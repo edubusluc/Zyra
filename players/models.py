@@ -202,6 +202,9 @@ class SnpTeamImport(PublicIdModel):
     existing = models.JSONField(default=list, blank=True)
     created_players = models.JSONField(default=list, blank=True)
     message = models.TextField(blank=True)
+    # Si ha fallado, dónde puede arreglarlo el capitán (SnpScrapeError.kind): "account" en la
+    # cuenta SNP, "team" en los datos de su equipo, o vacío.
+    error_kind = models.CharField(max_length=10, blank=True, default="")
 
     class Meta:
         ordering = ["-created_at"]

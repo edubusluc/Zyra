@@ -95,11 +95,12 @@ def search(team_import, scraper=None, **scrape_options):
     account = getattr(team_import.club, "snp_account", None)
     try:
         if account is None:
-            raise SnpScrapeError(_("El club no tiene cuenta SNP."))
+            raise SnpScrapeError(_("El club no tiene cuenta SNP."), kind=SnpScrapeError.ACCOUNT)
         scores = (scraper or scrape_scores)(account.username, account.password, account.team_id or None,
                                           country=team_country(account.club), **scrape_options)
     except (SnpScrapeError, DecryptionError) as exc:
-        changes = {"status": SnpTeamImport.ERROR, "message": str(exc), "finished_at": timezone.now()}
+        kind = exc.kind if isinstance(exc, SnpScrapeError) else SnpScrapeError.ACCOUNT
+        changes = {"status": SnpTeamImport.ERROR, "message": str(exc), "error_kind": kind, "finished_at": timezone.now()}
     else:
         to_add, existing = plan_import(team_import.club, scores)
         changes = {"status": SnpTeamImport.READY, "to_add": to_add, "existing": existing}
