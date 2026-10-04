@@ -6663,3 +6663,41 @@ msgstr[1] "%(n)s teams updated."
 #: match/templates/includes/lineup_form.html:15
 msgid "Resetear"
 msgstr "Reset"
+
+#: core/templates/base.html
+#, python-format
+msgid "¿Abandonar y eliminar %(club)s?"
+msgstr "Leave and delete %(club)s?"
+
+#: core/templates/base.html
+msgid "Eres el único miembro del club. Si lo abandonas, el club se eliminará."
+msgstr "You are the only member of the club. If you leave it, the club will be deleted."
+
+#: core/templates/base.html
+msgid ""
+"Se borrarán para siempre tu equipo, los equipos rivales, los jugadores y sus "
+"fotos, los partidos, las convocatorias, las sanciones, las estadísticas y la "
+"cuenta SNP. Esto no se puede deshacer."
+msgstr ""
+"Your team, rival teams, players and their photos, matches, call-ups, "
+"penalties, statistics and SNP account will be permanently deleted. This "
+"cannot be undone."
+
+#: core/templates/base.html
+#, python-format
+msgid "Escribe <strong>%(club)s</strong> para confirmar:"
+msgstr "Type <strong>%(club)s</strong> to confirm:"
+
+#: core/templates/base.html
+msgid "Eliminar el club"
+msgstr "Delete the club"
+
+#: core/views.py
+#, python-format
+msgid "Para eliminar el club escribe su nombre exactamente: %(club)s."
+msgstr "To delete the club, type its name exactly: %(club)s."
+
+#: core/views.py
+#, python-format
+msgid "Has abandonado %(club)s y el club se ha eliminado con todos sus datos."
+msgstr "You have left %(club)s and the club has been deleted with all its data."
