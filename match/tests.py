@@ -77,6 +77,54 @@ class MatchesAndCallsTests(TestCase):
         response = self.client.get(reverse("list_match"), {"season": "all"})
         self.assertEqual(len(response.context["matches"]), 2)
 
+    def test_match_list_season_selector_and_draws(self):
+        """Chips con la temporada actual activa, «Todas» con ?season=all, la temporada de cada
+        partido a la vista y los empates en el resumen."""
+        self.old.draft_mode = False
+        self.old.result = "EMPATE"
+        self.old.save()
+        response = self.client.get(reverse("list_match"))
+        chips = response.context["season_chips"]
+        self.assertTrue(chips[0]["active"])
+        self.assertEqual(chips[0]["label"], self.current.season)
+        self.assertTrue(response.context["season_all"]["url"].endswith("?season=all"))
+        self.assertContains(response, f"Temporada {self.current.season}")
+
+        response = self.client.get(reverse("list_match"), {"season": "all", "page": "1"})
+        self.assertTrue(response.context["season_all"]["active"])
+        self.assertEqual(response.context["summary"]["drawn"], 1)
+        self.assertNotIn("page=", response.context["season_chips"][0]["url"])
+        self.assertContains(response, 'class="z-fixture is-draw"')
+
+        # Una temporada que no existe vuelve a la actual
+        response = self.client.get(reverse("list_match"), {"season": "1999-2000"})
+        self.assertEqual(response.context["selected_season"], self.current.season)
+
+    def test_match_list_search_for_older_seasons(self):
+        """Con más de tres temporadas aparece el buscador; la antigua elegida sale como chip activo."""
+        start = int(self.current.season[:4])
+        for years_ago in (1, 3, 4):
+            Match.objects.create(club=self.club, local=self.club.own_team, visiting=self.rival,
+                                 start_date=datetime.date(start - years_ago, 10, 1))
+        oldest = f"{start - 4}-{start - 3}"
+        response = self.client.get(reverse("list_match"))
+        self.assertIn(oldest, response.context["season_search"])
+        self.assertEqual(len(response.context["season_chips"]), 3)
+        response = self.client.get(reverse("list_match"), {"season": oldest})
+        self.assertEqual([c["label"] for c in response.context["season_chips"] if c["active"]], [oldest])
+        self.assertEqual(len(response.context["matches"]), 1)
+
+    def test_long_call_groups_are_collapsed(self):
+        """Con muchos convocados en una posición, se ven los primeros y el resto tras «Ver N más»."""
+        players = [Player.objects.create(club=self.club, name=f"P{i:02d}", last_name="X", position="Derecha")
+                   for i in range(11)]
+        call = Call.objects.create(match=self.current, draft_mode=False)
+        call.players.set(players)
+        response = self.client.get(reverse("call_for_match", args=[self.current.public_id]))
+        drive = next(g for g in response.context["groups"] if len(g["players"]) == 11)
+        self.assertEqual(drive["hidden"], 3)
+        self.assertContains(response, "Ver 3 más")
+
     def test_call_players_are_alphabetical_and_current(self):
         response = self.client.get(reverse("create_call", args=[self.current.public_id]))
         self.assertEqual([p.name for p in response.context["players"]], ["Ana", "Zoe"])

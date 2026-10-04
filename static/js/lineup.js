@@ -1,5 +1,5 @@
-// Alineación de parejas: evita repetir jugadores, calcula el orden por puntos
-// y solo deja guardar cuando las 5 parejas están completas.
+// Alineación de parejas: evita repetir jugadores, muestra en vivo el orden por
+// puntos SNP (columna derecha) y solo deja guardar cuando las 5 parejas están completas.
 (function () {
   const form = document.querySelector('[data-lineup]');
   if (!form) return;
@@ -26,17 +26,31 @@
         gameId: slot.dataset.gameId || null,
         player1Id: a.value,
         player2Id: b.value,
-        label: interpolate(gettext('%(a)s y %(b)s'), { a: oa.textContent.trim(), b: ob.textContent.trim() }, true),
+        label: interpolate(gettext('%(a)s y %(b)s'), { a: oa.dataset.short || oa.textContent.trim(), b: ob.dataset.short || ob.textContent.trim() }, true),
         points: (parseFloat(oa.dataset.points) || 0) + (parseFloat(ob.dataset.points) || 0),
       });
     });
     pairs.sort((x, y) => y.points - x.points);
 
     list.innerHTML = '';
-    pairs.forEach(function (p, i) {
+    slots.forEach(function (_slot, i) {
+      const p = pairs[i];
       const li = document.createElement('li');
-      li.textContent = interpolate(gettext('%(pair)s · %(points)s pts SNP · partido de %(value)s puntos'),
-        { pair: p.label, points: Math.round(p.points * 10) / 10, value: i < 2 ? 3 : 2 }, true);
+      if (!p) li.className = 'is-empty';
+      const body = document.createElement('div');
+      const top = document.createElement('p');
+      const head = document.createElement('small');
+      head.textContent = interpolate(gettext('Partido %(n)s · %(value)s puntos'), { n: i + 1, value: i < 2 ? 3 : 2 }, true);
+      top.appendChild(head);
+      if (p) {
+        const pts = document.createElement('b');
+        pts.textContent = interpolate(gettext('%(points)s pts'), { points: Math.round(p.points * 10) / 10 }, true);
+        top.appendChild(pts);
+      }
+      const name = document.createElement('span');
+      name.textContent = p ? p.label : gettext('Pareja sin completar');
+      body.append(top, name);
+      li.appendChild(body);
       list.appendChild(li);
     });
 

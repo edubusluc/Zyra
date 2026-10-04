@@ -445,3 +445,27 @@ class AffinityScopeTests(TestCase):
         rows = {r["name"]: r["in_team"] for r in response.context["chart_affinity"]}
         self.assertEqual(rows, {"B BSON": True, "C CSON": False, "D DSON": False})
         self.assertContains(response, 'data-scope="team" aria-pressed="true"')
+
+
+class DrawStatisticsTests(TestCase):
+    """Una eliminatoria empatada a puntos (6-6) cuenta como empate, no como derrota."""
+
+    def setUp(self):
+        self.user = User.objects.create_user("admin", password="pass-12345")
+        self.club = create_club("Club A", "Sevilla", self.user)
+        own = self.club.own_team
+        rival = Team.objects.create(club=self.club, name="Rival", location="X", in_group=True)
+        for day, result in ((1, "Victoria Local"), (8, "EMPATE"), (15, "Victoria Visitante")):
+            Match.objects.create(club=self.club, local=own, visiting=rival, draft_mode=False,
+                                 start_date=datetime.date(2025, 10, day), result=result)
+        self.client.force_login(self.user)
+
+    def test_team_statistics_count_draws(self):
+        response = self.client.get(reverse("team_statistics"))
+        self.assertEqual(response.context["total_matches"], 3)
+        self.assertEqual(response.context["won_matches"], 1)
+        self.assertEqual(response.context["drawn_matches"], 1)
+        self.assertEqual(response.context["lost_matches"], 1)
+        self.assertEqual(response.context["percentage_drawn"], 33.33)
+        self.assertEqual(response.context["dicc_line_chart"], {"2025-2026": {"won": 1, "drawn": 1, "lost": 1}})
+        self.assertContains(response, "Empates")

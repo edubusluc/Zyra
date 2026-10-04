@@ -8,20 +8,14 @@
         <h1>{% translate "Partidos" %}</h1>
     </div>
     <div class="z-actions">
-        <form method="get" class="d-flex align-items-center gap-2">
-            <label for="season" class="z-toolbar-label mb-0">{% translate "Temporada" %}</label>
-            <select name="season" id="season" onchange="this.form.submit()" class="z-select-compact">
-                {% for s in seasons %}
-                <option value="{{ s }}" {% if s == selected_season %}selected{% endif %}>{{ s }}</option>
-                {% endfor %}
-                <option value="{{ all_seasons }}" {% if selected_season == all_seasons %}selected{% endif %}>{% translate "Todas" %}</option>
-            </select>
-        </form>
         {% if is_club_admin %}
         <a href="{% url 'create_match' %}" class="btn btn-primary text-nowrap"><i class="fa-solid fa-plus me-1"></i> {% translate "Nuevo partido" %}</a>
         {% endif %}
     </div>
 </div>
+
+<script src="{% static 'js/player-picker.js' %}" defer></script>
+{% include 'includes/season_filter.html' %}
 
 {% if messages %}
 <div class="alert-message">{% for message in messages %}<p>{{ message }}</p>{% endfor %}</div>
@@ -30,6 +24,7 @@
 <div class="z-summary" aria-label="{% translate 'Resumen' %}">
     <div><b>{{ summary.played }}</b><span>{% translate "Jugados" %}</span></div>
     <div class="is-win"><b>{{ summary.won }}</b><span>{% translate "Ganados" %}</span></div>
+    <div class="is-draw"><b>{{ summary.drawn }}</b><span>{% translate "Empatados" %}</span></div>
     <div class="is-loss"><b>{{ summary.lost }}</b><span>{% translate "Perdidos" %}</span></div>
     <div><b>{{ summary.pending }}</b><span>{% translate "Pendientes" %}</span></div>
 </div>
@@ -37,12 +32,13 @@
 {% if matches %}
 <ol class="z-fixtures">
     {% for m in matches %}
-    <li class="z-fixture {% if m.outcome == 'V' %}is-win{% elif m.outcome == 'D' %}is-loss{% endif %}">
+    <li class="z-fixture {% if m.outcome == 'V' %}is-win{% elif m.outcome == 'D' %}is-loss{% elif m.outcome == 'E' %}is-draw{% endif %}">
         <div class="z-fixture-date">
             <b>{{ m.start_date|date:"d" }}</b>
             <span>{{ m.start_date|date:"M"|upper }}</span>
             <small>{{ m.start_date|date:"Y" }}</small>
         </div>
+        <div class="z-fixture-main">
         <div class="z-fixture-teams">
             <div class="z-fixture-team {% if m.local.is_own %}is-own{% endif %}">
                 <img src="{% if m.local.photo %}{{ m.local.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="">
@@ -56,8 +52,9 @@
                 <img src="{% if m.visiting.photo %}{{ m.visiting.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="">
             </div>
         </div>
+        <p class="z-fixture-meta">{% blocktranslate with season=m.season %}Temporada {{ season }}{% endblocktranslate %}{% if m.match_type != m.ENFRENTAMIENTO %} · {{ m.get_match_type_display }}{% endif %}</p>
+        </div>
         <div class="z-fixture-status">
-            {% if m.match_type != m.ENFRENTAMIENTO %}<span class="z-badge z-badge--outline">{{ m.get_match_type_display }}</span>{% endif %}
             {% if m.outcome == 'V' %}<span class="z-wl z-wl--w" title="{% translate 'Victoria' %}">{% translate "V" context "inicial de victoria" %}</span>
             {% elif m.outcome == 'D' %}<span class="z-wl z-wl--l" title="{% translate 'Derrota' %}">{% translate "D" context "inicial de derrota" %}</span>
             {% elif m.outcome == 'E' %}<span class="z-wl" title="{% translate 'Empate' %}">{% translate "E" context "inicial de empate" %}</span>
