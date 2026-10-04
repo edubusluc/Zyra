@@ -251,6 +251,7 @@ class RolesAndClubSwitchTests(TestCase):
             "name": "Nuevo Club", "location": "Cádiz", "gender": "F", "country": "MX", "division": "1000",
             "username": "fundador", "email": "f@example.com",
             "password1": "Clave-Segura-123", "password2": "Clave-Segura-123",
+            "player-name": "Ana", "player-last_name": "Ruiz",
         })
         self.assertRedirects(response, reverse("home"), fetch_redirect_response=False)
         club = Club.objects.get(name="Nuevo Club")

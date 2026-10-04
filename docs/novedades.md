@@ -5,6 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 04/10/2026
 
+- [#88](https://github.com/edubusluc/Zyra/pull/88) Al registrar un club se crea el jugador del capitán enlazado a su cuenta (nombre y apellidos como en SNP; aviso si Google no los da)
 - [#87](https://github.com/edubusluc/Zyra/pull/87) Si el capitán es el único miembro, abandonar el club lo elimina con todos sus datos (con aviso y confirmación escribiendo el nombre)
 - [#83](https://github.com/edubusluc/Zyra/pull/83) Convocatoria paginada de 20 en 20, botón Resetear por pareja, pareja en el resultado e informe sin guiones
 - [#85](https://github.com/edubusluc/Zyra/pull/85) Ajuste de la foto dentro del círculo al subirla, jugadores a la vista en Estadísticas › Jugador y errores en popup

@@ -37,6 +37,23 @@ class ClubForm(forms.Form):
         plain_text(self, "name", "location")
 
 
+class CaptainPlayerForm(forms.Form):
+    """
+    Nombre y apellidos del capitán al registrar el club: con ellos se crea su jugador,
+    enlazado a su cuenta. Deben coincidir con los de SNP para que se le asignen los puntos.
+    """
+    name = forms.CharField(label=_("Nombre"), max_length=100)
+    last_name = forms.CharField(
+        label=_("Apellidos"), max_length=100,
+        help_text=_("Escríbelos exactamente como aparecen en SNP."),
+    )
+
+    def __init__(self, *args, **kwargs):
+        """Los nombres solo admiten texto plano (core.validators)."""
+        super().__init__(*args, **kwargs)
+        plain_text(self, "name", "last_name")
+
+
 class SignUpForm(UserCreationForm):
     """
     Registro de una cuenta con usuario, email y contraseña (al registrar un club o desde

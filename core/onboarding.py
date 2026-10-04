@@ -9,6 +9,7 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 from match.models import Match
+from .models import Membership
 from players.models import Player
 from team.models import Team
 
@@ -38,7 +39,10 @@ def onboarding_steps(club):
             "help": _("Para los jugadores que no vayan a aceptar la invitación, añádelos tú a la plantilla."),
             "url": reverse("create_player"),
             "action": _("Crear jugador"),
-            "done": Player.objects.filter(club=club).exists(),
+            # El jugador del capitán se crea al registrar el club: no cuenta para este paso.
+            "done": Player.objects.filter(club=club).exclude(
+                user_id__in=club.memberships.filter(role=Membership.ADMIN).values("user_id")
+            ).exists(),
         },
         {
             "key": "match",

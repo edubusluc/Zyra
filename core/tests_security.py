@@ -237,7 +237,7 @@ class FormValidationTests(SecurityBase):
         self.client.post(reverse("register_club"), {
             "name": "<script>x</script>", "location": "Cádiz", "gender": "F", "country": "ES", "division": "500",
             "username": "nuevo", "email": "n@example.com", "password1": "Clave-Segura-123",
-            "password2": "Clave-Segura-123",
+            "password2": "Clave-Segura-123", "player-name": "Ana", "player-last_name": "Ruiz",
         })
         self.assertFalse(User.objects.filter(username="nuevo").exists())
 

@@ -20,7 +20,9 @@ el club activo: lo de otro club da 404. Sin permiso, la página «Sin permiso» 
 ## Cuentas y clubes
 
 - **Registro de club**: usuario, email y contraseña (requisitos en vivo y botón para verla) o con
-  Google. La página se abre arriba, sin saltar a ningún campo. Crea el club, su equipo propio y deja a la persona como capitán
+  Google. La página se abre arriba, sin saltar a ningún campo. Crea el club, su equipo propio y deja a la persona como capitán,
+  con su jugador ya creado y enlazado a su cuenta (nombre y apellidos como en SNP; con Google se rellenan del
+  perfil y, si no vienen, se avisa de que hay que escribirlos)
   ([`core.views.register_club`](referencia/core/views.md), [`core.services`](referencia/core/services.md)).
 - **Entrar con Google**: si el email ya existe, entra en esa cuenta y no crea otra
   ([`core.adapters`](referencia/core/adapters.md)).

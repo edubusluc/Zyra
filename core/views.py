@@ -6,6 +6,7 @@ import datetime
 from urllib.parse import urlencode
 
 from allauth.account.models import EmailAddress
+from allauth.socialaccount.models import SocialAccount
 from django.forms import Select
 from django.forms.utils import ErrorDict
 from django.contrib import messages
@@ -33,7 +34,7 @@ from .adapters import GOOGLE_NEW_ACCOUNT_KEY
 from .blocklist import is_user_blocked
 from .decorators import club_admin_required
 from .emails import send_invitation_email, send_welcome_email
-from .forms import ClubForm, InviteMemberForm, SignUpForm
+from .forms import CaptainPlayerForm, ClubForm, InviteMemberForm, SignUpForm
 from .middleware import SESSION_KEY
 from .models import Invitation, Membership
 from .onboarding import onboarding_for
@@ -197,10 +198,19 @@ def register_club(request):
                                   "Abandona ese club antes de registrar otro.") % {"club": current.name})
         return redirect("home")
 
+    # Nombre y apellidos para el jugador del capitán. Con Google vienen de su perfil si
+    # los tiene; si falta alguno, se avisa de que hay que escribirlos.
+    known = {} if anonymous else {"name": request.user.first_name.strip(), "last_name": request.user.last_name.strip()}
+    google_missing_name = (
+        not anonymous and not all(known.values())
+        and SocialAccount.objects.filter(user=request.user, provider="google").exists()
+    )
+
     if request.method == "POST":
         club_form = ClubForm(request.POST)
+        player_form = CaptainPlayerForm(request.POST, prefix="player")
         user_form = SignUpForm(request.POST) if anonymous else None
-        valid = club_form.is_valid() and (user_form is None or user_form.is_valid())
+        valid = all([club_form.is_valid(), player_form.is_valid(), user_form is None or user_form.is_valid()])
         # Un email bloqueado por el personal (p. ej. de un club suspendido) no puede crear clubes.
         if valid and not anonymous and is_user_blocked(request.user):
             club_form.add_error(None, _("Tu email está bloqueado en Zyra y no puede crear clubes."))
@@ -208,9 +218,14 @@ def register_club(request):
         if valid:
             with transaction.atomic():
                 user = user_form.save() if anonymous else request.user
-                data = club_form.cleaned_data
+                data, player = club_form.cleaned_data, player_form.cleaned_data
                 club = create_club(data["name"], data["location"], user, gender=data["gender"], country=data["country"],
-                                   division=data["division"])
+                                   division=data["division"], player_name=player["name"],
+                                   player_last_name=player["last_name"])
+                # La cuenta se queda con el nombre del jugador si no tenía uno.
+                if not (user.first_name or user.last_name):
+                    user.first_name, user.last_name = player["name"], player["last_name"]
+                    user.save(update_fields=["first_name", "last_name"])
             if anonymous:
                 login(request, user, backend=LOGIN_BACKEND)
             request.session[SESSION_KEY] = club.id
@@ -219,11 +234,13 @@ def register_club(request):
             return redirect("home")
     else:
         club_form = ClubForm()
+        player_form = CaptainPlayerForm(initial=known, prefix="player")
         user_form = SignUpForm() if anonymous else None
 
-    _style(club_form, user_form)
+    _style(club_form, user_form, player_form)
     return render(request, "register_club.html", {
-        "club_form": club_form, "user_form": user_form,
+        "club_form": club_form, "user_form": user_form, "player_form": player_form,
+        "google_missing_name": google_missing_name,
         "google_next": f"{reverse('register_club')}?{FROM_GOOGLE_PARAM}=1",
     })
 

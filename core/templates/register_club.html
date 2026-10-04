@@ -17,6 +17,13 @@
             <h2 class="z-section-title">{% translate "Tu cuenta (capitán)" %}</h2>
             {{ user_form.as_p }}
             {% endif %}
+            <h2 class="z-section-title">{% translate "Tu jugador" %}</h2>
+            <p class="text-muted small">{% translate "Como capitán también juegas: con estos datos creamos tu jugador en el equipo, ya enlazado a tu cuenta." %}</p>
+            {% if google_missing_name %}
+            <div class="alert alert-warning" role="alert">{% translate "No ha sido posible obtener tu nombre y apellidos de tu cuenta de Google. Indícalos para crear tu jugador." %}</div>
+            {% endif %}
+            <div class="alert alert-info" role="note"><strong>{% translate "Importante:" %}</strong> {% translate "el nombre y los apellidos deben coincidir exactamente con los que tienes registrados en SNP. Si no coinciden, no se te podrán asignar tus puntos SNP." %}</div>
+            {{ player_form.as_p }}
             <button type="submit" class="btn btn-primary btn-lg mt-2">{% translate "Crear club" %}</button>
         </form>
         {% if user_form %}

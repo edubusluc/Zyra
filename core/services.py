@@ -10,6 +10,7 @@ from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
+from players.models import Player
 from team.models import Team
 from .blocklist import is_user_blocked
 from .models import Club, Invitation, Membership
@@ -25,12 +26,20 @@ def club_of(user):
 
 
 @transaction.atomic
-def create_club(name, location, admin_user, gender="", country="", division=""):
-    """Crea un club con su equipo propio y deja a admin_user como capitán."""
+def create_club(name, location, admin_user, gender="", country="", division="",
+                player_name="", player_last_name=""):
+    """
+    Crea un club con su equipo propio y deja a admin_user como capitán. Con
+    ``player_name`` y ``player_last_name`` crea también el jugador del capitán en el
+    equipo propio, enlazado a su cuenta.
+    """
     club = Club.objects.create(name=name)
-    Team.objects.create(club=club, name=name, location=location, gender=gender, country=country,
-                        division=division, is_own=True, in_group=True)
+    own_team = Team.objects.create(club=club, name=name, location=location, gender=gender, country=country,
+                                   division=division, is_own=True, in_group=True)
     Membership.objects.create(user=admin_user, club=club, role=Membership.ADMIN)
+    if player_name and player_last_name:
+        Player.objects.create(club=club, team=own_team, name=player_name, last_name=player_last_name,
+                              user=admin_user)
     return club
 
 
