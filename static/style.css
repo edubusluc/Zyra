@@ -2092,3 +2092,23 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 .z-claim-dot.is-free { background: var(--z-lime); }
 .z-claim-dot.is-taken { background: var(--z-border-strong); }
 .z-claim-confirm-name { font-size: 1.15rem; font-weight: 800; color: var(--z-lime); margin-bottom: .75rem; }
+
+/* ---------- Portada: primeros pasos del club nuevo (core.onboarding) ---------- */
+.z-onboarding { margin-top: 2rem; margin-bottom: 24px; border-color: var(--z-lime); }
+.z-onboarding-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.z-onboarding-head h2 { font-size: 1.15rem; margin: 4px 0 0; }
+.z-onboarding-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.z-onboarding-steps li {
+    display: flex; align-items: center; gap: 12px; padding: 12px;
+    background: var(--z-surface-2); border: 1px solid var(--z-border); border-radius: var(--z-radius-sm);
+}
+.z-onboarding-check { font-size: 1.25rem; color: var(--z-muted); flex: none; }
+.z-onboarding-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.z-onboarding-text span { color: var(--z-muted); font-size: .9rem; }
+.z-onboarding-steps .btn { flex: none; white-space: nowrap; }
+.z-onboarding-steps li.is-done .z-onboarding-check { color: var(--z-lime); }
+.z-onboarding-steps li.is-done strong { text-decoration: line-through; color: var(--z-muted); }
+@media (max-width: 575.98px) {
+    .z-onboarding-steps li { flex-wrap: wrap; }
+    .z-onboarding-steps .btn { width: 100%; }
+}
