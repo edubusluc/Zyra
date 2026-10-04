@@ -9,7 +9,7 @@
         <img src="{% static 'zyra/logo.svg' %}" alt="" class="z-auth-logo">
         <h1>{% translate "Invitación no válida" %}</h1>
         <p class="text-muted">
-            {% if invitation and invitation.is_used %}{% translate "Este enlace ya se ha usado: cada invitación sirve para una sola persona." %}
+            {% if invitation and invitation.is_used %}{% translate "Este enlace ya se ha usado: las invitaciones por email sirven para una sola persona." %}
             {% elif invitation %}{% translate "Este enlace ha caducado: las invitaciones son válidas durante 24 horas." %}
             {% else %}{% translate "No encontramos esta invitación." %}{% endif %}
             {% translate "Pide al capitán de tu equipo que te envíe una nueva." %}

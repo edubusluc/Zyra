@@ -36,7 +36,7 @@ from .emails import send_invitation_email, send_welcome_email
 from .forms import ClubForm, InviteMemberForm, SignUpForm
 from .middleware import SESSION_KEY
 from .models import Invitation, Membership
-from .services import InvitationError, accept_invitation, create_club
+from .services import InvitationError, accept_invitation, create_club, is_last_admin, remove_membership
 
 INVITATIONS_PER_PAGE = 10
 
@@ -245,7 +245,7 @@ def club_members(request, invite_form=None):
     invite_form = invite_form or InviteMemberForm(club=club)
     _style(invite_form)
     memberships = club.memberships.select_related("user").order_by("user__username")
-    pending = club.invitations.filter(used_at__isnull=True, expires_at__gt=timezone.now())
+    pending = club.invitations.pending()
     has_invitations = pending.exists()
     search = request.GET.get("q", "").strip()
     if search:
@@ -290,9 +290,12 @@ def create_invitation(request):
 @club_admin_required
 @require_POST
 def create_invitation_link(request):
-    """Invitación sin email: el capitán copia el enlace y lo comparte (por WhatsApp, por ejemplo)."""
-    Invitation.objects.create(club=request.club, created_by=request.user)
-    messages.success(request, _("Invitación creada: copia el enlace y compártelo. Caduca en 24 horas y sirve para una sola persona."))
+    """
+    Invitación sin email: el capitán copia el enlace y lo comparte (por WhatsApp, por
+    ejemplo). Sirve para todas las personas que lo usen hasta que caduque o se anule.
+    """
+    Invitation.objects.create(club=request.club, created_by=request.user, reusable=True)
+    messages.success(request, _("Enlace creado: cópialo y compártelo. Lo pueden usar varias personas y caduca en 24 horas."))
     return redirect(reverse("club_members") + "#invitaciones")
 
 
@@ -304,7 +307,7 @@ def revoke_invitation(request, invitation_id):
 
     Redirige a la lista de invitaciones de la página de miembros.
     """
-    get_object_or_404(Invitation, public_id=invitation_id, club=request.club, used_at__isnull=True).delete()
+    get_object_or_404(Invitation.objects.pending(), public_id=invitation_id, club=request.club).delete()
     messages.success(request, _("Invitación anulada."))
     return redirect(reverse("club_members") + "#invitaciones")
 
@@ -390,11 +393,6 @@ def invitation(request, token):
     return render(request, "invitation.html", {"invitation": invitation, "club": club, "form": form})
 
 
-def _is_last_admin(membership):
-    """True si ``membership`` es el único capitán de su club."""
-    return membership.is_admin and not membership.club.memberships.filter(role=Membership.ADMIN).exclude(pk=membership.pk).exists()
-
-
 @club_admin_required
 @require_POST
 def update_member(request, membership_id):
@@ -416,7 +414,7 @@ def update_member(request, membership_id):
             return redirect("club_members")
     if role not in dict(Membership.ROLES):
         messages.error(request, _("Rol no válido."))
-    elif role != Membership.ADMIN and _is_last_admin(membership):
+    elif role != Membership.ADMIN and is_last_admin(membership):
         messages.error(request, _("El club debe tener al menos un capitán."))
     else:
         membership.role = role
@@ -446,13 +444,42 @@ def _change_own_email(user, email):
 @require_POST
 def remove_member(request, membership_id):
     """
-    Da de baja a un miembro del club (solo capitanes, solo POST).
+    Da de baja a un miembro del club (solo capitanes, solo POST) y desenlaza su cuenta de
+    su jugador, así si vuelve a entrar no sigue enlazado al de antes.
 
     No permite quitar al último capitán. Redirige a la página de miembros.
     """
-    membership = get_object_or_404(Membership, public_id=membership_id, club=request.club)
-    if _is_last_admin(membership):
+    membership = get_object_or_404(Membership.objects.select_related("user"), public_id=membership_id, club=request.club)
+    if is_last_admin(membership):
         messages.error(request, _("El club debe tener al menos un capitán."))
+    elif membership.user_id == request.user.id:
+        # Quitarse a uno mismo es abandonar el club: se hace desde el menú, con su aviso.
+        return leave_club(request)
     else:
-        membership.delete()
+        remove_membership(membership)
+        messages.success(request, _("%(username)s ya no es miembro del club.") % {"username": membership.user.username})
     return redirect("club_members")
+
+
+@login_required
+@require_POST
+def leave_club(request):
+    """
+    El usuario abandona el club activo (solo POST; el menú pide confirmación antes).
+
+    Se desenlaza su cuenta del jugador que tuviera en el club. El último capitán no puede
+    irse: antes tiene que nombrar a otro. Después pasa a otro de sus clubes o, si no
+    tiene más, a la página «sin club».
+    """
+    membership = request.membership
+    if membership is None:
+        return redirect("home")
+    if is_last_admin(membership):
+        messages.error(request, _("Eres el único capitán de %(club)s: nombra a otro capitán antes de abandonar el club.")
+                       % {"club": membership.club.name})
+        return redirect("club_members")
+    club_name = membership.club.name
+    remove_membership(membership)
+    request.session.pop(SESSION_KEY, None)
+    messages.success(request, _("Has abandonado %(club)s.") % {"club": club_name})
+    return redirect("home")

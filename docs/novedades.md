@@ -6,6 +6,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 ## 04/10/2026
 
 - [#82](https://github.com/edubusluc/Zyra/pull/82) Informe PDF de convocatoria en dos páginas también con muchos convocados
+- [#80](https://github.com/edubusluc/Zyra/pull/80) Enlaces de invitación para varias personas, abandonar el club, elegir jugador con confirmación y foto editable por el capitán
 
 ## 03/10/2026
 

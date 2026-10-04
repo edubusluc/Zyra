@@ -1,6 +1,6 @@
 """
-Operaciones de negocio sobre clubes que usan varias vistas: crear un club y aceptar
-una invitación. Cada una se ejecuta en una transacción.
+Operaciones de negocio sobre clubes que usan varias vistas: crear un club, aceptar
+una invitación y dar de baja a un miembro. Cada una se ejecuta en una transacción.
 """
 from django.db import transaction
 from django.utils import timezone
@@ -29,9 +29,10 @@ class InvitationError(Exception):
 @transaction.atomic
 def accept_invitation(invitation, user):
     """
-    Da de alta a ``user`` como miembro del club de la invitación y la marca como
-    usada. La invitación se bloquea mientras tanto, así un mismo enlace no puede
-    usarse dos veces aunque lleguen dos peticiones a la vez.
+    Da de alta a ``user`` como miembro del club de la invitación y apunta el uso. La
+    invitación se bloquea mientras tanto, así una invitación de un solo uso (las de
+    email) no puede usarse dos veces aunque lleguen dos peticiones a la vez. Los enlaces
+    compartidos (``reusable``) siguen valiendo para más personas.
     """
     invitation = Invitation.objects.select_for_update().select_related("club").get(pk=invitation.pk)
     if not invitation.is_valid:
@@ -45,5 +46,24 @@ def accept_invitation(invitation, user):
     membership = Membership.objects.create(user=user, club=invitation.club, role=Membership.MEMBER)
     invitation.used_by = user
     invitation.used_at = timezone.now()
-    invitation.save(update_fields=["used_by", "used_at"])
+    invitation.use_count += 1
+    invitation.save(update_fields=["used_by", "used_at", "use_count"])
     return membership
+
+
+def is_last_admin(membership):
+    """True si ``membership`` es el único capitán de su club."""
+    return membership.is_admin and not membership.club.memberships.filter(role=Membership.ADMIN).exclude(pk=membership.pk).exists()
+
+
+@transaction.atomic
+def remove_membership(membership):
+    """
+    Saca al usuario del club (lo quita el capitán o lo abandona él) y desenlaza su cuenta
+    del jugador que tuviera en ese club: si vuelve a entrar, elige de nuevo quién es.
+    El jugador y sus estadísticas se conservan.
+    """
+    from players.models import Player
+
+    Player.objects.filter(club=membership.club, user=membership.user).update(user=None)
+    membership.delete()

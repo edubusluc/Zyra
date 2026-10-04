@@ -91,7 +91,9 @@
                 <td>{{ inv.created_at|date:"j M Y H:i" }}</td>
                 <td>{{ inv.created_by.username|default:"—" }}</td>
                 <td>
-                    {% if inv.is_used %}<span class="z-badge z-badge--lime">{% with username=inv.used_by.username|default:"—" %}{% blocktranslate %}Usada por {{ username }}{% endblocktranslate %}{% endwith %}</span>
+                    {% if inv.reusable %}<span class="z-badge z-badge--lime">{% blocktranslate trimmed count n=inv.use_count %}Enlace compartido: {{ n }} uso{% plural %}Enlace compartido: {{ n }} usos{% endblocktranslate %}</span>
+                    {% if inv.is_expired %}<span class="z-badge z-badge--outline">{% translate "Caducada" %}</span>{% endif %}
+                    {% elif inv.is_used %}<span class="z-badge z-badge--lime">{% with username=inv.used_by.username|default:"—" %}{% blocktranslate %}Usada por {{ username }}{% endblocktranslate %}{% endwith %}</span>
                     {% elif inv.is_expired %}<span class="z-badge z-badge--outline">{% translate "Caducada" %}</span>
                     {% else %}<span class="z-badge z-badge--warning">{% translate "Vigente" %}</span>{% endif %}
                 </td>

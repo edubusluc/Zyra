@@ -33,18 +33,24 @@ class PlayerEditForm(forms.ModelForm):
     """
     Edición de un jugador. Antes la vista guardaba lo que llegara en el POST sin
     validar (posiciones inventadas, temporadas con cualquier formato, nombres de más
-    de 100 caracteres); ahora se aplican las mismas reglas que al crearlo.
+    de 100 caracteres); ahora se aplican las mismas reglas que al crearlo. El capitán
+    también puede cambiar la foto (sin subir ninguna se queda la que tenía).
     """
     class Meta:
         model = Player
-        fields = ['name', 'last_name', 'position', 'skillfull_hand', 'joined_season', 'in_team']
+        fields = ['name', 'last_name', 'position', 'skillfull_hand', 'joined_season', 'in_team', 'photo']
 
     def __init__(self, *args, **kwargs):
         """Pone «Elige una opción» en posición y mano hábil y limpia el texto de nombre y apellidos."""
         super().__init__(*args, **kwargs)
         self.fields['position'].choices = with_placeholder(Player.POSITIONS)
         self.fields['skillfull_hand'].choices = with_placeholder(Player.HAND)
+        self.fields['photo'].widget = forms.FileInput(attrs={"class": "form-control", "accept": "image/*"})
         plain_text(self, 'name', 'last_name')
+
+    def clean_photo(self):
+        """Valida, reduce y pasa a WebP la foto antes de guardarla (core/images.py)."""
+        return clean_photo_field(self)
 
 
 class OwnPlayerForm(forms.ModelForm):

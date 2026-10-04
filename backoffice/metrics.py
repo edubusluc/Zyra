@@ -102,7 +102,7 @@ def dashboard_kpis():
             "calls_open": Call.objects.filter(draft_mode=True, match__start_date__gte=today).count(),
         },
         "invitations": {
-            "pending": invitations.filter(used_at__isnull=True, expires_at__gt=now).count(),
+            "pending": invitations.pending().count(),
             "created_30": inv_created_30,
             "used_30": inv_used_30,
             "conversion_30": round(100 * inv_used_30 / inv_created_30) if inv_created_30 else None,
