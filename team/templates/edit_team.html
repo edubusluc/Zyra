@@ -3,6 +3,13 @@
 
 {% block content %}
     <div class="table-container mt-4">
+        {% if messages %}
+        <div class="alert">
+            {% for message in messages %}
+            <p class="{{ message.tags }}">{{ message }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
         <h1>{% translate "Editar Equipo" %}</h1>
         
         <form method="POST" action="{% url 'edit_team' team.public_id %}" enctype="multipart/form-data">

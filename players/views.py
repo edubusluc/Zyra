@@ -8,11 +8,13 @@ from match.models import Game
 from players.models import Player, SnpAccount, SnpTeamImport
 from core.crypto import DecryptionError
 from django.http import JsonResponse
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
+from django.urls import reverse
 from django.db import transaction
 from django.db.models import BooleanField, ExpressionWrapper, Q
 from django.utils.translation import gettext as _, ngettext
 from . import snp_import
+from .scraper import SnpScrapeError
 from core import similarity
 
 
@@ -206,8 +208,20 @@ def manage_roster(request):
 
 @club_admin_required
 def snp_account(request):
-    """Cuenta SNP del capitán: con ella se descargan cada semana los puntos SNP de los jugadores."""
+    """
+    Cuenta SNP del capitán: con ella se descargan cada semana los puntos SNP de los jugadores.
+    Con la cuenta guardada se muestra una tarjeta con el usuario y la contraseña oculta; el
+    formulario solo aparece al pulsar «Editar» (``?edit=1``), si todavía no hay cuenta o si
+    lo enviado no es válido.
+    """
     account = SnpAccount.objects.filter(club=request.club).first()
+    username = None
+    if account:
+        try:
+            username = account.username
+        except DecryptionError:
+            if request.method != "POST":
+                messages.error(request, _("No se ha podido leer la cuenta guardada (¿ha cambiado la clave de cifrado?). Vuelve a introducirla."))
     if request.method == "POST":
         form = SnpAccountForm(request.POST, has_password=account is not None)
         if form.is_valid():
@@ -221,17 +235,26 @@ def snp_account(request):
             messages.success(request, _("Cuenta SNP guardada. Los puntos se actualizarán cada lunes por la noche."))
             return redirect("snp_account")
     else:
-        initial = {}
-        if account:
-            initial["team"] = account.team_id
-            try:
-                initial["username"] = account.username
-            except DecryptionError:
-                messages.error(request, _("No se ha podido leer la cuenta guardada (¿ha cambiado la clave de cifrado?). Vuelve a introducirla."))
+        initial = {"team": account.team_id, "username": username} if account else {}
         form = SnpAccountForm(initial=initial, has_password=account is not None)
+    editing = account is None or username is None or request.method == "POST" or request.GET.get("edit") == "1"
     return render(request, "snp_account.html", {
-        "form": form, "account": account,
+        "form": form, "account": account, "username": username, "editing": editing,
     })
+
+
+@club_admin_required
+@require_POST
+def snp_account_password(request):
+    """
+    Contraseña de SNP guardada, en JSON, para enseñarla en la tarjeta de la cuenta al pulsar
+    el ojo. Solo capitanes y por POST: así no queda escrita en la página ni en el historial.
+    """
+    account = get_object_or_404(SnpAccount, club=request.club)
+    try:
+        return JsonResponse({"password": account.password})
+    except DecryptionError:
+        return JsonResponse({"error": _("No se ha podido leer la contraseña guardada.")}, status=409)
 
 
 @club_admin_required
@@ -274,7 +297,34 @@ def complete_team_start(request):
 def complete_team_status(request, import_id):
     """Estado en JSON de una búsqueda de «Completar equipo» (lo consulta la lista). Solo capitanes."""
     team_import = get_object_or_404(SnpTeamImport, public_id=import_id, club=request.club)
-    return JsonResponse({"status": team_import.status, "message": team_import.message})
+    data = {"status": team_import.status, "message": team_import.message, "redirect": ""}
+    if team_import.status == SnpTeamImport.ERROR and team_import.error_kind in (SnpScrapeError.ACCOUNT, SnpScrapeError.TEAM):
+        data["redirect"] = reverse("complete_team_failed", args=[team_import.public_id])
+    return JsonResponse(data)
+
+
+@club_admin_required
+@require_GET
+def complete_team_failed(request, import_id):
+    """
+    Lleva al capitán a donde puede arreglar el fallo de «Completar equipo», con el motivo:
+    a la cuenta SNP si SNP no acepta la cuenta, o a la edición de su equipo si no se
+    encuentran jugadores. Solo capitanes.
+    """
+    team_import = get_object_or_404(SnpTeamImport, public_id=import_id, club=request.club, status=SnpTeamImport.ERROR)
+    reason = _("No se ha podido leer el equipo de SNP: %(message)s") % {"message": team_import.message}
+    own = request.club.own_team
+    if team_import.error_kind == SnpScrapeError.TEAM and own:
+        hint = _("Comprueba que la configuración de tu equipo es correcta, sobre todo la nacionalidad: decide en qué país de SNP se buscan tus jugadores.")
+        destination = reverse("edit_team", args=[own.public_id])
+    elif team_import.error_kind == SnpScrapeError.ACCOUNT:
+        hint = _("Revisa el usuario, la contraseña y el equipo de tu cuenta SNP.")
+        destination = reverse("snp_account") + "?edit=1"
+    else:
+        hint = _("Comprueba que la configuración de tu equipo es correcta.")
+        destination = reverse("list_players")
+    messages.error(request, f"{reason} {hint}")
+    return redirect(destination)
 
 
 @club_admin_required

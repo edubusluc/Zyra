@@ -154,7 +154,11 @@
                 <div id="complete-team-running" data-status-url="{% url 'complete_team_status' snp_import.public_id %}">
                     <p><span class="spinner-border spinner-border-sm me-2" role="status"></span>{% translate "Buscando los jugadores de tu equipo en SNP. Puede tardar un minuto…" %}</p>
                 </div>
-                <p id="complete-team-error" class="text-danger" hidden></p>
+                <div id="complete-team-error" hidden>
+                    <p class="text-danger" data-error-text></p>
+                    <p>{% translate "Comprueba que la configuración de tu equipo es correcta." %}
+                    {% if request.club.own_team %}<a href="{% url 'edit_team' request.club.own_team.public_id %}">{% translate "Revisar mi equipo" %}</a>{% endif %}</p>
+                </div>
                 {% else %}
                 {% if snp_import.to_add %}
                 <p>{% blocktranslate trimmed count n=snp_import.to_add|length %}Se van a añadir <strong>{{ n }}</strong> jugador:{% plural %}Se van a añadir <strong>{{ n }}</strong> jugadores:{% endblocktranslate %}</p>
@@ -217,8 +221,10 @@
                 .then(function (data) {
                     if (data.status === 'running') { setTimeout(poll, 2000); return; }
                     if (data.status === 'error') {
+                        // Fallo que se arregla en la cuenta SNP o en el equipo: se lleva al capitán allí.
+                        if (data.redirect) { window.location.href = data.redirect; return; }
                         running.hidden = true;
-                        errorBox.textContent = '{{ t_snp_error|escapejs }}'.replace('{message}', data.message);
+                        errorBox.querySelector('[data-error-text]').textContent = '{{ t_snp_error|escapejs }}'.replace('{message}', data.message);
                         errorBox.hidden = false;
                         return;
                     }

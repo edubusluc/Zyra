@@ -130,8 +130,12 @@ BULK_FIELDS = ('gender', 'country', 'division')
 @club_admin_required
 @require_http_methods(["GET", "POST"])
 def manage_teams(request):
-    """Cambia de una vez categoría, nacionalidad, división y grupo de varios equipos."""
-    teams = list(Team.objects.filter(club=request.club).order_by('-is_own', 'name'))
+    """
+    Cambia de una vez categoría, nacionalidad, división y grupo de los equipos del grupo.
+    No muestra el equipo propio (se edita desde su ficha) ni los equipos fuera del grupo.
+    """
+    club_teams = list(Team.objects.filter(club=request.club).order_by('name'))
+    teams = [t for t in club_teams if t.in_group and not t.is_own]
     rows = [{"team": t, "error": "", **{f: getattr(t, f) for f in BULK_FIELDS}, "in_group": t.in_group} for t in teams]
 
     if request.method == "POST":
@@ -143,16 +147,17 @@ def manage_teams(request):
                 # No se puede dejar en blanco un dato que ya tenía (los equipos antiguos sí lo tienen vacío).
                 if value in valid[f] or value == row[f]:
                     row[f] = value
-            if not team.is_own:  # el equipo propio siempre está en el grupo
-                row["in_group"] = f"in_group_{team.id}" in request.POST
+            row["in_group"] = f"in_group_{team.id}" in request.POST
         # Mismas reglas que Teamform: el nombre no puede repetirse en una división; los
-        # equipos sin división cuentan para todas.
+        # equipos sin división cuentan para todas. Se compara con todos los equipos del club.
+        shown = {row["team"].pk for row in rows}
+        others = rows + [{"team": t, "division": t.division} for t in club_teams if t.pk not in shown]
         for row in rows:
             changed = row["division"] != row["team"].division
             if not changed or not row["division"]:
                 continue
             if any(o is not row and o["division"] in (row["division"], "") and similarity.same_name(row["team"].name, o["team"].name)
-                   for o in rows):
+                   for o in others):
                 row["error"] = _("Ya existe un equipo con ese nombre en esa división en tu club.")
 
         if any(row["error"] for row in rows):
@@ -166,7 +171,7 @@ def manage_teams(request):
                     if any(getattr(team, f) != v for f, v in new.items()):
                         for f, v in new.items():
                             setattr(team, f, v)
-                        team.save()  # save() pasa la categoría del equipo propio a sus jugadores
+                        team.save()
                         changed += 1
             if changed:
                 messages.success(request, ngettext("%(n)s equipo actualizado.", "%(n)s equipos actualizados.", changed) % {"n": changed})

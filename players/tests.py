@@ -535,6 +535,49 @@ class CompleteTeamTests(TestCase):
         self.client.post(reverse("complete_team_start"))
         self.assertEqual(SnpTeamImport.objects.filter(status=SnpTeamImport.READY).count(), 1)
 
+    def failed_import(self, error):
+        from .models import SnpTeamImport
+        with mock.patch("players.snp_import.scrape_scores", side_effect=error):
+            self.client.post(reverse("complete_team_start"))
+        team_import = SnpTeamImport.objects.get()
+        self.assertEqual(team_import.status, SnpTeamImport.ERROR)
+        return team_import, self.client.get(reverse("complete_team_status", args=[team_import.public_id])).json()
+
+    def test_rejected_password_leads_to_the_snp_account_form(self):
+        team_import, status = self.failed_import(SnpScrapeError("SNP no ha aceptado el usuario o la contraseña.", kind=SnpScrapeError.ACCOUNT))
+        self.assertEqual(status["redirect"], reverse("complete_team_failed", args=[team_import.public_id]))
+        response = self.client.get(status["redirect"], follow=True)
+        self.assertRedirects(response, reverse("snp_account") + "?edit=1")
+        self.assertContains(response, "no ha aceptado el usuario")
+        self.assertContains(response, 'name="username"')  # el formulario, no la tarjeta
+
+    def test_no_players_found_leads_to_editing_the_own_team(self):
+        from .scraper import SnpTemporaryError
+        team_import, status = self.failed_import(SnpTemporaryError("La tabla de jugadores de SNP está vacía.", kind=SnpScrapeError.TEAM))
+        response = self.client.get(status["redirect"], follow=True)
+        self.assertRedirects(response, reverse("edit_team", args=[self.club.own_team.public_id]))
+        self.assertContains(response, "Comprueba que la configuración de tu equipo es correcta")
+
+    def test_other_errors_stay_in_the_popup_with_the_team_hint(self):
+        from .scraper import SnpTemporaryError
+        team_import, status = self.failed_import(SnpTemporaryError("Error del navegador al leer SNP: timeout"))
+        self.assertEqual(status["redirect"], "")
+
+    def test_scraper_errors_say_where_to_fix_them(self):
+        from . import scraper
+        self.assertEqual(scraper.SnpScrapeError("x").kind, "")
+        self.assertTrue(scraper.SnpTemporaryError("x", kind=scraper.SnpScrapeError.TEAM).retryable)
+        page, frame = mock.Mock(), mock.Mock()
+        frame.query_selector_all.return_value = []
+        with mock.patch.object(scraper, "_find", return_value=(frame, mock.Mock())), \
+                self.assertRaises(scraper.SnpScrapeError) as raised:
+            scraper._open_team_page(page, "4380", lambda m: None)
+        self.assertEqual(raised.exception.kind, scraper.SnpScrapeError.ACCOUNT)
+        with mock.patch.object(scraper, "_find", return_value=(frame, mock.Mock())), \
+                self.assertRaises(scraper.SnpScrapeError) as raised:
+            scraper._open_team_page(page, None, lambda m: None)
+        self.assertEqual(raised.exception.kind, scraper.SnpScrapeError.TEAM)
+
     def test_no_button_without_snp_account_or_for_members(self):
         viewer = User.objects.create_user("viewer", password="pass-12345")
         Membership.objects.create(user=viewer, club=self.club, role=Membership.MEMBER)
@@ -703,3 +746,47 @@ class DeletePlayerTests(TestCase):
         self.client.login(username="viewer", password="pass-12345")
         self.client.post(reverse("delete_player", args=[self.ana.public_id]))
         self.assertTrue(Player.objects.filter(pk=self.ana.pk).exists())
+
+
+@override_settings(FIELD_ENCRYPTION_KEY="")
+class SnpAccountCardTests(TestCase):
+    def setUp(self):
+        self.admin = User.objects.create_user("admin", password="pass-12345")
+        self.club = create_club("Club A", "Sevilla", self.admin)
+        self.client.force_login(self.admin)
+        self.url = reverse("snp_account")
+
+    def save_account(self):
+        return self.client.post(self.url, {"username": "capitan", "password": "secreto", "team": ""})
+
+    def test_form_until_the_account_is_saved_then_a_card(self):
+        self.assertContains(self.client.get(self.url), 'name="username"')
+        response = self.save_account()
+        self.assertRedirects(response, self.url, fetch_redirect_response=False)
+        page = self.client.get(self.url)
+        self.assertNotContains(page, 'name="username"')
+        self.assertContains(page, "capitan")
+        self.assertContains(page, "••••••••")
+        self.assertNotContains(page, "secreto")  # la contraseña no se escribe en la página
+        self.assertContains(page, "?edit=1")
+
+    def test_edit_opens_the_form_with_the_username(self):
+        self.save_account()
+        page = self.client.get(self.url + "?edit=1")
+        self.assertContains(page, 'name="username"')
+        self.assertContains(page, 'value="capitan"')
+        self.assertNotContains(page, "secreto")
+        # Dejar la contraseña vacía mantiene la actual.
+        self.client.post(self.url, {"username": "otro", "password": "", "team": ""})
+        account = SnpAccount.objects.get(club=self.club)
+        self.assertEqual((account.username, account.password), ("otro", "secreto"))
+
+    def test_password_is_shown_only_on_request_to_captains(self):
+        self.save_account()
+        password_url = reverse("snp_account_password")
+        self.assertEqual(self.client.get(password_url).status_code, 405)
+        self.assertEqual(self.client.post(password_url).json(), {"password": "secreto"})
+        member = User.objects.create_user("member", password="pass-12345")
+        Membership.objects.create(user=member, club=self.club, role=Membership.MEMBER)
+        self.client.force_login(member)
+        self.assertNotEqual(self.client.post(password_url).status_code, 200)
