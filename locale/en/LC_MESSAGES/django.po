@@ -2798,9 +2798,6 @@ msgid "Abandonar el club"
 msgstr "Leave the club"
 
 #: core/templates/base.html:104
-msgid "Registrar otro club"
-msgstr "Register another club"
-
 #: core/templates/base.html:109
 msgid "Cerrar sesión"
 msgstr "Log out"
@@ -6488,3 +6485,66 @@ msgstr[1] "%(n)s teams updated."
 #: match/templates/includes/lineup_form.html:15
 msgid "Resetear"
 msgstr "Reset"
+
+msgid "Añade un equipo de tu grupo"
+msgstr "Add a team from your group"
+
+msgid "Da de alta a los rivales de tu grupo para poder crear partidos contra ellos."
+msgstr "Add the opponents in your group so you can create matches against them."
+
+msgid "Añadir equipo"
+msgstr "Add team"
+
+msgid "Invita a tus jugadores"
+msgstr "Invite your players"
+
+msgid "Envíales una invitación por email o comparte un enlace para que se unan al club."
+msgstr "Send them an email invitation or share a link so they can join the club."
+
+msgid "Invitar"
+msgstr "Invite"
+
+msgid "Crea un jugador"
+msgstr "Create a player"
+
+msgid "Para los jugadores que no vayan a aceptar la invitación, añádelos tú a la plantilla."
+msgstr "For players who won't accept the invitation, add them to the squad yourself."
+
+msgid "Crear jugador"
+msgstr "Create player"
+
+msgid "Crea un partido"
+msgstr "Create a match"
+
+msgid "Programa el próximo partido para preparar la convocatoria y las parejas."
+msgstr "Schedule the next match to prepare the call-up and the pairs."
+
+#, python-format
+msgid "Ya perteneces a %(club)s y solo se puede pertenecer a un club. Abandona ese club antes de unirte a otro."
+msgstr "You already belong to %(club)s and you can only belong to one club. Leave that club before joining another one."
+
+msgid "Primeros pasos"
+msgstr "First steps"
+
+msgid "Prepara tu club en Zyra"
+msgstr "Set up your club in Zyra"
+
+msgid "Ocultar primeros pasos"
+msgstr "Hide first steps"
+
+msgid "Hecho"
+msgstr "Done"
+
+#, python-format
+msgid "Ya perteneces a %(club)s y solo se puede pertenecer a un club. Si quieres unirte a este, abandona antes tu club desde el menú de usuario."
+msgstr "You already belong to %(club)s and you can only belong to one club. To join this one, first leave your club from the user menu."
+
+msgid "Volver a mi club"
+msgstr "Back to my club"
+
+#, python-format
+msgid "Ya perteneces a %(club)s y solo se puede pertenecer a un club. Abandona ese club antes de registrar otro."
+msgstr "You already belong to %(club)s and you can only belong to one club. Leave that club before registering another one."
+
+msgid "Enlace nuevo creado: el anterior ya no funciona. Cópialo y compártelo. Lo pueden usar varias personas y caduca en 24 horas."
+msgstr "New link created: the previous one no longer works. Copy and share it. Several people can use it and it expires in 24 hours."

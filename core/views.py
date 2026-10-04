@@ -36,7 +36,8 @@ from .emails import send_invitation_email, send_welcome_email
 from .forms import ClubForm, InviteMemberForm, SignUpForm
 from .middleware import SESSION_KEY
 from .models import Invitation, Membership
-from .services import InvitationError, accept_invitation, create_club, is_last_admin, remove_membership
+from .onboarding import onboarding_for
+from .services import InvitationError, accept_invitation, club_of, create_club, is_last_admin, remove_membership
 
 INVITATIONS_PER_PAGE = 10
 
@@ -83,7 +84,18 @@ def home(request):
         'hot_pair': hot_pair,
         # Aviso al capitán mientras no haya registrado la cuenta SNP del club.
         'snp_missing': request.membership.is_admin and not SnpAccount.objects.filter(club=club).exists(),
+        # Primeros pasos del capitán de un club nuevo (core.onboarding).
+        'onboarding': onboarding_for(request.membership),
     })
+
+
+@club_admin_required
+@require_POST
+def dismiss_onboarding(request):
+    """El capitán cierra la lista de primeros pasos de la portada (solo POST)."""
+    request.club.onboarding_dismissed_at = timezone.now()
+    request.club.save(update_fields=["onboarding_dismissed_at"])
+    return redirect("home")
 
 
 class ThrottledLoginView(LoginView):
@@ -161,7 +173,10 @@ def _style(*forms):
 
 
 def register_club(request):
-    """Alta de un club nuevo. Si el visitante no tiene cuenta, se le crea una."""
+    """
+    Alta de un club nuevo. Si el visitante no tiene cuenta, se le crea una. Quien ya
+    pertenece a un club (como miembro o capitán) no puede registrar otro.
+    """
     anonymous = not request.user.is_authenticated
 
     # Vuelve de "Crear mi cuenta con Google". Si el email ya tenía cuenta, Google ha
@@ -170,6 +185,13 @@ def register_club(request):
         if request.session.pop(GOOGLE_NEW_ACCOUNT_KEY, False):
             return redirect("register_club")
         messages.info(request, _("Ya tenías una cuenta con este email. Has iniciado sesión con ella."))
+        return redirect("home")
+
+    # Una cuenta solo puede pertenecer a un club.
+    current = None if anonymous else club_of(request.user)
+    if current is not None:
+        messages.error(request, _("Ya perteneces a %(club)s y solo se puede pertenecer a un club. "
+                                  "Abandona ese club antes de registrar otro.") % {"club": current.name})
         return redirect("home")
 
     if request.method == "POST":
@@ -293,9 +315,17 @@ def create_invitation_link(request):
     """
     Invitación sin email: el capitán copia el enlace y lo comparte (por WhatsApp, por
     ejemplo). Sirve para todas las personas que lo usen hasta que caduque o se anule.
+    Solo vale el último enlace: al generar uno nuevo, el anterior deja de funcionar (se
+    marca como caducado, así se conserva quién se unió con él).
     """
-    Invitation.objects.create(club=request.club, created_by=request.user, reusable=True)
-    messages.success(request, _("Enlace creado: cópialo y compártelo. Lo pueden usar varias personas y caduca en 24 horas."))
+    with transaction.atomic():
+        replaced = request.club.invitations.pending().filter(reusable=True).update(expires_at=timezone.now())
+        Invitation.objects.create(club=request.club, created_by=request.user, reusable=True)
+    if replaced:
+        messages.success(request, _("Enlace nuevo creado: el anterior ya no funciona. Cópialo y compártelo. "
+                                    "Lo pueden usar varias personas y caduca en 24 horas."))
+    else:
+        messages.success(request, _("Enlace creado: cópialo y compártelo. Lo pueden usar varias personas y caduca en 24 horas."))
     return redirect(reverse("club_members") + "#invitaciones")
 
 
@@ -361,6 +391,11 @@ def invitation(request, token):
             request.session[SESSION_KEY] = club.id
             messages.info(request, _("Ya eres miembro de %(club)s.") % {"club": club.name})
             return redirect("home")
+        # Solo se puede pertenecer a un club: explica por qué no puede unirse a este.
+        current = club_of(request.user)
+        if current is not None:
+            request.session.pop(PENDING_INVITE_KEY, None)
+            return render(request, "invitation.html", {"invitation": invitation, "club": club, "current_club_name": current.name})
         # Vuelve de iniciar sesión con Google desde esta misma invitación: se une directamente.
         from_google = request.session.pop(PENDING_INVITE_KEY, None) == token
         if request.method == "POST" or from_google:

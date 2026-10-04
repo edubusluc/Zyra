@@ -11,21 +11,24 @@ Qué puede hacer cada persona en Zyra. Los enlaces a la derecha llevan al códig
 | **Personal** (staff) | Equipo de Zyra. | Back-office: métricas, clubes, usuarios, procesos, revisión de fotos. |
 | **Superusuario** | Dueño de la plataforma. | Además, consola SQL, importación de datos y el admin de Django. |
 
-Una persona puede estar en varios clubes y cambiar de club activo. Todos los datos se filtran por
+Cada cuenta pertenece a un solo club: quien ya es miembro o capitán de uno no puede registrar
+otro ni unirse a otro hasta que abandone el suyo (los clubes suspendidos no cuentan). Las cuentas
+que ya estaban en varios clubes conservan el selector de club. Todos los datos se filtran por
 el club activo: lo de otro club da 404. Sin permiso, la página «Sin permiso» explica por qué
 ([`core.decorators`](referencia/core/decorators.md)).
 
 ## Cuentas y clubes
 
 - **Registro de club**: usuario, email y contraseña (requisitos en vivo y botón para verla) o con
-  Google. Crea el club, su equipo propio y deja a la persona como capitán
+  Google. La página se abre arriba, sin saltar a ningún campo. Crea el club, su equipo propio y deja a la persona como capitán
   ([`core.views.register_club`](referencia/core/views.md), [`core.services`](referencia/core/services.md)).
 - **Entrar con Google**: si el email ya existe, entra en esa cuenta y no crea otra
   ([`core.adapters`](referencia/core/adapters.md)).
 - **Inicio de sesión con freno**: demasiados intentos fallidos devuelven 429.
 - **Miembros**: lista, cambio de rol, quitar del club (nunca el último capitán; su cuenta se
   desenlaza de su jugador), invitaciones por email (un solo uso) o por enlace compartido (lo
-  pueden usar varias personas, con contador de cuántas se han unido), ambas válidas 24 h;
+  pueden usar varias personas, con contador de cuántas se han unido; al generar uno nuevo el
+  anterior deja de funcionar y solo se ve el último), ambas válidas 24 h;
   pendientes paginadas de 10 en 10 con buscador por email.
 - **Abandonar el club**: desde el menú de usuario, con confirmación. La cuenta se desenlaza de su
   jugador (que se conserva) y el último capitán no puede irse sin nombrar a otro.
@@ -34,6 +37,11 @@ el club activo: lo de otro club da 404. Sin permiso, la página «Sin permiso» 
 - **Idioma**: español o inglés con el selector de la cabecera.
 
 ## Inicio del club
+
+**Primeros pasos** para el capitán de un club nuevo: añadir un equipo de su grupo, invitar a sus
+jugadores, crear un jugador y crear un partido. Cada paso se marca solo cuando el club ya lo tiene
+y la lista desaparece al completarla o al cerrarla ([`core.onboarding`](referencia/core/onboarding.md)).
+Los clubes que ya existían no la ven.
 
 Próximo partido con cuenta atrás, jugador y pareja en racha de victorias (con enlace a sus
 estadísticas) y aviso al capitán si el club no tiene cuenta SNP

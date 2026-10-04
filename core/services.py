@@ -1,6 +1,10 @@
 """
 Operaciones de negocio sobre clubes que usan varias vistas: crear un club, aceptar
 una invitación y dar de baja a un miembro. Cada una se ejecuta en una transacción.
+
+Cada cuenta pertenece a un solo club: quien ya es miembro (o capitán) de uno no puede
+registrar otro ni unirse a otro (``club_of``). Los clubes suspendidos no cuentan, porque
+ya no se pueden usar.
 """
 from django.db import transaction
 from django.utils import timezone
@@ -9,6 +13,15 @@ from django.utils.translation import gettext as _
 from team.models import Team
 from .blocklist import is_user_blocked
 from .models import Club, Invitation, Membership
+
+
+def club_of(user):
+    """Club (no suspendido) al que pertenece ``user``, o None si no tiene ninguno."""
+    membership = (
+        Membership.objects.filter(user=user, club__suspended_at__isnull=True)
+        .select_related("club").order_by("pk").first()
+    )
+    return membership.club if membership else None
 
 
 @transaction.atomic
@@ -43,6 +56,10 @@ def accept_invitation(invitation, user):
         raise InvitationError(_("Tu email está bloqueado en Zyra y no puede unirse a clubes."))
     if Membership.objects.filter(user=user, club=invitation.club).exists():
         raise InvitationError(_("Ya eres miembro de %(club)s.") % {"club": invitation.club.name})
+    current = club_of(user)
+    if current is not None:
+        raise InvitationError(_("Ya perteneces a %(club)s y solo se puede pertenecer a un club. "
+                                "Abandona ese club antes de unirte a otro.") % {"club": current.name})
     membership = Membership.objects.create(user=user, club=invitation.club, role=Membership.MEMBER)
     invitation.used_by = user
     invitation.used_at = timezone.now()
