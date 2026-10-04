@@ -5,7 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 04/10/2026
 
-- Informe PDF de convocatoria en dos páginas también con muchos convocados
+- [#82](https://github.com/edubusluc/Zyra/pull/82) Informe PDF de convocatoria en dos páginas también con muchos convocados
 
 ## 03/10/2026
 
