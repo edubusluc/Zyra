@@ -6,9 +6,6 @@
     <div class="z-auth-card text-center">
         <img src="{% static 'zyra/logo.svg' %}" alt="" class="z-auth-logo">
         {% if not suspended_clubs %}<h1>{% translate "Sin club" %}</h1>{% endif %}
-        {% if messages %}
-        <div class="alert-message">{% for message in messages %}<p>{{ message }}</p>{% endfor %}</div>
-        {% endif %}
         {% if suspended_clubs %}
         <h1>{% translate "Club suspendido" %}</h1>
         {% for club in suspended_clubs %}

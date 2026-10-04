@@ -2,10 +2,6 @@
 {% load static i18n %}
 
 {% block content %}
-{% if messages %}
-<div class="alert-message">{% for message in messages %}<p>{{ message }}</p>{% endfor %}</div>
-{% endif %}
-
 <section class="z-home-hero">
     <img class="z-home-logo" src="{% if own_team.photo %}{{ own_team.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="{% blocktranslate with club=current_club.name %}Escudo de {{ club }}{% endblocktranslate %}">
     <div>

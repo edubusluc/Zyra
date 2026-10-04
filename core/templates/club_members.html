@@ -3,14 +3,6 @@
 
 {% block content %}
 <div class="table-container my-4">
-    {% if messages %}
-    <div class="alert">
-        {% for message in messages %}
-        <p class="{{ message.tags }}">{{ message }}</p>
-        {% endfor %}
-    </div>
-    {% endif %}
-
     <h1>{% blocktranslate with club=current_club.name %}Miembros de {{ club }}{% endblocktranslate %}</h1>
 
     <div class="z-table-wrap"><table class="table align-middle z-table-stack">

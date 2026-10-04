@@ -9,10 +9,6 @@
     </div>
 </div>
 
-{% if messages %}
-<div class="alert-message">{% for message in messages %}<p>{{ message }}</p>{% endfor %}</div>
-{% endif %}
-
 <p class="text-muted">{% translate "Cambia la categoría, la nacionalidad, la división o el grupo de varios equipos y guarda todos los cambios de una vez. Marca equipos para aplicarles el mismo valor a todos." %}</p>
 
 <form method="post" data-teams>

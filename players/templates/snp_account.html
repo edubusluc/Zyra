@@ -3,14 +3,6 @@
 
 {% block content %}
 <div class="table-container my-4">
-    {% if messages %}
-    <div class="alert">
-        {% for message in messages %}
-        <p class="{{ message.tags }}">{{ message }}</p>
-        {% endfor %}
-    </div>
-    {% endif %}
-
     <h1>{% translate "Cuenta SNP" %}</h1>
     <p class="text-muted">
         {% blocktranslate trimmed %}

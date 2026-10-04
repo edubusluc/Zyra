@@ -8,9 +8,6 @@
     <div class="z-auth-card">
         <img src="{% static 'zyra/logo.svg' %}" alt="" class="z-auth-logo">
         <h1>{% blocktranslate with club=club.name %}Únete a {{ club }}{% endblocktranslate %}</h1>
-        {% if messages %}
-        <div class="alert">{% for message in messages %}<p class="{{ message.tags }}">{{ message }}</p>{% endfor %}</div>
-        {% endif %}
         <p class="text-muted text-center">
             {% if invitation.created_by %}{% blocktranslate trimmed with name=invitation.created_by.get_full_name|default:invitation.created_by.username %}{{ name }} te invita a entrar en el equipo para consultar partidos, convocatorias y estadísticas.{% endblocktranslate %}{% else %}{% translate "Te han invitado a entrar en el equipo para consultar partidos, convocatorias y estadísticas." %}{% endif %}
             {% blocktranslate trimmed with date=invitation.expires_at|timezone:"Europe/Madrid"|date:"d/m/Y" time=invitation.expires_at|timezone:"Europe/Madrid"|date:"H:i" %}La invitación caduca el {{ date }} a las {{ time }}.{% endblocktranslate %}

@@ -1,0 +1,60 @@
+{% load i18n %}
+{% comment %}
+Mensajes de la aplicación (django.contrib.messages), para todas las páginas desde base.html.
+Los errores y avisos salen en un popup que hay que cerrar; las confirmaciones (éxito,
+información), en una notificación arriba que se cierra sola. Las páginas no los pintan.
+{% endcomment %}
+{% if messages %}
+<div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3 z-toasts" aria-live="polite" aria-atomic="true">
+    {% for message in messages %}{% if message.level < DEFAULT_MESSAGE_LEVELS.WARNING %}
+    <div class="toast z-toast {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}is-success{% endif %}" role="status" data-bs-delay="7000" data-z-message>
+        <div class="d-flex align-items-start gap-2">
+            <i class="fa-solid {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}fa-circle-check{% else %}fa-circle-info{% endif %} z-toast-icon" aria-hidden="true"></i>
+            <div class="toast-body p-0">{{ message }}</div>
+            <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="toast" aria-label="{% translate 'Cerrar' %}"></button>
+        </div>
+    </div>
+    {% endif %}{% endfor %}
+</div>
+
+<div class="modal fade z-messages-modal" id="zMessagesModal" tabindex="-1" aria-labelledby="zMessagesTitle" aria-hidden="true" data-z-messages>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="z-messages-icon" aria-hidden="true"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                <h2 class="modal-title h5" id="zMessagesTitle">{% translate "Revisa esto" %}</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% translate 'Cerrar' %}"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="z-messages-list">
+                    {% for message in messages %}{% if message.level >= DEFAULT_MESSAGE_LEVELS.WARNING %}
+                    <li data-z-message="{% if message.level >= DEFAULT_MESSAGE_LEVELS.ERROR %}error{% else %}warning{% endif %}">{{ message }}</li>
+                    {% endif %}{% endfor %}
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">{% translate "Entendido" %}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Muestra el popup si hay errores o avisos, y las notificaciones de confirmación.
+(function () {
+    if (!window.bootstrap) return;
+    const modal = document.getElementById('zMessagesModal');
+    if (modal.querySelector('[data-z-message]')) {
+        // Solo avisos (sin errores): icono amarillo en vez de rojo.
+        if (!modal.querySelector('[data-z-message="error"]')) modal.querySelector('.z-messages-icon').classList.add('is-warning');
+        bootstrap.Modal.getOrCreateInstance(modal).show();
+    } else {
+        modal.remove();
+    }
+    document.querySelectorAll('.z-toast[data-z-message]').forEach(function (el) { bootstrap.Toast.getOrCreateInstance(el).show(); });
+})();
+</script>
+<noscript>
+    <div class="main-content pb-0">{% for message in messages %}<p class="alert">{{ message }}</p>{% endfor %}</div>
+</noscript>
+{% endif %}
