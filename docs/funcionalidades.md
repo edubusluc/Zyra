@@ -31,7 +31,10 @@ el club activo: lo de otro club da 404. Sin permiso, la página «Sin permiso» 
   anterior deja de funcionar y solo se ve el último), ambas válidas 24 h;
   pendientes paginadas de 10 en 10 con buscador por email.
 - **Abandonar el club**: desde el menú de usuario, con confirmación. La cuenta se desenlaza de su
-  jugador (que se conserva) y el último capitán no puede irse sin nombrar a otro.
+  jugador (que se conserva) y el último capitán no puede irse sin nombrar a otro. Si el capitán
+  es el único miembro, al irse se elimina el club con todos sus datos (equipos, jugadores,
+  fotos, partidos, convocatorias, sanciones y cuenta SNP); el popup lo avisa y pide escribir el
+  nombre del club para confirmar.
 - **Suspensiones y emails bloqueados**: el personal puede suspender un club o una cuenta y bloquear
   emails para que no se registren ([`core.blocklist`](referencia/core/blocklist.md)).
 - **Idioma**: español o inglés con el selector de la cabecera.

@@ -143,30 +143,50 @@
 {% endif %}
 
 {% if user.is_authenticated and current_club %}
+{% with deletes_club=leaving_deletes_club %}
 <div class="modal fade" id="leaveClubModal" tabindex="-1" aria-labelledby="leaveClubTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <form class="modal-content" method="post" action="{% url 'leave_club' %}">
+        <form class="modal-content" method="post" action="{% url 'leave_club' %}"{% if deletes_club %} data-delete-club{% endif %}>
             {% csrf_token %}
             <div class="modal-header">
+                {% if deletes_club %}
+                <h2 class="modal-title h5" id="leaveClubTitle">{% blocktranslate with club=current_club.name %}¿Abandonar y eliminar {{ club }}?{% endblocktranslate %}</h2>
+                {% else %}
                 <h2 class="modal-title h5" id="leaveClubTitle">{% blocktranslate with club=current_club.name %}¿Abandonar {{ club }}?{% endblocktranslate %}</h2>
+                {% endif %}
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% translate 'Cerrar' %}"></button>
             </div>
             <div class="modal-body">
+                {% if deletes_club %}
+                <div class="alert alert-danger" role="alert">
+                    <p class="mb-2"><i class="fa-solid fa-triangle-exclamation"></i> <strong>{% translate "Eres el único miembro del club. Si lo abandonas, el club se eliminará." %}</strong></p>
+                    <p class="mb-0">{% translate "Se borrarán para siempre tu equipo, los equipos rivales, los jugadores y sus fotos, los partidos, las convocatorias, las sanciones, las estadísticas y la cuenta SNP. Esto no se puede deshacer." %}</p>
+                </div>
+                <label for="leaveClubConfirm" class="form-label">{% blocktranslate with club=current_club.name %}Escribe <strong>{{ club }}</strong> para confirmar:{% endblocktranslate %}</label>
+                <input type="text" class="form-control" id="leaveClubConfirm" name="confirm_name" autocomplete="off" required data-club-name="{{ current_club.name }}">
+                {% else %}
                 <p class="mb-0">{% translate "Dejarás de ver los partidos, jugadores y estadísticas del club, y tu cuenta se desenlazará de tu jugador. Para volver necesitarás una nueva invitación." %}</p>
+                {% endif %}
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{% translate "Cancelar" %}</button>
+                {% if deletes_club %}
+                <button type="submit" class="btn btn-danger" data-delete-club-submit disabled>{% translate "Eliminar el club" %}</button>
+                {% else %}
                 <button type="submit" class="btn btn-danger">{% translate "Abandonar el club" %}</button>
+                {% endif %}
             </div>
         </form>
     </div>
 </div>
+{% endwith %}
 {% endif %}
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{% static 'js/password.js' %}"></script>
 <script src="{% static 'js/nav.js' %}"></script>
 <script src="{% static 'js/photo-crop.js' %}"></script>
+<script src="{% static 'js/leave-club.js' %}"></script>
 {% include 'includes/messages_popup.html' %}
 </body>
 </html>

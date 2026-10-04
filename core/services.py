@@ -73,6 +73,26 @@ def is_last_admin(membership):
     return membership.is_admin and not membership.club.memberships.filter(role=Membership.ADMIN).exclude(pk=membership.pk).exists()
 
 
+def is_only_member(membership):
+    """True si ``membership`` es el único miembro (de cualquier rol) de su club."""
+    return not membership.club.memberships.exclude(pk=membership.pk).exists()
+
+
+def club_name_matches(club, typed):
+    """True si ``typed`` es el nombre del club, sin distinguir mayúsculas ni espacios de los extremos."""
+    return (typed or "").strip().casefold() == club.name.strip().casefold()
+
+
+@transaction.atomic
+def delete_club(club):
+    """
+    Borra el club y todo lo que cuelga de él: equipo propio y rivales, jugadores, partidos,
+    convocatorias, sanciones, cuenta SNP, invitaciones y miembros. Las fotos se borran del
+    almacenamiento con las señales de core.images. Las cuentas de usuario se conservan.
+    """
+    club.delete()
+
+
 @transaction.atomic
 def remove_membership(membership):
     """

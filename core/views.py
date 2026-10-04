@@ -37,7 +37,10 @@ from .forms import ClubForm, InviteMemberForm, SignUpForm
 from .middleware import SESSION_KEY
 from .models import Invitation, Membership
 from .onboarding import onboarding_for
-from .services import InvitationError, accept_invitation, club_of, create_club, is_last_admin, remove_membership
+from .services import (
+    InvitationError, accept_invitation, club_name_matches, club_of, create_club, delete_club, is_last_admin,
+    is_only_member, remove_membership,
+)
 
 INVITATIONS_PER_PAGE = 10
 
@@ -503,11 +506,23 @@ def leave_club(request):
     El usuario abandona el club activo (solo POST; el menú pide confirmación antes).
 
     Se desenlaza su cuenta del jugador que tuviera en el club. El último capitán no puede
-    irse: antes tiene que nombrar a otro. Después pasa a otro de sus clubes o, si no
-    tiene más, a la página «sin club».
+    irse si quedan otros miembros: antes tiene que nombrar a otro capitán. Si es el único
+    miembro, al irse se elimina el club con todos sus datos, siempre que confirme
+    escribiendo el nombre del club (campo ``confirm_name``). Después pasa a otro de sus
+    clubes o, si no tiene más, a la página «sin club».
     """
     membership = request.membership
     if membership is None:
+        return redirect("home")
+    if is_last_admin(membership) and is_only_member(membership):
+        club = membership.club
+        if not club_name_matches(club, request.POST.get("confirm_name")):
+            messages.error(request, _("Para eliminar el club escribe su nombre exactamente: %(club)s.") % {"club": club.name})
+            return redirect("home")
+        club_name = club.name
+        delete_club(club)
+        request.session.pop(SESSION_KEY, None)
+        messages.success(request, _("Has abandonado %(club)s y el club se ha eliminado con todos sus datos.") % {"club": club_name})
         return redirect("home")
     if is_last_admin(membership):
         messages.error(request, _("Eres el único capitán de %(club)s: nombra a otro capitán antes de abandonar el club.")
