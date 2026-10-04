@@ -220,6 +220,44 @@ class InvitationTests(TestCase):
         self.assertContains(response, "ya se ha usado", status_code=410)
         self.assertFalse(User.objects.filter(username="segundo").exists())
 
+    def test_shared_link_works_for_many_people(self):
+        self.client.login(username="capitan", password="pass-12345")
+        self.client.post(reverse("create_invitation_link"))
+        invitation = Invitation.objects.get(club=self.club)
+        self.assertTrue(invitation.reusable)
+        self.client.logout()
+        self.client.post(self.url(invitation), SIGNUP)
+        self.client.logout()
+        self.client.post(self.url(invitation), {**SIGNUP, "username": "segundo", "email": "s@example.com"})
+        self.assertEqual(
+            set(Membership.objects.filter(club=self.club, user__username__in=["nuevo", "segundo"]).values_list("user__username", flat=True)),
+            {"nuevo", "segundo"},
+        )
+        invitation.refresh_from_db()
+        self.assertEqual(invitation.use_count, 2)
+        # Sigue pendiente (y se puede anular) hasta que caduque.
+        self.client.login(username="capitan", password="pass-12345")
+        page = self.client.get(reverse("club_members"))
+        self.assertContains(page, "2 personas se han unido")
+        self.client.post(reverse("revoke_invitation", args=[invitation.public_id]))
+        self.assertFalse(Invitation.objects.filter(pk=invitation.pk).exists())
+
+    def test_expired_shared_link_is_rejected(self):
+        invitation = self.invite(reusable=True, expires_at=timezone.now() - datetime.timedelta(seconds=1))
+        response = self.client.post(self.url(invitation), SIGNUP)
+        self.assertContains(response, "ha caducado", status_code=410)
+
+    def test_emailed_invitation_is_single_use(self):
+        self.client.login(username="capitan", password="pass-12345")
+        self.client.post(reverse("create_invitation"), {"email": "j@example.com"})
+        invitation = Invitation.objects.get(club=self.club)
+        self.assertFalse(invitation.reusable)
+        self.client.logout()
+        self.client.post(self.url(invitation), {**SIGNUP, "email": "j@example.com"})
+        self.client.logout()
+        response = self.client.post(self.url(invitation), {**SIGNUP, "username": "segundo", "email": "s@example.com"})
+        self.assertEqual(response.status_code, 410)
+
     def test_expired_invitation_is_rejected(self):
         invitation = self.invite(expires_at=timezone.now() - datetime.timedelta(seconds=1))
         response = self.client.post(self.url(invitation), SIGNUP)

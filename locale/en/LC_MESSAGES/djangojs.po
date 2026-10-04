@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zyra\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-04 12:43+0000\n"
+"POT-Creation-Date: 2026-10-04 12:54+0000\n"
 "PO-Revision-Date: 2026-10-01 20:00+0200\n"
 "Last-Translator: Zyra\n"
 "Language-Team: English\n"
@@ -61,19 +61,19 @@ msgstr "Clear"
 msgid "%(a)s y %(b)s"
 msgstr "%(a)s and %(b)s"
 
-#: static/js/lineup.js:42
+#: static/js/lineup.js:43
 msgid "Partido %(n)s · %(value)s puntos"
 msgstr "Match %(n)s · %(value)s points"
 
-#: static/js/lineup.js:44
-msgid "Pareja sin completar"
-msgstr "Pair not complete"
-
-#: static/js/lineup.js:49
+#: static/js/lineup.js:47
 msgid "%(points)s pts"
 msgstr "%(points)s pts"
 
-#: static/js/lineup.js:60
+#: static/js/lineup.js:51
+msgid "Pareja sin completar"
+msgstr "Pair not complete"
+
+#: static/js/lineup.js:62
 msgid "Completa todas las parejas para guardar"
 msgstr "Complete all pairs to save"
 

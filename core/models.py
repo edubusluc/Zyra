@@ -99,10 +99,21 @@ def _invitation_expiry():
     return timezone.now() + INVITATION_TTL
 
 
+class InvitationQuerySet(models.QuerySet):
+    """QuerySet de Invitation con filtros propios."""
+    def pending(self):
+        """
+        Invitaciones que todavía se pueden aceptar: sin caducar y, si son de un solo uso
+        (las de email), sin usar. Los enlaces compartidos sirven para varias personas.
+        """
+        return self.filter(models.Q(used_at__isnull=True) | models.Q(reusable=True), expires_at__gt=timezone.now())
+
+
 class Invitation(PublicIdModel):
     """
-    Enlace de un solo uso que un capitán envía por email para que un jugador se
-    registre (o, si ya tiene cuenta, se una) al club como miembro. Caduca a las 24 h.
+    Invitación al club como miembro: quien la abre se registra (o, si ya tiene cuenta,
+    se une). La que el capitán envía por email es de un solo uso; el enlace que genera
+    para compartirlo (``reusable``) lo pueden usar varias personas. Caducan a las 24 h.
     """
     PUBLIC_ID_PREFIX = "INV"
     club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name="invitations")
@@ -117,15 +128,22 @@ class Invitation(PublicIdModel):
     used_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="invitations_used",
     )
+    # En los enlaces compartidos, used_by y used_at son los del último que se unió.
     used_at = models.DateTimeField(null=True, blank=True)
+    # Enlace compartido: sirve para varias personas hasta que caduca o se anula.
+    reusable = models.BooleanField(default=False)
+    # Cuántas personas se han unido con esta invitación.
+    use_count = models.PositiveIntegerField(default=0)
+
+    objects = InvitationQuerySet.as_manager()
 
     class Meta:
         ordering = ["-created_at"]
 
     @property
     def is_used(self):
-        """True si ya se ha aceptado la invitación."""
-        return self.used_at is not None
+        """True si es de un solo uso y ya se ha aceptado (un enlace compartido nunca se agota)."""
+        return not self.reusable and self.used_at is not None
 
     @property
     def is_expired(self):

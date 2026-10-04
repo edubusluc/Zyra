@@ -10,7 +10,7 @@ from core.crypto import DecryptionError
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import BooleanField, ExpressionWrapper, Q
 from django.utils.translation import gettext as _, ngettext
 from . import snp_import
 from core import similarity
@@ -124,11 +124,12 @@ def _complete_team_context(club):
 @club_admin_required
 def edit_player(request, player_id):
     """
-    Edición de un jugador del club. Solo capitanes. GET muestra el formulario; POST lo
-    guarda si es válido y redirige a la lista de jugadores.
+    Edición de un jugador del club, foto incluida. Solo capitanes. GET muestra el
+    formulario; POST lo guarda si es válido y redirige a la lista de jugadores.
     """
     player = get_object_or_404(Player, public_id=player_id, club=request.club)
-    form = PlayerEditForm(request.POST or None, instance=player)
+    form = PlayerEditForm(request.POST or None, request.FILES or None, instance=player)
+    form.uploader = request.user
     if request.method == "POST":
         if form.is_valid():
             form.save()
@@ -311,9 +312,10 @@ def own_player(request):
 @club_required
 def my_player(request):
     """
-    «Mi jugador». Sin jugador enlazado: lista de jugadores del club sin cuenta para
-    elegir «Soy yo», o formulario para crear el suyo si no está. Con jugador enlazado:
-    edita su posición, mano hábil y foto (el nombre y la temporada los cambia el capitán).
+    «Mi jugador». Sin jugador enlazado: lista de jugadores del club para elegir «Soy yo»
+    (los que ya tienen cuenta aparecen apagados y no se pueden elegir), con confirmación,
+    o formulario para crear el suyo si no está. Con jugador enlazado: edita su posición,
+    mano hábil y foto (el nombre y la temporada los cambia el capitán).
     """
     player = own_player(request)
     if player:
@@ -339,8 +341,15 @@ def my_player(request):
         messages.success(request, _("Jugador creado y enlazado a tu cuenta."))
         return redirect("show_player", player_id=player.public_id)
 
+    # Todos los jugadores del club: primero los que se pueden elegir (sin cuenta, se ven en
+    # lima) y después los ya enlazados (apagados). El buscador filtra la lista mientras se
+    # escribe; ``q`` queda para quien navega sin JavaScript.
     search = request.GET.get("q", "").strip()
-    candidates = Player.objects.filter(club=request.club, user__isnull=True).order_by("-in_team", "name", "last_name")
+    candidates = (
+        Player.objects.filter(club=request.club)
+        .annotate(linked=ExpressionWrapper(Q(user__isnull=False), output_field=BooleanField()))
+        .order_by("linked", "-in_team", "name", "last_name")
+    )
     if search:
         candidates = candidates.filter(Q(name__icontains=search) | Q(last_name__icontains=search))
     return render(request, "link_player.html", {
