@@ -101,7 +101,9 @@
                     {% if user.is_staff %}
                     <li><a class="dropdown-item" href="{% url 'backoffice:dashboard' %}"><i class="fa-solid fa-gauge-high"></i> Back-office</a></li>
                     {% endif %}
-                    <li><a class="dropdown-item" href="{% url 'register_club' %}"><i class="fa-solid fa-plus"></i> {% translate "Registrar otro club" %}</a></li>
+                    {% if not current_club %}
+                    <li><a class="dropdown-item" href="{% url 'register_club' %}"><i class="fa-solid fa-plus"></i> {% translate "Registrar un club" %}</a></li>
+                    {% endif %}
                     <li><hr class="dropdown-divider"></li>
                     <li>
                         <form action="{% url 'logout' %}" method="post">

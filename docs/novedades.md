@@ -6,6 +6,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 ## 04/10/2026
 
 - [#85](https://github.com/edubusluc/Zyra/pull/85) Ajuste de la foto dentro del círculo al subirla, jugadores a la vista en Estadísticas › Jugador y errores en popup
+- [#86](https://github.com/edubusluc/Zyra/pull/86) Primeros pasos en la portada del club nuevo, registro sin saltar al usuario, un solo club por cuenta y un solo enlace de invitación compartido
 - [#82](https://github.com/edubusluc/Zyra/pull/82) Informe PDF de convocatoria en dos páginas también con muchos convocados
 - [#81](https://github.com/edubusluc/Zyra/pull/81) Partidos: empates en las estadísticas, selector de temporada con buscador, alineación con buscador y orden SNP al lado, convocatoria más compacta
 - [#80](https://github.com/edubusluc/Zyra/pull/80) Enlaces de invitación para varias personas, abandonar el club, elegir jugador con confirmación y foto editable por el capitán
