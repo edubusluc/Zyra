@@ -195,6 +195,11 @@ class Game(PublicIdModel):
         """Nombre de la pareja visitante ('' si no hay)."""
         return self._pair_label("player_1_visiting", "player_2_visiting")
 
+    @property
+    def pair_label(self):
+        """Nombre de la pareja propia (solo se guarda la del equipo del club)."""
+        return self.local_pair_label or self.visiting_pair_label
+
     def __str__(self):
         """Enfrentamiento, número de partido y pareja local; si no hay, la pareja visitante."""
         if self.player_1_local:

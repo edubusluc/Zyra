@@ -9,6 +9,9 @@
             {% for slot in slots %}
             <fieldset data-slot data-game-id="{{ slot.gameId|default_if_none:'' }}">
                 <legend>{% blocktranslate with n=forloop.counter %}Pareja {{ n }}{% endblocktranslate %}</legend>
+                <button type="button" class="btn btn-outline-secondary btn-sm z-lineup-reset" data-slot-reset>
+                    <i class="fa-solid fa-rotate-left" aria-hidden="true"></i> {% translate "Resetear" %}
+                </button>
                 {% for key in "12" %}
                 <div>
                     <label for="slot{{ forloop.parentloop.counter }}-p{{ key }}">{% blocktranslate %}Jugador {{ key }}{% endblocktranslate %}</label>

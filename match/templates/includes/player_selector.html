@@ -1,6 +1,6 @@
 {# Selector de jugadores para convocatorias. Recibe: players (con penalty_reasons), selected, submit_label, min_players #}
 {% load static i18n %}
-<div class="z-selector" data-selector data-min="{{ min_players|default:0 }}">
+<div class="z-selector" data-selector data-min="{{ min_players|default:0 }}" data-page-size="20">
     <div class="z-selector-tools">
         <div class="z-search">
             <i class="fa-solid fa-magnifying-glass"></i>
@@ -41,6 +41,12 @@
         {% endfor %}
         <p class="z-empty" data-selector-empty hidden style="grid-column: 1 / -1;">{% translate "Ningún jugador coincide con la búsqueda." %}</p>
     </div>
+
+    <nav class="st-pager" data-selector-pager aria-label="{% translate 'Páginas de jugadores' %}" hidden>
+        <button type="button" class="st-pager-btn" data-step="-1" aria-label="{% translate 'Anterior' %}"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
+        <span class="st-pager-info" aria-live="polite"></span>
+        <button type="button" class="st-pager-btn" data-step="1" aria-label="{% translate 'Siguiente' %}"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+    </nav>
 
     <div class="z-selector-bar">
         <div>

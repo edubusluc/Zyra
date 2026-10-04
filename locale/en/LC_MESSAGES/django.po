@@ -5235,7 +5235,7 @@ msgstr ""
 msgid "Pareja %(n)s"
 msgstr "Pair %(n)s"
 
-#: match/templates/includes/lineup_form.html:14
+#: match/templates/includes/lineup_form.html:15
 #, python-format
 msgid "Jugador %(key)s"
 msgstr "Player %(key)s"
@@ -6484,3 +6484,7 @@ msgid "%(n)s equipo actualizado."
 msgid_plural "%(n)s equipos actualizados."
 msgstr[0] "%(n)s team updated."
 msgstr[1] "%(n)s teams updated."
+
+#: match/templates/includes/lineup_form.html:15
+msgid "Resetear"
+msgstr "Reset"
