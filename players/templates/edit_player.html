@@ -15,7 +15,7 @@
     </div>
     {% endif %}
     
-    <form method="POST" action="{% url 'edit_player' player.public_id %}">
+    <form method="POST" action="{% url 'edit_player' player.public_id %}" enctype="multipart/form-data">
         {% csrf_token %}
         
         <div>
@@ -52,6 +52,15 @@
         </div>
         
         <div>
+            <label for="{{ form.photo.id_for_label }}">{% translate "Foto:" %}</label>
+            <div class="d-flex align-items-center gap-3">
+                <img src="{% if player.photo %}{{ player.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="" class="z-avatar z-avatar--sm" data-photo-preview>
+                {{ form.photo }}
+            </div>
+            <small class="form-text">{% translate "Deja el campo vacío para mantener la foto actual." %}</small>
+        </div>
+
+        <div>
             <input type="checkbox" id="in_team" name="in_team" {% if player.in_team %}checked{% endif %}>
             <label for="in_team">{% translate "¿Se encuentra en el equipo?" %}</label>
         </div>
@@ -72,4 +81,12 @@
     <form id="unlink-player" method="post" action="{% url 'unlink_player' player.public_id %}">{% csrf_token %}</form>
     {% endif %}
 </div>
+<script>
+// Vista previa de la foto elegida antes de guardar.
+document.getElementById('{{ form.photo.id_for_label }}').addEventListener('change', function () {
+    if (this.files && this.files[0]) {
+        document.querySelector('[data-photo-preview]').src = URL.createObjectURL(this.files[0]);
+    }
+});
+</script>
 {% endblock %}

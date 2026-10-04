@@ -71,7 +71,22 @@ class OwnPlayerTests(MediaMixin, TestCase):
         self.client.post(reverse("link_player", args=[self.ana.public_id]))
         self.ana.refresh_from_db()
         self.assertEqual(self.ana.user, intruder)
-        self.assertNotContains(self.client.get(reverse("my_player")), "ANA RUIZ")
+        # Aparece apagado y sin «Soy yo»; el libre, en lima con su botón.
+        page = self.client.get(reverse("my_player")).content.decode()
+        self.assertRegex(page, r'class="z-claim is-taken" data-name="ANA RUIZ GÓMEZ"')
+        self.assertRegex(page, r'class="z-claim is-free" data-name="LUIS PÉREZ"')
+        self.assertEqual(page.count("data-claim-pick"), 1)
+
+    def test_choose_player_page_has_live_search_and_confirmation(self):
+        page = self.client.get(reverse("my_player"))
+        self.assertContains(page, "data-claim-search")
+        self.assertContains(page, 'id="claimModal"')
+        self.assertContains(page, "js/link-player.js")
+        # Los disponibles van primero.
+        intruder = User.objects.create_user("otro", password="pass-12345")
+        Player.objects.create(club=self.club, name="Abel", last_name="Alonso", user=intruder)
+        html = self.client.get(reverse("my_player")).content.decode()
+        self.assertLess(html.index("LUIS PÉREZ"), html.index("ABEL ALONSO"))
 
     def test_cannot_link_player_of_another_club(self):
         other_captain = User.objects.create_user("c2", password="pass-12345")
@@ -127,6 +142,73 @@ class OwnPlayerTests(MediaMixin, TestCase):
         self.client.post(reverse("unlink_player", args=[self.ana.public_id]))
         self.ana.refresh_from_db()
         self.assertIsNone(self.ana.user)
+
+    def test_captain_changes_player_photo(self):
+        self.client.force_login(self.captain)
+        self.assertContains(self.client.get(reverse("edit_player", args=[self.ana.public_id])), 'enctype="multipart/form-data"')
+        data = {"name": "Ana", "last_name": "Ruiz Gómez", "position": "NONE", "skillfull_hand": "NONE",
+                "joined_season": "2024-2025", "in_team": "on"}
+        response = self.client.post(reverse("edit_player", args=[self.ana.public_id]), {**data, "photo": upload()})
+        self.assertRedirects(response, reverse("list_players"), fetch_redirect_response=False)
+        self.ana.refresh_from_db()
+        photo = self.ana.photo.name
+        self.assertTrue(photo.startswith("players/"))
+        self.assertEqual(PhotoCheck.objects.get(player=self.ana).uploaded_by, self.captain)
+        # Guardar sin elegir otra foto mantiene la que tenía.
+        self.client.post(reverse("edit_player", args=[self.ana.public_id]), data)
+        self.ana.refresh_from_db()
+        self.assertEqual(self.ana.photo.name, photo)
+
+    def test_removed_member_is_unlinked_and_rejoins_without_player(self):
+        self.ana.user = self.user
+        self.ana.save()
+        membership = Membership.objects.get(user=self.user, club=self.club)
+        self.client.force_login(self.captain)
+        self.client.post(reverse("remove_member", args=[membership.public_id]))
+        self.assertFalse(Membership.objects.filter(user=self.user, club=self.club).exists())
+        self.ana.refresh_from_db()
+        self.assertIsNone(self.ana.user)
+
+        invitation = Invitation.objects.create(club=self.club, created_by=self.captain, reusable=True)
+        self.client.force_login(self.user)
+        self.client.post(reverse("invitation", args=[invitation.token]))
+        self.assertContains(self.client.get(reverse("my_player")), "¿Quién eres en el equipo?")
+
+    def test_member_leaves_club_and_is_unlinked(self):
+        self.ana.user = self.user
+        self.ana.save()
+        self.assertContains(self.client.get(reverse("home")), "Abandonar el club")
+        response = self.client.post(reverse("leave_club"))
+        self.assertRedirects(response, reverse("home"), fetch_redirect_response=False)
+        self.assertFalse(Membership.objects.filter(user=self.user, club=self.club).exists())
+        self.ana.refresh_from_db()
+        self.assertIsNone(self.ana.user)
+        self.assertEqual(Player.objects.filter(club=self.club).count(), 2)  # el jugador se conserva
+        self.assertRedirects(self.client.get(reverse("home")), reverse("no_club"))
+
+    def test_leave_club_needs_post(self):
+        self.assertEqual(self.client.get(reverse("leave_club")).status_code, 405)
+        self.assertTrue(Membership.objects.filter(user=self.user, club=self.club).exists())
+
+    def test_last_captain_cannot_leave(self):
+        self.client.force_login(self.captain)
+        self.client.post(reverse("leave_club"))
+        self.assertTrue(Membership.objects.filter(user=self.captain, club=self.club).exists())
+
+    def test_captain_leaves_when_there_is_another_captain(self):
+        Membership.objects.filter(user=self.user).update(role=Membership.ADMIN)
+        self.client.force_login(self.captain)
+        self.client.post(reverse("leave_club"))
+        self.assertFalse(Membership.objects.filter(user=self.captain, club=self.club).exists())
+
+    def test_leaving_one_club_keeps_the_others(self):
+        other_club = create_club("Club B", "Huelva", self.user)
+        session = self.client.session
+        session["club_id"] = self.club.id
+        session.save()
+        self.client.post(reverse("leave_club"))
+        self.assertEqual(list(Membership.objects.filter(user=self.user).values_list("club", flat=True)), [other_club.id])
+        self.assertEqual(self.client.get(reverse("home")).status_code, 200)
 
     def test_member_cannot_unlink(self):
         self.ana.user = self.user

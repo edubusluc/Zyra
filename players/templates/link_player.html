@@ -15,29 +15,59 @@
 {% endif %}
 
 <p class="text-muted">{% translate "Busca tu nombre y pulsa «Soy yo» para enlazar tu cuenta con tu jugador. Así podrás cambiar tu foto, tu posición y tu mano hábil. Si no estás en la lista, crea tu jugador más abajo." %}</p>
+<p class="z-claim-legend">
+    <span><span class="z-claim-dot is-free"></span>{% translate "Disponible" %}</span>
+    <span><span class="z-claim-dot is-taken"></span>{% translate "Ya enlazado a otra cuenta" %}</span>
+</p>
 
-<form method="get" class="z-selector-tools">
+<form method="get" class="z-selector-tools" data-claim-search-form>
     <div class="z-search">
         <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="search" name="q" value="{{ search }}" placeholder="{% translate 'Buscar jugador...' %}" aria-label="{% translate 'Buscar jugador' %}">
+        <input type="search" name="q" value="{{ search }}" placeholder="{% translate 'Buscar jugador...' %}" aria-label="{% translate 'Buscar jugador' %}" autocomplete="off" data-claim-search>
     </div>
 </form>
 
-<div class="z-selector-grid">
+<div class="z-selector-grid" data-claim-list>
     {% for p in candidates %}
-    <form method="post" action="{% url 'link_player' p.public_id %}" class="z-roster">
-        {% csrf_token %}
+    {% if p.linked %}<div class="z-claim is-taken" data-name="{{ p.full_name }}">
+    {% else %}<form method="post" action="{% url 'link_player' p.public_id %}" class="z-claim is-free" data-name="{{ p.full_name }}">
+        {% csrf_token %}{% endif %}
         <img src="{% if p.photo %}{{ p.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="" class="z-avatar z-avatar--sm">
         <span class="z-pick-body">
             <span class="z-pick-name">{{ p.full_name }}</span>
-            <span class="z-pick-meta">{{ p.get_position_display }}</span>
+            <span class="z-pick-meta">{% if p.linked %}{% translate "Ya enlazado" %}{% else %}{{ p.get_position_display }}{% endif %}</span>
         </span>
-        <button type="submit" class="btn btn-primary btn-sm">{% translate "Soy yo" %}</button>
+        {% if p.linked %}
+        <span class="z-claim-lock" title="{% translate 'Ya enlazado a otra cuenta' %}"><i class="fa-solid fa-lock"></i></span>
+    </div>
+        {% else %}
+        <button type="submit" class="btn btn-primary btn-sm" data-claim-pick>{% translate "Soy yo" %}</button>
     </form>
-    {% empty %}
-    <div class="z-empty" style="grid-column: 1 / -1;">{% if search %}{% translate "Ningún jugador coincide con la búsqueda." %}{% else %}{% translate "No hay jugadores sin cuenta en el club." %}{% endif %}</div>
+        {% endif %}
     {% endfor %}
+    <div class="z-empty" style="grid-column: 1 / -1;{% if candidates %} display: none;{% endif %}" data-claim-empty>{% if search or candidates %}{% translate "Ningún jugador coincide con la búsqueda." %}{% else %}{% translate "Todavía no hay jugadores en el club." %}{% endif %}</div>
 </div>
+
+<div class="modal fade" id="claimModal" tabindex="-1" aria-labelledby="claimModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title h5" id="claimModalTitle">{% translate "¿Enlazar tu cuenta a este jugador?" %}</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% translate 'Cerrar' %}"></button>
+            </div>
+            <div class="modal-body">
+                <p>{% translate "Vas a enlazar tu cuenta a:" %}</p>
+                <p class="z-claim-confirm-name" data-claim-name></p>
+                <p class="text-muted small mb-0">{% translate "Asegúrate de que eres tú: solo tu capitán podrá deshacerlo." %}</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{% translate "Cancelar" %}</button>
+                <button type="button" class="btn btn-primary" data-claim-confirm>{% translate "Sí, soy yo" %}</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="{% static 'js/link-player.js' %}" defer></script>
 
 <details class="z-panel mt-4" id="nuevo" {% if show_new %}open{% endif %}>
     <summary class="z-section-title mt-0">{% translate "No estoy en la lista: crear mi jugador" %}</summary>

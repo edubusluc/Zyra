@@ -23,8 +23,12 @@ el club activo: lo de otro club da 404. Sin permiso, la página «Sin permiso» 
 - **Entrar con Google**: si el email ya existe, entra en esa cuenta y no crea otra
   ([`core.adapters`](referencia/core/adapters.md)).
 - **Inicio de sesión con freno**: demasiados intentos fallidos devuelven 429.
-- **Miembros**: lista, cambio de rol, quitar del club (nunca el último capitán), invitaciones por
-  email o por enlace (un uso, 24 h), pendientes paginadas de 10 en 10 con buscador por email.
+- **Miembros**: lista, cambio de rol, quitar del club (nunca el último capitán; su cuenta se
+  desenlaza de su jugador), invitaciones por email (un solo uso) o por enlace compartido (lo
+  pueden usar varias personas, con contador de cuántas se han unido), ambas válidas 24 h;
+  pendientes paginadas de 10 en 10 con buscador por email.
+- **Abandonar el club**: desde el menú de usuario, con confirmación. La cuenta se desenlaza de su
+  jugador (que se conserva) y el último capitán no puede irse sin nombrar a otro.
 - **Suspensiones y emails bloqueados**: el personal puede suspender un club o una cuenta y bloquear
   emails para que no se registren ([`core.blocklist`](referencia/core/blocklist.md)).
 - **Idioma**: español o inglés con el selector de la cabecera.
@@ -37,11 +41,13 @@ estadísticas) y aviso al capitán si el club no tiene cuenta SNP
 
 ## Jugadores
 
-- Alta, edición y baja. Al borrar un jugador sus partidos se conservan con su nombre
+- Alta, edición (foto incluida) y baja. Al borrar un jugador sus partidos se conservan con su nombre
   ([`players.views`](referencia/players/views.md)).
 - Nombres siempre en mayúsculas; posición (derecha, revés, mixto) y si sigue en el equipo.
 - **Plantilla**: marcar de una vez quién está en el equipo.
-- **Mi jugador**: cada miembro enlaza su cuenta con su jugador y sube su foto; las fotos se
+- **Mi jugador**: cada miembro enlaza su cuenta con su jugador y sube su foto. Al elegir quién es
+  ve en lima los jugadores libres y apagados los ya enlazados, el buscador filtra mientras escribe
+  y «Soy yo» pide confirmación con su nombre y apellidos. Las fotos se
   validan (opcionalmente con AWS Rekognition) y el personal las revisa
   ([`core.images`](referencia/core/images.md), [`core.moderation`](referencia/core/moderation.md)).
 - **Cuenta SNP** del club, cifrada ([`core.crypto`](referencia/core/crypto.md)), para:
