@@ -26,6 +26,8 @@ from . import pairs as pair_stats
 # ---------------------------------------------------------------
 LOCAL_WIN = "Victoria Local"
 VISITING_WIN = "Victoria Visitante"
+# Empate a puntos en la eliminatoria (p. ej. 6-6): ni victoria ni derrota.
+DRAW = "EMPATE"
 
 
 def get_total_season(matchs):
@@ -50,6 +52,7 @@ def selected_match_type(request):
 # SELECTOR DE TEMPORADAS: Todas + las tres últimas + buscador para el resto
 # ---------------------------------------------------------------
 SEASON_PARAM = "season"
+PAGE_PARAM = "page"
 RECENT_SEASONS = 3
 
 
@@ -58,12 +61,14 @@ def season_filter_context(request, seasons, selected_season, all_value=None, anc
     Chips "Todas" y las ``RECENT_SEASONS`` temporadas más recientes (``seasons`` de más nueva a
     más antigua); si la elegida es más antigua, aparece también como chip activo. Con más temporadas
     de las que caben en los chips, ``season_search`` lista todas para el buscador. Cada enlace conserva
-    el resto de la URL (jugador, tipo de partido). ``all_value`` es el valor de "Todas" en la URL
-    (advertencias usa ?season=all porque sin parámetro muestra la temporada actual).
+    el resto de la URL (jugador, tipo de partido) salvo la página, que vuelve a la primera.
+    ``all_value`` es el valor de "Todas" en la URL (advertencias y el listado de partidos usan
+    ?season=all porque sin parámetro muestran la temporada actual).
     """
     def url(value):
         """URL de la página actual con la temporada ``value`` (sin ella para «Todas»)."""
         params = request.GET.copy()
+        params.pop(PAGE_PARAM, None)
         if value:
             params[SEASON_PARAM] = value
         else:
@@ -80,7 +85,7 @@ def season_filter_context(request, seasons, selected_season, all_value=None, anc
         'season_chips': [{'label': s, 'url': url(s), 'active': s == selected_season} for s in chips],
         'season_search': list(seasons) if len(seasons) > RECENT_SEASONS else [],
         # Resto de la URL para el formulario del buscador.
-        'season_keep': [(key, value) for key, values in request.GET.lists() if key != SEASON_PARAM
+        'season_keep': [(key, value) for key, values in request.GET.lists() if key not in (SEASON_PARAM, PAGE_PARAM)
                         for value in values],
         'season_anchor': anchor,
     }
@@ -133,7 +138,8 @@ def _by_type(matches, match_type, prefix=""):
 def calculate_match_statistics(season, team, match_type=None):
     """
     Enfrentamientos cerrados del club (de la temporada si se indica): (total, ganados,
-    perdidos, % ganados, % perdidos). Perdidos son todos los no ganados.
+    empatados, perdidos, % ganados, % empatados, % perdidos). Una eliminatoria empatada a
+    puntos cuenta como empate, no como derrota.
     """
     matches = _by_type(Match.objects.filter(club=team.club, draft_mode=False), match_type)
     if season is not None:
@@ -143,11 +149,15 @@ def calculate_match_statistics(season, team, match_type=None):
     won_visiting = matches.filter(visiting=team, result=VISITING_WIN).count()
 
     total_won = won_local + won_visiting
-    lost_matches = total_matches - total_won
-    percentage_won = round((total_won / total_matches) * 100, 2) if total_matches > 0 else 0
-    percentage_lost = round((lost_matches / total_matches) * 100, 2) if total_matches > 0 else 0
+    drawn_matches = matches.filter(result=DRAW).count()
+    lost_matches = total_matches - total_won - drawn_matches
 
-    return total_matches, total_won, lost_matches, percentage_won, percentage_lost
+    def pct(n):
+        """``n`` como porcentaje del total, con dos decimales."""
+        return round(n / total_matches * 100, 2) if total_matches > 0 else 0
+
+    return (total_matches, total_won, drawn_matches, lost_matches,
+            pct(total_won), pct(drawn_matches), pct(lost_matches))
 
 
 def _games_totals(season, team, own_local, match_type=None):
@@ -185,13 +195,15 @@ def calculate_visiting_game_statistics(season, team, match_type=None):
 
 
 def calculate_matches_won_per_year(team, match_type=None):
-    """{temporada: {'won', 'lost'}} en orden, con una sola consulta."""
+    """{temporada: {'won', 'drawn', 'lost'}} en orden, con una sola consulta."""
     dicc_match = {}
     rows = _by_type(Match.objects.filter(club=team.club, draft_mode=False), match_type).values_list('season', 'result', 'local_id', 'visiting_id')
     for season, result, local_id, visiting_id in rows:
-        d = dicc_match.setdefault(season, {'won': 0, 'lost': 0})
+        d = dicc_match.setdefault(season, {'won': 0, 'drawn': 0, 'lost': 0})
         if (result == LOCAL_WIN and local_id == team.id) or (result == VISITING_WIN and visiting_id == team.id):
             d['won'] += 1
+        elif result == DRAW:
+            d['drawn'] += 1
         elif result in (LOCAL_WIN, VISITING_WIN):
             d['lost'] += 1
     return dict(sorted(dicc_match.items()))
@@ -266,7 +278,8 @@ def team_statistics(request):
         return render(request, 'team_statistics.html', {"seasons": seasons, **match_type_context(request, match_type),
                                                         **season_filter_context(request, seasons, selected_season)})
 
-    total_matches, total_won, lost_matches, percentage_won, percentage_lost = calculate_match_statistics(selected_season or None, team, match_type)
+    (total_matches, total_won, drawn_matches, lost_matches,
+     percentage_won, percentage_drawn, percentage_lost) = calculate_match_statistics(selected_season or None, team, match_type)
     local_games_won, local_games_lost, percentage_local_games_won, percentage_local_games_lost = calculate_local_game_statistics(selected_season or None, team, match_type)
     visiting_games_won, visiting_games_lost, percentage_visiting_games_won, percentage_visiting_games_lost = calculate_visiting_game_statistics(selected_season or None, team, match_type)
 
@@ -282,10 +295,12 @@ def team_statistics(request):
         'team': team,
         'total_matches': total_matches,
         'won_matches': total_won,
+        'drawn_matches': drawn_matches,
         'lost_matches': lost_matches,
         'local_games_won': local_games_won,
         'local_games_lost': local_games_lost,
         'percentage_won': percentage_won,
+        'percentage_drawn': percentage_drawn,
         'percentage_lost': percentage_lost,
         'visiting_games_won': visiting_games_won,
         'visiting_games_lost': visiting_games_lost,

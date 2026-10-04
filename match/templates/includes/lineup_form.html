@@ -1,32 +1,37 @@
 {# Alineación de 5 parejas. Recibe: players, slots (lista de {gameId, player1Id, player2Id}) o nada, submit_label #}
+{# A la izquierda se eligen las parejas (buscador al escribir + desplegable); a la derecha se ve el orden por puntos SNP. #}
 {% load static i18n l10n %}
-<form method="post" data-lineup>
+<form method="post" data-lineup class="z-lineup">
     {% csrf_token %}
-    <div class="z-games-grid">
-        {% for slot in slots %}
-        <fieldset data-slot data-game-id="{{ slot.gameId|default_if_none:'' }}">
-            <legend>{% blocktranslate with n=forloop.counter %}Pareja {{ n }}{% endblocktranslate %}</legend>
-            {% for key in "12" %}
-            <div>
-                <label for="slot{{ forloop.parentloop.counter }}-p{{ key }}">{% blocktranslate %}Jugador {{ key }}{% endblocktranslate %}</label>
-                <select id="slot{{ forloop.parentloop.counter }}-p{{ key }}" data-player>
-                    <option value="">{% translate "Elegir jugador" %}</option>
-                    {% for p in players %}
-                    <option value="{{ p.id }}" data-points="{{ p.snp_score|default:0|unlocalize }}"
-                        {% if key == "1" and p.id == slot.player1Id or key == "2" and p.id == slot.player2Id %}selected{% endif %}>{{ p.full_name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
+    <div class="z-lineup-main">
+        <p class="text-muted small mb-3">{% translate "Escribe para buscar un jugador o abre la lista con la flecha. Solo aparecen los convocados que aún no están en otra pareja." %}</p>
+        <div class="z-lineup-pairs">
+            {% for slot in slots %}
+            <fieldset data-slot data-game-id="{{ slot.gameId|default_if_none:'' }}">
+                <legend>{% blocktranslate with n=forloop.counter %}Pareja {{ n }}{% endblocktranslate %}</legend>
+                {% for key in "12" %}
+                <div>
+                    <label for="slot{{ forloop.parentloop.counter }}-p{{ key }}">{% blocktranslate %}Jugador {{ key }}{% endblocktranslate %}</label>
+                    <select id="slot{{ forloop.parentloop.counter }}-p{{ key }}" data-player data-picker data-picker-toggle data-picker-clearable data-placeholder="{% translate 'Buscar jugador...' %}">
+                        <option value="">{% translate "Elegir jugador" %}</option>
+                        {% for p in players %}
+                        {% blocktranslate asvar meta with points=p.snp_score|default:0|floatformat:"0" %}{{ points }} pts{% endblocktranslate %}
+                        <option value="{{ p.id }}" data-points="{{ p.snp_score|default:0|unlocalize }}" data-meta="{{ meta }}" data-short="{{ p.short_name }}"
+                            {% if key == "1" and p.id == slot.player1Id or key == "2" and p.id == slot.player2Id %}selected{% endif %}>{{ p.full_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endfor %}
+            </fieldset>
             {% endfor %}
-        </fieldset>
-        {% endfor %}
+        </div>
     </div>
 
-    <div class="pair-order-container">
-        <h2>{% translate "Orden de juego" %}</h2>
+    <aside class="z-lineup-side pair-order-container" aria-labelledby="pair-order-title">
+        <h2 id="pair-order-title">{% translate "Orden de juego" %}</h2>
         <p class="text-muted small mb-2">{% translate "Se ordena por la suma de puntos SNP: las dos parejas más fuertes juegan los partidos de 3 puntos." %}</p>
-        <ol id="pair-order-list"></ol>
-    </div>
+        <ol id="pair-order-list" aria-live="polite"></ol>
+    </aside>
 
     <input type="hidden" name="ordered_games" data-lineup-output>
     <div class="z-selector-bar">
@@ -34,4 +39,5 @@
         <button type="submit" class="btn btn-primary" data-lineup-save disabled>{{ submit_label }}</button>
     </div>
 </form>
+<script src="{% static 'js/player-picker.js' %}" defer></script>
 <script src="{% static 'js/lineup.js' %}" defer></script>

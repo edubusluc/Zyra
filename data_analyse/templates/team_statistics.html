@@ -14,6 +14,7 @@
   <script>
     const teamData = {
       wonMatches: {{ won_matches|default:0|unlocalize }},
+      drawnMatches: {{ drawn_matches|default:0|unlocalize }},
       lostMatches: {{ lost_matches|default:0|unlocalize }},
       localGamesWon: {{ local_games_won|default:0|unlocalize }},
       localGamesLost: {{ local_games_lost|default:0|unlocalize }},
@@ -56,12 +57,17 @@
             </div>
             <span class="st-record-sep" aria-hidden="true">–</span>
             <div class="st-score">
+              <span class="st-record-num">{{ drawn_matches }}</span>
+              <span class="st-score-cap">{% translate "Empates" %}</span>
+            </div>
+            <span class="st-record-sep" aria-hidden="true">–</span>
+            <div class="st-score">
               <span class="st-record-num">{{ lost_matches }}</span>
               <span class="st-score-cap">{% translate "Derrotas" %}</span>
             </div>
           </div>
           <div class="st-bar" role="img" aria-label="{% blocktranslate with pct=percentage_won %}{{ pct }} % de partidos ganados{% endblocktranslate %}">
-            <span class="st-bar-win" style="width: {% widthratio won_matches total_matches 100 %}%"></span>
+            <span class="st-bar-win" style="width: {% widthratio won_matches total_matches 100 %}%"></span><span class="st-bar-draw" style="width: {% widthratio drawn_matches total_matches 100 %}%"></span>
           </div>
         </div>
 
@@ -103,12 +109,13 @@
       <h2 class="st-section-title mt-4">{% translate "Gráficos" %}</h2>
       <div class="st-grid">
         <section class="st-card">
-          <h2 class="st-card-title">{% translate "Partidos ganados y perdidos" %}</h2>
+          <h2 class="st-card-title">{% translate "Partidos ganados, empatados y perdidos" %}</h2>
           <div class="st-chart">
             <canvas id="myPieChart"></canvas>
           </div>
           <div class="st-tally">
             <span class="st-tally-item st-tally-item--win"><b>{{ percentage_won }} %</b> {% translate "ganados" %}</span>
+            <span class="st-tally-item st-tally-item--draw"><b>{{ percentage_drawn }} %</b> {% translate "empatados" %}</span>
             <span class="st-tally-item st-tally-item--loss"><b>{{ percentage_lost }} %</b> {% translate "perdidos" %}</span>
           </div>
         </section>
@@ -137,7 +144,7 @@
 
         <section class="st-card st-card--wide">
           <h2 class="st-card-title">{% translate "Partidos ganados por año" %}</h2>
-          <p class="st-card-note">{% translate "Evolución de victorias y derrotas del equipo en cada temporada." %}</p>
+          <p class="st-card-note">{% translate "Evolución de victorias, empates y derrotas del equipo en cada temporada." %}</p>
           <div class="st-chart">
             <canvas id="myLineChart"></canvas>
           </div>

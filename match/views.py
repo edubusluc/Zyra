@@ -29,6 +29,7 @@ import json
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.core.exceptions import ValidationError
 from django.db.models import Q
+from data_analyse.views import season_filter_context
 
 
 CREATE_MATCH_HTML = "create_match.html"
@@ -51,6 +52,8 @@ def club_players(request, ids):
 
 
 MATCHES_PER_PAGE = 12
+# Jugadores de cada posición que se ven en el detalle del partido antes de pulsar «Ver todos».
+CALL_GROUP_PREVIEW = 8
 ALL_SEASONS = "all"
 
 
@@ -70,26 +73,30 @@ def list_match(request):
     """Listado paginado de los enfrentamientos del club, filtrable por temporada.
 
     Requiere pertenecer al club (club_required). Por GET ``season`` elige la temporada
-    (por defecto la actual; 'all' muestra todas) y ``page`` la página. Renderiza
-    list_match.html con el resultado de cada partido y un resumen de ganados, perdidos
-    y pendientes.
+    (por defecto la actual; 'all' muestra todas) y ``page`` la página. El selector muestra
+    «Todas», las tres temporadas más recientes y un buscador para las demás
+    (data_analyse.views.season_filter_context). Renderiza list_match.html con el resultado
+    y la temporada de cada partido y un resumen de ganados, empatados, perdidos y pendientes.
     """
-    # Por defecto, la temporada actual; "all" muestra todas.
-    season = request.GET.get('season') or current_season()
-
     club_matches = Match.objects.filter(club=request.club).select_related('local', 'visiting')
-    matches = club_matches.order_by('-start_date', '-id')
-    if season != ALL_SEASONS:
-        matches = matches.filter(season=season)
-
     # Temporadas para el selector (desc), incluida la actual aunque aún no tenga partidos
     seasons = set(club_matches.values_list('season', flat=True)) | {current_season()}
     seasons = sorted((x for x in seasons if x and x != "NONE"), reverse=True)
+
+    # Por defecto, la temporada actual; "all" muestra todas.
+    season = request.GET.get('season') or current_season()
+    if season != ALL_SEASONS and season not in seasons:
+        season = current_season()
+
+    matches = club_matches.order_by('-start_date', '-id')
+    if season != ALL_SEASONS:
+        matches = matches.filter(season=season)
 
     outcomes = [match_outcome(m) for m in matches]
     summary = {
         'played': sum(o is not None for o in outcomes),
         'won': outcomes.count('V'),
+        'drawn': outcomes.count('E'),
         'lost': outcomes.count('D'),
         'pending': outcomes.count(None),
     }
@@ -112,6 +119,7 @@ def list_match(request):
         'selected_season': season,
         'all_seasons': ALL_SEASONS,
         'summary': summary,
+        **season_filter_context(request, seasons, season, all_value=ALL_SEASONS),
     })
 
 @club_admin_required
@@ -389,7 +397,9 @@ def call_for_match(request, match_id):
         known = {key for key, _label in POSITION_GROUPS}
         for key, label in POSITION_GROUPS:
             members = [p for p in players if p.position == key or (key == "Mixto" and p.position not in known)]
-            groups.append({"label": label, "players": members})
+            # Primero los que juegan un partido: son los que se ven antes de desplegar el grupo
+            members.sort(key=lambda p: not p.is_playing)
+            groups.append({"label": label, "players": members, "hidden": max(len(members) - CALL_GROUP_PREVIEW, 0)})
 
     return render(request, "call_for_match.html", {
         "call_for_match": call,

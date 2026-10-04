@@ -4,6 +4,7 @@ const Z = {
   limeDark: '#6E9400',
   coral: '#FF5C63',
   coralDark: '#9E3A3F',
+  draw: '#8A8A8A',
   text: '#A3A3A3',
   grid: 'rgba(255, 255, 255, 0.08)',
   card: '#151515',
@@ -20,14 +21,14 @@ const scales = (extra = {}) => ({
   y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: Z.grid }, ...extra.y },
 });
 
-// Partidos ganados / perdidos
+// Partidos ganados / empatados / perdidos
 new Chart(document.getElementById('myPieChart'), {
   type: 'doughnut',
   data: {
-    labels: [gettext('Ganados'), gettext('Perdidos')],
+    labels: [gettext('Ganados'), gettext('Empatados'), gettext('Perdidos')],
     datasets: [{
-      data: [teamData.wonMatches, teamData.lostMatches],
-      backgroundColor: [Z.lime, Z.coral],
+      data: [teamData.wonMatches, teamData.drawnMatches, teamData.lostMatches],
+      backgroundColor: [Z.lime, Z.draw, Z.coral],
       borderColor: Z.card,
       borderWidth: 4,
     }],
@@ -47,7 +48,7 @@ const gamesBar = (id, won, lost) => new Chart(document.getElementById(id), {
 gamesBar('myBarChart', teamData.localGamesWon, teamData.localGamesLost);
 gamesBar('myVisitingBarChart', teamData.visitingGamesWon, teamData.visitingGamesLost);
 
-// Partidos ganados y perdidos por temporada
+// Partidos ganados, empatados y perdidos por temporada
 const years = Object.keys(teamData.matchesWonPerYear);
 new Chart(document.getElementById('myLineChart'), {
   type: 'line',
@@ -62,6 +63,15 @@ new Chart(document.getElementById('myLineChart'), {
         pointBackgroundColor: Z.lime,
         tension: 0.35,
         fill: true,
+      },
+      {
+        label: gettext('Empatados'),
+        data: years.map((y) => teamData.matchesWonPerYear[y].drawn || 0),
+        borderColor: Z.draw,
+        backgroundColor: 'rgba(138, 138, 138, 0.08)',
+        pointBackgroundColor: Z.draw,
+        tension: 0.35,
+        fill: false,
       },
       {
         label: gettext('Perdidos'),
