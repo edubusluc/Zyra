@@ -141,6 +141,8 @@
       else if (e.key === 'Escape') { close(); input.blur(); }
     });
 
+    // Si otro script cambia el valor (p. ej. «Resetear» en la alineación), el buscador lo refleja
+    select.addEventListener('change', () => { if (document.activeElement !== input) showSelected(); });
     showSelected();
   }
 

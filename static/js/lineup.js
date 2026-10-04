@@ -64,6 +64,16 @@
   }
 
   selects.forEach((s) => s.addEventListener('change', refresh));
+  // «Resetear» deja en blanco los dos jugadores de esa pareja de una vez
+  slots.forEach(function (slot) {
+    slot.querySelector('[data-slot-reset]').addEventListener('click', function () {
+      slot.querySelectorAll('select[data-player]').forEach(function (s) {
+        if (!s.value) return;
+        s.value = '';
+        s.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    });
+  });
   form.addEventListener('submit', function () {
     form.querySelector('[data-lineup-save]').disabled = true; // evita el doble envío
   });

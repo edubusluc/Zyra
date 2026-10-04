@@ -6659,3 +6659,7 @@ msgid "%(n)s equipo actualizado."
 msgid_plural "%(n)s equipos actualizados."
 msgstr[0] "%(n)s team updated."
 msgstr[1] "%(n)s teams updated."
+
+#: match/templates/includes/lineup_form.html:15
+msgid "Resetear"
+msgstr "Reset"

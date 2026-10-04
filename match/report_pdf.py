@@ -157,9 +157,9 @@ def _wl(wins, losses):
 
 
 def _record(wins, played):
-    """'3V-2D · 60%' a partir de victorias y jugados; '—' si no hay partidos."""
+    """'3V-2D · 60%' a partir de victorias y jugados; vacío si no hay partidos."""
     if not played:
-        return "—"
+        return ""
     return f"{_wl(wins, played - wins)} · {round(wins / played * 100)}%"
 
 
@@ -169,9 +169,9 @@ def _streak_label(kind, n):
 
 
 def _streak(streak):
-    """Texto de una racha ('3V', '2D') o '—' si no hay."""
+    """Texto de una racha ('3V', '2D'); vacío si no hay (mejor una celda en blanco que un guion)."""
     kind, n = streak
-    return _streak_label(kind, n) if kind else "—"
+    return _streak_label(kind, n) if kind else ""
 
 
 def _columns(left, right, left_w):
@@ -230,8 +230,8 @@ def _data_table(header, rows, col_widths, st, highlight_first=False, pad=CELL_PA
 
 
 def _kpis(items, st):
-    """Fila de indicadores (etiqueta y valor grande) dentro de una tarjeta."""
-    cells = [[Paragraph(esc(label.upper()), st["kpi_label"]), Paragraph(value, st["kpi_value"])] for label, value in items]
+    """Fila de indicadores (etiqueta y valor grande) dentro de una tarjeta; un valor vacío se deja en blanco."""
+    cells = [[Paragraph(esc(label.upper()), st["kpi_label"]), Paragraph(value or "&nbsp;", st["kpi_value"])] for label, value in items]
     widths = [CONTENT_W / len(items)] * len(items)
     inner = [Table([[c[0]], [c[1]]], colWidths=[widths[0] - 8]) for c in cells]
     for t in inner:
@@ -351,7 +351,7 @@ def _story(report, layout):
         (_("Convocados"), str(len(report["called"]))),
         (_("Temporada"), _wl(s['won'], s['played'] - s['won'])),
         (_("Como %(venue)s") % {"venue": venue}, _wl(s['venue_won'], s['venue_played'] - s['venue_won'])),
-        ((_("Vs %(rival)s") % {"rival": report['rival']})[:22], _wl(prec_w, len(prec) - prec_w) if prec else "—"),
+        ((_("Vs %(rival)s") % {"rival": report['rival']})[:22], _wl(prec_w, len(prec) - prec_w) if prec else ""),
     ], st))
 
     # Precedentes y rachas, en dos columnas
@@ -395,8 +395,8 @@ def _story(report, layout):
     name_w = 44 * mm - CELL_X_PAD
     player_rows = [[
         Paragraph(f"<b>{esc(_player_label(f.player, name_w, size=cell_size))}</b>", st["cell"]),
-        Paragraph(f.player.get_position_display() if f.player.position else "—", st["cell"]),
-        Paragraph(f"{f.snp:g}" if f.snp else "—", st["cell"]),
+        Paragraph(f.player.get_position_display() if f.player.position else "", st["cell"]),
+        Paragraph(f"{f.snp:g}" if f.snp else "", st["cell"]),
         Paragraph(_record(f.venue_wins, f.venue_played), st["cell"]),
         Paragraph(_record(f.wins, f.played), st["cell"]),
         Paragraph(f"<font color='{'#B4F100' if f.streak[0] == 'V' else '#FF5C63'}'><b>{_streak(f.streak)}</b></font>", st["cell"]),
@@ -425,7 +425,7 @@ def _story(report, layout):
                       st["cell"]),
             Paragraph(f"<b>{u['games']}</b>", st["cell"]),
             Paragraph(str(u["calls"]), st["cell"]),
-            Paragraph(f"{u['last']:%d/%m}" if u["last"] else "—", st["cell"]),
+            Paragraph(f"{u['last']:%d/%m}" if u["last"] else "", st["cell"]),
         ] for u in rows]
         return _data_table([_("Jugador"), _("Partidos"), _("Convoc."), _("Último")], body,
                            [usage_name_w, 18 * mm, 16 * mm, 15 * mm], st, pad=pad)
