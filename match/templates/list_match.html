@@ -17,10 +17,6 @@
 <script src="{% static 'js/player-picker.js' %}" defer></script>
 {% include 'includes/season_filter.html' %}
 
-{% if messages %}
-<div class="alert-message">{% for message in messages %}<p>{{ message }}</p>{% endfor %}</div>
-{% endif %}
-
 <div class="z-summary" aria-label="{% translate 'Resumen' %}">
     <div><b>{{ summary.played }}</b><span>{% translate "Jugados" %}</span></div>
     <div class="is-win"><b>{{ summary.won }}</b><span>{% translate "Ganados" %}</span></div>

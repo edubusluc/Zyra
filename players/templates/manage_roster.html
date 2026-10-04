@@ -9,10 +9,6 @@
     </div>
 </div>
 
-{% if messages %}
-<div class="alert-message">{% for message in messages %}<p>{{ message }}</p>{% endfor %}</div>
-{% endif %}
-
 <p class="text-muted">{% translate "Activa o desactiva a los jugadores que están en el equipo y guarda todos los cambios de una vez. Los jugadores fuera del equipo no aparecen en convocatorias, sanciones ni en los rankings." %}</p>
 
 <form method="post" data-roster>

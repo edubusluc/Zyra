@@ -9,11 +9,8 @@
     </div>
 </div>
 
-{% if messages %}
-<div class="alert-message">{% for message in messages %}<p>{{ message }}</p>{% endfor %}</div>
-{% endif %}
-
-<p class="text-muted">{% translate "Cambia la categoría, la nacionalidad, la división o el grupo de varios equipos y guarda todos los cambios de una vez. Marca equipos para aplicarles el mismo valor a todos." %}</p>
+<p class="text-muted">{% translate "Cambia la categoría, la nacionalidad, la división o el grupo de los equipos de tu grupo y guarda todos los cambios de una vez. Marca equipos para aplicarles el mismo valor a todos." %}</p>
+<p class="form-text">{% translate "Tu equipo no aparece aquí: sus datos se cambian desde su ficha. Si sacas un equipo del grupo, dejará de verse en esta lista al guardar." %}</p>
 
 <form method="post" data-teams>
     {% csrf_token %}
@@ -21,11 +18,6 @@
         <div class="z-search">
             <i class="fa-solid fa-magnifying-glass"></i>
             <input type="search" placeholder="{% translate 'Buscar equipo...' %}" data-teams-search aria-label="{% translate 'Buscar equipo' %}">
-        </div>
-        <div class="z-segmented" role="group" aria-label="{% translate 'Filtrar' %}">
-            <button type="button" class="btn btn-sm active" data-teams-filter="">{% translate "Todos" %}</button>
-            <button type="button" class="btn btn-sm" data-teams-filter="in">{% translate "En tu grupo" %}</button>
-            <button type="button" class="btn btn-sm" data-teams-filter="out">{% translate "Fuera" context "fuera de grupo" %}</button>
         </div>
     </div>
 
@@ -62,7 +54,7 @@
                 <img src="{% if t.photo %}{{ t.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="" class="table-logo">
                 <span class="z-pick-body">
                     <span class="z-pick-name">{{ t.name }}</span>
-                    <span class="z-pick-meta">{% if t.is_own %}{% translate "Tu equipo · sus jugadores tienen su categoría" %}{% else %}{{ t.location }}{% endif %}</span>
+                    <span class="z-pick-meta">{{ t.location }}</span>
                 </span>
             </div>
             <div class="z-team-row-fields">
@@ -78,19 +70,15 @@
                     {% if not t.division %}<option value="">{% translate "Sin división" %}</option>{% endif %}
                     {% for value, label in divisions %}<option value="{{ value }}" {% if row.division == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
                 </select>
-                {% if t.is_own %}
-                <span class="z-badge z-badge--lime">{% translate "Tu equipo" %}</span>
-                {% else %}
                 <label class="form-check form-switch m-0 z-team-row-group">
                     <input class="form-check-input" type="checkbox" role="switch" name="in_group_{{ t.id }}" data-field="in_group" {% if row.in_group %}checked{% endif %} data-initial="{% if t.in_group %}1{% else %}0{% endif %}">
                     <span class="form-check-label">{% translate "En tu grupo" %}</span>
                 </label>
-                {% endif %}
             </div>
             {% if row.error %}<div class="text-danger small">{{ row.error }}</div>{% endif %}
         </div>
         {% endwith %}{% empty %}
-        <div class="z-empty">{% translate "Todavía no hay equipos." %}</div>
+        <div class="z-empty">{% translate "Todavía no hay equipos en tu grupo." %}</div>
         {% endfor %}
         <p class="z-empty" data-teams-empty hidden>{% translate "Ningún equipo coincide con la búsqueda." %}</p>
     </div>
@@ -122,19 +110,16 @@
   const group = (r) => r.querySelector('[data-field="in_group"]');
   const search = root.querySelector('[data-teams-search]');
   const all = root.querySelector('[data-teams-all]');
-  let filter = '';
 
   function refresh() {
     const q = norm(search.value);
     let visible = 0, changes = 0, count = 0, marked = 0, visibleMarked = 0;
     rows.forEach(function (r) {
-      const g = group(r);
-      const inGroup = !g || g.checked;
-      count += inGroup;
+      count += group(r).checked;
       const changed = fields(r).some((el) => value(el) !== el.dataset.initial);
       changes += changed;
       r.classList.toggle('is-changed', changed);
-      r.hidden = !((!q || norm(r.dataset.name).includes(q)) && (!filter || (filter === 'in') === inGroup));
+      r.hidden = !!q && !norm(r.dataset.name).includes(q);
       if (!r.hidden) { visible++; visibleMarked += pick(r).checked; }
       marked += pick(r).checked;
     });
@@ -150,13 +135,6 @@
   }
 
   search.addEventListener('input', refresh);
-  root.querySelectorAll('[data-teams-filter]').forEach(function (b) {
-    b.addEventListener('click', function () {
-      filter = b.dataset.teamsFilter;
-      root.querySelectorAll('[data-teams-filter]').forEach((x) => x.classList.toggle('active', x === b));
-      refresh();
-    });
-  });
   all.addEventListener('change', function () {
     rows.forEach((r) => { if (!r.hidden) pick(r).checked = all.checked; });
     refresh();

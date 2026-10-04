@@ -3,14 +3,6 @@
 
 {% block content %}
 <div class="table-container my-4">
-    {% if messages %}
-    <div class="alert">
-        {% for message in messages %}
-        <p class="{{ message.tags }}">{{ message }}</p>
-        {% endfor %}
-    </div>
-    {% endif %}
-
     <h1>{% translate "Cuenta SNP" %}</h1>
     <p class="text-muted">
         {% blocktranslate trimmed %}
@@ -20,23 +12,67 @@
         {% endblocktranslate %}
     </p>
 
-    {% if account %}
-    <div class="mb-4">
-        <p class="mb-3"><strong>{% translate "Última actualización:" %}</strong>
-            {% if account.last_sync_at %}
-                {{ account.last_sync_at|timezone:"Europe/Madrid"|date:"d/m/Y H:i" }}
-                {% if account.last_sync_ok %}<span class="badge bg-success">{% translate "correcta" %}</span>{% else %}<span class="badge bg-danger">{% translate "con error" %}</span>{% endif %}
-            {% else %}{% translate "todavía no se ha ejecutado" %}{% endif %}
-        </p>
-        <form method="post" action="{% url 'snp_account_delete' %}" class="d-inline" onsubmit="return confirm('{% translate "¿Borrar la cuenta SNP del club?" as confirm_msg %}{{ confirm_msg|escapejs }}');">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-outline-danger">{% translate "Borrar cuenta" %}</button>
-        </form>
+    {% if account and username is not None and not editing %}
+    <div class="z-card z-snp-card mb-4">
+        <dl class="z-snp-fields">
+            <dt>{% translate "Usuario de SNP" %}</dt>
+            <dd>{{ username }}</dd>
+            <dt>{% translate "Contraseña de SNP" %}</dt>
+            <dd class="z-snp-password">
+                <span data-snp-password aria-live="polite">••••••••</span>
+                <button type="button" class="z-password-toggle position-static" data-snp-password-toggle data-url="{% url 'snp_account_password' %}"
+                        aria-pressed="false" aria-label="{% translate 'Mostrar contraseña' %}" title="{% translate 'Mostrar contraseña' %}"><i class="fa-regular fa-eye"></i></button>
+            </dd>
+            {% if account.team_id %}
+            <dt>{% translate "Equipo en SNP" %}</dt>
+            <dd>{{ account.team_id }}</dd>
+            {% endif %}
+            <dt>{% translate "Última actualización" %}</dt>
+            <dd>
+                {% if account.last_sync_at %}
+                    {{ account.last_sync_at|timezone:"Europe/Madrid"|date:"d/m/Y H:i" }}
+                    {% if account.last_sync_ok %}<span class="badge bg-success">{% translate "correcta" %}</span>{% else %}<span class="badge bg-danger">{% translate "con error" %}</span>{% endif %}
+                {% else %}{% translate "todavía no se ha ejecutado" %}{% endif %}
+            </dd>
+        </dl>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="?edit=1" class="btn btn-primary"><i class="fa-solid fa-pen me-1"></i> {% translate "Editar" %}</a>
+            <form method="post" action="{% url 'snp_account_delete' %}" class="d-inline" onsubmit="return confirm('{% translate "¿Borrar la cuenta SNP del club?" as confirm_msg %}{{ confirm_msg|escapejs }}');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-danger">{% translate "Borrar cuenta" %}</button>
+            </form>
+        </div>
     </div>
-    {% endif %}
-
+    {% translate "Mostrar contraseña" as t_show %}{% translate "Ocultar contraseña" as t_hide %}
+    <script>
+        // La contraseña no está en la página: se pide al pulsar el ojo y se vuelve a ocultar al pulsarlo otra vez.
+        (function () {
+            const btn = document.querySelector('[data-snp-password-toggle]');
+            const box = document.querySelector('[data-snp-password]');
+            const hidden = box.textContent;
+            const token = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            function render(visible) {
+                btn.querySelector('i').className = visible ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
+                const label = visible ? '{{ t_hide|escapejs }}' : '{{ t_show|escapejs }}';
+                btn.setAttribute('aria-label', label);
+                btn.title = label;
+                btn.setAttribute('aria-pressed', visible ? 'true' : 'false');
+            }
+            btn.addEventListener('click', function () {
+                if (btn.getAttribute('aria-pressed') === 'true') { box.textContent = hidden; render(false); return; }
+                fetch(btn.dataset.url, {method: 'POST', headers: {'X-CSRFToken': token, 'Accept': 'application/json'}})
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        if (data.password === undefined) { box.textContent = data.error || hidden; return; }
+                        box.textContent = data.password;
+                        render(true);
+                    });
+            });
+        })();
+    </script>
+    {% else %}
     <h4>{% if account %}{% translate "Cambiar la cuenta" %}{% else %}{% translate "Configurar la cuenta" %}{% endif %}</h4>
-    <form method="post" autocomplete="off">
+    <form method="post" action="{% url 'snp_account' %}" autocomplete="off">
         {% csrf_token %}
         {% for field in form %}
         <div class="mb-3">
@@ -46,7 +82,17 @@
             {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
         </div>
         {% endfor %}
-        <button type="submit" class="btn btn-primary">{% translate "Guardar" %}</button>
+        <div class="d-flex flex-wrap gap-2">
+            <button type="submit" class="btn btn-primary">{% translate "Guardar" %}</button>
+            {% if account and username is not None %}<a href="{% url 'snp_account' %}" class="btn btn-outline-secondary">{% translate "Cancelar" %}</a>{% endif %}
+        </div>
     </form>
+    {% if account and username is None %}
+    <form method="post" action="{% url 'snp_account_delete' %}" class="mt-3" onsubmit="return confirm('{% translate "¿Borrar la cuenta SNP del club?" as confirm_msg %}{{ confirm_msg|escapejs }}');">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-outline-danger">{% translate "Borrar cuenta" %}</button>
+    </form>
+    {% endif %}
+    {% endif %}
 </div>
 {% endblock %}

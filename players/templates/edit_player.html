@@ -81,12 +81,4 @@
     <form id="unlink-player" method="post" action="{% url 'unlink_player' player.public_id %}">{% csrf_token %}</form>
     {% endif %}
 </div>
-<script>
-// Vista previa de la foto elegida antes de guardar.
-document.getElementById('{{ form.photo.id_for_label }}').addEventListener('change', function () {
-    if (this.files && this.files[0]) {
-        document.querySelector('[data-photo-preview]').src = URL.createObjectURL(this.files[0]);
-    }
-});
-</script>
 {% endblock %}

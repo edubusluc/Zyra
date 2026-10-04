@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zyra\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-04 12:54+0000\n"
+"POT-Creation-Date: 2026-10-04 17:06+0000\n"
 "PO-Revision-Date: 2026-10-01 20:00+0200\n"
 "Last-Translator: Zyra\n"
 "Language-Team: English\n"
@@ -104,6 +104,45 @@ msgstr "Hide password"
 #: static/js/password.js:32
 msgid "Mostrar contraseña"
 msgstr "Show password"
+
+#: static/js/photo-crop.js:53
+msgid "Ajusta la foto"
+msgstr "Adjust the photo"
+
+#: static/js/photo-crop.js:54
+msgid ""
+"Arrastra la foto y usa el zoom para elegir lo que se verá dentro del "
+"círculo."
+msgstr ""
+"Drag the photo and use the zoom to choose what will show inside the circle."
+
+#: static/js/photo-crop.js:55
+msgid "Cerrar"
+msgstr "Close"
+
+#: static/js/photo-crop.js:56
+msgid "Cancelar"
+msgstr "Cancel"
+
+#: static/js/photo-crop.js:57
+msgid "Usar esta foto"
+msgstr "Use this photo"
+
+#: static/js/photo-crop.js:58
+msgid "Foto: arrastra o usa las flechas para moverla, + y - para el zoom"
+msgstr "Photo: drag it or use the arrow keys to move it, + and - to zoom"
+
+#: static/js/photo-crop.js:59
+msgid "Zoom"
+msgstr "Zoom"
+
+#: static/js/photo-crop.js:60
+msgid "Alejar"
+msgstr "Zoom out"
+
+#: static/js/photo-crop.js:61
+msgid "Acercar"
+msgstr "Zoom in"
 
 #: static/js/player-picker.js:35
 msgid "Buscar..."

@@ -52,8 +52,21 @@ class SnpScrapeError(Exception):
     tiene sentido volver a intentarlo más tarde (un fallo de red o de carga) o no (la
     contraseña no vale, la cuenta no tiene ese equipo…): reintentar un inicio de sesión
     rechazado una y otra vez puede acabar bloqueando la cuenta del capitán.
+
+    ``kind`` dice dónde puede arreglarlo el capitán: ``ACCOUNT`` en su cuenta SNP (usuario,
+    contraseña o equipo de la cuenta), ``TEAM`` en los datos de su equipo (la nacionalidad
+    decide en qué país se busca) o vacío si no se sabe.
     """
     retryable = False
+    ACCOUNT = "account"
+    TEAM = "team"
+    kind = ""
+
+    def __init__(self, message="", kind=None):
+        """``message`` se enseña al capitán; ``kind`` sustituye al de la clase si se indica."""
+        super().__init__(message)
+        if kind is not None:
+            self.kind = kind
 
 
 class SnpTemporaryError(SnpScrapeError):
@@ -133,7 +146,7 @@ def _login(page, username, password):
     page.wait_for_timeout(2000)
     still_on_login = "/usuario/login" in page.url and page.query_selector('input[type="password"]')
     if still_on_login:
-        raise SnpScrapeError("SNP no ha aceptado el usuario o la contraseña.")
+        raise SnpScrapeError("SNP no ha aceptado el usuario o la contraseña.", kind=SnpScrapeError.ACCOUNT)
 
 
 def _frame_label(frame, page):
@@ -193,15 +206,15 @@ def _open_team_page(page, team_id, log, country=None):
             teams.setdefault(found.group(1), (link, link.inner_text().strip()))
     if team_id:
         if team_id not in teams:
-            raise SnpScrapeError(f"El equipo {team_id} no aparece en «Mis equipos» de esta cuenta SNP.")
+            raise SnpScrapeError(f"El equipo {team_id} no aparece en «Mis equipos» de esta cuenta SNP.", kind=SnpScrapeError.ACCOUNT)
         link = teams[team_id][0]
     elif len(teams) == 1:
         link = next(iter(teams.values()))[0]
     elif not teams:
-        raise SnpScrapeError("Esta cuenta SNP no tiene ningún equipo en «Mis equipos».")
+        raise SnpScrapeError(f"Esta cuenta SNP no tiene ningún equipo en «Mis equipos» de {country_name}.", kind=SnpScrapeError.TEAM)
     else:
         names = ", ".join(f"{name} ({number})" for number, (_, name) in teams.items())
-        raise SnpScrapeError(f"La cuenta tiene varios equipos; indica cuál en la cuenta SNP: {names}.")
+        raise SnpScrapeError(f"La cuenta tiene varios equipos; indica cuál en la cuenta SNP: {names}.", kind=SnpScrapeError.ACCOUNT)
 
     link.click()
     frame, _ = _find(page, RESULTS_TABLE, "la tabla de jugadores", log, url_pattern=r"/equipo/view/\d+")
@@ -226,7 +239,7 @@ def _wait_for_rows(page, frame, log):
         page.wait_for_timeout(500)
         waited += 500
     raise SnpTemporaryError(f"La tabla de jugadores de SNP sigue vacía tras {TABLE_TIMEOUT_MS // 1000} s: "
-                            "SNP no ha terminado de cargarla.")
+                            "SNP no ha terminado de cargarla.", kind=SnpScrapeError.TEAM)
 
 
 def _table_names(frame):
@@ -418,7 +431,7 @@ def _scrape(username, password, team_id, log, browser, country=None):
             except PlaywrightError:
                 pass
     if not players:
-        raise SnpTemporaryError("La tabla de jugadores de SNP está vacía.")
+        raise SnpTemporaryError("La tabla de jugadores de SNP está vacía.", kind=SnpScrapeError.TEAM)
     # Algunas páginas pueden repetir filas: nos quedamos con la primera aparición.
     unique = {}
     for player in players:
