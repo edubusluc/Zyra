@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zyra\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-02 11:53+0000\n"
+"POT-Creation-Date: 2026-10-04 12:54+0000\n"
 "PO-Revision-Date: 2026-10-01 20:00+0200\n"
 "Last-Translator: Zyra\n"
 "Language-Team: English\n"
@@ -61,23 +61,35 @@ msgstr "Clear"
 msgid "%(a)s y %(b)s"
 msgstr "%(a)s and %(b)s"
 
-#: static/js/lineup.js:38
-msgid "%(pair)s · %(points)s pts SNP · partido de %(value)s puntos"
-msgstr "%(pair)s · %(points)s SNP pts · %(value)s-point match"
+#: static/js/lineup.js:43
+msgid "Partido %(n)s · %(value)s puntos"
+msgstr "Match %(n)s · %(value)s points"
 
-#: static/js/lineup.js:48
+#: static/js/lineup.js:47
+msgid "%(points)s pts"
+msgstr "%(points)s pts"
+
+#: static/js/lineup.js:51
+msgid "Pareja sin completar"
+msgstr "Pair not complete"
+
+#: static/js/lineup.js:62
 msgid "Completa todas las parejas para guardar"
 msgstr "Complete all pairs to save"
 
+#: static/js/match-form.js:26
+msgid "Elige equipo"
+msgstr "Choose team"
+
 #: static/js/pair_statistics.js:21 static/js/player_statistics.js:33
-#: static/js/team_statistics.js:27 static/js/team_statistics.js:42
-#: static/js/team_statistics.js:58
+#: static/js/team_statistics.js:28 static/js/team_statistics.js:43
+#: static/js/team_statistics.js:59
 msgid "Ganados"
 msgstr "Won"
 
 #: static/js/pair_statistics.js:22 static/js/player_statistics.js:34
-#: static/js/team_statistics.js:27 static/js/team_statistics.js:42
-#: static/js/team_statistics.js:67
+#: static/js/team_statistics.js:28 static/js/team_statistics.js:43
+#: static/js/team_statistics.js:77
 msgid "Perdidos"
 msgstr "Lost"
 
@@ -93,11 +105,15 @@ msgstr "Hide password"
 msgid "Mostrar contraseña"
 msgstr "Show password"
 
-#: static/js/player-picker.js:27
+#: static/js/player-picker.js:35
 msgid "Buscar..."
 msgstr "Search..."
 
-#: static/js/player-picker.js:59
+#: static/js/player-picker.js:61
+msgid "Ver todos"
+msgstr "Show all"
+
+#: static/js/player-picker.js:87
 msgid "Sin resultados"
 msgstr "No results"
 
@@ -113,13 +129,17 @@ msgstr "SNP points"
 msgid "%(n)s puntos"
 msgstr "%(n)s points"
 
-#: static/js/player_statistics.js:113
+#: static/js/player_statistics.js:126
 msgid "Afinidad"
 msgstr "Affinity"
 
-#: static/js/player_statistics.js:130
+#: static/js/player_statistics.js:137
 msgid "%(wins)sV - %(losses)sD"
 msgstr "%(wins)sW - %(losses)sL"
+
+#: static/js/player_statistics.js:139
+msgid "Ya no está en el equipo"
+msgstr "No longer on the team"
 
 #: static/js/result-form.js:14
 msgid "Set %(n)s: gana %(team)s (%(score)s)"
@@ -137,33 +157,31 @@ msgstr "Set 3: each pair has won a set, the third one is missing"
 msgid "Ganador del partido: %(team)s"
 msgstr "Match winner: %(team)s"
 
-#: static/js/team_statistics.js:81 static/js/team_statistics.js:102
+#: static/js/team_statistics.js:28 static/js/team_statistics.js:68
+msgid "Empatados"
+msgstr "Drawn"
+
+#: static/js/team_statistics.js:91 static/js/team_statistics.js:157
+#: static/js/team_statistics.js:170
 msgid "Partidos"
 msgstr "Matches"
 
-#: static/js/team_statistics.js:92
-msgid "2 puntos ganados"
-msgstr "2 points won"
-
-#: static/js/team_statistics.js:93
+#: static/js/team_statistics.js:101
 msgid "3 puntos ganados"
 msgstr "3 points won"
 
-#: static/js/team_statistics.js:94
-msgid "2 puntos perdidos"
-msgstr "2 points lost"
+#: static/js/team_statistics.js:102
+msgid "2 puntos ganados"
+msgstr "2 points won"
 
-#: static/js/team_statistics.js:95
+#: static/js/team_statistics.js:103
 msgid "3 puntos perdidos"
 msgstr "3 points lost"
 
-#: static/js/team_statistics.js
-#, python-format
+#: static/js/team_statistics.js:104
+msgid "2 puntos perdidos"
+msgstr "2 points lost"
+
+#: static/js/team_statistics.js:197
 msgid "%(first)s–%(last)s de %(total)s"
 msgstr "%(first)s–%(last)s of %(total)s"
-
-msgid "Elige equipo"
-msgstr "Choose team"
-
-msgid "Ya no está en el equipo"
-msgstr "No longer on the team"

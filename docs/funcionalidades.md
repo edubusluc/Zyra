@@ -77,21 +77,30 @@ El ciclo de un enfrentamiento ([`match.views`](referencia/match/views.md)):
    falle se reintenta solo cada 5 minutos. El informe recomienda cómo formar las parejas según el
    historial del club ([`match.advisor`](referencia/match/advisor.md)). También se puede descargar o
    reenviar ([`match.report_pdf`](referencia/match/report_pdf.md), [`match.notifications`](referencia/match/notifications.md)).
-4. **Parejas**: 5 partidos; los dos primeros valen 3 puntos y el resto 2. Se pueden reordenar
-   mientras el acta está abierta ([`match.lineup`](referencia/match/lineup.md)).
+4. **Parejas**: 5 partidos; los dos primeros valen 3 puntos y el resto 2. Cada jugador se elige
+   con un buscador que filtra al escribir o desde la lista desplegable (solo convocados que no
+   están ya en otra pareja, con sus puntos SNP). A la derecha se ve en vivo el orden de juego por
+   la suma de puntos SNP. Se pueden reordenar mientras el acta está abierta
+   ([`match.lineup`](referencia/match/lineup.md)).
 5. **Resultados** por sets, con validación ([`match.scoring`](referencia/match/scoring.md)).
-6. **Cerrar actas**: con los 5 resultados, calcula los puntos y el ganador. Un partido cerrado ya
-   no se puede cambiar ni borrar.
+6. **Cerrar actas**: con los 5 resultados, calcula los puntos y el ganador; si la eliminatoria
+   queda empatada a puntos (6-6), el partido queda como **empate**. Un partido cerrado ya no se
+   puede cambiar ni borrar.
 
 - **Sanciones**: advertencias a jugadores desde la convocatoria ([`penalty`](referencia/penalty/index.md)).
-- Lista de partidos por temporada con resumen de ganados, perdidos y pendientes.
+- Lista de partidos con resumen de ganados, empatados, perdidos y pendientes, y la temporada de
+  cada partido. Selector de temporada: la actual por defecto, «Todas», las tres más recientes y un
+  buscador para las más antiguas.
+- En el detalle del partido la convocatoria va por posición en varias columnas; las posiciones con
+  más de 8 jugadores muestran primero los que juegan y el resto con «Ver N más».
 
 ## Estadísticas
 
 Todas con filtro Todos / Competitivos / Amistosos y selector de temporada
 ([`data_analyse.views`](referencia/data_analyse/views.md), [`data_analyse.pairs`](referencia/data_analyse/pairs.md)):
 
-- **Equipo**: victorias por temporada, local / visitante, mejores jugadores y parejas, gráficos.
+- **Equipo**: victorias, empates y derrotas (en total y por temporada), local / visitante,
+  mejores jugadores y parejas, gráficos.
 - **Jugador**: balance, con quién juega mejor, grado de afinidad (en el equipo o incluyendo
   antiguos), evolución de puntos SNP.
 - **Parejas**: mejores y peores parejas y detalle de una pareja (rachas, temporadas, últimos partidos).

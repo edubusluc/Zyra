@@ -79,15 +79,21 @@
         <section class="z-call-group">
             <h3>{{ group.label }} <span>{{ group.players|length }}</span></h3>
             {% if group.players %}
-            <ul>
-                {% for p in group.players %}
-                <li class="z-chip {% if p.is_playing %}is-playing{% endif %}">
-                    <img src="{% if p.photo %}{{ p.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="">
-                    <span>{{ p.short_name }}</span>
-                    {% if p.is_playing %}<i class="z-dot" title="{% translate 'Juega un partido' %}"></i>{% endif %}
-                </li>
-                {% endfor %}
-            </ul>
+            <div>
+                <ul {% if group.hidden %}class="is-collapsed"{% endif %} id="call-group-{{ forloop.counter }}">
+                    {% for p in group.players %}
+                    <li class="z-chip {% if p.is_playing %}is-playing{% endif %}" title="{{ p.full_name }}">
+                        <img src="{% if p.photo %}{{ p.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="">
+                        <span>{{ p.short_name }}</span>
+                        {% if p.is_playing %}<i class="z-dot" title="{% translate 'Juega un partido' %}"></i>{% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% if group.hidden %}
+                <button type="button" class="z-call-more" aria-controls="call-group-{{ forloop.counter }}" aria-expanded="false"
+                    data-more="{% blocktranslate with n=group.hidden %}Ver {{ n }} más{% endblocktranslate %}" data-less="{% translate 'Ver menos' %}">{% blocktranslate with n=group.hidden %}Ver {{ n }} más{% endblocktranslate %}</button>
+                {% endif %}
+            </div>
             {% else %}
             <p>{% translate "Nadie en esta posición." %}</p>
             {% endif %}
@@ -95,6 +101,17 @@
         {% endfor %}
     </div>
 </div>
+<script>
+  // Grupos largos de la convocatoria: se muestran los primeros y el resto al pulsar «Ver N más».
+  document.querySelectorAll('.z-call-more').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var list = document.getElementById(btn.getAttribute('aria-controls'));
+      var open = list.classList.toggle('is-collapsed') === false;
+      btn.setAttribute('aria-expanded', String(open));
+      btn.textContent = open ? btn.dataset.less : btn.dataset.more;
+    });
+  });
+</script>
 {% else %}
 <div class="z-empty"><i class="fa-solid fa-clipboard-list"></i>{% translate "Todavía no hay convocatoria para este partido." %}</div>
 {% endif %}

@@ -5,6 +5,12 @@
  * El <select> original se oculta pero sigue siendo el que se envía en el
  * formulario, y recibe un evento "change" al elegir una opción (así siguen
  * funcionando los onchange="this.form.submit()" existentes).
+ *
+ * Las opciones se leen del <select> cada vez que se abre la lista, así que las que
+ * otro script desactive (disabled) no aparecen. Opcional:
+ *   data-meta en un <option>: texto secundario a la derecha (p. ej. los puntos SNP).
+ *   data-picker-toggle en el <select>: botón de flecha para desplegar todas las opciones.
+ *   data-picker-clearable en el <select>: borrar el texto y salir deja el selector vacío.
  */
 (function () {
   const normalize = (text) => text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
@@ -13,9 +19,11 @@
     if (select.dataset.pickerReady) return;
     select.dataset.pickerReady = '1';
 
-    const options = Array.from(select.options)
-      .filter((o) => o.value !== '')
-      .map((o) => ({ value: o.value, label: o.textContent.trim(), key: normalize(o.textContent) }));
+    // Opciones elegibles en este momento (sin la vacía ni las desactivadas).
+    const readOptions = () => Array.from(select.options)
+      .filter((o) => o.value !== '' && !o.disabled)
+      .map((o) => ({ value: o.value, label: o.textContent.trim(), key: normalize(o.textContent), meta: o.dataset.meta || '' }));
+    let options = readOptions();
 
     const wrap = document.createElement('div');
     wrap.className = 'z-picker';
@@ -44,13 +52,33 @@
     select.parentNode.insertBefore(wrap, select);
     wrap.append(input, list, select);
 
+    if ('pickerToggle' in select.dataset) {
+      // Flecha para ver todas las opciones disponibles sin escribir
+      const toggle = document.createElement('button');
+      toggle.type = 'button';
+      toggle.className = 'z-picker-toggle';
+      toggle.tabIndex = -1;
+      toggle.setAttribute('aria-label', gettext('Ver todos'));
+      toggle.innerHTML = '<i class="fa-solid fa-chevron-down" aria-hidden="true"></i>';
+      toggle.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        if (wrap.classList.contains('is-open')) { close(); input.blur(); } else { input.focus(); }
+      });
+      wrap.classList.add('has-toggle');
+      wrap.appendChild(toggle);
+    }
+
     let active = -1;
     let shown = [];
-    const current = () => options.find((o) => o.value === select.value);
+    const current = () => {
+      const o = Array.from(select.options).find((opt) => opt.value !== '' && opt.value === select.value);
+      return o ? { value: o.value, label: o.textContent.trim() } : null;
+    };
     const showSelected = () => { input.value = current() ? current().label : ''; };
 
     function render(query) {
       const q = normalize(query || '');
+      options = readOptions();
       shown = q ? options.filter((o) => o.key.includes(q)) : options;
       list.innerHTML = '';
       if (!shown.length) {
@@ -66,6 +94,12 @@
         li.setAttribute('role', 'option');
         li.setAttribute('aria-selected', String(o.value === select.value));
         li.textContent = o.label;
+        if (o.meta) {
+          const meta = document.createElement('small');
+          meta.className = 'z-picker-meta';
+          meta.textContent = o.meta;
+          li.appendChild(meta);
+        }
         li.addEventListener('mousedown', (e) => { e.preventDefault(); choose(o); });
         list.appendChild(li);
       });
@@ -93,7 +127,13 @@
 
     input.addEventListener('focus', () => { input.select(); render(''); open(); });
     input.addEventListener('input', () => { render(input.value); open(); setActive(shown.length ? 0 : -1); });
-    input.addEventListener('blur', () => setTimeout(close, 120));
+    input.addEventListener('blur', () => setTimeout(() => {
+      if ('pickerClearable' in select.dataset && !input.value.trim() && select.value) {
+        select.value = '';
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      close();
+    }, 120));
     input.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowDown') { e.preventDefault(); open(); setActive(Math.min(active + 1, shown.length - 1)); }
       else if (e.key === 'ArrowUp') { e.preventDefault(); setActive(Math.max(active - 1, 0)); }
