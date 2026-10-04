@@ -18,14 +18,14 @@
 
       <form class="st-picker" method="GET" action="{% url 'pair_statistics' %}">
         <label class="visually-hidden" for="p1">{% translate "Jugador 1" %}</label>
-        <select class="st-select" name="p1" id="p1" data-picker data-placeholder="{% translate 'Jugador 1: buscar...' %}">
+        <select class="st-select" name="p1" id="p1" data-picker data-picker-toggle data-placeholder="{% translate 'Jugador 1: buscar...' %}">
           <option value="">{% translate "Jugador 1" %}</option>
           {% for p in players %}
             <option value="{{ p.public_id }}" {% if p.public_id == selected_p1 %}selected{% endif %}>{{ p.full_name }}{% if not p.in_team %} {% translate "(fuera del equipo)" %}{% endif %}</option>
           {% endfor %}
         </select>
         <label class="visually-hidden" for="p2">{% translate "Jugador 2" %}</label>
-        <select class="st-select" name="p2" id="p2" data-picker data-placeholder="{% translate 'Jugador 2: buscar...' %}">
+        <select class="st-select" name="p2" id="p2" data-picker data-picker-toggle data-placeholder="{% translate 'Jugador 2: buscar...' %}">
           <option value="">{% translate "Jugador 2" %}</option>
           {% for p in players %}
             <option value="{{ p.public_id }}" {% if p.public_id == selected_p2 %}selected{% endif %}>{{ p.full_name }}{% if not p.in_team %} {% translate "(fuera del equipo)" %}{% endif %}</option>

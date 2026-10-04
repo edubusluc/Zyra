@@ -1408,9 +1408,25 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 .st-bar-win { display: block; height: 100%; background: var(--z-lime); }
 .st-bar-draw { display: block; height: 100%; background: #8A8A8A; }
 
+/* Jugadores para elegir en las estadísticas de jugador (sin jugador elegido) */
+.st-player-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: 10px; margin: 0 0 24px; padding: 0; list-style: none;
+}
+.st-player-card {
+  display: flex; align-items: center; gap: 12px; height: 100%; padding: 10px 14px;
+  font-weight: 700; color: var(--z-text); text-decoration: none;
+  background: var(--st-card); border: 1px solid var(--st-line); border-radius: 14px;
+  transition: border-color .15s, background .15s;
+}
+.st-player-card:hover, .st-player-card:focus-visible { color: var(--z-text); border-color: var(--z-lime); background: var(--z-surface-2); }
+.st-player-card span { min-width: 0; overflow-wrap: anywhere; }
+
 @media (max-width: 760px) {
   .st-select { min-width: 0; width: 100%; }
   .st-picker { width: 100%; }
+  .st-player-grid { gap: 8px; }
+  .st-player-card { padding: 8px 12px; }
   .st-chart { height: 260px; }
   .st-chart--tall { height: 460px; }
   .st-kpi-value { font-size: 2.3rem; }
@@ -2093,6 +2109,53 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 .z-claim-dot.is-taken { background: var(--z-border-strong); }
 .z-claim-confirm-name { font-size: 1.15rem; font-weight: 800; color: var(--z-lime); margin-bottom: .75rem; }
 
+/* ---------- Ajuste de la foto en el círculo (static/js/photo-crop.js) ---------- */
+.z-crop-field { display: flex; align-items: center; gap: 12px; }
+.z-crop-field .form-control { flex: 1; min-width: 0; }
+.z-crop-stage {
+    position: relative; width: min(100%, 360px); aspect-ratio: 1; margin: 0 auto;
+    overflow: hidden; touch-action: none; cursor: grab; user-select: none;
+    background: repeating-conic-gradient(#202020 0 25%, #171717 0 50%) 0 0 / 20px 20px;
+    border-radius: 14px;
+}
+.z-crop-stage:active { cursor: grabbing; }
+.z-crop-stage:focus-visible { outline: 2px solid var(--z-lime); outline-offset: 3px; }
+.z-crop-stage canvas { display: block; width: 100%; height: 100%; }
+.z-crop-ring {
+    position: absolute; inset: 8%; pointer-events: none;
+    border: 2px solid var(--z-lime); border-radius: 50%;
+    box-shadow: 0 0 0 999px rgba(0, 0, 0, .6);
+}
+.z-crop-zoom { display: flex; align-items: center; gap: 10px; width: min(100%, 360px); margin: 16px auto 0; }
+.z-crop-zoom .form-range { flex: 1; }
+.z-crop-zoom .form-range::-webkit-slider-thumb { background-color: var(--z-lime); }
+.z-crop-zoom .form-range::-moz-range-thumb { background-color: var(--z-lime); }
+.z-crop-zoom .form-range:focus::-webkit-slider-thumb { box-shadow: 0 0 0 1px var(--z-bg), 0 0 0 .25rem rgba(var(--z-lime-rgb), .25); }
+
+/* ---------- Avisos de error en popup (core/templates/includes/messages_modal.html) ---------- */
+.z-messages-modal .modal-header { gap: 12px; justify-content: flex-start; }
+.z-messages-modal .modal-header .btn-close { margin-left: auto; }
+.z-messages-icon {
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+    width: 40px; height: 40px; font-size: 1.1rem; color: var(--z-ink);
+    background: var(--z-danger); border-radius: 50%;
+}
+.z-messages-icon.is-warning { background: var(--z-warning); }
+.z-messages-list { margin: 0; padding: 0; list-style: none; }
+.z-messages-list li + li { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--z-border); }
+
+/* Notificaciones de confirmación (éxito, información) */
+.z-toasts { z-index: 1090; width: min(100%, 460px); margin-top: 56px; }
+.z-toast {
+    --bs-toast-max-width: 100%;
+    width: 100%; padding: 14px 16px; color: var(--z-text); font-weight: 600;
+    background: var(--z-surface-2); border: 1px solid var(--z-border); border-left: 4px solid var(--z-muted);
+    border-radius: 12px; box-shadow: 0 16px 40px rgba(0, 0, 0, .5);
+}
+.z-toast.is-success { border-left-color: var(--z-lime); }
+.z-toast-icon { margin-top: 3px; color: var(--z-muted); }
+.z-toast.is-success .z-toast-icon { color: var(--z-lime); }
+
 /* Tarjeta de la cuenta SNP */
 .z-snp-card { max-width: 560px; }
 .z-snp-fields { display: grid; grid-template-columns: max-content 1fr; gap: 8px 16px; margin: 0 0 16px; align-items: center; }
@@ -2103,6 +2166,7 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 @media (max-width: 480px) {
     .z-snp-fields { grid-template-columns: 1fr; gap: 2px; }
     .z-snp-fields dd { margin-bottom: 8px; }
+}
 
 /* ---------- Portada: primeros pasos del club nuevo (core.onboarding) ---------- */
 .z-onboarding { margin-top: 2rem; margin-bottom: 24px; border-color: var(--z-lime); }

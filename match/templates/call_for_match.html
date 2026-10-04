@@ -23,10 +23,6 @@
 <p class="mb-4"><a class="z-location" href="{{ match.maps_url }}" target="_blank" rel="noopener"><i class="fa-solid fa-location-dot"></i><span>{{ match.location }}</span></a></p>
 {% endif %}
 
-{% if messages %}
-<div>{% for message in messages %}<p class="alert">{{ message }}</p>{% endfor %}</div>
-{% endif %}
-
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
     <h2 class="z-section-title mt-0">{% translate "Convocatoria" %}</h2>
     {% if is_club_admin %}

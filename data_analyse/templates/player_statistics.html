@@ -16,7 +16,7 @@
 
       <form class="st-picker" method="GET" action="{% url 'player_statistics' %}">
         <label class="st-label" for="player">{% translate "Jugador" %}</label>
-        <select class="st-select" name="player" id="player" onchange="this.form.submit()" data-picker data-placeholder="{% translate 'Buscar jugador...' %}">
+        <select class="st-select" name="player" id="player" onchange="this.form.submit()" data-picker data-picker-toggle data-placeholder="{% translate 'Busca o elige un jugador' %}">
           <option value="">{% translate "Elige un jugador" %}</option>
           {% for p in players %}
             <option value="{{ p.public_id }}" {% if p.public_id == selected_player %}selected{% endif %}>{{ p.full_name }}</option>
@@ -31,10 +31,25 @@
 
     {% if not selected_player %}
 
-      <div class="st-empty">
+      <div class="st-empty st-empty--inline">
         <strong>{% translate "Elige un jugador" %}</strong>
-        {% translate "Verás su balance, sus rachas y cómo evoluciona temporada a temporada." %}
+        {% translate "Pulsa en un jugador para ver su balance, sus rachas y cómo evoluciona temporada a temporada." %}
       </div>
+
+      {% if players %}
+        <ul class="st-player-grid" aria-label="{% translate 'Jugadores' %}">
+          {% for p in players %}
+            <li>
+              <a class="st-player-card" href="{% url 'player_statistics' %}?player={{ p.public_id }}{{ match_type_qs }}">
+                <img src="{% if p.photo %}{{ p.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="" class="z-avatar z-avatar--sm" loading="lazy">
+                <span>{{ p.full_name }}</span>
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-muted">{% translate "Todavía no hay jugadores en el equipo." %}</p>
+      {% endif %}
 
     {% else %}
 

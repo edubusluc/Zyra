@@ -9,9 +9,5 @@
     </div>
 </div>
 
-{% if messages %}
-<div>{% for message in messages %}<p class="alert warning">{{ message }}</p>{% endfor %}</div>
-{% endif %}
-
 {% include 'includes/lineup_form.html' with slots="12345"|make_list submit_label=_("Guardar partidos") %}
 {% endblock %}

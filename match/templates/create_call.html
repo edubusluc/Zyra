@@ -9,10 +9,6 @@
     </div>
 </div>
 
-{% if messages %}
-<div>{% for message in messages %}<p class="alert warning">{{ message }}</p>{% endfor %}</div>
-{% endif %}
-
 <form method="POST">
     {% csrf_token %}
     {% include 'includes/player_selector.html' with selected=selected_players submit_label=_("Crear convocatoria") min_players=10 %}

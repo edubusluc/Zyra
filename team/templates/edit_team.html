@@ -3,13 +3,6 @@
 
 {% block content %}
     <div class="table-container mt-4">
-        {% if messages %}
-        <div class="alert">
-            {% for message in messages %}
-            <p class="{{ message.tags }}">{{ message }}</p>
-            {% endfor %}
-        </div>
-        {% endif %}
         <h1>{% translate "Editar Equipo" %}</h1>
         
         <form method="POST" action="{% url 'edit_team' team.public_id %}" enctype="multipart/form-data">
@@ -60,7 +53,10 @@
 
             <div class="mb-3">
                 <label for="photo" class="form-label">{% translate "Foto:" %}</label>
-                <input type="file" id="photo" name="photo" class="form-control">
+                <div class="d-flex align-items-center gap-3">
+                    <img src="{% if team.photo %}{{ team.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="" class="z-avatar z-avatar--sm" data-photo-preview>
+                    <input type="file" id="photo" name="photo" class="form-control" accept="image/*">
+                </div>
                 <small class="form-text text-muted">{% translate "Dejar vacío si no deseas cambiar la foto." %}</small>
             </div>
 

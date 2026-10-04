@@ -10,10 +10,6 @@
     <a href="{% url 'home' %}" class="btn btn-outline-secondary btn-sm">{% translate "Ahora no" %}</a>
 </div>
 
-{% if messages %}
-<div class="alert-message">{% for message in messages %}<p>{{ message }}</p>{% endfor %}</div>
-{% endif %}
-
 <p class="text-muted">{% translate "Busca tu nombre y pulsa «Soy yo» para enlazar tu cuenta con tu jugador. Así podrás cambiar tu foto, tu posición y tu mano hábil. Si no estás en la lista, crea tu jugador más abajo." %}</p>
 <p class="z-claim-legend">
     <span><span class="z-claim-dot is-free"></span>{% translate "Disponible" %}</span>

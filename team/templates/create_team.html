@@ -3,13 +3,6 @@
 
 {% block content %}
 <div class="table-container">
-    {% if messages %}
-    <div class="alert">
-        {% for message in messages %}
-        <p class="{{ message.tags }}">{{ message }}</p>
-        {% endfor %}
-    </div>
-    {% endif %}
     <h1>{% translate "Crear Equipo" %}</h1>
     <form method="POST" class="mt-4" enctype="multipart/form-data" data-similar-check>
         {% csrf_token %}
