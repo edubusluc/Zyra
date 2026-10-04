@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 04/10/2026
+
+- Informe PDF de convocatoria en dos páginas también con muchos convocados
+
 ## 03/10/2026
 
 - Textos con «Los Gladiadores» (ruta del README y ejemplo de importación) pasan a Zyra

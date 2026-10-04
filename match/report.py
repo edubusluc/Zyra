@@ -16,7 +16,6 @@ from players.models import Player
 
 from .models import Match
 
-MAX_PLAYERS_TABLE = 16
 MAX_PAIRS_TABLE = 6
 MAX_PRECEDENTS = 4
 MAX_USAGE_ROWS = 5
@@ -139,8 +138,7 @@ def build_report(call):
         "rival": rival,
         "venue_label": venue_label,
         "called": called,
-        "players": player_rows[:MAX_PLAYERS_TABLE],
-        "hidden_players": max(0, len(player_rows) - MAX_PLAYERS_TABLE),
+        "players": player_rows,  # todos; el PDF decide cuántos caben
         "hot": hot[:4],
         "cold": cold[:3],
         "pairs": pair_rows,
