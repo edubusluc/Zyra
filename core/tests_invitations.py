@@ -16,6 +16,7 @@ User = get_user_model()
 SIGNUP = {
     "username": "nuevo", "email": "nuevo@example.com",
     "password1": "Clave-Segura-123", "password2": "Clave-Segura-123",
+    "player-name": "Nuevo", "player-last_name": "Jugador",
 }
 
 GOOGLE_ON = dict(
@@ -360,7 +361,7 @@ class LoginAndWelcomeTests(TestCase):
         email = mail.outbox[0]
         self.assertIn("Has creado Nuevo Club", email.subject)
         self.assertIn("Equipo creado: Nuevo Club", email.body)
-        self.assertIn("Capitanes: nuevo", email.body)
+        self.assertIn("Capitanes: Nuevo Jugador", email.body)
 
     def test_welcome_is_skipped_without_email(self):
         user = User.objects.create_user("sinemail")

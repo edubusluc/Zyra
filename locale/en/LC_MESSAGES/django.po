@@ -6701,3 +6701,27 @@ msgstr "To delete the club, type its name exactly: %(club)s."
 #, python-format
 msgid "Has abandonado %(club)s y el club se ha eliminado con todos sus datos."
 msgstr "You have left %(club)s and the club has been deleted with all its data."
+
+#: core/forms.py
+msgid "Escríbelos exactamente como aparecen en SNP."
+msgstr "Write them exactly as they appear in SNP."
+
+#: core/templates/register_club.html
+msgid "Tu jugador"
+msgstr "Your player"
+
+#: core/templates/register_club.html
+msgid "Como capitán también juegas: con estos datos creamos tu jugador en el equipo, ya enlazado a tu cuenta."
+msgstr "As captain you also play: with these details we create your player in the team, already linked to your account."
+
+#: core/templates/register_club.html
+msgid "No ha sido posible obtener tu nombre y apellidos de tu cuenta de Google. Indícalos para crear tu jugador."
+msgstr "We couldn't get your first name and last name from your Google account. Please enter them to create your player."
+
+#: core/templates/register_club.html
+msgid "Importante:"
+msgstr "Important:"
+
+#: core/templates/register_club.html
+msgid "el nombre y los apellidos deben coincidir exactamente con los que tienes registrados en SNP. Si no coinciden, no se te podrán asignar tus puntos SNP."
+msgstr "your first name and last name must match exactly the ones registered in SNP. If they don't match, your SNP points can't be assigned to you."

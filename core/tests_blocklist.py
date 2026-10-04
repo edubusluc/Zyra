@@ -10,7 +10,8 @@ from core.services import create_club
 
 User = get_user_model()
 
-CLUB = {"name": "Club Nuevo", "location": "Cádiz", "gender": "F", "country": "ES", "division": "500"}
+CLUB = {"name": "Club Nuevo", "location": "Cádiz", "gender": "F", "country": "ES", "division": "500",
+        "player-name": "Ana", "player-last_name": "Ruiz"}
 SIGNUP = {"username": "nuevo", "password1": "Clave-Segura-123", "password2": "Clave-Segura-123"}
 
 
