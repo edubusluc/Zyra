@@ -14,6 +14,11 @@
             {% for error in form.name.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
         </div>
 
+        <div class="mb-3">
+            <label for="{{ form.location.id_for_label }}" class="form-label">{% translate "Localización:" %}</label>
+            {{ form.location }}  <!-- Se agregó la clase en la vista -->
+        </div>
+
         <div class="mb-3 form-check">
             <input type="checkbox" id="{{ form.in_group.id_for_label }}" name="in_group" class="form-check-input" {% if form.in_group.value %}checked{% endif %}>
             <label for="{{ form.in_group.id_for_label }}" class="form-check-label">{% translate "¿Se encuentra en tu grupo?" %}</label>
@@ -43,10 +48,7 @@
             {% for error in form.division.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
         </div>
 
-        <div class="mb-3">
-            <label for="{{ form.location.id_for_label }}" class="form-label">{% translate "Localización:" %}</label>
-            {{ form.location }}  <!-- Se agregó la clase en la vista -->
-        </div>
+        
 
         <div class="mb-3">
             <label for="{{ form.photo.id_for_label }}" class="form-label">{% translate "Foto:" %}</label>
