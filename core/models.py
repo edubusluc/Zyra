@@ -28,6 +28,9 @@ class Club(PublicIdModel):
     # hasta que se reactive. No se borra nada.
     suspended_at = models.DateTimeField(null=True, blank=True)
     suspension_reason = models.CharField(max_length=500, blank=True)
+    # El capitán cerró la lista de «Primeros pasos» de la portada (core.onboarding). Los
+    # clubes que ya existían cuando se añadió la lista la tienen cerrada.
+    onboarding_dismissed_at = models.DateTimeField(null=True, blank=True)
 
     @property
     def is_suspended(self):

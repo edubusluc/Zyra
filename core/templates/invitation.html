@@ -16,7 +16,10 @@
             {% blocktranslate trimmed with date=invitation.expires_at|timezone:"Europe/Madrid"|date:"d/m/Y" time=invitation.expires_at|timezone:"Europe/Madrid"|date:"H:i" %}La invitación caduca el {{ date }} a las {{ time }}.{% endblocktranslate %}
         </p>
 
-        {% if user.is_authenticated %}
+        {% if current_club_name %}
+        <div class="alert alert-warning text-center">{% blocktranslate trimmed with club=current_club_name %}Ya perteneces a {{ club }} y solo se puede pertenecer a un club. Si quieres unirte a este, abandona antes tu club desde el menú de usuario.{% endblocktranslate %}</div>
+        <a class="btn btn-secondary btn-lg mt-2" href="{% url 'home' %}">{% translate "Volver a mi club" %}</a>
+        {% elif user.is_authenticated %}
         <form method="post">
             {% csrf_token %}
             <button type="submit" class="btn btn-primary btn-lg mt-2">{% blocktranslate with username=user.username %}Unirme como {{ username }}{% endblocktranslate %}</button>
