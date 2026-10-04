@@ -9,6 +9,8 @@ from django.core.management import CommandError, call_command
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
+from reportlab.lib.units import mm
+from reportlab.pdfbase import pdfmetrics
 
 from call.models import Call, ReportDelivery
 from core.models import Membership
@@ -17,6 +19,7 @@ from data_analyse.pairs import club_game_log
 from match import advisor
 from match.models import Game, Match
 from match.report import build_report
+from match import report_pdf
 from match.report_pdf import render_report
 from players.models import Player
 from team.models import Team
@@ -104,6 +107,59 @@ class ReportTests(TestCase):
         self.assertEqual(len(report["precedents"]), 4)
         self.assertTrue(report["hot"])
         self.assertEqual(pdf_pages(render_report(report)), 2)
+
+    def big_call(self, n=30):
+        """Convocatoria de ``n`` jugadores con nombres largos e historial variado (rachas, parejas, precedentes)."""
+        names = ["Francisco Javier", "José Luis", "María del Carmen", "Juan Antonio", "Alejandro", "Rocío"]
+        surnames = ["Fernández-Villalobos de la Torre", "Gutiérrez Domínguez", "Rodríguez Martín"]
+        extra = [Player.objects.create(club=self.club, name=names[i % 6], last_name=surnames[i % 3],
+                                       snp_score=30 + i, position="Derecha") for i in range(n - len(self.players))]
+        squad = self.players + extra
+        for k in range(10):
+            winner = ("Visitante", "Local")[k % 3 == 0]
+            m = Match.objects.create(club=self.club, local=self.rival, visiting=self.club.own_team,
+                                     start_date=datetime.date(2025, 9, 1) + datetime.timedelta(days=3 * k),
+                                     draft_mode=False, result=f"Victoria {winner}",
+                                     result_points="3/9" if winner == "Visitante" else "9/3")
+            for g in range(1, 6):
+                Game.objects.create(match=m, n_game=g, score=3 if g < 3 else 2, winner=winner, draft_mode=False,
+                                    player_1_visiting=squad[(2 * g + k) % n],
+                                    player_2_visiting=squad[(2 * g + 1 + 3 * k) % n])
+        self.call.players.set(squad)
+        return build_report(self.call)
+
+    def test_pdf_fits_in_two_pages_with_a_huge_call(self):
+        # Antes salían 3-4 páginas con el segundo bloque casi vacío
+        for n in (24, 30, 40):
+            with self.subTest(called=n):
+                report = self.big_call(n)
+                self.assertEqual(len(report["players"]), n)  # el informe trae a todos; el PDF decide cuántos caben
+                self.assertEqual(pdf_pages(render_report(report)), 2)
+
+    def test_compact_layout_shows_every_player_when_it_fits(self):
+        report = self.big_call(30)
+        layouts = [layout for layout in report_pdf.LAYOUTS if report_pdf._build(report, layout)[1] <= 2]
+        self.assertIsNone(layouts[0].max_players)  # los 30 en la tabla, sin «no caben»
+
+    def test_footer_counts_the_real_number_of_pages(self):
+        report = build_report(self.call)
+        for item in report["lineups"]:
+            item["explanation"] = "Texto muy largo. " * 600  # no cabe ni en la distribución más compacta
+        totals = []
+        original = report_pdf._on_page
+        with mock.patch.object(report_pdf, "_on_page",
+                               side_effect=lambda c, d, r, total: (totals.append(total), original(c, d, r, total))):
+            pages = pdf_pages(render_report(report))
+        self.assertGreater(pages, 2)
+        self.assertEqual(totals[-pages:], [pages] * pages)
+
+    def test_long_names_stay_on_one_line(self):
+        player = Player(name="María del Carmen", last_name="Fernández-Villalobos de la Torre")
+        width = 30 * mm
+        label = report_pdf._player_label(player, width)
+        self.assertTrue(label.startswith("M. D. C. "))
+        self.assertLessEqual(pdfmetrics.stringWidth(label, "Archivo-Bold", 8), width)
+        self.assertEqual(report_pdf._player_label(Player(name="Ana", last_name="Gil"), width), "ANA GIL")
 
     def test_not_enough_players(self):
         self.call.players.set(self.players[:6])

@@ -2,8 +2,14 @@
 PDF del informe de convocatoria con el estilo de Zyra (fondo oscuro, acento lima).
 Pensado para caber en dos páginas A4: la primera con el contexto del partido y
 los convocados; la segunda con parejas y las dos alineaciones recomendadas.
+
+Con convocatorias grandes ``render_report`` prueba distribuciones cada vez más
+compactas (``LAYOUTS``) hasta que el informe cabe en dos páginas. Si ni la más
+compacta cabe, el contenido fluye de una página a la siguiente sin saltos forzados
+para no dejar huecos grandes.
 """
 import io
+from dataclasses import dataclass, replace
 from xml.sax.saxutils import escape as xml_escape
 from pathlib import Path
 
@@ -18,8 +24,10 @@ from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.platypus.doctemplate import LayoutError
 from reportlab.platypus import (
-    BaseDocTemplate, Frame, KeepTogether, PageBreak, PageTemplate, Paragraph, Spacer, Table, TableStyle,
+    BaseDocTemplate, CondPageBreak, Frame, KeepTogether, PageBreak, PageTemplate, Paragraph, Spacer, Table,
+    TableStyle,
 )
 
 # Paleta de la web
@@ -48,6 +56,45 @@ HEADING_GAP = 2.5 * mm     # título de sección -> su contenido
 NOTE_GAP = 2 * mm          # tabla -> nota aclaratoria
 GUTTER = 6 * mm            # separación entre columnas
 PANEL_PAD = 9              # relleno interior de las tarjetas (pt)
+CELL_PAD = 3.5             # relleno vertical de las filas de las tablas (pt)
+
+MAX_PLAYERS_TABLE = 16     # filas de convocados en las distribuciones más apretadas
+MAX_BENCH_NAMES = 8        # nombres en «Descansan»; el resto se cuenta
+MIN_ROWS_AFTER_HEADING = 22 * mm  # sin salto forzado, un título no se queda solo al pie
+
+
+@dataclass(frozen=True)
+class Layout:
+    """Densidad y reparto del informe.
+
+    Los valores por defecto son la distribución normal; las demás de ``LAYOUTS``
+    aprietan el espaciado, pasan el reparto de partidos a la segunda página, dejan
+    fluir el contenido sin salto forzado y, en último caso, limitan las filas de
+    convocados.
+    """
+    section_gap: float = SECTION_GAP
+    heading_gap: float = HEADING_GAP
+    note_gap: float = NOTE_GAP
+    panel_pad: float = PANEL_PAD
+    cell_pad: float = CELL_PAD
+    cell_size: float = 8          # cuerpo de letra de las celdas
+    body_size: float = 8.5        # cuerpo de letra del texto corrido
+    usage_on_first: bool = True   # reparto de partidos en la primera página (si no, en la segunda)
+    max_players: int = None       # filas de convocados (None = todos)
+    flow: bool = False            # sin salto de página forzado ni bloques indivisibles
+
+
+_COMPACT = Layout(section_gap=4 * mm, heading_gap=1.8 * mm, note_gap=1.5 * mm, panel_pad=6,
+                  cell_pad=2, cell_size=7.5, body_size=8)
+LAYOUTS = (
+    Layout(),
+    _COMPACT,
+    replace(_COMPACT, usage_on_first=False),
+    replace(_COMPACT, usage_on_first=False, flow=True),
+    *(replace(_COMPACT, usage_on_first=False, max_players=n) for n in (24, 20, MAX_PLAYERS_TABLE)),
+    # La última fluye sin huecos: si tampoco cabe en dos páginas, es la que se envía
+    replace(_COMPACT, usage_on_first=False, max_players=MAX_PLAYERS_TABLE, flow=True),
+)
 
 _fonts_ready = False
 
@@ -63,25 +110,27 @@ def _register_fonts():
     _fonts_ready = True
 
 
-def _styles():
-    """Estilos de párrafo del informe, por nombre."""
-    base = dict(fontName="Archivo", fontSize=8.5, leading=11, textColor=TEXT, alignment=TA_LEFT)
+def _styles(layout=Layout()):
+    """Estilos de párrafo del informe, por nombre, con los cuerpos de letra de ``layout``."""
+    size, cell = layout.body_size, layout.cell_size
+    base = dict(fontName="Archivo", fontSize=size, leading=size * 1.3, textColor=TEXT, alignment=TA_LEFT)
     return {
         "title": ParagraphStyle("title", fontName="Syncopate", fontSize=17, leading=21, textColor=TEXT),
         "subtitle": ParagraphStyle("subtitle", **{**base, "fontSize": 10, "leading": 13, "textColor": MUTED}),
         "section": ParagraphStyle("section", fontName="Archivo-Black", fontSize=9.5, leading=12,
-                                  textColor=TEXT, spaceAfter=HEADING_GAP),
+                                  textColor=TEXT, spaceAfter=layout.heading_gap),
         "subsection": ParagraphStyle("subsection", fontName="Archivo-Bold", fontSize=6.5, leading=8,
                                      textColor=MUTED, spaceAfter=1.5 * mm),
         "body": ParagraphStyle("body", **base),
         "list": ParagraphStyle("list", **{**base, "spaceAfter": 2}),
         "muted": ParagraphStyle("muted", **{**base, "textColor": MUTED, "fontSize": 7.5, "leading": 9.5}),
-        "cell": ParagraphStyle("cell", **{**base, "fontSize": 8, "leading": 10}),
-        "cell_bold": ParagraphStyle("cell_bold", **{**base, "fontName": "Archivo-Bold", "fontSize": 8, "leading": 10}),
+        "cell": ParagraphStyle("cell", **{**base, "fontSize": cell, "leading": cell * 1.25}),
+        "cell_bold": ParagraphStyle("cell_bold", **{**base, "fontName": "Archivo-Bold", "fontSize": cell,
+                                                    "leading": cell * 1.25}),
         "kpi_value": ParagraphStyle("kpi_value", fontName="Archivo-Black", fontSize=17, leading=19, textColor=TEXT),
         "kpi_label": ParagraphStyle("kpi_label", fontName="Archivo-Bold", fontSize=6.5, leading=8, textColor=MUTED),
         "lineup_title": ParagraphStyle("lineup_title", fontName="Archivo-Black", fontSize=10, leading=13,
-                                       textColor=LIME, spaceAfter=HEADING_GAP),
+                                       textColor=LIME, spaceAfter=layout.heading_gap),
     }
 
 
@@ -154,10 +203,11 @@ def _panel(content, padding=PANEL_PAD):
     return t
 
 
-def _data_table(header, rows, col_widths, st, highlight_first=False):
+def _data_table(header, rows, col_widths, st, highlight_first=False, pad=CELL_PAD):
     """Tabla con cabecera y filas al estilo de la web.
 
-    ``highlight_first`` marca con una línea lima las dos primeras filas de datos.
+    ``highlight_first`` marca con una línea lima las dos primeras filas de datos y
+    ``pad`` es el relleno vertical de cada fila.
     """
     data = [[Paragraph(h.upper(), st["kpi_label"]) for h in header]] + rows
     t = Table(data, colWidths=col_widths, repeatRows=1)
@@ -168,8 +218,8 @@ def _data_table(header, rows, col_widths, st, highlight_first=False):
         ("BOX", (0, 0), (-1, -1), 0.6, BORDER),
         ("ROUNDEDCORNERS", [8, 8, 8, 8]),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ("TOPPADDING", (0, 0), (-1, -1), 3.5),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 3.5),
+        ("TOPPADDING", (0, 0), (-1, -1), pad),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), pad),
         ("LEFTPADDING", (0, 0), (-1, -1), 5),
         ("RIGHTPADDING", (0, 0), (-1, -1), 5),
     ]
@@ -201,8 +251,8 @@ def _kpis(items, st):
     return t
 
 
-def _on_page(canvas, doc, report):
-    """Dibuja el fondo, la cabecera (logo, club y fecha) y el pie de cada página."""
+def _on_page(canvas, doc, report, total):
+    """Dibuja el fondo, la cabecera (logo, club y fecha) y el pie («Página n de ``total``»)."""
     canvas.saveState()
     canvas.setFillColor(BG)
     canvas.rect(0, 0, PAGE_W, PAGE_H, stroke=0, fill=1)
@@ -223,8 +273,43 @@ def _on_page(canvas, doc, report):
     # Pie
     canvas.setFont("Archivo", 7)
     canvas.drawString(MARGIN, 8 * mm, _("Informe automático de convocatoria · Zyra"))
-    canvas.drawRightString(PAGE_W - MARGIN, 8 * mm, _("Página %(page)s de %(total)s") % {"page": doc.page, "total": 2})
+    canvas.drawRightString(PAGE_W - MARGIN, 8 * mm, _("Página %(page)s de %(total)s") % {"page": doc.page, "total": total})
     canvas.restoreState()
+
+
+CELL_X_PAD = 10  # relleno horizontal de una celda (5 pt por lado)
+
+
+def _fit(text, width, font="Archivo-Bold", size=8):
+    """Recorta ``text`` con «…» para que quepa en una línea de ``width`` puntos."""
+    text = str(text)
+    if pdfmetrics.stringWidth(text, font, size) <= width:
+        return text
+    while text and pdfmetrics.stringWidth(text.rstrip() + "…", font, size) > width:
+        text = text[:-1]
+    return text.rstrip() + "…"
+
+
+def _player_label(player, width, font="Archivo-Bold", size=8):
+    """Nombre corto del jugador en una sola línea de ``width`` puntos.
+
+    Si no cabe entero se abrevia el nombre de pila («F. J. FERNÁNDEZ») y, como
+    último recurso, se recorta con «…»: así cada jugador ocupa una fila y la
+    tabla no crece con los nombres largos.
+    """
+    full = player.short_name
+    if pdfmetrics.stringWidth(full, font, size) <= width:
+        return full
+    initials = " ".join(f"{part[0]}." for part in player.name.split() if part)
+    return _fit(f"{initials} {player.get_first_last_name()}".strip().upper(), width, font, size)
+
+
+def _pair_label(pair, width, font="Archivo-Bold", size=8):
+    """'JUGADOR A / JUGADOR B' en una línea de ``width`` puntos (cada nombre en su mitad si no cabe)."""
+    if pdfmetrics.stringWidth(pair.name, font, size) <= width:
+        return pair.name
+    half = (width - pdfmetrics.stringWidth(" / ", font, size)) / 2
+    return f"{_player_label(pair.a.player, half, font, size)} / {_player_label(pair.b.player, half, font, size)}"
 
 
 def esc(value):
@@ -234,13 +319,19 @@ def esc(value):
     return xml_escape(str(value))
 
 
-def render_report(report):
-    """Devuelve los bytes del PDF."""
-    _register_fonts()
-    st = _styles()
+def _story(report, layout):
+    """Flowables del informe con la densidad y el reparto de ``layout``."""
+    st = _styles(layout)
     match, venue = report["match"], report["venue_label"]
     own = match.local if match.own_is_local else match.visiting
+    cell_size, pad = layout.cell_size, layout.cell_pad
     story = []
+
+    def section(text):
+        """Título de sección; sin saltos forzados no se queda solo al pie de una página."""
+        if layout.flow:
+            story.append(CondPageBreak(MIN_ROWS_AFTER_HEADING))
+        story.append(Paragraph(text, st["section"]))
 
     # ---------------- Página 1 ----------------
     story.append(Paragraph(_("INFORME DE CONVOCATORIA"), st["title"]))
@@ -251,7 +342,7 @@ def render_report(report):
             "own": esc(own), "rival": esc(report['rival']), "date": f"{match.start_date:%d/%m/%Y}",
             "venue": venue.upper(), "season": match.season},
         st["subtitle"]))
-    story.append(Spacer(1, 5 * mm))
+    story.append(Spacer(1, 5 * mm if layout.section_gap >= SECTION_GAP else 3 * mm))
 
     s = report["season"]
     prec = report["precedents"]
@@ -273,31 +364,37 @@ def render_report(report):
                      for p in prec]
         prec_block = [Paragraph(_("PRECEDENTES CONTRA %(rival)s") % {"rival": esc(str(report['rival']).upper())}, st["section"]),
                       _data_table([_("Fecha"), _("Sede"), _("Puntos"), ""], prec_rows,
-                                  [22 * mm, 22 * mm, 18 * mm, prec_col_w - 62 * mm], st)]
+                                  [22 * mm, 22 * mm, 18 * mm, prec_col_w - 62 * mm], st, pad=pad)]
     else:
         prec_block = [Paragraph(_("PRECEDENTES CONTRA %(rival)s") % {"rival": esc(str(report['rival']).upper())}, st["section"]),
                       Paragraph(_("Primer enfrentamiento contra este equipo."), st["muted"])]
+
+    streak_w = CONTENT_W - prec_col_w - GUTTER - 18  # columna derecha menos la etiqueta «3V»
 
     def streak_lines(items, color):
         """Una línea por jugador en racha, o un aviso si no hay ninguno."""
         if not items:
             return [Paragraph(_("Nadie con 2 o más resultados seguidos."), st["muted"])]
-        return [Paragraph(f"<font color='{color}'><b>{_streak_label(f.streak[0], f.streak[1])}</b></font>  {esc(f.name)}", st["list"])
+        return [Paragraph(f"<font color='{color}'><b>{_streak_label(f.streak[0], f.streak[1])}</b></font>  "
+                          f"{esc(_player_label(f.player, streak_w, 'Archivo', layout.body_size))}", st["list"])
                 for f in items]
 
     streak_block = [Paragraph(_("JUGADORES EN RACHA"), st["section"]),
                     *streak_lines(report["hot"], "#B4F100"),
-                    Spacer(1, 3 * mm),
+                    Spacer(1, 3 * mm if layout.section_gap >= SECTION_GAP else 2 * mm),
                     Paragraph(_("EN MALA RACHA"), st["subsection"]),
                     *streak_lines(report["cold"], "#FF5C63")]
-    story.append(Spacer(1, SECTION_GAP))
+    story.append(Spacer(1, layout.section_gap))
     story.append(_columns(prec_block, streak_block, prec_col_w))
 
     # Convocados
-    story.append(Spacer(1, SECTION_GAP))
-    story.append(Paragraph(_("CONVOCADOS · RENDIMIENTO COMO %(venue)s") % {"venue": venue.upper()}, st["section"]))
+    players = report["players"]
+    shown = players[:layout.max_players] if layout.max_players else players
+    story.append(Spacer(1, layout.section_gap))
+    section(_("CONVOCADOS · RENDIMIENTO COMO %(venue)s") % {"venue": venue.upper()})
+    name_w = 44 * mm - CELL_X_PAD
     player_rows = [[
-        Paragraph(f"<b>{esc(f.name)}</b>", st["cell"]),
+        Paragraph(f"<b>{esc(_player_label(f.player, name_w, size=cell_size))}</b>", st["cell"]),
         Paragraph(f.player.get_position_display() if f.player.position else "—", st["cell"]),
         Paragraph(f"{f.snp:g}" if f.snp else "—", st["cell"]),
         Paragraph(_record(f.venue_wins, f.venue_played), st["cell"]),
@@ -305,40 +402,41 @@ def render_report(report):
         Paragraph(f"<font color='{'#B4F100' if f.streak[0] == 'V' else '#FF5C63'}'><b>{_streak(f.streak)}</b></font>", st["cell"]),
         _pips(f.form),
         Paragraph(f"<b>{round(f.strength * 100)}%</b>", st["cell"]),
-    ] for f in report["players"]]
+    ] for f in shown]
     story.append(_data_table(
         [_("Jugador"), _("Posición"), "SNP", _("Como %(venue)s") % {"venue": venue}, _("Global"), _("Racha"),
          _("Forma"), _("Estim.")],
-        player_rows, [44 * mm, 19 * mm, 13 * mm, 30 * mm, 30 * mm, 13 * mm, 17 * mm, 16 * mm], st))
+        player_rows, [44 * mm, 19 * mm, 13 * mm, 30 * mm, 30 * mm, 13 * mm, 17 * mm, 16 * mm], st, pad=pad))
     note = _("Estim.: probabilidad estimada de ganar un partido (historial, rendimiento en la sede, forma y racha).")
-    if report["hidden_players"]:
-        note += " " + _("%(n)s convocados más no caben en la tabla.") % {"n": report['hidden_players']}
-    story.append(Spacer(1, NOTE_GAP))
+    if len(players) > len(shown):
+        note += " " + _("%(n)s convocados más no caben en la tabla.") % {"n": len(players) - len(shown)}
+    story.append(Spacer(1, layout.note_gap))
     story.append(Paragraph(note, st["muted"]))
 
     # Reparto de partidos en la temporada (toda la plantilla)
+    half = (CONTENT_W - GUTTER) / 2
+    usage_name_w = half - 49 * mm
+
     def usage_table(rows):
         """Tabla de reparto de partidos; los convocados ahora se resaltan en lima."""
         body = [[
             Paragraph(f"<font color='{'#B4F100' if u['called_now'] else '#F4F4F4'}'>"
-                      f"<b>{esc(u['player'].short_name)}</b></font>", st["cell"]),
+                      f"<b>{esc(_player_label(u['player'], usage_name_w - CELL_X_PAD, size=cell_size))}</b></font>",
+                      st["cell"]),
             Paragraph(f"<b>{u['games']}</b>", st["cell"]),
             Paragraph(str(u["calls"]), st["cell"]),
             Paragraph(f"{u['last']:%d/%m}" if u["last"] else "—", st["cell"]),
         ] for u in rows]
-        half = (CONTENT_W - GUTTER) / 2
         return _data_table([_("Jugador"), _("Partidos"), _("Convoc."), _("Último")], body,
-                           [half - 49 * mm, 18 * mm, 16 * mm, 15 * mm], st)
+                           [usage_name_w, 18 * mm, 16 * mm, 15 * mm], st, pad=pad)
 
     never = report["never_played"]
-    usage_block = _columns(
-        [Paragraph(_("JUGADORES CON MÁS PARTIDOS"), st["section"]), usage_table(report["most_games"])],
-        [Paragraph(_("JUGADORES CON MENOS PARTIDOS"), st["section"]), usage_table(report["least_games"])],
-        (CONTENT_W - GUTTER) / 2)
-    story.append(Spacer(1, SECTION_GAP))
-    story.append(KeepTogether([
-        usage_block,
-        Spacer(1, NOTE_GAP),
+    usage_block = [KeepTogether([  # bloque corto: la nota no se separa de sus tablas
+        _columns(
+            [Paragraph(_("JUGADORES CON MÁS PARTIDOS"), st["section"]), usage_table(report["most_games"])],
+            [Paragraph(_("JUGADORES CON MENOS PARTIDOS"), st["section"]), usage_table(report["least_games"])],
+            half),
+        Spacer(1, layout.note_gap),
         Paragraph(
             _("Temporada %(season)s, toda la plantilla (%(n)s jugadores).") % {
                 "season": match.season, "n": report['squad_size']} + " "
@@ -347,63 +445,85 @@ def render_report(report):
             + _("En <font color='#B4F100'><b>lima</b></font>, convocados para este partido.") + " "
             + _("Convoc.: convocatorias cerradas en la temporada."),
             st["muted"]),
-    ]))
+    ])]
+    if layout.usage_on_first:
+        story.append(Spacer(1, layout.section_gap))
+        story.extend(usage_block)
 
     # ---------------- Página 2 ----------------
-    story.append(PageBreak())
-    story.append(Paragraph(_("PAREJAS CON HISTORIAL ENTRE LOS CONVOCADOS"), st["section"]))
+    if layout.flow:
+        story.append(Spacer(1, layout.section_gap))
+    else:
+        story.append(PageBreak())
+    section(_("PAREJAS CON HISTORIAL ENTRE LOS CONVOCADOS"))
     if report["pairs"]:
+        pair_name_w = 70 * mm - CELL_X_PAD
         pair_rows = [[
-            Paragraph(f"<b>{esc(p.name)}</b>", st["cell"]),
+            Paragraph(f"<b>{esc(_pair_label(p, pair_name_w, size=cell_size))}</b>", st["cell"]),
             Paragraph(f"{p.snp_sum:g}", st["cell"]),
             Paragraph(_record(p.venue_wins, p.venue_played), st["cell"]),
             Paragraph(_record(p.wins, p.played), st["cell"]),
             Paragraph(_streak(p.streak), st["cell"]),
         ] for p in report["pairs"]]
         story.append(_data_table([_("Pareja"), _("Suma SNP"), _("Como %(venue)s") % {"venue": venue}, _("Juntos"), _("Racha")],
-                                 pair_rows, [70 * mm, 18 * mm, 36 * mm, 36 * mm, 22 * mm], st))
+                                 pair_rows, [70 * mm, 18 * mm, 36 * mm, 36 * mm, 22 * mm], st, pad=pad))
     else:
         story.append(Paragraph(_("Ninguna pareja de convocados ha jugado junta todavía."), st["muted"]))
 
-    story.append(Spacer(1, SECTION_GAP))
-    story.append(Paragraph(_("ALINEACIONES RECOMENDADAS"), st["section"]))
+    if not layout.usage_on_first:
+        story.append(Spacer(1, layout.section_gap))
+        if layout.flow:
+            story.append(CondPageBreak(MIN_ROWS_AFTER_HEADING))
+        story.extend(usage_block)
+
+    story.append(Spacer(1, layout.section_gap))
+    section(_("ALINEACIONES RECOMENDADAS"))
     if not report["enough_players"]:
         story.append(Paragraph(_("Hacen falta al menos 10 convocados para proponer una alineación."), st["body"]))
-    lineup_w = CONTENT_W - 2 * PANEL_PAD
+    # Sin saltos forzados las alineaciones van sin tarjeta para que su tabla pueda partirse entre páginas
+    lineup_w = CONTENT_W - (0 if layout.flow else 2 * layout.panel_pad)
+    pair_col_w = lineup_w - 76 * mm
     for i, item in enumerate(report["lineups"]):
         if i:
-            story.append(Spacer(1, 4 * mm))
+            story.append(Spacer(1, layout.section_gap if layout.flow else 4 * mm))
         lineup = item["lineup"]
         rows = [[
             Paragraph(f"<b>{row['n']}</b>", st["cell_bold"]),
             _badge(_("%(n)s PTS") % {"n": row['value']}, fill=LIME if row['value'] == 3 else SURFACE_2,
                    fg=INK if row['value'] == 3 else TEXT, width=13 * mm),
-            Paragraph(f"<b>{esc(row['pair'].name)}</b>", st["cell"]),
+            Paragraph(f"<b>{esc(_pair_label(row['pair'], pair_col_w - CELL_X_PAD, size=cell_size))}</b>", st["cell"]),
             Paragraph(f"{row['pair'].snp_sum:g}", st["cell"]),
             Paragraph(f"<b>{row['pct']}%</b>", st["cell"]),
         ] for row in lineup.rows]
         table = _data_table([_("Partido"), _("Valor"), _("Pareja"), _("Suma SNP"), _("Victoria est.")], rows,
-                            [16 * mm, 18 * mm, lineup_w - 76 * mm, 20 * mm, 22 * mm], st, highlight_first=True)
-        block = [
-            Paragraph(_("%(title)s · %(pct)s%% DE GANAR LA ELIMINATORIA") % {
-                "title": item['title'].upper(), "pct": round(lineup.win * 100)},
-                      st["lineup_title"]),
-            table,
-            Spacer(1, 3 * mm),
-            Paragraph(esc(item["explanation"]), st["body"]),
-        ]
+                            [16 * mm, 18 * mm, pair_col_w, 20 * mm, 22 * mm], st, highlight_first=True, pad=pad)
+        title = Paragraph(_("%(title)s · %(pct)s%% DE GANAR LA ELIMINATORIA") % {
+            "title": item['title'].upper(), "pct": round(lineup.win * 100)}, st["lineup_title"])
+        if layout.flow:
+            story.append(CondPageBreak(MIN_ROWS_AFTER_HEADING))
+        block = [title, table, Spacer(1, 3 * mm if layout.section_gap >= SECTION_GAP else 2 * mm),
+                 Paragraph(esc(item["explanation"]), st["body"])]
         if lineup.bench:
-            block.append(Spacer(1, NOTE_GAP))
-            block.append(Paragraph(_("Descansan: %(names)s") % {"names": esc(", ".join(f.name for f in lineup.bench))}, st["muted"]))
-        story.append(KeepTogether([_panel(block)]))
+            block.append(Spacer(1, layout.note_gap))
+            names = ", ".join(f.name for f in lineup.bench[:MAX_BENCH_NAMES])
+            if len(lineup.bench) > MAX_BENCH_NAMES:
+                names = _("%(names)s y %(n)s más") % {"names": names, "n": len(lineup.bench) - MAX_BENCH_NAMES}
+            block.append(Paragraph(_("Descansan: %(names)s") % {"names": esc(names)}, st["muted"]))
+        story.extend(block if layout.flow else [KeepTogether([_panel(block, layout.panel_pad)])])
 
-    story.append(Spacer(1, SECTION_GAP))
+    story.append(Spacer(1, layout.section_gap))
     story.append(Paragraph(
         _("Formato SNP: 5 partidos; los partidos 1 y 2 valen 3 puntos y los 3, 4 y 5 valen 2. Las parejas se "
           "ordenan por la suma de puntos SNP de sus jugadores y se necesitan 7 de 12 puntos para ganar la "
           "eliminatoria. Las estimaciones se basan en el historial del club y son orientativas."),
         st["muted"]))
+    return story
 
+
+def _build(report, layout, total=2):
+    """Maqueta el informe con ``layout``; devuelve (bytes del PDF, número de páginas)."""
+    match = report["match"]
+    own = match.local if match.own_is_local else match.visiting
     buffer = io.BytesIO()
     doc = BaseDocTemplate(
         buffer, pagesize=A4, leftMargin=MARGIN, rightMargin=MARGIN,
@@ -413,6 +533,26 @@ def render_report(report):
     # Marco sin relleno: los títulos y las tablas (que miden CONTENT_W) quedan alineados al mismo margen
     frame = Frame(MARGIN, BOTTOM_MARGIN, CONTENT_W, PAGE_H - TOP_MARGIN - BOTTOM_MARGIN,
                   leftPadding=0, rightPadding=0, topPadding=0, bottomPadding=0)
-    doc.addPageTemplates([PageTemplate(frames=[frame], onPage=lambda c, d: _on_page(c, d, report))])
-    doc.build(story)
-    return buffer.getvalue()
+    doc.addPageTemplates([PageTemplate(frames=[frame], onPage=lambda c, d: _on_page(c, d, report, total))])
+    doc.build(_story(report, layout))
+    return buffer.getvalue(), doc.page
+
+
+def render_report(report):
+    """Devuelve los bytes del PDF.
+
+    Usa la primera distribución de ``LAYOUTS`` que cabe en dos páginas; si ninguna
+    cabe, la última (el contenido sigue de una página a otra sin huecos). El pie
+    numera sobre el total real de páginas.
+    """
+    _register_fonts()
+    for layout in LAYOUTS[:-1]:
+        try:
+            pdf, pages = _build(report, layout)
+        except LayoutError:  # un bloque indivisible más alto que una página: solo cabe fluyendo
+            continue
+        if pages <= 2:
+            return pdf
+    layout = LAYOUTS[-1]
+    pdf, pages = _build(report, layout)
+    return pdf if pages == 2 else _build(report, layout, total=pages)[0]

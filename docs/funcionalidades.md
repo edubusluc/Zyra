@@ -75,7 +75,8 @@ El ciclo de un enfrentamiento ([`match.views`](referencia/match/views.md)):
    cambio queda en el **registro de convocatoria** ([`callLog`](referencia/callLog/index.md)).
 3. **Cerrar convocatoria** (mínimo 10 jugadores): envía el **informe PDF** a los capitanes; lo que
    falle se reintenta solo cada 5 minutos. El informe recomienda cómo formar las parejas según el
-   historial del club ([`match.advisor`](referencia/match/advisor.md)). También se puede descargar o
+   historial del club ([`match.advisor`](referencia/match/advisor.md)) y cabe en dos páginas aunque la
+   convocatoria sea grande: se compacta solo y, si aun así no cabe, sigue sin dejar huecos. También se puede descargar o
    reenviar ([`match.report_pdf`](referencia/match/report_pdf.md), [`match.notifications`](referencia/match/notifications.md)).
 4. **Parejas**: 5 partidos; los dos primeros valen 3 puntos y el resto 2. Cada jugador se elige
    con un buscador que filtra al escribir o desde la lista desplegable (solo convocados que no

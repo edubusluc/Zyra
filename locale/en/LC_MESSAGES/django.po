@@ -4959,6 +4959,11 @@ msgstr "%(title)s · %(pct)s%% CHANCE OF WINNING THE TIE"
 msgid "Descansan: %(names)s"
 msgstr "Resting: %(names)s"
 
+#: match/report_pdf.py
+#, python-format
+msgid "%(names)s y %(n)s más"
+msgstr "%(names)s and %(n)s more"
+
 #: match/report_pdf.py:402
 msgid ""
 "Formato SNP: 5 partidos; los partidos 1 y 2 valen 3 puntos y los 3, 4 y 5 "
