@@ -14,23 +14,30 @@
             {% for error in form.name.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
         </div>
 
-        {% if own_team %}
-        <p class="form-text text-muted">{% blocktranslate trimmed with team=own_team.name %}Categoría, nacionalidad y división vienen rellenas con las de {{ team }}. Cámbialas si este equipo es distinto.{% endblocktranslate %}</p>
+        <div class="mb-3 form-check">
+            <input type="checkbox" id="{{ form.in_group.id_for_label }}" name="in_group" class="form-check-input" {% if form.in_group.value %}checked{% endif %}>
+            <label for="{{ form.in_group.id_for_label }}" class="form-check-label">{% translate "¿Se encuentra en tu grupo?" %}</label>
+            <small class="form-text text-muted d-block">{% translate "Los equipos de tu grupo los ven todos los miembros y se pueden elegir al crear un partido." %}</small>
+        </div>
+
+        {% if own_team and form.group_fields %}
+        <p class="form-text text-muted" data-group-note>{% blocktranslate trimmed with team=own_team.name %}Al ser de tu grupo, juega en la misma categoría, nacionalidad y división que {{ team }}: se copian de tu equipo.{% endblocktranslate %}</p>
+        <p class="form-text text-muted" data-group-note-out hidden>{% blocktranslate trimmed with team=own_team.name %}Categoría, nacionalidad y división vienen rellenas con las de {{ team }}. Cámbialas si este equipo es distinto.{% endblocktranslate %}</p>
         {% endif %}
 
-        <div class="mb-3">
+        <div class="mb-3"{% if "gender" in form.group_fields %} data-group-field{% endif %}>
             <label for="{{ form.gender.id_for_label }}" class="form-label">{% translate "Categoría:" %}</label>
             {{ form.gender }}
             {% for error in form.gender.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
         </div>
 
-        <div class="mb-3">
+        <div class="mb-3"{% if "country" in form.group_fields %} data-group-field{% endif %}>
             <label for="{{ form.country.id_for_label }}" class="form-label">{% translate "Nacionalidad del equipo:" %}</label>
             {{ form.country }}
             {% for error in form.country.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
         </div>
 
-        <div class="mb-3">
+        <div class="mb-3"{% if "division" in form.group_fields %} data-group-field{% endif %}>
             <label for="{{ form.division.id_for_label }}" class="form-label">{% translate "División:" %}</label>
             {{ form.division }}
             {% for error in form.division.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
@@ -46,17 +53,28 @@
             {{ form.photo }}  <!-- Se agregó la clase en la vista -->
         </div>
 
-        <div class="mb-3 form-check">
-            <input type="checkbox" id="{{ form.in_group.id_for_label }}" name="in_group" class="form-check-input" {% if form.in_group.value %}checked{% endif %}>
-            <label for="{{ form.in_group.id_for_label }}" class="form-check-label">{% translate "¿Se encuentra en tu grupo?" %}</label>
-            <small class="form-text text-muted d-block">{% translate "Los equipos de tu grupo los ven todos los miembros y se pueden elegir al crear un partido." %}</small>
-        </div>
-
         <div class="text-center">
             <button type="submit" class="btn btn-primary">{% translate "Crear Equipo" %}</button>
         </div>
     </form>
 </div>
+<script>
+    // Equipo del grupo: categoría, nacionalidad y división se copian del equipo propio.
+    (function () {
+        const inGroup = document.getElementById('{{ form.in_group.id_for_label }}');
+        const fields = document.querySelectorAll('[data-group-field]');
+        if (!inGroup || !fields.length) return;
+        const note = document.querySelector('[data-group-note]');
+        const noteOut = document.querySelector('[data-group-note-out]');
+        function sync() {
+            fields.forEach(function (f) { f.hidden = inGroup.checked; });
+            if (note) note.hidden = !inGroup.checked;
+            if (noteOut) noteOut.hidden = inGroup.checked;
+        }
+        inGroup.addEventListener('change', sync);
+        sync();
+    })();
+</script>
 {% translate "Ya hay un equipo con un nombre parecido" as t_title %}
 {% translate "En tu club ya existe un equipo con este nombre o uno muy parecido:" as t_message %}
 {% include 'includes/similar_modal.html' with title=t_title message=t_message similar=similar %}

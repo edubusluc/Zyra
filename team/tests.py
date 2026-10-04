@@ -131,11 +131,32 @@ class NewTeamDefaultsTests(TestCase):
         self.assertEqual({f: form[f].value() for f in ("gender", "country", "division", "in_group")},
                          {"gender": "F", "country": "IT", "division": "1000", "in_group": True})
 
-    def test_new_team_can_be_created_in_group(self):
-        self.client.post(reverse("create_team"), {"name": "Burguillos", "location": "X", "gender": "M", "country": "ES",
-                                                  "division": "500", "in_group": "on"})
+    def test_team_in_group_copies_category_country_and_division_from_own_team(self):
+        # Aunque llegue otro valor (o ninguno), un equipo del grupo juega en lo mismo que el propio.
+        response = self.client.post(reverse("create_team"), {"name": "Burguillos", "location": "X", "gender": "M",
+                                                             "in_group": "on"})
+        self.assertRedirects(response, reverse("list_teams"), fetch_redirect_response=False)
         team = Team.objects.get(name="Burguillos")
-        self.assertEqual((team.gender, team.division, team.in_group, team.is_own), ("M", "500", True, False))
+        self.assertEqual((team.gender, team.country, team.division, team.in_group, team.is_own), ("F", "IT", "1000", True, False))
+
+    def test_team_out_of_group_keeps_its_own_values(self):
+        self.client.post(reverse("create_team"), {"name": "Burguillos", "location": "X", "gender": "M", "country": "ES",
+                                                  "division": "500"})
+        team = Team.objects.get(name="Burguillos")
+        self.assertEqual((team.gender, team.country, team.division, team.in_group), ("M", "ES", "500", False))
+        response = self.client.post(reverse("create_team"), {"name": "Gines", "location": "X"})
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Team.objects.filter(name="Gines").exists())
+
+    def test_copied_division_counts_for_duplicate_names(self):
+        Team.objects.create(club=self.club, name="Tomares", location="X", gender="F", country="IT", division="1000")
+        response = self.client.post(reverse("create_team"), {"name": "TOMARES", "location": "X", "in_group": "on",
+                                                             "confirm_similar": "1"})
+        self.assertContains(response, "Ya existe un equipo con ese nombre en esa división")
+
+    def test_fields_are_marked_to_hide_when_in_group(self):
+        page = self.client.get(reverse("create_team"))
+        self.assertEqual(page.content.decode().count("data-group-field"), 4)  # 3 campos + el script
 
 
 class ManageTeamsTests(TestCase):
@@ -171,26 +192,32 @@ class ManageTeamsTests(TestCase):
         self.assertNotEqual(self.client.get(self.url).status_code, 200)
 
     def test_saves_several_teams_at_once(self):
-        response = self.post_form(**{f"gender_{self.a.id}": "M", f"division_{self.b.id}": "grand_slam",
-                                     f"gender_{self.b.id}": "M", f"in_group_{self.a.id}": "on",
-                                     f"in_group_{self.b.id}": None})
+        response = self.post_form(**{f"gender_{self.c.id}": "M", f"division_{self.b.id}": "grand_slam",
+                                     f"gender_{self.b.id}": "M", f"in_group_{self.b.id}": None})
         self.assertRedirects(response, self.url, fetch_redirect_response=False)
-        self.a.refresh_from_db()
+        self.c.refresh_from_db()
         self.b.refresh_from_db()
-        self.assertEqual((self.a.gender, self.a.in_group), ("M", True))
+        self.assertEqual((self.c.gender, self.c.in_group), ("M", True))
         self.assertEqual((self.b.gender, self.b.division, self.b.in_group), ("M", "grand_slam", False))
 
-    def test_own_team_stays_in_group_and_passes_gender_to_players(self):
-        player = Player.objects.create(club=self.club, name="Ana", last_name="López")
-        self.post_form(**{f"gender_{self.own.id}": "M", f"in_group_{self.own.id}": None})
+    def test_only_teams_in_group_are_shown_and_never_the_own_team(self):
+        rows = self.client.get(self.url).context["rows"]
+        self.assertEqual([r["team"] for r in rows], [self.b, self.c])
+
+    def test_own_team_and_teams_out_of_group_are_not_touched(self):
+        self.post_form(**{f"gender_{self.own.id}": "M", f"in_group_{self.own.id}": None, f"gender_{self.a.id}": "M"})
         self.own.refresh_from_db()
-        player.refresh_from_db()
-        self.assertEqual((self.own.gender, self.own.in_group, player.gender), ("M", True, "M"))
+        self.a.refresh_from_db()
+        self.assertEqual((self.own.gender, self.own.in_group, self.a.gender), ("F", True, "F"))
+
+    def test_name_clash_with_a_team_out_of_group_is_detected(self):
+        response = self.post_form(**{f"division_{self.c.id}": "500"})
+        self.assertContains(response, "Ya existe un equipo con ese nombre en esa división")
 
     def test_invalid_or_blank_values_are_ignored(self):
-        self.post_form(**{f"gender_{self.a.id}": "", f"division_{self.a.id}": "champions"})
-        self.a.refresh_from_db()
-        self.assertEqual((self.a.gender, self.a.division), ("F", "500"))
+        self.post_form(**{f"gender_{self.c.id}": "", f"division_{self.c.id}": "champions"})
+        self.c.refresh_from_db()
+        self.assertEqual((self.c.gender, self.c.division), ("F", "1000"))
 
     def test_same_name_in_same_division_saves_nothing(self):
         response = self.post_form(**{f"division_{self.c.id}": "500", f"gender_{self.b.id}": "M"})

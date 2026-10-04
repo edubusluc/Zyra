@@ -2156,6 +2156,18 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 .z-toast-icon { margin-top: 3px; color: var(--z-muted); }
 .z-toast.is-success .z-toast-icon { color: var(--z-lime); }
 
+/* Tarjeta de la cuenta SNP */
+.z-snp-card { max-width: 560px; }
+.z-snp-fields { display: grid; grid-template-columns: max-content 1fr; gap: 8px 16px; margin: 0 0 16px; align-items: center; }
+.z-snp-fields dt { font-size: .78rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--z-muted); }
+.z-snp-fields dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+.z-snp-password { display: flex; align-items: center; gap: 4px; }
+.z-snp-password .z-password-toggle { width: 2.5rem; height: 2rem; border-radius: 8px; }
+@media (max-width: 480px) {
+    .z-snp-fields { grid-template-columns: 1fr; gap: 2px; }
+    .z-snp-fields dd { margin-bottom: 8px; }
+}
+
 /* ---------- Portada: primeros pasos del club nuevo (core.onboarding) ---------- */
 .z-onboarding { margin-top: 2rem; margin-bottom: 24px; border-color: var(--z-lime); }
 .z-onboarding-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
