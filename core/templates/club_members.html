@@ -50,7 +50,7 @@
     </table></div>
 
     <h4 class="mt-4" id="invitaciones">{% translate "Invitar jugadores" %}</h4>
-    <p class="text-muted">{% translate "Invita a un jugador por email o genera un enlace para compartirlo tú (por WhatsApp, por ejemplo). Podrá registrarse con usuario, email y contraseña o con Google, o unirse con la cuenta que ya tenga, y entrará como miembro. Cada invitación sirve para una persona y caduca a las 24 horas." %}</p>
+    <p class="text-muted">{% translate "Invita a un jugador por email o genera un enlace para compartirlo tú (por WhatsApp, por ejemplo). Podrá registrarse con usuario, email y contraseña o con Google, o unirse con la cuenta que ya tenga, y entrará como miembro. La invitación por email sirve para una sola persona; el enlace lo pueden usar varias. Ambos caducan a las 24 horas." %}</p>
     <form method="post" action="{% url 'create_invitation' %}" class="mb-3" novalidate>
         {% csrf_token %}
         {{ invite_form.as_p }}
@@ -80,7 +80,7 @@
         <tbody>
         {% for inv, url in invitations %}
             <tr>
-                <td>{% if inv.email %}{{ inv.email }}{% else %}<span class="text-muted">{% translate "Enlace compartido" %}</span>{% endif %}</td>
+                <td>{% if inv.email %}{{ inv.email }}{% else %}<span class="text-muted">{% translate "Enlace compartido" %}</span>{% if inv.reusable %}<br><small class="text-muted">{% blocktranslate trimmed count n=inv.use_count %}{{ n }} persona se ha unido{% plural %}{{ n }} personas se han unido{% endblocktranslate %}</small>{% endif %}{% endif %}</td>
                 <td>
                     <div class="input-group input-group-sm" style="min-width: 260px;">
                         <input type="text" class="form-control" value="{{ url }}" readonly aria-label="{% translate 'Enlace de invitación' %}" id="invite-{{ inv.id }}">

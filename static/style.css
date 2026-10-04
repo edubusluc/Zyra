@@ -2029,3 +2029,24 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
     .z-team-row-fields { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
     .z-team-row-fields .form-select { width: 100%; min-width: 0; }
 }
+
+/* ---------- «¿Quién eres en el equipo?» (link_player.html) ---------- */
+.z-claim {
+    display: flex; align-items: center; gap: 12px; margin: 0; padding: 10px 14px;
+    background: var(--z-surface); border: 1px solid var(--z-border); border-radius: 14px;
+    transition: border-color .12s, background-color .12s;
+}
+.z-claim[hidden] { display: none; }
+.z-claim.is-free { border-color: var(--z-lime); background: rgba(var(--z-lime-rgb), .08); }
+.z-claim .z-pick-name { white-space: normal; overflow-wrap: anywhere; }
+.z-claim.is-free .z-pick-name { color: var(--z-lime); }
+.z-claim.is-free .z-avatar { border-color: var(--z-lime); }
+.z-claim.is-taken { opacity: .45; }
+.z-claim.is-taken .z-pick-name { color: var(--z-muted); }
+.z-claim-lock { flex-shrink: 0; color: var(--z-muted); padding: 0 6px; }
+.z-claim-legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: .82rem; color: var(--z-muted); }
+.z-claim-legend > span { display: inline-flex; align-items: center; gap: 6px; }
+.z-claim-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
+.z-claim-dot.is-free { background: var(--z-lime); }
+.z-claim-dot.is-taken { background: var(--z-border-strong); }
+.z-claim-confirm-name { font-size: 1.15rem; font-weight: 800; color: var(--z-lime); margin-bottom: .75rem; }

@@ -13,6 +13,7 @@ urlpatterns = (
     path('no_club/', views.no_club, name='no_club'),
     path('switch_club/', views.switch_club, name='switch_club'),
     path('members/', views.club_members, name='club_members'),
+    path('members/leave/', views.leave_club, name='leave_club'),
     path('members/<pid:membership_id>/update/', views.update_member, name='update_member'),
     path('members/<pid:membership_id>/remove/', views.remove_member, name='remove_member'),
     path('members/invitations/new/', views.create_invitation, name='create_invitation'),
