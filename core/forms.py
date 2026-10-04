@@ -53,6 +53,10 @@ class SignUpForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
         """Traduce las etiquetas y añade la lista de requisitos de la contraseña."""
         super().__init__(*args, **kwargs)
+        # UserCreationForm pone el foco en el usuario, pero en el alta de club ese campo va
+        # después de los datos del club y la página saltaba hasta él al abrirse (y en el
+        # móvil abría el teclado). La página empieza arriba, sin foco en ningún campo.
+        self.fields["username"].widget.attrs.pop("autofocus", None)
         self.fields["username"].label = _("Usuario")
         self.fields["username"].help_text = _("Letras, números y @ . + - _ (máximo 150).")
         self.fields["password1"].label = _("Contraseña")

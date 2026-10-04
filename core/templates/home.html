@@ -14,6 +14,35 @@
     </div>
 </section>
 
+{% if onboarding %}
+<section class="z-card z-onboarding" aria-labelledby="onboarding-title">
+    <div class="z-onboarding-head">
+        <div>
+            <span class="z-eyebrow"><i class="fa-solid fa-flag-checkered me-1"></i> {% translate "Primeros pasos" %}</span>
+            <h2 id="onboarding-title">{% translate "Prepara tu club en Zyra" %}</h2>
+        </div>
+        <form method="post" action="{% url 'dismiss_onboarding' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-close btn-close-white" aria-label="{% translate 'Ocultar primeros pasos' %}" title="{% translate 'Ocultar primeros pasos' %}"></button>
+        </form>
+    </div>
+    <ol class="z-onboarding-steps">
+        {% for step in onboarding %}
+        <li class="{% if step.done %}is-done{% endif %}">
+            <i class="z-onboarding-check fa-{% if step.done %}solid fa-circle-check{% else %}regular fa-circle{% endif %}" aria-hidden="true"></i>
+            <div class="z-onboarding-text">
+                <strong>{{ step.title }}</strong>
+                <span>{% if step.done %}{% translate "Hecho" %}{% else %}{{ step.help }}{% endif %}</span>
+            </div>
+            {% if not step.done %}
+            <a class="btn btn-primary btn-sm" href="{{ step.url }}">{{ step.action }}</a>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ol>
+</section>
+{% endif %}
+
 {% if snp_missing %}
 <div class="z-card z-card--link z-snp-notice d-flex flex-column align-items-start" style = "margin-top: 2rem;">
     <i class="fa-solid fa-trophy"></i>

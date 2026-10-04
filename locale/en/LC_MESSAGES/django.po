@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zyra\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-04 17:04+0000\n"
+"POT-Creation-Date: 2026-10-04 17:40+0000\n"
 "PO-Revision-Date: 2026-10-01 20:00+0200\n"
 "Last-Translator: Zyra\n"
 "Language-Team: English\n"
@@ -129,9 +129,8 @@ msgstr "One of the two teams must be %(team)s."
 #: backoffice/importer.py:250
 #: backoffice/templates/backoffice/club_detail.html:37
 #: backoffice/templates/backoffice/includes/club_rows.html:5
-#: core/templates/base.html:36 core/templates/base.html:138
-#: players/templates/list_players.html:8
-#: players/templates/manage_roster.html:7
+#: core/templates/base.html:36 core/templates/base.html:140
+#: players/templates/list_players.html:8 players/templates/manage_roster.html:7
 #: players/templates/player_detail.html:6
 msgid "Jugadores"
 msgstr "Players"
@@ -190,13 +189,13 @@ msgid ""
 "Se buscan por ID o, si no hay ID, por nombre dentro del club. El equipo "
 "propio no se importa."
 msgstr ""
-"Matched by ID or, if there is no ID, by name within the club. The club’s own"
-" team is not imported."
+"Matched by ID or, if there is no ID, by name within the club. The club’s own "
+"team is not imported."
 
 #: backoffice/importer.py:273
 #: backoffice/templates/backoffice/club_detail.html:38
 #: backoffice/templates/backoffice/includes/club_rows.html:5
-#: core/templates/base.html:35 core/templates/base.html:136
+#: core/templates/base.html:35 core/templates/base.html:138
 #: core/templates/landing.html:30
 #: data_analyse/templates/includes/match_type_filter.html:5
 #: data_analyse/templates/player_statistics.html:162
@@ -218,12 +217,12 @@ msgstr "Matches"
 msgid "Fecha"
 msgstr "Date"
 
-#: backoffice/importer.py:276 core/templates/home.html:45 match/forms.py:37
+#: backoffice/importer.py:276 core/templates/home.html:74 match/forms.py:37
 #: match/report.py:91 match/templates/call_for_match.html:14
 msgid "Local"
 msgstr "Home"
 
-#: backoffice/importer.py:277 core/templates/home.html:51 match/forms.py:37
+#: backoffice/importer.py:277 core/templates/home.html:80 match/forms.py:37
 #: match/report.py:91 match/templates/call_for_match.html:19
 msgid "Visitante"
 msgstr "Away"
@@ -306,8 +305,8 @@ msgstr "Deletes expired user sessions from the database."
 msgid ""
 "Descarga de SNP los puntos de los jugadores de los clubes con cuenta SNP, "
 "por lotes de 50 y con pausas. El ciclo empieza los lunes a las 23:00; el "
-"resto de días solo hace lo que quedó pendiente (clubes sin procesar o con un"
-" fallo pasajero)."
+"resto de días solo hace lo que quedó pendiente (clubes sin procesar o con un "
+"fallo pasajero)."
 msgstr ""
 "Downloads SNP points for the players of clubs with an SNP account, in "
 "batches of 50 with pauses. The cycle starts on Mondays at 23:00; on other "
@@ -367,8 +366,7 @@ msgstr "Team id"
 
 #: backoffice/jobs.py:110
 msgid ""
-"Id del equipo propio del club en Zyra, TEA... (aparece en la ficha del "
-"club)."
+"Id del equipo propio del club en Zyra, TEA... (aparece en la ficha del club)."
 msgstr "Id of the club’s own team in Zyra, TEA... (shown on the club page)."
 
 #: backoffice/models.py:23
@@ -472,18 +470,15 @@ msgstr "executed query"
 msgid "consultas ejecutadas"
 msgstr "executed queries"
 
-#: backoffice/models.py:181
-#: backoffice/templates/backoffice/import_list.html:70
+#: backoffice/models.py:181 backoffice/templates/backoffice/import_list.html:70
 msgid "Sin confirmar"
 msgstr "Unconfirmed"
 
-#: backoffice/models.py:181
-#: backoffice/templates/backoffice/import_list.html:68
+#: backoffice/models.py:181 backoffice/templates/backoffice/import_list.html:68
 msgid "Importada"
 msgstr "Imported"
 
-#: backoffice/models.py:181
-#: backoffice/templates/backoffice/import_list.html:69
+#: backoffice/models.py:181 backoffice/templates/backoffice/import_list.html:69
 msgid "Deshecha"
 msgstr "Undone"
 
@@ -675,13 +670,13 @@ msgstr[1] "%(n)s emails"
 
 #: backoffice/templates/backoffice/blocked_email_list.html:17
 msgid ""
-"Un email bloqueado no puede registrarse, crear un club, recibir invitaciones"
-" ni unirse a un club. Se compara sin mayúsculas, sin «+etiqueta» y, en "
-"Gmail, sin puntos. Los de un club suspendido se desbloquean al reactivarlo."
+"Un email bloqueado no puede registrarse, crear un club, recibir invitaciones "
+"ni unirse a un club. Se compara sin mayúsculas, sin «+etiqueta» y, en Gmail, "
+"sin puntos. Los de un club suspendido se desbloquean al reactivarlo."
 msgstr ""
-"A blocked email cannot sign up, create a club, receive invitations or join a"
-" club. It is compared ignoring case, any “+tag” and, for Gmail, dots. Emails"
-" blocked with a suspended club are unblocked when it is reactivated."
+"A blocked email cannot sign up, create a club, receive invitations or join a "
+"club. It is compared ignoring case, any “+tag” and, for Gmail, dots. Emails "
+"blocked with a suspended club are unblocked when it is reactivated."
 
 #: backoffice/templates/backoffice/blocked_email_list.html:21
 msgid "Email a bloquear"
@@ -843,7 +838,7 @@ msgstr "no matches played"
 #: backoffice/templates/backoffice/club_detail.html:45
 #: backoffice/templates/backoffice/load.html:38
 #: backoffice/templates/backoffice/photo_list.html:69
-#: backoffice/templates/backoffice/user_list.html:26 core/forms.py:56
+#: backoffice/templates/backoffice/user_list.html:26 core/forms.py:60
 #: core/templates/club_members.html:18 core/templates/emails/welcome.html:9
 #: core/templates/emails/welcome.txt:5
 msgid "Usuario"
@@ -862,7 +857,7 @@ msgstr "Last login"
 
 #: backoffice/templates/backoffice/club_detail.html:51
 #: backoffice/templates/backoffice/club_detail.html:120
-#: backoffice/templates/backoffice/user_detail.html:63 core/models.py:66
+#: backoffice/templates/backoffice/user_detail.html:63 core/models.py:69
 msgid "Capitán"
 msgstr "Captain"
 
@@ -941,9 +936,9 @@ msgstr "This club has not created any invitations."
 
 #: backoffice/templates/backoffice/club_detail.html:111
 msgid ""
-"Sus miembros no podrán entrar hasta que lo reactives (no se borra nada). Los"
-" emails marcados quedan bloqueados: no podrán crear otro club, registrarse "
-"ni unirse a ningún club como jugadores."
+"Sus miembros no podrán entrar hasta que lo reactives (no se borra nada). Los "
+"emails marcados quedan bloqueados: no podrán crear otro club, registrarse ni "
+"unirse a ningún club como jugadores."
 msgstr ""
 "Its members won’t be able to access it until you reactivate it (nothing is "
 "deleted). The selected emails are blocked: they won’t be able to create "
@@ -1188,8 +1183,7 @@ msgid ""
 "Tienes la salida completa en el back-office, en <strong>Procesos "
 "programados</strong>."
 msgstr ""
-"The full output is in the back office, under <strong>Scheduled "
-"jobs</strong>."
+"The full output is in the back office, under <strong>Scheduled jobs</strong>."
 
 #: backoffice/templates/backoffice/emails/job_failed.txt:1
 #, python-format
@@ -1246,8 +1240,8 @@ msgid ""
 "Sube un CSV (desde Excel: <em>Guardar como → CSV UTF-8</em>). Sirve con "
 "<code>;</code> o con <code>,</code>."
 msgstr ""
-"Upload a CSV (from Excel: <em>Save as → CSV UTF-8</em>). Both <code>;</code>"
-" and <code>,</code> work."
+"Upload a CSV (from Excel: <em>Save as → CSV UTF-8</em>). Both <code>;</code> "
+"and <code>,</code> work."
 
 #: backoffice/templates/backoffice/import_list.html:46
 msgid ""
@@ -1259,11 +1253,10 @@ msgstr ""
 
 #: backoffice/templates/backoffice/import_list.html:47
 msgid ""
-"Revisa la previsualización: cada fila pasa las mismas validaciones que en la"
-" web."
+"Revisa la previsualización: cada fila pasa las mismas validaciones que en la "
+"web."
 msgstr ""
-"Review the preview: each row goes through the same validation as on the "
-"site."
+"Review the preview: each row goes through the same validation as on the site."
 
 #: backoffice/templates/backoffice/import_list.html:48
 msgid ""
@@ -1320,8 +1313,8 @@ msgstr "Continue"
 
 #: backoffice/templates/backoffice/import_list.html:75
 msgid ""
-"Se borrarán los registros creados y se restaurarán los valores anteriores de"
-" los actualizados. ¿Deshacer?"
+"Se borrarán los registros creados y se restaurarán los valores anteriores de "
+"los actualizados. ¿Deshacer?"
 msgstr ""
 "Created records will be deleted and updated ones restored to their previous "
 "values. Undo?"
@@ -1399,7 +1392,7 @@ msgid "Siguiente: previsualizar"
 msgstr "Next: preview"
 
 #: backoffice/templates/backoffice/import_map.html:39
-#: core/templates/base.html:156 core/templates/includes/similar_modal.html:19
+#: core/templates/base.html:158 core/templates/includes/similar_modal.html:19
 #: match/templates/delete_match.html:12
 #: players/templates/confirm_delete.html:24
 #: players/templates/link_player.html:64
@@ -1876,7 +1869,7 @@ msgstr ""
 msgid "Ahora mismo Rekognition no valida las fotos nuevas (%(reason)s)."
 msgstr "Rekognition is not checking new photos right now (%(reason)s)."
 
-#: backoffice/templates/backoffice/photo_list.html:35 core/models.py:223
+#: backoffice/templates/backoffice/photo_list.html:35 core/models.py:226
 msgid "Foto"
 msgstr "Photo"
 
@@ -2022,8 +2015,8 @@ msgid ""
 "<code>local_id.name</code> lee campos de la tabla relacionada"
 msgstr ""
 "Ctrl + Enter runs · Ctrl + Space suggests fields · up to %(display_limit)s "
-"rows are shown and up to %(export_limit)s exported · "
-"<code>local_id.name</code> reads fields from the related table"
+"rows are shown and up to %(export_limit)s exported · <code>local_id.name</"
+"code> reads fields from the related table"
 
 #: backoffice/templates/backoffice/sql_console.html:33
 msgid "Guardar consulta"
@@ -2104,8 +2097,8 @@ msgid ""
 "<code>local_id.name</code> para leer sus campos."
 msgstr ""
 "Click a table to query it or a column to add it. Columns with <span "
-"class=\"bo-fk\">→</span> point to another table: write "
-"<code>local_id.name</code> to read its fields."
+"class=\"bo-fk\">→</span> point to another table: write <code>local_id.name</"
+"code> to read its fields."
 
 #: backoffice/templates/backoffice/sql_console.html:94
 #, python-format
@@ -2161,8 +2154,7 @@ msgid "Todavía no se ha lanzado ninguna consulta."
 msgstr "No queries have been run yet."
 
 #: backoffice/templates/backoffice/user_detail.html:13
-msgid ""
-"¿Suspender esta cuenta? No podrá iniciar sesión hasta que la reactives."
+msgid "¿Suspender esta cuenta? No podrá iniciar sesión hasta que la reactives."
 msgstr ""
 "Suspend this account? They won’t be able to sign in until you reactivate it."
 
@@ -2351,7 +2343,7 @@ msgid_plural "%(n)s emails bloqueados."
 msgstr[0] "%(n)s email blocked."
 msgstr[1] "%(n)s emails blocked."
 
-#: backoffice/views.py:224 core/forms.py:58
+#: backoffice/views.py:224 core/forms.py:62
 #: core/templates/registration/login.html:22
 #: core/templates/registration/login.html:23
 msgid "Contraseña"
@@ -2510,7 +2502,7 @@ msgstr "Existing call-up"
 msgid "Ya existe una convocatoria para este partido."
 msgstr "A call-up already exists for this match."
 
-#: call/templates/existing_call.html:9 core/templates/home.html:66
+#: call/templates/existing_call.html:9 core/templates/home.html:95
 msgid "Ver convocatoria"
 msgstr "View call-up"
 
@@ -2620,39 +2612,39 @@ msgid ""
 msgstr ""
 "We'll send you the registration confirmation. You can also use it to log in."
 
-#: core/forms.py:57
+#: core/forms.py:61
 msgid "Letras, números y @ . + - _ (máximo 150)."
 msgstr "Letters, numbers and @ . + - _ (150 max)."
 
-#: core/forms.py:64
+#: core/forms.py:68
 msgid "Repite la contraseña"
 msgstr "Repeat the password"
 
-#: core/forms.py:71
+#: core/forms.py:75
 msgid "Ya hay una cuenta con este email: inicia sesión con ella."
 msgstr "There is already an account with this email: log in with it."
 
-#: core/forms.py:73
+#: core/forms.py:77
 msgid "Este email no puede registrarse en Zyra."
 msgstr "This email cannot sign up to Zyra."
 
-#: core/forms.py:80
+#: core/forms.py:84
 msgid "Email del jugador"
 msgstr "Player's email"
 
-#: core/forms.py:81
+#: core/forms.py:85
 msgid ""
 "Le enviaremos un enlace para registrarse (o unirse con su cuenta) como "
 "miembro. Caduca en 24 horas."
 msgstr ""
-"We'll send them a link to sign up (or join with their existing account) as a"
-" member. It expires in 24 hours."
+"We'll send them a link to sign up (or join with their existing account) as a "
+"member. It expires in 24 hours."
 
-#: core/forms.py:93
+#: core/forms.py:97
 msgid "Ese email ya pertenece a un miembro del club."
 msgstr "That email already belongs to a club member."
 
-#: core/forms.py:95
+#: core/forms.py:99
 msgid "No se puede invitar a este email."
 msgstr "This email cannot be invited."
 
@@ -2667,54 +2659,120 @@ msgstr "The file is not a valid image."
 
 #: core/images.py:97
 msgid ""
-"La foto no se puede usar: parece contener contenido no permitido. Elige "
-"otra."
+"La foto no se puede usar: parece contener contenido no permitido. Elige otra."
 msgstr ""
 "This photo can’t be used: it seems to contain content that isn’t allowed. "
 "Choose another one."
 
-#: core/models.py:67
+#: core/models.py:70
 msgid "Miembro (solo lectura)"
 msgstr "Member (read-only)"
 
-#: core/models.py:183
+#: core/models.py:186
 msgid "Validada"
 msgstr "Approved"
 
-#: core/models.py:184
+#: core/models.py:187
 msgid "Rechazada"
 msgstr "Rejected"
 
-#: core/models.py:185
+#: core/models.py:188
 msgid "Pendiente de revisar"
 msgstr "Pending review"
 
-#: core/models.py:220
+#: core/models.py:223
 #, python-format
 msgid "Foto de %(player)s"
 msgstr "Photo of %(player)s"
 
-#: core/models.py:222
+#: core/models.py:225
 #, python-format
 msgid "Escudo de %(team)s"
 msgstr "%(team)s crest"
 
-#: core/services.py:39
+#: core/onboarding.py:21
+msgid "Añade un equipo de tu grupo"
+msgstr "Add a team from your group"
+
+#: core/onboarding.py:22
+msgid ""
+"Da de alta a los rivales de tu grupo para poder crear partidos contra ellos."
+msgstr ""
+"Add the opponents in your group so you can create matches against them."
+
+#: core/onboarding.py:24
+msgid "Añadir equipo"
+msgstr "Add team"
+
+#: core/onboarding.py:29
+msgid "Invita a tus jugadores"
+msgstr "Invite your players"
+
+#: core/onboarding.py:30
+msgid ""
+"Envíales una invitación por email o comparte un enlace para que se unan al "
+"club."
+msgstr ""
+"Send them an email invitation or share a link so they can join the club."
+
+#: core/onboarding.py:32
+msgid "Invitar"
+msgstr "Invite"
+
+#: core/onboarding.py:37
+msgid "Crea un jugador"
+msgstr "Create a player"
+
+#: core/onboarding.py:38
+msgid ""
+"Para los jugadores que no vayan a aceptar la invitación, añádelos tú a la "
+"plantilla."
+msgstr ""
+"For players who won't accept the invitation, add them to the squad yourself."
+
+#: core/onboarding.py:40
+msgid "Crear jugador"
+msgstr "Create player"
+
+#: core/onboarding.py:45
+msgid "Crea un partido"
+msgstr "Create a match"
+
+#: core/onboarding.py:46
+msgid ""
+"Programa el próximo partido para preparar la convocatoria y las parejas."
+msgstr "Schedule the next match to prepare the call-up and the pairs."
+
+#: core/onboarding.py:48 core/templates/home.html:103
+#: match/templates/list_match.html:73
+msgid "Crear partido"
+msgstr "Create match"
+
+#: core/services.py:52
 msgid "Esta invitación ya se ha usado o ha caducado."
 msgstr "This invitation has already been used or has expired."
 
-#: core/services.py:41
+#: core/services.py:54
 msgid "Este club está suspendido y no admite nuevos miembros."
 msgstr "This club is suspended and does not accept new members."
 
-#: core/services.py:43
+#: core/services.py:56
 msgid "Tu email está bloqueado en Zyra y no puede unirse a clubes."
 msgstr "Your email is blocked on Zyra and cannot join clubs."
 
-#: core/services.py:45 core/views.py:362
+#: core/services.py:58 core/views.py:392
 #, python-format
 msgid "Ya eres miembro de %(club)s."
 msgstr "You are already a member of %(club)s."
+
+#: core/services.py:61
+#, python-format
+msgid ""
+"Ya perteneces a %(club)s y solo se puede pertenecer a un club. Abandona ese "
+"club antes de unirte a otro."
+msgstr ""
+"You already belong to %(club)s and you can only belong to one club. Leave "
+"that club before joining another one."
 
 #: core/templates/403.html:4 core/templates/403.html:10
 msgid "Sin permiso"
@@ -2764,16 +2822,16 @@ msgstr "Zyra, home"
 msgid "Principal"
 msgstr "Main"
 
-#: core/templates/base.html:34 core/templates/base.html:134
+#: core/templates/base.html:34 core/templates/base.html:136
 msgid "Inicio"
 msgstr "Home"
 
-#: core/templates/base.html:37 core/templates/base.html:137
+#: core/templates/base.html:37 core/templates/base.html:139
 #: team/templates/list_teams.html:8 team/templates/manage_teams.html:7
 msgid "Equipos"
 msgstr "Teams"
 
-#: core/templates/base.html:38 core/templates/base.html:135
+#: core/templates/base.html:38 core/templates/base.html:137
 #: core/templates/landing.html:35
 msgid "Estadísticas"
 msgstr "Statistics"
@@ -2794,44 +2852,45 @@ msgstr "Club members"
 msgid "Cuenta SNP"
 msgstr "SNP account"
 
-#: core/templates/base.html:99 core/templates/base.html:157
+#: core/templates/base.html:99 core/templates/base.html:159
 msgid "Abandonar el club"
 msgstr "Leave the club"
 
-#: core/templates/base.html:104
-msgid "Registrar otro club"
-msgstr "Register another club"
+#: core/templates/base.html:105 core/templates/no_club.html:20
+#: core/templates/register_club.html:10
+msgid "Registrar un club"
+msgstr "Register a club"
 
-#: core/templates/base.html:109
+#: core/templates/base.html:111
 msgid "Cerrar sesión"
 msgstr "Log out"
 
-#: core/templates/base.html:115 core/templates/register_club.html:4
+#: core/templates/base.html:117 core/templates/register_club.html:4
 msgid "Registrar club"
 msgstr "Register club"
 
-#: core/templates/base.html:116 core/templates/registration/login.html:4
+#: core/templates/base.html:118 core/templates/registration/login.html:4
 #: core/templates/registration/login.html:10
 #: core/templates/registration/logout.html:10
 msgid "Iniciar sesión"
 msgstr "Log in"
 
-#: core/templates/base.html:132
+#: core/templates/base.html:134
 msgid "Navegación móvil"
 msgstr "Mobile navigation"
 
-#: core/templates/base.html:149
+#: core/templates/base.html:151
 #, python-format
 msgid "¿Abandonar %(club)s?"
 msgstr "Leave %(club)s?"
 
-#: core/templates/base.html:150 core/templates/includes/similar_modal.html:9
+#: core/templates/base.html:152 core/templates/includes/similar_modal.html:9
 #: players/templates/link_player.html:56
 #: players/templates/list_players.html:198
 msgid "Cerrar"
 msgstr "Close"
 
-#: core/templates/base.html:153
+#: core/templates/base.html:155
 msgid ""
 "Dejarás de ver los partidos, jugadores y estadísticas del club, y tu cuenta "
 "se desenlazará de tu jugador. Para volver necesitarás una nueva invitación."
@@ -2976,11 +3035,11 @@ msgstr "Join %(club)s on Zyra"
 #: core/templates/emails/invitation.html:2
 #, python-format
 msgid ""
-"<strong>%(name)s</strong>, capitán de <strong>%(club)s</strong>, te invita a"
-" entrar en el equipo para consultar partidos, convocatorias y estadísticas."
+"<strong>%(name)s</strong>, capitán de <strong>%(club)s</strong>, te invita a "
+"entrar en el equipo para consultar partidos, convocatorias y estadísticas."
 msgstr ""
-"<strong>%(name)s</strong>, captain of <strong>%(club)s</strong>, invites you"
-" to join the team to see matches, call-ups and statistics."
+"<strong>%(name)s</strong>, captain of <strong>%(club)s</strong>, invites you "
+"to join the team to see matches, call-ups and statistics."
 
 #: core/templates/emails/invitation.html:2
 #, python-format
@@ -3043,8 +3102,7 @@ msgid ""
 "Te han invitado a entrar en %(club)s para consultar partidos, convocatorias "
 "y estadísticas."
 msgstr ""
-"You've been invited to join %(club)s to see matches, call-ups and "
-"statistics."
+"You've been invited to join %(club)s to see matches, call-ups and statistics."
 
 #: core/templates/emails/invitation.txt:5
 msgid ""
@@ -3071,8 +3129,8 @@ msgstr "Hi, %(username)s"
 #: core/templates/emails/photo_removed.html:2
 #: core/templates/emails/photo_removed.txt:3
 msgid ""
-"El equipo de Zyra ha revisado esta imagen y la ha eliminado porque no cumple"
-" los términos y condiciones de uso:"
+"El equipo de Zyra ha revisado esta imagen y la ha eliminado porque no cumple "
+"los términos y condiciones de uso:"
 msgid_plural ""
 "El equipo de Zyra ha revisado estas imágenes y las ha eliminado porque no "
 "cumplen los términos y condiciones de uso:"
@@ -3126,10 +3184,9 @@ msgstr "Welcome to Zyra, %(username)s!"
 #: core/templates/emails/welcome.html:3
 #, python-format
 msgid ""
-"Tu registro se ha completado y has creado el equipo "
-"<strong>%(club)s</strong>. Como capitán puedes gestionar jugadores, "
-"partidos, convocatorias y estadísticas, e invitar al resto del equipo desde "
-"<em>Miembros del club</em>."
+"Tu registro se ha completado y has creado el equipo <strong>%(club)s</"
+"strong>. Como capitán puedes gestionar jugadores, partidos, convocatorias y "
+"estadísticas, e invitar al resto del equipo desde <em>Miembros del club</em>."
 msgstr ""
 "Your registration is complete and you have created the team "
 "<strong>%(club)s</strong>. As a captain you can manage players, matches, "
@@ -3139,13 +3196,13 @@ msgstr ""
 #: core/templates/emails/welcome.html:5
 #, python-format
 msgid ""
-"Tu registro se ha completado y ya formas parte de <strong>%(club)s</strong>."
-" Desde ahora puedes consultar los partidos, las convocatorias y las "
+"Tu registro se ha completado y ya formas parte de <strong>%(club)s</strong>. "
+"Desde ahora puedes consultar los partidos, las convocatorias y las "
 "estadísticas del equipo."
 msgstr ""
-"Your registration is complete and you are now part of "
-"<strong>%(club)s</strong>. From now on you can view the team's matches, "
-"call-ups and statistics."
+"Your registration is complete and you are now part of <strong>%(club)s</"
+"strong>. From now on you can view the team's matches, call-ups and "
+"statistics."
 
 #: core/templates/emails/welcome.html:13 core/templates/emails/welcome.txt:6
 msgid "Equipo creado"
@@ -3169,8 +3226,8 @@ msgid ""
 "invitar al resto del equipo desde \"Miembros del club\"."
 msgstr ""
 "Your registration is complete and you have created the team %(club)s. As a "
-"captain you can manage players, matches, call-ups and statistics, and invite"
-" the rest of the team from \"Club members\"."
+"captain you can manage players, matches, call-ups and statistics, and invite "
+"the rest of the team from \"Club members\"."
 
 #: core/templates/emails/welcome.txt:3
 #, python-format
@@ -3195,11 +3252,27 @@ msgstr "%(club)s crest"
 msgid "Temporada %(season)s"
 msgstr "Season %(season)s"
 
+#: core/templates/home.html:21
+msgid "Primeros pasos"
+msgstr "First steps"
+
 #: core/templates/home.html:22
+msgid "Prepara tu club en Zyra"
+msgstr "Set up your club in Zyra"
+
+#: core/templates/home.html:26
+msgid "Ocultar primeros pasos"
+msgstr "Hide first steps"
+
+#: core/templates/home.html:35
+msgid "Hecho"
+msgstr "Done"
+
+#: core/templates/home.html:51
 msgid "Registra tu cuenta de SNP"
 msgstr "Register your SNP account"
 
-#: core/templates/home.html:24
+#: core/templates/home.html:53
 msgid ""
 "Mantén actualizados semanalmente los puntos SNP de tus jugadores y carga "
 "automáticamente sus datos para ahorrar tiempo y tenerlo todo siempre al día."
@@ -3207,70 +3280,66 @@ msgstr ""
 "Keep your players' SNP points updated every week and load their data "
 "automatically to save time and keep everything up to date."
 
-#: core/templates/home.html:29
+#: core/templates/home.html:58
 msgid "Registrar cuenta"
 msgstr "Register account"
 
-#: core/templates/home.html:34
+#: core/templates/home.html:63
 msgid "Próximo partido"
 msgstr "Next match"
 
-#: core/templates/home.html:38
+#: core/templates/home.html:67
 msgid "Hoy"
 msgstr "Today"
 
-#: core/templates/home.html:38
+#: core/templates/home.html:67
 msgid "Mañana"
 msgstr "Tomorrow"
 
-#: core/templates/home.html:38
+#: core/templates/home.html:67
 #, python-format
 msgid "En %(n)s día"
 msgid_plural "En %(n)s días"
 msgstr[0] "In %(n)s day"
 msgstr[1] "In %(n)s days"
 
-#: core/templates/home.html:60 team/templates/list_teams.html:45
+#: core/templates/home.html:89 team/templates/list_teams.html:45
 msgid "Sin ubicación"
 msgstr "No location"
 
-#: core/templates/home.html:64
+#: core/templates/home.html:93
 msgid "Cómo llegar"
 msgstr "Directions"
 
-#: core/templates/home.html:73
+#: core/templates/home.html:102
 msgid "No hay partidos programados."
 msgstr "No matches scheduled."
 
-#: core/templates/home.html:74 match/templates/list_match.html:73
-msgid "Crear partido"
-msgstr "Create match"
-
-#: core/templates/home.html:78
+#: core/templates/home.html:107
 msgid "En racha"
 msgstr "On a streak"
 
-#: core/templates/home.html:84
+#: core/templates/home.html:113
 msgid "Jugador en racha"
 msgstr "Player on a streak"
 
-#: core/templates/home.html:89 core/templates/home.html:106
+#: core/templates/home.html:118 core/templates/home.html:135
 #, python-format
 msgid "%(n)s victoria seguida"
 msgid_plural "%(n)s victorias seguidas"
 msgstr[0] "%(n)s win in a row"
 msgstr[1] "%(n)s wins in a row"
 
-#: core/templates/home.html:92 core/templates/home.html:109
+#: core/templates/home.html:121 core/templates/home.html:138
 #: players/templates/player_detail.html:33
 msgid "Ver estadísticas"
 msgstr "View statistics"
 
-#: core/templates/home.html:98
+#: core/templates/home.html:127
 msgid "Pareja en racha"
 msgstr "Pair on a streak"
 
-#: core/templates/home.html:116
+#: core/templates/home.html:145
 msgid "Nadie encadena victorias ahora mismo."
 msgstr "Nobody is on a winning streak right now."
 
@@ -3350,8 +3419,8 @@ msgstr ""
 
 #: core/templates/invitation.html:15
 msgid ""
-"Te han invitado a entrar en el equipo para consultar partidos, convocatorias"
-" y estadísticas."
+"Te han invitado a entrar en el equipo para consultar partidos, convocatorias "
+"y estadísticas."
 msgstr ""
 "You have been invited to join the team to view matches, call-ups and "
 "statistics."
@@ -3361,24 +3430,37 @@ msgstr ""
 msgid "La invitación caduca el %(date)s a las %(time)s."
 msgstr "The invitation expires on %(date)s at %(time)s."
 
-#: core/templates/invitation.html:22
+#: core/templates/invitation.html:20
+#, python-format
+msgid ""
+"Ya perteneces a %(club)s y solo se puede pertenecer a un club. Si quieres "
+"unirte a este, abandona antes tu club desde el menú de usuario."
+msgstr ""
+"You already belong to %(club)s and you can only belong to one club. To join "
+"this one, first leave your club from the user menu."
+
+#: core/templates/invitation.html:21
+msgid "Volver a mi club"
+msgstr "Back to my club"
+
+#: core/templates/invitation.html:25
 #, python-format
 msgid "Unirme como %(username)s"
 msgstr "Join as %(username)s"
 
-#: core/templates/invitation.html:38
+#: core/templates/invitation.html:41
 msgid "Crear cuenta y unirme"
 msgstr "Create account and join"
 
-#: core/templates/invitation.html:40
+#: core/templates/invitation.html:43
 msgid "Registrarme con Google"
 msgstr "Sign up with Google"
 
-#: core/templates/invitation.html:42
+#: core/templates/invitation.html:45
 #, python-format
 msgid ""
-"¿Ya tienes cuenta? <a href=\"%(login_url)s?next=%(next)s\">Inicia sesión</a>"
-" para unirte."
+"¿Ya tienes cuenta? <a href=\"%(login_url)s?next=%(next)s\">Inicia sesión</a> "
+"para unirte."
 msgstr ""
 "Already have an account? <a href=\"%(login_url)s?next=%(next)s\">Log in</a> "
 "to join."
@@ -3396,8 +3478,7 @@ msgstr ""
 "This link has already been used: email invitations work for one person only."
 
 #: core/templates/invitation_invalid.html:13
-msgid ""
-"Este enlace ha caducado: las invitaciones son válidas durante 24 horas."
+msgid "Este enlace ha caducado: las invitaciones son válidas durante 24 horas."
 msgstr "This link has expired: invitations are valid for 24 hours."
 
 #: core/templates/invitation_invalid.html:14
@@ -3465,8 +3546,8 @@ msgstr "Club suspended"
 #: core/templates/no_club.html:15
 #, python-format
 msgid ""
-"El club %(club)s está suspendido por incumplir los términos y condiciones de"
-" Zyra. Si crees que es un error, escribe a join.zyra@gmail.com."
+"El club %(club)s está suspendido por incumplir los términos y condiciones de "
+"Zyra. Si crees que es un error, escribe a join.zyra@gmail.com."
 msgstr ""
 "The club %(club)s is suspended for breaking Zyra’s terms and conditions. If "
 "you think this is a mistake, write to join.zyra@gmail.com."
@@ -3478,10 +3559,6 @@ msgid ""
 msgstr ""
 "You don't belong to any club yet. Ask a captain to add you as a member, or "
 "register a new club."
-
-#: core/templates/no_club.html:20 core/templates/register_club.html:10
-msgid "Registrar un club"
-msgstr "Register a club"
 
 #: core/templates/register_club.html:11
 msgid ""
@@ -3519,7 +3596,8 @@ msgstr "Log in"
 
 #: core/templates/registration/login.html:28
 #, python-format
-msgid "¿Tu club aún no está en Zyra? <a href=\"%(register_url)s\">Regístralo</a>"
+msgid ""
+"¿Tu club aún no está en Zyra? <a href=\"%(register_url)s\">Regístralo</a>"
 msgstr ""
 "Is your club not on Zyra yet? <a href=\"%(register_url)s\">Register it</a>"
 
@@ -3535,91 +3613,108 @@ msgstr "You have been logged out."
 msgid "No se admiten los signos < > ni saltos de línea."
 msgstr "The characters < > and line breaks are not allowed."
 
-#: core/views.py:106
+#: core/views.py:118
 msgid "Demasiados intentos fallidos. Espera 15 minutos y vuelve a intentarlo."
 msgstr "Too many failed attempts. Wait 15 minutes and try again."
 
-#: core/views.py:144
+#: core/views.py:156
 msgid ""
-"No se ha podido comprobar el formulario: puede que haya caducado o que venga"
-" de otra web. Vuelve a la página, recárgala e inténtalo de nuevo."
+"No se ha podido comprobar el formulario: puede que haya caducado o que venga "
+"de otra web. Vuelve a la página, recárgala e inténtalo de nuevo."
 msgstr ""
 "The form could not be verified: it may have expired or come from another "
 "website. Go back, reload the page and try again."
 
-#: core/views.py:172
+#: core/views.py:187
 msgid "Ya tenías una cuenta con este email. Has iniciado sesión con ella."
 msgstr ""
 "You already had an account with this email. You are now signed in to it."
 
-#: core/views.py:181
+#: core/views.py:193
+#, python-format
+msgid ""
+"Ya perteneces a %(club)s y solo se puede pertenecer a un club. Abandona ese "
+"club antes de registrar otro."
+msgstr ""
+"You already belong to %(club)s and you can only belong to one club. Leave "
+"that club before registering another one."
+
+#: core/views.py:203
 msgid "Tu email está bloqueado en Zyra y no puede crear clubes."
 msgstr "Your email is blocked on Zyra and cannot create clubs."
 
-#: core/views.py:193
+#: core/views.py:215
 #, python-format
 msgid "Club %(club)s creado correctamente."
 msgstr "Club %(club)s created successfully."
 
-#: core/views.py:283
+#: core/views.py:305
 #, python-format
 msgid "Invitación enviada a %(email)s. El enlace caduca en 24 horas."
 msgstr "Invitation sent to %(email)s. The link expires in 24 hours."
 
-#: core/views.py:286
+#: core/views.py:308
 #, python-format
 msgid "No se pudo enviar el correo a %(email)s. Inténtalo de nuevo más tarde."
 msgstr "The email to %(email)s could not be sent. Please try again later."
 
-#: core/views.py:298
+#: core/views.py:325
 msgid ""
-"Enlace creado: cópialo y compártelo. Lo pueden usar varias personas y caduca"
-" en 24 horas."
+"Enlace nuevo creado: el anterior ya no funciona. Cópialo y compártelo. Lo "
+"pueden usar varias personas y caduca en 24 horas."
 msgstr ""
-"Link created: copy it and share it. Several people can use it and it expires"
-" in 24 hours."
+"New link created: the previous one no longer works. Copy and share it. "
+"Several people can use it and it expires in 24 hours."
 
-#: core/views.py:311
+#: core/views.py:328
+msgid ""
+"Enlace creado: cópialo y compártelo. Lo pueden usar varias personas y caduca "
+"en 24 horas."
+msgstr ""
+"Link created: copy it and share it. Several people can use it and it expires "
+"in 24 hours."
+
+#: core/views.py:341
 msgid "Invitación anulada."
 msgstr "Invitation revoked."
 
-#: core/views.py:343 core/views.py:387
+#: core/views.py:373 core/views.py:422
 #, python-format
 msgid "¡Bienvenido a %(club)s!"
 msgstr "Welcome to %(club)s!"
 
-#: core/views.py:416
+#: core/views.py:451
 msgid "Rol no válido."
 msgstr "Invalid role."
 
-#: core/views.py:418 core/views.py:454
+#: core/views.py:453 core/views.py:489
 msgid "El club debe tener al menos un capitán."
 msgstr "The club must have at least one captain."
 
-#: core/views.py:433
+#: core/views.py:468
 #, python-format
 msgid "'%(email)s' no es un email válido."
 msgstr "'%(email)s' is not a valid email."
 
-#: core/views.py:435
+#: core/views.py:470
 msgid "Ese email ya lo usa otra cuenta."
 msgstr "That email is already used by another account."
 
-#: core/views.py:460
+#: core/views.py:495
 #, python-format
 msgid "%(username)s ya no es miembro del club."
 msgstr "%(username)s is no longer a club member."
 
-#: core/views.py:478
+#: core/views.py:513
 #, python-format
 msgid ""
 "Eres el único capitán de %(club)s: nombra a otro capitán antes de abandonar "
 "el club."
 msgstr ""
-"You are the only captain of %(club)s: appoint another captain before leaving"
-" the club."
+"You are the only captain of %(club)s: appoint another captain before leaving "
+"the club."
 
-#: core/views.py:484
+#: core/views.py:519
 #, python-format
 msgid "Has abandonado %(club)s."
 msgstr "You have left %(club)s."
@@ -3767,8 +3862,8 @@ msgid ""
 "Cuando disputen su primer partido cerrado como pareja aparecerán aquí sus "
 "estadísticas."
 msgstr ""
-"Their statistics will appear here once they play their first closed match as"
-" a pair."
+"Their statistics will appear here once they play their first closed match as "
+"a pair."
 
 #: data_analyse/templates/pair_statistics.html:61
 msgid "Resumen de la pareja"
@@ -4090,8 +4185,7 @@ msgstr[1] "%(played)s matches played in %(n)s seasons"
 #: data_analyse/templates/player_statistics.html:19
 #: match/templates/includes/lineup_form.html:15
 #: match/templates/includes/player_selector.html:7
-#: players/templates/link_player.html:26
-#: players/templates/list_players.html:36
+#: players/templates/link_player.html:26 players/templates/list_players.html:36
 #: players/templates/manage_roster.html:23
 msgid "Buscar jugador..."
 msgstr "Search player..."
@@ -4529,8 +4623,8 @@ msgstr ""
 #: match/advisor.py:382
 #, python-format
 msgid ""
-"Segunda mejor opción, con %(n)s parejas distintas a la A: sirve de plan B si"
-" hay bajas o si se prefieren esas combinaciones."
+"Segunda mejor opción, con %(n)s parejas distintas a la A: sirve de plan B si "
+"hay bajas o si se prefieren esas combinaciones."
 msgstr ""
 "Second-best option, with %(n)s pairs different from lineup A: a plan B if "
 "there are absences or if those combinations are preferred."
@@ -4547,8 +4641,8 @@ msgstr ""
 #: match/advisor.py:393
 #, python-format
 msgid ""
-"%(pair1)s y %(pair2)s tienen la mayor suma de puntos SNP, así que disputarán"
-" los dos partidos de 3 puntos (victoria estimada %(pct1)s %% y %(pct2)s %%)."
+"%(pair1)s y %(pair2)s tienen la mayor suma de puntos SNP, así que disputarán "
+"los dos partidos de 3 puntos (victoria estimada %(pct1)s %% y %(pct2)s %%)."
 msgstr ""
 "%(pair1)s and %(pair2)s have the highest sum of SNP points, so they will "
 "play the two 3-point matches (estimated win %(pct1)s %% and %(pct2)s %%)."
@@ -4593,8 +4687,8 @@ msgid ""
 "Probabilidad estimada de ganar la eliminatoria: %(pct)s (%(expected)s de 12 "
 "puntos esperados)."
 msgstr ""
-"Estimated probability of winning the tie: %(pct)s (%(expected)s of 12 points"
-" expected)."
+"Estimated probability of winning the tie: %(pct)s (%(expected)s of 12 points "
+"expected)."
 
 #: match/forms.py:29
 msgid "Competitivo"
@@ -4634,8 +4728,7 @@ msgid ""
 "Tu equipo (%(team)s) tiene que jugar el partido: elígelo como local o "
 "visitante."
 msgstr ""
-"Your team (%(team)s) must play the match: choose it as the home or away "
-"team."
+"Your team (%(team)s) must play the match: choose it as the home or away team."
 
 #: match/lineup.py:36
 msgid "Los datos de la alineación no son válidos."
@@ -4857,8 +4950,8 @@ msgstr "Est."
 
 #: match/report_pdf.py:410
 msgid ""
-"Estim.: probabilidad estimada de ganar un partido (historial, rendimiento en"
-" la sede, forma y racha)."
+"Estim.: probabilidad estimada de ganar un partido (historial, rendimiento en "
+"la sede, forma y racha)."
 msgstr ""
 "Est.: estimated probability of winning a match (history, performance at the "
 "venue, form and streak)."
@@ -4968,13 +5061,13 @@ msgstr "Resting: %(names)s"
 #: match/report_pdf.py:516
 msgid ""
 "Formato SNP: 5 partidos; los partidos 1 y 2 valen 3 puntos y los 3, 4 y 5 "
-"valen 2. Las parejas se ordenan por la suma de puntos SNP de sus jugadores y"
-" se necesitan 7 de 12 puntos para ganar la eliminatoria. Las estimaciones se"
-" basan en el historial del club y son orientativas."
+"valen 2. Las parejas se ordenan por la suma de puntos SNP de sus jugadores y "
+"se necesitan 7 de 12 puntos para ganar la eliminatoria. Las estimaciones se "
+"basan en el historial del club y son orientativas."
 msgstr ""
 "SNP format: 5 matches; matches 1 and 2 are worth 3 points and matches 3, 4 "
-"and 5 are worth 2. Pairs are ordered by the sum of their players' SNP points"
-" and 7 of 12 points are needed to win the tie. Estimates are based on the "
+"and 5 are worth 2. Pairs are ordered by the sum of their players' SNP points "
+"and 7 of 12 points are needed to win the tie. Estimates are based on the "
 "club's history and are only a guide."
 
 #: match/report_pdf.py:531
@@ -5049,8 +5142,8 @@ msgstr "Create call-up"
 
 #: match/templates/call_for_match.html:38
 #: players/templates/list_players.html:126
-#: players/templates/player_detail.html:8
-#: players/templates/snp_account.html:47 team/templates/list_teams.html:84
+#: players/templates/player_detail.html:8 players/templates/snp_account.html:47
+#: team/templates/list_teams.html:84
 msgid "Editar"
 msgstr "Edit"
 
@@ -5189,13 +5282,13 @@ msgstr "Delete match"
 #: match/templates/delete_match.html:8
 #, python-format
 msgid ""
-"Vas a eliminar el partido entre <strong class=\"text-"
-"white\">%(local)s</strong> y <strong class=\"text-"
-"white\">%(visiting)s</strong>. Esta acción no se puede deshacer."
+"Vas a eliminar el partido entre <strong class=\"text-white\">%(local)s</"
+"strong> y <strong class=\"text-white\">%(visiting)s</strong>. Esta acción no "
+"se puede deshacer."
 msgstr ""
 "You are about to delete the match between <strong class=\"text-"
-"white\">%(local)s</strong> and <strong class=\"text-"
-"white\">%(visiting)s</strong>. This action cannot be undone."
+"white\">%(local)s</strong> and <strong class=\"text-white\">%(visiting)s</"
+"strong>. This action cannot be undone."
 
 #: match/templates/delete_match.html:11
 #: players/templates/confirm_delete.html:23
@@ -5272,8 +5365,7 @@ msgid "Elige equipo"
 msgstr "Choose team"
 
 #: match/templates/includes/player_selector.html:7
-#: players/templates/link_player.html:26
-#: players/templates/list_players.html:36
+#: players/templates/link_player.html:26 players/templates/list_players.html:36
 #: players/templates/manage_roster.html:23
 msgid "Buscar jugador"
 msgstr "Search player"
@@ -5431,8 +5523,8 @@ msgid ""
 "%(done)s. Ningún capitán tiene email: añádelo en Miembros para recibir el "
 "informe automáticamente."
 msgstr ""
-"%(done)s. No captain has an email address: add one in Members to receive the"
-" report automatically."
+"%(done)s. No captain has an email address: add one in Members to receive the "
+"report automatically."
 
 #: match/views.py:266
 #, python-format
@@ -5539,8 +5631,8 @@ msgstr "SNP team (optional)"
 
 #: players/forms.py:117
 msgid ""
-"Solo si la cuenta tiene varios equipos: el número del equipo (p. ej. 4380) o"
-" la dirección de su página en SNP."
+"Solo si la cuenta tiene varios equipos: el número del equipo (p. ej. 4380) o "
+"la dirección de su página en SNP."
 msgstr ""
 "Only if the account has several teams: the team number (e.g. 4380) or the "
 "address of its SNP page."
@@ -5580,8 +5672,7 @@ msgid ""
 "Formato 2024-2025. Se usa para contar a cuántas convocatorias no se ha "
 "apuntado."
 msgstr ""
-"Format 2024-2025. Used to count how many call-ups they haven't signed up "
-"for."
+"Format 2024-2025. Used to count how many call-ups they haven't signed up for."
 
 #: players/models.py:118 players/templates/snp_account.html:35
 msgid "Equipo en SNP"
@@ -5711,11 +5802,11 @@ msgstr "Their SNP points history"
 
 #: players/templates/confirm_delete.html:18
 msgid ""
-"Los enfrentamientos y sus resultados no se borran: en las parejas en las que"
-" jugó se seguirá mostrando su nombre."
+"Los enfrentamientos y sus resultados no se borran: en las parejas en las que "
+"jugó se seguirá mostrando su nombre."
 msgstr ""
-"Matches and their results are not deleted: their name will still be shown in"
-" the pairs they played in."
+"Matches and their results are not deleted: their name will still be shown in "
+"the pairs they played in."
 
 #: players/templates/confirm_delete.html:20
 msgid "Esta acción no se puede deshacer."
@@ -5807,11 +5898,11 @@ msgstr "Unlink"
 
 #: players/templates/edit_player.html:73
 msgid ""
-"Sin cuenta enlazada: el jugador puede enlazarla desde «Mi jugador» al entrar"
-" en el club."
+"Sin cuenta enlazada: el jugador puede enlazarla desde «Mi jugador» al entrar "
+"en el club."
 msgstr ""
-"No linked account: the player can link it from “My player” after joining the"
-" club."
+"No linked account: the player can link it from “My player” after joining the "
+"club."
 
 #: players/templates/link_player.html:8
 msgid "¿Quién eres en el equipo?"
@@ -5973,8 +6064,8 @@ msgstr "SNP points"
 
 #: players/templates/list_players.html:177
 msgid ""
-"Todos los jugadores de tu equipo de SNP ya están en Zyra: no hay nadie nuevo"
-" que añadir."
+"Todos los jugadores de tu equipo de SNP ya están en Zyra: no hay nadie nuevo "
+"que añadir."
 msgstr ""
 "All the players from your SNP team are already in Zyra: there's nobody new "
 "to add."
@@ -6014,8 +6105,8 @@ msgstr "Couldn't read the SNP team: %(message)s"
 
 #: players/templates/manage_roster.html:16
 msgid ""
-"Activa o desactiva a los jugadores que están en el equipo y guarda todos los"
-" cambios de una vez. Los jugadores fuera del equipo no aparecen en "
+"Activa o desactiva a los jugadores que están en el equipo y guarda todos los "
+"cambios de una vez. Los jugadores fuera del equipo no aparecen en "
 "convocatorias, sanciones ni en los rankings."
 msgstr ""
 "Turn players on or off the team and save all changes at once. Players off "
@@ -6108,8 +6199,7 @@ msgid ""
 "Registra aquí el usuario y la contraseña de SNP del capitán y tendrás en "
 "Zyra los puntos SNP de todos tus jugadores, actualizados cada semana. Así "
 "verás el nivel de cada uno de un vistazo y te será más fácil montar las "
-"parejas de los partidos. Tus claves se guardan cifradas y nadie puede "
-"verlas."
+"parejas de los partidos. Tus claves se guardan cifradas y nadie puede verlas."
 msgstr ""
 "Register the captain's SNP username and password here and you'll have the "
 "SNP points of all your players in Zyra, updated every week. You'll see "
@@ -6140,8 +6230,7 @@ msgstr "hasn't run yet"
 msgid "¿Borrar la cuenta SNP del club?"
 msgstr "Delete the club's SNP account?"
 
-#: players/templates/snp_account.html:50
-#: players/templates/snp_account.html:101
+#: players/templates/snp_account.html:50 players/templates/snp_account.html:101
 msgid "Borrar cuenta"
 msgstr "Delete account"
 
@@ -6191,8 +6280,8 @@ msgstr "There were no changes to save."
 
 #: players/views.py:224
 msgid ""
-"No se ha podido leer la cuenta guardada (¿ha cambiado la clave de cifrado?)."
-" Vuelve a introducirla."
+"No se ha podido leer la cuenta guardada (¿ha cambiado la clave de cifrado?). "
+"Vuelve a introducirla."
 msgstr ""
 "The saved account could not be read (has the encryption key changed?). "
 "Please enter it again."
@@ -6213,8 +6302,8 @@ msgstr "SNP account deleted."
 #: players/views.py:275
 #, python-format
 msgid ""
-"El equipo ya se ha completado este mes. Podrás volver a hacerlo a partir del"
-" %(date)s."
+"El equipo ya se ha completado este mes. Podrás volver a hacerlo a partir del "
+"%(date)s."
 msgstr ""
 "The team has already been completed this month. You can do it again from "
 "%(date)s."
@@ -6254,8 +6343,7 @@ msgstr "Your account is already linked to a player."
 
 #: players/views.py:420
 msgid ""
-"Ese jugador ya está enlazado a otra cuenta. Si eres tú, habla con tu "
-"capitán."
+"Ese jugador ya está enlazado a otra cuenta. Si eres tú, habla con tu capitán."
 msgstr ""
 "That player is already linked to another account. If it’s you, talk to your "
 "captain."
@@ -6321,8 +6409,8 @@ msgstr ""
 #: team/templates/create_team.html:31
 #, python-format
 msgid ""
-"Al ser de tu grupo, juega en la misma categoría, nacionalidad y división que"
-" %(team)s: se copian de tu equipo."
+"Al ser de tu grupo, juega en la misma categoría, nacionalidad y división que "
+"%(team)s: se copian de tu equipo."
 msgstr ""
 "As it is in your group, it plays in the same category, nationality and "
 "division as %(team)s: they are copied from your team."
