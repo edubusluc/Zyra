@@ -204,6 +204,10 @@
 <script src="{% static 'js/password.js' %}"></script>
 <script src="{% static 'js/nav.js' %}"></script>
 <script src="{% static 'js/page-transitions.js' %}"></script>
+{# Precarga las secciones principales (solo lectura) al ir a pulsarlas: la página siguiente llega antes y el paso es más fluido. Navegadores sin soporte lo ignoran. #}
+<script type="speculationrules">
+{"prefetch": [{"where": {"or": [{"href_matches": "/"}, {"href_matches": "/data_analyse/*"}, {"href_matches": "/match/list_match"}, {"href_matches": "/players/list_players"}, {"href_matches": "/team/list_teams"}]}, "eagerness": "moderate"}]}
+</script>
 <script src="{% static 'js/photo-crop.js' %}"></script>
 <script src="{% static 'js/leave-club.js' %}"></script>
 {% include 'includes/messages_popup.html' %}
