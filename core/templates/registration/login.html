@@ -22,6 +22,7 @@
                 <label for="{{ form.password.id_for_label }}">{% translate "Contraseña" %}</label>
                 <input type="password" name="password" id="{{ form.password.id_for_label }}" placeholder="{% translate 'Contraseña' %}" autocomplete="current-password" required>
             </p>
+            <p class="mb-0"><a href="{% url 'account_reset_password' %}">{% translate "¿Has olvidado tu contraseña?" %}</a></p>
             <button type="submit" class="btn btn-primary btn-lg mt-2">{% translate "Entrar" %}</button>
         </form>
         {% include 'includes/google_button.html' with next=next %}

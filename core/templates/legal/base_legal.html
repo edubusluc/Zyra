@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% comment %}
+Páginas legales (privacidad, términos, cookies). El texto está solo en español: es el
+que vale legalmente. Los datos del responsable salen de LEGAL_OWNER_* y CONTACT_EMAIL.
+{% endcomment %}
+
+{% block content %}
+<article class="z-panel z-legal" lang="es">
+    {% block legal %}{% endblock %}
+    <p class="text-muted mt-4 mb-0"><small>Última actualización: {{ legal_updated }}</small></p>
+</article>
+{% endblock %}

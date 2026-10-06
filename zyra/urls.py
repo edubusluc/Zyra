@@ -3,7 +3,8 @@ Mapa de URLs del proyecto.
 
 - ADMIN_URL: Django admin (solo superusuarios).
 - backoffice/: back-office del personal de Zyra (app backoffice).
-- "" (raíz): portada (core.views.home).
+- "" (raíz): portada (core.views.home), robots.txt, sitemap.xml, páginas legales
+  (privacidad/, terminos/, cookies/) y healthz/ (monitor de caídas).
 - players/: jugadores (app players).
 - match/: partidos (app match).
 - data_analyse/: estadísticas (app data_analyse).
@@ -25,7 +26,10 @@ from django.views.i18n import JavaScriptCatalog
 
 from core.public_id import PublicIdConverter
 
-from core.views import error_403_view, error_404_view, home
+from django.contrib.sitemaps.views import sitemap
+
+from core.sitemaps import PublicPagesSitemap
+from core.views import error_403_view, error_404_view, healthz, home, legal_page, robots_txt
 
 # <pid:...>: identificador público de un objeto (core/public_id.py). Se registra antes de
 # cargar las URLs de cada aplicación, que lo usan.
@@ -35,6 +39,14 @@ urlpatterns = [
     path(settings.ADMIN_URL, admin.site.urls),
     path('backoffice/', include('backoffice.urls')),
     path("", home, name="home"),
+    # Páginas públicas para buscadores y obligaciones legales.
+    path("robots.txt", robots_txt, name="robots_txt"),
+    path("sitemap.xml", sitemap, {"sitemaps": {"public": PublicPagesSitemap}}, name="sitemap"),
+    path("privacidad/", legal_page, {"template": "legal/privacy.html"}, name="privacy"),
+    path("terminos/", legal_page, {"template": "legal/terms.html"}, name="terms"),
+    path("cookies/", legal_page, {"template": "legal/cookies.html"}, name="cookies"),
+    # Para el servicio que avisa si la web se cae.
+    path("healthz/", healthz, name="healthz"),
     path('players/', include('players.urls')),
     path('match/', include('match.urls')),
     path('data_analyse/',include('data_analyse.urls')),

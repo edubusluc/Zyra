@@ -18,13 +18,14 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.paginator import Paginator
 from django.core.validators import validate_email
-from django.db import transaction
-from django.http import Http404, JsonResponse
+from django.conf import settings
+from django.db import DatabaseError, connection, transaction
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_safe
 
 from data_analyse import pairs as pair_stats
 from match.models import Match
@@ -550,3 +551,42 @@ def leave_club(request):
     request.session.pop(SESSION_KEY, None)
     messages.success(request, _("Has abandonado %(club)s.") % {"club": club_name})
     return redirect("home")
+
+
+# Fecha de la última revisión de las páginas legales (cámbiala al editar sus textos).
+LEGAL_UPDATED = datetime.date(2026, 10, 6)
+
+TEXT_PLAIN = "text/plain"
+
+
+@require_safe
+def legal_page(request, template):
+    """Página legal pública (privacidad, términos o cookies) con los datos del responsable."""
+    return render(request, template, {
+        "legal": {
+            "owner_name": settings.LEGAL_OWNER_NAME,
+            "owner_id": settings.LEGAL_OWNER_ID,
+            "owner_address": settings.LEGAL_OWNER_ADDRESS,
+        },
+        "legal_updated": LEGAL_UPDATED,
+    })
+
+
+@require_safe
+def robots_txt(request):
+    """robots.txt: qué secciones no deben rastrear los buscadores y dónde está el sitemap."""
+    return render(request, "robots.txt", content_type=TEXT_PLAIN)
+
+
+@require_safe
+def healthz(request):
+    """
+    Comprobación para el servicio que vigila si la web está caída (UptimeRobot, Better
+    Stack...): 200 si la aplicación y la base de datos responden, 503 si no.
+    """
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+    except DatabaseError:
+        return HttpResponse("db error", status=503, content_type=TEXT_PLAIN)
+    return HttpResponse("ok", content_type=TEXT_PLAIN)

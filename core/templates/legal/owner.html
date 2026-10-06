@@ -1,0 +1,10 @@
+{% if legal.owner_name %}
+<ul>
+    <li><strong>Titular:</strong> {{ legal.owner_name }}</li>
+    {% if legal.owner_id %}<li><strong>NIF:</strong> {{ legal.owner_id }}</li>{% endif %}
+    {% if legal.owner_address %}<li><strong>Domicilio:</strong> {{ legal.owner_address }}</li>{% endif %}
+    <li><strong>Correo de contacto:</strong> <a href="mailto:{{ contact_email }}">{{ contact_email }}</a></li>
+</ul>
+{% else %}
+<p>Correo de contacto: <a href="mailto:{{ contact_email }}">{{ contact_email }}</a></p>
+{% endif %}

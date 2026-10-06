@@ -109,7 +109,7 @@
                     <img src="{% static 'zyra/avatar.svg' %}" alt="" class="table-avatar">
                     {% endif %}
                 </td>
-                <td><strong>{{ player.short_name }}</strong></td>
+                <td><a href="{% url 'show_player' player.public_id %}" class="text-reset"><strong>{{ player.short_name }}</strong></a></td>
                 <td>{{ player.get_position_display }}</td>
                 <td>{{ player.get_skillfull_hand_display }}</td>
                 <td>{{ player.snp_score|default:"-" }}</td>

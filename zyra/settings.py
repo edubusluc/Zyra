@@ -68,6 +68,18 @@ ALLOWED_HOSTS = config('DJANGO_ALLOWED_HOSTS', default='localhost,127.0.0.1', ca
 # Orígenes HTTPS de confianza para los formularios: "https://zyra.es,https://www.zyra.es".
 CSRF_TRUSTED_ORIGINS = config('DJANGO_CSRF_TRUSTED_ORIGINS', default='', cast=Csv())
 
+# URL pública y única de la web, sin barra final: "https://zyra.es". Se usa en las URLs
+# canónicas, la vista previa al compartir (Open Graph) y el sitemap. Si está definida, las
+# peticiones a cualquier otro dominio de ALLOWED_HOSTS (p. ej. www.zyra.es) se redirigen
+# aquí con un 301 (core.middleware.CanonicalHostMiddleware). Vacía en local.
+SITE_URL = config('SITE_URL', default='').rstrip('/')
+
+# Datos del responsable de la web que exigen el aviso legal y la política de privacidad
+# (LSSI-CE art. 10 y RGPD art. 13). Mientras falten, las páginas legales lo avisan.
+LEGAL_OWNER_NAME = config('LEGAL_OWNER_NAME', default='')
+LEGAL_OWNER_ID = config('LEGAL_OWNER_ID', default='')  # NIF/DNI
+LEGAL_OWNER_ADDRESS = config('LEGAL_OWNER_ADDRESS', default='')
+
 # Ruta del Django admin (herramienta de emergencia, solo superusuarios). Se puede
 # cambiar por una menos obvia con la variable de entorno ADMIN_URL.
 ADMIN_URL = config('ADMIN_URL', default='admin/')
@@ -105,6 +117,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sitemaps',
     'players',
     'core',
     'match',
@@ -123,6 +136,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    # Un solo dominio: redirige con 301 a SITE_URL (www → sin www, dominio antiguo...).
+    'core.middleware.CanonicalHostMiddleware',
     # Mide todas las peticiones y la última actividad de cada usuario (back-office).
     'backoffice.middleware.ActivityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -154,6 +169,7 @@ TEMPLATES = [
                 'core.context_processors.club',
                 'core.context_processors.navigation',
                 'core.context_processors.google_login',
+                'core.context_processors.site',
             ],
         },
     },
@@ -317,6 +333,8 @@ EMAIL_BACKEND = config(
     else 'django.core.mail.backends.console.EmailBackend',
 )
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default=f'Zyra <{ZYRA_SENDER}>')
+# Correo de contacto que se muestra en el pie y en las páginas legales.
+CONTACT_EMAIL = config('CONTACT_EMAIL', default=ZYRA_SENDER)
 # Los informes de convocatoria se guardan en una cola (match.ReportDelivery): se intenta
 # enviarlos al cerrar la convocatoria y, si falla, el proceso send_call_reports los
 # reintenta con esperas crecientes. Como mucho EMAIL_MAX_PER_RUN correos por pasada,

@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 06/10/2026
+
+- Páginas de privacidad, términos y cookies, contacto en el pie, robots.txt y sitemap, URL canónica y vista previa al compartir, un solo dominio (301 a `SITE_URL`), `/healthz/` para avisar de caídas, fuentes servidas desde la web y mejoras de accesibilidad
+
 ## 04/10/2026
 
 - [#88](https://github.com/edubusluc/Zyra/pull/88) Al registrar un club se crea el jugador del capitán enlazado a su cuenta (nombre y apellidos como en SNP; aviso si Google no los da)

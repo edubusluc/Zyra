@@ -35,7 +35,7 @@
         <a href="{% url 'view_call_log' call_for_match.public_id %}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-triangle-exclamation me-1"></i> {% translate "Penalizaciones" %}</a>
         {% endif %}
         {% if call_for_match %}
-        <a href="{% url 'call_report' match.public_id %}" class="btn btn-secondary btn-sm" target="_blank"><i class="fa-solid fa-file-pdf me-1"></i> {% translate "Informe PDF" %}</a>
+        <a href="{% url 'call_report' match.public_id %}" class="btn btn-secondary btn-sm" target="_blank" rel="noopener"><i class="fa-solid fa-file-pdf me-1"></i> {% translate "Informe PDF" %}</a>
         {% endif %}
         {% if call_for_match and not call_for_match.draft_mode %}
         <form action="{% url 'resend_call_report' match.public_id %}" method="post" class="d-inline">
