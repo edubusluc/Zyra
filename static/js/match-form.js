@@ -25,6 +25,8 @@
     if (sourceRow) sourceRow.hidden = !friendly;
     if (groupRival) groupRival.hidden = manual;
     if (manualRival) manualRival.hidden = !manual;
+    // Los desplegables ocultos no deben bloquear el envío por ser obligatorios.
+    if (groupRival) groupRival.querySelectorAll('select').forEach((s) => { s.disabled = manual; });
     radios.forEach((r) => r.closest('label').classList.toggle('active', r.checked));
   }
   radios.forEach((r) => r.addEventListener('change', (event) => {
