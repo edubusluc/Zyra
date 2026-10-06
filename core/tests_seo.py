@@ -44,6 +44,11 @@ class PublicPagesTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, b"ok")
 
+    def test_public_endpoints_only_accept_get_and_head(self):
+        for url in ("/healthz/", "/robots.txt", "/privacidad/"):
+            self.assertEqual(self.client.head(url).status_code, 200)
+            self.assertEqual(self.client.post(url).status_code, 405)
+
 
 @override_settings(SITE_URL="https://zyra.es", ALLOWED_HOSTS=["zyra.es", "www.zyra.es"])
 class CanonicalHostTests(TestCase):
