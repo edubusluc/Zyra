@@ -1,0 +1,1 @@
+{% load i18n %}{% autoescape off %}{% translate "No hay ninguna cuenta de Zyra con este email" %}{% endautoescape %}

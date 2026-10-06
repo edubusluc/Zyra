@@ -1,0 +1,14 @@
+{% comment %}Campos de un formulario en las tarjetas de acceso (z-auth-card): etiqueta, campo, ayuda y errores.{% endcomment %}
+{% if form.non_field_errors %}
+<div class="alert">{% for e in form.non_field_errors %}<p>{{ e }}</p>{% endfor %}</div>
+{% endif %}
+{% for field in form %}
+{% if field.is_hidden %}{{ field }}{% else %}
+<p>
+    {{ field.label_tag }}
+    {{ field }}
+    {% if field.help_text %}<small class="text-muted d-block">{{ field.help_text }}</small>{% endif %}
+    {% for error in field.errors %}<span class="text-danger d-block small">{{ error }}</span>{% endfor %}
+</p>
+{% endif %}
+{% endfor %}

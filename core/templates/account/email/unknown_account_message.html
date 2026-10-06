@@ -1,0 +1,6 @@
+{% load i18n %}<h1 style="margin:0 0 16px; font-size:22px; color:#0B0B0B;">{% translate "No encontramos tu cuenta" %}</h1>
+<p style="margin:0 0 12px;">{% blocktranslate trimmed %}Alguien ha pedido cambiar la contraseña de Zyra para <strong>{{ email }}</strong>, pero no hay ninguna cuenta con este email.{% endblocktranslate %}</p>
+<p style="margin:0 0 12px;">{% translate "Si te registraste con otro email, pide el cambio con ese. Si tu club usa Zyra, pide a tu capitán una invitación; si eres capitán, puedes registrar tu club." %}</p>
+<p style="margin:0 0 16px;"><a href="{{ site_url }}{% url 'register_club' %}" style="display:inline-block; background-color:#B4F100; color:#0A0A0A; font-weight:bold; text-decoration:none; padding:10px 20px; border-radius:8px;">{% translate "Registrar club" %}</a></p>
+<p style="margin:0 0 16px; font-size:13px; color:#666666;">{% translate "Si no has sido tú, ignora este correo." %}</p>
+<p style="margin:0;">{% translate "Un saludo," %}<br>{% translate "El equipo de Zyra" %}</p>

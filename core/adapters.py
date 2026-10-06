@@ -6,9 +6,12 @@ Se activan en settings (ACCOUNT_ADAPTER y SOCIALACCOUNT_ADAPTER).
 """
 from allauth.account.adapter import DefaultAccountAdapter
 from allauth.account.models import EmailAddress
+from allauth.core import context as allauth_context
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from django.contrib.auth import get_user_model
 from django.db.models import Count
+from django.template import TemplateDoesNotExist
+from django.template.loader import render_to_string
 
 # Marca en la sesión que el último inicio de sesión con Google ha creado una cuenta
 # nueva (y no ha entrado en una que ya existía con ese email).
@@ -39,6 +42,28 @@ class AccountAdapter(DefaultAccountAdapter):
     def add_message(self, *args, **kwargs):
         """Sin avisos de allauth ("Has iniciado sesión como..."): la app ya muestra los suyos."""
         pass
+
+    def render_mail(self, template_prefix, email, context, headers=None):
+        """
+        Correos de allauth (p. ej. «¿Has olvidado tu contraseña?») con el diseño de los de
+        Zyra (core/emails.py): si hay plantilla ``<prefijo>_message.html`` en
+        core/templates/account/email, su contenido va dentro del layout con el logo y el pie.
+        Los que no la tienen salen como los manda allauth.
+        """
+        from .emails import build_email
+
+        request = allauth_context.request
+        try:
+            html = render_to_string(f"{template_prefix}_message.html", context, request)
+        except TemplateDoesNotExist:
+            return super().render_mail(template_prefix, email, context, headers)
+        subject = render_to_string(f"{template_prefix}_subject.txt", context, request)
+        subject = self.format_email_subject(" ".join(subject.splitlines()).strip())
+        text = render_to_string(f"{template_prefix}_message.txt", context, request)
+        msg = build_email(subject, text, html, to=[email] if isinstance(email, str) else email)
+        msg.from_email = self.get_from_email()
+        msg.extra_headers.update(headers or {})
+        return msg
 
 
 class SocialAccountAdapter(DefaultSocialAccountAdapter):

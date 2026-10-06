@@ -1,4 +1,5 @@
-"""Formularios de alta de club, registro de usuario e invitación de miembros."""
+"""Formularios de alta de club, registro de usuario, invitación de miembros y contraseñas."""
+from allauth.account.forms import ChangePasswordForm, ResetPasswordKeyForm, SetPasswordForm
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
@@ -20,6 +21,19 @@ def password_min_length():
         if isinstance(validator, MinimumLengthValidator):
             return validator.min_length
     return 8
+
+
+def password_rules(user=None):
+    """
+    Lista de requisitos de la contraseña (includes/password_rules.html) que
+    static/js/password.js va marcando mientras se escribe. ``user``: cuenta cuya
+    contraseña se cambia, para avisar si la nueva se parece a su usuario o email
+    cuando el formulario no tiene esos campos.
+    """
+    return render_to_string("includes/password_rules.html", {
+        "min_length": password_min_length(),
+        "user": user,
+    })
 
 
 class ClubForm(forms.Form):
@@ -78,9 +92,7 @@ class SignUpForm(UserCreationForm):
         self.fields["username"].help_text = _("Letras, números y @ . + - _ (máximo 150).")
         self.fields["password1"].label = _("Contraseña")
         # Lista de requisitos que static/js/password.js va marcando mientras se escribe.
-        self.fields["password1"].help_text = render_to_string("includes/password_rules.html", {
-            "min_length": password_min_length(),
-        })
+        self.fields["password1"].help_text = password_rules()
         self.fields["password1"].widget.attrs["data-password-rules"] = "password-rules"
         self.fields["password2"].label = _("Repite la contraseña")
         self.fields["password2"].help_text = ""
@@ -115,3 +127,36 @@ class InviteMemberForm(forms.Form):
         if is_blocked(email):
             raise forms.ValidationError(gettext("No se puede invitar a este email."))
         return email
+
+
+class PasswordRulesMixin:
+    """
+    Formularios de allauth para elegir contraseña nueva: etiquetas de Zyra y la misma
+    lista de requisitos que el registro, marcada mientras se escribe.
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if "oldpassword" in self.fields:
+            self.fields["oldpassword"].label = _("Contraseña actual")
+            self.fields["oldpassword"].help_text = ""
+            self.fields["oldpassword"].widget.attrs.pop("placeholder", None)
+        password1, password2 = self.fields["password1"], self.fields["password2"]
+        password1.label = _("Contraseña nueva")
+        password1.help_text = password_rules(self.user)
+        password1.widget.attrs["data-password-rules"] = "password-rules"
+        password1.widget.attrs.pop("placeholder", None)
+        password2.label = _("Repite la contraseña nueva")
+        password2.help_text = ""
+        password2.widget.attrs.pop("placeholder", None)
+
+
+class ZyraResetPasswordKeyForm(PasswordRulesMixin, ResetPasswordKeyForm):
+    """Contraseña nueva desde el enlace del correo de «¿Has olvidado tu contraseña?»."""
+
+
+class ZyraChangePasswordForm(PasswordRulesMixin, ChangePasswordForm):
+    """Cambio de contraseña con la sesión iniciada (pide la actual)."""
+
+
+class ZyraSetPasswordForm(PasswordRulesMixin, SetPasswordForm):
+    """Primera contraseña de una cuenta creada con Google."""

@@ -69,7 +69,11 @@
       pending = new AbortController();
       const data = new FormData();
       data.append('password', value);
-      ['username', 'email'].forEach((name) => { if (field(name)) data.append(name, field(name).value); });
+      // Sin campos de usuario/email (cambio de contraseña), los de la cuenta van en la lista.
+      ['username', 'email'].forEach((name) => {
+        const value = field(name) ? field(name).value : list.dataset[name];
+        if (value) data.append(name, value);
+      });
       fetch(list.dataset.passwordCheck, {
         method: 'POST',
         body: data,

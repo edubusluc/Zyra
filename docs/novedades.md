@@ -5,6 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 06/10/2026
 
+- Recuperar y cambiar la contraseña con el estilo de la web, la lista de requisitos marcándose al escribir (como en el registro) y el correo de «¿Has olvidado tu contraseña?» con el diseño de los correos de Zyra
 - Páginas de privacidad, términos y cookies, contacto en el pie, robots.txt y sitemap, URL canónica y vista previa al compartir, un solo dominio (301 a `SITE_URL`), `/healthz/` para avisar de caídas, fuentes servidas desde la web y mejoras de accesibilidad
 
 ## 04/10/2026
