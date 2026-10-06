@@ -5,6 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 06/10/2026
 
+- [#95](https://github.com/edubusluc/Zyra/pull/95) Amistosos contra un rival escrito a mano: no se crea ningún equipo, el nombre se guarda en el partido
 - Paso entre páginas más fluido: el contenido se desvanece al salir y aparece en cascada al entrar, y las secciones principales se precargan al ir a pulsarlas
 - Móvil: los chips de temporada y de tipo de partido y los paneles de resumen de Partidos ya no se salen de la pantalla; paso suave entre páginas con un fundido que no hace perder clics
 - Recuperar y cambiar la contraseña con el estilo de la web, la lista de requisitos marcándose al escribir (como en el registro) y el correo de «¿Has olvidado tu contraseña?» con el diseño de los correos de Zyra
