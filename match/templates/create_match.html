@@ -26,9 +26,34 @@
         </p>
         {% for error in form.match_type.errors %}<div class="alert-message">{{ error }}</div>{% endfor %}
 
-        <div class="z-team-cards">
+        <fieldset class="z-mode" data-rival-source-row{% if form.mode.value != "amistoso" %} hidden{% endif %}>
+            <legend class="form-label">{{ form.rival_source.label }}</legend>
+            <div class="z-segmented z-mode-options">
+                {% for radio in form.rival_source %}
+                <label class="z-mode-option">{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>
+                {% endfor %}
+            </div>
+        </fieldset>
+
+        <div class="z-team-cards" data-group-rival{% if form.manual_rival %} hidden{% endif %}>
             {% include "includes/match_team_card.html" with field=form.local team=form.local_team %}
             {% include "includes/match_team_card.html" with field=form.visiting team=form.visiting_team %}
+        </div>
+
+        <div class="z-manual-rival" data-manual-rival{% if not form.manual_rival %} hidden{% endif %}>
+            <fieldset class="z-mode">
+                <legend class="form-label">{{ form.own_side.label }}</legend>
+                <div class="z-segmented z-mode-options">
+                    {% for radio in form.own_side %}
+                    <label class="z-mode-option">{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>
+                    {% endfor %}
+                </div>
+            </fieldset>
+            <p>
+                {{ form.rival_name.label_tag }} {{ form.rival_name }}
+                <small class="text-muted d-block mt-1">{% translate "No se añade a tu grupo de equipos: solo se guarda el nombre en este partido." %}</small>
+            </p>
+            {% for error in form.rival_name.errors %}<div class="alert-message">{{ error }}</div>{% endfor %}
         </div>
 
         <p>

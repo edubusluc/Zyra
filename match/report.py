@@ -50,7 +50,8 @@ def build_report(call):
     club = match.club
     own_local = match.own_is_local
     venue_label = pgettext("sede, en minúscula", "local") if own_local else pgettext("sede, en minúscula", "visitante")
-    rival = match.visiting if own_local else match.local
+    rival_team = match.visiting if own_local else match.local
+    rival = match.rival_label
 
     called = list(call.players.order_by("name", "last_name"))
     # Solo la historia anterior a este partido (el informe de un partido antiguo no ve el futuro)
@@ -83,7 +84,12 @@ def build_report(call):
             season["venue_played"] += 1
             season["venue_won"] += won
 
-    # Precedentes contra el mismo rival
+    # Precedentes contra el mismo rival: el equipo del grupo o, si se escribió a mano,
+    # los partidos con ese mismo nombre de rival.
+    if rival_team:
+        same_rival = Q(local=rival_team) | Q(visiting=rival_team)
+    else:
+        same_rival = Q(rival_name__iexact=rival) & (Q(local__isnull=True) | Q(visiting__isnull=True))
     precedents = [
         {
             "date": m.start_date,
@@ -93,7 +99,7 @@ def build_report(call):
             "outcome": _outcome(m),
         }
         for m in Match.objects.filter(club=club, draft_mode=False, start_date__lt=match.start_date)
-        .filter(Q(local=rival) | Q(visiting=rival))
+        .filter(same_rival)
         .select_related("local", "visiting")
         .order_by("-start_date")[:MAX_PRECEDENTS]
     ]

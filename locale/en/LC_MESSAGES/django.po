@@ -6881,3 +6881,35 @@ msgstr "If you signed up with another email, request the change with that one. I
 #: core/templates/account/email/unknown_account_message.html
 msgid "Si no has sido tú, ignora este correo."
 msgstr "If it wasn't you, ignore this email."
+
+#: match/forms.py
+msgid "Equipo del grupo"
+msgstr "Team from the group"
+
+#: match/forms.py
+msgid "Escribir nombre"
+msgstr "Type a name"
+
+#: match/forms.py
+msgid "Tu equipo juega como"
+msgstr "Your team plays as"
+
+#: match/forms.py
+msgid "Nombre del rival"
+msgstr "Opponent name"
+
+#: match/forms.py
+msgid "Ej.: Pádel Norte"
+msgstr "E.g.: Pádel Norte"
+
+#: match/forms.py
+msgid "Escribe el nombre del equipo rival."
+msgstr "Type the opponent team's name."
+
+#: match/forms.py
+msgid "El rival no puede llamarse igual que tu equipo."
+msgstr "The opponent can't have the same name as your team."
+
+#: match/templates/create_match.html
+msgid "No se añade a tu grupo de equipos: solo se guarda el nombre en este partido."
+msgstr "It isn't added to your group of teams: the name is only saved on this match."

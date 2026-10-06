@@ -41,7 +41,7 @@
         {% endif %}
         <li>
             <div class="min-w-0">
-                <strong>{% blocktranslate with local=game.match.local visiting=game.match.visiting %}{{ local }} vs {{ visiting }}{% endblocktranslate %}</strong>
+                <strong>{% blocktranslate with local=game.match.local_name visiting=game.match.visiting_name %}{{ local }} vs {{ visiting }}{% endblocktranslate %}</strong>
                 <div class="z-result-date">{{ game.match.start_date|date:"d/m/Y" }} · {% blocktranslate with n=game.n_game %}Partido {{ n }}{% endblocktranslate %}</div>
             </div>
             <span class="z-wl z-wl--{{ res }}">{% if res == "w" %}{% translate "V" context "victoria" %}{% else %}{% translate "D" context "derrota" %}{% endif %}</span>

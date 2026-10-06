@@ -63,7 +63,7 @@
         <h2 class="h5">{% translate "Últimos partidos" %}</h2>
         <ul class="bo-list">
             {% for m in past_matches %}
-            <li><span>{{ m.local }} – {{ m.visiting }}</span><small class="text-muted ms-auto">{{ m.start_date|date:"j M Y" }}{% if m.result_points != "NONE" %} · {{ m.result_points }}{% endif %}</small></li>
+            <li><span>{{ m.local_name }} – {{ m.visiting_name }}</span><small class="text-muted ms-auto">{{ m.start_date|date:"j M Y" }}{% if m.result_points != "NONE" %} · {{ m.result_points }}{% endif %}</small></li>
             {% empty %}
             <li class="text-muted">{% translate "Sin partidos jugados." %}</li>
             {% endfor %}
@@ -73,7 +73,7 @@
         <h2 class="h5">{% translate "Próximos partidos" %}</h2>
         <ul class="bo-list">
             {% for m in upcoming_matches %}
-            <li><span>{{ m.local }} – {{ m.visiting }}</span><small class="text-muted ms-auto">{{ m.start_date|date:"j M Y" }}</small></li>
+            <li><span>{{ m.local_name }} – {{ m.visiting_name }}</span><small class="text-muted ms-auto">{{ m.start_date|date:"j M Y" }}</small></li>
             {% empty %}
             <li class="text-muted">{% translate "Nada programado." %}</li>
             {% endfor %}

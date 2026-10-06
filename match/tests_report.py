@@ -89,6 +89,19 @@ class ReportTests(TestCase):
         a, b = (item["lineup"] for item in report["lineups"])
         self.assertGreaterEqual(len(b.keys - a.keys), 1)
 
+    def test_report_with_rival_typed_by_hand(self):
+        # Amistosos contra un rival fuera del grupo: no hay equipo, solo su nombre en el partido
+        Match.objects.filter(club=self.club).update(local=None, rival_name="Pádel Norte",
+                                                    match_type=Match.AMISTOSO)
+        Match.objects.create(club=self.club, visiting=self.club.own_team, rival_name="Otro Rival",
+                             start_date=datetime.date(2025, 10, 20), draft_mode=False,
+                             result="Victoria Visitante", result_points="3/9")
+        self.match.refresh_from_db()
+        report = build_report(self.call)
+        self.assertEqual(report["rival"], "Pádel Norte")
+        self.assertEqual(len(report["precedents"]), 2)  # solo los de "Pádel Norte"
+        self.assertTrue(render_report(report).startswith(b"%PDF"))
+
     def test_pdf_fits_in_two_pages_with_many_players(self):
         pdf = render_report(build_report(self.call))
         self.assertTrue(pdf.startswith(b"%PDF"))

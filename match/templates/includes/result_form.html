@@ -2,7 +2,7 @@
 {% load static i18n %}
 <div class="z-page-head">
     <div>
-        <a href="{% url 'call_for_match' game.match.public_id %}" class="z-eyebrow"><i class="fa-solid fa-arrow-left me-1"></i> {{ game.match.local }} vs {{ game.match.visiting }}</a>
+        <a href="{% url 'call_for_match' game.match.public_id %}" class="z-eyebrow"><i class="fa-solid fa-arrow-left me-1"></i> {{ game.match.local_name }} vs {{ game.match.visiting_name }}</a>
         <h1>{{ title }}</h1>
         {% if game.pair_label %}
         <p class="z-result-pair">{% blocktranslate with n=game.n_game %}Pareja {{ n }}{% endblocktranslate %}: <strong>{{ game.pair_label }}</strong></p>
@@ -24,15 +24,15 @@
             <span class="z-result-head">Set 2</span>
             <span class="z-result-head">Set 3</span>
 
-            <span class="z-result-team">{{ game.match.local }}{% if game.match.local.is_own %} <i class="fa-solid fa-star text-lime" title="{% translate 'Tu equipo' %}"></i>{% endif %}{% if game.local_pair_label %}<small>{{ game.local_pair_label }}</small>{% endif %}</span>
-            <input type="text" inputmode="numeric" maxlength="2" name="set1_local" value="{{ values.set1_local }}" aria-label="Set 1, {{ game.match.local }}" data-set="1" data-side="l">
-            <input type="text" inputmode="numeric" maxlength="2" name="set2_local" value="{{ values.set2_local }}" aria-label="Set 2, {{ game.match.local }}" data-set="2" data-side="l">
-            <input type="text" inputmode="numeric" maxlength="2" name="set3_local" value="{{ values.set3_local }}" aria-label="Set 3, {{ game.match.local }}" data-set="3" data-side="l">
+            <span class="z-result-team">{{ game.match.local_name }}{% if game.match.local.is_own %} <i class="fa-solid fa-star text-lime" title="{% translate 'Tu equipo' %}"></i>{% endif %}{% if game.local_pair_label %}<small>{{ game.local_pair_label }}</small>{% endif %}</span>
+            <input type="text" inputmode="numeric" maxlength="2" name="set1_local" value="{{ values.set1_local }}" aria-label="Set 1, {{ game.match.local_name }}" data-set="1" data-side="l">
+            <input type="text" inputmode="numeric" maxlength="2" name="set2_local" value="{{ values.set2_local }}" aria-label="Set 2, {{ game.match.local_name }}" data-set="2" data-side="l">
+            <input type="text" inputmode="numeric" maxlength="2" name="set3_local" value="{{ values.set3_local }}" aria-label="Set 3, {{ game.match.local_name }}" data-set="3" data-side="l">
 
-            <span class="z-result-team">{{ game.match.visiting }}{% if game.match.visiting.is_own %} <i class="fa-solid fa-star text-lime" title="{% translate 'Tu equipo' %}"></i>{% endif %}{% if game.visiting_pair_label %}<small>{{ game.visiting_pair_label }}</small>{% endif %}</span>
-            <input type="text" inputmode="numeric" maxlength="2" name="set1_visiting" value="{{ values.set1_visiting }}" aria-label="Set 1, {{ game.match.visiting }}" data-set="1" data-side="v">
-            <input type="text" inputmode="numeric" maxlength="2" name="set2_visiting" value="{{ values.set2_visiting }}" aria-label="Set 2, {{ game.match.visiting }}" data-set="2" data-side="v">
-            <input type="text" inputmode="numeric" maxlength="2" name="set3_visiting" value="{{ values.set3_visiting }}" aria-label="Set 3, {{ game.match.visiting }}" data-set="3" data-side="v">
+            <span class="z-result-team">{{ game.match.visiting_name }}{% if game.match.visiting.is_own %} <i class="fa-solid fa-star text-lime" title="{% translate 'Tu equipo' %}"></i>{% endif %}{% if game.visiting_pair_label %}<small>{{ game.visiting_pair_label }}</small>{% endif %}</span>
+            <input type="text" inputmode="numeric" maxlength="2" name="set1_visiting" value="{{ values.set1_visiting }}" aria-label="Set 1, {{ game.match.visiting_name }}" data-set="1" data-side="v">
+            <input type="text" inputmode="numeric" maxlength="2" name="set2_visiting" value="{{ values.set2_visiting }}" aria-label="Set 2, {{ game.match.visiting_name }}" data-set="2" data-side="v">
+            <input type="text" inputmode="numeric" maxlength="2" name="set3_visiting" value="{{ values.set3_visiting }}" aria-label="Set 3, {{ game.match.visiting_name }}" data-set="3" data-side="v">
         </div>
 
         <ul class="z-result-checks" aria-live="polite" data-result-checks></ul>

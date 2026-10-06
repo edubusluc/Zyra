@@ -5,7 +5,7 @@
 <div class="z-auth">
     <div class="z-auth-card text-center">
         <h1>{% translate "Eliminar partido" %}</h1>
-        <p class="text-muted">{% blocktranslate trimmed with local=match.local visiting=match.visiting %}Vas a eliminar el partido entre <strong class="text-white">{{ local }}</strong> y <strong class="text-white">{{ visiting }}</strong>. Esta acción no se puede deshacer.{% endblocktranslate %}</p>
+        <p class="text-muted">{% blocktranslate trimmed with local=match.local_name visiting=match.visiting_name %}Vas a eliminar el partido entre <strong class="text-white">{{ local }}</strong> y <strong class="text-white">{{ visiting }}</strong>. Esta acción no se puede deshacer.{% endblocktranslate %}</p>
         <form method="POST" class="d-grid gap-2">
             {% csrf_token %}
             <button type="submit" class="btn btn-danger">{% translate "Eliminar" %}</button>

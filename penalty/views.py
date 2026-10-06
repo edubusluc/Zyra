@@ -22,7 +22,7 @@ def create_penalty(request, call_id):
         for player in Player.objects.filter(club=request.club, in_team=True, id__in=ids):
             Penalty.objects.create(
                 player = player,
-                reason = "Advertencia en el partido " + match.local.name + " VS " + match.visiting.name + ".",
+                reason = "Advertencia en el partido " + match.local_name + " VS " + match.visiting_name + ".",
                 call = call
             )
 

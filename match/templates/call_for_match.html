@@ -11,12 +11,12 @@
 </div>
 
 <div class="z-versus">
-    <div class="z-versus-team"><small>{% translate "Local" %}</small>{{ match.local }}</div>
+    <div class="z-versus-team"><small>{% translate "Local" %}</small>{{ match.local_name }}</div>
     <div class="z-versus-mid">
         <div class="z-versus-vs">{% if not match.draft_mode and match.result_points != "NONE" %}{{ match.result_points }}{% else %}VS{% endif %}</div>
         <div class="z-versus-date">{{ match.start_date|date:"d/m/Y" }}</div>
     </div>
-    <div class="z-versus-team"><small>{% translate "Visitante" %}</small>{{ match.visiting }}</div>
+    <div class="z-versus-team"><small>{% translate "Visitante" %}</small>{{ match.visiting_name }}</div>
 </div>
 
 {% if match.location %}
@@ -145,7 +145,7 @@
         </div>
         <div class="z-game-row {% if g.winner == 'Local' %}is-winner{% endif %}">
             <div class="z-game-side">
-                <strong>{{ match.local }}</strong>
+                <strong>{{ match.local_name }}</strong>
                 {{ g.local_pair_label }}
             </div>
             <span class="z-set">{{ r.set1_local|default_if_none:"–" }}</span>
@@ -154,7 +154,7 @@
         </div>
         <div class="z-game-row {% if g.winner == 'Visitante' %}is-winner{% endif %}">
             <div class="z-game-side">
-                <strong>{{ match.visiting }}</strong>
+                <strong>{{ match.visiting_name }}</strong>
                 {{ g.visiting_pair_label }}
             </div>
             <span class="z-set">{{ r.set1_visiting|default_if_none:"–" }}</span>
