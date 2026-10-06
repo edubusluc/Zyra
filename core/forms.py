@@ -135,6 +135,7 @@ class PasswordRulesMixin:
     lista de requisitos que el registro, marcada mientras se escribe.
     """
     def __init__(self, *args, **kwargs):
+        """Traduce las etiquetas, quita los placeholders en inglés y añade la lista de requisitos."""
         super().__init__(*args, **kwargs)
         if "oldpassword" in self.fields:
             self.fields["oldpassword"].label = _("Contraseña actual")
