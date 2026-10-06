@@ -1,0 +1,33 @@
+{% extends 'legal/base_legal.html' %}
+
+{% block title %}Términos y condiciones · Zyra{% endblock %}
+
+{% block legal %}
+<h1>Términos y condiciones</h1>
+
+<h2>1. Aviso legal</h2>
+<p>En cumplimiento del artículo 10 de la Ley 34/2002 de Servicios de la Sociedad de la Información (LSSI-CE):</p>
+{% include 'legal/owner.html' %}
+
+<h2>2. Qué es Zyra</h2>
+<p>Zyra es una herramienta web para que los clubes de pádel gestionen sus jugadores, convocatorias, partidos y estadísticas. Al registrarte o usar la web aceptas estas condiciones.</p>
+
+<h2>3. Cuentas</h2>
+<ul>
+    <li>Tienes que dar datos ciertos y mantener tu contraseña en secreto.</li>
+    <li>El capitán que registra un club es responsable de los miembros que invita y de los datos de jugadores que introduce, y debe contar con su permiso para subir sus fotos.</li>
+    <li>Puedes abandonar un club cuando quieras desde el menú de usuario.</li>
+</ul>
+
+<h2>4. Uso aceptable</h2>
+<p>No está permitido subir contenido ilegal, ofensivo o que vulnere derechos de terceros, ni intentar acceder a datos de otros clubes. Podemos retirar fotos o suspender clubes y cuentas que incumplan estas normas.</p>
+
+<h2>5. Disponibilidad y responsabilidad</h2>
+<p>Intentamos que el servicio funcione sin interrupciones, pero no lo garantizamos. Los datos de SNP se importan tal como los publica SNP; Zyra no es responsable de sus errores.</p>
+
+<h2>6. Propiedad intelectual</h2>
+<p>La marca, el diseño y el código de Zyra son de su titular. Los datos que introduces siguen siendo tuyos o de tu club.</p>
+
+<h2>7. Cambios y ley aplicable</h2>
+<p>Si cambiamos estas condiciones lo avisaremos en la web. Se rigen por la ley española.</p>
+{% endblock %}

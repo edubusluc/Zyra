@@ -1,0 +1,18 @@
+# Solo son públicas la portada, el alta de club, el inicio de sesión y las páginas legales.
+# El resto requiere iniciar sesión.
+User-agent: *
+Disallow: /backoffice/
+Disallow: /players/
+Disallow: /match/
+Disallow: /data_analyse/
+Disallow: /team/
+Disallow: /callLog/
+Disallow: /penalty/
+Disallow: /core/members/
+Disallow: /core/invite/
+Disallow: /core/no_club/
+Disallow: /accounts/
+Disallow: /i18n/
+Disallow: /healthz/
+
+Sitemap: {{ site_url }}/sitemap.xml

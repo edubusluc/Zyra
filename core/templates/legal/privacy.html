@@ -1,0 +1,43 @@
+{% extends 'legal/base_legal.html' %}
+
+{% block title %}Política de privacidad · Zyra{% endblock %}
+
+{% block legal %}
+<h1>Política de privacidad</h1>
+
+<h2>1. Responsable del tratamiento</h2>
+{% include 'legal/owner.html' %}
+
+<h2>2. Qué datos tratamos</h2>
+<ul>
+    <li><strong>Cuenta:</strong> nombre de usuario, email y contraseña (guardada cifrada, nunca en claro). Si entras con Google, recibimos tu nombre y tu email de Google.</li>
+    <li><strong>Datos del club:</strong> nombre y ciudad del club, equipos, partidos, convocatorias, resultados y sanciones.</li>
+    <li><strong>Jugadores:</strong> nombre, apellidos, foto (opcional), posición, mano, categoría, temporada de alta y puntuación SNP. Los introduce el capitán del club o el propio jugador.</li>
+    <li><strong>Cuenta SNP del club</strong> (opcional): usuario y contraseña, guardados cifrados, solo para importar los datos del club.</li>
+    <li><strong>Datos técnicos:</strong> la dirección IP se usa unos minutos para frenar intentos de acceso fallidos; guardamos la fecha de tu última visita y estadísticas de uso anónimas (número de peticiones por minuto).</li>
+</ul>
+
+<h2>3. Para qué y con qué base legal</h2>
+<ul>
+    <li>Prestar el servicio de gestión del club que solicitas al registrarte (ejecución del contrato, art. 6.1.b RGPD).</li>
+    <li>Enviar los correos del servicio: bienvenida, invitaciones e informes de convocatoria (ejecución del contrato).</li>
+    <li>Mantener la web segura y moderar las fotos subidas (interés legítimo, art. 6.1.f RGPD).</li>
+</ul>
+<p>No vendemos tus datos, no hacemos publicidad ni perfiles comerciales.</p>
+
+<h2>4. Quién ve tus datos</h2>
+<p>Los datos de un club solo los ven los miembros de ese club y el personal de Zyra para dar soporte. Usamos estos proveedores, que tratan datos por cuenta nuestra:</p>
+<ul>
+    <li>Proveedor de alojamiento del servidor y la base de datos.</li>
+    <li>Google (Gmail) para enviar los correos y, si lo eliges, para iniciar sesión con Google.</li>
+</ul>
+
+<h2>5. Cuánto tiempo los guardamos</h2>
+<p>Mientras tu cuenta o tu club existan. Si el último capitán elimina el club, se borran sus equipos, jugadores, fotos, partidos, estadísticas y la cuenta SNP. Las estadísticas de uso anónimas se purgan periódicamente.</p>
+
+<h2>6. Tus derechos</h2>
+<p>Puedes pedir acceso, rectificación, supresión, oposición, limitación y portabilidad de tus datos escribiendo a <a href="mailto:{{ contact_email }}">{{ contact_email }}</a>. Si no estás conforme con la respuesta, puedes reclamar ante la Agencia Española de Protección de Datos (<a href="https://www.aepd.es" rel="noopener">www.aepd.es</a>).</p>
+
+<h2>7. Cookies</h2>
+<p>Solo usamos cookies técnicas imprescindibles. Detalle en la <a href="{% url 'cookies' %}">política de cookies</a>.</p>
+{% endblock %}

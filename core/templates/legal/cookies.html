@@ -1,0 +1,25 @@
+{% extends 'legal/base_legal.html' %}
+
+{% block title %}Política de cookies · Zyra{% endblock %}
+
+{% block legal %}
+<h1>Política de cookies</h1>
+
+<p>Zyra solo usa <strong>cookies técnicas</strong>, imprescindibles para que la web funcione. Según el artículo 22.2 de la LSSI-CE, estas cookies no necesitan tu consentimiento, por eso no mostramos un banner de cookies. No usamos cookies de análisis, publicidad ni redes sociales.</p>
+
+<div class="table-responsive">
+<table class="table">
+    <thead><tr><th scope="col">Cookie</th><th scope="col">Para qué sirve</th><th scope="col">Duración</th></tr></thead>
+    <tbody>
+        <tr><td><code>sessionid</code></td><td>Mantener tu sesión iniciada y el club activo.</td><td>2 semanas</td></tr>
+        <tr><td><code>csrftoken</code></td><td>Proteger los formularios frente a envíos falsificados.</td><td>1 año</td></tr>
+        <tr><td><code>django_language</code></td><td>Recordar el idioma que eliges en el selector.</td><td>Sesión</td></tr>
+        <tr><td><code>messages</code></td><td>Mostrar avisos tras una acción («Jugador guardado»).</td><td>Sesión</td></tr>
+    </tbody>
+</table>
+</div>
+
+<p>Si inicias sesión con Google, Google puede poner sus propias cookies en su página de inicio de sesión; las rige la <a href="https://policies.google.com/technologies/cookies" rel="noopener">política de cookies de Google</a>.</p>
+
+<p>Puedes borrar o bloquear las cookies desde la configuración de tu navegador, pero entonces no podrás iniciar sesión.</p>
+{% endblock %}

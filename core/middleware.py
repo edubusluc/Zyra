@@ -1,5 +1,8 @@
-"""Middlewares propios de Zyra: club activo del usuario e idioma de la interfaz."""
+"""Middlewares propios de Zyra: club activo del usuario, idioma de la interfaz y dominio único."""
+from urllib.parse import urlsplit
+
 from django.conf import settings
+from django.http import HttpResponsePermanentRedirect
 from django.utils import translation
 from django.utils.cache import patch_vary_headers
 
@@ -83,3 +86,23 @@ class LanguageMiddleware:
         response.headers.setdefault("Content-Language", request.LANGUAGE_CODE)
         patch_vary_headers(response, ("Cookie",))
         return response
+
+
+class CanonicalHostMiddleware:
+    """
+    Una sola versión del dominio: si SITE_URL está definida, cualquier petición a otro
+    dominio (www.zyra.es, el dominio antiguo...) se redirige con un 301 a la misma ruta en
+    SITE_URL. Ese otro dominio tiene que estar en ALLOWED_HOSTS para llegar hasta aquí.
+    """
+
+    def __init__(self, get_response):
+        """Guarda la siguiente capa de la cadena de middlewares y el dominio canónico."""
+        self.get_response = get_response
+        self.site_url = settings.SITE_URL
+        self.host = urlsplit(self.site_url).netloc if self.site_url else ""
+
+    def __call__(self, request):
+        """Redirige (301) si la petición no llega por el dominio de SITE_URL."""
+        if self.host and request.get_host() != self.host:
+            return HttpResponsePermanentRedirect(self.site_url + request.get_full_path())
+        return self.get_response(request)

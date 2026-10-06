@@ -46,3 +46,16 @@ def navigation(request):
 def google_login(request):
     """Si se muestra el botón de iniciar sesión con Google."""
     return {"google_login_enabled": settings.GOOGLE_LOGIN_ENABLED}
+
+
+def site(request):
+    """
+    URL canónica de la página (SITE_URL o el dominio de la petición, sin parámetros) y
+    correo de contacto, para el <head> y el pie.
+    """
+    base = settings.SITE_URL or f"{request.scheme}://{request.get_host()}"
+    return {
+        "site_url": base,
+        "canonical_url": base + request.path,
+        "contact_email": settings.CONTACT_EMAIL,
+    }

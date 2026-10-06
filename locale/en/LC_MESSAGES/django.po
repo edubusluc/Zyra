@@ -6725,3 +6725,31 @@ msgstr "Important:"
 #: core/templates/register_club.html
 msgid "el nombre y los apellidos deben coincidir exactamente con los que tienes registrados en SNP. Si no coinciden, no se te podrán asignar tus puntos SNP."
 msgstr "your first name and last name must match exactly the ones registered in SNP. If they don't match, your SNP points can't be assigned to you."
+
+#: core/templates/base.html
+msgid "Información legal"
+msgstr "Legal information"
+
+#: core/templates/base.html
+msgid "Privacidad"
+msgstr "Privacy"
+
+#: core/templates/base.html
+msgid "Términos"
+msgstr "Terms"
+
+#: core/templates/base.html
+msgid "Cookies"
+msgstr "Cookies"
+
+#: core/templates/base.html
+msgid "Contacto"
+msgstr "Contact"
+
+#: core/templates/registration/login.html
+msgid "¿Has olvidado tu contraseña?"
+msgstr "Forgot your password?"
+
+#: core/templates/club_members.html
+msgid "Compartir por WhatsApp"
+msgstr "Share on WhatsApp"
