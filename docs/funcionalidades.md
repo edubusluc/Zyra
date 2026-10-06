@@ -83,7 +83,9 @@ estadísticas) y aviso al capitán si el club no tiene cuenta SNP
 El ciclo de un enfrentamiento ([`match.views`](referencia/match/views.md)):
 
 1. **Crear partido**: competitivo (enfrentamiento, reto o play off) o amistoso; el equipo propio
-   juega siempre como local o visitante; calendario propio de Zyra.
+   juega siempre como local o visitante; en un amistoso el rival puede ser un equipo del grupo
+   o un nombre escrito a mano (no se crea ningún equipo, el nombre se guarda en el partido);
+   calendario propio de Zyra.
 2. **Convocatoria**: elegir jugadores (con sus sanciones a la vista); se puede editar y cada
    cambio queda en el **registro de convocatoria** ([`callLog`](referencia/callLog/index.md)).
 3. **Cerrar convocatoria** (mínimo 10 jugadores): envía el **informe PDF** a los capitanes; lo que

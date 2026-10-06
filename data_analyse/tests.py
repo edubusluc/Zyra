@@ -148,7 +148,7 @@ class PairStatisticsTests(TestCase):
         response = self.client.get(reverse("pair_statistics"), {"p1": self.a.public_id, "p2": self.b.public_id})
         games = response.context["last_games"]
         self.assertEqual([g["date"] for g in games], [datetime.date(2026, 1, d) for d in (5, 4, 3, 2, 1)])
-        self.assertTrue(all(g["local"] and not g["won"] and g["rival"] == rival for g in games))
+        self.assertTrue(all(g["local"] and not g["won"] and g["rival"] == rival.name for g in games))
         self.assertContains(response, "Últimos 5 partidos")
 
     def test_pair_last_games_sets_and_side(self):
@@ -215,7 +215,7 @@ class PairStatisticsTests(TestCase):
             ],
         )
         self.assertEqual(games[0]["partner"], self.b)
-        self.assertEqual(games[0]["rival"].name, "Rival")
+        self.assertEqual(games[0]["rival"], "Rival")
 
         # Cada fila enlaza a su partido en la sección de partidos
         match_id = games[0]["match_public_id"]

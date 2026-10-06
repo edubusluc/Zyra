@@ -38,13 +38,13 @@
         <div class="z-fixture-teams">
             <div class="z-fixture-team {% if m.local.is_own %}is-own{% endif %}">
                 <img src="{% if m.local.photo %}{{ m.local.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="">
-                <span>{{ m.local }}</span>
+                <span>{{ m.local_name }}</span>
             </div>
-            <a href="{% url 'call_for_match' m.public_id %}" class="z-fixture-score stretched-link" aria-label="{% blocktranslate with local=m.local visiting=m.visiting %}Ver {{ local }} contra {{ visiting }}{% endblocktranslate %}">
+            <a href="{% url 'call_for_match' m.public_id %}" class="z-fixture-score stretched-link" aria-label="{% blocktranslate with local=m.local_name visiting=m.visiting_name %}Ver {{ local }} contra {{ visiting }}{% endblocktranslate %}">
                 {% if m.outcome %}{{ m.result_points }}{% else %}VS{% endif %}
             </a>
             <div class="z-fixture-team z-fixture-team--away {% if m.visiting.is_own %}is-own{% endif %}">
-                <span>{{ m.visiting }}</span>
+                <span>{{ m.visiting_name }}</span>
                 <img src="{% if m.visiting.photo %}{{ m.visiting.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="">
             </div>
         </div>

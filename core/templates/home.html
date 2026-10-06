@@ -66,13 +66,13 @@
     <div class="z-next-match-teams">
         <div class="z-next-match-team {% if next_match.local.is_own %}is-own{% endif %}">
             <img src="{% if next_match.local.photo %}{{ next_match.local.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="">
-            <span>{{ next_match.local }}</span>
+            <span>{{ next_match.local_name }}</span>
             <small>{% translate "Local" %}</small>
         </div>
         <div class="z-versus-vs">VS</div>
         <div class="z-next-match-team {% if next_match.visiting.is_own %}is-own{% endif %}">
             <img src="{% if next_match.visiting.photo %}{{ next_match.visiting.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="">
-            <span>{{ next_match.visiting }}</span>
+            <span>{{ next_match.visiting_name }}</span>
             <small>{% translate "Visitante" %}</small>
         </div>
     </div>
