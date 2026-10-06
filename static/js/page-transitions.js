@@ -25,7 +25,7 @@
     if (link.target && link.target !== '_self') return false;
     if (link.hasAttribute('download') || link.hasAttribute('data-bs-toggle')) return false;
     const href = link.getAttribute('href');
-    if (!href || href.charAt(0) === '#' || /^(mailto|tel|javascript):/i.test(href)) return false;
+    if (!href || href.startsWith('#') || /^(mailto|tel|javascript):/i.test(href)) return false;
     if (link.origin !== window.location.origin) return false;
     // Mismo documento con otra ancla: no hay carga de página
     return !(link.hash && link.pathname === window.location.pathname && link.search === window.location.search);
@@ -33,7 +33,7 @@
 
   // Fase de burbuja: si otro script ha cancelado el clic o el envío, no se atenúa nada.
   document.addEventListener('click', function (event) {
-    const link = event.target.closest && event.target.closest('a[href]');
+    const link = event.target.closest?.('a[href]');
     if (link && isPageLink(link, event)) leaving();
   });
 

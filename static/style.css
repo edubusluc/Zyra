@@ -88,8 +88,7 @@ html {
    "backwards" y no "both": al acabar, main no se queda como contexto de apilamiento. */
 @keyframes z-page-in { from { opacity: 0; } }
 @media (prefers-reduced-motion: no-preference) {
-    .main-content { animation: z-page-in .26s var(--z-ease) backwards; }
-    .main-content { transition: opacity .18s var(--z-ease); }
+    .main-content { animation: z-page-in .26s var(--z-ease) backwards; transition: opacity .18s var(--z-ease); }
     body.z-leaving .main-content { opacity: .45; }
 }
 
