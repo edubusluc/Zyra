@@ -383,6 +383,8 @@ web; los que envían los procesos programados salen en español.
 Todos los correos salen de join.zyra@gmail.com con el mismo pie corporativo (logo de
 Zyra y contacto), montado en `core/emails.py` y `core/templates/emails/layout.html`.
 El logo va incrustado en el propio correo (`static/zyra/email-logo.png`).
+Los de allauth (recuperar contraseña) usan el mismo diseño: `core.adapters.AccountAdapter.render_mail`
+mete en el layout el `*_message.html` de `core/templates/account/email/`.
 
 ## Back-office
 

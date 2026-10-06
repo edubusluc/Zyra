@@ -1,0 +1,11 @@
+{% load i18n %}{% autoescape off %}{% translate "No encontramos tu cuenta" %}
+
+{% blocktranslate trimmed %}Alguien ha pedido cambiar la contraseña de Zyra para {{ email }}, pero no hay ninguna cuenta con este email.{% endblocktranslate %}
+
+{% translate "Si te registraste con otro email, pide el cambio con ese. Si tu club usa Zyra, pide a tu capitán una invitación; si eres capitán, puedes registrar tu club:" %}
+{{ site_url }}{% url 'register_club' %}
+
+{% translate "Si no has sido tú, ignora este correo." %}
+
+{% translate "Un saludo," %}
+{% translate "El equipo de Zyra" %}{% endautoescape %}

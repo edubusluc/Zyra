@@ -6753,3 +6753,131 @@ msgstr "Forgot your password?"
 #: core/templates/club_members.html
 msgid "Compartir por WhatsApp"
 msgstr "Share on WhatsApp"
+
+#: core/forms.py
+msgid "Contraseña actual"
+msgstr "Current password"
+
+#: core/forms.py
+msgid "Contraseña nueva"
+msgstr "New password"
+
+#: core/forms.py
+msgid "Repite la contraseña nueva"
+msgstr "Repeat the new password"
+
+#: core/templates/account/password_change.html
+msgid "Cambiar contraseña"
+msgstr "Change password"
+
+#: core/templates/account/password_change.html
+msgid "Guardar contraseña"
+msgstr "Save password"
+
+#: core/templates/account/password_reset.html
+msgid "Recuperar contraseña"
+msgstr "Reset password"
+
+#: core/templates/account/password_reset.html
+msgid "Escribe el email de tu cuenta y te enviaremos un enlace para elegir una contraseña nueva."
+msgstr "Enter your account email and we will send you a link to choose a new password."
+
+#: core/templates/account/password_reset.html
+msgid "Enviar enlace"
+msgstr "Send link"
+
+#: core/templates/account/password_reset.html
+msgid "Volver a iniciar sesión"
+msgstr "Back to log in"
+
+#: core/templates/account/password_reset_done.html
+msgid "Revisa tu correo"
+msgstr "Check your email"
+
+#: core/templates/account/password_reset_done.html
+msgid "Si hay una cuenta con ese email, te hemos enviado un enlace para elegir una contraseña nueva. Si no lo ves en unos minutos, mira en la carpeta de spam."
+msgstr "If there is an account with that email, we have sent you a link to choose a new password. If you don't see it in a few minutes, check your spam folder."
+
+#: core/templates/account/password_reset_from_key.html
+msgid "Enlace no válido"
+msgstr "Invalid link"
+
+#: core/templates/account/password_reset_from_key.html
+msgid "El enlace para cambiar la contraseña no es válido o ya se ha usado."
+msgstr "The password change link is invalid or has already been used."
+
+#: core/templates/account/password_reset_from_key.html
+msgid "Pedir un enlace nuevo"
+msgstr "Request a new link"
+
+#: core/templates/account/password_reset_from_key_done.html
+msgid "Contraseña cambiada"
+msgstr "Password changed"
+
+#: core/templates/account/password_reset_from_key_done.html
+msgid "Ya puedes iniciar sesión con tu contraseña nueva."
+msgstr "You can now log in with your new password."
+
+#: core/templates/account/password_set.html
+msgid "Crear contraseña"
+msgstr "Create password"
+
+#: core/templates/account/password_set.html
+msgid "Con ella podrás entrar también con tu usuario o email, además de con Google."
+msgstr "With it you can also log in with your username or email, as well as with Google."
+
+#: core/templates/account/email/password_reset_key_subject.txt
+msgid "Cambia tu contraseña de Zyra"
+msgstr "Change your Zyra password"
+
+#: core/templates/account/email/password_reset_key_message.html
+msgid "Cambia tu contraseña"
+msgstr "Change your password"
+
+#: core/templates/account/email/password_reset_key_message.html
+msgid "Hemos recibido una petición para cambiar la contraseña de tu cuenta de Zyra (usuario <strong>%(username)s</strong>)."
+msgstr "We have received a request to change the password of your Zyra account (username <strong>%(username)s</strong>)."
+
+#: core/templates/account/email/password_reset_key_message.txt
+msgid "Hemos recibido una petición para cambiar la contraseña de tu cuenta de Zyra (usuario %(username)s)."
+msgstr "We have received a request to change the password of your Zyra account (username %(username)s)."
+
+#: core/templates/account/email/password_reset_key_message.html
+msgid "Pulsa el botón para elegir una contraseña nueva."
+msgstr "Click the button to choose a new password."
+
+#: core/templates/account/email/password_reset_key_message.txt
+msgid "Abre este enlace para elegir una contraseña nueva:"
+msgstr "Open this link to choose a new password:"
+
+#: core/templates/account/email/password_reset_key_message.html
+msgid "Si no has pedido el cambio, ignora este correo: tu contraseña sigue siendo la misma. El enlace solo sirve una vez."
+msgstr "If you didn't request the change, ignore this email: your password stays the same. The link only works once."
+
+#: core/templates/account/email/unknown_account_subject.txt
+msgid "No hay ninguna cuenta de Zyra con este email"
+msgstr "There is no Zyra account with this email"
+
+#: core/templates/account/email/unknown_account_message.html
+msgid "No encontramos tu cuenta"
+msgstr "We couldn't find your account"
+
+#: core/templates/account/email/unknown_account_message.html
+msgid "Alguien ha pedido cambiar la contraseña de Zyra para <strong>%(email)s</strong>, pero no hay ninguna cuenta con este email."
+msgstr "Someone asked to change the Zyra password for <strong>%(email)s</strong>, but there is no account with this email."
+
+#: core/templates/account/email/unknown_account_message.txt
+msgid "Alguien ha pedido cambiar la contraseña de Zyra para %(email)s, pero no hay ninguna cuenta con este email."
+msgstr "Someone asked to change the Zyra password for %(email)s, but there is no account with this email."
+
+#: core/templates/account/email/unknown_account_message.html
+msgid "Si te registraste con otro email, pide el cambio con ese. Si tu club usa Zyra, pide a tu capitán una invitación; si eres capitán, puedes registrar tu club."
+msgstr "If you signed up with another email, request the change with that one. If your club uses Zyra, ask your captain for an invitation; if you are a captain, you can register your club."
+
+#: core/templates/account/email/unknown_account_message.txt
+msgid "Si te registraste con otro email, pide el cambio con ese. Si tu club usa Zyra, pide a tu capitán una invitación; si eres capitán, puedes registrar tu club:"
+msgstr "If you signed up with another email, request the change with that one. If your club uses Zyra, ask your captain for an invitation; if you are a captain, you can register your club:"
+
+#: core/templates/account/email/unknown_account_message.html
+msgid "Si no has sido tú, ignora este correo."
+msgstr "If it wasn't you, ignore this email."

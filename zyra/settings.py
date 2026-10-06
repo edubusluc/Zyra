@@ -367,6 +367,15 @@ ACCOUNT_LOGIN_METHODS = {'username', 'email'}
 ACCOUNT_SIGNUP_FIELDS = ['username*', 'email*', 'password1*', 'password2*']
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_ADAPTER = 'core.adapters.AccountAdapter'
+# Contraseña nueva (olvidada, cambio o primera de una cuenta de Google) con la lista de
+# requisitos del registro.
+ACCOUNT_FORMS = {
+    'reset_password_from_key': 'core.forms.ZyraResetPasswordKeyForm',
+    'change_password': 'core.forms.ZyraChangePasswordForm',
+    'set_password': 'core.forms.ZyraSetPasswordForm',
+}
+# Los correos de allauth no llevan «[example.com]» delante del asunto, como el resto de Zyra.
+ACCOUNT_EMAIL_SUBJECT_PREFIX = ''
 SOCIALACCOUNT_ADAPTER = 'core.adapters.SocialAccountAdapter'
 SOCIALACCOUNT_AUTO_SIGNUP = True
 # Google verifica el email: si ya hay una cuenta con ese email (p. ej. creada por
