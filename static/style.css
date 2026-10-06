@@ -81,12 +81,6 @@ html {
     html { scroll-behavior: smooth; }
 }
 
-/* Paso suave entre páginas (navegadores que lo soportan; el resto, igual que antes) */
-@view-transition { navigation: auto; }
-.z-header { view-transition-name: z-header; }
-.z-bottom-nav { view-transition-name: z-bottom-nav; }
-::view-transition-old(root), ::view-transition-new(root) { animation-duration: .22s; }
-
 body {
     min-height: 100vh;
     min-height: 100dvh;
@@ -341,9 +335,8 @@ h3 { font-size: 1rem; font-weight: 700; }
     font-size: 1.15rem;
     color: var(--z-ink);
     border-radius: 50%;
-    transition: background-color .2s var(--z-ease), color .2s var(--z-ease), transform .15s var(--z-ease);
+    transition: background-color .2s var(--z-ease), color .2s var(--z-ease);
 }
-.z-bottom-nav a:active { transform: scale(.9); }
 .z-bottom-nav a.is-active { color: var(--z-lime); background: var(--z-ink); }
 .z-bottom-nav .visually-hidden { position: absolute; }
 
@@ -398,6 +391,8 @@ h3 { font-size: 1rem; font-weight: 700; }
 .footer { background: transparent; box-shadow: none; }
 
 /* ---------- Botones ---------- */
+/* Ojo: nada de transform (scale/translate) en :hover/:active de botones, enlaces o tarjetas.
+   Mueven la zona clicable: si el puntero queda fuera al soltar, el clic se pierde. */
 
 .btn {
     --bs-btn-font-weight: 800;
@@ -408,9 +403,8 @@ h3 { font-size: 1rem; font-weight: 700; }
     font-size: .85rem;
     letter-spacing: .05em;
     text-transform: uppercase;
-    transition: background-color .2s var(--z-ease), color .2s var(--z-ease), border-color .2s var(--z-ease), box-shadow .2s var(--z-ease), transform .15s var(--z-ease);
+    transition: background-color .2s var(--z-ease), color .2s var(--z-ease), border-color .2s var(--z-ease), box-shadow .2s var(--z-ease);
 }
-.btn:active { transform: scale(.97); }
 .btn-primary:hover, .btn-success:hover, .button:hover { box-shadow: var(--z-glow); }
 .btn-primary, .btn-success, .button { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35); }
 .btn-sm { --bs-btn-padding-x: .9rem; --bs-btn-padding-y: .38rem; font-size: .72rem; }
@@ -684,14 +678,12 @@ legend {
 .z-card { padding: 20px; }
 .card-title { color: #FFFFFF; }
 
-a.z-card, .z-card--link { display: block; color: inherit; transition: border-color .25s var(--z-ease), transform .25s var(--z-ease), box-shadow .25s var(--z-ease); }
+a.z-card, .z-card--link { display: block; color: inherit; transition: border-color .25s var(--z-ease), box-shadow .25s var(--z-ease); }
 a.z-card:hover, .z-card--link:hover {
     color: inherit;
     border-color: rgba(var(--z-lime-rgb), .7);
-    transform: translateY(-3px);
     box-shadow: var(--z-edge), var(--z-shadow), 0 0 0 1px rgba(var(--z-lime-rgb), .15) !important;
 }
-a.z-card:active, .z-card--link:active { transform: translateY(-1px); }
 
 .z-grid {
     display: grid;
@@ -968,8 +960,8 @@ a.z-card:active, .z-card--link:active { transform: translateY(-1px); }
 .z-hero-art { display: grid; place-items: center; order: -1; }
 .z-hero-art img { width: min(100%, 150px); height: auto; border-radius: 0; filter: drop-shadow(0 30px 60px rgba(var(--z-lime-rgb), .25)); }
 .z-features { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; width: 100%; max-width: 1000px; margin: 40px auto 0; text-align: left; }
-.z-feature { padding: 22px; transition: border-color .25s var(--z-ease), transform .25s var(--z-ease); }
-.z-feature:hover { border-color: rgba(var(--z-lime-rgb), .45); transform: translateY(-2px); }
+.z-feature { padding: 22px; transition: border-color .25s var(--z-ease); }
+.z-feature:hover { border-color: rgba(var(--z-lime-rgb), .45); }
 .z-feature i {
     display: grid;
     place-items: center;
@@ -1615,9 +1607,9 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
     border-left: 4px solid var(--z-border-strong);
     border-radius: 14px;
     box-shadow: var(--z-edge);
-    transition: border-color .2s var(--z-ease), background-color .2s var(--z-ease), transform .2s var(--z-ease);
+    transition: border-color .2s var(--z-ease), background-color .2s var(--z-ease);
 }
-.z-fixture:hover { background: var(--z-surface-2); border-color: var(--z-border-strong); transform: translateY(-1px); }
+.z-fixture:hover { background: var(--z-surface-2); border-color: var(--z-border-strong); }
 .z-fixture.is-win { border-left-color: var(--z-lime); }
 .z-fixture.is-loss { border-left-color: var(--z-danger); }
 .z-fixture.is-draw { border-left-color: #8A8A8A; }
@@ -1854,9 +1846,8 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
     border-radius: 14px;
     cursor: pointer;
     user-select: none;
-    transition: border-color .2s var(--z-ease), background-color .2s var(--z-ease), transform .15s var(--z-ease);
+    transition: border-color .2s var(--z-ease), background-color .2s var(--z-ease);
 }
-.z-pick:active { transform: scale(.98); }
 .z-pick:hover { border-color: var(--z-border-strong); }
 .z-pick input { position: absolute; opacity: 0; pointer-events: none; }
 .z-pick-check {
