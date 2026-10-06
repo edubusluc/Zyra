@@ -81,6 +81,17 @@ html {
     html { scroll-behavior: smooth; }
 }
 
+/* Paso suave entre páginas (js/page-transitions.js). Solo opacidad sobre el contenido:
+   nada de View Transitions (desvían los clics mientras dura la animación) ni transform
+   (mueve la zona clicable). La opacidad no cambia dónde cae un clic, así que pulsar
+   rápido durante el fundido sigue funcionando. Cabecera y barra inferior no se animan.
+   "backwards" y no "both": al acabar, main no se queda como contexto de apilamiento. */
+@keyframes z-page-in { from { opacity: 0; } }
+@media (prefers-reduced-motion: no-preference) {
+    .main-content { animation: z-page-in .26s var(--z-ease) backwards; transition: opacity .18s var(--z-ease); }
+    body.z-leaving .main-content { opacity: .45; }
+}
+
 body {
     min-height: 100vh;
     min-height: 100dvh;
@@ -1544,7 +1555,14 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 
 @media (max-width: 900px) {
   .st-grid { grid-template-columns: 1fr; }
-  .st-board { grid-template-columns: 1fr; }
+  .st-board { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 575.98px) {
+  .st-board { padding: 18px; }
+  .st-record { justify-content: space-between; gap: 8px; }
+  .st-record-sep { font-size: 1.5rem; }
+  .st-score-cap { font-size: .62rem; letter-spacing: .04em; }
+  .st-fact { min-width: 0; padding: 12px; }
 }
 
 /* Ajustes de maquetación */
@@ -1643,10 +1661,11 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 .z-wl { color: var(--z-text); background: var(--z-surface-3); }
 
 @media (max-width: 767.98px) {
-    .z-summary { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
-    .z-summary > div { flex-direction: column; align-items: center; gap: 4px; padding: 10px 4px; }
+    .z-summary { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
+    .z-summary > div { flex-direction: column; align-items: center; gap: 4px; min-width: 0; padding: 10px 0; }
     .z-summary b { font-size: 1.2rem; }
-    .z-summary span { font-size: .6rem; }
+    /* El texto escala con la pantalla para que "Pendientes" quepa en su panel incluso a 320 px */
+    .z-summary span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; font-size: clamp(.47rem, 2.3vw, .6rem); letter-spacing: 0; }
     .z-select-compact { min-width: 0; width: 100%; }
     .z-page-head .z-actions { width: 100%; }
     .z-page-head .z-actions form { flex: 1; }
@@ -2019,17 +2038,17 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
     }
     .st-tabs.z-segmented .btn i { margin: 0 !important; font-size: .95rem; }
 
-    .st-seasons {
-        flex-wrap: nowrap;
-        margin-left: -16px;
-        margin-right: -16px;
-        padding: 0 16px 4px;
-        overflow-x: auto;
-        scrollbar-width: none;
-        -webkit-overflow-scrolling: touch;
-    }
-    .st-seasons::-webkit-scrollbar { display: none; }
-    .st-seasons > li { flex-shrink: 0; }
+    /* Temporadas y tipo de partido: sin scroll lateral, los chips reparten el ancho
+       y si no caben pasan a la línea siguiente (nunca se salen de la pantalla). */
+    .st-seasons { gap: 6px; }
+    .st-seasons > li { flex: 1 1 auto; min-width: 0; }
+    .st-seasons .st-chip { display: block; overflow: hidden; padding: 7px 10px; font-size: .8rem; text-align: center; text-overflow: ellipsis; }
+    /* Temporadas: Todas + tres últimas en una sola fila de columnas iguales; si hay una
+       temporada antigua elegida (quinto chip), baja a una segunda fila. */
+    .st-season-filter .st-seasons { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }
+    .st-season-filter .st-seasons:has(> li:nth-child(5)) { grid-auto-flow: row; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .st-season-filter .st-chip { padding: 7px 4px; font-size: clamp(.7rem, 3.4vw, .85rem); }
+    .st-seasons > .st-filter-label { flex-basis: 100%; margin: 0 0 2px; font-size: .7rem; }
     .st-chip { white-space: nowrap; }
 }
 

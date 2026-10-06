@@ -19,13 +19,3 @@
   </form>
   {% endif %}
 </nav>
-<script>
-  // En móvil los chips se desplazan en horizontal: deja visible la temporada elegida.
-  (function () {
-    var list = document.currentScript.previousElementSibling.querySelector('.st-seasons');
-    var active = list && list.querySelector('[aria-current]');
-    if (active && list.scrollWidth > list.clientWidth) {
-      list.scrollLeft += active.getBoundingClientRect().right - list.getBoundingClientRect().right + 16;
-    }
-  })();
-</script>
