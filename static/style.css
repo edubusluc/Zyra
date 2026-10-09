@@ -1668,7 +1668,7 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
     font-variant-numeric: tabular-nums;
 }
 .z-fixture.is-win .z-fixture-score { color: var(--z-ink); background: var(--z-lime); border-color: var(--z-lime); }
-.z-fixture.is-loss .z-fixture-score { color: #FFFFFF; background: rgba(255, 92, 99, .28); border-color: var(--z-danger); }
+.z-fixture.is-loss .z-fixture-score { color: #FFFFFF; background: #5A2226; border-color: var(--z-danger); }
 .z-fixture.is-draw .z-fixture-score { color: var(--z-ink); background: #C9CBC4; border-color: #C9CBC4; }
 .z-fixture-score:hover { color: inherit; }
 .z-fixture.is-win .z-fixture-score:hover, .z-fixture.is-draw .z-fixture-score:hover { color: var(--z-ink); }
@@ -1678,7 +1678,7 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 .z-wl { color: var(--z-text); background: var(--z-surface-3); }
 .z-wl--d { color: var(--z-ink); background: #C9CBC4; }
 .z-fixture .z-wl--w { color: var(--z-ink); background: var(--z-lime); }
-.z-fixture .z-wl--l { color: #FFFFFF; background: var(--z-danger); }
+.z-fixture .z-wl--l { color: var(--z-ink); background: var(--z-danger); }
 
 /* Buscador y filtro por rival encima del listado */
 .z-match-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 0 0 14px; }
