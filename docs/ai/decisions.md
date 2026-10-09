@@ -85,6 +85,8 @@ cambios: `docs/novedades.md`. Índice general: `ZYRA_CONTEXT.md`. Verificado el 
   y este índice para asistentes (`ZYRA_CONTEXT.md` + `docs/ai/`).
 - **Motivo**: `docs/mantener-documentacion.md`.
 - **Consecuencias**: `docs/ai/` no está en la navegación de `mkdocs.yml` (se construye pero no se enlaza en el menú).
+  El índice se consulta con `grep` (columna *Claves* con sinónimos) más que leyéndolo entero, porque así lo usan
+  los asistentes; `scripts/check_ai_docs.py` en CI evita que se quede desfasado.
 
 ## D13. Etiqueta «Capitán» sobre el valor `admin`
 

@@ -10,7 +10,9 @@ La documentación vive en el repositorio y se publica sola. En cada pull request
 3. **Novedades.** Añade una línea arriba del todo en [Novedades](novedades.md)
    (`docs/novedades.md`) con el número de la pull request.
 4. **Índice para asistentes.** Si cambian rutas, reglas de negocio, modelos o comandos, actualiza
-   `ZYRA_CONTEXT.md` (raíz del repositorio) y el documento afectado de `docs/ai/`.
+   `ZYRA_CONTEXT.md` (raíz del repositorio) y el documento afectado de `docs/ai/`. Un JS, una
+   plantilla principal o un test nuevo va a la fila de su área; el CI lo comprueba con
+   `python scripts/check_ai_docs.py`.
 
 La [Referencia del código](referencia/index.md) no se escribe a mano: `docs/gen_ref_pages.py` crea
 una página por módulo en cada build, y un módulo nuevo aparece solo.
