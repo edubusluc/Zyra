@@ -5,6 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 09/10/2026
 
+- Portada: al final, en ordenador, el botón «Volver arriba» sustituye al segundo «Registrar mi club gratis» (en móvil se mantiene el registro)
 - Documentación para asistentes de IA: índice `ZYRA_CONTEXT.md` en la raíz, `CLAUDE.md` y `docs/ai/` (arquitectura, modelo de datos, reglas de negocio, comandos y decisiones), para retomar tareas sin recorrer todo el código
 - Accesibilidad: texto alternativo en fotos, escudos y logos, gráficos descritos para lectores de pantalla, encabezados sin saltos de nivel, título propio en cada página, enlace «Saltar al contenido», etiquetas en todos los campos, iconos decorativos ocultos, más contraste en botones de borrar y jugadores fuera del equipo, tablas desplazables con el teclado y pruebas automáticas en CI (`core/tests_accessibility.py`) más auditoría con axe-core (`scripts/auditoria_accesibilidad.py`)
 - Posicionamiento en buscadores: portada con más contenido (qué hace, cómo funciona y preguntas frecuentes), títulos y descripciones con las palabras que buscan los capitanes, versión en inglés con URL propia (`?lang=en`) enlazada con hreflang en las páginas y en el sitemap, y datos estructurados (JSON-LD) de la aplicación

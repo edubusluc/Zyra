@@ -378,6 +378,17 @@ class HomeTests(TestCase):
         self.client.logout()
         self.assertTemplateUsed(self.client.get(reverse("home")), "landing.html")
 
+    def test_landing_bottom_cta_back_to_top_only_on_desktop(self):
+        """Al final de la portada, en ordenador se vuelve arriba en vez de repetir «Registrar mi club»."""
+        self.client.logout()
+        html = self.client.get(reverse("home")).content.decode()
+        self.assertIn('class="btn btn-outline-light btn-lg d-none d-lg-inline-flex z-back-to-top" href="#contenido"', html)
+        self.assertIn("Volver arriba", html)
+        # El registro de abajo solo queda en móvil y tableta (oculto desde lg)
+        self.assertEqual(html.count("btn btn-primary btn-lg d-lg-none"), 1)
+        english = self.client.get(reverse("home") + "?lang=en").content.decode()
+        self.assertIn("Back to top", english)
+
     def test_match_copies_local_location(self):
         match = Match.objects.create(club=self.club, local=self.rival, visiting=self.own, start_date=self.today)
         self.assertEqual(match.location, "Calle Real 1, Sevilla")
