@@ -10,7 +10,7 @@ Uso, con la web arrancada (``python manage.py runserver``) y datos de prueba
 
     python scripts/auditoria_accesibilidad.py --usuario capitan --contrasena '...'
     python scripts/auditoria_accesibilidad.py --usuario capitan --contrasena '...' --movil
-    python scripts/auditoria_accesibilidad.py --solo-publicas --json informe.json
+    python scripts/auditoria_accesibilidad.py --solo-publicas --json
 
 Sin ``--usuario`` solo se revisan las páginas públicas. Las páginas de un partido,
 jugador y equipo se descubren solas siguiendo el primer enlace de cada listado.
@@ -29,6 +29,9 @@ import sys
 from playwright.sync_api import sync_playwright
 
 AXE_CDN = "https://cdnjs.cloudflare.com/ajax/libs/axe-core/4.10.2/axe.min.js"
+# Nombres fijos (no se aceptan rutas por línea de órdenes): siempre en la carpeta actual
+LOCAL_AXE = "axe.min.js"
+JSON_OUTPUT = "auditoria-accesibilidad.json"
 WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "best-practice"]
 SOLID_BACKGROUND = "body{background:#252821 !important} *:not(body){background-image:none !important}"
 
@@ -59,10 +62,11 @@ def parse_args():
     parser.add_argument("--contrasena", help="contraseña de ese usuario")
     parser.add_argument("--solo-publicas", action="store_true", help="revisa solo las páginas públicas")
     parser.add_argument("--movil", action="store_true", help="pantalla de móvil (390 x 844) en vez de escritorio")
-    parser.add_argument("--axe", help="ruta a un axe.min.js local (si no, se descarga de cdnjs)")
+    parser.add_argument("--axe", action="store_true",
+                        help=f"usa el {LOCAL_AXE} de la carpeta actual en vez de descargarlo de cdnjs")
     parser.add_argument("--sin-contraste-solido", action="store_true",
                         help="no sustituye el degradado del fondo (el contraste quedará «por revisar»)")
-    parser.add_argument("--json", help="guarda aquí el resultado completo en JSON")
+    parser.add_argument("--json", action="store_true", help=f"guarda el resultado completo en {JSON_OUTPUT}")
     return parser.parse_args()
 
 
@@ -92,7 +96,7 @@ def audit_page(page, args, path):
     if not args.sin_contraste_solido:
         page.add_style_tag(content=SOLID_BACKGROUND)
     if args.axe:
-        page.add_script_tag(path=args.axe)
+        page.add_script_tag(path=LOCAL_AXE)
     else:
         page.add_script_tag(url=AXE_CDN)
     return page.evaluate(AXE_RUN, WCAG_TAGS)
@@ -138,7 +142,7 @@ def main():
     print(f"\n{len(results)} páginas revisadas, {sum(map(len, results.values()))} reglas incumplidas "
           f"({serious} graves o críticas).")
     if args.json:
-        with open(args.json, "w", encoding="utf-8") as fh:
+        with open(JSON_OUTPUT, "w", encoding="utf-8") as fh:
             json.dump(results, fh, ensure_ascii=False, indent=1)
     sys.exit(1 if serious else 0)
 
