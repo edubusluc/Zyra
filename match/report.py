@@ -12,13 +12,11 @@ from data_analyse.pairs import club_game_log
 
 from . import advisor
 from call.models import Call
-from players.models import Player
 
 from .models import Match
 
 MAX_PAIRS_TABLE = 6
 MAX_PRECEDENTS = 4
-MAX_USAGE_ROWS = 5
 
 
 def _outcome(match):
@@ -43,7 +41,7 @@ def build_report(call):
     """Reúne todos los datos del informe de la convocatoria ``call`` en un diccionario.
 
     Incluye la forma de los convocados y sus parejas, rachas, balance de la temporada,
-    precedentes contra el rival, reparto de partidos de la plantilla y las dos alineaciones
+    precedentes contra el rival, partidos jugados y convocatorias de cada convocado y las dos alineaciones
     recomendadas. Solo usa partidos anteriores a la fecha del enfrentamiento.
     """
     match = call.match
@@ -104,29 +102,21 @@ def build_report(call):
         .order_by("-start_date")[:MAX_PRECEDENTS]
     ]
 
-    # Reparto de partidos en la temporada: toda la plantilla actual (no solo los convocados)
-    squad = list(Player.objects.filter(club=club, in_team=True).order_by("name", "last_name"))
-    season_log = [g for g in log if g["season"] == match.season]
-    usage = {p.id: {"player": p, "games": 0, "last": None, "calls": 0,
-                     "called_now": False} for p in squad}
-    for g in season_log:
+    # Uso de cada convocado: partidos jugados y convocatorias en las que se apuntó esta
+    # temporada, y fecha del último partido que disputó (de cualquier temporada)
+    usage = {p.id: {"games": 0, "calls": 0, "last": None} for p in called}
+    for g in log:
         for pid in g["pair"]:
             if pid in usage:
-                usage[pid]["games"] += 1
+                if g["season"] == match.season:
+                    usage[pid]["games"] += 1
                 usage[pid]["last"] = max(filter(None, (usage[pid]["last"], g["date"])))
     calls = (Call.objects.filter(match__club=club, match__season=match.season, draft_mode=False,
                                  match__start_date__lt=match.start_date)
-             .values_list("players", flat=True))
+             .exclude(pk=call.pk).values_list("players", flat=True))
     for pid in calls:
         if pid in usage:
             usage[pid]["calls"] += 1
-    for p in called:
-        if p.id in usage:
-            usage[p.id]["called_now"] = True
-    usage_rows = list(usage.values())
-    most_games = sorted(usage_rows, key=lambda u: (-u["games"], u["player"].name))[:MAX_USAGE_ROWS]
-    least_games = sorted(usage_rows, key=lambda u: (u["games"], -u["calls"], u["player"].name))[:MAX_USAGE_ROWS]
-    never_played = sum(1 for u in usage_rows if not u["games"])
 
     lineup_a, lineup_b = advisor.recommend(forms, pairs, [p.id for p in called])
     lineups = []
@@ -151,10 +141,7 @@ def build_report(call):
         "season": season,
         "precedents": precedents,
         "lineups": lineups,
-        "most_games": most_games,
-        "least_games": least_games,
-        "never_played": never_played,
-        "squad_size": len(squad),
+        "usage": usage,  # por id de convocado: {'games', 'calls', 'last'}
         "enough_players": len(called) >= advisor.PLAYERS_PER_LINEUP,
     }
 
