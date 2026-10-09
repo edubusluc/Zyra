@@ -22,7 +22,7 @@
 
 <p class="text-muted">{% translate "Revisa las fotos que suben los usuarios. Si una no cumple los términos y condiciones, elimínala: se avisa por email al jugador (o a quien subió el escudo) y queda registrado. Si se repite, puedes suspender su cuenta y eliminar el equipo." %}</p>
 {% if rekognition_enabled and not_validating %}
-<p class="z-panel"><i class="fa-solid fa-triangle-exclamation me-1"></i> {% blocktranslate trimmed with reason=not_validating %}Ahora mismo Rekognition no valida las fotos nuevas ({{ reason }}).{% endblocktranslate %}</p>
+<p class="z-panel"><i class="fa-solid fa-triangle-exclamation me-1" aria-hidden="true"></i> {% blocktranslate trimmed with reason=not_validating %}Ahora mismo Rekognition no valida las fotos nuevas ({{ reason }}).{% endblocktranslate %}</p>
 {% endif %}
 
 <div class="z-segmented mb-3" role="group" aria-label="{% translate 'Estado' %}">
@@ -32,11 +32,11 @@
 </div>
 
 <div class="z-table-wrap"><table class="table align-middle">
-    <thead><tr><th>{% translate "Foto" %}</th><th>{% translate "De" %}</th><th>{% translate "Club" %}</th><th>{% translate "Avisar a" %}</th><th>{% translate "Fotos eliminadas antes" %}</th><th>{% translate "Fecha" %}</th>{% if status == 'rejected' %}<th>{% translate "Motivo" %}</th>{% endif %}<th></th></tr></thead>
+    <thead><tr><th>{% translate "Foto" %}</th><th>{% translate "De" %}</th><th>{% translate "Club" %}</th><th>{% translate "Avisar a" %}</th><th>{% translate "Fotos eliminadas antes" %}</th><th>{% translate "Fecha" %}</th>{% if status == 'rejected' %}<th>{% translate "Motivo" %}</th>{% endif %}<th><span class="visually-hidden">{% translate "Acciones" %}</span></th></tr></thead>
     <tbody>
     {% for c in page %}
         <tr>
-            <td>{% if c.in_use %}<a href="{{ c.subject.photo.url }}" target="_blank" rel="noopener" title="{% translate 'Ver a tamaño completo' %}"><img src="{{ c.subject.photo.url }}" alt="" width="96" height="96" style="object-fit:cover;border-radius:8px;"></a>{% elif c.photo %}<span class="text-muted">{% translate "Ya no se usa" %}</span>{% else %}—{% endif %}</td>
+            <td>{% if c.in_use %}<a href="{{ c.subject.photo.url }}" target="_blank" rel="noopener" title="{% translate 'Ver a tamaño completo' %}"><img src="{{ c.subject.photo.url }}" alt="{% blocktranslate with subject=c.subject_label %}Ver la foto de {{ subject }} a tamaño completo{% endblocktranslate %}" width="96" height="96" style="object-fit:cover;border-radius:8px;"></a>{% elif c.photo %}<span class="text-muted">{% translate "Ya no se usa" %}</span>{% else %}—{% endif %}</td>
             <td>{{ c.subject_label }}</td>
             <td>{% if c.club %}<a href="{% url 'backoffice:club_detail' c.club.public_id %}">{{ c.club.name }}</a>{% else %}—{% endif %}</td>
             <td>{% if c.owner %}<a href="{% url 'backoffice:user_detail' c.owner.id %}">{{ c.owner.username }}</a>{% if not c.owner.email %} <span class="z-badge z-badge--danger">{% translate "sin email" %}</span>{% endif %}{% else %}—{% endif %}</td>
@@ -48,11 +48,11 @@
                 <form method="post" action="{% url 'backoffice:photo_delete' c.public_id %}" class="d-flex flex-wrap gap-2 justify-content-end mb-2" onsubmit="return confirm('{% translate "¿Eliminar esta foto y avisar al usuario por email?" %}')">
                     {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
                     <input type="text" name="reason" maxlength="500" class="form-control form-control-sm" style="max-width:220px" placeholder="{% translate 'Motivo (opcional, va en el email)' %}" aria-label="{% translate 'Motivo' %}">
-                    <button class="btn btn-outline-danger btn-sm"><i class="fa-solid fa-trash"></i> {% translate "Eliminar y avisar" %}</button>
+                    <button class="btn btn-outline-danger btn-sm"><i class="fa-solid fa-trash" aria-hidden="true"></i> {% translate "Eliminar y avisar" %}</button>
                 </form>
                 {% endif %}
                 {% if c.status == 'unchecked' %}
-                <form method="post" action="{% url 'backoffice:photo_approve' c.public_id %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn btn-outline-light btn-sm"><i class="fa-solid fa-check"></i> {% if c.in_use %}{% translate "Correcta" %}{% else %}{% translate "Quitar de pendientes" %}{% endif %}</button></form>
+                <form method="post" action="{% url 'backoffice:photo_approve' c.public_id %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn btn-outline-light btn-sm"><i class="fa-solid fa-check" aria-hidden="true"></i> {% if c.in_use %}{% translate "Correcta" %}{% else %}{% translate "Quitar de pendientes" %}{% endif %}</button></form>
                 {% endif %}
             </td>
         </tr>

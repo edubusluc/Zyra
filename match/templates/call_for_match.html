@@ -1,10 +1,11 @@
 {% extends 'base.html' %}
 {% load static i18n %}
+{% block page_title %}{% translate "Resumen del partido" %} · {% endblock %}
 
 {% block content %}
 <div class="z-page-head">
     <div>
-        <a href="{% url 'list_match' %}" class="z-eyebrow"><i class="fa-solid fa-arrow-left me-1"></i> {% translate "Partidos" %}</a>
+        <a href="{% url 'list_match' %}" class="z-eyebrow"><i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i> {% translate "Partidos" %}</a>
         <h1>{% translate "Resumen del partido" %}</h1>
     </div>
     {% if match.draft_mode %}<span class="z-badge">{% translate "Sin validar" %}</span>{% else %}<span class="z-badge z-badge--lime">{% translate "Acta cerrada" %}</span>{% endif %}
@@ -20,7 +21,7 @@
 </div>
 
 {% if match.location %}
-<p class="mb-4"><a class="z-location" href="{{ match.maps_url }}" target="_blank" rel="noopener"><i class="fa-solid fa-location-dot"></i><span>{{ match.location }}</span></a></p>
+<p class="mb-4"><a class="z-location" href="{{ match.maps_url }}" target="_blank" rel="noopener"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>{{ match.location }}</span></a></p>
 {% endif %}
 
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
@@ -28,25 +29,25 @@
     {% if is_club_admin %}
     <div class="d-flex flex-wrap gap-2">
         {% if match.draft_mode and not call_for_match %}
-        <a href="{% url 'create_call' match_id %}" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus me-1"></i> {% translate "Crear convocatoria" %}</a>
+        <a href="{% url 'create_call' match_id %}" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus me-1" aria-hidden="true"></i> {% translate "Crear convocatoria" %}</a>
         {% endif %}
         {% if call_for_match and match.draft_mode %}
-        <a href="{% url 'edit_call' call_for_match.public_id %}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-pen me-1"></i> {% translate "Editar" %}</a>
-        <a href="{% url 'view_call_log' call_for_match.public_id %}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-triangle-exclamation me-1"></i> {% translate "Penalizaciones" %}</a>
+        <a href="{% url 'edit_call' call_for_match.public_id %}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-pen me-1" aria-hidden="true"></i> {% translate "Editar" %}</a>
+        <a href="{% url 'view_call_log' call_for_match.public_id %}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-triangle-exclamation me-1" aria-hidden="true"></i> {% translate "Penalizaciones" %}</a>
         {% endif %}
         {% if call_for_match %}
-        <a href="{% url 'call_report' match.public_id %}" class="btn btn-secondary btn-sm" target="_blank" rel="noopener"><i class="fa-solid fa-file-pdf me-1"></i> {% translate "Informe PDF" %}</a>
+        <a href="{% url 'call_report' match.public_id %}" class="btn btn-secondary btn-sm" target="_blank" rel="noopener"><i class="fa-solid fa-file-pdf me-1" aria-hidden="true"></i> {% translate "Informe PDF" %}</a>
         {% endif %}
         {% if call_for_match and not call_for_match.draft_mode %}
         <form action="{% url 'resend_call_report' match.public_id %}" method="post" class="d-inline">
             {% csrf_token %}
-            <button type="submit" class="btn btn-secondary btn-sm"><i class="fa-solid fa-paper-plane me-1"></i> {% translate "Reenviar informe" %}</button>
+            <button type="submit" class="btn btn-secondary btn-sm"><i class="fa-solid fa-paper-plane me-1" aria-hidden="true"></i> {% translate "Reenviar informe" %}</button>
         </form>
         {% endif %}
         {% if call_for_match.draft_mode %}
         <form action="{% url 'close_call' match.public_id %}" method="post" class="d-inline">
             {% csrf_token %}
-            <button type="submit" class="btn btn-danger btn-sm"><i class="fa-solid fa-lock me-1"></i> {% translate "Cerrar convocatoria" %}</button>
+            <button type="submit" class="btn btn-danger btn-sm"><i class="fa-solid fa-lock me-1" aria-hidden="true"></i> {% translate "Cerrar convocatoria" %}</button>
         </form>
         {% endif %}
     </div>
@@ -54,7 +55,7 @@
 </div>
 
 {% if is_club_admin and report_deliveries %}
-<p class="small text-muted mb-2"><i class="fa-solid fa-envelope me-1"></i> {% translate "Informe por email:" %}
+<p class="small text-muted mb-2"><i class="fa-solid fa-envelope me-1" aria-hidden="true"></i> {% translate "Informe por email:" %}
     {% for d in report_deliveries %}{{ d.email }}
     {% if d.status == "sent" %}<span class="z-badge z-badge--lime">{% blocktranslate with when=d.sent_at|date:"d/m H:i" %}enviado {{ when }}{% endblocktranslate %}</span>
     {% elif d.status == "pending" %}<span class="z-badge" title="{{ d.last_error }}">{% if d.attempts %}{% blocktranslate with when=d.next_attempt_at|date:"H:i" %}reintento {{ when }}{% endblocktranslate %}{% else %}{% translate "pendiente" %}{% endif %}</span>
@@ -67,8 +68,8 @@
 <div class="z-call">
     <div class="z-call-head">
         <span>{% blocktranslate trimmed count n=players_count %}<b>{{ n }}</b> convocado{% plural %}<b>{{ n }}</b> convocados{% endblocktranslate %}</span>
-        {% if call_for_match.draft_mode %}<span class="z-badge">{% translate "Abierta" %}</span>{% else %}<span class="z-badge z-badge--lime"><i class="fa-solid fa-lock"></i> {% translate "Cerrada" %}</span>{% endif %}
-        {% if games_count %}<span class="z-call-legend"><i class="z-dot"></i> {% translate "juega un partido" %}</span>{% endif %}
+        {% if call_for_match.draft_mode %}<span class="z-badge">{% translate "Abierta" %}</span>{% else %}<span class="z-badge z-badge--lime"><i class="fa-solid fa-lock" aria-hidden="true"></i> {% translate "Cerrada" %}</span>{% endif %}
+        {% if games_count %}<span class="z-call-legend"><i class="z-dot" aria-hidden="true"></i> {% translate "juega un partido" %}</span>{% endif %}
     </div>
     <div class="z-call-groups">
         {% for group in groups %}
@@ -81,7 +82,7 @@
                     <li class="z-chip {% if p.is_playing %}is-playing{% endif %}" title="{{ p.full_name }}">
                         <img src="{% if p.photo %}{{ p.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="">
                         <span>{{ p.short_name }}</span>
-                        {% if p.is_playing %}<i class="z-dot" title="{% translate 'Juega un partido' %}"></i>{% endif %}
+                        {% if p.is_playing %}<i class="z-dot" title="{% translate 'Juega un partido' %}" aria-hidden="true"></i><span class="visually-hidden">{% translate "Juega un partido" %}</span>{% endif %}
                     </li>
                     {% endfor %}
                 </ul>
@@ -109,7 +110,7 @@
   });
 </script>
 {% else %}
-<div class="z-empty"><i class="fa-solid fa-clipboard-list"></i>{% translate "Todavía no hay convocatoria para este partido." %}</div>
+<div class="z-empty"><i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>{% translate "Todavía no hay convocatoria para este partido." %}</div>
 {% endif %}
 
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-4">
@@ -117,10 +118,10 @@
     {% if is_club_admin %}
     <div class="d-flex flex-wrap gap-2">
         {% if match.draft_mode and call_for_match and game_for_match %}
-        <a href="{% url 'edit_games_match' match.public_id %}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-shuffle me-1"></i> {% translate "Editar parejas" %}</a>
+        <a href="{% url 'edit_games_match' match.public_id %}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-shuffle me-1" aria-hidden="true"></i> {% translate "Editar parejas" %}</a>
         {% endif %}
         {% if match.draft_mode and call_for_match and not call_for_match.draft_mode and not games_count %}
-        <a href="{% url 'create_game' match_id %}" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus me-1"></i> {% translate "Crear partidos" %}</a>
+        <a href="{% url 'create_game' match_id %}" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus me-1" aria-hidden="true"></i> {% translate "Crear partidos" %}</a>
         {% endif %}
     </div>
     {% endif %}
@@ -136,9 +137,9 @@
                 <div class="z-game-sets-head" aria-hidden="true"><span>S1</span><span>S2</span><span>S3</span></div>
                 {% if is_club_admin %}
                 {% if r and match.draft_mode %}
-                <a href="{% url 'edit_result' g.public_id %}" class="z-edit position-static" aria-label="{% translate 'Editar resultado' %}"><i class="fa-solid fa-pen"></i></a>
+                <a href="{% url 'edit_result' g.public_id %}" class="z-edit position-static" aria-label="{% translate 'Editar resultado' %}"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
                 {% elif not r %}
-                <a href="{% url 'create_result' g.public_id %}" class="z-edit position-static" aria-label="{% translate 'Añadir resultado' %}"><i class="fa-solid fa-plus"></i></a>
+                <a href="{% url 'create_result' g.public_id %}" class="z-edit position-static" aria-label="{% translate 'Añadir resultado' %}"><i class="fa-solid fa-plus" aria-hidden="true"></i></a>
                 {% endif %}
                 {% endif %}
             </div>
@@ -165,7 +166,7 @@
     {% endwith %}
 {% empty %}
     <div class="z-empty">
-        <i class="fa-solid fa-table-tennis-paddle-ball"></i>
+        <i class="fa-solid fa-table-tennis-paddle-ball" aria-hidden="true"></i>
         {% translate "Todavía no hay partidos. Primero hay que cerrar la convocatoria." %}
     </div>
 {% endfor %}
@@ -174,7 +175,7 @@
 {% if is_club_admin and games_count == 5 and match.draft_mode %}
 <form method="POST" action="{% url 'close_match' match.public_id %}" class="text-center mt-4">
     {% csrf_token %}
-    <button type="submit" class="btn btn-primary btn-lg"><i class="fa-solid fa-flag-checkered me-1"></i> {% translate "Cerrar acta del partido" %}</button>
+    <button type="submit" class="btn btn-primary btn-lg"><i class="fa-solid fa-flag-checkered me-1" aria-hidden="true"></i> {% translate "Cerrar acta del partido" %}</button>
 </form>
 {% endif %}
 {% endblock %}

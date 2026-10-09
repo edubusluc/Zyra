@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load i18n %}
+{% block page_title %}{% translate "Eliminar jugador" %} · {% endblock %}
 
 {% block content %}
 <div class="z-auth">
@@ -7,7 +8,7 @@
         <h1>{% translate "Eliminar jugador" %}</h1>
         <p>{% blocktranslate trimmed with name=player %}¿Seguro que quieres eliminar a «{{ name }}»?{% endblocktranslate %}</p>
         <div class="alert alert-warning text-start" role="alert">
-            <p class="mb-2"><i class="fa-solid fa-triangle-exclamation me-1"></i>
+            <p class="mb-2"><i class="fa-solid fa-triangle-exclamation me-1" aria-hidden="true"></i>
                 {% blocktranslate trimmed %}Se eliminarán también todas las estadísticas relacionadas con este jugador:{% endblocktranslate %}</p>
             <ul class="mb-2">
                 <li>{% blocktranslate trimmed count n=games %}Sus estadísticas de {{ n }} partido jugado{% plural %}Sus estadísticas de {{ n }} partidos jugados{% endblocktranslate %}</li>

@@ -130,6 +130,10 @@ body {
 
 a { color: var(--z-lime); text-decoration: none; }
 a:hover { color: var(--z-lime-hover); }
+/* Enlaces dentro de un texto: subrayados, para no distinguirlos solo por el color (WCAG 1.4.1) */
+.z-auth-foot a, .z-legal p a, .z-legal li a, main p a:not([class]) { text-decoration: underline; text-underline-offset: .2em; }
+/* btn-outline-danger de Bootstrap (#dc3545) no llega a 4.5:1 sobre el fondo oscuro */
+.btn-outline-danger { --bs-btn-color: var(--z-danger); --bs-btn-border-color: var(--z-danger); }
 
 img { border-radius: var(--z-radius-sm); }
 
@@ -157,6 +161,8 @@ h2, .z-subtitle {
 }
 
 h3 { font-size: 1rem; font-weight: 700; }
+/* Encabezado con el tamaño de .h4/.h5 de Bootstrap pero sin las mayúsculas de h2 */
+.z-heading-plain { text-transform: none; letter-spacing: normal; font-weight: 700; }
 
 .text-muted, .text-secondary, .form-text { color: var(--z-muted) !important; }
 .text-dark { color: var(--z-text) !important; }
@@ -165,6 +171,14 @@ h3 { font-size: 1rem; font-weight: 700; }
 .text-lime { color: var(--z-lime) !important; }
 
 :focus-visible { outline: 2px solid var(--z-lime); outline-offset: 2px; }
+/* Enlace «Saltar al contenido»: oculto hasta que se llega a él con el teclado */
+.z-skip-link {
+    position: absolute; left: 12px; top: -100px; z-index: 2000;
+    padding: 10px 16px; border-radius: var(--z-radius-sm);
+    background: var(--z-lime); color: var(--z-ink); font-weight: 700;
+}
+.z-skip-link:focus { top: 12px; color: var(--z-ink); }
+main:focus { outline: none; }
 
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { transition: none !important; animation: none !important; }
@@ -1066,7 +1080,7 @@ a.z-card:hover, .z-card--link:hover {
 /* Tarjeta de equipo */
 .z-team { display: flex; align-items: center; gap: 16px; padding: 16px; }
 .z-team img { width: 72px; height: 72px; flex-shrink: 0; object-fit: cover; border-radius: 14px; background: var(--z-surface-2); }
-.z-team h3 { margin: 0 0 2px; font-size: 1rem; font-weight: 800; text-transform: uppercase; }
+.z-team h2 { margin: 0 0 2px; font-size: 1rem; font-weight: 800; text-transform: uppercase; letter-spacing: normal; }
 .z-team p { margin: 0 0 8px; font-size: .85rem; color: var(--z-muted); }
 
 /* Tarjeta de enfrentamiento */
@@ -1945,7 +1959,9 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
     background: var(--z-surface); border: 1px solid var(--z-border); border-radius: 14px; cursor: pointer;
     transition: border-color .12s, opacity .12s;
 }
-.z-roster:not(.is-on) { opacity: .6; }
+/* Fuera del equipo: se atenúa la foto, no el texto (el texto debe mantener contraste 4.5:1) */
+.z-roster:not(.is-on) .z-avatar { opacity: .5; }
+.z-roster:not(.is-on) .z-pick-name { color: var(--z-muted); }
 .z-roster:not(.is-on) .z-avatar { border-color: var(--z-border-strong); }
 .z-roster.is-changed { border-color: var(--z-warning); opacity: 1; }
 .z-roster .form-switch .form-check-input { width: 2.6em; height: 1.4em; margin: 0; cursor: pointer; }

@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static i18n %}
+{% block page_title %}{% translate "Crear Jugador" %} · {% endblock %}
 
 {% block content %}
     <div class="table-container">
@@ -26,7 +27,7 @@
             </div>
 
             <div class="mb-3">
-                <label for="{{ form.lastname.id_for_label }}" class="form-label">{% translate "Apellidos:" %}</label>
+                <label for="{{ form.last_name.id_for_label }}" class="form-label">{% translate "Apellidos:" %}</label>
                 {{ form.last_name }}  <!-- Se agregó la clase en la vista -->
             </div>
 
@@ -36,7 +37,7 @@
             </div>
 
             <div class="mb-3">
-                <label for="{{ form.handedness.id_for_label }}" class="form-label">{% translate "Mano hábil:" %}</label>
+                <label for="{{ form.skillfull_hand.id_for_label }}" class="form-label">{% translate "Mano hábil:" %}</label>
                 {{ form.skillfull_hand }}  <!-- Se agregó la clase en la vista -->
             </div>
 

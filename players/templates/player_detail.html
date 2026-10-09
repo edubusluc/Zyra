@@ -1,26 +1,27 @@
 {% extends 'base.html' %}
 {% load static i18n %}
+{% block page_title %}{{ player.short_name }} · {% endblock %}
 
 {% block content %}
 <div class="z-page-head">
-    <a href="{% url 'list_players' %}" class="z-eyebrow"><i class="fa-solid fa-arrow-left me-1"></i> {% translate "Jugadores" %}</a>
+    <a href="{% url 'list_players' %}" class="z-eyebrow"><i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i> {% translate "Jugadores" %}</a>
     {% if is_club_admin %}
-    <a href="{% url 'edit_player' player.public_id %}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-pen me-1"></i> {% translate "Editar" %}</a>
+    <a href="{% url 'edit_player' player.public_id %}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-pen me-1" aria-hidden="true"></i> {% translate "Editar" %}</a>
     {% elif player.user_id == user.id %}
-    <a href="{% url 'my_player' %}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-pen me-1"></i> {% translate "Editar mi jugador" %}</a>
+    <a href="{% url 'my_player' %}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-pen me-1" aria-hidden="true"></i> {% translate "Editar mi jugador" %}</a>
     {% endif %}
 </div>
 
 <div class="z-panel">
     <div class="z-profile">
-        <img src="{% if player.photo %}{{ player.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="" class="z-avatar z-avatar--xl">
+        <img src="{% if player.photo %}{{ player.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="{% blocktranslate with name=player.full_name %}Foto de {{ name }}{% endblocktranslate %}" class="z-avatar z-avatar--xl">
         <div>
             <span class="z-eyebrow">{% translate "Perfil del jugador" %}</span>
             <h1 class="z-profile-name">{{ player.short_name }}</h1>
             <p class="z-player-meta mb-0">
-                <span><i class="fa-solid fa-location-crosshairs"></i>{{ player.get_position_display }}</span>
-                <span><i class="fa-solid fa-hand"></i>{{ player.get_skillfull_hand_display }}</span>
-                <span><i class="fa-solid fa-calendar"></i>{% blocktranslate with season=player.joined_season %}Desde {{ season }}{% endblocktranslate %}</span>
+                <span><i class="fa-solid fa-location-crosshairs" aria-hidden="true"></i>{{ player.get_position_display }}</span>
+                <span><i class="fa-solid fa-hand" aria-hidden="true"></i>{{ player.get_skillfull_hand_display }}</span>
+                <span><i class="fa-solid fa-calendar" aria-hidden="true"></i>{% blocktranslate with season=player.joined_season %}Desde {{ season }}{% endblocktranslate %}</span>
             </p>
         </div>
         <div class="z-profile-stats">
@@ -30,7 +31,7 @@
 
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
         <h2 class="z-section-title mt-0">{% translate "Últimos partidos" %}</h2>
-        <a href="{% url 'player_statistics' %}?player={{ player.public_id }}" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-chart-simple me-1"></i> {% translate "Ver estadísticas" %}</a>
+        <a href="{% url 'player_statistics' %}?player={{ player.public_id }}" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-chart-simple me-1" aria-hidden="true"></i> {% translate "Ver estadísticas" %}</a>
     </div>
     <ul class="z-results">
         {% for game in games %}

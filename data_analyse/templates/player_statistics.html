@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static i18n l10n %}
+{% block page_title %}{% if selected_player %}{% blocktranslate with name=player.full_name %}Estadísticas de {{ name }}{% endblocktranslate %}{% else %}{% translate "Estadísticas de jugadores" %}{% endif %} · {% endblock %}
 
 {% block content %}
   <script src="{% static 'js/player-picker.js' %}" defer></script>
@@ -273,13 +274,13 @@
           <article class="st-card">
             <h3 class="st-card-title">{% translate "Partidos jugados" %}</h3>
             <p class="st-card-note">{% translate "Ganados y perdidos en cada temporada." %}</p>
-            <div class="st-chart"><canvas id="chartPlayed"></canvas></div>
+            <div class="st-chart"><canvas id="chartPlayed" role="img" aria-label="{% translate "Partidos jugados" %}"></canvas></div>
           </article>
 
           <article class="st-card">
             <h3 class="st-card-title">{% translate "Evolución del % de victorias" %}</h3>
             <p class="st-card-note">{% translate "Porcentaje de partidos ganados por temporada." %}</p>
-            <div class="st-chart"><canvas id="chartPct"></canvas></div>
+            <div class="st-chart"><canvas id="chartPct" role="img" aria-label="{% translate "Evolución del % de victorias" %}"></canvas></div>
           </article>
         </div>
 
@@ -287,7 +288,7 @@
           <h3 class="st-card-title">{% translate "Evolución de los puntos SNP" %}</h3>
           <p class="st-card-note">{% blocktranslate with season=snp_season %}Puntos SNP en cada actualización semanal de la temporada {{ season }}.{% endblocktranslate %}</p>
           {% if chart_snp.scores %}
-            <div class="st-chart"><canvas id="chartSnp"></canvas></div>
+            <div class="st-chart"><canvas id="chartSnp" role="img" aria-label="{% translate "Evolución de los puntos SNP" %}"></canvas></div>
           {% else %}
             <p class="st-muted">{% translate "Todavía no hay puntos SNP guardados en esta temporada." %}</p>
           {% endif %}
@@ -351,7 +352,7 @@
               <button type="button" class="st-chip" data-scope="all" aria-pressed="false">{% translate "Incluir antiguos" %}</button>
             </div>
           </div>
-          <div class="st-chart st-chart--tall" id="affinityChart"><canvas id="chartAffinity"></canvas></div>
+          <div class="st-chart st-chart--tall" id="affinityChart"><canvas id="chartAffinity" role="img" aria-label="{% translate "Grado de afinidad" %}"></canvas></div>
           <p class="st-card-note st-aff-empty" id="affinityEmpty" hidden>{% translate "No hay partidos en pareja con compañeros de esta selección." %}</p>
         </article>
       </section>

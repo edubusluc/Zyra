@@ -26,7 +26,7 @@
     <span class="text-danger">{% translate "Corrige los errores y vuelve a subir el fichero: no se importará nada mientras haya filas con errores." %}</span>
     {% else %}
     <form method="post" action="{% url 'backoffice:import_confirm' job.public_id %}" onsubmit="return confirm('{% autoescape off %}{% blocktranslate trimmed count n=total with club=job.club.name asvar t_confirm %}¿Importar {{ n }} fila en {{ club }}?{% plural %}¿Importar {{ n }} filas en {{ club }}?{% endblocktranslate %}{% endautoescape %}{{ t_confirm|escapejs }}');">
-        {% csrf_token %}<button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> {% blocktranslate trimmed count n=total %}Importar {{ n }} fila{% plural %}Importar {{ n }} filas{% endblocktranslate %}</button>
+        {% csrf_token %}<button type="submit" class="btn btn-primary"><i class="fa-solid fa-check" aria-hidden="true"></i> {% blocktranslate trimmed count n=total %}Importar {{ n }} fila{% plural %}Importar {{ n }} filas{% endblocktranslate %}</button>
     </form>
     {% endif %}
     <a href="{% url 'backoffice:import_map' job.public_id %}" class="btn btn-outline-light">{% translate "Cambiar columnas" %}</a>

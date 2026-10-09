@@ -16,7 +16,7 @@
   function line(ok, text) {
     const li = document.createElement('li');
     li.className = ok === null ? '' : ok ? 'is-ok' : 'is-bad';
-    li.innerHTML = `<i class="fa-solid ${ok === null ? 'fa-circle-info' : ok ? 'fa-check' : 'fa-xmark'}"></i> `;
+    li.innerHTML = `<i class="fa-solid ${ok === null ? 'fa-circle-info' : ok ? 'fa-check' : 'fa-xmark'}" aria-hidden="true"></i> `;
     li.appendChild(document.createTextNode(text));
     checks.appendChild(li);
   }

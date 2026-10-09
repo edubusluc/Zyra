@@ -16,6 +16,7 @@
     {% block extra_head %}{% endblock %}
 </head>
 <body class="bo">
+<a class="z-skip-link" href="#contenido">{% translate "Saltar al contenido" %}</a>
 
 <div class="bo-shell">
     <aside class="bo-side">
@@ -26,36 +27,36 @@
         <span class="bo-tag">{% translate "Back-office" %}</span>
         <nav aria-label="{% translate 'Back-office' %}">
             <ul class="bo-nav">
-                <li><a href="{% url 'backoffice:dashboard' %}" class="{% if section == 'dashboard' %}is-active{% endif %}"><i class="fa-solid fa-gauge-high"></i> {% translate "Dashboard" %}</a></li>
-                <li><a href="{% url 'backoffice:load' %}" class="{% if section == 'load' %}is-active{% endif %}"><i class="fa-solid fa-signal"></i> {% translate "Carga y conectados" %}</a></li>
-                <li><a href="{% url 'backoffice:usage' %}" class="{% if section == 'usage' %}is-active{% endif %}"><i class="fa-solid fa-chart-column"></i> {% translate "Uso de la plataforma" %}</a></li>
-                <li><a href="{% url 'backoffice:health' %}" class="{% if section == 'health' %}is-active{% endif %}"><i class="fa-solid fa-heart-pulse"></i> {% translate "Salud de los servicios" %}</a></li>
-                <li><a href="{% url 'backoffice:job_list' %}" class="{% if section == 'jobs' %}is-active{% endif %}"><i class="fa-solid fa-clock-rotate-left"></i> {% translate "Procesos" %}</a></li>
+                <li><a href="{% url 'backoffice:dashboard' %}" class="{% if section == 'dashboard' %}is-active{% endif %}"><i class="fa-solid fa-gauge-high" aria-hidden="true"></i> {% translate "Dashboard" %}</a></li>
+                <li><a href="{% url 'backoffice:load' %}" class="{% if section == 'load' %}is-active{% endif %}"><i class="fa-solid fa-signal" aria-hidden="true"></i> {% translate "Carga y conectados" %}</a></li>
+                <li><a href="{% url 'backoffice:usage' %}" class="{% if section == 'usage' %}is-active{% endif %}"><i class="fa-solid fa-chart-column" aria-hidden="true"></i> {% translate "Uso de la plataforma" %}</a></li>
+                <li><a href="{% url 'backoffice:health' %}" class="{% if section == 'health' %}is-active{% endif %}"><i class="fa-solid fa-heart-pulse" aria-hidden="true"></i> {% translate "Salud de los servicios" %}</a></li>
+                <li><a href="{% url 'backoffice:job_list' %}" class="{% if section == 'jobs' %}is-active{% endif %}"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> {% translate "Procesos" %}</a></li>
                 {% if user.is_superuser %}
-                <li><a href="{% url 'backoffice:sql_console' %}" class="{% if section == 'sql' %}is-active{% endif %}"><i class="fa-solid fa-database"></i> {% translate "Consola SQL" %}</a></li>
-                <li><a href="{% url 'backoffice:import_list' %}" class="{% if section == 'import' %}is-active{% endif %}"><i class="fa-solid fa-file-import"></i> {% translate "Importar datos" %}</a></li>
+                <li><a href="{% url 'backoffice:sql_console' %}" class="{% if section == 'sql' %}is-active{% endif %}"><i class="fa-solid fa-database" aria-hidden="true"></i> {% translate "Consola SQL" %}</a></li>
+                <li><a href="{% url 'backoffice:import_list' %}" class="{% if section == 'import' %}is-active{% endif %}"><i class="fa-solid fa-file-import" aria-hidden="true"></i> {% translate "Importar datos" %}</a></li>
                 {% endif %}
-                <li><a href="{% url 'backoffice:club_list' %}" class="{% if section == 'clubs' %}is-active{% endif %}"><i class="fa-solid fa-shield-halved"></i> {% translate "Clubes" %}</a></li>
-                <li><a href="{% url 'backoffice:user_list' %}" class="{% if section == 'users' %}is-active{% endif %}"><i class="fa-solid fa-users"></i> {% translate "Usuarios" %}</a></li>
-                <li><a href="{% url 'backoffice:photo_list' %}" class="{% if section == 'photos' %}is-active{% endif %}"><i class="fa-solid fa-image"></i> {% translate "Fotos" %}</a></li>
-                <li><a href="{% url 'backoffice:blocked_email_list' %}" class="{% if section == 'blocked' %}is-active{% endif %}"><i class="fa-solid fa-envelope-circle-check"></i> {% translate "Emails bloqueados" %}</a></li>
+                <li><a href="{% url 'backoffice:club_list' %}" class="{% if section == 'clubs' %}is-active{% endif %}"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> {% translate "Clubes" %}</a></li>
+                <li><a href="{% url 'backoffice:user_list' %}" class="{% if section == 'users' %}is-active{% endif %}"><i class="fa-solid fa-users" aria-hidden="true"></i> {% translate "Usuarios" %}</a></li>
+                <li><a href="{% url 'backoffice:photo_list' %}" class="{% if section == 'photos' %}is-active{% endif %}"><i class="fa-solid fa-image" aria-hidden="true"></i> {% translate "Fotos" %}</a></li>
+                <li><a href="{% url 'backoffice:blocked_email_list' %}" class="{% if section == 'blocked' %}is-active{% endif %}"><i class="fa-solid fa-envelope-circle-check" aria-hidden="true"></i> {% translate "Emails bloqueados" %}</a></li>
             </ul>
         </nav>
         <div class="bo-side-foot">
             {% if user.is_superuser %}
-            <a href="{% url 'admin:index' %}"><i class="fa-solid fa-toolbox"></i> {% translate "Django admin" %}</a>
+            <a href="{% url 'admin:index' %}"><i class="fa-solid fa-toolbox" aria-hidden="true"></i> {% translate "Django admin" %}</a>
             {% endif %}
-            <a href="{% url 'home' %}"><i class="fa-solid fa-arrow-left"></i> {% translate "Volver a la web" %}</a>
+            <a href="{% url 'home' %}"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> {% translate "Volver a la web" %}</a>
             {% get_current_language as current_language %}
             {% get_available_languages as available_languages %}
             {% get_language_info_list for available_languages as language_list %}
             <div class="dropup z-lang-menu">
                 <button class="btn btn-secondary btn-sm dropdown-toggle d-inline-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{% translate 'Idioma' %}">
-                    <i class="fa-solid fa-globe"></i>
+                    <i class="fa-solid fa-globe" aria-hidden="true"></i>
                     <span>{{ current_language|upper }}</span>
                 </button>
                 <ul class="dropdown-menu">
-                    <li><h6 class="dropdown-header">{% translate "Idioma" %}</h6></li>
+                    <li><span class="dropdown-header">{% translate "Idioma" %}</span></li>
                     {% for language in language_list %}
                     <li>
                         <form action="{% url 'set_language' %}" method="post">
@@ -63,7 +64,7 @@
                             <input type="hidden" name="next" value="{{ request.get_full_path }}">
                             <input type="hidden" name="language" value="{{ language.code }}">
                             <button type="submit" class="dropdown-item {% if language.code == current_language %}active{% endif %}" lang="{{ language.code }}">
-                                <i class="fa-solid {% if language.code == current_language %}fa-check{% else %}fa-language{% endif %}"></i> {{ language.name_local|capfirst }}
+                                <i class="fa-solid {% if language.code == current_language %}fa-check{% else %}fa-language{% endif %}" aria-hidden="true"></i> {{ language.name_local|capfirst }}
                             </button>
                         </form>
                     </li>
@@ -74,11 +75,12 @@
         </div>
     </aside>
 
-    <main class="bo-main">
+    <main class="bo-main" id="contenido" tabindex="-1">
         {% block content %}{% endblock %}
     </main>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'js/a11y.js' %}"></script>
 </body>
 </html>

@@ -12,7 +12,7 @@
 
 {% if health.scheduler_late %}
 <div class="alert alert-warning d-flex flex-wrap gap-2 align-items-center">
-    <i class="fa-solid fa-triangle-exclamation"></i>
+    <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
     <span>{% translate "El lanzador de procesos no está en marcha: no se envían reintentos de informes ni se sincronizan los puntos SNP." %}</span>
     <a href="{% url 'backoffice:job_list' %}" class="ms-auto">{% translate "Ver procesos" %}</a>
 </div>

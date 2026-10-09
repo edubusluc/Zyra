@@ -6,7 +6,7 @@
 {% block content %}
 <div class="z-auth">
     <div class="z-auth-card text-center">
-        <img src="{% static 'zyra/logo.svg' %}" alt="" class="z-auth-logo">
+        <img src="{% static 'zyra/logo.svg' %}" alt="Zyra" class="z-auth-logo">
         <h1><i class="fa-solid fa-lock me-2" aria-hidden="true"></i>{% translate "Sin permiso" %}</h1>
         <p class="text-muted">
             {% if reason %}{{ reason }}{% else %}{% translate "No tienes permiso para ver esta página o realizar esta acción." %}{% endif %}

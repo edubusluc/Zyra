@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static i18n l10n %}
+{% block page_title %}{% translate "Estadísticas del equipo" %} · {% endblock %}
 
 {% block content %}
   <script src="{% static 'js/player-picker.js' %}" defer></script>
@@ -121,12 +122,13 @@
         {% include 'includes/team_records.html' %}
       </section>
 
-      <h2 class="st-section-title mt-4">{% translate "Gráficos" %}</h2>
+      <section aria-labelledby="charts-title" class="st-section">
+      <h2 class="st-section-title mt-4" id="charts-title">{% translate "Gráficos" %}</h2>
       <div class="st-grid">
         <section class="st-card">
-          <h2 class="st-card-title">{% translate "Partidos ganados, empatados y perdidos" %}</h2>
+          <h3 class="st-card-title">{% translate "Partidos ganados, empatados y perdidos" %}</h3>
           <div class="st-chart">
-            <canvas id="myPieChart"></canvas>
+            <canvas id="myPieChart" role="img" aria-label="{% translate "Partidos ganados, empatados y perdidos" %}"></canvas>
           </div>
           <div class="st-tally">
             <span class="st-tally-item st-tally-item--win"><b>{{ percentage_won }} %</b> {% translate "ganados" %}</span>
@@ -136,9 +138,9 @@
         </section>
 
         <section class="st-card">
-          <h2 class="st-card-title">{% translate "Juegos como local" %}</h2>
+          <h3 class="st-card-title">{% translate "Juegos como local" %}</h3>
           <div class="st-chart">
-            <canvas id="myBarChart"></canvas>
+            <canvas id="myBarChart" role="img" aria-label="{% translate "Juegos como local" %}"></canvas>
           </div>
           <div class="st-tally">
             <span class="st-tally-item st-tally-item--win"><b>{{ percentage_local_games_won }} %</b> {% translate "ganados" %}</span>
@@ -147,9 +149,9 @@
         </section>
 
         <section class="st-card">
-          <h2 class="st-card-title">{% translate "Juegos como visitante" %}</h2>
+          <h3 class="st-card-title">{% translate "Juegos como visitante" %}</h3>
           <div class="st-chart">
-            <canvas id="myVisitingBarChart"></canvas>
+            <canvas id="myVisitingBarChart" role="img" aria-label="{% translate "Juegos como visitante" %}"></canvas>
           </div>
           <div class="st-tally">
             <span class="st-tally-item st-tally-item--win"><b>{{ percentage_visiting_games_won }} %</b> {% translate "ganados" %}</span>
@@ -158,15 +160,15 @@
         </section>
 
         <section class="st-card st-card--wide">
-          <h2 class="st-card-title">{% translate "Partidos ganados por año" %}</h2>
+          <h3 class="st-card-title">{% translate "Partidos ganados por año" %}</h3>
           <p class="st-card-note">{% translate "Evolución de victorias, empates y derrotas del equipo en cada temporada." %}</p>
           <div class="st-chart">
-            <canvas id="myLineChart"></canvas>
+            <canvas id="myLineChart" role="img" aria-label="{% translate "Partidos ganados por año" %}"></canvas>
           </div>
         </section>
 
         <section class="st-card st-card--wide">
-          <h2 class="st-card-title">{% translate "Balance de partidos por jugador" %}</h2>
+          <h3 class="st-card-title">{% translate "Balance de partidos por jugador" %}</h3>
           <p class="st-card-note">{% translate "Partidos de 3 y de 2 puntos, ganados y perdidos, de cada jugador actual del equipo." %}</p>
           <div class="st-balance-sort" role="group" aria-label="{% translate 'Ordenar por' %}">
             <span class="st-filter-label">{% translate "Ordenar por" %}</span>
@@ -175,7 +177,7 @@
             <button type="button" class="st-chip" data-sort="name" aria-pressed="false">{% translate "Nombre" %}</button>
           </div>
           <div class="st-chart" id="balanceChart">
-            <canvas id="myColumnChart"></canvas>
+            <canvas id="myColumnChart" role="img" aria-label="{% translate "Balance de partidos por jugador" %}"></canvas>
           </div>
           <nav class="st-pager" id="balancePager" aria-label="{% translate 'Páginas de jugadores' %}" hidden>
             <button type="button" class="st-pager-btn" data-step="-1" aria-label="{% translate 'Anterior' %}"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
@@ -184,6 +186,7 @@
           </nav>
         </section>
       </div>
+      </section>
 
     {% endif %}
 

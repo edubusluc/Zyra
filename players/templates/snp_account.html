@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load tz i18n %}
+{% block page_title %}{% translate "Cuenta SNP" %} · {% endblock %}
 
 {% block content %}
 <div class="table-container my-4">
@@ -21,7 +22,7 @@
             <dd class="z-snp-password">
                 <span data-snp-password aria-live="polite">••••••••</span>
                 <button type="button" class="z-password-toggle position-static" data-snp-password-toggle data-url="{% url 'snp_account_password' %}"
-                        aria-pressed="false" aria-label="{% translate 'Mostrar contraseña' %}" title="{% translate 'Mostrar contraseña' %}"><i class="fa-regular fa-eye"></i></button>
+                        aria-pressed="false" aria-label="{% translate 'Mostrar contraseña' %}" title="{% translate 'Mostrar contraseña' %}"><i class="fa-regular fa-eye" aria-hidden="true"></i></button>
             </dd>
             <dt>{% translate "Última actualización" %}</dt>
             <dd>
@@ -32,7 +33,7 @@
             </dd>
         </dl>
         <div class="d-flex flex-wrap gap-2">
-            <a href="?edit=1" class="btn btn-primary"><i class="fa-solid fa-pen me-1"></i> {% translate "Editar" %}</a>
+            <a href="?edit=1" class="btn btn-primary"><i class="fa-solid fa-pen me-1" aria-hidden="true"></i> {% translate "Editar" %}</a>
             <form method="post" action="{% url 'snp_account_delete' %}" class="d-inline" onsubmit="return confirm('{% translate "¿Borrar la cuenta SNP del club?" as confirm_msg %}{{ confirm_msg|escapejs }}');">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-outline-danger">{% translate "Borrar cuenta" %}</button>
@@ -67,14 +68,14 @@
         })();
     </script>
     {% else %}
-    <h4>{% if account %}{% translate "Cambiar la cuenta" %}{% else %}{% translate "Configurar la cuenta" %}{% endif %}</h4>
+    <h2 class="h4 z-heading-plain">{% if account %}{% translate "Cambiar la cuenta" %}{% else %}{% translate "Configurar la cuenta" %}{% endif %}</h2>
     <form method="post" action="{% url 'snp_account' %}" autocomplete="off">
         {% csrf_token %}
         {% for field in form %}
         <div class="mb-3">
             <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
             {{ field }}
-            {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+            {% if field.help_text %}<div class="form-text" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</div>{% endif %}
             {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
         </div>
         {% endfor %}
