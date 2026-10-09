@@ -11,7 +11,13 @@ import json
 
 from django.conf import settings
 from django.templatetags.static import static
+from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
+
+# Como en json_script de Django: <, > y & como \uXXXX para que el JSON no pueda cerrar el
+# <script> ni abrir otra etiqueta, aunque un texto traducido los lleve.
+JSON_SCRIPT_ESCAPES = {ord("<"): "\\u003C", ord(">"): "\\u003E", ord("&"): "\\u0026"}
 
 LANG_PARAM = "lang"
 
@@ -79,8 +85,8 @@ def landing_faq():
 def landing_structured_data(request):
     """
     JSON-LD de la portada: la organización, el sitio web, la aplicación (gratis, en la web)
-    y las preguntas frecuentes. Devuelve el texto listo para un ``<script>``, con ``<``
-    escapado para que el contenido no pueda cerrar la etiqueta.
+    y las preguntas frecuentes. Devuelve la etiqueta ``<script type="application/ld+json">``
+    completa (como json_script de Django, que solo genera ``application/json``).
     """
     base = site_base(request)
     home = base + "/"
@@ -139,4 +145,6 @@ def landing_structured_data(request):
     }
     if not settings.CONTACT_EMAIL:
         del data["@graph"][0]["email"]
-    return json.dumps(data, ensure_ascii=False).replace("<", "\\u003c")
+    text = json.dumps(data, ensure_ascii=False).translate(JSON_SCRIPT_ESCAPES)
+    # El JSON ya va escapado: marcarlo como seguro solo evita que se convierta en &quot;...
+    return format_html('<script type="application/ld+json">{}</script>', mark_safe(text))

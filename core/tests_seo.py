@@ -91,6 +91,12 @@ class PublicPagesTests(TestCase):
         for question in faq["mainEntity"]:
             self.assertContains(response, question["name"])
 
+    @override_settings(CONTACT_EMAIL="x</script><script>alert(1)</script>@zyra.es")
+    def test_structured_data_cannot_close_its_script_tag(self):
+        content = self.client.get(reverse("home")).content.decode()
+        self.assertNotIn("<script>alert(1)", content)
+        self.assertIn("x\\u003C/script\\u003E", content)
+
     def test_landing_has_one_h1_and_keyword_title(self):
         response = self.client.get(reverse("home"))
         self.assertEqual(response.content.decode().count("<h1"), 1)
