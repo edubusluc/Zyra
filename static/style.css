@@ -1049,6 +1049,7 @@ a.z-card:hover, .z-card--link:hover {
 .z-faq summary h3 { display: inline; margin: 0; font-size: 1rem; font-weight: 700; }
 .z-faq details p { margin: 10px 0 0; color: var(--z-muted); }
 .z-landing-cta { margin-top: 28px; }
+.z-back-to-top { align-items: center; gap: 8px; }
 
 @media (max-width: 767.98px) {
     .z-hero-art img { width: 120px; }

@@ -77,8 +77,12 @@
         </details>
         {% endfor %}
     </div>
+    {# En ordenador el registro ya está a la vista arriba: se ofrece volver a él en vez de repetirlo. #}
     <div class="z-hero-actions z-landing-cta">
-        <a class="btn btn-primary btn-lg" href="{% url 'register_club' %}">{% translate "Registrar mi club gratis" %}</a>
+        <a class="btn btn-primary btn-lg d-lg-none" href="{% url 'register_club' %}">{% translate "Registrar mi club gratis" %}</a>
+        <a class="btn btn-outline-light btn-lg d-none d-lg-inline-flex z-back-to-top" href="#contenido">
+            <i class="fa-solid fa-arrow-up" aria-hidden="true"></i> {% translate "Volver arriba" %}
+        </a>
     </div>
 </section>
 

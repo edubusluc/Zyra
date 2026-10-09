@@ -4241,6 +4241,10 @@ msgstr "Register my club for free"
 msgid "Ya tengo cuenta"
 msgstr "I already have an account"
 
+#: core/templates/landing.html:84
+msgid "Volver arriba"
+msgstr "Back to top"
+
 #: core/templates/landing.html:26
 msgid "Todo lo que necesita el capitán de un equipo de pádel"
 msgstr "Everything a padel team captain needs"
