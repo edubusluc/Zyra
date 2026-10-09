@@ -114,6 +114,34 @@ class MatchesAndCallsTests(TestCase):
         self.assertEqual([c["label"] for c in response.context["season_chips"] if c["active"]], [oldest])
         self.assertEqual(len(response.context["matches"]), 1)
 
+    def test_match_list_search_and_rival_filter(self):
+        """Buscar por nombre o elegir rival busca en todas las temporadas si no se indica una."""
+        other = Team.objects.create(club=self.club, name="Pádel Tomares", location="Tomares", in_group=True)
+        tomares = Match.objects.create(club=self.club, local=other, visiting=self.club.own_team,
+                                       start_date=self.old.start_date)
+        friendly = Match.objects.create(club=self.club, local=self.club.own_team, start_date=self.current.start_date,
+                                        match_type=Match.AMISTOSO, rival_name="Amigos FC")
+        response = self.client.get(reverse("list_match"))
+        self.assertEqual(response.context["rivals"], ["Amigos FC", "Pádel Tomares", "Rival"])
+
+        response = self.client.get(reverse("list_match"), {"rival": "Rival"})
+        self.assertEqual({m.id for m in response.context["matches"]}, {self.current.id, self.old.id})
+        self.assertTrue(response.context["season_all"]["active"])
+        self.assertIn("rival=Rival", response.context["page_extra"])
+
+        response = self.client.get(reverse("list_match"), {"q": "tomar"})
+        self.assertEqual([m.id for m in response.context["matches"]], [tomares.id])
+        response = self.client.get(reverse("list_match"), {"q": "amigos"})
+        self.assertEqual([m.id for m in response.context["matches"]], [friendly.id])
+        # Con temporada elegida, el filtro se queda en ella.
+        response = self.client.get(reverse("list_match"), {"rival": "Rival", "season": self.current.season})
+        self.assertEqual([m.id for m in response.context["matches"]], [self.current.id])
+        response = self.client.get(reverse("list_match"), {"q": "nadie"})
+        self.assertContains(response, "Ningún partido coincide con la búsqueda.")
+        # Un rival que no existe se ignora.
+        response = self.client.get(reverse("list_match"), {"rival": "Otro club"})
+        self.assertEqual(response.context["rival"], "")
+
     def test_long_call_groups_are_collapsed(self):
         """Con muchos convocados en una posición, se ven los primeros y el resto tras «Ver N más»."""
         players = [Player.objects.create(club=self.club, name=f"P{i:02d}", last_name="X", position="Derecha")

@@ -27,6 +27,7 @@ from datetime import datetime
 from callLog.models import CallLog
 from penalty.models import Penalty
 import json
+from urllib.parse import urlencode
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.core.exceptions import ValidationError
 from django.db.models import Q
@@ -69,29 +70,67 @@ def match_outcome(match):
     return "E"
 
 
+def rival_names(club_matches):
+    """Rivales distintos de los partidos (equipos ajenos y rivales escritos a mano), por orden alfabético."""
+    names = set()
+    for m in club_matches:
+        if m.local_id or m.visiting_id or m.rival_name:
+            names.add(m.rival_label)
+    return sorted((n for n in names if n), key=str.casefold)
+
+
+def filter_by_rival(matches, rival):
+    """Partidos contra ``rival``: un equipo ajeno con ese nombre o un rival escrito a mano."""
+    return matches.filter(
+        Q(local__name=rival, local__is_own=False) | Q(visiting__name=rival, visiting__is_own=False) | Q(rival_name=rival)
+    )
+
+
+def search_matches(matches, text):
+    """Partidos cuyo equipo local, visitante, rival escrito a mano o ubicación contienen ``text``."""
+    query = Q()
+    for word in text.split():
+        query &= (Q(local__name__icontains=word) | Q(visiting__name__icontains=word)
+                  | Q(rival_name__icontains=word) | Q(location__icontains=word))
+    return matches.filter(query)
+
+
 @club_required
 def list_match(request):
-    """Listado paginado de los enfrentamientos del club, filtrable por temporada.
+    """Listado paginado de los enfrentamientos del club, filtrable por temporada, rival y nombre.
 
     Requiere pertenecer al club (club_required). Por GET ``season`` elige la temporada
     (por defecto la actual; 'all' muestra todas) y ``page`` la página. El selector muestra
     «Todas», las tres temporadas más recientes y un buscador para las demás
-    (data_analyse.views.season_filter_context). Renderiza list_match.html con el resultado
-    y la temporada de cada partido y un resumen de ganados, empatados, perdidos y pendientes.
+    (data_analyse.views.season_filter_context). ``rival`` deja solo los partidos contra ese
+    rival y ``q`` busca por coincidencia en los nombres de los equipos y la ubicación; al
+    buscar o elegir rival sin indicar temporada se buscan en todas. Renderiza list_match.html
+    con el resultado, la temporada de cada partido y un resumen de ganados, empatados,
+    perdidos y pendientes de lo filtrado.
     """
     club_matches = Match.objects.filter(club=request.club).select_related('local', 'visiting')
     # Temporadas para el selector (desc), incluida la actual aunque aún no tenga partidos
     seasons = set(club_matches.values_list('season', flat=True)) | {current_season()}
     seasons = sorted((x for x in seasons if x and x != "NONE"), reverse=True)
+    rivals = rival_names(club_matches)
 
-    # Por defecto, la temporada actual; "all" muestra todas.
-    season = request.GET.get('season') or current_season()
+    search = request.GET.get('q', '').strip()[:100]
+    rival = request.GET.get('rival', '').strip()
+    if rival not in rivals:
+        rival = ''
+
+    # Por defecto, la temporada actual; "all" muestra todas. Al buscar, todas.
+    season = request.GET.get('season') or (ALL_SEASONS if search or rival else current_season())
     if season != ALL_SEASONS and season not in seasons:
         season = current_season()
 
     matches = club_matches.order_by('-start_date', '-id')
     if season != ALL_SEASONS:
         matches = matches.filter(season=season)
+    if rival:
+        matches = filter_by_rival(matches, rival)
+    if search:
+        matches = search_matches(matches, search)
 
     outcomes = [match_outcome(m) for m in matches]
     summary = {
@@ -114,12 +153,19 @@ def list_match(request):
     for m in matches:
         m.outcome = match_outcome(m)
 
+    # Resto de filtros para la paginación y para los formularios de búsqueda.
+    keep = {'season': season, 'q': search, 'rival': rival}
     return render(request, "list_match.html", {
         'matches': matches,
         'seasons': seasons,
         'selected_season': season,
         'all_seasons': ALL_SEASONS,
         'summary': summary,
+        'search': search,
+        'rival': rival,
+        'rivals': rivals,
+        'filtering': bool(search or rival),
+        'page_extra': '&' + urlencode({k: v for k, v in keep.items() if v}),
         **season_filter_context(request, seasons, season, all_value=ALL_SEASONS),
     })
 

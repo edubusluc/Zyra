@@ -68,6 +68,49 @@ class CaptainPlayerForm(forms.Form):
         plain_text(self, "name", "last_name")
 
 
+class CaptainSnpForm(forms.Form):
+    """
+    Cómo se crea el jugador del capitán al registrar el club: escribiendo su nombre
+    (CaptainPlayerForm) o conectando su cuenta de SNP, que trae todo el equipo con sus
+    puntos; después elige cuál de esos jugadores es él. El usuario y la contraseña solo
+    son obligatorios con la opción de SNP.
+    """
+    MANUAL = "manual"
+    SNP = "snp"
+    MODES = [
+        (SNP, _("Conectar mi cuenta de SNP y traer mi equipo")),
+        (MANUAL, _("Escribir mi nombre y apellidos")),
+    ]
+    mode = forms.ChoiceField(label=_("¿Cómo quieres empezar?"), choices=MODES, initial=MANUAL,
+                             required=False, widget=forms.RadioSelect)
+    username = forms.CharField(label=_("Usuario de SNP"), max_length=150, required=False)
+    password = forms.CharField(
+        label=_("Contraseña de SNP"), required=False, widget=forms.PasswordInput(render_value=False),
+        help_text=_("Se guarda cifrada. Con ella actualizamos los puntos SNP de tu equipo cada semana."),
+    )
+
+    def __init__(self, *args, **kwargs):
+        """El usuario y la contraseña no los autocompleta el navegador con los de Zyra."""
+        super().__init__(*args, **kwargs)
+        self.fields["username"].widget.attrs["autocomplete"] = "off"
+        self.fields["password"].widget.attrs["autocomplete"] = "new-password"
+
+    @property
+    def uses_snp(self):
+        """True si el capitán ha elegido conectar su cuenta de SNP (según lo enviado)."""
+        return self.data.get(self.add_prefix("mode")) == self.SNP
+
+    def clean(self):
+        """Con la opción de SNP, el usuario y la contraseña son obligatorios."""
+        cleaned = super().clean()
+        if cleaned.get("mode") == self.SNP:
+            if not cleaned.get("username", "").strip():
+                self.add_error("username", _("Escribe tu usuario de SNP."))
+            if not cleaned.get("password"):
+                self.add_error("password", _("Escribe la contraseña de SNP."))
+        return cleaned
+
+
 class SignUpForm(UserCreationForm):
     """
     Registro de una cuenta con usuario, email y contraseña (al registrar un club o desde

@@ -23,10 +23,6 @@
                 <button type="button" class="z-password-toggle position-static" data-snp-password-toggle data-url="{% url 'snp_account_password' %}"
                         aria-pressed="false" aria-label="{% translate 'Mostrar contraseña' %}" title="{% translate 'Mostrar contraseña' %}"><i class="fa-regular fa-eye"></i></button>
             </dd>
-            {% if account.team_id %}
-            <dt>{% translate "Equipo en SNP" %}</dt>
-            <dd>{{ account.team_id }}</dd>
-            {% endif %}
             <dt>{% translate "Última actualización" %}</dt>
             <dd>
                 {% if account.last_sync_at %}

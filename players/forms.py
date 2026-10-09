@@ -104,17 +104,13 @@ class NewOwnPlayerForm(OwnPlayerForm):
 
 class SnpAccountForm(forms.Form):
     """
-    Cuenta SNP del capitán. La contraseña solo es obligatoria si todavía no hay una guardada;
-    el equipo es opcional y admite el número o la dirección de su página en SNP.
+    Cuenta SNP del capitán. La contraseña solo es obligatoria si todavía no hay una guardada.
+    No se pide el equipo: si la cuenta tiene varios, se lee el que se llama como el del club.
     """
     username = forms.CharField(label=_("Usuario de SNP"), max_length=150)
     password = forms.CharField(
         label=_("Contraseña de SNP"), required=False, widget=forms.PasswordInput(render_value=False),
         help_text=_("Se guarda cifrada. Déjala vacía para mantener la actual."),
-    )
-    team = forms.CharField(
-        label=_("Equipo en SNP (opcional)"), max_length=1000, required=False,
-        help_text=_("Solo si la cuenta tiene varios equipos: el número del equipo (p. ej. 4380) o la dirección de su página en SNP."),
     )
 
     def __init__(self, *args, has_password=False, **kwargs):
@@ -132,14 +128,3 @@ class SnpAccountForm(forms.Form):
         if not password and not self.has_password:
             raise forms.ValidationError(_("Escribe la contraseña de SNP."))
         return password
-
-    def clean_team(self):
-        """Convierte el número o la dirección del equipo en SNP en su número; vacío si no se indica."""
-        from .scraper import parse_team_id
-        value = self.cleaned_data["team"].strip()
-        if not value:
-            return ""
-        number = parse_team_id(value)
-        if not number:
-            raise forms.ValidationError(_("Escribe el número del equipo (p. ej. 4380) o la dirección de su página en SNP."))
-        return number

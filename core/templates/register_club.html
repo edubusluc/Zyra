@@ -18,12 +18,49 @@
             {{ user_form.as_p }}
             {% endif %}
             <h2 class="z-section-title">{% translate "Tu jugador" %}</h2>
-            <p class="text-muted small">{% translate "Como capitán también juegas: con estos datos creamos tu jugador en el equipo, ya enlazado a tu cuenta." %}</p>
+            <p class="text-muted small">{% translate "Como capitán también juegas. Puedes conectar tu cuenta de SNP para traer tu equipo con sus puntos y elegir después cuál eres tú, o escribir tu nombre." %}</p>
+            <fieldset class="z-choice" data-captain-mode>
+                <legend class="visually-hidden">{{ snp_form.mode.label }}</legend>
+                {% for radio in snp_form.mode %}
+                <label class="z-choice-option" for="{{ radio.id_for_label }}">
+                    {{ radio.tag }}
+                    <span>{{ radio.choice_label }}</span>
+                    {% if radio.data.value == 'snp' %}<small>{% translate "Recomendado: tu equipo y tus puntos SNP listos en un minuto." %}</small>{% endif %}
+                </label>
+                {% endfor %}
+            </fieldset>
+            <div data-mode-panel="snp">
+                <div class="alert alert-info" role="note">{% translate "Usa el usuario y la contraseña con los que entras en SNP. Traeremos a todos los jugadores de tu equipo con sus puntos; al terminar, eliges cuál de ellos eres tú." %}</div>
+                {% for field in snp_form %}{% if field.name != 'mode' %}
+                <p>
+                    <label for="{{ field.id_for_label }}">{{ field.label }}:</label>
+                    {{ field }}
+                    {% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}
+                    {% for error in field.errors %}<span class="errorlist d-block text-danger small">{{ error }}</span>{% endfor %}
+                </p>
+                {% endif %}{% endfor %}
+            </div>
+            <div data-mode-panel="manual">
             {% if google_missing_name %}
             <div class="alert alert-warning" role="alert">{% translate "No ha sido posible obtener tu nombre y apellidos de tu cuenta de Google. Indícalos para crear tu jugador." %}</div>
             {% endif %}
             <div class="alert alert-info" role="note"><strong>{% translate "Importante:" %}</strong> {% translate "el nombre y los apellidos deben coincidir exactamente con los que tienes registrados en SNP. Si no coinciden, no se te podrán asignar tus puntos SNP." %}</div>
             {{ player_form.as_p }}
+            </div>
+            <script>
+                // Muestra solo los campos de la opción elegida (sin JavaScript se ven las dos).
+                (function () {
+                    const radios = document.querySelectorAll('[data-captain-mode] input[type=radio]');
+                    function sync() {
+                        const mode = (Array.from(radios).find(function (r) { return r.checked; }) || {}).value || 'manual';
+                        document.querySelectorAll('[data-mode-panel]').forEach(function (panel) {
+                            panel.hidden = panel.dataset.modePanel !== mode;
+                        });
+                    }
+                    radios.forEach(function (r) { r.addEventListener('change', sync); });
+                    sync();
+                })();
+            </script>
             <button type="submit" class="btn btn-primary btn-lg mt-2">{% translate "Crear club" %}</button>
         </form>
         {% if user_form %}

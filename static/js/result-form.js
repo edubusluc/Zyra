@@ -10,8 +10,6 @@
   const checks = form.querySelector('[data-result-checks]');
   const names = Array.from(form.querySelectorAll('.z-result-team')).map((e) => e.textContent.trim());
 
-  const setWon = (n, team, a, b) =>
-    interpolate(gettext('Set %(n)s: gana %(team)s (%(score)s)'), { n: n, team: team, score: `${a}-${b}` }, true);
   const setInvalid = (n, a, b) =>
     interpolate(gettext('Set %(n)s: %(score)s no es un resultado válido'), { n: n, score: `${a}-${b}` }, true);
 
@@ -34,8 +32,9 @@
       if (a === null || b === null) { ok = false; return; }
       const good = validSet(a, b);
       ok = ok && good;
-      line(good, good ? setWon(i + 1, a > b ? names[0] : names[1], a, b) : setInvalid(i + 1, a, b));
+      // Solo se avisa de los sets no válidos; el ganador de cada set no se muestra.
       if (good) winners.push(a > b ? 0 : 1);
+      else line(false, setInvalid(i + 1, a, b));
     });
 
     const split = winners.length === 2 && winners[0] !== winners[1];
@@ -46,12 +45,12 @@
 
     if (split) {
       const [a, b] = s[2];
-      if (a === null || b === null) { ok = false; line(null, gettext('Set 3: cada pareja ha ganado un set, falta el tercero')); }
+      if (a === null || b === null) ok = false;
       else {
         const good = validSet(a, b) || validTB(a, b);
         ok = ok && good;
-        line(good, good ? setWon(3, a > b ? names[0] : names[1], a, b) : setInvalid(3, a, b));
         if (good) winners.push(a > b ? 0 : 1);
+        else line(false, setInvalid(3, a, b));
       }
     }
 

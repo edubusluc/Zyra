@@ -35,7 +35,7 @@ from .adapters import GOOGLE_NEW_ACCOUNT_KEY
 from .blocklist import is_user_blocked
 from .decorators import club_admin_required
 from .emails import send_invitation_email, send_welcome_email
-from .forms import CaptainPlayerForm, ClubForm, InviteMemberForm, SignUpForm
+from .forms import CaptainPlayerForm, CaptainSnpForm, ClubForm, InviteMemberForm, SignUpForm
 from .middleware import SESSION_KEY
 from .models import Invitation, Membership
 from .onboarding import onboarding_for
@@ -181,6 +181,10 @@ def register_club(request):
     """
     Alta de un club nuevo. Si el visitante no tiene cuenta, se le crea una. Quien ya
     pertenece a un club (como miembro o capitán) no puede registrar otro.
+
+    El jugador del capitán se crea con su nombre y apellidos o, si elige conectar su cuenta
+    de SNP (CaptainSnpForm), se guarda la cuenta y se trae el equipo de SNP con sus puntos
+    («Completar equipo» confirmado solo); al terminar elige cuál de esos jugadores es él.
     """
     anonymous = not request.user.is_authenticated
 
@@ -210,37 +214,54 @@ def register_club(request):
     if request.method == "POST":
         club_form = ClubForm(request.POST)
         player_form = CaptainPlayerForm(request.POST, prefix="player")
+        snp_form = CaptainSnpForm(request.POST, prefix="snp")
         user_form = SignUpForm(request.POST) if anonymous else None
-        valid = all([club_form.is_valid(), player_form.is_valid(), user_form is None or user_form.is_valid()])
+        # Con SNP no hace falta escribir el nombre: el jugador se elige después de entre los de SNP.
+        valid = all([club_form.is_valid(), snp_form.is_valid(), snp_form.uses_snp or player_form.is_valid(),
+                     user_form is None or user_form.is_valid()])
         # Un email bloqueado por el personal (p. ej. de un club suspendido) no puede crear clubes.
         if valid and not anonymous and is_user_blocked(request.user):
             club_form.add_error(None, _("Tu email está bloqueado en Zyra y no puede crear clubes."))
             valid = False
         if valid:
+            use_snp = snp_form.uses_snp
             with transaction.atomic():
                 user = user_form.save() if anonymous else request.user
-                data, player = club_form.cleaned_data, player_form.cleaned_data
+                data = club_form.cleaned_data
+                player = {} if use_snp else player_form.cleaned_data
                 club = create_club(data["name"], data["location"], user, gender=data["gender"], country=data["country"],
-                                   division=data["division"], player_name=player["name"],
-                                   player_last_name=player["last_name"])
+                                   division=data["division"], player_name=player.get("name", ""),
+                                   player_last_name=player.get("last_name", ""))
                 # La cuenta se queda con el nombre del jugador si no tenía uno.
-                if not (user.first_name or user.last_name):
+                if player and not (user.first_name or user.last_name):
                     user.first_name, user.last_name = player["name"], player["last_name"]
                     user.save(update_fields=["first_name", "last_name"])
+                if use_snp:
+                    account = SnpAccount(club=club, updated_by=user)
+                    account.username = snp_form.cleaned_data["username"].strip()
+                    account.password = snp_form.cleaned_data["password"]
+                    account.save()
             if anonymous:
                 login(request, user, backend=LOGIN_BACKEND)
             request.session[SESSION_KEY] = club.id
             send_welcome_email(user, club, created=True, site_url=_site_url(request))
             messages.success(request, _("Club %(club)s creado correctamente.") % {"club": club.name})
+            if use_snp:
+                from players import snp_import
+                team_import = snp_import.start_search(club, user, auto_confirm=True)
+                return redirect("complete_team_welcome", import_id=team_import.public_id)
             return redirect("home")
     else:
         club_form = ClubForm()
         player_form = CaptainPlayerForm(initial=known, prefix="player")
+        snp_form = CaptainSnpForm(prefix="snp")
         user_form = SignUpForm() if anonymous else None
 
     _style(club_form, user_form, player_form)
+    for name in ("username", "password"):
+        snp_form.fields[name].widget.attrs["class"] = "form-control"
     return render(request, "register_club.html", {
-        "club_form": club_form, "user_form": user_form, "player_form": player_form,
+        "club_form": club_form, "user_form": user_form, "player_form": player_form, "snp_form": snp_form,
         "google_missing_name": google_missing_name,
         "google_next": f"{reverse('register_club')}?{FROM_GOOGLE_PARAM}=1",
     })
