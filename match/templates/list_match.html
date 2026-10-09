@@ -20,10 +20,6 @@
 {# Buscador por nombre y filtro por rival: sin temporada elegida, buscan en todas. #}
 <form method="get" class="z-match-filters" role="search">
     {% if request.GET.season %}<input type="hidden" name="season" value="{{ selected_season }}">{% endif %}
-    <div class="z-search">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="search" name="q" value="{{ search }}" placeholder="{% translate 'Buscar por equipo o lugar...' %}" aria-label="{% translate 'Buscar partidos' %}" autocomplete="off">
-    </div>
     {% if rivals %}
     <label for="rival-filter" class="visually-hidden">{% translate "Rival" %}</label>
     <select class="st-select" name="rival" id="rival-filter" onchange="this.form.submit()" data-picker data-picker-toggle data-placeholder="{% translate 'Filtrar por rival...' %}">
