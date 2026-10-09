@@ -1638,61 +1638,68 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 .z-summary .is-loss b { color: var(--z-danger); }
 .z-summary .is-draw b { color: #A3A3A3; }
 
-/* Listado de partidos compacto: una fila por partido, marcador en el centro y el
-   resultado con color propio (lima victoria, rojo derrota, gris empate). */
-.z-fixtures { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+/* Listado de partidos en tarjetas: fecha, tipo y estado arriba; un equipo por fila con
+   sus puntos a la derecha (el ganador resaltado); abajo lugar, convocados y «Ver partido».
+   El borde izquierdo y la etiqueta de estado llevan el color del resultado (lima victoria,
+   rojo derrota, gris empate, ámbar próximo). Toda la tarjeta es pulsable. */
+.z-fixtures { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr)); gap: 14px; margin: 0; padding: 0; list-style: none; }
 .z-fixture {
     position: relative;
-    display: grid;
-    grid-template-columns: 52px minmax(0, 1fr) 150px;
-    align-items: center;
-    gap: 14px;
-    padding: 6px 12px 6px 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+    padding: 14px 16px;
     background: var(--z-surface);
     border: 1px solid var(--z-border);
     border-left: 4px solid var(--z-border-strong);
-    border-radius: 12px;
+    border-radius: var(--z-radius);
     box-shadow: var(--z-edge);
     transition: border-color .2s var(--z-ease), background-color .2s var(--z-ease);
 }
 .z-fixture:hover { background-color: var(--z-surface-2); border-color: var(--z-border-strong); }
-.z-fixture.is-win { border-left-color: var(--z-lime); background-image: linear-gradient(90deg, rgba(var(--z-lime-rgb), .09), transparent 45%); }
-.z-fixture.is-loss { border-left-color: var(--z-danger); background-image: linear-gradient(90deg, rgba(255, 92, 99, .1), transparent 45%); }
+.z-fixture:focus-within { outline: 2px solid var(--z-lime); outline-offset: 2px; }
+.z-fixture.is-win { border-left-color: var(--z-lime); }
+.z-fixture.is-loss { border-left-color: var(--z-danger); }
 .z-fixture.is-draw { border-left-color: #A3A3A3; }
 .z-fixture.is-pending { border-left-color: var(--z-warning); }
-.z-fixture-date { display: grid; justify-items: center; padding: 4px 0; line-height: 1.05; background: var(--z-surface-3); border-radius: 8px; }
-.z-fixture-date b { font-size: 1.1rem; font-weight: 800; color: #FFFFFF; }
-.z-fixture-date span { font-size: .62rem; font-weight: 800; letter-spacing: .05em; color: var(--z-lime); white-space: nowrap; }
-.z-fixture-teams { display: grid; grid-template-columns: minmax(0, 1fr) 84px minmax(0, 1fr); align-items: center; gap: 12px; min-width: 0; }
-.z-fixture-team { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: .92rem; font-weight: 700; color: #D9DBD3; }
-.z-fixture-team span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.z-fixture-team--home { justify-content: flex-end; text-align: right; }
-.z-fixture-team.is-own { color: #FFFFFF; font-weight: 800; }
-.z-fixture-team img { width: 26px; height: 26px; flex-shrink: 0; object-fit: cover; border-radius: 50%; background: var(--z-surface-2); border: 1px solid var(--z-border-strong); }
-.z-fixture-score {
-    width: 84px;
-    padding: 5px 8px;
-    font-size: 1rem;
-    font-weight: 800;
-    text-align: center;
-    color: var(--z-text);
-    background: var(--z-surface-3);
-    border: 1px solid var(--z-border-strong);
-    border-radius: 999px;
-    font-variant-numeric: tabular-nums;
-}
-.z-fixture.is-win .z-fixture-score { color: var(--z-ink); background: var(--z-lime); border-color: var(--z-lime); }
-.z-fixture.is-loss .z-fixture-score { color: #FFFFFF; background: #5A2226; border-color: var(--z-danger); }
-.z-fixture.is-draw .z-fixture-score { color: var(--z-ink); background: #C9CBC4; border-color: #C9CBC4; }
-.z-fixture-score:hover { color: inherit; }
-.z-fixture.is-win .z-fixture-score:hover, .z-fixture.is-draw .z-fixture-score:hover { color: var(--z-ink); }
-.z-fixture-status { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
-.z-fixture-status .z-edit { z-index: 2; top: auto; right: auto; }
-.z-fixture-type { padding: 2px 8px; font-size: .66rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--z-text); border: 1px solid var(--z-border-strong); border-radius: 999px; white-space: nowrap; }
+
+.z-fixture-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; min-width: 0; }
+.z-fixture-date { display: inline-flex; align-items: center; gap: 7px; margin-right: auto; font-size: .88rem; font-weight: 700; color: var(--z-text); white-space: nowrap; }
+.z-fixture-date i { color: var(--z-lime); font-size: .85em; }
+.z-fixture-type { padding: 3px 9px; font-size: .68rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--z-text); border: 1px solid var(--z-border-strong); border-radius: 999px; white-space: nowrap; }
+.z-fixture-state { padding: 3px 10px; font-size: .72rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; border-radius: 999px; white-space: nowrap; }
+.z-fixture-state.is-win { color: var(--z-ink); background: var(--z-lime); }
+.z-fixture-state.is-loss { color: var(--z-ink); background: var(--z-danger); }
+.z-fixture-state.is-draw { color: var(--z-ink); background: #C9CBC4; }
+.z-fixture-state.is-upcoming { color: var(--z-ink); background: var(--z-warning); }
+.z-fixture-state.is-open { color: var(--z-warning); border: 1px solid var(--z-warning); }
+
+.z-fixture-teams { display: grid; gap: 8px; }
+.z-fixture-team { display: flex; align-items: center; gap: 12px; min-width: 0; font-size: 1rem; font-weight: 700; color: #D9DBD3; }
+.z-fixture-team img { width: 36px; height: 36px; flex-shrink: 0; object-fit: cover; border-radius: 50%; background: var(--z-surface-2); border: 1px solid var(--z-border-strong); }
+.z-fixture-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.z-fixture-team.is-own .z-fixture-name { color: #FFFFFF; font-weight: 800; }
+.z-fixture-team.is-own img { border-color: var(--z-lime); }
+.z-fixture-points { min-width: 2ch; font-size: 1.5rem; font-weight: 800; line-height: 1; text-align: right; color: #FFFFFF; font-variant-numeric: tabular-nums; }
+.z-fixture-team.is-loser { color: var(--z-muted); }
+.z-fixture-team.is-loser .z-fixture-points { color: var(--z-muted); }
+.z-fixture.is-win .z-fixture-team.is-winner .z-fixture-points { color: var(--z-lime); }
+.z-fixture.is-loss .z-fixture-team.is-winner .z-fixture-points { color: var(--z-danger); }
+
+.z-fixture-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; min-height: 32px; margin-top: auto; padding-top: 10px; border-top: 1px solid var(--z-border); font-size: .82rem; color: var(--z-muted); }
+.z-fixture-meta { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
+.z-fixture-meta i { font-size: .9em; }
+.z-fixture-place { display: block; flex: 0 1 auto; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.z-fixture-place i { margin-right: 6px; }
+.z-fixture-actions { display: inline-flex; align-items: center; gap: 12px; margin-left: auto; }
+.z-fixture-open { display: inline-flex; align-items: center; gap: 6px; font-weight: 800; color: var(--z-lime); text-decoration: none; white-space: nowrap; }
+.z-fixture-open:hover { color: var(--z-lime-hover); }
+.z-fixture-open:focus-visible { outline: none; }
+.z-fixture-open i { font-size: .75em; }
+.z-fixture .z-fixture-delete { position: relative; top: auto; right: auto; }
 .z-wl { color: var(--z-text); background: var(--z-surface-3); }
 .z-wl--d { color: var(--z-ink); background: #C9CBC4; }
-.z-fixture .z-wl--w { color: var(--z-ink); background: var(--z-lime); }
-.z-fixture .z-wl--l { color: var(--z-ink); background: var(--z-danger); }
 
 /* Buscador y filtro por rival encima del listado */
 .z-match-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 0 0 14px; }
@@ -1709,19 +1716,10 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
     .z-select-compact { min-width: 0; width: 100%; }
     .z-page-head .z-actions { width: 100%; }
     .z-page-head .z-actions form { flex: 1; }
-    /* Móvil: los dos equipos uno debajo del otro y el marcador a la derecha; el color del
-       marcador ya dice si se ganó, así que la columna de estado solo queda para borrar. */
-    .z-fixture { grid-template-columns: 44px minmax(0, 1fr); gap: 10px; padding: 6px 8px 6px 6px; }
-    .z-fixture.has-actions { grid-template-columns: 44px minmax(0, 1fr) auto; }
-    .z-fixture-date b { font-size: 1rem; }
-    .z-fixture-teams { grid-template-columns: minmax(0, 1fr) 62px; grid-template-rows: auto auto; gap: 3px 10px; }
-    .z-fixture-team, .z-fixture-team--home { grid-column: 1; justify-content: flex-start; text-align: left; font-size: .85rem; }
-    .z-fixture-team--home { flex-direction: row-reverse; justify-content: flex-end; }
-    .z-fixture-team img { width: 20px; height: 20px; }
-    .z-fixture-score { grid-column: 2; grid-row: 1 / span 2; width: 62px; padding: 5px 4px; font-size: .88rem; }
-    .z-fixture-status { display: none; }
-    .z-fixture.has-actions .z-fixture-status { display: flex; }
-    .z-fixture.has-actions .z-fixture-status > :not(.z-edit) { display: none; }
+    /* Móvil: una tarjeta por fila a todo el ancho, con algo menos de relleno. */
+    .z-fixtures { gap: 10px; }
+    .z-fixture { gap: 10px; padding: 12px 14px; }
+    .z-fixture-team img { width: 32px; height: 32px; }
     .z-match-filters .z-search, .z-match-filters .z-picker { flex: 1 1 100%; max-width: none; }
 }
 
