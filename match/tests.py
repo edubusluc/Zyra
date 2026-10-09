@@ -100,6 +100,31 @@ class MatchesAndCallsTests(TestCase):
         response = self.client.get(reverse("list_match"), {"season": "1999-2000"})
         self.assertEqual(response.context["selected_season"], self.current.season)
 
+    def test_match_list_cards_show_points_state_and_call(self):
+        """Cada tarjeta lleva los puntos de cada lado, el estado en palabras y, si está
+        pendiente, cuántos convocados tiene."""
+        from match.views import split_points
+        self.assertEqual(split_points("5/7"), ("5", "7"))
+        self.assertEqual(split_points("7-5"), ("7", "5"))
+        self.assertEqual(split_points("NONE"), (None, None))
+
+        self.old.draft_mode = False
+        self.old.result = "Victoria Local"
+        self.old.result_points = "9/3"
+        self.old.save()
+        self.current.start_date = datetime.date.today() + datetime.timedelta(days=3)
+        self.current.save()
+        Call.objects.create(match=self.current).players.set([self.zoe, self.ana])
+        response = self.client.get(reverse("list_match"), {"season": "all"})
+        cards = {m.id: m for m in response.context["matches"]}
+        self.assertEqual((cards[self.old.id].local_points, cards[self.old.id].visiting_points), ("9", "3"))
+        self.assertEqual(cards[self.current.id].called, 2)
+        self.assertTrue(cards[self.current.id].upcoming)
+        self.assertContains(response, "Victoria")
+        self.assertContains(response, "Próximo")
+        self.assertContains(response, "2 convocados")
+        self.assertContains(response, "Ver partido")
+
     def test_match_list_search_for_older_seasons(self):
         """Con más de tres temporadas aparece el buscador; la antigua elegida sale como chip activo."""
         start = int(self.current.season[:4])
