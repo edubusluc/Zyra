@@ -265,7 +265,7 @@ class RolesAndClubSwitchTests(TestCase):
         from unittest import mock
         from players.models import SnpAccount, SnpTeamImport
         team = [{"name": "ANA RUIZ PEREZ 500", "score": 40.0}, {"name": "LUIS GOMEZ SOTO", "score": 12.5}]
-        with mock.patch("players.snp_import.scrape_scores", lambda *a, **k: team):
+        with mock.patch("players.snp_import.scrape_scores", return_value=team):
             response = self.client.post(reverse("register_club"), {
                 "name": "Club SNP", "location": "Cádiz", "gender": "M", "country": "ES", "division": "500",
                 "username": "fundadora", "email": "s@example.com",

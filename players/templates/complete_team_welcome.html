@@ -7,7 +7,7 @@
     <div class="z-auth-card z-welcome-snp">
         {% if team_import.status == 'running' or team_import.status == 'ready' %}
         <div data-status-url="{% url 'complete_team_status' team_import.public_id %}" id="welcome-running">
-            <div class="z-welcome-spinner"><span class="spinner-border" role="status"></span></div>
+            <div class="z-welcome-spinner"><output class="spinner-border" aria-label="{% translate 'Cargando' %}"></output></div>
             <h1>{% translate "Trayendo tu equipo de SNP" %}</h1>
             <p class="text-muted">{% translate "Estamos leyendo tus jugadores y sus puntos SNP. Suele tardar menos de un minuto; no cierres esta página." %}</p>
         </div>

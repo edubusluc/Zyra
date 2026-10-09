@@ -649,7 +649,7 @@ class CompleteTeamLimitsTests(TestCase):
     def setUp(self):
         self.admin = User.objects.create_user("admin", password="pass-12345")
         self.client.login(username="admin", password="pass-12345")
-        patcher = mock.patch("players.snp_import.scrape_scores", lambda *a, **k: SNP_TEAM)
+        patcher = mock.patch("players.snp_import.scrape_scores", return_value=SNP_TEAM)
         patcher.start()
         self.addCleanup(patcher.stop)
 

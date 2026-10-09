@@ -200,10 +200,12 @@ def search_limit(club, now=None):
         club=club, source=SnpTeamImport.WEB, created_at__gte=now - datetime.timedelta(days=1),
     ).order_by("-created_at").values_list("created_at", flat=True))
     waits = []
-    if recent and now - recent[0] < SEARCH_COOLDOWN:
-        waits.append(recent[0] + SEARCH_COOLDOWN)
-    if len(recent) >= SEARCHES_PER_DAY:
-        waits.append(recent[SEARCHES_PER_DAY - 1] + datetime.timedelta(days=1))
+    if recent and now - max(recent) < SEARCH_COOLDOWN:
+        waits.append(max(recent) + SEARCH_COOLDOWN)
+    # Las SEARCHES_PER_DAY más recientes: hasta que la más antigua de ellas cumpla un día.
+    latest = recent[:SEARCHES_PER_DAY]
+    if len(latest) == SEARCHES_PER_DAY:
+        waits.append(min(latest) + datetime.timedelta(days=1))
     return max(waits) if waits else None
 
 

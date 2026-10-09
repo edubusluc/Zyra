@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zyra\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-09 10:57+0000\n"
+"POT-Creation-Date: 2026-10-09 11:12+0000\n"
 "PO-Revision-Date: 2026-10-01 20:00+0200\n"
 "Last-Translator: Zyra\n"
 "Language-Team: English\n"
@@ -6783,13 +6783,17 @@ msgid_plural "Puntos SNP actualizados de %(n)s jugadores que ya estaban."
 msgstr[0] "Updated the SNP points of %(n)s player who was already there."
 msgstr[1] "Updated the SNP points of %(n)s players who were already there."
 
-#: players/snp_import.py:244
+#: players/snp_import.py:246
 msgid "La búsqueda en SNP no ha terminado. Vuelve a intentarlo."
 msgstr "The SNP search did not finish. Please try again."
 
-#: players/snp_import.py:278
+#: players/snp_import.py:280
 msgid "Error inesperado al leer SNP."
 msgstr "Unexpected error while reading SNP."
+
+#: players/templates/complete_team_welcome.html:10
+msgid "Cargando"
+msgstr "Loading"
 
 #: players/templates/complete_team_welcome.html:11
 msgid "Trayendo tu equipo de SNP"

@@ -400,6 +400,22 @@ def scrape_scores(username, password, team_id=None, headed=False, log=None, brow
     return browser.run(_scrape, username, password, team_id, log, browser, country, team_name)
 
 
+def _read_all_pages(page, frame, log):
+    """Filas de todas las páginas de la tabla de jugadores (hasta MAX_PAGES), pasando de una a otra."""
+    players = []
+    for page_number in range(2, MAX_PAGES + 2):
+        rows = _read_rows(frame)
+        log(f"Página {page_number - 1} de la tabla: {len(rows)} jugadores ({', '.join(r['name'] for r in rows)}).")
+        players.extend(rows)
+        next_button = frame.query_selector(NEXT_PAGE.format(page_number))
+        if not next_button or not next_button.is_visible():
+            break
+        before = [r["name"] for r in rows]
+        next_button.click()
+        frame = _wait_for_next_page(page, frame, before, log)
+    return players
+
+
 def _scrape(username, password, team_id, log, browser, country=None, team_name=None):
     """
     Lectura de un club en el hilo del navegador: inicia sesión, abre la página del equipo y
@@ -420,16 +436,7 @@ def _scrape(username, password, team_id, log, browser, country=None, team_name=N
         log(f"Sesión iniciada. Abriendo Series Nacionales → {snp_country_name(country)} → Mis equipos…")
         frame = _open_team_page(page, team_id, log, country, team_name)
         log(f"Página del equipo abierta: {frame.url}")
-        for page_number in range(2, MAX_PAGES + 2):
-            rows = _read_rows(frame)
-            log(f"Página {page_number - 1} de la tabla: {len(rows)} jugadores ({', '.join(r['name'] for r in rows)}).")
-            players.extend(rows)
-            next_button = frame.query_selector(NEXT_PAGE.format(page_number))
-            if not next_button or not next_button.is_visible():
-                break
-            before = [r["name"] for r in rows]
-            next_button.click()
-            frame = _wait_for_next_page(page, frame, before, log)
+        players = _read_all_pages(page, frame, log)
     except (SnpScrapeError, PlaywrightError) as exc:
         if blocked and not isinstance(exc, SnpBlockedError):
             raise SnpBlockedError(f"SNP ha respondido {blocked[-1]} mientras se leía el equipo: "
