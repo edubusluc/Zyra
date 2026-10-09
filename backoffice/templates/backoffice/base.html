@@ -60,7 +60,7 @@
                     <li>
                         <form action="{% url 'set_language' %}" method="post">
                             {% csrf_token %}
-                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                            <input type="hidden" name="next" value="{{ language_next }}">
                             <input type="hidden" name="language" value="{{ language.code }}">
                             <button type="submit" class="dropdown-item {% if language.code == current_language %}active{% endif %}" lang="{{ language.code }}">
                                 <i class="fa-solid {% if language.code == current_language %}fa-check{% else %}fa-language{% endif %}"></i> {{ language.name_local|capfirst }}

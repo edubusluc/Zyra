@@ -1,39 +1,86 @@
 {% extends 'base.html' %}
 {% load static i18n %}
 
-{% block title %}Zyra · {% translate "Improve your level" %}{% endblock %}
+{% block title %}{% translate "Zyra · App para gestionar equipos de pádel" %}{% endblock %}
+{% block description %}{% translate "Organiza tu equipo de pádel de liga por equipos: convocatorias, parejas, resultados y estadísticas de cada jugador. Gratis para capitanes y clubes." %}{% endblock %}
+{% block og_title %}{% translate "Zyra · App para gestionar equipos de pádel" %}{% endblock %}
+{% block og_description %}{% translate "Organiza tu equipo de pádel de liga por equipos: convocatorias, parejas, resultados y estadísticas de cada jugador. Gratis para capitanes y clubes." %}{% endblock %}
 
 {% block content %}
 <section class="z-hero">
     <div>
         <p class="z-hero-tag">{% translate "Improve your level" %}</p>
-        <h1 class="z-hero-title">Zyra</h1>
-        <p class="z-hero-text">{% translate "Gestiona tu equipo de pádel: jugadores, convocatorias, partidos y estadísticas, en privado para cada club." %}</p>
+        <h1 class="z-hero-title">Zyra <span class="z-hero-subtitle">{% translate "Gestión de equipos de pádel" %}</span></h1>
+        <p class="z-hero-text">{% translate "La app para capitanes de equipos de pádel que juegan ligas por equipos: convoca a tus jugadores, organiza las parejas, apunta los resultados y descubre qué parejas funcionan mejor." %}</p>
         <div class="z-hero-actions">
-            <a class="btn btn-primary btn-lg" href="{% url 'register_club' %}">{% translate "Empezar" %}</a>
+            <a class="btn btn-primary btn-lg" href="{% url 'register_club' %}">{% translate "Registrar mi club gratis" %}</a>
             <a class="btn btn-outline-light btn-lg" href="{% url 'login' %}">{% translate "Ya tengo cuenta" %}</a>
         </div>
     </div>
     <div class="z-hero-art">
-        <img src="{% static 'zyra/logo.svg' %}" alt="{% translate 'Logotipo de Zyra' %}">
+        <img src="{% static 'zyra/logo.svg' %}" alt="{% translate 'Logotipo de Zyra' %}" width="150" height="150">
     </div>
 </section>
 
-<section class="z-features" aria-label="{% translate 'Qué puedes hacer' %}">
-    <div class="z-card z-feature">
-        <i class="fa-solid fa-clipboard-list"></i>
-        <h2>{% translate "Convocatorias" %}</h2>
-        <p>{% translate "Convoca jugadores, registra cambios y aplica sanciones." %}</p>
-    </div>
-    <div class="z-card z-feature">
-        <i class="fa-solid fa-table-tennis-paddle-ball"></i>
-        <h2>{% translate "Partidos" %}</h2>
-        <p>{% translate "Organiza las parejas y apunta los resultados de cada set." %}</p>
-    </div>
-    <div class="z-card z-feature">
-        <i class="fa-solid fa-chart-line"></i>
-        <h2>{% translate "Estadísticas" %}</h2>
-        <p>{% translate "Rachas, afinidad entre parejas y evolución por temporada." %}</p>
+<section class="z-landing-section" aria-labelledby="features-title">
+    <h2 id="features-title" class="z-landing-title">{% translate "Todo lo que necesita el capitán de un equipo de pádel" %}</h2>
+    <div class="z-features">
+        <div class="z-card z-feature">
+            <i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>
+            <h3>{% translate "Convocatorias" %}</h3>
+            <p>{% translate "Convoca jugadores para cada partido, registra los cambios y envía el informe de la convocatoria en PDF por email." %}</p>
+        </div>
+        <div class="z-card z-feature">
+            <i class="fa-solid fa-table-tennis-paddle-ball" aria-hidden="true"></i>
+            <h3>{% translate "Partidos y parejas" %}</h3>
+            <p>{% translate "Organiza las parejas de cada enfrentamiento, con alineación sugerida, y apunta el resultado de cada set." %}</p>
+        </div>
+        <div class="z-card z-feature">
+            <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
+            <h3>{% translate "Estadísticas de pádel" %}</h3>
+            <p>{% translate "Victorias por jugador y pareja, rachas, afinidad entre compañeros y evolución por temporada." %}</p>
+        </div>
+        <div class="z-card z-feature">
+            <i class="fa-solid fa-ranking-star" aria-hidden="true"></i>
+            <h3>{% translate "Puntos SNP" %}</h3>
+            <p>{% translate "Trae los puntos SNP de tus jugadores para ordenar las parejas como en la liga." %}</p>
+        </div>
+        <div class="z-card z-feature">
+            <i class="fa-solid fa-users" aria-hidden="true"></i>
+            <h3>{% translate "Tu club, en privado" %}</h3>
+            <p>{% translate "Invita a tus jugadores con un enlace. Nadie de fuera del club ve sus datos." %}</p>
+        </div>
+        <div class="z-card z-feature">
+            <i class="fa-solid fa-mobile-screen" aria-hidden="true"></i>
+            <h3>{% translate "En el móvil" %}</h3>
+            <p>{% translate "Funciona en el navegador del móvil y del ordenador, sin instalar nada, en español y en inglés." %}</p>
+        </div>
     </div>
 </section>
+
+<section class="z-landing-section" aria-labelledby="steps-title">
+    <h2 id="steps-title" class="z-landing-title">{% translate "Cómo funciona" %}</h2>
+    <ol class="z-steps">
+        <li class="z-card"><strong>{% translate "Registra tu club" %}</strong> {% translate "Crea la cuenta del capitán y el equipo con el que compites." %}</li>
+        <li class="z-card"><strong>{% translate "Añade a tu equipo" %}</strong> {% translate "Da de alta a los jugadores e invítalos a unirse al club." %}</li>
+        <li class="z-card"><strong>{% translate "Juega y mide" %}</strong> {% translate "Convoca, apunta los resultados y deja que las estadísticas te digan qué parejas rinden mejor." %}</li>
+    </ol>
+</section>
+
+<section class="z-landing-section" aria-labelledby="faq-title">
+    <h2 id="faq-title" class="z-landing-title">{% translate "Preguntas frecuentes" %}</h2>
+    <div class="z-faq">
+        {% for question, answer in faq %}
+        <details class="z-card">
+            <summary><h3>{{ question }}</h3></summary>
+            <p>{{ answer }}</p>
+        </details>
+        {% endfor %}
+    </div>
+    <div class="z-hero-actions z-landing-cta">
+        <a class="btn btn-primary btn-lg" href="{% url 'register_club' %}">{% translate "Registrar mi club gratis" %}</a>
+    </div>
+</section>
+
+{{ structured_data }}
 {% endblock %}

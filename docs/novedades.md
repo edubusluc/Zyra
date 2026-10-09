@@ -5,6 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 09/10/2026
 
+- Posicionamiento en buscadores: portada con más contenido (qué hace, cómo funciona y preguntas frecuentes), títulos y descripciones con las palabras que buscan los capitanes, versión en inglés con URL propia (`?lang=en`) enlazada con hreflang en las páginas y en el sitemap, y datos estructurados (JSON-LD) de la aplicación
 - Partidos: cada partido es ahora una tarjeta (dos columnas en escritorio, una en móvil) con la fecha completa, el estado en palabras (Victoria, Derrota, Empate, Próximo o Sin resultado), un equipo por fila con sus puntos y el ganador resaltado, el lugar, los convocados de los pendientes y el enlace «Ver partido»
 - «Mi jugador» pasa a ser «Mi perfil»: muestra el email y la contraseña con opción de cambiarlos (el email pide la contraseña actual; si entras solo con Google, lo gestiona Google) y el jugador enlazado, que se pulsa para editarlo, o el botón para enlazarte a uno
 - Informe PDF de convocatoria: la tabla de convocados cambia «Posición» y «Estim.» por partidos jugados / convocatorias apuntadas (p. ej. 5/8) y la fecha del último partido; sin las tablas de jugadores con más y menos partidos, y letra más grande

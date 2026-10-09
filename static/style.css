@@ -997,11 +997,49 @@ a.z-card:hover, .z-card--link:hover {
     border: 1px solid rgba(var(--z-lime-rgb), .25);
     border-radius: 12px;
 }
-.z-feature h2 { margin: 0 0 6px; font-size: .9rem; text-transform: uppercase; letter-spacing: .05em; }
+.z-feature h3 { margin: 0 0 6px; font-size: .9rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
 .z-feature p { margin: 0; font-size: .9rem; color: var(--z-muted); }
+
+.z-hero-subtitle {
+    display: block;
+    margin-top: 14px;
+    font-family: var(--z-body);
+    font-style: normal;
+    font-size: clamp(1rem, 2.6vw, 1.35rem);
+    letter-spacing: .08em;
+    -webkit-text-fill-color: var(--z-text);
+    color: var(--z-text);
+}
+/* Secciones de la portada bajo el primer pantallazo: qué hace, cómo funciona y preguntas */
+.z-landing-section { width: 100%; max-width: 1000px; margin: 56px auto 0; }
+.z-landing-section .z-features { margin-top: 0; }
+.z-landing-title { margin: 0 0 18px; font-size: 1.15rem; font-weight: 800; text-align: center; }
+.z-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 0; padding: 0; list-style: none; counter-reset: z-step; }
+.z-steps li { padding: 22px; color: var(--z-muted); counter-increment: z-step; }
+.z-steps li::before {
+    content: counter(z-step);
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    margin-bottom: 12px;
+    font-weight: 800;
+    color: var(--z-ink);
+    background: var(--z-lime);
+    border-radius: 50%;
+}
+.z-steps strong { display: block; margin-bottom: 4px; color: var(--z-text); }
+.z-faq { display: grid; gap: 10px; }
+.z-faq details { padding: 16px 20px; }
+.z-faq summary { cursor: pointer; }
+.z-faq summary h3 { display: inline; margin: 0; font-size: 1rem; font-weight: 700; }
+.z-faq details p { margin: 10px 0 0; color: var(--z-muted); }
+.z-landing-cta { margin-top: 28px; }
 
 @media (max-width: 767.98px) {
     .z-hero-art img { width: 120px; }
+    .z-steps { grid-template-columns: 1fr; }
+    .z-landing-section { margin-top: 40px; }
     .z-hero-actions { width: 100%; }
     .z-hero-actions .btn { flex: 1 1 100%; }
     .z-features { grid-template-columns: 1fr; }
