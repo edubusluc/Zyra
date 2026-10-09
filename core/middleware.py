@@ -6,6 +6,7 @@ from django.http import HttpResponsePermanentRedirect
 from django.utils import translation
 from django.utils.cache import patch_vary_headers
 
+from . import seo
 from .models import Membership
 
 SESSION_KEY = "club_id"
@@ -59,8 +60,9 @@ class CurrentClubMiddleware:
 
 class LanguageMiddleware:
     """
-    Activa el idioma de la interfaz: el que el usuario eligió en el selector (cookie que
-    guarda la vista set_language) o, si no eligió ninguno, el español (LANGUAGE_CODE).
+    Activa el idioma de la interfaz: el de la URL (``?lang=en``, core.seo), el que el usuario
+    eligió en el selector (cookie que guarda la vista set_language) o, si no eligió ninguno,
+    el español (LANGUAGE_CODE).
 
     A diferencia de LocaleMiddleware de Django, no mira el idioma del navegador: la web
     sale siempre en español hasta que alguien elige otro idioma.
@@ -72,16 +74,32 @@ class LanguageMiddleware:
 
     def __call__(self, request):
         """
-        Activa el idioma de la cookie (o LANGUAGE_CODE) y añade a la respuesta Content-Language
-        y Vary: Cookie, para que las cachés no mezclen idiomas.
+        Activa el idioma de la URL (``?lang=en``, la que enlazan los buscadores), si no el de
+        la cookie (o LANGUAGE_CODE), y añade a la respuesta Content-Language y Vary: Cookie,
+        para que las cachés no mezclen idiomas. El idioma de la URL se guarda en la cookie
+        para que el visitante siga en ese idioma al pasar a otras páginas.
         """
-        language = request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME)
+        url_language = seo.url_language(request)
+        language = url_language or request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME)
         if language not in dict(settings.LANGUAGES):
             language = settings.LANGUAGE_CODE
         translation.activate(language)
         request.LANGUAGE_CODE = translation.get_language()
 
         response = self.get_response(request)
+
+        if url_language and request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME) != url_language:
+            # Los mismos parámetros que la vista set_language de Django.
+            response.set_cookie(
+                settings.LANGUAGE_COOKIE_NAME,
+                url_language,
+                max_age=settings.LANGUAGE_COOKIE_AGE,
+                path=settings.LANGUAGE_COOKIE_PATH,
+                domain=settings.LANGUAGE_COOKIE_DOMAIN,
+                secure=settings.LANGUAGE_COOKIE_SECURE,
+                httponly=settings.LANGUAGE_COOKIE_HTTPONLY,
+                samesite=settings.LANGUAGE_COOKIE_SAMESITE,
+            )
 
         response.headers.setdefault("Content-Language", request.LANGUAGE_CODE)
         patch_vary_headers(response, ("Cookie",))

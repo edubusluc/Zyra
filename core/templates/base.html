@@ -6,18 +6,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>{% block title %}{% if current_club %}{{ current_club.name }} · {% endif %}Zyra{% endblock %}</title>
     <meta name="description" content="{% block description %}{% translate 'Zyra: gestión de equipos de pádel — jugadores, convocatorias, partidos y estadísticas.' %}{% endblock %}">
-    <link rel="canonical" href="{{ canonical_url }}">
+    {% block robots %}{% endblock %}
+    <link rel="canonical" href="{% block canonical %}{{ canonical_url }}{% endblock %}">
+    {# La misma página en cada idioma (?lang=en): los buscadores muestran la de su usuario #}
+    {% block alternates %}{% if not user.is_authenticated %}
+    {% for code, url in alternate_urls %}
+    <link rel="alternate" hreflang="{{ code }}" href="{{ url }}">
+    {% endfor %}
+    <link rel="alternate" hreflang="x-default" href="{{ default_language_url }}">
+    {% endif %}{% endblock %}
     {# Vista previa al compartir el enlace (WhatsApp, Telegram, redes sociales) #}
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Zyra">
     <meta property="og:title" content="{% block og_title %}Zyra · {% translate 'Gestión de equipos de pádel' %}{% endblock %}">
-    <meta property="og:description" content="{% translate 'Gestiona tu equipo de pádel: jugadores, convocatorias, partidos y estadísticas, en privado para cada club.' %}">
+    <meta property="og:description" content="{% block og_description %}{% translate 'Gestiona tu equipo de pádel: jugadores, convocatorias, partidos y estadísticas, en privado para cada club.' %}{% endblock %}">
     <meta property="og:url" content="{{ canonical_url }}">
     <meta property="og:image" content="{{ site_url }}{% static 'zyra/icon-512.png' %}">
     <meta property="og:image:width" content="512">
     <meta property="og:image:height" content="512">
     <meta property="og:image:alt" content="{% translate 'Logotipo de Zyra' %}">
     <meta property="og:locale" content="{% if LANGUAGE_CODE == 'en' %}en_GB{% else %}es_ES{% endif %}">
+    <meta property="og:locale:alternate" content="{% if LANGUAGE_CODE == 'en' %}es_ES{% else %}en_GB{% endif %}">
     <meta name="twitter:card" content="summary">
     <meta name="theme-color" content="#0A0B09">
     <link rel="icon" href="{% static 'zyra/logo.svg' %}" type="image/svg+xml">
@@ -67,7 +76,7 @@
                     <li>
                         <form action="{% url 'set_language' %}" method="post">
                             {% csrf_token %}
-                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                            <input type="hidden" name="next" value="{{ language_next }}">
                             <input type="hidden" name="language" value="{{ language.code }}">
                             <button type="submit" class="dropdown-item {% if language.code == current_language %}active{% endif %}" lang="{{ language.code }}">
                                 <i class="fa-solid {% if language.code == current_language %}fa-check{% else %}fa-language{% endif %}"></i> {{ language.name_local|capfirst }}
