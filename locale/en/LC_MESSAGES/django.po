@@ -5952,63 +5952,14 @@ msgstr "Streak"
 msgid "Forma"
 msgstr "Form"
 
-#: match/report_pdf.py:408
-msgid "Estim."
-msgstr "Est."
-
-#: match/report_pdf.py:410
-msgid ""
-"Estim.: probabilidad estimada de ganar un partido (historial, rendimiento en "
-"la sede, forma y racha)."
-msgstr ""
-"Est.: estimated probability of winning a match (history, performance at the "
-"venue, form and streak)."
-
 #: match/report_pdf.py:412
 #, python-format
 msgid "%(n)s convocados más no caben en la tabla."
 msgstr "%(n)s more called-up players do not fit in the table."
 
 #: match/report_pdf.py:430
-msgid "Convoc."
-msgstr "Call-ups"
-
-#: match/report_pdf.py:430
 msgid "Último"
 msgstr "Last"
-
-#: match/report_pdf.py:436
-msgid "JUGADORES CON MÁS PARTIDOS"
-msgstr "PLAYERS WITH THE MOST MATCHES"
-
-#: match/report_pdf.py:437
-msgid "JUGADORES CON MENOS PARTIDOS"
-msgstr "PLAYERS WITH THE FEWEST MATCHES"
-
-#: match/report_pdf.py:441
-#, python-format
-msgid "Temporada %(season)s, toda la plantilla (%(n)s jugadores)."
-msgstr "Season %(season)s, whole squad (%(n)s players)."
-
-#: match/report_pdf.py:443
-#, python-format
-msgid "%(n)s sin jugar todavía."
-msgstr "%(n)s yet to play."
-
-#: match/report_pdf.py:444
-msgid "Todos han jugado ya."
-msgstr "Everyone has played already."
-
-#: match/report_pdf.py:445
-msgid ""
-"En <font color='#B4F100'><b>lima</b></font>, convocados para este partido."
-msgstr ""
-"In <font color='#B4F100'><b>lime</b></font>, players called up for this "
-"match."
-
-#: match/report_pdf.py:446
-msgid "Convoc.: convocatorias cerradas en la temporada."
-msgstr "Call-ups: closed call-ups this season."
 
 #: match/report_pdf.py:458
 msgid "PAREJAS CON HISTORIAL ENTRE LOS CONVOCADOS"
@@ -7738,3 +7689,15 @@ msgid "%(n)s equipo actualizado."
 msgid_plural "%(n)s equipos actualizados."
 msgstr[0] "%(n)s team updated."
 msgstr[1] "%(n)s teams updated."
+
+#: match/report_pdf.py
+msgid "Jug./Conv."
+msgstr "Pl./Calls"
+
+#: match/report_pdf.py
+msgid ""
+"Jug./Conv.: partidos jugados / convocatorias en las que se apuntó esta "
+"temporada. Último: fecha del último partido disputado."
+msgstr ""
+"Pl./Calls: matches played / call-ups signed up for this season. Last: date "
+"of the last match played."

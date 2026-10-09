@@ -68,32 +68,29 @@ class Layout:
     """Densidad y reparto del informe.
 
     Los valores por defecto son la distribución normal; las demás de ``LAYOUTS``
-    aprietan el espaciado, pasan el reparto de partidos a la segunda página, dejan
-    fluir el contenido sin salto forzado y, en último caso, limitan las filas de
-    convocados.
+    aprietan el espaciado y la letra, dejan fluir el contenido sin salto forzado y,
+    en último caso, limitan las filas de convocados.
     """
     section_gap: float = SECTION_GAP
     heading_gap: float = HEADING_GAP
     note_gap: float = NOTE_GAP
     panel_pad: float = PANEL_PAD
     cell_pad: float = CELL_PAD
-    cell_size: float = 8          # cuerpo de letra de las celdas
-    body_size: float = 8.5        # cuerpo de letra del texto corrido
-    usage_on_first: bool = True   # reparto de partidos en la primera página (si no, en la segunda)
+    cell_size: float = 9.5        # cuerpo de letra de las celdas
+    body_size: float = 9.5        # cuerpo de letra del texto corrido
     max_players: int = None       # filas de convocados (None = todos)
     flow: bool = False            # sin salto de página forzado ni bloques indivisibles
 
 
 _COMPACT = Layout(section_gap=4 * mm, heading_gap=1.8 * mm, note_gap=1.5 * mm, panel_pad=6,
-                  cell_pad=2, cell_size=7.5, body_size=8)
+                  cell_pad=2, cell_size=8.5, body_size=9)
 LAYOUTS = (
     Layout(),
     _COMPACT,
-    replace(_COMPACT, usage_on_first=False),
-    replace(_COMPACT, usage_on_first=False, flow=True),
-    *(replace(_COMPACT, usage_on_first=False, max_players=n) for n in (24, 20, MAX_PLAYERS_TABLE)),
+    replace(_COMPACT, flow=True),
+    *(replace(_COMPACT, max_players=n) for n in (24, 20, MAX_PLAYERS_TABLE)),
     # La última fluye sin huecos: si tampoco cabe en dos páginas, es la que se envía
-    replace(_COMPACT, usage_on_first=False, max_players=MAX_PLAYERS_TABLE, flow=True),
+    replace(_COMPACT, max_players=MAX_PLAYERS_TABLE, flow=True),
 )
 
 _fonts_ready = False
@@ -116,20 +113,20 @@ def _styles(layout=Layout()):
     base = dict(fontName="Archivo", fontSize=size, leading=size * 1.3, textColor=TEXT, alignment=TA_LEFT)
     return {
         "title": ParagraphStyle("title", fontName="Syncopate", fontSize=17, leading=21, textColor=TEXT),
-        "subtitle": ParagraphStyle("subtitle", **{**base, "fontSize": 10, "leading": 13, "textColor": MUTED}),
-        "section": ParagraphStyle("section", fontName="Archivo-Black", fontSize=9.5, leading=12,
+        "subtitle": ParagraphStyle("subtitle", **{**base, "fontSize": 11, "leading": 14, "textColor": MUTED}),
+        "section": ParagraphStyle("section", fontName="Archivo-Black", fontSize=11, leading=14,
                                   textColor=TEXT, spaceAfter=layout.heading_gap),
-        "subsection": ParagraphStyle("subsection", fontName="Archivo-Bold", fontSize=6.5, leading=8,
+        "subsection": ParagraphStyle("subsection", fontName="Archivo-Bold", fontSize=7.5, leading=9,
                                      textColor=MUTED, spaceAfter=1.5 * mm),
         "body": ParagraphStyle("body", **base),
         "list": ParagraphStyle("list", **{**base, "spaceAfter": 2}),
-        "muted": ParagraphStyle("muted", **{**base, "textColor": MUTED, "fontSize": 7.5, "leading": 9.5}),
+        "muted": ParagraphStyle("muted", **{**base, "textColor": MUTED, "fontSize": 8.5, "leading": 11}),
         "cell": ParagraphStyle("cell", **{**base, "fontSize": cell, "leading": cell * 1.25}),
         "cell_bold": ParagraphStyle("cell_bold", **{**base, "fontName": "Archivo-Bold", "fontSize": cell,
                                                     "leading": cell * 1.25}),
         "kpi_value": ParagraphStyle("kpi_value", fontName="Archivo-Black", fontSize=17, leading=19, textColor=TEXT),
-        "kpi_label": ParagraphStyle("kpi_label", fontName="Archivo-Bold", fontSize=6.5, leading=8, textColor=MUTED),
-        "lineup_title": ParagraphStyle("lineup_title", fontName="Archivo-Black", fontSize=10, leading=13,
+        "kpi_label": ParagraphStyle("kpi_label", fontName="Archivo-Bold", fontSize=7.5, leading=9, textColor=MUTED),
+        "lineup_title": ParagraphStyle("lineup_title", fontName="Archivo-Black", fontSize=11, leading=14,
                                        textColor=LIME, spaceAfter=layout.heading_gap),
     }
 
@@ -392,63 +389,35 @@ def _story(report, layout):
     shown = players[:layout.max_players] if layout.max_players else players
     story.append(Spacer(1, layout.section_gap))
     section(_("CONVOCADOS · RENDIMIENTO COMO %(venue)s") % {"venue": venue.upper()})
-    name_w = 44 * mm - CELL_X_PAD
+    widths = [44 * mm, 12 * mm, 28 * mm, 26 * mm, 20 * mm, 18 * mm, 14 * mm, 20 * mm]
+    name_w = widths[0] - CELL_X_PAD
+    usage = report["usage"]
+
+    def last_played(f):
+        """Fecha del último partido disputado por el convocado; vacía si aún no ha jugado."""
+        last = usage[f.player.id]["last"]
+        return f"{last:%d/%m/%y}" if last else ""
+
     player_rows = [[
         Paragraph(f"<b>{esc(_player_label(f.player, name_w, size=cell_size))}</b>", st["cell"]),
-        Paragraph(f.player.get_position_display() if f.player.position else "", st["cell"]),
         Paragraph(f"{f.snp:g}" if f.snp else "", st["cell"]),
         Paragraph(_record(f.venue_wins, f.venue_played), st["cell"]),
         Paragraph(_record(f.wins, f.played), st["cell"]),
+        Paragraph(f"<b>{usage[f.player.id]['games']}</b>/{usage[f.player.id]['calls']}", st["cell"]),
+        Paragraph(last_played(f), st["cell"]),
         Paragraph(f"<font color='{'#B4F100' if f.streak[0] == 'V' else '#FF5C63'}'><b>{_streak(f.streak)}</b></font>", st["cell"]),
         _pips(f.form),
-        Paragraph(f"<b>{round(f.strength * 100)}%</b>", st["cell"]),
     ] for f in shown]
     story.append(_data_table(
-        [_("Jugador"), _("Posición"), "SNP", _("Como %(venue)s") % {"venue": venue}, _("Global"), _("Racha"),
-         _("Forma"), _("Estim.")],
-        player_rows, [44 * mm, 19 * mm, 13 * mm, 30 * mm, 30 * mm, 13 * mm, 17 * mm, 16 * mm], st, pad=pad))
-    note = _("Estim.: probabilidad estimada de ganar un partido (historial, rendimiento en la sede, forma y racha).")
+        [_("Jugador"), "SNP", _("Como %(venue)s") % {"venue": venue}, _("Global"), _("Jug./Conv."), _("Último"),
+         _("Racha"), _("Forma")],
+        player_rows, widths, st, pad=pad))
+    note = _("Jug./Conv.: partidos jugados / convocatorias en las que se apuntó esta temporada. "
+             "Último: fecha del último partido disputado.")
     if len(players) > len(shown):
         note += " " + _("%(n)s convocados más no caben en la tabla.") % {"n": len(players) - len(shown)}
     story.append(Spacer(1, layout.note_gap))
     story.append(Paragraph(note, st["muted"]))
-
-    # Reparto de partidos en la temporada (toda la plantilla)
-    half = (CONTENT_W - GUTTER) / 2
-    usage_name_w = half - 49 * mm
-
-    def usage_table(rows):
-        """Tabla de reparto de partidos; los convocados ahora se resaltan en lima."""
-        body = [[
-            Paragraph(f"<font color='{'#B4F100' if u['called_now'] else '#F4F4F4'}'>"
-                      f"<b>{esc(_player_label(u['player'], usage_name_w - CELL_X_PAD, size=cell_size))}</b></font>",
-                      st["cell"]),
-            Paragraph(f"<b>{u['games']}</b>", st["cell"]),
-            Paragraph(str(u["calls"]), st["cell"]),
-            Paragraph(f"{u['last']:%d/%m}" if u["last"] else "", st["cell"]),
-        ] for u in rows]
-        return _data_table([_("Jugador"), _("Partidos"), _("Convoc."), _("Último")], body,
-                           [usage_name_w, 18 * mm, 16 * mm, 15 * mm], st, pad=pad)
-
-    never = report["never_played"]
-    usage_block = [KeepTogether([  # bloque corto: la nota no se separa de sus tablas
-        _columns(
-            [Paragraph(_("JUGADORES CON MÁS PARTIDOS"), st["section"]), usage_table(report["most_games"])],
-            [Paragraph(_("JUGADORES CON MENOS PARTIDOS"), st["section"]), usage_table(report["least_games"])],
-            half),
-        Spacer(1, layout.note_gap),
-        Paragraph(
-            _("Temporada %(season)s, toda la plantilla (%(n)s jugadores).") % {
-                "season": match.season, "n": report['squad_size']} + " "
-            + ("<font color='#FF5C63'><b>" + _("%(n)s sin jugar todavía.") % {"n": never} + "</b></font> "
-               if never else _("Todos han jugado ya.") + " ")
-            + _("En <font color='#B4F100'><b>lima</b></font>, convocados para este partido.") + " "
-            + _("Convoc.: convocatorias cerradas en la temporada."),
-            st["muted"]),
-    ])]
-    if layout.usage_on_first:
-        story.append(Spacer(1, layout.section_gap))
-        story.extend(usage_block)
 
     # ---------------- Página 2 ----------------
     if layout.flow:
@@ -457,7 +426,7 @@ def _story(report, layout):
         story.append(PageBreak())
     section(_("PAREJAS CON HISTORIAL ENTRE LOS CONVOCADOS"))
     if report["pairs"]:
-        pair_name_w = 70 * mm - CELL_X_PAD
+        pair_name_w = 84 * mm - CELL_X_PAD
         pair_rows = [[
             Paragraph(f"<b>{esc(_pair_label(p, pair_name_w, size=cell_size))}</b>", st["cell"]),
             Paragraph(f"{p.snp_sum:g}", st["cell"]),
@@ -466,15 +435,9 @@ def _story(report, layout):
             Paragraph(_streak(p.streak), st["cell"]),
         ] for p in report["pairs"]]
         story.append(_data_table([_("Pareja"), _("Suma SNP"), _("Como %(venue)s") % {"venue": venue}, _("Juntos"), _("Racha")],
-                                 pair_rows, [70 * mm, 18 * mm, 36 * mm, 36 * mm, 22 * mm], st, pad=pad))
+                                 pair_rows, [84 * mm, 18 * mm, 30 * mm, 30 * mm, 20 * mm], st, pad=pad))
     else:
         story.append(Paragraph(_("Ninguna pareja de convocados ha jugado junta todavía."), st["muted"]))
-
-    if not layout.usage_on_first:
-        story.append(Spacer(1, layout.section_gap))
-        if layout.flow:
-            story.append(CondPageBreak(MIN_ROWS_AFTER_HEADING))
-        story.extend(usage_block)
 
     story.append(Spacer(1, layout.section_gap))
     section(_("ALINEACIONES RECOMENDADAS"))
@@ -482,7 +445,7 @@ def _story(report, layout):
         story.append(Paragraph(_("Hacen falta al menos 10 convocados para proponer una alineación."), st["body"]))
     # Sin saltos forzados las alineaciones van sin tarjeta para que su tabla pueda partirse entre páginas
     lineup_w = CONTENT_W - (0 if layout.flow else 2 * layout.panel_pad)
-    pair_col_w = lineup_w - 76 * mm
+    pair_col_w = lineup_w - 80 * mm
     for i, item in enumerate(report["lineups"]):
         if i:
             story.append(Spacer(1, layout.section_gap if layout.flow else 4 * mm))
@@ -496,7 +459,7 @@ def _story(report, layout):
             Paragraph(f"<b>{row['pct']}%</b>", st["cell"]),
         ] for row in lineup.rows]
         table = _data_table([_("Partido"), _("Valor"), _("Pareja"), _("Suma SNP"), _("Victoria est.")], rows,
-                            [16 * mm, 18 * mm, pair_col_w, 20 * mm, 22 * mm], st, highlight_first=True, pad=pad)
+                            [16 * mm, 18 * mm, pair_col_w, 20 * mm, 26 * mm], st, highlight_first=True, pad=pad)
         title = Paragraph(_("%(title)s · %(pct)s%% DE GANAR LA ELIMINATORIA") % {
             "title": item['title'].upper(), "pct": round(lineup.win * 100)}, st["lineup_title"])
         if layout.flow:
