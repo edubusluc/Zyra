@@ -57,8 +57,8 @@ class OwnPlayerTests(MediaMixin, TestCase):
         self.assertRedirects(response, reverse("my_player"), fetch_redirect_response=False)
         self.ana.refresh_from_db()
         self.assertEqual(self.ana.user, self.user)
-        # Ya enlazado: «Mi jugador» es el formulario de su perfil y no puede enlazar otro.
-        self.assertContains(self.client.get(reverse("my_player")), "Editar mi perfil")
+        # Ya enlazado: «Mi jugador» es el formulario de su jugador y no puede enlazar otro.
+        self.assertContains(self.client.get(reverse("my_player")), "Editar mi jugador")
         self.client.post(reverse("link_player", args=[self.other.public_id]))
         self.other.refresh_from_db()
         self.assertIsNone(self.other.user)

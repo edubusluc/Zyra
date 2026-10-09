@@ -70,7 +70,7 @@
             {% blocktranslate with account=player.user.email|default:player.user.username %}Enlazado a la cuenta {{ account }}: puede cambiar su posición, mano hábil y foto.{% endblocktranslate %}
             <button type="submit" form="unlink-player" class="btn btn-link btn-sm p-0 align-baseline">{% translate "Desenlazar" %}</button>
             {% else %}
-            {% translate "Sin cuenta enlazada: el jugador puede enlazarla desde «Mi jugador» al entrar en el club." %}
+            {% translate "Sin cuenta enlazada: el jugador puede enlazarla desde «Mi perfil» al entrar en el club." %}
             {% endif %}
         </p>
 

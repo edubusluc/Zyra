@@ -100,9 +100,7 @@
                     {% endfor %}
                     <li><hr class="dropdown-divider"></li>
                     {% endif %}
-                    {% if current_club %}
-                    <li><a class="dropdown-item" href="{% url 'my_player' %}"><i class="fa-solid fa-id-badge"></i> {% translate "Mi jugador" %}</a></li>
-                    {% endif %}
+                    <li><a class="dropdown-item" href="{% url 'my_profile' %}"><i class="fa-solid fa-id-badge"></i> {% translate "Mi perfil" %}</a></li>
                     {% if is_club_admin %}
                     <li><a class="dropdown-item" href="{% url 'club_members' %}"><i class="fa-solid fa-user-gear"></i> {% translate "Miembros del club" %}</a></li>
                     <li><a class="dropdown-item" href="{% url 'snp_account' %}"><i class="fa-solid fa-trophy"></i> {% translate "Cuenta SNP" %}</a></li>

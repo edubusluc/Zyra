@@ -172,6 +172,44 @@ class InviteMemberForm(forms.Form):
         return email
 
 
+class EmailChangeForm(forms.Form):
+    """
+    Cambio del email de la propia cuenta desde «Mi perfil». Pide la contraseña actual:
+    con el email se entra en Zyra (y con Google, que entra en la cuenta de ese email).
+    """
+    email = forms.EmailField(
+        label=_("Email nuevo"), max_length=254,
+        widget=forms.EmailInput(attrs={"autocomplete": "email", "class": "form-control"}),
+    )
+    current_password = forms.CharField(
+        label=_("Contraseña actual"), strip=False,
+        widget=forms.PasswordInput(attrs={"autocomplete": "current-password", "class": "form-control"}),
+    )
+
+    def __init__(self, *args, user=None, **kwargs):
+        """``user``: cuenta cuyo email se cambia."""
+        super().__init__(*args, **kwargs)
+        self.user = user
+
+    def clean_email(self):
+        """Normaliza el email y rechaza el actual, los de otras cuentas y los bloqueados."""
+        email = self.cleaned_data["email"].strip().lower()
+        if email == (self.user.email or "").lower():
+            raise forms.ValidationError(gettext("Ese ya es tu email."))
+        if User.objects.filter(email__iexact=email).exclude(pk=self.user.pk).exists():
+            raise forms.ValidationError(gettext("Ese email ya lo usa otra cuenta."))
+        if is_blocked(email):
+            raise forms.ValidationError(gettext("Este email no puede usarse en Zyra."))
+        return email
+
+    def clean_current_password(self):
+        """Comprueba que la contraseña actual es la de la cuenta."""
+        password = self.cleaned_data["current_password"]
+        if not self.user.check_password(password):
+            raise forms.ValidationError(gettext("La contraseña no es correcta."))
+        return password
+
+
 class PasswordRulesMixin:
     """
     Formularios de allauth para elegir contraseña nueva: etiquetas de Zyra y la misma

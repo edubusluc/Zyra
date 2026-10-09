@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+{% comment %}«Mi perfil» (core.views.my_profile): email y contraseña de la cuenta y jugador enlazado del club activo.{% endcomment %}
+
+{% block title %}{% translate "Mi perfil" %} · Zyra{% endblock %}
+
+{% block content %}
+<div class="z-page-head">
+    <div>
+        <span class="z-eyebrow">{{ user.username }}</span>
+        <h1>{% translate "Mi perfil" %}</h1>
+    </div>
+</div>
+
+<div class="z-panel z-account">
+    <h2 class="z-section-title mt-0">{% translate "Cuenta" %}</h2>
+    {% if email_form %}
+    <form method="post" action="{% url 'my_profile' %}" class="z-account-form" novalidate>
+        {% csrf_token %}
+        <p class="form-text mt-0">{% blocktranslate with email=user.email|default:"—" %}Email actual: <strong>{{ email }}</strong>{% endblocktranslate %}</p>
+        {% for field in email_form %}
+        <div class="mb-3">
+            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+            {{ field }}
+            {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+        </div>
+        {% endfor %}
+        <div class="d-flex flex-wrap gap-2">
+            <button type="submit" class="btn btn-primary">{% translate "Guardar email" %}</button>
+            <a href="{% url 'my_profile' %}" class="btn btn-outline-secondary">{% translate "Cancelar" %}</a>
+        </div>
+    </form>
+    {% else %}
+    <div class="z-account-row">
+        <i class="fa-solid fa-envelope" aria-hidden="true"></i>
+        <div class="z-account-body">
+            <span class="z-account-label">{% translate "Email" %}</span>
+            <span class="z-account-value">{{ user.email|default:"—" }}</span>
+        </div>
+        {% if not google_only %}
+        <a href="?edit=email" class="btn btn-outline-secondary btn-sm" aria-label="{% translate 'Cambiar el email' %}"><i class="fa-solid fa-pen"></i><span class="z-account-btn-text"> {% translate "Cambiar" %}</span></a>
+        {% endif %}
+    </div>
+    {% if google_only %}
+    <div class="z-account-row">
+        <i class="fa-brands fa-google" aria-hidden="true"></i>
+        <div class="z-account-body">
+            <span class="z-account-label">{% translate "Acceso" %}</span>
+            <span class="z-account-value">{% translate "Entras con Google" %}</span>
+            <span class="z-account-note">{% translate "Tu email y tu contraseña los gestiona Google." %}</span>
+        </div>
+    </div>
+    {% else %}
+    <div class="z-account-row">
+        <i class="fa-solid fa-key" aria-hidden="true"></i>
+        <div class="z-account-body">
+            <span class="z-account-label">{% translate "Contraseña" %}</span>
+            <span class="z-account-value">••••••••</span>
+            {% if uses_google %}<span class="z-account-note">{% translate "También puedes entrar con Google." %}</span>{% endif %}
+        </div>
+        <a href="{% url 'account_change_password' %}" class="btn btn-outline-secondary btn-sm" aria-label="{% translate 'Cambiar la contraseña' %}"><i class="fa-solid fa-pen"></i><span class="z-account-btn-text"> {% translate "Cambiar" %}</span></a>
+    </div>
+    {% endif %}
+    {% endif %}
+</div>
+
+{% if current_club %}
+<div class="z-panel z-account">
+    <h2 class="z-section-title mt-0">{% translate "Mi jugador" %}</h2>
+    {% if player %}
+    <a href="{% url 'my_player' %}" class="z-claim is-free z-account-player">
+        <img src="{% if player.photo %}{{ player.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="" class="z-avatar z-avatar--sm">
+        <span class="z-pick-body">
+            <span class="z-pick-name">{{ player.full_name }}</span>
+            <span class="z-pick-meta"><i class="fa-solid fa-link me-1"></i>{% blocktranslate with club=current_club.name %}Tu cuenta está enlazada a este jugador de {{ club }}{% endblocktranslate %}</span>
+        </span>
+        <span class="btn btn-primary btn-sm"><i class="fa-solid fa-pen"></i><span class="z-account-btn-text"> {% translate "Editar" %}</span></span>
+    </a>
+    <p class="form-text mb-0 mt-2">{% translate "Pulsa sobre tu jugador para cambiar tu foto, tu posición y tu mano hábil." %} <a href="{% url 'show_player' player.public_id %}">{% translate "Ver su ficha" %}</a></p>
+    {% else %}
+    <div class="z-callout z-callout--info">
+        <i class="fa-solid fa-link-slash" aria-hidden="true"></i>
+        <p class="mb-0">{% blocktranslate with club=current_club.name %}Tu cuenta no está enlazada a ningún jugador de {{ club }}. Enlázala para cambiar tu foto, tu posición y tu mano hábil.{% endblocktranslate %}</p>
+    </div>
+    <a href="{% url 'my_player' %}" class="btn btn-primary mt-3"><i class="fa-solid fa-link me-1"></i> {% translate "Enlazarme a un jugador" %}</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

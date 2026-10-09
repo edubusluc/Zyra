@@ -60,6 +60,10 @@ estadísticas) y aviso al capitán si el club no tiene cuenta SNP
   ([`players.views`](referencia/players/views.md)).
 - Nombres siempre en mayúsculas; posición (derecha, revés, mixto) y si sigue en el equipo.
 - **Plantilla**: marcar de una vez quién está en el equipo.
+- **Mi perfil** (menú de la cuenta): email y contraseña de la cuenta con opción de cambiarlos (el email
+  pide la contraseña actual; en las cuentas solo de Google el email lo gestiona Google) y el jugador
+  enlazado, que se pulsa para editarlo, o el botón para enlazarse a uno
+  ([`core.views.my_profile`](referencia/core/views.md)).
 - **Mi jugador**: cada miembro enlaza su cuenta con su jugador y sube su foto. Al elegir quién es
   ve en lima los jugadores libres y apagados los ya enlazados, el buscador filtra mientras escribe
   y «Soy yo» pide confirmación con su nombre y apellidos. Las fotos se

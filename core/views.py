@@ -35,7 +35,7 @@ from .adapters import GOOGLE_NEW_ACCOUNT_KEY
 from .blocklist import is_user_blocked
 from .decorators import club_admin_required
 from .emails import send_invitation_email, send_welcome_email
-from .forms import CaptainPlayerForm, CaptainSnpForm, ClubForm, InviteMemberForm, SignUpForm
+from .forms import CaptainPlayerForm, CaptainSnpForm, ClubForm, EmailChangeForm, InviteMemberForm, SignUpForm
 from .middleware import SESSION_KEY
 from .models import Invitation, Membership
 from .onboarding import onboarding_for
@@ -515,6 +515,35 @@ def _change_own_email(user, email):
     # El email verificado (Google) era el anterior: allauth no debe seguir dándolo por bueno.
     EmailAddress.objects.filter(user=user).exclude(email__iexact=email).delete()
     return None
+
+
+@login_required
+def my_profile(request):
+    """
+    «Mi perfil»: email y contraseña de la cuenta y, con club activo, su jugador.
+
+    El email se cambia aquí (``?edit=email``) pidiendo la contraseña actual; la contraseña,
+    en la página de allauth. Las cuentas creadas con Google y sin contraseña ven su email
+    sin poder cambiarlo: lo gestiona Google. Con jugador enlazado se muestra para ir a
+    editarlo; sin él, se ofrece enlazarse a uno (players.views.my_player).
+    """
+    user = request.user
+    google_only = not user.has_usable_password()
+    email_form = None
+    if not google_only and (request.method == "POST" or request.GET.get("edit") == "email"):
+        email_form = EmailChangeForm(request.POST or None, user=user)
+        if email_form.is_valid():
+            _change_own_email(user, email_form.cleaned_data["email"])
+            messages.success(request, _("Email actualizado."))
+            return redirect("my_profile")
+    elif request.method == "POST":
+        return redirect("my_profile")
+    return render(request, "my_profile.html", {
+        "google_only": google_only,
+        "uses_google": SocialAccount.objects.filter(user=user, provider="google").exists(),
+        "email_form": email_form,
+        "player": Player.objects.filter(club=request.club, user=user).first() if request.club else None,
+    })
 
 
 @club_admin_required

@@ -1,6 +1,6 @@
 """
 URLs de la app core (montadas en /core/): inicio de sesión, alta de club, cambio de
-club, miembros e invitaciones.
+club, «Mi perfil», miembros e invitaciones.
 """
 from django.urls import path
 from django.contrib.auth import views as auth_views
@@ -13,6 +13,7 @@ urlpatterns = (
     path('no_club/', views.no_club, name='no_club'),
     path('switch_club/', views.switch_club, name='switch_club'),
     path('onboarding/dismiss/', views.dismiss_onboarding, name='dismiss_onboarding'),
+    path('profile/', views.my_profile, name='my_profile'),
     path('members/', views.club_members, name='club_members'),
     path('members/leave/', views.leave_club, name='leave_club'),
     path('members/<pid:membership_id>/update/', views.update_member, name='update_member'),
