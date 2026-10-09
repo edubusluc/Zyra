@@ -39,6 +39,7 @@ from .forms import CaptainPlayerForm, CaptainSnpForm, ClubForm, EmailChangeForm,
 from .middleware import SESSION_KEY
 from .models import Invitation, Membership
 from .onboarding import onboarding_for
+from . import seo
 from .services import (
     InvitationError, accept_invitation, club_name_matches, club_of, create_club, delete_club, is_last_admin,
     is_only_member, remove_membership,
@@ -65,7 +66,10 @@ LOGIN_LOCKOUT_SECONDS = 15 * 60
 def home(request):
     """Portada del club: logo, próximo partido y jugador/pareja en racha."""
     if not request.user.is_authenticated:
-        return render(request, 'landing.html')
+        return render(request, 'landing.html', {
+            'faq': seo.landing_faq(),
+            'structured_data': seo.landing_structured_data(request),
+        })
     if request.club is None:
         return redirect('no_club')
 

@@ -4,6 +4,7 @@ sección de la navegación y si el inicio de sesión con Google está activado).
 """
 from django.conf import settings
 
+from . import seo
 from .services import is_last_admin, is_only_member
 
 
@@ -50,12 +51,18 @@ def google_login(request):
 
 def site(request):
     """
-    URL canónica de la página (SITE_URL o el dominio de la petición, sin parámetros) y
-    correo de contacto, para el <head> y el pie.
+    URL canónica de la página (SITE_URL o el dominio de la petición, sin parámetros salvo
+    ``?lang=`` en inglés), sus versiones en cada idioma para hreflang, la ruta a la que
+    vuelve el selector de idioma y el correo de contacto, para el <head> y el pie.
     """
-    base = settings.SITE_URL or f"{request.scheme}://{request.get_host()}"
+    base = seo.site_base(request)
+    alternates = seo.alternate_urls(request)
+    language = seo.url_language(request)
     return {
         "site_url": base,
-        "canonical_url": base + request.path,
+        "canonical_url": dict(alternates)[language] if language else base + request.path,
+        "alternate_urls": alternates,
+        "default_language_url": base + request.path,
+        "language_next": seo.path_without_language(request),
         "contact_email": settings.CONTACT_EMAIL,
     }
