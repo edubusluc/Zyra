@@ -117,6 +117,13 @@
         </div>
       </section>
 
+      {# ============ 1b. SETS ============ #}
+      <section aria-labelledby="pair-sets-title" class="st-section">
+        <h2 class="st-section-title" id="pair-sets-title">{% translate "Sets de la pareja" %}</h2>
+        {% translate "Sets" as t_title %}{% translate "Tercer set, tie-breaks, remontadas y roscos de la pareja jugando junta." as t_note %}
+        {% include 'includes/set_stats.html' with st=pair_sets title=t_title note=t_note %}
+      </section>
+
       {# ============ 2. ÚLTIMOS PARTIDOS ============ #}
       <section aria-labelledby="last-title" class="st-section">
         <h2 class="st-section-title" id="last-title">{% blocktranslate trimmed count n=last_games|length %}Últimos {{ n }} partido{% plural %}Últimos {{ n }} partidos{% endblocktranslate %}</h2>

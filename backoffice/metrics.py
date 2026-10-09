@@ -6,16 +6,18 @@ import datetime
 
 from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth import get_user_model
-from django.db.models import Count, Max, OuterRef, Subquery, Sum
+from django.db.models import Count, Max, OuterRef, Q, Subquery, Sum
 from django.db.models.functions import TruncHour, TruncWeek
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
-from call.models import Call
+from call.models import Call, ReportDelivery
 from core.models import Club, Invitation, Membership
-from match.models import Match
-from players.models import Player
+from match.models import Game, Match, Result
+from players.models import Player, SnpAccount
 
-from .models import RequestMetric, UserActivity
+from .models import JobRun, RequestMetric, ScheduledJob, UserActivity
+from .scheduler import scheduler_is_late
 
 User = get_user_model()
 
@@ -219,4 +221,146 @@ def load_metrics():
         "last_hour": _summary(last_hour),
         "last_day": _summary(last_day),
         "peak_minute": peak if peak["requests"] else None,
+    }
+
+
+# ---------- Uso de la plataforma ----------
+
+USAGE_WEEKS = 12
+
+
+def _weekly(dates, mondays):
+    """Cuenta de fechas por semana (lunes) para las semanas dadas, con la barra relativa a la mayor."""
+    counts = {}
+    for d in dates:
+        monday = d - datetime.timedelta(days=d.weekday())
+        counts[monday] = counts.get(monday, 0) + 1
+    peak = max((counts.get(m, 0) for m in mondays), default=0) or 1
+    return [{"week": m, "n": counts.get(m, 0), "pct": round(100 * counts.get(m, 0) / peak)} for m in mondays]
+
+
+def usage_metrics(weeks=USAGE_WEEKS):
+    """
+    Uso de la plataforma: enfrentamientos jugados, convocatorias cerradas y resultados
+    metidos por semana (por fecha del enfrentamiento), cuántos clubes usan cada parte de
+    la web y los clubes con más partidos en los últimos 30 días.
+    """
+    today = timezone.localdate()
+    this_monday = today - datetime.timedelta(days=today.weekday())
+    mondays = [this_monday - datetime.timedelta(weeks=i) for i in range(weeks - 1, -1, -1)]
+    start, end = mondays[0], this_monday + datetime.timedelta(days=6)
+    in_range = {"start_date__gte": start, "start_date__lte": min(end, today)}
+
+    matches = Match.objects.filter(**in_range).values_list("start_date", flat=True)
+    calls = Call.objects.filter(draft_mode=False, **{f"match__{k}": v for k, v in in_range.items()}) \
+        .values_list("match__start_date", flat=True)
+    results = Result.objects.filter(**{f"game__match__{k}": v for k, v in in_range.items()}) \
+        .values_list("game__match__start_date", flat=True)
+
+    clubs = Club.objects.all()
+    total = clubs.count()
+
+    def adoption(label, qs):
+        """{'label', 'n', 'pct'}: clubes de ``qs`` (distintos) sobre el total."""
+        n = qs.values("pk").distinct().count()
+        return {"label": label, "n": n, "pct": round(100 * n / total) if total else 0}
+
+    features = [
+        adoption(_("Han creado algún enfrentamiento"), clubs.filter(matches__isnull=False)),
+        adoption(_("Han cerrado una convocatoria"), clubs.filter(pk__in=Call.objects.filter(draft_mode=False).values("match__club"))),
+        adoption(_("Han hecho una alineación"), clubs.filter(pk__in=Game.objects.values("match__club"))),
+        adoption(_("Han metido resultados"), clubs.filter(pk__in=Result.objects.values("game__match__club"))),
+        adoption(_("Tienen cuenta SNP"), clubs.filter(pk__in=SnpAccount.objects.values("club"))),
+        adoption(_("Tienen jugadores con cuenta"), clubs.filter(players__user__isnull=False)),
+        adoption(_("Tienen más de un miembro"), clubs.annotate(n=Count("memberships")).filter(n__gt=1)),
+    ]
+
+    month_ago = today - datetime.timedelta(days=30)
+    top_clubs = (
+        annotate_clubs(clubs)
+        .annotate(recent=Count("matches", filter=Q(matches__start_date__gte=month_ago, matches__start_date__lte=today)))
+        .filter(recent__gt=0).order_by("-recent", "name")[:10]
+    )
+    return {
+        "weeks": weeks,
+        "matches": _weekly(matches, mondays),
+        "calls": _weekly(calls, mondays),
+        "results": _weekly(results, mondays),
+        "totals": {
+            "matches": len(matches), "calls": len(calls), "results": len(results),
+            "all_matches": Match.objects.count(), "all_results": Result.objects.count(),
+        },
+        "clubs_total": total,
+        "features": features,
+        "top_clubs": top_clubs,
+    }
+
+
+# ---------- Salud de los servicios ----------
+
+# Una cuenta SNP sin sincronizar en estos días está "atrasada" (el ciclo es semanal).
+SNP_STALE_DAYS = 8
+HEALTH_DAYS = 30
+
+
+def health_metrics():
+    """
+    Salud de los servicios: envío de informes por email (ReportDelivery), sincronización
+    de puntos SNP por club, procesos programados y errores 500 de la web en 24 h.
+    """
+    now = timezone.now()
+    since = now - datetime.timedelta(days=HEALTH_DAYS)
+
+    deliveries = ReportDelivery.objects.filter(created_at__gte=since)
+    by_status = dict(deliveries.order_by().values_list("status").annotate(n=Count("pk")))
+    sent = by_status.get(ReportDelivery.SENT, 0)
+    failed = by_status.get(ReportDelivery.FAILED, 0)
+    pending = by_status.get(ReportDelivery.PENDING, 0)
+    finished = sent + failed
+    retried = deliveries.filter(status=ReportDelivery.SENT, attempts__gt=1).count()
+    problems = (
+        ReportDelivery.objects.exclude(status=ReportDelivery.SENT)
+        .select_related("call__match__club").order_by("-created_at")[:10]
+    )
+
+    accounts = SnpAccount.objects.select_related("club")
+    stale_before = now - datetime.timedelta(days=SNP_STALE_DAYS)
+    snp_failing = list(accounts.filter(last_sync_ok=False).order_by("-last_sync_at")[:10])
+    snp = {
+        "total": accounts.count(),
+        "ok": accounts.filter(last_sync_ok=True).count(),
+        "failed": accounts.filter(last_sync_ok=False).count(),
+        "never": accounts.filter(last_sync_at__isnull=True).count(),
+        "stale": accounts.filter(last_sync_at__lt=stale_before).count(),
+        "failing": snp_failing,
+    }
+
+    week_ago = now - datetime.timedelta(days=7)
+    runs = JobRun.objects.filter(started_at__gte=week_ago)
+    jobs = []
+    for job in ScheduledJob.objects.all():
+        job_runs = runs.filter(job=job)
+        total_runs = job_runs.count()
+        errors = job_runs.filter(status=JobRun.ERROR).count()
+        last = job.runs.order_by("-started_at").first()
+        jobs.append({
+            "job": job, "runs": total_runs, "errors": errors, "last": last,
+            "ok_pct": round(100 * (total_runs - errors) / total_runs) if total_runs else None,
+        })
+
+    web = _summary(RequestMetric.objects.filter(minute__gte=now - datetime.timedelta(hours=24)))
+    web["error_pct"] = round(100 * web["errors"] / web["requests"], 2) if web["requests"] else 0
+
+    return {
+        "days": HEALTH_DAYS,
+        "reports": {
+            "sent": sent, "failed": failed, "pending": pending, "retried": retried,
+            "ok_pct": round(100 * sent / finished) if finished else None,
+            "problems": problems,
+        },
+        "snp": snp,
+        "snp_stale_days": SNP_STALE_DAYS,
+        "jobs": jobs,
+        "scheduler_late": scheduler_is_late(),
+        "web": web,
     }

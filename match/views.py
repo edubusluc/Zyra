@@ -11,9 +11,10 @@ from .models import Match, Game, Result
 from . import lineup
 from .notifications import send_call_report, report_filename
 from call.models import ReportDelivery
-from .report import build_report
+from .report import build_report, suggested_lineups
 from .report_pdf import render_report
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
+from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_POST
 from django.utils.translation import gettext as _, gettext_lazy
 import logging
@@ -462,6 +463,27 @@ def create_game_for_match(request, match_id):
         "players": call.players.order_by('name', 'last_name'),
         "games_per_match": lineup.GAMES_PER_MATCH,
     })
+
+
+@club_admin_required
+@require_GET
+def suggested_lineup(request, match_id):
+    """
+    Alineaciones sugeridas (JSON) para rellenar las parejas del formulario de partidos.
+
+    Solo administradores del club y con la convocatoria cerrada. Devuelve
+    ``{"lineups": [...]}`` (ver match.report.suggested_lineups) o ``{"error": ...}``
+    con estado 400 si no se puede sugerir.
+    """
+    match = club_match(request, match_id)
+    call = Call.objects.filter(match=match).first()
+    is_valid, error_message = validate_game_for_match(call)
+    if not is_valid:
+        return JsonResponse({"error": str(error_message)}, status=400)
+    lineups = suggested_lineups(call)
+    if not lineups:
+        return JsonResponse({"error": _("Hacen falta al menos 10 convocados para sugerir una alineación.")}, status=400)
+    return JsonResponse({"lineups": lineups})
 
 
 SET_FIELDS = ('set1_local', 'set1_visiting', 'set2_local', 'set2_visiting', 'set3_local', 'set3_visiting')

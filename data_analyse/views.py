@@ -20,6 +20,8 @@ from core.decorators import club_required, club_admin_required
 from penalty.models import Penalty
 from players.models import current_season
 from . import pairs as pair_stats
+from . import records
+from .sets import best_and_worst_number, by_game_number, own_sets, set_stats
 
 # ---------------------------------------------------------------
 # ESTADÍSTICAS EQUIPO
@@ -319,8 +321,30 @@ def team_statistics(request):
         "min_games_player": pair_stats.MIN_GAMES_PLAYER,
         "min_games_pair": min_games_pair,
     }
+    context.update(team_extra_context(request.club, selected_season, match_type, log))
 
     return render(request, 'team_statistics.html', context)
+
+
+def team_extra_context(club, season, match_type, log):
+    """
+    Tarjetas de la página de equipo que salen del log de partidos: balance por número de
+    partido, sets, récords y ranking SNP de la plantilla (de la temporada elegida o la actual).
+    """
+    numbers = by_game_number(log)
+    best_number, worst_number = best_and_worst_number(numbers)
+    snp_season = season or current_season()
+    snp = records.snp_ranking(club, snp_season)
+    return {
+        'game_numbers': numbers,
+        'best_number': best_number,
+        'worst_number': worst_number,
+        'set_stats': set_stats(log),
+        'records': records.team_records(club, season, match_type, log),
+        'snp': snp,
+        'snp_season': snp_season,
+        'snp_chart': snp['chart'],
+    }
 
 
 # ---------------------------------------------------------------
@@ -400,8 +424,9 @@ def degree_of_affinity(player, match_type=None):
 def build_game_log(player, match_type=None):
     """
     Una sola consulta (+1 prefetch): lista cronológica de los partidos (Game) del jugador.
-    Cada elemento: {'season', 'local', 'won', 'points', 'sets_won', 'sets_lost'}
-    'sets_*' son los "juegos" que suma el jugador y su rival dentro del partido.
+    Cada elemento: {'season', 'match_id', 'n_game', 'local', 'won', 'points', 'sets_won', 'sets_lost', 'sets'}
+    'sets_*' son los "juegos" que suma el jugador y su rival dentro del partido; 'sets', los
+    sets jugados desde su lado (ver data_analyse.sets).
     """
     games = (
         Game.objects
@@ -433,11 +458,14 @@ def build_game_log(player, match_type=None):
 
         log.append({
             'season': g.match.season,
+            'match_id': g.match_id,
+            'n_game': g.n_game,
             'local': is_local,
             'won': won,
             'points': g.score if won else 0,
             'sets_won': sets_won,
             'sets_lost': sets_lost,
+            'sets': own_sets(next(iter(g.results.all()), None), is_local),
         })
     return log
 
@@ -508,6 +536,40 @@ def calls_by_season(player, match_type=None):
         .order_by().values_list('match__season').annotate(n=Count('id', distinct=True))
     )
     return present, total
+
+
+def aligned_by_season(player, match_type=None):
+    """
+    {temporada: convocatorias cerradas a las que se apuntó y en las que además jugó algún
+    partido}. Junto con calls_by_season da el "apuntado y alineado".
+    """
+    signed = _by_type(
+        Call.objects.filter(match__club=player.club, draft_mode=False, players__id=player.id), match_type, "match__"
+    ).values_list('match_id', 'match__season')
+    seasons = dict(signed)
+    played = set(
+        Game.objects.filter(
+            Q(player_1_local=player) | Q(player_2_local=player) |
+            Q(player_1_visiting=player) | Q(player_2_visiting=player),
+            match_id__in=list(seasons),
+        ).values_list('match_id', flat=True)
+    )
+    result = {}
+    for match_id in played:
+        result[seasons[match_id]] = result.get(seasons[match_id], 0) + 1
+    return result
+
+
+def lineup_summary(calls_present, aligned):
+    """Totales de "apuntado y alineado": {'signed', 'aligned', 'benched', 'pct'} (pct None sin convocatorias)."""
+    signed = sum(calls_present.values())
+    played = sum(aligned.values())
+    return {
+        'signed': signed,
+        'aligned': played,
+        'benched': signed - played,
+        'pct': round(played / signed * 100) if signed else None,
+    }
 
 
 def _pct(wins, total):
@@ -642,6 +704,10 @@ def statistics_per_player(request):
     summary = summarize(log)
     calls_present, calls_total = calls_by_season(player, match_type)
     rows = summarize_by_season(log, calls_present, calls_total)
+    aligned = aligned_by_season(player, match_type)
+    for r in rows:
+        r['aligned'] = aligned.get(r['season'], 0)
+    lineup_rate = lineup_summary(calls_present, aligned)
 
     # Detalle de la temporada elegida
     detail = None
@@ -653,6 +719,7 @@ def statistics_per_player(request):
             'calls_present': present,
             'calls_total': total,
             'calls_absent': total - present,
+            'aligned': aligned.get(selected_season, 0),
             'games': season_games(player, selected_season, match_type),
         })
 
@@ -684,6 +751,9 @@ def statistics_per_player(request):
             'pct': [r['pct'] for r in rows],
         },
         'chart_affinity': degree_of_affinity(player, match_type),
+        'lineup_rate': lineup_rate,
+        'game_numbers': by_game_number(log),
+        'clutch': set_stats(log),
         'snp_season': snp_season,
         'chart_snp': {
             'labels': [h.date.strftime('%d/%m') for h in snp_history],
@@ -737,6 +807,7 @@ def statistics_per_pair(request):
                 'p2': p2,
                 's': summary,
                 'last_games': pair_last_games(request.club, p1, p2, match_type=match_type),
+                'pair_sets': set_stats([g for g in log if g['pair'] == pair_stats.pair_key(p1.id, p2.id)]),
                 'pct_w': round(summary['pct']),
                 'local_pct_w': round(summary['local_pct']),
                 'visiting_pct_w': round(summary['visiting_pct']),

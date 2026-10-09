@@ -117,6 +117,34 @@
         </div>
       </section>
 
+      {# ============ 1b. PARTIDOS, SETS Y CONVOCATORIAS ============ #}
+      <section aria-labelledby="clutch-title" class="st-section">
+        <h2 class="st-section-title" id="clutch-title">{% translate "Partidos y sets" %}</h2>
+        <div class="st-row">
+          {% translate "Por número de partido" as t_title %}{% translate "% de victorias en cada partido del enfrentamiento (el 1 lo juega la pareja con más puntos SNP)." as t_note %}
+          {% include 'includes/game_numbers.html' with rows=game_numbers title=t_title note=t_note %}
+          {% translate "Sets clutch" as t_title %}{% translate "Cómo responde en los momentos decisivos: tercer set, tie-breaks y remontadas." as t_note %}
+          {% include 'includes/set_stats.html' with st=clutch title=t_title note=t_note %}
+          <article class="st-card">
+            <h3 class="st-card-title">{% translate "Apuntado y alineado" %}</h3>
+            <p class="st-card-note">{% translate "De las convocatorias a las que se apunta, en cuántas acaba jugando." %}</p>
+            {% if lineup_rate.signed %}
+              <div class="st-split">
+                <div class="st-split-head"><span>{% translate "Juega cuando se apunta" %}</span><b>{{ lineup_rate.pct }}%</b></div>
+                <div class="st-meter"><span style="width: {{ lineup_rate.pct|unlocalize }}%"></span></div>
+                <p class="st-split-foot">{% blocktranslate trimmed with aligned=lineup_rate.aligned signed=lineup_rate.signed %}Alineado en {{ aligned }} de {{ signed }} convocatorias{% endblocktranslate %}</p>
+              </div>
+              <div class="st-tally">
+                <span class="st-tally-item st-tally-item--neutral"><b>{{ lineup_rate.aligned }}</b> {% translate "alineado" %}</span>
+                <span class="st-tally-item st-tally-item--muted"><b>{{ lineup_rate.benched }}</b> {% translate "sin jugar" %}</span>
+              </div>
+            {% else %}
+              <p class="st-muted mt-3 mb-0">{% translate "Todavía no se ha apuntado a ninguna convocatoria cerrada." %}</p>
+            {% endif %}
+          </article>
+        </div>
+      </section>
+
       {# ============ 2. POR TEMPORADAS ============ #}
       <section aria-labelledby="seasons-title" class="st-section" id="temporadas">
         <h2 class="st-section-title" id="seasons-title">{% translate "Por temporadas" %}</h2>
@@ -167,6 +195,7 @@
                 <div class="st-tally">
                   <span class="st-tally-item st-tally-item--neutral"><b>{{ d.calls_present }}</b> {% translate "se apuntó" %}</span>
                   <span class="st-tally-item st-tally-item--loss"><b>{{ d.calls_absent }}</b> {% translate "no se apuntó" %}</span>
+                  <span class="st-tally-item st-tally-item--win"><b>{{ d.aligned }}</b> {% translate "jugó" %}</span>
                 </div>
               </article>
 
@@ -278,6 +307,7 @@
                   <th scope="col">{% translate "Cambio" %}</th>
                   <th scope="col">{% translate "Puntos" %}</th>
                   <th scope="col">{% translate "Convocatorias" %}</th>
+                  <th scope="col">{% translate "Alineado" %}</th>
                 </tr>
               </thead>
               <tbody>
@@ -298,6 +328,7 @@
                     </td>
                     <td>{{ r.points }}</td>
                     <td>{% blocktranslate with present=r.calls_present total=r.calls_total %}{{ present }} de {{ total }}{% endblocktranslate %}</td>
+                    <td>{% blocktranslate with aligned=r.aligned present=r.calls_present %}{{ aligned }} de {{ present }}{% endblocktranslate %}</td>
                   </tr>
                 {% endfor %}
               </tbody>

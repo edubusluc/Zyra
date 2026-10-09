@@ -2297,3 +2297,37 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
     .z-onboarding-steps li { flex-wrap: wrap; }
     .z-onboarding-steps .btn { width: 100%; }
 }
+
+/* Por número de partido, sets, récords y ranking SNP (estadísticas) */
+.st-numbers { margin: 4px 0 0; padding: 0; list-style: none; }
+.st-number .st-split-head small { font-weight: 500; color: var(--st-muted); }
+.st-number--best .st-split-head b { color: var(--z-lime); }
+.st-number--worst .st-meter span { background: var(--st-loss); }
+.st-numbers-note { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--st-line); }
+.st-facts--sets { grid-template-columns: repeat(auto-fit, minmax(min(100%, 92px), 1fr)); gap: 10px; margin-top: 16px; }
+.st-facts--sets .st-fact { padding: 12px; }
+.st-facts--sets dt { font-size: .74rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--st-muted); }
+.st-facts--sets dd { margin: 4px 0 0; font-size: 1.35rem; font-weight: 800; color: #FFFFFF; font-variant-numeric: tabular-nums; }
+.st-facts--sets .st-fact-name { font-size: 1rem; overflow-wrap: anywhere; }
+.st-sets-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 0 22px; }
+.st-records { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
+.st-record-tile { display: flex; flex-direction: column; gap: 4px; min-width: 0; padding: 16px; background: var(--st-card); border: 1px solid var(--st-line); border-radius: 16px; }
+.st-record-tile b { font-size: 1.35rem; font-weight: 800; line-height: 1.2; color: #FFFFFF; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.st-record-tile b.st-up { color: var(--st-win); }
+.st-record-tile b.st-down { color: var(--st-loss); }
+.st-record-tile small { font-size: .85rem; color: var(--st-muted); }
+.st-record-tile small a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.st-snp-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; margin-top: 16px; align-items: start; }
+.st-snp-table td:first-child { width: 2.5em; color: var(--st-muted); }
+@media (max-width: 760px) { .st-snp-layout { grid-template-columns: minmax(0, 1fr); } }
+
+/* Alineación sugerida en el formulario de parejas */
+.z-lineup-suggest { display: flex; flex-direction: column; gap: 8px; margin: 0 0 18px; padding: 14px 16px; background: rgba(var(--z-lime-rgb), .06); border: 1px solid rgba(var(--z-lime-rgb), .3); border-radius: 14px; }
+.z-lineup-suggest-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.z-lineup-suggest [data-suggest-info] { color: var(--z-muted); }
+.st-snp-table th[scope="row"], .st-snp-table thead th:nth-child(2) { text-align: left; }
+.st-snp-table th[scope="row"] { white-space: normal; overflow-wrap: anywhere; }
+@media (max-width: 575.98px) {
+  .st-snp-table th, .st-snp-table td { padding: 10px 6px; font-size: .9rem; }
+  .st-facts--sets dd { font-size: 1.1rem; }
+}

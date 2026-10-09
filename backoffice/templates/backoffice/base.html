@@ -28,6 +28,8 @@
             <ul class="bo-nav">
                 <li><a href="{% url 'backoffice:dashboard' %}" class="{% if section == 'dashboard' %}is-active{% endif %}"><i class="fa-solid fa-gauge-high"></i> {% translate "Dashboard" %}</a></li>
                 <li><a href="{% url 'backoffice:load' %}" class="{% if section == 'load' %}is-active{% endif %}"><i class="fa-solid fa-signal"></i> {% translate "Carga y conectados" %}</a></li>
+                <li><a href="{% url 'backoffice:usage' %}" class="{% if section == 'usage' %}is-active{% endif %}"><i class="fa-solid fa-chart-column"></i> {% translate "Uso de la plataforma" %}</a></li>
+                <li><a href="{% url 'backoffice:health' %}" class="{% if section == 'health' %}is-active{% endif %}"><i class="fa-solid fa-heart-pulse"></i> {% translate "Salud de los servicios" %}</a></li>
                 <li><a href="{% url 'backoffice:job_list' %}" class="{% if section == 'jobs' %}is-active{% endif %}"><i class="fa-solid fa-clock-rotate-left"></i> {% translate "Procesos" %}</a></li>
                 {% if user.is_superuser %}
                 <li><a href="{% url 'backoffice:sql_console' %}" class="{% if section == 'sql' %}is-active{% endif %}"><i class="fa-solid fa-database"></i> {% translate "Consola SQL" %}</a></li>

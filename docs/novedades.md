@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 09/10/2026
+
+- Estadísticas nuevas: por número de partido, sets (decisivo, tie-breaks, remontadas, roscos), récords del equipo, ranking SNP de la plantilla, sets clutch y apuntado/alineado por jugador y sets de cada pareja; botón «Alineación sugerida» en las parejas; páginas de uso y salud de los servicios en el back-office
+
 ## 06/10/2026
 
 - Amistoso con rival escrito a mano: el formulario ya se envía (los desplegables de equipo ocultos bloqueaban el envío)

@@ -1,0 +1,66 @@
+{% load i18n %}
+{# Ranking SNP de la plantilla. Recibe: snp (data_analyse.records.snp_ranking), snp_season #}
+<article class="st-card st-card--wide">
+  <h3 class="st-card-title">{% translate "Ranking SNP del equipo" %}</h3>
+  <p class="st-card-note">{% blocktranslate with season=snp_season %}Puntos SNP actuales de la plantilla y cuánto han cambiado en la temporada {{ season }}.{% endblocktranslate %}</p>
+  {% if snp.rows %}
+    <dl class="st-facts st-facts--sets">
+      <div class="st-fact st-fact--gold">
+        <dt>{% translate "Media del equipo" %}</dt>
+        <dd>{{ snp.average|floatformat:"0g" }}</dd>
+      </div>
+      <div class="st-fact">
+        <dt>{% translate "Jugadores con puntos" %}</dt>
+        <dd>{{ snp.rows|length }}</dd>
+      </div>
+      {% if snp.riser %}
+        <div class="st-fact">
+          <dt>{% translate "Quien más sube" %}</dt>
+          <dd class="st-fact-name">{{ snp.riser.player.short_name }} <span class="st-up">▲ {{ snp.riser.delta|floatformat:"0g" }}</span></dd>
+        </div>
+      {% endif %}
+    </dl>
+    <div class="st-snp-layout">
+      <div class="st-table-wrap">
+        <table class="st-table st-snp-table" data-snp-table>
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">{% translate "Jugador" %}</th>
+              <th scope="col">{% translate "Puntos" %}</th>
+              <th scope="col">{% translate "Cambio" %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in snp.rows %}
+              <tr{% if forloop.counter > 10 %} data-snp-extra hidden{% endif %}>
+                <td>{{ r.pos }}</td>
+                <th scope="row" title="{{ r.player.full_name }}">{{ r.player.short_name }}</th>
+                <td>{{ r.score|floatformat:"0g" }}</td>
+                <td>
+                  {% if r.delta is None %}<span class="st-muted">—</span>
+                  {% elif r.delta > 0 %}<span class="st-up">▲ {{ r.delta|floatformat:"0g" }}</span>
+                  {% elif r.delta < 0 %}<span class="st-down">▼ {{ r.delta|floatformat:"0g" }}</span>
+                  {% else %}<span class="st-muted">=</span>{% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% if snp.rows|length > 10 %}
+          <button type="button" class="btn btn-outline-secondary btn-sm mt-2" data-snp-more data-less="{% translate 'Ver solo los 10 primeros' %}">{% blocktranslate with n=snp.rows|length %}Ver los {{ n }} jugadores{% endblocktranslate %}</button>
+        {% endif %}
+      </div>
+      <div>
+        <p class="st-card-note mt-0">{% translate "Media del equipo en cada actualización." %}</p>
+        {% if snp.chart.average|length > 1 %}
+          <div class="st-chart"><canvas id="chartSnpTeam"></canvas></div>
+        {% else %}
+          <p class="st-muted">{% translate "Hace falta más de una actualización para ver la evolución." %}</p>
+        {% endif %}
+      </div>
+    </div>
+  {% else %}
+    <p class="st-muted mt-3 mb-0">{% translate "Todavía no hay puntos SNP de la plantilla." %}</p>
+  {% endif %}
+</article>

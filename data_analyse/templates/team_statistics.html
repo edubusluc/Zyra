@@ -106,6 +106,21 @@
         </div>
       </section>
 
+      <section aria-labelledby="numbers-title" class="st-section mt-4">
+        <h2 class="st-section-title" id="numbers-title">{% translate "Partidos y sets" %}</h2>
+        <div class="st-row">
+          {% translate "Por número de partido" as t_title %}{% translate "% de victorias en cada partido del enfrentamiento. Las parejas se ordenan por puntos SNP: el partido 1 lo juega la pareja que más suma." as t_note %}
+          {% include 'includes/game_numbers.html' with rows=game_numbers title=t_title note=t_note best=best_number worst=worst_number %}
+          {% translate "Sets" as t_title %}{% translate "Cómo se ganan y se pierden los partidos, set a set." as t_note %}
+          {% include 'includes/set_stats.html' with st=set_stats title=t_title note=t_note %}
+        </div>
+      </section>
+
+      <section aria-labelledby="records-title" class="st-section">
+        <h2 class="st-section-title" id="records-title">{% translate "Récords del equipo" %}{% if selected_season %} · {{ selected_season }}{% endif %}</h2>
+        {% include 'includes/team_records.html' %}
+      </section>
+
       <h2 class="st-section-title mt-4">{% translate "Gráficos" %}</h2>
       <div class="st-grid">
         <section class="st-card">
@@ -171,7 +186,15 @@
       </div>
 
     {% endif %}
+
+    {% if team %}
+      <section aria-labelledby="snp-title" class="st-section">
+        <h2 class="st-section-title" id="snp-title">{% translate "Puntos SNP" %}</h2>
+        {% include 'includes/snp_ranking.html' %}
+      </section>
+    {% endif %}
   </div>
 
+  {{ snp_chart|json_script:"snp-team-data" }}
   <script src="{% static 'js/team_statistics.js' %}"></script>
 {% endblock %}
