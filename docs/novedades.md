@@ -5,6 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 09/10/2026
 
+- Partidos: buscador por nombre y filtro por rival, listado más compacto y con más contraste; el resultado ya no dice quién gana cada set (solo avisa si un set no es válido); registro de club conectando la cuenta de SNP para traer el equipo y elegir después tu jugador; «Completar equipo» actualiza los puntos de los jugadores que ya estaban, avisa de completar la posición y limita las búsquedas repetidas (salvo el club de pruebas); la cuenta SNP ya no pide el equipo
 - Estadísticas nuevas: por número de partido, sets (decisivo, tie-breaks, remontadas, roscos), récords del equipo, ranking SNP de la plantilla, sets clutch y apuntado/alineado por jugador y sets de cada pareja; botón «Alineación sugerida» en las parejas; páginas de uso y salud de los servicios en el back-office
 
 ## 06/10/2026

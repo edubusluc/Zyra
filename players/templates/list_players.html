@@ -12,9 +12,12 @@
         {% if snp_import_enabled %}
         {% if snp_import_last %}
         <button type="button" class="btn btn-secondary" disabled title="{% blocktranslate with date=snp_import_next|date:'d/m/Y' %}Ya se ha completado este mes. Podrás volver a hacerlo a partir del {{ date }}.{% endblocktranslate %}"><i class="fa-solid fa-users-rays me-1"></i> {% translate "Completar equipo" %}</button>
+        {% elif snp_import_wait %}
+        <button type="button" class="btn btn-secondary" disabled title="{% blocktranslate with date=snp_import_wait|date:'d/m/Y H:i' %}Has buscado tu equipo en SNP varias veces seguidas. Podrás volver a intentarlo a partir del {{ date }}.{% endblocktranslate %}"><i class="fa-solid fa-users-rays me-1"></i> {% translate "Completar equipo" %}</button>
         {% else %}
-        <form method="post" action="{% url 'complete_team_start' %}" class="d-inline">{% csrf_token %}
-            <button type="submit" class="btn btn-secondary" title="{% translate 'Añade los jugadores de tu equipo de SNP que todavía no están en Zyra' %}"><i class="fa-solid fa-users-rays me-1"></i> {% translate "Completar equipo" %}</button>
+        {# Se desactiva al enviarlo: un doble clic no lanza dos búsquedas en SNP. #}
+        <form method="post" action="{% url 'complete_team_start' %}" class="d-inline" onsubmit="this.querySelector('button').disabled = true;">{% csrf_token %}
+            <button type="submit" class="btn btn-secondary" title="{% translate 'Añade los jugadores de tu equipo de SNP que todavía no están en Zyra y actualiza los puntos de los que ya están' %}"><i class="fa-solid fa-users-rays me-1"></i> {% translate "Completar equipo" %}</button>
         </form>
         {% endif %}
         {% endif %}
@@ -169,33 +172,37 @@
                         </tbody>
                     </table>
                 </div>
+                <div class="z-callout z-callout--info my-3">
+                    <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                    <p class="mb-0">{% translate "Un detalle: SNP no dice en qué lado de la pista juega cada uno, así que los jugadores nuevos llegarán sin posición. Después, edita cada uno y elige su posición: te ayudará a montar mejor las parejas y las alineaciones." %}</p>
+                </div>
                 {% else %}
                 <p>{% translate "Todos los jugadores de tu equipo de SNP ya están en Zyra: no hay nadie nuevo que añadir." %}</p>
                 {% endif %}
                 {% if snp_import.existing %}
-                <p>{% blocktranslate with n=snp_import.existing|length %}No se añaden porque ya están registrados en el equipo ({{ n }}):{% endblocktranslate %}</p>
+                <p>{% blocktranslate with n=snp_import.existing|length %}Ya están registrados en el equipo; solo se actualizan sus puntos SNP ({{ n }}):{% endblocktranslate %}</p>
                 <div class="z-import-wrap">
                     <table class="z-import-table">
-                        <colgroup><col><col class="z-import-cat"><col class="z-import-last"></colgroup>
-                        <thead><tr><th>{% translate "Nombre en SNP" %}</th><th>{% translate "Categoría" %}</th><th>{% translate "Jugador en Zyra" %}</th></tr></thead>
+                        <colgroup><col><col><col class="z-import-cat"></colgroup>
+                        <thead><tr><th>{% translate "Nombre en SNP" %}</th><th>{% translate "Jugador en Zyra" %}</th><th class="text-end">{% translate "Puntos SNP" %}</th></tr></thead>
                         <tbody>
                         {% for p in snp_import.existing %}
-                        <tr><td>{{ p.snp_name|upper }}</td><td>{% include 'includes/snp_category.html' with category=p.category %}</td><td class="text-muted">{{ p.player }}</td></tr>
+                        <tr><td>{{ p.snp_name|upper }}</td><td class="text-muted">{{ p.player }}</td><td class="text-end">{% if p.player_id %}{{ p.score|floatformat:"-1" }}{% else %}<span class="text-muted">—</span>{% endif %}</td></tr>
                         {% endfor %}
                         </tbody>
                     </table>
                 </div>
                 {% endif %}
-                <p class="small text-muted mb-0">{% translate "Los jugadores que ya existen no se modifican. Solo se puede completar el equipo una vez al mes." %}</p>
+                <p class="small text-muted mb-0">{% translate "De los jugadores que ya existen solo cambian los puntos SNP. Solo se puede completar el equipo una vez al mes." %}</p>
                 {% endif %}
             </div>
             <div class="modal-footer">
                 <form method="post" action="{% url 'complete_team_cancel' snp_import.public_id %}">{% csrf_token %}
-                    <button type="submit" class="btn btn-outline-secondary">{% if snp_import.to_add or snp_import.status == 'running' %}{% translate "Cancelar" %}{% else %}{% translate "Cerrar" %}{% endif %}</button>
+                    <button type="submit" class="btn btn-outline-secondary">{% if snp_import_changes or snp_import.status == 'running' %}{% translate "Cancelar" %}{% else %}{% translate "Cerrar" %}{% endif %}</button>
                 </form>
-                {% if snp_import.status == 'ready' and snp_import.to_add %}
-                <form method="post" action="{% url 'complete_team_confirm' snp_import.public_id %}">{% csrf_token %}
-                    <button type="submit" class="btn btn-primary">{% blocktranslate trimmed count n=snp_import.to_add|length %}Añadir {{ n }} jugador{% plural %}Añadir {{ n }} jugadores{% endblocktranslate %}</button>
+                {% if snp_import.status == 'ready' and snp_import_changes %}
+                <form method="post" action="{% url 'complete_team_confirm' snp_import.public_id %}" onsubmit="this.querySelector('button').disabled = true;">{% csrf_token %}
+                    <button type="submit" class="btn btn-primary">{% if snp_import.to_add %}{% blocktranslate trimmed count n=snp_import.to_add|length %}Añadir {{ n }} jugador{% plural %}Añadir {{ n }} jugadores{% endblocktranslate %}{% else %}{% translate "Actualizar puntos SNP" %}{% endif %}</button>
                 </form>
                 {% endif %}
             </div>

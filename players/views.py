@@ -12,7 +12,8 @@ from django.views.decorators.http import require_GET, require_POST
 from django.urls import reverse
 from django.db import transaction
 from django.db.models import BooleanField, ExpressionWrapper, Q
-from django.utils.translation import gettext as _, ngettext
+from django.utils import timezone
+from django.utils.translation import gettext as _, gettext_lazy, ngettext
 from . import snp_import
 from .scraper import SnpScrapeError
 from core import similarity
@@ -112,15 +113,18 @@ def list_players(request):
 
 
 def _complete_team_context(club):
-    """Estado del botón «Completar equipo» (solo con cuenta SNP; una vez al mes)."""
+    """Estado del botón «Completar equipo» (solo con cuenta SNP; una vez al mes y pocas búsquedas al día)."""
     if not SnpAccount.objects.filter(club=club).exists():
         return {}
     last = snp_import.last_import_this_month(club)
+    active = snp_import.active_import(club)
     return {
         'snp_import_enabled': True,
-        'snp_import': snp_import.active_import(club),
+        'snp_import': active,
+        'snp_import_changes': bool(active) and snp_import.has_changes(active),
         'snp_import_last': last,
         'snp_import_next': snp_import.next_month_start() if last else None,
+        'snp_import_wait': snp_import.search_limit(club),
     }
 
 @club_admin_required
@@ -229,13 +233,14 @@ def snp_account(request):
             account.username = form.cleaned_data["username"]
             if form.cleaned_data["password"]:
                 account.password = form.cleaned_data["password"]
-            account.team_id = form.cleaned_data["team"]
+            # El equipo ya no se pide: si la cuenta tiene varios, se elige por el nombre del equipo del club.
+            account.team_id = ""
             account.updated_by = request.user
             account.save()
             messages.success(request, _("Cuenta SNP guardada. Los puntos se actualizarán cada lunes por la noche."))
             return redirect("snp_account")
     else:
-        initial = {"team": account.team_id, "username": username} if account else {}
+        initial = {"username": username} if account else {}
         form = SnpAccountForm(initial=initial, has_password=account is not None)
     editing = account is None or username is None or request.method == "POST" or request.GET.get("edit") == "1"
     return render(request, "snp_account.html", {
@@ -268,6 +273,13 @@ def snp_account_delete(request):
 
 # ---------- «Completar equipo» con los jugadores de SNP ----------
 
+# Aviso tras traer jugadores de SNP: llegan sin posición en pista.
+POSITION_NOTICE = gettext_lazy(
+    "¡Ya tienes a tus jugadores! SNP no dice en qué lado juega cada uno, así que su posición en pista "
+    "ha quedado vacía. Cuando puedas, edita cada jugador y elige su posición: así las parejas y las "
+    "alineaciones te saldrán mucho mejor."
+)
+
 def _blocked_this_month(request):
     """True (y deja un mensaje de error) si el equipo ya se ha completado este mes desde la web."""
     last = snp_import.last_import_this_month(request.club)
@@ -282,14 +294,22 @@ def _blocked_this_month(request):
 def complete_team_start(request):
     """
     Lanza en segundo plano la búsqueda de «Completar equipo». Solo capitanes y por POST.
-    Hace falta cuenta SNP; no se lanza si ya se completó este mes o hay otra en curso.
+    Hace falta cuenta SNP; no se lanza si ya se completó este mes, hay otra en curso o se
+    han hecho demasiadas búsquedas seguidas (snp_import.search_limit).
     Redirige a la lista de jugadores, que va preguntando el estado.
     """
     if not SnpAccount.objects.filter(club=request.club).exists():
         messages.error(request, _("Primero registra la cuenta SNP del capitán."))
         return redirect("snp_account")
-    if not _blocked_this_month(request) and not snp_import.active_import(request.club):
-        snp_import.start_search(request.club, request.user)
+    if _blocked_this_month(request) or snp_import.active_import(request.club):
+        return redirect("list_players")
+    wait = snp_import.search_limit(request.club)
+    if wait:
+        messages.error(request, _("Has buscado tu equipo en SNP varias veces seguidas. Para no saturar SNP, "
+                                  "podrás volver a intentarlo a partir del %(date)s.")
+                       % {"date": f"{timezone.localtime(wait):%d/%m/%Y %H:%M}"})
+        return redirect("list_players")
+    snp_import.start_search(request.club, request.user)
     return redirect("list_players")
 
 
@@ -331,14 +351,17 @@ def complete_team_failed(request, import_id):
 @require_POST
 def complete_team_confirm(request, import_id):
     """
-    Confirma una búsqueda de «Completar equipo» lista para confirmar y crea los jugadores.
-    Solo capitanes y por POST; respeta el límite de una vez al mes. Redirige a la lista de jugadores.
+    Confirma una búsqueda de «Completar equipo» lista para confirmar: crea los jugadores
+    nuevos y actualiza los puntos SNP de los que ya estaban. Solo capitanes y por POST;
+    respeta el límite de una vez al mes. Redirige a la lista de jugadores.
     """
     team_import = get_object_or_404(SnpTeamImport, public_id=import_id, club=request.club, source=SnpTeamImport.WEB)
-    if team_import.status != SnpTeamImport.READY or not team_import.to_add or _blocked_this_month(request):
+    if team_import.status != SnpTeamImport.READY or not snp_import.has_changes(team_import) or _blocked_this_month(request):
         return redirect("list_players")
     team_import = snp_import.confirm(team_import)
     messages.success(request, _("Equipo completado: %(message)s") % {"message": team_import.message})
+    if team_import.created_players:
+        messages.info(request, POSITION_NOTICE)
     return redirect("list_players")
 
 
@@ -352,7 +375,27 @@ def complete_team_cancel(request, import_id):
     return redirect("list_players")
 
 
+@club_admin_required
+@require_GET
+def complete_team_welcome(request, import_id):
+    """
+    Equipo traído de SNP al registrar el club. Mientras se busca, muestra una espera que va
+    preguntando el estado; al terminar lleva al capitán a «¿Quién eres en el equipo?» para
+    que enlace su cuenta a su jugador; si falla, explica el motivo y cómo seguir. Solo capitanes.
+    """
+    team_import = get_object_or_404(SnpTeamImport, public_id=import_id, club=request.club, source=SnpTeamImport.WEB)
+    if team_import.status == SnpTeamImport.DONE:
+        messages.success(request, _("¡Tu equipo ya está en Zyra! %(message)s") % {"message": team_import.message})
+        if own_player(request):
+            return redirect("list_players")
+        return redirect(reverse("my_player") + f"?{WELCOME_PARAM}=1")
+    return render(request, "complete_team_welcome.html", {"team_import": team_import})
+
+
 # ---------- Perfil del propio jugador ----------
+
+# «¿Quién eres en el equipo?» recién traído el equipo de SNP al registrar el club.
+WELCOME_PARAM = "bienvenida"
 
 def own_player(request):
     """Jugador enlazado a la cuenta del usuario en el club activo (o None)."""
@@ -405,6 +448,8 @@ def my_player(request):
     return render(request, "link_player.html", {
         "candidates": candidates, "search": search, "new_form": new_form,
         "show_new": request.method == "POST",
+        # Recién traído el equipo de SNP: se recuerda completar la posición de cada jugador.
+        "position_notice": POSITION_NOTICE if request.GET.get(WELCOME_PARAM) else "",
     })
 
 
@@ -422,6 +467,10 @@ def link_player(request, player_id):
         else:
             player.user = request.user
             player.save(update_fields=["user"])
+            # Quien se registró con SNP no escribió su nombre: la cuenta toma el del jugador.
+            if not (request.user.first_name or request.user.last_name):
+                request.user.first_name, request.user.last_name = player.name, player.last_name
+                request.user.save(update_fields=["first_name", "last_name"])
             messages.success(request, _("Tu cuenta está enlazada a %(player)s.") % {"player": player.short_name})
     return redirect("my_player")
 

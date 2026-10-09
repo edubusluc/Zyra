@@ -187,10 +187,18 @@ def snp_country_name(country):
     return SNP_COUNTRIES.get(country or "", SNP_COUNTRIES[DEFAULT_COUNTRY])
 
 
-def _open_team_page(page, team_id, log, country=None):
+def _same_team_name(a, b):
+    """Mismo nombre de equipo sin distinguir mayúsculas, tildes, signos ni espacios."""
+    from core.similarity import same_name
+    return same_name(a or "", b or "")
+
+
+def _open_team_page(page, team_id, log, country=None, team_name=None):
     """
     Series Nacionales → el país del equipo → Mis equipos → el equipo, como lo haría el
-    capitán. Devuelve el frame donde está la tabla de jugadores.
+    capitán. Devuelve el frame donde está la tabla de jugadores. Si la cuenta tiene varios
+    equipos y no se indica ``team_id``, se elige el que se llama como el equipo del club
+    (``team_name``).
     """
     country_name = snp_country_name(country)
     _find(page, SERIES_MENU, "el menú «Series Nacionales»", log)[1].click()
@@ -213,8 +221,12 @@ def _open_team_page(page, team_id, log, country=None):
     elif not teams:
         raise SnpScrapeError(f"Esta cuenta SNP no tiene ningún equipo en «Mis equipos» de {country_name}.", kind=SnpScrapeError.TEAM)
     else:
-        names = ", ".join(f"{name} ({number})" for number, (_, name) in teams.items())
-        raise SnpScrapeError(f"La cuenta tiene varios equipos; indica cuál en la cuenta SNP: {names}.", kind=SnpScrapeError.ACCOUNT)
+        same = [link for link, name in teams.values() if _same_team_name(name, team_name)]
+        if len(same) != 1:
+            names = ", ".join(name for _, name in teams.values())
+            raise SnpScrapeError(f"La cuenta tiene varios equipos ({names}) y ninguno se llama como tu equipo en Zyra; "
+                                 f"pon a tu equipo el mismo nombre que tiene en SNP.", kind=SnpScrapeError.TEAM)
+        link = same[0]
 
     link.click()
     frame, _ = _find(page, RESULTS_TABLE, "la tabla de jugadores", log, url_pattern=r"/equipo/view/\d+")
@@ -370,12 +382,13 @@ def _skip_heavy_resources(route):
         route.continue_()
 
 
-def scrape_scores(username, password, team_id=None, headed=False, log=None, browser=None, country=None):
+def scrape_scores(username, password, team_id=None, headed=False, log=None, browser=None, country=None, team_name=None):
     """
     Puntos SNP de los jugadores del equipo ``team_id`` (o del único equipo de la cuenta
     si no se indica). Lanza SnpScrapeError si algo falla. ``country`` es la nacionalidad
     del equipo (código de Team.COUNTRIES) y decide qué país se abre en «Series
-    Nacionales»; sin ella se usa España.
+    Nacionales»; sin ella se usa España. ``team_name`` es el nombre del equipo del club:
+    si la cuenta tiene varios equipos, se lee el que se llama igual.
 
     ``headed`` abre el navegador a la vista (y más despacio) para seguir la ejecución;
     ``log`` recibe una línea por cada paso. ``browser`` es un SnpBrowser ya abierto que
@@ -383,11 +396,27 @@ def scrape_scores(username, password, team_id=None, headed=False, log=None, brow
     """
     if browser is None:
         with SnpBrowser(headed=headed) as own:
-            return own.run(_scrape, username, password, team_id, log, own, country)
-    return browser.run(_scrape, username, password, team_id, log, browser, country)
+            return own.run(_scrape, username, password, team_id, log, own, country, team_name)
+    return browser.run(_scrape, username, password, team_id, log, browser, country, team_name)
 
 
-def _scrape(username, password, team_id, log, browser, country=None):
+def _read_all_pages(page, frame, log):
+    """Filas de todas las páginas de la tabla de jugadores (hasta MAX_PAGES), pasando de una a otra."""
+    players = []
+    for page_number in range(2, MAX_PAGES + 2):
+        rows = _read_rows(frame)
+        log(f"Página {page_number - 1} de la tabla: {len(rows)} jugadores ({', '.join(r['name'] for r in rows)}).")
+        players.extend(rows)
+        next_button = frame.query_selector(NEXT_PAGE.format(page_number))
+        if not next_button or not next_button.is_visible():
+            break
+        before = [r["name"] for r in rows]
+        next_button.click()
+        frame = _wait_for_next_page(page, frame, before, log)
+    return players
+
+
+def _scrape(username, password, team_id, log, browser, country=None, team_name=None):
     """
     Lectura de un club en el hilo del navegador: inicia sesión, abre la página del equipo y
     recorre las páginas de la tabla de jugadores. Si durante la lectura SNP ha respondido que
@@ -405,18 +434,9 @@ def _scrape(username, password, team_id, log, browser, country=None):
         log("Iniciando sesión en SNP…")
         _login(page, username, password)
         log(f"Sesión iniciada. Abriendo Series Nacionales → {snp_country_name(country)} → Mis equipos…")
-        frame = _open_team_page(page, team_id, log, country)
+        frame = _open_team_page(page, team_id, log, country, team_name)
         log(f"Página del equipo abierta: {frame.url}")
-        for page_number in range(2, MAX_PAGES + 2):
-            rows = _read_rows(frame)
-            log(f"Página {page_number - 1} de la tabla: {len(rows)} jugadores ({', '.join(r['name'] for r in rows)}).")
-            players.extend(rows)
-            next_button = frame.query_selector(NEXT_PAGE.format(page_number))
-            if not next_button or not next_button.is_visible():
-                break
-            before = [r["name"] for r in rows]
-            next_button.click()
-            frame = _wait_for_next_page(page, frame, before, log)
+        players = _read_all_pages(page, frame, log)
     except (SnpScrapeError, PlaywrightError) as exc:
         if blocked and not isinstance(exc, SnpBlockedError):
             raise SnpBlockedError(f"SNP ha respondido {blocked[-1]} mientras se leía el equipo: "

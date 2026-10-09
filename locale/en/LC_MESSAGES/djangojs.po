@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zyra\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-09 10:05+0000\n"
+"POT-Creation-Date: 2026-10-09 10:51+0000\n"
 "PO-Revision-Date: 2026-10-01 20:00+0200\n"
 "Last-Translator: Zyra\n"
 "Language-Team: English\n"
@@ -200,18 +200,10 @@ msgid "Ya no está en el equipo"
 msgstr "No longer on the team"
 
 #: static/js/result-form.js:14
-msgid "Set %(n)s: gana %(team)s (%(score)s)"
-msgstr "Set %(n)s: %(team)s wins (%(score)s)"
-
-#: static/js/result-form.js:16
 msgid "Set %(n)s: %(score)s no es un resultado válido"
 msgstr "Set %(n)s: %(score)s is not a valid score"
 
-#: static/js/result-form.js:49
-msgid "Set 3: cada pareja ha ganado un set, falta el tercero"
-msgstr "Set 3: each pair has won a set, the third one is missing"
-
-#: static/js/result-form.js:60
+#: static/js/result-form.js:59
 msgid "Ganador del partido: %(team)s"
 msgstr "Match winner: %(team)s"
 

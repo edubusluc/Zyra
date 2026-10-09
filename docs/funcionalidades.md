@@ -20,9 +20,11 @@ el club activo: lo de otro club da 404. Sin permiso, la página «Sin permiso» 
 ## Cuentas y clubes
 
 - **Registro de club**: usuario, email y contraseña (requisitos en vivo y botón para verla) o con
-  Google. La página se abre arriba, sin saltar a ningún campo. Crea el club, su equipo propio y deja a la persona como capitán,
-  con su jugador ya creado y enlazado a su cuenta (nombre y apellidos como en SNP; con Google se rellenan del
-  perfil y, si no vienen, se avisa de que hay que escribirlos)
+  Google. La página se abre arriba, sin saltar a ningún campo. Crea el club, su equipo propio y deja a la persona como capitán.
+  Su jugador se crea de una de dos formas: **conectando su cuenta de SNP**, que guarda la cuenta, trae
+  todo el equipo con sus puntos y al terminar le pide elegir cuál de esos jugadores es él («Soy yo»); o
+  escribiendo su nombre y apellidos (como en SNP; con Google se rellenan del perfil y, si no vienen, se
+  avisa de que hay que escribirlos)
   ([`core.views.register_club`](referencia/core/views.md), [`core.services`](referencia/core/services.md)).
 - **Entrar con Google**: si el email ya existe, entra en esa cuenta y no crea otra
   ([`core.adapters`](referencia/core/adapters.md)).
@@ -67,8 +69,13 @@ estadísticas) y aviso al capitán si el club no tiene cuenta SNP
     - **Puntos SNP**: proceso diario que entra en snpgalaxy.com y actualiza los puntos de cada
       jugador, con histórico y gráfico ([`players.snp`](referencia/players/snp.md),
       [`players.scraper`](referencia/players/scraper.md)).
-    - **Completar equipo**: trae de SNP los jugadores que faltan, para revisar y confirmar
-      ([`players.snp_import`](referencia/players/snp_import.md)).
+    - **Completar equipo**: trae de SNP los jugadores que faltan y actualiza los puntos SNP de los
+      que ya están, para revisar y confirmar; los nuevos llegan sin posición y se avisa al capitán de
+      que la complete. Una vez al mes y, para no saturar SNP, como mucho tres búsquedas al día con
+      cinco minutos entre una y otra; el club de pruebas (`SNP_IMPORT_UNLIMITED_CLUBS`, por defecto
+      Los Gladiadores) no tiene límites ([`players.snp_import`](referencia/players/snp_import.md)).
+    - La cuenta solo pide usuario y contraseña: si tiene varios equipos en SNP, se usa el que se llama
+      como el equipo del club.
 
 ## Equipos
 
@@ -100,15 +107,18 @@ El ciclo de un enfrentamiento ([`match.views`](referencia/match/views.md)):
    recomendación del informe (y **Ver la alternativa**, con la segunda); después se puede cambiar
    cualquier pareja. Se pueden reordenar mientras el acta está abierta
    ([`match.lineup`](referencia/match/lineup.md)).
-5. **Resultados** por sets, con validación ([`match.scoring`](referencia/match/scoring.md)).
+5. **Resultados** por sets, con validación ([`match.scoring`](referencia/match/scoring.md)). Mientras
+   se escribe solo se avisa de los sets no válidos y, al final, del ganador del partido.
 6. **Cerrar actas**: con los 5 resultados, calcula los puntos y el ganador; si la eliminatoria
    queda empatada a puntos (6-6), el partido queda como **empate**. Un partido cerrado ya no se
    puede cambiar ni borrar.
 
 - **Sanciones**: advertencias a jugadores desde la convocatoria ([`penalty`](referencia/penalty/index.md)).
-- Lista de partidos con resumen de ganados, empatados, perdidos y pendientes, y la temporada de
-  cada partido. Selector de temporada: la actual por defecto, «Todas», las tres más recientes y un
-  buscador para las más antiguas.
+- Lista de partidos compacta (una fila por partido, marcador en verde si se ganó, en rojo si se
+  perdió y en gris si fue empate) con resumen de ganados, empatados, perdidos y pendientes.
+  Selector de temporada: la actual por defecto, «Todas», las tres más recientes y un buscador para
+  las más antiguas. Buscador por nombre de equipo o lugar y filtro por rival (equipos del grupo y
+  rivales escritos a mano); sin temporada elegida, buscan en todas.
 - En el detalle del partido la convocatoria va por posición en varias columnas; las posiciones con
   más de 8 jugadores muestran primero los que juegan y el resto con «Ver N más».
 

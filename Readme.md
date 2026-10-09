@@ -301,8 +301,9 @@ python manage.py migrate          # crea core_invitation y las tablas de allauth
 ## Puntos SNP automáticos
 
 Cada administrador guarda en *Menú → Cuenta SNP* el usuario y la contraseña de SNP
-(snpgalaxy.com) de su capitán y, solo si la cuenta tiene varios equipos, el número del
-equipo. Usuario y contraseña se guardan cifrados (`core/crypto.py`). El proceso
+(snpgalaxy.com) de su capitán (también se puede hacer al registrar el club). Si la cuenta
+tiene varios equipos, se usa el que se llama como el equipo del club. Usuario y contraseña
+se guardan cifrados (`core/crypto.py`). El proceso
 programado `update_snp_scores` recorre los clubes, entra
 en SNP con su cuenta, navega Series Nacionales → el país de la nacionalidad del equipo (España si no tiene) → Mis equipos → el equipo, lee
 los puntos de los jugadores (`players/scraper.py`) y actualiza los «Puntos SNP». Los
@@ -336,6 +337,11 @@ Cómo se reparte el trabajo y cómo se evita que SNP nos bloquee:
 
 A ese ritmo cada club tarda de media unos 30–40 s. 1.000 clubes son unas 10 horas y
 10.000, unos 4 o 5 días, dentro de la semana del ciclo.
+
+«Completar equipo» desde la web (Jugadores) se puede usar una vez al mes y, para no saturar
+SNP, como mucho tres búsquedas al día con cinco minutos entre una y otra. Los clubes de
+`SNP_IMPORT_UNLIMITED_CLUBS` (variable de entorno, nombres separados por comas; por defecto
+`Los Gladiadores`, el club de pruebas) no tienen esos límites.
 
 Define una clave de cifrado propia en `.env` (obligatoria en producción; si la cambias,
 las cuentas guardadas dejan de poder leerse y hay que volver a introducirlas):

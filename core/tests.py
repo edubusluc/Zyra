@@ -3,7 +3,7 @@ import io
 
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
-from django.test import SimpleTestCase, TestCase
+from django.test import SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 
 from call.models import Call
@@ -258,6 +258,60 @@ class RolesAndClubSwitchTests(TestCase):
         self.assertTrue(Membership.objects.get(user__username="fundador", club=club).is_admin)
         self.assertEqual(club.own_team.name, "Nuevo Club")
         self.assertEqual((club.own_team.gender, club.own_team.country), ("F", "MX"))
+
+
+    @override_settings(FIELD_ENCRYPTION_KEY="", SNP_IMPORT_INLINE=True)
+    def test_register_club_with_snp_brings_the_team_and_asks_who_you_are(self):
+        from unittest import mock
+        from players.models import SnpAccount, SnpTeamImport
+        team = [{"name": "ANA RUIZ PEREZ 500", "score": 40.0}, {"name": "LUIS GOMEZ SOTO", "score": 12.5}]
+        with mock.patch("players.snp_import.scrape_scores", return_value=team):
+            response = self.client.post(reverse("register_club"), {
+                "name": "Club SNP", "location": "Cádiz", "gender": "M", "country": "ES", "division": "500",
+                "username": "fundadora", "email": "s@example.com",
+                "password1": "Clave-Segura-123", "password2": "Clave-Segura-123",
+                "snp-mode": "snp", "snp-username": "capi", "snp-password": "secreto",
+            })
+        club = Club.objects.get(name="Club SNP")
+        team_import = SnpTeamImport.objects.get(club=club)
+        self.assertRedirects(response, reverse("complete_team_welcome", args=[team_import.public_id]),
+                             fetch_redirect_response=False)
+        self.assertEqual(SnpAccount.objects.get(club=club).username, "capi")
+        self.assertEqual(team_import.status, SnpTeamImport.DONE)
+        # Sin jugador del capitán: lo elige entre los traídos de SNP.
+        self.assertEqual(sorted(Player.objects.filter(club=club).values_list("snp_score", flat=True)), [12.5, 40.0])
+        self.assertFalse(Player.objects.filter(club=club, user__isnull=False).exists())
+        page = self.client.get(response.url, follow=True)
+        self.assertContains(page, "¿Quién eres en el equipo?")
+        self.assertContains(page, "su posición en pista ha quedado vacía")
+
+        ana = Player.objects.get(club=club, name="Ana")
+        self.client.post(reverse("link_player", args=[ana.public_id]))
+        user = User.objects.get(username="fundadora")
+        self.assertEqual(ana.__class__.objects.get(pk=ana.pk).user, user)
+        self.assertEqual((user.first_name, user.last_name), ("Ana", "Ruiz Perez"))
+
+    @override_settings(FIELD_ENCRYPTION_KEY="", SNP_IMPORT_INLINE=True)
+    def test_register_club_with_snp_needs_credentials_and_shows_errors_on_failure(self):
+        from unittest import mock
+        from players.scraper import SnpScrapeError
+        data = {
+            "name": "Club SNP", "location": "Cádiz", "gender": "M", "country": "ES", "division": "500",
+            "username": "fundadora", "email": "s@example.com",
+            "password1": "Clave-Segura-123", "password2": "Clave-Segura-123",
+            "snp-mode": "snp", "snp-username": "", "snp-password": "",
+        }
+        response = self.client.post(reverse("register_club"), data)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Escribe tu usuario de SNP.")
+        self.assertFalse(Club.objects.filter(name="Club SNP").exists())
+
+        data.update({"snp-username": "capi", "snp-password": "mala"})
+        error = SnpScrapeError("SNP no ha aceptado el usuario o la contraseña.", kind=SnpScrapeError.ACCOUNT)
+        with mock.patch("players.snp_import.scrape_scores", side_effect=error):
+            response = self.client.post(reverse("register_club"), data, follow=True)
+        self.assertContains(response, "No hemos podido traer tu equipo")
+        self.assertContains(response, "no ha aceptado el usuario")
 
 
 class AssignDefaultClubCommandTests(TestCase):

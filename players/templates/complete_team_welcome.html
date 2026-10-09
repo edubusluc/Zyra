@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{# Equipo traído de SNP al registrar el club: espera mientras se busca o el motivo si ha fallado. #}
+{% block content %}
+<div class="z-auth">
+    <div class="z-auth-card z-welcome-snp">
+        {% if team_import.status == 'running' or team_import.status == 'ready' %}
+        <div data-status-url="{% url 'complete_team_status' team_import.public_id %}" id="welcome-running">
+            <div class="z-welcome-spinner"><output class="spinner-border" aria-label="{% translate 'Cargando' %}"></output></div>
+            <h1>{% translate "Trayendo tu equipo de SNP" %}</h1>
+            <p class="text-muted">{% translate "Estamos leyendo tus jugadores y sus puntos SNP. Suele tardar menos de un minuto; no cierres esta página." %}</p>
+        </div>
+        <script>
+            // Pregunta cada pocos segundos; al terminar recarga y la vista lleva al siguiente paso.
+            (function () {
+                const box = document.getElementById('welcome-running');
+                function poll() {
+                    fetch(box.dataset.statusUrl, {headers: {'Accept': 'application/json'}})
+                        .then(function (r) { return r.json(); })
+                        .then(function (data) {
+                            if (data.status === 'running' || data.status === 'ready') setTimeout(poll, 2500);
+                            else window.location.reload();
+                        })
+                        .catch(function () { setTimeout(poll, 5000); });
+                }
+                setTimeout(poll, 2000);
+            })();
+        </script>
+        {% else %}
+        <h1>{% translate "No hemos podido traer tu equipo" %}</h1>
+        <p class="text-danger">{{ team_import.message|default:_("La búsqueda se ha cancelado.") }}</p>
+        <p class="text-muted">{% translate "Tu club ya está creado. Revisa tu cuenta de SNP y vuelve a intentarlo desde Jugadores con «Completar equipo», o crea tu jugador a mano." %}</p>
+        <div class="d-flex flex-wrap gap-2 justify-content-center">
+            <a href="{% url 'snp_account' %}?edit=1" class="btn btn-primary">{% translate "Revisar cuenta SNP" %}</a>
+            <a href="{% url 'my_player' %}" class="btn btn-outline-secondary">{% translate "Crear mi jugador" %}</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
