@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zyra\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-09 20:01+0000\n"
+"POT-Creation-Date: 2026-10-09 20:29+0000\n"
 "PO-Revision-Date: 2026-10-01 20:00+0200\n"
 "Last-Translator: Zyra\n"
 "Language-Team: English\n"
@@ -2764,7 +2764,7 @@ msgstr "%(email)s was already blocked."
 msgid "%(email)s desbloqueado."
 msgstr "%(email)s unblocked."
 
-#: call/models.py:36 match/templates/list_match.html:71
+#: call/models.py:36
 msgid "Pendiente"
 msgstr "Pending"
 
@@ -2772,7 +2772,7 @@ msgstr "Pending"
 msgid "Fallido"
 msgstr "Failed"
 
-#: call/templates/closed_call.html:5 match/views.py:288
+#: call/templates/closed_call.html:5 match/views.py:309
 msgid "Convocatoria cerrada"
 msgstr "Call-up closed"
 
@@ -3100,15 +3100,15 @@ msgid ""
 msgstr "Schedule the next match to prepare the call-up and the pairs."
 
 #: core/onboarding.py:52 core/templates/home.html:99
-#: match/templates/list_match.html:83
+#: match/templates/list_match.html:95
 msgid "Crear partido"
 msgstr "Create match"
 
-#: core/seo.py:54
+#: core/seo.py:63
 msgid "¿Qué es Zyra?"
 msgstr "What is Zyra?"
 
-#: core/seo.py:55
+#: core/seo.py:64
 msgid ""
 "Zyra es una aplicación web para gestionar equipos de pádel que juegan ligas "
 "por equipos, como las SNP (Series Nacionales de Pádel): jugadores, "
@@ -3118,19 +3118,19 @@ msgstr ""
 " the SNP (Series Nacionales de Pádel): players, call-ups, pairs, results and "
 "statistics in one place."
 
-#: core/seo.py:58
+#: core/seo.py:67
 msgid "¿Cuánto cuesta?"
 msgstr "How much does it cost?"
 
-#: core/seo.py:59
+#: core/seo.py:68
 msgid "Registrar un club y usar Zyra es gratis."
 msgstr "Registering a club and using Zyra is free."
 
-#: core/seo.py:62
+#: core/seo.py:71
 msgid "¿Quién puede ver los datos de mi equipo?"
 msgstr "Who can see my team's data?"
 
-#: core/seo.py:63
+#: core/seo.py:72
 msgid ""
 "Solo los miembros de tu club. El capitán invita al resto de jugadores con un "
 "enlace y nadie de fuera del club puede ver sus jugadores, partidos ni "
@@ -3139,11 +3139,11 @@ msgstr ""
 "Only your club's members. The captain invites the other players with a link, "
 "and nobody outside the club can see its players, matches or statistics."
 
-#: core/seo.py:66
+#: core/seo.py:75
 msgid "¿Sirve para la liga SNP?"
 msgstr "Does it work for the SNP league?"
 
-#: core/seo.py:67
+#: core/seo.py:76
 msgid ""
 "Sí. Zyra está pensada para equipos de ligas de pádel por equipos y puede "
 "traer los puntos SNP de tus jugadores para ordenar las parejas. Zyra es un "
@@ -3153,11 +3153,11 @@ msgstr ""
 "players' SNP points to rank the pairs. Zyra is an independent project and is "
 "not affiliated with the SNP."
 
-#: core/seo.py:70
+#: core/seo.py:79
 msgid "¿Necesito instalar algo?"
 msgstr "Do I need to install anything?"
 
-#: core/seo.py:71
+#: core/seo.py:80
 msgid ""
 "No. Zyra funciona en el navegador del móvil y del ordenador, en español y en "
 "inglés."
@@ -3165,7 +3165,7 @@ msgstr ""
 "No. Zyra works in the browser on your phone and computer, in Spanish and "
 "English."
 
-#: core/seo.py:85
+#: core/seo.py:94
 msgid ""
 "Aplicación web para capitanes de equipos de pádel: convocatorias, parejas, "
 "resultados y estadísticas de cada jugador y pareja."
@@ -3173,19 +3173,19 @@ msgstr ""
 "Web app for padel team captains: call-ups, pairs, results and statistics for "
 "every player and pair."
 
-#: core/seo.py:116
+#: core/seo.py:125
 msgid "Convocatorias con informe en PDF por email"
 msgstr "Call-ups with a PDF report by email"
 
-#: core/seo.py:117
+#: core/seo.py:126
 msgid "Parejas y resultados de cada set"
 msgstr "Pairs and the result of each set"
 
-#: core/seo.py:118
+#: core/seo.py:127
 msgid "Estadísticas por jugador, pareja y temporada"
 msgstr "Statistics by player, pair and season"
 
-#: core/seo.py:119
+#: core/seo.py:128
 msgid "Puntos SNP de los jugadores"
 msgstr "Players' SNP points"
 
@@ -3956,7 +3956,7 @@ msgstr "%(club)s crest"
 
 #: core/templates/home.html:8 data_analyse/templates/player_statistics.html:157
 #: data_analyse/templates/warnings_statistics.html:13
-#: match/templates/list_match.html:49
+#: match/templates/list_match.html:54
 #, python-format
 msgid "Temporada %(season)s"
 msgstr "Season %(season)s"
@@ -5155,13 +5155,13 @@ msgstr "Last %(n)s matches together, most recent on the right."
 
 #: data_analyse/templates/pair_statistics.html:98
 #: data_analyse/templates/player_statistics.html:96
-#: match/templates/list_match.html:68
+#: match/templates/list_match.html:58
 msgid "Victoria"
 msgstr "Win"
 
 #: data_analyse/templates/pair_statistics.html:98
 #: data_analyse/templates/player_statistics.html:96
-#: match/templates/list_match.html:69
+#: match/templates/list_match.html:59
 msgid "Derrota"
 msgstr "Loss"
 
@@ -6085,7 +6085,7 @@ msgstr "Home win"
 msgid "Victoria Visitante"
 msgstr "Away win"
 
-#: match/models.py:43 match/templates/list_match.html:70
+#: match/models.py:43 match/templates/list_match.html:60
 msgid "Empate"
 msgstr "Draw"
 
@@ -6544,7 +6544,7 @@ msgstr ""
 msgid "Guardar resultado"
 msgstr "Save result"
 
-#: match/templates/delete_match.html:7 match/templates/list_match.html:73
+#: match/templates/delete_match.html:7 match/templates/list_match.html:84
 msgid "Eliminar partido"
 msgstr "Delete match"
 
@@ -6601,7 +6601,7 @@ msgstr "Suggested lineup"
 msgid "Ver la alternativa"
 msgstr "See the alternative"
 
-#: match/templates/includes/lineup_form.html:17 match/views.py:531
+#: match/templates/includes/lineup_form.html:17 match/views.py:552
 msgid "Hacen falta al menos 10 convocados para sugerir una alineación."
 msgstr "At least 10 called-up players are needed to suggest a lineup."
 
@@ -6675,12 +6675,12 @@ msgstr "Search player"
 msgid "Filtrar por posición"
 msgstr "Filter by position"
 
-#: match/templates/includes/player_selector.html:11 match/views.py:416
+#: match/templates/includes/player_selector.html:11 match/views.py:437
 #: players/models.py:35
 msgid "Derecha"
 msgstr "Right side"
 
-#: match/templates/includes/player_selector.html:12 match/views.py:416
+#: match/templates/includes/player_selector.html:12 match/views.py:437
 #: players/models.py:36
 msgid "Revés"
 msgstr "Left side"
@@ -6760,60 +6760,68 @@ msgstr "Drawn"
 msgid "Pendientes"
 msgstr "Pending"
 
-#: match/templates/list_match.html:58
+#: match/templates/list_match.html:61
+msgid "Próximo"
+msgstr "Upcoming"
+
+#: match/templates/list_match.html:62
+msgid "Sin resultado"
+msgstr "No result"
+
+#: match/templates/list_match.html:80
+#, python-format
+msgid "%(n)s convocado"
+msgid_plural "%(n)s convocados"
+msgstr[0] "%(n)s player called up"
+msgstr[1] "%(n)s players called up"
+
+#: match/templates/list_match.html:80
+msgid "Sin convocatoria"
+msgstr "No call-up"
+
+#: match/templates/list_match.html:82
 #, python-format
 msgid "Ver %(local)s contra %(visiting)s"
 msgstr "View %(local)s vs %(visiting)s"
 
-#: match/templates/list_match.html:68
-msgctxt "inicial de victoria"
-msgid "V"
-msgstr "W"
-
-#: match/templates/list_match.html:69
-msgctxt "inicial de derrota"
-msgid "D"
-msgstr "L"
-
-#: match/templates/list_match.html:70
-msgctxt "inicial de empate"
-msgid "E"
-msgstr "D"
-
 #: match/templates/list_match.html:82
+msgid "Ver partido"
+msgstr "View match"
+
+#: match/templates/list_match.html:94
 msgid "Ningún partido coincide con la búsqueda."
 msgstr "No matches match your search."
 
-#: match/templates/list_match.html:82
+#: match/templates/list_match.html:94
 #, python-format
 msgid "No hay partidos en la temporada %(season)s."
 msgstr "There are no matches in the %(season)s season."
 
-#: match/templates/list_match.html:82
+#: match/templates/list_match.html:94
 msgid "No hay partidos."
 msgstr "There are no matches."
 
-#: match/views.py:204
+#: match/views.py:225
 msgid "No se puede eliminar un partido ya confirmado"
 msgstr "A confirmed match cannot be deleted"
 
-#: match/views.py:208
+#: match/views.py:229
 msgid "El partido no existe"
 msgstr "The match does not exist"
 
-#: match/views.py:248
+#: match/views.py:269
 msgid "Debes seleccionar al menos un jugador."
 msgstr "You must select at least one player."
 
-#: match/views.py:265
+#: match/views.py:286
 msgid "Para cerrar una convocatoria al menos debes contar con 10 jugadores"
 msgstr "You need at least 10 players to close a call-up"
 
-#: match/views.py:267
+#: match/views.py:288
 msgid "Esta convocatoria ha sido cerrada"
 msgstr "This call-up has been closed"
 
-#: match/views.py:303
+#: match/views.py:324
 #, python-format
 msgid ""
 "%(done)s, pero no se pudo enviar el informe por email. Puedes descargarlo "
@@ -6822,7 +6830,7 @@ msgstr ""
 "%(done)s, but the report could not be sent by email. You can download it from"
 " this page."
 
-#: match/views.py:307
+#: match/views.py:328
 #, python-format
 msgid ""
 "%(done)s. Ningún capitán tiene email: añádelo en Miembros para recibir el "
@@ -6831,12 +6839,12 @@ msgstr ""
 "%(done)s. No captain has an email address: add one in Members to receive the "
 "report automatically."
 
-#: match/views.py:313
+#: match/views.py:334
 #, python-format
 msgid "%(done)s. Informe enviado a %(emails)s."
 msgstr "%(done)s. Report sent to %(emails)s."
 
-#: match/views.py:316
+#: match/views.py:337
 #, python-format
 msgid ""
 "No se pudo enviar el informe a %(emails)s: se reintentará automáticamente. "
@@ -6845,7 +6853,7 @@ msgstr ""
 "The report could not be sent to %(emails)s: it will be retried automatically."
 " Meanwhile, you can download it from this page."
 
-#: match/views.py:319
+#: match/views.py:340
 #, python-format
 msgid ""
 "%(done)s. No se pudo enviar el informe a %(emails)s: se reintentará "
@@ -6854,59 +6862,59 @@ msgstr ""
 "%(done)s. The report could not be sent to %(emails)s: it will be retried "
 "automatically. Meanwhile, you can download it from this page."
 
-#: match/views.py:329
+#: match/views.py:350
 msgid "Informe reenviado"
 msgstr "Report resent"
 
-#: match/views.py:416
+#: match/views.py:437
 msgid "Mixtos"
 msgstr "Mixed"
 
-#: match/views.py:468
+#: match/views.py:489
 msgid "No se pueden crear partidos, no existe ninguna convocatoria."
 msgstr "Matches cannot be created: there is no call-up."
 
-#: match/views.py:470
+#: match/views.py:491
 msgid "Para crear los partidos debes contar al menos con 10 jugadores"
 msgstr "You need at least 10 players to create the matches"
 
-#: match/views.py:472
+#: match/views.py:493
 msgid "Para crear los partidos debes confirmar la convocatoria"
 msgstr "You must confirm the call-up to create the matches"
 
-#: match/views.py:494
+#: match/views.py:515
 msgid "Los partidos ya están creados: puedes cambiar las parejas desde aquí."
 msgstr "The matches have already been created: you can change the pairs here."
 
-#: match/views.py:503
+#: match/views.py:524
 msgid "Partidos creados."
 msgstr "Matches created."
 
-#: match/views.py:565
+#: match/views.py:586
 msgid "No se pueden añadir resultados a un partido ya confirmado"
 msgstr "Results cannot be added to a confirmed match"
 
-#: match/views.py:587
+#: match/views.py:608
 msgid "No se pueden editar los resultados de un partido ya confirmado"
 msgstr "The results of a confirmed match cannot be edited"
 
-#: match/views.py:624
+#: match/views.py:645
 msgid "No se pueden cerrar actas, el partido ya ha sido cerrado"
 msgstr "The scoresheet cannot be closed: the match has already been closed"
 
-#: match/views.py:626
+#: match/views.py:647
 msgid "No se pueden cerrar actas, se requieren al menos 5 partidos."
 msgstr "The scoresheet cannot be closed: at least 5 matches are required."
 
-#: match/views.py:630
+#: match/views.py:651
 msgid "No se pueden cerrar actas, algunos partidos no tienen resultado."
 msgstr "The scoresheet cannot be closed: some matches have no result."
 
-#: match/views.py:679
+#: match/views.py:700
 msgid "No se pueden editar los partidos que se encuentran ya confirmados"
 msgstr "Confirmed matches cannot be edited"
 
-#: match/views.py:693
+#: match/views.py:714
 msgid "Parejas actualizadas."
 msgstr "Pairs updated."
 
@@ -7994,3 +8002,15 @@ msgstr[1] "%(n)s teams updated."
 
 #~ msgid "Convoca jugadores, registra cambios y aplica sanciones."
 #~ msgstr "Call up players, track changes and apply penalties."
+
+#~ msgctxt "inicial de victoria"
+#~ msgid "V"
+#~ msgstr "W"
+
+#~ msgctxt "inicial de derrota"
+#~ msgid "D"
+#~ msgstr "L"
+
+#~ msgctxt "inicial de empate"
+#~ msgid "E"
+#~ msgstr "D"

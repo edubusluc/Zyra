@@ -43,35 +43,46 @@
 </div>
 
 {% if matches %}
+{% comment %}Una tarjeta por partido: fecha, tipo (si no es un enfrentamiento) y estado arriba;
+un equipo por fila con sus puntos; abajo lugar, convocados y el enlace al partido (toda la
+tarjeta es pulsable).{% endcomment %}
 <ol class="z-fixtures">
     {% for m in matches %}
-    <li class="z-fixture {% if m.outcome == 'V' %}is-win{% elif m.outcome == 'D' %}is-loss{% elif m.outcome == 'E' %}is-draw{% else %}is-pending{% endif %}{% if m.draft_mode and is_club_admin %} has-actions{% endif %}">
-        <div class="z-fixture-date" title="{% blocktranslate with season=m.season %}Temporada {{ season }}{% endblocktranslate %}">
-            <b>{{ m.start_date|date:"d" }}</b>
-            <span>{{ m.start_date|date:"M"|upper }} {{ m.start_date|date:"y" }}</span>
+    <li class="z-fixture {% if m.outcome == 'V' %}is-win{% elif m.outcome == 'D' %}is-loss{% elif m.outcome == 'E' %}is-draw{% else %}is-pending{% endif %}">
+        <div class="z-fixture-head">
+            <time class="z-fixture-date" datetime="{{ m.start_date|date:'Y-m-d' }}" title="{% blocktranslate with season=m.season %}Temporada {{ season }}{% endblocktranslate %}">
+                <i class="fa-regular fa-calendar" aria-hidden="true"></i>{{ m.start_date|date:"D j M Y" }}
+            </time>
+            {% if m.match_type != m.ENFRENTAMIENTO %}<span class="z-fixture-type">{{ m.get_match_type_display }}</span>{% endif %}
+            {% if m.outcome == 'V' %}<span class="z-fixture-state is-win">{% translate "Victoria" %}</span>
+            {% elif m.outcome == 'D' %}<span class="z-fixture-state is-loss">{% translate "Derrota" %}</span>
+            {% elif m.outcome == 'E' %}<span class="z-fixture-state is-draw">{% translate "Empate" %}</span>
+            {% elif m.upcoming %}<span class="z-fixture-state is-upcoming">{% translate "Próximo" %}</span>
+            {% else %}<span class="z-fixture-state is-open">{% translate "Sin resultado" %}</span>{% endif %}
         </div>
         <div class="z-fixture-teams">
-            <div class="z-fixture-team z-fixture-team--home {% if m.local.is_own %}is-own{% endif %}">
-                <span>{{ m.local_name }}</span>
-                <img src="{% if m.local.photo %}{{ m.local.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="">
+            {% with lp=m.local_points vp=m.visiting_points %}
+            <div class="z-fixture-team {% if m.local.is_own %}is-own{% endif %} {% if lp and vp and lp|add:0 > vp|add:0 %}is-winner{% elif lp and vp and lp|add:0 < vp|add:0 %}is-loser{% endif %}">
+                <img src="{% if m.local.photo %}{{ m.local.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="" width="36" height="36" loading="lazy">
+                <span class="z-fixture-name">{{ m.local_name }}</span>
+                {% if lp %}<b class="z-fixture-points">{{ lp }}</b>{% endif %}
             </div>
-            <a href="{% url 'call_for_match' m.public_id %}" class="z-fixture-score stretched-link" aria-label="{% blocktranslate with local=m.local_name visiting=m.visiting_name %}Ver {{ local }} contra {{ visiting }}{% endblocktranslate %}">
-                {% if m.outcome %}{{ m.result_points }}{% else %}VS{% endif %}
-            </a>
-            <div class="z-fixture-team z-fixture-team--away {% if m.visiting.is_own %}is-own{% endif %}">
-                <img src="{% if m.visiting.photo %}{{ m.visiting.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="">
-                <span>{{ m.visiting_name }}</span>
+            <div class="z-fixture-team {% if m.visiting.is_own %}is-own{% endif %} {% if lp and vp and vp|add:0 > lp|add:0 %}is-winner{% elif lp and vp and vp|add:0 < lp|add:0 %}is-loser{% endif %}">
+                <img src="{% if m.visiting.photo %}{{ m.visiting.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="" width="36" height="36" loading="lazy">
+                <span class="z-fixture-name">{{ m.visiting_name }}</span>
+                {% if vp %}<b class="z-fixture-points">{{ vp }}</b>{% endif %}
             </div>
+            {% endwith %}
         </div>
-        <div class="z-fixture-status">
-            {% if m.match_type != m.ENFRENTAMIENTO %}<span class="z-fixture-type">{{ m.get_match_type_display }}</span>{% endif %}
-            {% if m.outcome == 'V' %}<span class="z-wl z-wl--w" title="{% translate 'Victoria' %}">{% translate "V" context "inicial de victoria" %}</span>
-            {% elif m.outcome == 'D' %}<span class="z-wl z-wl--l" title="{% translate 'Derrota' %}">{% translate "D" context "inicial de derrota" %}</span>
-            {% elif m.outcome == 'E' %}<span class="z-wl z-wl--d" title="{% translate 'Empate' %}">{% translate "E" context "inicial de empate" %}</span>
-            {% else %}<span class="z-badge">{% translate "Pendiente" %}</span>{% endif %}
-            {% if m.draft_mode and is_club_admin %}
-            <a href="{% url 'delete_match' m.public_id %}" class="z-edit z-edit--danger position-relative" aria-label="{% translate 'Eliminar partido' %}"><i class="fa-solid fa-trash"></i></a>
-            {% endif %}
+        <div class="z-fixture-foot">
+            {% if m.location %}<span class="z-fixture-meta z-fixture-place"><i class="fa-solid fa-location-dot" aria-hidden="true"></i>{{ m.location }}</span>{% endif %}
+            {% if m.outcome is None %}<span class="z-fixture-meta"><i class="fa-solid fa-user-check" aria-hidden="true"></i>{% if m.called %}{% blocktranslate trimmed count n=m.called %}{{ n }} convocado{% plural %}{{ n }} convocados{% endblocktranslate %}{% else %}{% translate "Sin convocatoria" %}{% endif %}</span>{% endif %}
+            <span class="z-fixture-actions">
+                <a href="{% url 'call_for_match' m.public_id %}" class="z-fixture-open stretched-link" aria-label="{% blocktranslate with local=m.local_name visiting=m.visiting_name %}Ver {{ local }} contra {{ visiting }}{% endblocktranslate %}">{% translate "Ver partido" %}<i class="fa-solid fa-chevron-right" aria-hidden="true"></i></a>
+                {% if m.draft_mode and is_club_admin %}
+                <a href="{% url 'delete_match' m.public_id %}" class="z-edit z-edit--danger z-fixture-delete" aria-label="{% translate 'Eliminar partido' %}" title="{% translate 'Eliminar partido' %}"><i class="fa-solid fa-trash"></i></a>
+                {% endif %}
+            </span>
         </div>
     </li>
     {% endfor %}
