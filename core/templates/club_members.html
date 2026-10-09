@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load tz i18n %}
+{% block page_title %}{% translate "Miembros" %} · {% endblock %}
 
 {% block content %}
 <div class="table-container my-4">
@@ -7,7 +8,7 @@
 
     <div class="z-table-wrap"><table class="table align-middle z-table-stack">
         <thead>
-            <tr><th>{% translate "Usuario" %}</th><th>{% translate "Email y rol" %}</th><th></th></tr>
+            <tr><th>{% translate "Usuario" %}</th><th>{% translate "Email y rol" %}</th><th><span class="visually-hidden">{% translate "Acciones" %}</span></th></tr>
         </thead>
         <tbody>
         {% for m in memberships %}
@@ -22,7 +23,7 @@
                         {# Solo cada usuario cambia su email: así nadie puede apropiarse de la cuenta de otro. #}
                         <span class="form-control form-control-sm bg-transparent border-0 text-muted" style="max-width: 240px;">{{ m.user.email|default:"—" }}</span>
                         {% endif %}
-                        <select name="role" style="max-width: 220px;" class="form-select form-select-sm">
+                        <select name="role" style="max-width: 220px;" class="form-select form-select-sm" aria-label="{% blocktranslate with username=m.user.username %}Rol de {{ username }}{% endblocktranslate %}">
                             {% for value, label in roles %}
                             <option value="{{ value }}" {% if m.role == value %}selected{% endif %}>{{ label }}</option>
                             {% endfor %}
@@ -41,23 +42,23 @@
         </tbody>
     </table></div>
 
-    <h4 class="mt-4" id="invitaciones">{% translate "Invitar jugadores" %}</h4>
+    <h2 class="h4 z-heading-plain mt-4" id="invitaciones">{% translate "Invitar jugadores" %}</h2>
     <p class="text-muted">{% translate "Invita a un jugador por email o genera un enlace para compartirlo tú (por WhatsApp, por ejemplo). Podrá registrarse con usuario, email y contraseña o con Google, o unirse con la cuenta que ya tenga, y entrará como miembro. La invitación por email sirve para una sola persona; el enlace lo pueden usar varias. Ambos caducan a las 24 horas." %}</p>
     <form method="post" action="{% url 'create_invitation' %}" class="mb-3" novalidate>
         {% csrf_token %}
         {{ invite_form.as_p }}
-        <button type="submit" class="btn btn-primary"><i class="fa-regular fa-envelope"></i> {% translate "Enviar invitación" %}</button>
+        <button type="submit" class="btn btn-primary"><i class="fa-regular fa-envelope" aria-hidden="true"></i> {% translate "Enviar invitación" %}</button>
     </form>
     <form method="post" action="{% url 'create_invitation_link' %}" class="mb-3">
         {% csrf_token %}
-        <button type="submit" class="btn btn-outline-primary"><i class="fa-solid fa-link"></i> {% translate "Generar enlace de invitación" %}</button>
+        <button type="submit" class="btn btn-outline-primary"><i class="fa-solid fa-link" aria-hidden="true"></i> {% translate "Generar enlace de invitación" %}</button>
     </form>
     {% if has_invitations %}
-    <h5 class="mt-3">{% translate "Invitaciones pendientes" %}</h5>
+    <h3 class="h5 z-heading-plain mt-3">{% translate "Invitaciones pendientes" %}</h3>
     <div class="z-toolbar">
         <div class="z-toolbar-group">
             <form method="get" action="#invitaciones" class="z-search" role="search">
-                <i class="fa-solid fa-magnifying-glass"></i>
+                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
                 <input type="search" name="q" placeholder="{% translate 'Buscar por email...' %}" value="{{ search }}" aria-label="{% translate 'Buscar invitación por email' %}">
             </form>
             {% if search %}
@@ -68,7 +69,7 @@
     </div>
     {% if invitations %}
     <div class="z-table-wrap"><table class="table align-middle z-table-stack">
-        <thead><tr><th>{% translate "Enviada a" %}</th><th>{% translate "Enlace" %}</th><th>{% translate "Caduca" %}</th><th></th></tr></thead>
+        <thead><tr><th>{% translate "Enviada a" %}</th><th>{% translate "Enlace" %}</th><th>{% translate "Caduca" %}</th><th><span class="visually-hidden">{% translate "Acciones" %}</span></th></tr></thead>
         <tbody>
         {% for inv, url in invitations %}
             <tr>
@@ -76,7 +77,7 @@
                 <td>
                     <div class="input-group input-group-sm" style="min-width: 260px;">
                         <input type="text" class="form-control" value="{{ url }}" readonly aria-label="{% translate 'Enlace de invitación' %}" id="invite-{{ inv.id }}">
-                        <button type="button" class="btn btn-outline-primary" data-copy="#invite-{{ inv.id }}"><i class="fa-regular fa-copy"></i> {% translate "Copiar" %}</button>
+                        <button type="button" class="btn btn-outline-primary" data-copy="#invite-{{ inv.id }}"><i class="fa-regular fa-copy" aria-hidden="true"></i> {% translate "Copiar" %}</button>
                         {% autoescape off %}{% blocktranslate asvar wa_text with club=current_club.name url=url %}Únete a {{ club }} en Zyra: {{ url }}{% endblocktranslate %}{% endautoescape %}<a class="btn btn-outline-success" target="_blank" rel="noopener" href="https://wa.me/?text={{ wa_text|urlencode }}" aria-label="{% translate 'Compartir por WhatsApp' %}"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i></a>
                     </div>
                 </td>
@@ -102,7 +103,12 @@
 document.querySelectorAll('[data-copy]').forEach(function (btn) {
     btn.addEventListener('click', function () {
         var input = document.querySelector(btn.dataset.copy);
-        var done = function () { btn.innerHTML = '<i class="fa-solid fa-check"></i> ' + '{{ t_copied|escapejs }}'; };
+        var done = function () {
+            var icon = document.createElement('i');
+            icon.className = 'fa-solid fa-check';
+            icon.setAttribute('aria-hidden', 'true');
+            btn.replaceChildren(icon, document.createTextNode(' ' + '{{ t_copied|escapejs }}'));
+        };
         if (navigator.clipboard) {
             navigator.clipboard.writeText(input.value).then(done);
         } else {

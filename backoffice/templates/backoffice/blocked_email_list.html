@@ -20,16 +20,16 @@
     {% csrf_token %}
     <input type="email" name="email" required class="form-control" placeholder="{% translate 'Email a bloquear' %}" aria-label="{% translate 'Email a bloquear' %}">
     <input type="text" name="reason" maxlength="500" class="form-control" placeholder="{% translate 'Motivo (opcional)' %}" aria-label="{% translate 'Motivo' %}">
-    <button class="btn btn-outline-danger"><i class="fa-solid fa-ban"></i> {% translate "Bloquear" %}</button>
+    <button class="btn btn-outline-danger"><i class="fa-solid fa-ban" aria-hidden="true"></i> {% translate "Bloquear" %}</button>
 </form>
 
 <form method="get" class="bo-filters" role="search">
     <input type="search" name="q" value="{{ q }}" class="form-control" placeholder="{% translate 'Buscar por el principio del email' %}" aria-label="{% translate 'Buscar email' %}">
-    <button class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> {% translate "Buscar" %}</button>
+    <button class="btn btn-primary"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> {% translate "Buscar" %}</button>
 </form>
 
 <div class="z-table-wrap"><table class="table align-middle">
-    <thead><tr><th>{% translate "Email" %}</th><th>{% translate "Club" %}</th><th>{% translate "Motivo" %}</th><th>{% translate "Fecha" %}</th><th>{% translate "Bloqueado por" %}</th><th></th></tr></thead>
+    <thead><tr><th>{% translate "Email" %}</th><th>{% translate "Club" %}</th><th>{% translate "Motivo" %}</th><th>{% translate "Fecha" %}</th><th>{% translate "Bloqueado por" %}</th><th><span class="visually-hidden">{% translate "Acciones" %}</span></th></tr></thead>
     <tbody>
     {% for b in page %}
         <tr>

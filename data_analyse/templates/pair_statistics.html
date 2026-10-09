@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static i18n l10n %}
+{% block page_title %}{% if s %}{{ p1.short_name }} / {{ p2.short_name }}{% else %}{% translate "Estadísticas por parejas" %}{% endif %} · {% endblock %}
 
 {% block content %}
   <script src="{% static 'js/player-picker.js' %}" defer></script>
@@ -168,12 +169,12 @@
           <article class="st-card">
             <h3 class="st-card-title">{% translate "Partidos jugados" %}</h3>
             <p class="st-card-note">{% translate "Ganados y perdidos en cada temporada." %}</p>
-            <div class="st-chart"><canvas id="chartPlayed"></canvas></div>
+            <div class="st-chart"><canvas id="chartPlayed" role="img" aria-label="{% translate "Partidos jugados" %}"></canvas></div>
           </article>
           <article class="st-card">
             <h3 class="st-card-title">{% translate "Evolución del % de victorias" %}</h3>
             <p class="st-card-note">{% translate "Porcentaje de partidos ganados juntos por temporada." %}</p>
-            <div class="st-chart"><canvas id="chartPct"></canvas></div>
+            <div class="st-chart"><canvas id="chartPct" role="img" aria-label="{% translate "Evolución del % de victorias" %}"></canvas></div>
           </article>
         </div>
 

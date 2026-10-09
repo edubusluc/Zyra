@@ -1,6 +1,6 @@
 {% load i18n backoffice_tags tz %}
 <div class="z-table-wrap"><table class="table align-middle">
-    <thead><tr>{% if show_job %}<th>{% translate "Proceso" %}</th>{% endif %}<th>{% translate "Inicio" context "hora de inicio" %}</th><th>{% translate "Duración" %}</th><th>{% translate "Tipo" %}</th><th>{% translate "Estado" %}</th><th></th></tr></thead>
+    <thead><tr>{% if show_job %}<th>{% translate "Proceso" %}</th>{% endif %}<th>{% translate "Inicio" context "hora de inicio" %}</th><th>{% translate "Duración" %}</th><th>{% translate "Tipo" %}</th><th>{% translate "Estado" %}</th><th><span class="visually-hidden">{% translate "Acciones" %}</span></th></tr></thead>
     <tbody>
     {% for run in runs %}
         <tr>

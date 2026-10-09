@@ -7,7 +7,7 @@
 {% block content %}
 <div class="z-auth">
     <div class="z-auth-card">
-        <img src="{% static 'zyra/logo.svg' %}" alt="" class="z-auth-logo">
+        <img src="{% static 'zyra/logo.svg' %}" alt="Zyra" class="z-auth-logo">
         <h1>{% translate "Iniciar sesión" %}</h1>
         {% if form.non_field_errors %}
         <div class="alert">{% for e in form.non_field_errors %}<p>{{ e }}</p>{% endfor %}</div>

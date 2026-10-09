@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static i18n %}
+{% block page_title %}{% translate "Partidos" %} · {% endblock %}
 
 {% block content %}
 <div class="z-page-head">
@@ -9,7 +10,7 @@
     </div>
     <div class="z-actions">
         {% if is_club_admin %}
-        <a href="{% url 'create_match' %}" class="btn btn-primary text-nowrap"><i class="fa-solid fa-plus me-1"></i> {% translate "Nuevo partido" %}</a>
+        <a href="{% url 'create_match' %}" class="btn btn-primary text-nowrap"><i class="fa-solid fa-plus me-1" aria-hidden="true"></i> {% translate "Nuevo partido" %}</a>
         {% endif %}
     </div>
 </div>
@@ -34,7 +35,7 @@
     {% endif %}
 </form>
 
-<div class="z-summary" aria-label="{% translate 'Resumen' %}">
+<div class="z-summary" role="group" aria-label="{% translate 'Resumen' %}">
     <div><b>{{ summary.played }}</b><span>{% translate "Jugados" %}</span></div>
     <div class="is-win"><b>{{ summary.won }}</b><span>{% translate "Ganados" %}</span></div>
     <div class="is-draw"><b>{{ summary.drawn }}</b><span>{% translate "Empatados" %}</span></div>
@@ -80,7 +81,7 @@ tarjeta es pulsable).{% endcomment %}
             <span class="z-fixture-actions">
                 <a href="{% url 'call_for_match' m.public_id %}" class="z-fixture-open stretched-link" aria-label="{% blocktranslate with local=m.local_name visiting=m.visiting_name %}Ver {{ local }} contra {{ visiting }}{% endblocktranslate %}">{% translate "Ver partido" %}<i class="fa-solid fa-chevron-right" aria-hidden="true"></i></a>
                 {% if m.draft_mode and is_club_admin %}
-                <a href="{% url 'delete_match' m.public_id %}" class="z-edit z-edit--danger z-fixture-delete" aria-label="{% translate 'Eliminar partido' %}" title="{% translate 'Eliminar partido' %}"><i class="fa-solid fa-trash"></i></a>
+                <a href="{% url 'delete_match' m.public_id %}" class="z-edit z-edit--danger z-fixture-delete" aria-label="{% translate 'Eliminar partido' %}" title="{% translate 'Eliminar partido' %}"><i class="fa-solid fa-trash" aria-hidden="true"></i></a>
                 {% endif %}
             </span>
         </div>
@@ -89,7 +90,7 @@ tarjeta es pulsable).{% endcomment %}
 </ol>
 {% else %}
 <div class="z-empty">
-    <i class="fa-solid fa-table-tennis-paddle-ball"></i>
+    <i class="fa-solid fa-table-tennis-paddle-ball" aria-hidden="true"></i>
     {% if filtering %}{% translate "Ningún partido coincide con la búsqueda." %}{% elif selected_season != all_seasons %}{% blocktranslate with season=selected_season %}No hay partidos en la temporada {{ season }}.{% endblocktranslate %}{% else %}{% translate "No hay partidos." %}{% endif %}
     {% if is_club_admin %}<div class="mt-3"><a class="btn btn-primary btn-sm" href="{% url 'create_match' %}">{% translate "Crear partido" %}</a></div>{% endif %}
 </div>

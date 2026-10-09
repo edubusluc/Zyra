@@ -54,7 +54,7 @@
       <div>
         <p class="st-card-note mt-0">{% translate "Media del equipo en cada actualización." %}</p>
         {% if snp.chart.average|length > 1 %}
-          <div class="st-chart"><canvas id="chartSnpTeam"></canvas></div>
+          <div class="st-chart"><canvas id="chartSnpTeam" role="img" aria-label="{% translate "Media del equipo en cada actualización." %}"></canvas></div>
         {% else %}
           <p class="st-muted">{% translate "Hace falta más de una actualización para ver la evolución." %}</p>
         {% endif %}

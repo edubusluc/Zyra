@@ -7994,6 +7994,37 @@ msgid_plural "%(n)s equipos actualizados."
 msgstr[0] "%(n)s team updated."
 msgstr[1] "%(n)s teams updated."
 
+msgid "Saltar al contenido"
+msgstr "Skip to content"
+
+msgid "Escudo"
+msgstr "Crest"
+
+msgid "Acciones"
+msgstr "Actions"
+
+#, python-format
+msgid "Ver la foto de %(subject)s a tamaño completo"
+msgstr "View the photo of %(subject)s at full size"
+
+#, python-format
+msgid "Rol de %(username)s"
+msgstr "Role of %(username)s"
+
+#, python-format
+msgid "Estadísticas de %(name)s"
+msgstr "Statistics of %(name)s"
+
+msgid "Foto actual del jugador"
+msgstr "Player's current photo"
+
+#, python-format
+msgid "Foto de %(name)s"
+msgstr "Photo of %(name)s"
+
+msgid "Escudo actual del equipo"
+msgstr "Team's current crest"
+
 #~ msgid "Empezar"
 #~ msgstr "Get started"
 

@@ -6,7 +6,7 @@
 {% block content %}
 <div class="z-auth">
     <div class="z-auth-card">
-        <img src="{% static 'zyra/logo.svg' %}" alt="" class="z-auth-logo">
+        <img src="{% static 'zyra/logo.svg' %}" alt="Zyra" class="z-auth-logo">
         <h1>{% blocktranslate with club=club.name %}Únete a {{ club }}{% endblocktranslate %}</h1>
         <p class="text-muted text-center">
             {% if invitation.created_by %}{% blocktranslate trimmed with name=invitation.created_by.get_full_name|default:invitation.created_by.username %}{{ name }} te invita a entrar en el equipo para consultar partidos, convocatorias y estadísticas.{% endblocktranslate %}{% else %}{% translate "Te han invitado a entrar en el equipo para consultar partidos, convocatorias y estadísticas." %}{% endif %}
@@ -31,7 +31,7 @@
             <p>
                 {{ field.label_tag }}
                 {{ field }}
-                {% if field.help_text %}<small class="text-muted d-block">{{ field.help_text }}</small>{% endif %}
+                {% if field.help_text %}<small class="text-muted d-block" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</small>{% endif %}
                 {% for error in field.errors %}<span class="text-danger d-block small">{{ error }}</span>{% endfor %}
             </p>
             {% endfor %}

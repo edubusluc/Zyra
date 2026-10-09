@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static i18n %}
+{% block page_title %}{% translate "Editar Jugador" %} · {% endblock %}
 
 {% block content %}
     <div class="table-container">
@@ -54,7 +55,7 @@
         <div>
             <label for="{{ form.photo.id_for_label }}">{% translate "Foto:" %}</label>
             <div class="d-flex align-items-center gap-3">
-                <img src="{% if player.photo %}{{ player.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="" class="z-avatar z-avatar--sm" data-photo-preview>
+                <img src="{% if player.photo %}{{ player.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="{% translate 'Foto actual del jugador' %}" class="z-avatar z-avatar--sm" data-photo-preview>
                 {{ form.photo }}
             </div>
             <small class="form-text">{% translate "Deja el campo vacío para mantener la foto actual." %}</small>
@@ -75,7 +76,7 @@
         </p>
 
         <button type="submit" class="btn btn-primary">{% translate "Guardar" %}</button>
-        <a href="{% url 'delete_player' player.public_id %}" class="btn btn-outline-danger"><i class="fa-solid fa-trash me-1"></i> {% translate "Eliminar jugador" %}</a>
+        <a href="{% url 'delete_player' player.public_id %}" class="btn btn-outline-danger"><i class="fa-solid fa-trash me-1" aria-hidden="true"></i> {% translate "Eliminar jugador" %}</a>
     </form>
     {% if player.user %}
     <form id="unlink-player" method="post" action="{% url 'unlink_player' player.public_id %}">{% csrf_token %}</form>

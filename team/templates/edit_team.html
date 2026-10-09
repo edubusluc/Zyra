@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static i18n %}
+{% block page_title %}{% translate "Editar Equipo" %} · {% endblock %}
 
 {% block content %}
     <div class="table-container mt-4">
@@ -54,7 +55,7 @@
             <div class="mb-3">
                 <label for="photo" class="form-label">{% translate "Foto:" %}</label>
                 <div class="d-flex align-items-center gap-3">
-                    <img src="{% if team.photo %}{{ team.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="" class="z-avatar z-avatar--sm" data-photo-preview>
+                    <img src="{% if team.photo %}{{ team.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="{% translate 'Escudo actual del equipo' %}" class="z-avatar z-avatar--sm" data-photo-preview>
                     <input type="file" id="photo" name="photo" class="form-control" accept="image/*">
                 </div>
                 <small class="form-text text-muted">{% translate "Dejar vacío si no deseas cambiar la foto." %}</small>

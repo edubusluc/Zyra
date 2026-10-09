@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static i18n %}
+{% block page_title %}{% translate "¿Quién eres en el equipo?" %} · {% endblock %}
 
 {% block content %}
 <div class="z-page-head">
@@ -24,7 +25,7 @@
 
 <form method="get" class="z-selector-tools" data-claim-search-form>
     <div class="z-search">
-        <i class="fa-solid fa-magnifying-glass"></i>
+        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
         <input type="search" name="q" value="{{ search }}" placeholder="{% translate 'Buscar jugador...' %}" aria-label="{% translate 'Buscar jugador' %}" autocomplete="off" data-claim-search>
     </div>
 </form>
@@ -40,7 +41,7 @@
             <span class="z-pick-meta">{% if p.linked %}{% translate "Ya enlazado" %}{% else %}{{ p.get_position_display }}{% endif %}</span>
         </span>
         {% if p.linked %}
-        <span class="z-claim-lock" title="{% translate 'Ya enlazado a otra cuenta' %}"><i class="fa-solid fa-lock"></i></span>
+        <span class="z-claim-lock" title="{% translate 'Ya enlazado a otra cuenta' %}"><i class="fa-solid fa-lock" aria-hidden="true"></i></span>
     </div>
         {% else %}
         <button type="submit" class="btn btn-primary btn-sm" data-claim-pick>{% translate "Soy yo" %}</button>

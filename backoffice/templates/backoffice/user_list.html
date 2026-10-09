@@ -19,7 +19,7 @@
         <option value="inactive" {% if kind == 'inactive' %}selected{% endif %}>{% translate "Sin acceso en 30 días" %}</option>
         <option value="staff" {% if kind == 'staff' %}selected{% endif %}>{% translate "Personal de Zyra" %}</option>
     </select>
-    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> {% translate "Filtrar" %}</button>
+    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> {% translate "Filtrar" %}</button>
 </form>
 
 <div class="z-table-wrap"><table class="table align-middle">
@@ -29,7 +29,7 @@
         <tr>
             <td>
                 <a href="{% url 'backoffice:user_detail' u.id %}">{{ u.username }}</a>
-                {% if u.uses_google %}<i class="fa-brands fa-google text-muted ms-1" title="{% translate 'Entra con Google' %}"></i>{% endif %}
+                {% if u.uses_google %}<i class="fa-brands fa-google text-muted ms-1" role="img" aria-label="{% translate 'Entra con Google' %}" title="{% translate 'Entra con Google' %}"></i>{% endif %}
                 {% if u.is_staff %}<span class="z-badge z-badge--lime ms-1">{% translate "Staff" %}</span>{% endif %}
                 {% if not u.is_active %}<span class="z-badge z-badge--danger ms-1">{% translate "Inactivo" %}</span>{% endif %}
             </td>

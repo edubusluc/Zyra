@@ -235,3 +235,10 @@ msgstr "3 points lost"
 #: static/js/team_statistics.js:144
 msgid "2 puntos perdidos"
 msgstr "2 points lost"
+
+#, javascript-format
+msgid "Tabla desplazable %s"
+msgstr "Scrollable table %s"
+
+msgid "Vista previa de la foto"
+msgstr "Photo preview"

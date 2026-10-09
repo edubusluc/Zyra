@@ -5,6 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 09/10/2026
 
+- Accesibilidad: texto alternativo en fotos, escudos y logos, gráficos descritos para lectores de pantalla, encabezados sin saltos de nivel, título propio en cada página, enlace «Saltar al contenido», etiquetas en todos los campos, iconos decorativos ocultos, más contraste en botones de borrar y jugadores fuera del equipo, tablas desplazables con el teclado y pruebas automáticas en CI (`core/tests_accessibility.py`) más auditoría con axe-core (`scripts/auditoria_accesibilidad.py`)
 - Posicionamiento en buscadores: portada con más contenido (qué hace, cómo funciona y preguntas frecuentes), títulos y descripciones con las palabras que buscan los capitanes, versión en inglés con URL propia (`?lang=en`) enlazada con hreflang en las páginas y en el sitemap, y datos estructurados (JSON-LD) de la aplicación
 - Partidos: cada partido es ahora una tarjeta (dos columnas en escritorio, una en móvil) con la fecha completa, el estado en palabras (Victoria, Derrota, Empate, Próximo o Sin resultado), un equipo por fila con sus puntos y el ganador resaltado, el lugar, los convocados de los pendientes y el enlace «Ver partido»
 - «Mi jugador» pasa a ser «Mi perfil»: muestra el email y la contraseña con opción de cambiarlos (el email pide la contraseña actual; si entras solo con Google, lo gestiona Google) y el jugador enlazado, que se pulsa para editarlo, o el botón para enlazarte a uno

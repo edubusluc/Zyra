@@ -1,10 +1,11 @@
 {% extends 'base.html' %}
 {% load i18n %}
+{% block page_title %}{% translate "Crear convocatoria" %} · {% endblock %}
 
 {% block content %}
 <div class="z-page-head">
     <div>
-        <a href="{% url 'call_for_match' match.public_id %}" class="z-eyebrow"><i class="fa-solid fa-arrow-left me-1"></i> {{ match.local_name }} vs {{ match.visiting_name }}</a>
+        <a href="{% url 'call_for_match' match.public_id %}" class="z-eyebrow"><i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i> {{ match.local_name }} vs {{ match.visiting_name }}</a>
         <h1>{% translate "Crear convocatoria" %}</h1>
     </div>
 </div>

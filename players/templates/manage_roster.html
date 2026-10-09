@@ -1,10 +1,11 @@
 {% extends 'base.html' %}
 {% load static i18n %}
+{% block page_title %}{% translate "Gestionar plantilla" %} · {% endblock %}
 
 {% block content %}
 <div class="z-page-head">
     <div>
-        <a href="{% url 'list_players' %}" class="z-eyebrow"><i class="fa-solid fa-arrow-left me-1"></i> {% translate "Jugadores" %}</a>
+        <a href="{% url 'list_players' %}" class="z-eyebrow"><i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i> {% translate "Jugadores" %}</a>
         <h1>{% translate "Gestionar plantilla" %}</h1>
     </div>
 </div>
@@ -15,7 +16,7 @@
     {% csrf_token %}
     <div class="z-selector-tools">
         <div class="z-search">
-            <i class="fa-solid fa-magnifying-glass"></i>
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
             <input type="search" placeholder="{% translate 'Buscar jugador...' %}" data-roster-search aria-label="{% translate 'Buscar jugador' %}">
         </div>
         <div class="z-segmented" role="group" aria-label="{% translate 'Filtrar' %}">

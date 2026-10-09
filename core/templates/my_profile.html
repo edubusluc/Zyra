@@ -38,7 +38,7 @@
             <span class="z-account-value">{{ user.email|default:"—" }}</span>
         </div>
         {% if not google_only %}
-        <a href="?edit=email" class="btn btn-outline-secondary btn-sm" aria-label="{% translate 'Cambiar el email' %}"><i class="fa-solid fa-pen"></i><span class="z-account-btn-text"> {% translate "Cambiar" %}</span></a>
+        <a href="?edit=email" class="btn btn-outline-secondary btn-sm" aria-label="{% translate 'Cambiar el email' %}"><i class="fa-solid fa-pen" aria-hidden="true"></i><span class="z-account-btn-text"> {% translate "Cambiar" %}</span></a>
         {% endif %}
     </div>
     {% if google_only %}
@@ -58,7 +58,7 @@
             <span class="z-account-value">••••••••</span>
             {% if uses_google %}<span class="z-account-note">{% translate "También puedes entrar con Google." %}</span>{% endif %}
         </div>
-        <a href="{% url 'account_change_password' %}" class="btn btn-outline-secondary btn-sm" aria-label="{% translate 'Cambiar la contraseña' %}"><i class="fa-solid fa-pen"></i><span class="z-account-btn-text"> {% translate "Cambiar" %}</span></a>
+        <a href="{% url 'account_change_password' %}" class="btn btn-outline-secondary btn-sm" aria-label="{% translate 'Cambiar la contraseña' %}"><i class="fa-solid fa-pen" aria-hidden="true"></i><span class="z-account-btn-text"> {% translate "Cambiar" %}</span></a>
     </div>
     {% endif %}
     {% endif %}
@@ -72,9 +72,9 @@
         <img src="{% if player.photo %}{{ player.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="" class="z-avatar z-avatar--sm">
         <span class="z-pick-body">
             <span class="z-pick-name">{{ player.full_name }}</span>
-            <span class="z-pick-meta"><i class="fa-solid fa-link me-1"></i>{% blocktranslate with club=current_club.name %}Tu cuenta está enlazada a este jugador de {{ club }}{% endblocktranslate %}</span>
+            <span class="z-pick-meta"><i class="fa-solid fa-link me-1" aria-hidden="true"></i>{% blocktranslate with club=current_club.name %}Tu cuenta está enlazada a este jugador de {{ club }}{% endblocktranslate %}</span>
         </span>
-        <span class="btn btn-primary btn-sm"><i class="fa-solid fa-pen"></i><span class="z-account-btn-text"> {% translate "Editar" %}</span></span>
+        <span class="btn btn-primary btn-sm"><i class="fa-solid fa-pen" aria-hidden="true"></i><span class="z-account-btn-text"> {% translate "Editar" %}</span></span>
     </a>
     <p class="form-text mb-0 mt-2">{% translate "Pulsa sobre tu jugador para cambiar tu foto, tu posición y tu mano hábil." %} <a href="{% url 'show_player' player.public_id %}">{% translate "Ver su ficha" %}</a></p>
     {% else %}
@@ -82,7 +82,7 @@
         <i class="fa-solid fa-link-slash" aria-hidden="true"></i>
         <p class="mb-0">{% blocktranslate with club=current_club.name %}Tu cuenta no está enlazada a ningún jugador de {{ club }}. Enlázala para cambiar tu foto, tu posición y tu mano hábil.{% endblocktranslate %}</p>
     </div>
-    <a href="{% url 'my_player' %}" class="btn btn-primary mt-3"><i class="fa-solid fa-link me-1"></i> {% translate "Enlazarme a un jugador" %}</a>
+    <a href="{% url 'my_player' %}" class="btn btn-primary mt-3"><i class="fa-solid fa-link me-1" aria-hidden="true"></i> {% translate "Enlazarme a un jugador" %}</a>
     {% endif %}
 </div>
 {% endif %}

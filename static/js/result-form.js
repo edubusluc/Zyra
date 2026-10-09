@@ -16,8 +16,10 @@
   function line(ok, text) {
     const li = document.createElement('li');
     li.className = ok === null ? '' : ok ? 'is-ok' : 'is-bad';
-    li.innerHTML = `<i class="fa-solid ${ok === null ? 'fa-circle-info' : ok ? 'fa-check' : 'fa-xmark'}"></i> `;
-    li.appendChild(document.createTextNode(text));
+    const icon = document.createElement('i');
+    icon.className = `fa-solid ${ok === null ? 'fa-circle-info' : ok ? 'fa-check' : 'fa-xmark'}`;
+    icon.setAttribute('aria-hidden', 'true');
+    li.append(icon, document.createTextNode(' ' + text));
     checks.appendChild(li);
   }
 
