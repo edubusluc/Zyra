@@ -103,7 +103,12 @@
 document.querySelectorAll('[data-copy]').forEach(function (btn) {
     btn.addEventListener('click', function () {
         var input = document.querySelector(btn.dataset.copy);
-        var done = function () { btn.innerHTML = '<i class="fa-solid fa-check" aria-hidden="true"></i> ' + '{{ t_copied|escapejs }}'; };
+        var done = function () {
+            var icon = document.createElement('i');
+            icon.className = 'fa-solid fa-check';
+            icon.setAttribute('aria-hidden', 'true');
+            btn.replaceChildren(icon, document.createTextNode(' ' + '{{ t_copied|escapejs }}'));
+        };
         if (navigator.clipboard) {
             navigator.clipboard.writeText(input.value).then(done);
         } else {
