@@ -7803,3 +7803,26 @@ msgid "%(n)s equipo actualizado."
 msgid_plural "%(n)s equipos actualizados."
 msgstr[0] "%(n)s team updated."
 msgstr[1] "%(n)s teams updated."
+
+#: match/templates/list_match.html
+msgid "Próximo"
+msgstr "Upcoming"
+
+#: match/templates/list_match.html
+msgid "Sin resultado"
+msgstr "No result"
+
+#: match/templates/list_match.html
+#, python-format
+msgid "%(n)s convocado"
+msgid_plural "%(n)s convocados"
+msgstr[0] "%(n)s player called up"
+msgstr[1] "%(n)s players called up"
+
+#: match/templates/list_match.html
+msgid "Sin convocatoria"
+msgstr "No call-up"
+
+#: match/templates/list_match.html
+msgid "Ver partido"
+msgstr "View match"

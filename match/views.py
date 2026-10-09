@@ -27,10 +27,12 @@ from datetime import datetime
 from callLog.models import CallLog
 from penalty.models import Penalty
 import json
+import re
 from urllib.parse import urlencode
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.core.exceptions import ValidationError
-from django.db.models import Q
+from django.db.models import Count, Q
+from django.utils import timezone
 from data_analyse.views import season_filter_context
 
 
@@ -70,6 +72,17 @@ def match_outcome(match):
     return "E"
 
 
+def split_points(result_points):
+    """Puntos de local y visitante a partir de ``result_points`` ('5/7'; los antiguos, '7-5').
+
+    Devuelve dos cadenas, o (None, None) si no hay marcador legible.
+    """
+    parts = re.split(r"[/-]", result_points or "")
+    if len(parts) != 2 or not all(x.strip().isdigit() for x in parts):
+        return None, None
+    return parts[0].strip(), parts[1].strip()
+
+
 def rival_names(club_matches):
     """Rivales distintos de los partidos (equipos ajenos y rivales escritos a mano), por orden alfabético."""
     names = set()
@@ -106,7 +119,9 @@ def list_match(request):
     rival y ``q`` busca por coincidencia en los nombres de los equipos y la ubicación; al
     buscar o elegir rival sin indicar temporada se buscan en todas. Renderiza list_match.html
     con el resultado, la temporada de cada partido y un resumen de ganados, empatados,
-    perdidos y pendientes de lo filtrado.
+    perdidos y pendientes de lo filtrado. Cada partido de la página lleva además los puntos
+    de cada lado, cuántos convocados tiene y si es un partido próximo (sin resultado y con
+    fecha de hoy en adelante) para pintar su tarjeta.
     """
     club_matches = Match.objects.filter(club=request.club).select_related('local', 'visiting')
     # Temporadas para el selector (desc), incluida la actual aunque aún no tenga partidos
@@ -150,8 +165,14 @@ def list_match(request):
     except EmptyPage:
         matches = paginator.page(paginator.num_pages)
 
+    called = dict(Call.objects.filter(match__in=list(matches))
+                  .annotate(n=Count('players')).values_list('match_id', 'n'))
+    today = timezone.localdate()
     for m in matches:
         m.outcome = match_outcome(m)
+        m.local_points, m.visiting_points = split_points(m.result_points) if m.outcome else (None, None)
+        m.called = called.get(m.id)
+        m.upcoming = m.outcome is None and m.start_date >= today
 
     # Resto de filtros para la paginación y para los formularios de búsqueda.
     keep = {'season': season, 'q': search, 'rival': rival}
