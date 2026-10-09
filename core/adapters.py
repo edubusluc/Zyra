@@ -43,6 +43,15 @@ class AccountAdapter(DefaultAccountAdapter):
         """Sin avisos de allauth ("Has iniciado sesión como..."): la app ya muestra los suyos."""
         pass
 
+    def get_password_change_redirect_url(self, request):
+        """Tras cambiar o crear la contraseña con la sesión iniciada, vuelve a «Mi perfil» con un aviso."""
+        from django.contrib import messages
+        from django.urls import reverse
+        from django.utils.translation import gettext as _
+
+        messages.success(request, _("Contraseña actualizada."))
+        return reverse("my_profile")
+
     def render_mail(self, template_prefix, email, context, headers=None):
         """
         Correos de allauth (p. ej. «¿Has olvidado tu contraseña?») con el diseño de los de

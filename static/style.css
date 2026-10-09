@@ -2355,3 +2355,22 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 /* Espera mientras se trae el equipo de SNP tras registrar el club */
 .z-welcome-snp { text-align: center; }
 .z-welcome-spinner { margin: 8px 0 18px; color: var(--z-lime); }
+
+/* ---------- «Mi perfil» (core/templates/my_profile.html) ---------- */
+.z-account { max-width: 720px; }
+.z-account-row { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-top: 1px solid var(--z-border); }
+.z-account-row:first-of-type { border-top: 0; padding-top: 0; }
+.z-account-row > i { width: 1.25rem; text-align: center; color: var(--z-lime); }
+.z-account-body { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.z-account-label { font-size: .78rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--z-muted); }
+.z-account-value { font-weight: 600; overflow-wrap: anywhere; }
+.z-account-note { font-size: .82rem; color: var(--z-muted); }
+.z-account-row > .btn { flex-shrink: 0; }
+.z-account-form { max-width: 420px; }
+a.z-account-player { color: inherit; text-decoration: none; }
+a.z-account-player:hover { background: rgba(var(--z-lime-rgb), .14); }
+a.z-account-player .btn { flex-shrink: 0; }
+@media (max-width: 575.98px) {
+    .z-account-btn-text { display: none; }
+    .z-account-row > .btn, a.z-account-player .btn { width: 2.5rem; height: 2.5rem; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
+}
