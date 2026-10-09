@@ -89,16 +89,17 @@ class LanguageMiddleware:
         response = self.get_response(request)
 
         if url_language and request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME) != url_language:
-            # Los mismos parámetros que la vista set_language de Django.
+            # Como la de la vista set_language, pero solo por HTTPS y sin acceso desde
+            # JavaScript (los navegadores aceptan cookies Secure también en localhost).
             response.set_cookie(
                 settings.LANGUAGE_COOKIE_NAME,
                 url_language,
                 max_age=settings.LANGUAGE_COOKIE_AGE,
                 path=settings.LANGUAGE_COOKIE_PATH,
                 domain=settings.LANGUAGE_COOKIE_DOMAIN,
-                secure=settings.LANGUAGE_COOKIE_SECURE,
-                httponly=settings.LANGUAGE_COOKIE_HTTPONLY,
-                samesite=settings.LANGUAGE_COOKIE_SAMESITE,
+                secure=True,
+                httponly=True,
+                samesite="Lax",
             )
 
         response.headers.setdefault("Content-Language", request.LANGUAGE_CODE)

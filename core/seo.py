@@ -17,9 +17,12 @@ LANG_PARAM = "lang"
 
 
 def url_language(request):
-    """Idioma pedido en la URL (``?lang=en``) si es uno de LANGUAGES; si no, None."""
-    language = request.GET.get(LANG_PARAM)
-    return language if language in dict(settings.LANGUAGES) else None
+    """
+    Idioma pedido en la URL (``?lang=en``) si es uno de LANGUAGES; si no, None. Devuelve el
+    código de LANGUAGES, nunca el texto de la petición (va a una cabecera Set-Cookie).
+    """
+    requested = request.GET.get(LANG_PARAM)
+    return next((code for code, _name in settings.LANGUAGES if code == requested), None)
 
 
 def site_base(request):
