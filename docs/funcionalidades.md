@@ -96,7 +96,9 @@ El ciclo de un enfrentamiento ([`match.views`](referencia/match/views.md)):
 4. **Parejas**: 5 partidos; los dos primeros valen 3 puntos y el resto 2. Cada jugador se elige
    con un buscador que filtra al escribir o desde la lista desplegable (solo convocados que no
    están ya en otra pareja, con sus puntos SNP). A la derecha se ve en vivo el orden de juego por
-   la suma de puntos SNP. Se pueden reordenar mientras el acta está abierta
+   la suma de puntos SNP. El botón **Alineación sugerida** rellena las 5 parejas con la
+   recomendación del informe (y **Ver la alternativa**, con la segunda); después se puede cambiar
+   cualquier pareja. Se pueden reordenar mientras el acta está abierta
    ([`match.lineup`](referencia/match/lineup.md)).
 5. **Resultados** por sets, con validación ([`match.scoring`](referencia/match/scoring.md)).
 6. **Cerrar actas**: con los 5 resultados, calcula los puntos y el ganador; si la eliminatoria
@@ -116,10 +118,18 @@ Todas con filtro Todos / Competitivos / Amistosos y selector de temporada
 ([`data_analyse.views`](referencia/data_analyse/views.md), [`data_analyse.pairs`](referencia/data_analyse/pairs.md)):
 
 - **Equipo**: victorias, empates y derrotas (en total y por temporada), local / visitante,
-  mejores jugadores y parejas, gráficos.
+  mejores jugadores y parejas, gráficos, % de victorias por número de partido (1 a 5), sets
+  (set decisivo, tie-breaks, remontadas, cerrar el partido, sets ajustados, roscos), récords
+  ([`data_analyse.records`](referencia/data_analyse/records.md)) y ranking SNP de la plantilla con
+  la media del equipo en cada actualización.
 - **Jugador**: balance, con quién juega mejor, grado de afinidad (en el equipo o incluyendo
-  antiguos), evolución de puntos SNP.
-- **Parejas**: mejores y peores parejas y detalle de una pareja (rachas, temporadas, últimos partidos).
+  antiguos), evolución de puntos SNP, por número de partido, **sets clutch** y **apuntado y
+  alineado** (en cuántas convocatorias a las que se apunta acaba jugando).
+- **Parejas**: mejores y peores parejas y detalle de una pareja (rachas, temporadas, sets, últimos
+  partidos).
+
+Las reglas de sets están en [`data_analyse.sets`](referencia/data_analyse/sets.md): tie-break es un
+set 7-6, el tercer set puede ser un super tie-break a 10 y un 0-0 antiguo en el tercer set se ignora.
 - **Avisos**: sanciones por jugador y temporada.
 
 ## Back-office
@@ -127,6 +137,10 @@ Todas con filtro Todos / Competitivos / Amistosos y selector de temporada
 Solo para el personal, en `/backoffice/` ([`backoffice`](referencia/backoffice/index.md)):
 
 - Dashboard con KPIs, usuarios conectados y carga de la web por minuto.
+- **Uso de la plataforma**: enfrentamientos, convocatorias cerradas y resultados por semana, qué
+  partes de la web usan los clubes y los clubes más activos.
+- **Salud de los servicios**: informes por email enviados y fallidos, cuentas SNP con error o sin
+  sincronizar, procesos programados de la semana y errores 500 en 24 h.
 - Clubes y usuarios, con suspensión y borrado de fotos.
 - Revisión de fotos subidas.
 - **Procesos programados** (cron, hora de Madrid) con historial y traza en directo:

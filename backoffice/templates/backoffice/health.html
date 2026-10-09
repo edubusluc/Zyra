@@ -1,0 +1,119 @@
+{% extends 'backoffice/base.html' %}
+{% load i18n l10n backoffice_tags %}
+{% block title %}{% translate "Salud de los servicios" %}{% endblock %}
+
+{% block content %}
+<div class="z-page-head">
+    <div>
+        <span class="z-eyebrow">{% translate "Toda la plataforma" %}</span>
+        <h1>{% translate "Salud de los servicios" %}</h1>
+    </div>
+</div>
+
+{% if health.scheduler_late %}
+<div class="alert alert-warning d-flex flex-wrap gap-2 align-items-center">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <span>{% translate "El lanzador de procesos no está en marcha: no se envían reintentos de informes ni se sincronizan los puntos SNP." %}</span>
+    <a href="{% url 'backoffice:job_list' %}" class="ms-auto">{% translate "Ver procesos" %}</a>
+</div>
+{% endif %}
+
+<section class="bo-kpis" aria-label="{% translate 'Resumen' %}">
+    <div class="bo-kpi{% if health.reports.failed %} bo-kpi--alert{% endif %}">
+        <span class="bo-kpi-label">{% blocktranslate with days=health.days %}Informes enviados ({{ days }} días){% endblocktranslate %}</span>
+        <b>{% if health.reports.ok_pct is None %}—{% else %}{{ health.reports.ok_pct }} %{% endif %}</b>
+        <small>{% blocktranslate trimmed with sent=health.reports.sent failed=health.reports.failed pending=health.reports.pending %}{{ sent }} enviados · {{ failed }} fallidos · {{ pending }} pendientes{% endblocktranslate %}</small>
+    </div>
+    <div class="bo-kpi{% if health.snp.failed %} bo-kpi--alert{% endif %}">
+        <span class="bo-kpi-label">{% translate "Sincronización SNP" %}</span>
+        <b>{{ health.snp.ok }} / {{ health.snp.total }}</b>
+        <small>{% blocktranslate trimmed with failed=health.snp.failed never=health.snp.never %}{{ failed }} con error · {{ never }} sin sincronizar nunca{% endblocktranslate %}</small>
+    </div>
+    <div class="bo-kpi{% if health.web.errors %} bo-kpi--alert{% endif %}">
+        <span class="bo-kpi-label">{% translate "Errores 500 en 24 h" %}</span>
+        <b>{{ health.web.errors }}</b>
+        <small>{% blocktranslate trimmed with pct=health.web.error_pct requests=health.web.requests %}{{ pct }} % de {{ requests }} peticiones{% endblocktranslate %}</small>
+    </div>
+</section>
+
+<div class="bo-grid">
+    <section class="z-panel">
+        <h2 class="h5">{% translate "Informes de convocatoria por email" %}</h2>
+        <dl class="bo-facts">
+            <div><dt>{% translate "Enviados" %}</dt><dd>{{ health.reports.sent }}</dd></div>
+            <div><dt>{% translate "Enviados tras reintentar" %}</dt><dd>{{ health.reports.retried }}</dd></div>
+            <div><dt>{% translate "Pendientes de reintento" %}</dt><dd>{{ health.reports.pending }}</dd></div>
+            <div><dt>{% translate "Fallidos (sin más reintentos)" %}</dt><dd>{{ health.reports.failed }}</dd></div>
+        </dl>
+    </section>
+    <section class="z-panel">
+        <h2 class="h5">{% translate "Cuentas SNP" %}</h2>
+        <dl class="bo-facts">
+            <div><dt>{% translate "Cuentas" %}</dt><dd>{{ health.snp.total }}</dd></div>
+            <div><dt>{% translate "Última sincronización correcta" %}</dt><dd>{{ health.snp.ok }}</dd></div>
+            <div><dt>{% translate "Con error" %}</dt><dd>{{ health.snp.failed }}</dd></div>
+            <div><dt>{% blocktranslate with days=health.snp_stale_days %}Sin sincronizar en {{ days }} días{% endblocktranslate %}</dt><dd>{{ health.snp.stale }}</dd></div>
+        </dl>
+    </section>
+</div>
+
+<section class="z-panel">
+    <h2 class="h5">{% translate "Procesos programados (7 días)" %}</h2>
+    <div class="z-table-wrap"><table class="table align-middle">
+        <thead><tr><th>{% translate "Proceso" %}</th><th>{% translate "Ejecuciones" %}</th><th>{% translate "Correctas" %}</th><th>{% translate "Con error" %}</th><th>{% translate "Última" %}</th></tr></thead>
+        <tbody>
+        {% for j in health.jobs %}
+            <tr>
+                <td><a href="{% url 'backoffice:job_detail' j.job.name %}">{{ j.job.name }}</a>{% if not j.job.enabled %} <span class="z-badge">{% translate "Pausado" %}</span>{% endif %}</td>
+                <td>{{ j.runs }}</td>
+                <td>{% if j.ok_pct is None %}—{% else %}{{ j.ok_pct }} %{% endif %}</td>
+                <td>{% if j.errors %}<span class="text-danger">{{ j.errors }}</span>{% else %}0{% endif %}</td>
+                <td>{% if j.last %}<a href="{% url 'backoffice:run_detail' j.last.public_id %}">{{ j.last.get_status_display }}</a> · {{ j.last.started_at|ago }}{% else %}—{% endif %}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="5" class="text-muted">{% translate "No hay procesos registrados." %}</td></tr>
+        {% endfor %}
+        </tbody>
+    </table></div>
+</section>
+
+<section class="z-panel">
+    <h2 class="h5">{% translate "Informes con problemas" %}</h2>
+    <div class="z-table-wrap"><table class="table align-middle">
+        <thead><tr><th>{% translate "Club" %}</th><th>{% translate "Convocatoria" %}</th><th>{% translate "Destinatario" %}</th><th>{% translate "Estado" %}</th><th>{% translate "Intentos" %}</th><th>{% translate "Último error" %}</th></tr></thead>
+        <tbody>
+        {% for d in health.reports.problems %}
+            <tr>
+                <td>{% if d.call.match.club %}<a href="{% url 'backoffice:club_detail' d.call.match.club.public_id %}">{{ d.call.match.club.name }}</a>{% else %}—{% endif %}</td>
+                <td>{{ d.call }} · {{ d.call.match.start_date|date:"d/m/Y" }}</td>
+                <td>{{ d.email }}</td>
+                <td>{{ d.get_status_display }}</td>
+                <td>{{ d.attempts }}</td>
+                <td><small class="bo-mono">{{ d.last_error|truncatechars:120|default:"—" }}</small></td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="6" class="text-muted">{% translate "Todos los informes se han enviado." %}</td></tr>
+        {% endfor %}
+        </tbody>
+    </table></div>
+</section>
+
+<section class="z-panel">
+    <h2 class="h5">{% translate "Cuentas SNP con error" %}</h2>
+    <div class="z-table-wrap"><table class="table align-middle">
+        <thead><tr><th>{% translate "Club" %}</th><th>{% translate "Última sincronización" %}</th><th>{% translate "Se reintenta" %}</th><th>{% translate "Mensaje" %}</th></tr></thead>
+        <tbody>
+        {% for a in health.snp.failing %}
+            <tr>
+                <td><a href="{% url 'backoffice:club_detail' a.club.public_id %}">{{ a.club.name }}</a></td>
+                <td>{% if a.last_sync_at %}{{ a.last_sync_at|ago }}{% else %}—{% endif %}</td>
+                <td>{% if a.last_sync_retryable %}{% translate "Sí" %}{% else %}{% translate "No" %}{% endif %}</td>
+                <td><small>{{ a.last_sync_message|truncatechars:160|default:"—" }}</small></td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="4" class="text-muted">{% translate "Ninguna cuenta SNP tiene errores." %}</td></tr>
+        {% endfor %}
+        </tbody>
+    </table></div>
+</section>
+{% endblock %}

@@ -1,0 +1,7 @@
+{% load i18n l10n %}
+{# Una situación de sets: label, hint y r ({'wins', 'losses', 'total', 'pct'}) #}
+<div class="st-split st-set-rate">
+  <div class="st-split-head"><span>{{ label }}</span><b>{% if r.pct is None %}—{% else %}{{ r.pct }}%{% endif %}</b></div>
+  <div class="st-meter"><span style="width: {{ r.pct|default:0|unlocalize }}%"></span></div>
+  <p class="st-split-foot">{% if r.total %}{% blocktranslate trimmed with wins=r.wins losses=r.losses %}{{ wins }}V – {{ losses }}D{% endblocktranslate %}{% else %}{% translate "Ninguno todavía" %}{% endif %} · {{ hint }}</p>
+</div>

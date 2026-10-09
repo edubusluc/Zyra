@@ -1,0 +1,40 @@
+{% load i18n l10n %}
+{# Sets: decisivo, tie-breaks, remontadas... Recibe: st (data_analyse.sets.set_stats), title, note #}
+<article class="st-card">
+  <h3 class="st-card-title">{{ title }}</h3>
+  <p class="st-card-note">{{ note }}</p>
+  {% if st.played %}
+    <dl class="st-facts st-facts--sets">
+      <div class="st-fact">
+        <dt>{% translate "Sets" %}</dt>
+        <dd>{{ st.sets_won }}–{{ st.sets_lost }}</dd>
+      </div>
+      <div class="st-fact">
+        <dt>{% translate "Llegan al tercer set" %}</dt>
+        <dd>{{ st.third_share|default:0 }} %</dd>
+      </div>
+      <div class="st-fact">
+        <dt>{% translate "Roscos (6-0)" %}</dt>
+        <dd title="{% translate 'Dados – recibidos' %}">{{ st.bagels_for }}–{{ st.bagels_against }}</dd>
+      </div>
+    </dl>
+    <div class="st-sets-grid">
+      {% translate "Set decisivo" as label %}{% translate "Tercer set, a set normal o a super tie-break." as hint %}
+      {% include 'includes/set_rate.html' with label=label hint=hint r=st.third %}
+      {% translate "Tie-breaks" as label %}{% translate "Sets que llegan a 6-6 y acaban 7-6." as hint %}
+      {% include 'includes/set_rate.html' with label=label hint=hint r=st.tiebreak %}
+      {% translate "Remontadas" as label %}{% translate "Partidos ganados tras perder el primer set." as hint %}
+      {% include 'includes/set_rate.html' with label=label hint=hint r=st.comeback %}
+      {% translate "Cerrar el partido" as label %}{% translate "Partidos ganados tras ganar el primer set." as hint %}
+      {% include 'includes/set_rate.html' with label=label hint=hint r=st.first_set %}
+      {% translate "Sets ajustados" as label %}{% translate "Sets que acaban 7-5 o 7-6." as hint %}
+      {% include 'includes/set_rate.html' with label=label hint=hint r=st.close %}
+      {% if st.super_tb.total %}
+        {% translate "Super tie-break" as label %}{% translate "Tercer set jugado a 10 puntos." as hint %}
+        {% include 'includes/set_rate.html' with label=label hint=hint r=st.super_tb %}
+      {% endif %}
+    </div>
+  {% else %}
+    <p class="st-muted mt-3 mb-0">{% translate "Todavía no hay resultados set a set." %}</p>
+  {% endif %}
+</article>

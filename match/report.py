@@ -157,3 +157,36 @@ def build_report(call):
         "squad_size": len(squad),
         "enough_players": len(called) >= advisor.PLAYERS_PER_LINEUP,
     }
+
+
+def suggested_lineups(call):
+    """
+    Alineaciones recomendadas (A y, si la hay, B) para rellenar el formulario de parejas.
+
+    Usa el mismo recomendador que el informe de la convocatoria, con la historia anterior
+    al enfrentamiento. Devuelve una lista (vacía con menos de 10 convocados) de
+    {'key', 'title', 'win', 'expected', 'explanation', 'pairs': [[id, id], ...]} con las
+    parejas en orden de juego (partido 1 primero).
+    """
+    match = call.match
+    called = list(call.players.all())
+    if len(called) < advisor.PLAYERS_PER_LINEUP:
+        return []
+    own_local = match.own_is_local
+    venue_label = pgettext("sede, en minúscula", "local") if own_local else pgettext("sede, en minúscula", "visitante")
+    log = [g for g in club_game_log(match.club) if g['date'] < match.start_date]
+    forms, pairs = advisor.build_forms(log, called, own_local)
+    lineup_a, lineup_b = advisor.recommend(forms, pairs, [p.id for p in called])
+    result = []
+    for key, lineup, compare_to in (("A", lineup_a, None), ("B", lineup_b, lineup_a)):
+        if not lineup:
+            continue
+        result.append({
+            "key": key,
+            "title": _("Alineación %(letter)s · %(title)s") % {"letter": key, "title": lineup.title},
+            "win": round(lineup.win * 100),
+            "expected": round(lineup.expected, 1),
+            "explanation": advisor.explain(lineup, venue_label, compare_to=compare_to),
+            "pairs": [[p.a.id, p.b.id] for p in lineup.pairs],
+        })
+    return result
