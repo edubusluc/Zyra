@@ -40,3 +40,16 @@
   let timer;
   window.addEventListener('resize', () => { clearTimeout(timer); timer = setTimeout(update, 150); });
 })();
+
+// «Volver arriba»: el ancla (#contenido) es solo el respaldo sin JavaScript. El <main>
+// empieza bajo la cabecera, así que saltar a él no deja la página arriba del todo;
+// se sube al principio del documento y el foco pasa al contenido sin moverlo otra vez.
+// El desplazamiento suave lo decide el CSS (scroll-behavior, respeta reduced-motion).
+document.querySelectorAll('[data-scroll-top]').forEach((link) => {
+  link.addEventListener('click', (event) => {
+    event.preventDefault();
+    window.scrollTo(0, 0);
+    const target = document.querySelector(link.getAttribute('href'));
+    if (target) target.focus({ preventScroll: true });
+  });
+});
