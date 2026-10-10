@@ -34,8 +34,10 @@ class MatchLifecycleTests(TestCase):
             "mode": "competitivo", "match_type": Match.ENFRENTAMIENTO,
             "local": self.club.own_team.id, "visiting": self.rival.id, "start_date": "2026-10-10",
         })
-        self.assertRedirects(response, reverse("list_match"), fetch_redirect_response=False)
-        return Match.objects.get(club=self.club)
+        match = Match.objects.get(club=self.club)
+        self.assertRedirects(response, reverse("call_for_match", args=[match.public_id]),
+                             fetch_redirect_response=False)
+        return match
 
     def test_full_match_lifecycle(self):
         match = self._create_match()
