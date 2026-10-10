@@ -58,6 +58,11 @@ GUTTER = 6 * mm            # separación entre columnas
 PANEL_PAD = 9              # relleno interior de las tarjetas (pt)
 CELL_PAD = 3.5             # relleno vertical de las filas de las tablas (pt)
 
+# Anchos de la tabla de convocados (Jugador, SNP, Como sede, Global, Jug./Conv., Último, Racha, Forma):
+# el SNP (hasta «14062.5») y los registros caben en una sola línea; el nombre se abrevia solo
+PLAYER_COLS = [36 * mm, 17 * mm, 29 * mm, 29 * mm, 20 * mm, 18 * mm, 15 * mm, 18 * mm]
+assert abs(sum(PLAYER_COLS) - CONTENT_W) < 0.01
+
 MAX_PLAYERS_TABLE = 16     # filas de convocados en las distribuciones más apretadas
 MAX_BENCH_NAMES = 8        # nombres en «Descansan»; el resto se cuenta
 MIN_ROWS_AFTER_HEADING = 22 * mm  # sin salto forzado, un título no se queda solo al pie
@@ -389,7 +394,7 @@ def _story(report, layout):
     shown = players[:layout.max_players] if layout.max_players else players
     story.append(Spacer(1, layout.section_gap))
     section(_("CONVOCADOS · RENDIMIENTO COMO %(venue)s") % {"venue": venue.upper()})
-    widths = [44 * mm, 12 * mm, 28 * mm, 26 * mm, 20 * mm, 18 * mm, 14 * mm, 20 * mm]
+    widths = PLAYER_COLS
     name_w = widths[0] - CELL_X_PAD
     usage = report["usage"]
 
@@ -412,8 +417,8 @@ def _story(report, layout):
         [_("Jugador"), "SNP", _("Como %(venue)s") % {"venue": venue}, _("Global"), _("Jug./Conv."), _("Último"),
          _("Racha"), _("Forma")],
         player_rows, widths, st, pad=pad))
-    note = _("Jug./Conv.: partidos jugados / convocatorias en las que se apuntó esta temporada. "
-             "Último: fecha del último partido disputado.")
+    note = _("Jug./Conv.: partidos jugados / convocatorias en las que se apuntó esta temporada, sin contar "
+             "esta convocatoria ni este partido. Último: fecha del último partido disputado.")
     if len(players) > len(shown):
         note += " " + _("%(n)s convocados más no caben en la tabla.") % {"n": len(players) - len(shown)}
     story.append(Spacer(1, layout.note_gap))
