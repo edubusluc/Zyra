@@ -1,7 +1,7 @@
 # Arquitectura (para asistentes)
 
 Referencia compacta para ubicar código. Índice general: `ZYRA_CONTEXT.md` (raíz del repositorio).
-Verificado contra `main` el 09/10/2026. [V] comprobado · [I] inferido.
+Verificado contra `main` el 09/10/2026 (tras #105). [V] comprobado · [I] inferido.
 
 ## Capas
 

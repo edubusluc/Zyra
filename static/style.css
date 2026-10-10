@@ -2302,7 +2302,7 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 .z-crop-zoom .form-range::-moz-range-thumb { background-color: var(--z-lime); }
 .z-crop-zoom .form-range:focus::-webkit-slider-thumb { box-shadow: 0 0 0 1px var(--z-bg), 0 0 0 .25rem rgba(var(--z-lime-rgb), .25); }
 
-/* ---------- Avisos de error en popup (core/templates/includes/messages_modal.html) ---------- */
+/* ---------- Avisos de error en popup (core/templates/includes/messages_popup.html) ---------- */
 .z-messages-modal .modal-header { gap: 12px; justify-content: flex-start; }
 .z-messages-modal .modal-header .btn-close { margin-left: auto; }
 .z-messages-icon {

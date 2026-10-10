@@ -13,7 +13,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 APPS = ["backoffice", "call", "callLog", "core", "data_analyse", "match", "penalty", "players", "team", "zyra"]
-SCRIPTS = ["clear_database.py", "manage.py", "scripts/check_docstrings.py", "docs/gen_ref_pages.py"]
+SCRIPTS = ["clear_database.py", "manage.py", "scripts/check_docstrings.py", "scripts/check_ai_docs.py", "docs/gen_ref_pages.py"]
 SKIP_CLASSES = {"Meta", "Media"}
 
 

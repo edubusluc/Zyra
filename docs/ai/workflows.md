@@ -39,6 +39,7 @@ En PostgreSQL el CI corre además `python manage.py check --deploy --fail-level 
 ```bash
 pip install --only-binary ':all:' --require-hashes -r requirements-docs.txt
 python scripts/check_docstrings.py    # falla si falta un docstring (excluye migraciones y tests)
+python scripts/check_ai_docs.py       # falla si el índice para asistentes cita rutas que no existen o le faltan JS/tests/comandos
 mkdocs build --strict                 # falla con enlaces rotos
 mkdocs serve                          # vista local en http://127.0.0.1:8000
 ```
@@ -110,15 +111,16 @@ Según `docs/mantener-documentacion.md` y el CI:
 3. Textos nuevos traducidos (`makemessages` + `compilemessages`).
 4. Página nueva → URL en `core/tests_accessibility.py`.
 5. Comportamiento visible → `docs/funcionalidades.md`; línea en `docs/novedades.md` con el número del PR.
-6. Afecta a la tabla, reglas, modelos o comandos → actualizar `ZYRA_CONTEXT.md` y el `docs/ai/*.md` correspondiente.
+6. Afecta a la tabla, reglas, modelos o comandos → actualizar `ZYRA_CONTEXT.md` y el `docs/ai/*.md` correspondiente
+   (`python scripts/check_ai_docs.py` avisa de JS, tests o comandos sin apuntar).
 
 ## Validar la documentación para IA
 
-Comprueba que existen las rutas citadas entre comillas invertidas en el índice y en `docs/ai/`:
-
 ```bash
-grep -ohE '`[A-Za-z_./-]+\.(py|md|html|yml|toml|txt|css|js)`' ZYRA_CONTEXT.md docs/ai/*.md \
-  | tr -d '`' | sort -u | while read -r p; do [ -e "$p" ] || echo "NO EXISTE: $p"; done
+python scripts/check_ai_docs.py
 ```
 
-Escribe siempre la ruta completa desde la raíz para que esta comprobación la cubra.
+Lo corre el CI (`.github/workflows/docs.yml`). Falla si una ruta citada entre comillas invertidas en
+`ZYRA_CONTEXT.md`, `CLAUDE.md` o `docs/ai/` no existe, si un archivo de `static/js/` o de tests no
+aparece en la tabla del índice, o si un comando de gestión no aparece en el índice ni en `docs/ai/`.
+Escribe siempre la ruta completa desde la raíz para que la comprobación la cubra.
