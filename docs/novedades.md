@@ -5,6 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 10/10/2026
 
+- Partidos: al crear un partido se abre directamente su página (para hacer la convocatoria) en vez de volver al listado
 - Portada: «Volver arriba» sube hasta el principio de la página (antes se quedaba bajo la cabecera) y en móvil ya no se repite el botón de registro al final
 
 ## 09/10/2026

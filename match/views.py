@@ -196,12 +196,12 @@ def create_match(request):
 
     Solo para administradores del club (club_admin_required). En GET muestra el
     formulario; en POST lo valida (las reglas están en MatchForm), lo guarda y
-    redirige al listado.
+    redirige a la página del partido recién creado.
     """
     form = MatchForm(request.POST or None, club=request.club)
     if request.method == "POST" and form.is_valid():
-        form.save()
-        return redirect("list_match")
+        match = form.save()
+        return redirect("call_for_match", match.public_id)
     return render(request, CREATE_MATCH_HTML, {"form": form})
 
 @club_admin_required

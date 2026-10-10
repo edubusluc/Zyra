@@ -351,8 +351,8 @@ class CreateMatchTests(TestCase):
     def test_creates_match_with_iso_date(self):
         response = self.client.post(self.url, {"local": self.club.own_team.id, "visiting": self.rival.id,
                                                "start_date": "2026-11-15"})
-        self.assertRedirects(response, reverse("list_match"), fetch_redirect_response=False)
-        self.assertTrue(Match.objects.filter(club=self.club, start_date=datetime.date(2026, 11, 15)).exists())
+        match = Match.objects.get(club=self.club, start_date=datetime.date(2026, 11, 15))
+        self.assertRedirects(response, reverse("call_for_match", args=[match.public_id]))
 
     def test_missing_date_shows_error_instead_of_crashing(self):
         response = self.client.post(self.url, {"local": self.club.own_team.id, "visiting": self.rival.id})
@@ -384,8 +384,9 @@ class CreateMatchOwnTeamTests(TestCase):
 
     def test_own_team_as_visiting_is_allowed(self):
         response = self.post(self.rival, self.own)
-        self.assertRedirects(response, reverse("list_match"), fetch_redirect_response=False)
         match = Match.objects.get()
+        self.assertRedirects(response, reverse("call_for_match", args=[match.public_id]),
+                             fetch_redirect_response=False)
         self.assertEqual((match.local, match.visiting, match.club), (self.rival, self.own, self.club))
 
     def test_same_team_twice_is_rejected(self):
@@ -452,8 +453,9 @@ class CreateFriendlyMatchTests(TestCase):
 
     def test_friendly_match_ignores_type(self):
         response = self.client.post(self.url, {**self.data, "mode": "amistoso", "match_type": Match.PLAYOFF})
-        self.assertRedirects(response, reverse("list_match"), fetch_redirect_response=False)
         match = Match.objects.get()
+        self.assertRedirects(response, reverse("call_for_match", args=[match.public_id]),
+                             fetch_redirect_response=False)
         self.assertEqual(match.match_type, Match.AMISTOSO)
         self.assertTrue(match.is_friendly)
 
@@ -491,8 +493,9 @@ class FriendlyManualRivalTests(TestCase):
     def test_creates_friendly_without_creating_a_team(self):
         teams = Team.objects.count()
         response = self.client.post(self.url, self.data)
-        self.assertRedirects(response, reverse("list_match"), fetch_redirect_response=False)
         match = Match.objects.get()
+        self.assertRedirects(response, reverse("call_for_match", args=[match.public_id]),
+                             fetch_redirect_response=False)
         self.assertEqual(Team.objects.count(), teams)
         self.assertEqual((match.local, match.visiting), (self.own, None))
         self.assertEqual(match.rival_name, "Pádel Norte")
