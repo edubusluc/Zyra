@@ -5,6 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 10/10/2026
 
+- Informe PDF de convocatoria: la columna «Jug./Conv.» no cuenta la convocatoria ni el partido actuales (lo explica una nota bajo la tabla) y se redistribuyen las columnas para que los puntos SNP y los registros no salten de línea
 - Partidos: al crear un partido se abre directamente su página (para hacer la convocatoria) en vez de volver al listado
 - Portada: «Volver arriba» sube hasta el principio de la página (antes se quedaba bajo la cabecera) y en móvil ya no se repite el botón de registro al final
 

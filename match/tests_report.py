@@ -174,6 +174,18 @@ class ReportTests(TestCase):
         self.assertLessEqual(pdfmetrics.stringWidth(label, "Archivo-Bold", 8), width)
         self.assertEqual(report_pdf._player_label(Player(name="Ana", last_name="Gil"), width), "ANA GIL")
 
+    def test_player_table_cells_never_wrap(self):
+        # SNP con decimales, registros de dos cifras y fechas caben en su columna con el cuerpo más grande
+        pad = 10  # relleno lateral de las celdas
+        for col, text in ((1, "14062.5"), (2, "10V-9D · 100%"), (3, "10V-9D · 100%"), (5, "27/09/26"), (6, "10V")):
+            with self.subTest(text=text):
+                width = pdfmetrics.stringWidth(text, "Archivo", 9.5)
+                self.assertLessEqual(width + pad, report_pdf.PLAYER_COLS[col])
+        for col, header in ((2, "COMO VISITANTE"), (4, "JUG./CONV."), (6, "RACHA")):
+            with self.subTest(header=header):
+                width = pdfmetrics.stringWidth(header, "Archivo-Bold", 7.5)
+                self.assertLessEqual(width + pad, report_pdf.PLAYER_COLS[col])
+
     def test_not_enough_players(self):
         self.call.players.set(self.players[:6])
         report = build_report(self.call)

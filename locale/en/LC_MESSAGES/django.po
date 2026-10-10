@@ -6270,10 +6270,11 @@ msgstr "Form"
 #: match/report_pdf.py:415
 msgid ""
 "Jug./Conv.: partidos jugados / convocatorias en las que se apuntó esta "
-"temporada. Último: fecha del último partido disputado."
+"temporada, sin contar esta convocatoria ni este partido. Último: fecha del "
+"último partido disputado."
 msgstr ""
-"Pl./Calls: matches played / call-ups signed up for this season. Last: date of"
-" the last match played."
+"Pl./Calls: matches played / call-ups signed up for this season, not counting"
+" this call-up or this match. Last: date of the last match played."
 
 #: match/report_pdf.py:418
 #, python-format
