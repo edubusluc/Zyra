@@ -19,7 +19,7 @@ ACTIONS = {
     "club.contact": "Correo al capitán",
     "user.deactivate": "Cuenta suspendida",
     "user.activate": "Cuenta reactivada",
-    "user.password_reset": "Restablecimiento de contraseña enviado",
+    "user.reset_link": "Restablecimiento de contraseña enviado",
     "user.resend_confirmation": "Confirmación reenviada",
     "user.photos_delete": "Fotos del usuario eliminadas",
     "job.toggle": "Proceso activado o en pausa",

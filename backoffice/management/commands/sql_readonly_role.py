@@ -13,15 +13,15 @@ from django.db import connection
 from backoffice import sql
 
 
-def build_script(role, password_sql="'<contraseña>'", cursor=None):
+def build_script(role, secret_literal="'<contraseña>'", cursor=None):
     """
     Sentencias SQL (lista de textos) que crean el rol si no existe y le dan SELECT sobre las
-    tablas y columnas permitidas. ``password_sql`` es el literal de la contraseña ya escapado.
+    tablas y columnas permitidas. ``secret_literal`` es el literal de la contraseña ya escapado.
     """
     q = connection.ops.quote_name
     statements = [
         f"DO $$ BEGIN IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = '{role}') THEN "
-        f"CREATE ROLE {q(role)} LOGIN PASSWORD {password_sql}; END IF; END $$",
+        f"CREATE ROLE {q(role)} LOGIN PASSWORD {secret_literal}; END IF; END $$",
         f"REVOKE ALL ON ALL TABLES IN SCHEMA public FROM {q(role)}",
         f"GRANT USAGE ON SCHEMA public TO {q(role)}",
     ]

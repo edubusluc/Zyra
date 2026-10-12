@@ -438,7 +438,7 @@ class CrmTests(StaffTestCase):
     def test_password_reset_email(self):
         self.client.post(reverse("backoffice:user_password_reset", args=[self.captain.pk]))
         self.assertEqual(len(mail.outbox), 1)
-        self.assertTrue(AuditLog.objects.filter(action="user.password_reset").exists())
+        self.assertTrue(AuditLog.objects.filter(action="user.reset_link").exists())
 
 
 class SearchTests(StaffTestCase):

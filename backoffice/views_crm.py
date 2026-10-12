@@ -413,7 +413,7 @@ def user_password_reset(request, user_id):
         form = ResetPasswordForm({"email": member.email})
         if form.is_valid():
             form.save(request)
-            audit(request, "user.password_reset", member, label=member.get_username())
+            audit(request, "user.reset_link", member, label=member.get_username())
             messages.success(request, _("Correo de restablecimiento enviado a %(email)s.") % {"email": member.email})
         else:
             messages.error(request, _("No se ha podido preparar el correo de restablecimiento."))
