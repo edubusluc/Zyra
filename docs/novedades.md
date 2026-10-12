@@ -5,6 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 12/10/2026
 
+- SNP: «Competiciones/Competencias» se abre justo después de elegir el país (antes de «Mis equipos»). El proceso `add_group_teams` ya no lee jugadores: solo entra en Competiciones y lee la clasificación. En el registro y «Completar equipo» la clasificación se lee antes de los jugadores
 - Informe mensual: el PDF pasa a 2 páginas e incluye las convocatorias del mes (a cuántas te apuntaste, en cuáles fuiste convocado, en cuáles no y a las que no te apuntaste, con el listado), una gráfica de la evolución de tus puntos SNP durante el mes y el panel «Sets clutch» de las estadísticas del jugador (set decisivo, tie-breaks, remontadas, cerrar el partido, sets ajustados y super tie-break)
 - Backoffice › proceso «send_monthly_reports»: nuevas opciones «Mes» y «Enviar solo a este email» para mandar el PDF a mano a una cuenta aunque ya lo haya recibido ese mes (también si desactivó los correos). Queda anotado en `MonthlyReportDelivery` (`manual_sends`, `last_manual_at`) y en el registro de la ejecución
 - Back-office: nuevo proceso manual «add_group_teams» que pide el id del equipo propio de un club (TEA...) y crea solo los equipos del grupo que SNP muestra en su clasificación (sin tocar jugadores ni aplicar los límites de la web). También existe `--dry-run` desde la línea de comandos

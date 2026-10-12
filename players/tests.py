@@ -1044,3 +1044,31 @@ class AddGroupTeamsCommandTests(TestCase):
         from backoffice.jobs import get_spec
         spec = get_spec("add_group_teams")
         self.assertEqual((spec.schedule, [p.name for p in spec.params]), ("", ["team_id"]))
+
+
+class GroupOnlyScrapeTests(TestCase):
+    def run_scrape(self, **options):
+        from . import scraper
+        context = mock.Mock()
+        browser = mock.Mock(new_context=mock.Mock(return_value=context))
+        calls = []
+        patches = {
+            "_login": lambda *a: calls.append("login"),
+            "_open_country": lambda *a: calls.append("country") or "España",
+            "_read_group_teams": lambda *a: calls.append("competiciones") or GROUP_TEAMS,
+            "_open_team_page": lambda *a, **k: calls.append("mis equipos") or mock.Mock(url="x"),
+            "_read_all_pages": lambda *a: calls.append("jugadores") or [{"name": "ANA", "score": 1.0}],
+        }
+        with mock.patch.multiple(scraper, **patches):
+            result = scraper._scrape("u", "p", None, None, browser, **options)
+        return result, calls
+
+    def test_group_only_enters_competitions_without_reading_players(self):
+        result, calls = self.run_scrape(with_group_teams=True, group_only=True)
+        self.assertEqual(result, ([], GROUP_TEAMS))
+        self.assertEqual(calls, ["login", "country", "competiciones"])
+
+    def test_with_group_teams_reads_competitions_before_my_teams(self):
+        result, calls = self.run_scrape(with_group_teams=True)
+        self.assertEqual(result[1], GROUP_TEAMS)
+        self.assertEqual(calls, ["login", "country", "competiciones", "mis equipos", "jugadores"])

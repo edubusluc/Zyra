@@ -32,7 +32,7 @@ class Command(BaseCommand):
         verbose = options["verbosity"] >= 2 or headed
         log = (lambda message: self.stdout.write(f"  {message}")) if verbose else None
         team_import = SnpTeamImport.objects.create(club=club, source=SnpTeamImport.BACKOFFICE)
-        team_import = search(team_import, headed=headed, log=log)
+        team_import = search(team_import, headed=headed, log=log, group_only=True)
         if team_import.status == SnpTeamImport.ERROR:
             raise CommandError(team_import.message)
 
