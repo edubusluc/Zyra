@@ -81,6 +81,9 @@ python manage.py run_scheduler
 | `complete_snp_team` | `complete_snp_team <TEA...> [--dry-run]` | solo a mano |
 | `add_group_teams` | `add_group_teams <TEA...> [--dry-run]` | solo a mano |
 
+`complete_snp_team` y `add_group_teams` comparten la base `_snp_import_command` (resolver equipo propio, buscar en SNP,
+mostrar el plan, `--dry-run`); `add_group_teams` solo lee la «Clasificación» (`group_only`) y no toca jugadores.
+
 Proceso nuevo: crear el comando de Django y añadir un `JobSpec` a `JOBS`; aparece en
 *Back-office → Procesos*. Ejecutar a mano desde el back-office no espera al lanzador.
 
