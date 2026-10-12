@@ -5,6 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 12/10/2026
 
+- Back-office: nuevo proceso manual «add_group_teams» que pide el id del equipo propio de un club (TEA...) y crea solo los equipos del grupo que SNP muestra en su clasificación (sin tocar jugadores ni aplicar los límites de la web). También existe `--dry-run` desde la línea de comandos
 - Tipografía: corregido el hueco que aparecía en el título «ZYRA» («ZY RA») con la fuente en cursiva; la cursiva de Syncopate Bold se regenera con los espaciados de cada letra bien calculados
 - Estadísticas › Jugador y › Parejas: selector de temporadas (Todas, las tres últimas y buscador) como en el equipo; se combina con el tipo de partido y se mantiene al navegar
 - Tipografía: los títulos de toda la web, los PDF (convocatoria e informe mensual), la documentación y los emails usan la misma fuente, Syncopate Bold en cursiva (antes los PDF la llevaban sin cursiva). Se añade `Syncopate-BoldItalic.ttf`, una versión oblicua de la fuente (licencia libre) para que la cursiva sea idéntica en todos los sitios

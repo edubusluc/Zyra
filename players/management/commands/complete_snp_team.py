@@ -9,6 +9,24 @@ from players.snp_import import confirm, search
 from team.models import Team
 
 
+def resolve_own_team(team_id):
+    """
+    Equipo propio de un club con cuenta SNP a partir de su id (``TEA...`` o el numérico interno,
+    por si se lanza a mano desde la consola). Lanza CommandError si no existe, es un rival o el
+    club no tiene cuenta SNP.
+    """
+    team_id = team_id.strip()
+    lookup = {"pk": int(team_id)} if team_id.isdigit() else {"public_id": team_id}
+    team = Team.objects.select_related("club").filter(**lookup).first()
+    if team is None:
+        raise CommandError(f"No existe ningún equipo con id {team_id}.")
+    if not team.is_own or team.club is None:
+        raise CommandError(f"El equipo {team_id} ({team}) es un rival, no el equipo propio de un club.")
+    if not SnpAccount.objects.filter(club=team.club).exists():
+        raise CommandError(f"El club {team.club} no tiene cuenta SNP.")
+    return team
+
+
 class Command(BaseCommand):
     """Completa el equipo propio de un club con los jugadores de SNP que todavía no están en Zyra."""
     help = ("«Completar equipo»: da de alta en Zyra los jugadores del equipo de SNP del club que todavía "
@@ -27,17 +45,8 @@ class Command(BaseCommand):
         se añadiría y qué ya existe y, salvo con ``--dry-run``, crea los jugadores. Lanza
         CommandError si algo falla.
         """
-        team_id = team_id.strip()
-        # También acepta el id numérico interno, por si se lanza a mano desde la consola
-        lookup = {"pk": int(team_id)} if team_id.isdigit() else {"public_id": team_id}
-        team = Team.objects.select_related("club").filter(**lookup).first()
-        if team is None:
-            raise CommandError(f"No existe ningún equipo con id {team_id}.")
-        if not team.is_own or team.club is None:
-            raise CommandError(f"El equipo {team_id} ({team}) es un rival, no el equipo propio de un club.")
+        team = resolve_own_team(team_id)
         club = team.club
-        if not SnpAccount.objects.filter(club=club).exists():
-            raise CommandError(f"El club {club} no tiene cuenta SNP.")
 
         self.stdout.write(f"Equipo que se completa: {team} (club {club})")
         verbose = options["verbosity"] >= 2 or headed

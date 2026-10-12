@@ -1004,3 +1004,43 @@ class CompleteTeamGroupTests(TestCase):
         created = snp_import._create_group_teams(self.club, to_add, existing)
         self.assertIn("LOS GLADIADORES", created)
         self.assertTrue(Team.objects.get(club=self.club, name="LOS GLADIADORES").is_own)
+
+
+class AddGroupTeamsCommandTests(TestCase):
+    def setUp(self):
+        admin = User.objects.create_user("admin", password="pass-12345")
+        self.club = create_club("Club A", "Sevilla", admin)
+        own = self.club.own_team
+        own.name, own.gender, own.country, own.division = "Los Gladiadores", "M", "ES", "500"
+        own.save()
+        account = SnpAccount(club=self.club)
+        account.username, account.password = "capitan", "secreto"
+        account.save()
+        patcher = mock.patch("players.snp_import.scrape_scores", lambda *a, **k: ([{"name": "ANA ALVAREZ", "score": 1.0}], GROUP_TEAMS))
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def test_dry_run_then_create_only_teams(self):
+        team_id = self.club.own_team.public_id
+        out = StringIO()
+        call_command("add_group_teams", team_id, "--dry-run", stdout=out)
+        self.assertIn("Equipos a crear: 2 (ICONICO 500 PLUS, NorthPadel)", out.getvalue())
+        self.assertEqual(Team.objects.filter(club=self.club).count(), 1)
+
+        out = StringIO()
+        call_command("add_group_teams", team_id, stdout=out)
+        self.assertIn("Resultado: 2 equipos del grupo añadidos.", out.getvalue())
+        self.assertEqual(Team.objects.filter(club=self.club, in_group=True).count(), 3)
+        self.assertEqual(Player.objects.filter(club=self.club).count(), 0)  # no crea jugadores
+
+    def test_rejects_rivals_and_unknown_ids(self):
+        rival = Team.objects.create(club=self.club, name="Rival", location="X")
+        with self.assertRaises(CommandError):
+            call_command("add_group_teams", rival.public_id, stdout=StringIO())
+        with self.assertRaises(CommandError):
+            call_command("add_group_teams", "TEAnoexiste0000", stdout=StringIO())
+
+    def test_is_a_manual_backoffice_job(self):
+        from backoffice.jobs import get_spec
+        spec = get_spec("add_group_teams")
+        self.assertEqual((spec.schedule, [p.name for p in spec.params]), ("", ["team_id"]))
