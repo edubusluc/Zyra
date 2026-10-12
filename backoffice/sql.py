@@ -18,6 +18,8 @@ from django.utils.translation import gettext as _
 # Filas que se muestran en pantalla y que se exportan como máximo.
 DISPLAY_LIMIT = 500
 EXPORT_LIMIT = 50_000
+# Longitud máxima de una consulta (acota el coste de las expresiones regulares que la analizan).
+MAX_LENGTH = 20_000
 # Tiempo máximo de una consulta.
 TIMEOUT_SECONDS = 10
 
@@ -73,6 +75,8 @@ def clean(sql):
 
 def validate(sql):
     """Comprueba que la consulta es una única lectura y que no toca datos sensibles."""
+    if len(sql or "") > MAX_LENGTH:
+        raise QueryError(_("La consulta es demasiado larga (máximo %(max)s caracteres).") % {"max": MAX_LENGTH})
     sql = clean(sql)
     if not sql:
         raise QueryError(_("Escribe una consulta."))
@@ -334,7 +338,7 @@ def expand_relations(sql):
         out.append(code[last:start])
         # En la lista del SELECT, la columna del resultado se llama como se escribió.
         rest = code[end:select_end] if end <= select_end else ""
-        if original and end <= select_end and not re.match(r"\s*as\b", rest, re.IGNORECASE):
+        if original and end <= select_end and not re.match(r"as\b", rest.lstrip(), re.IGNORECASE):
             text += f' AS "{original}"'
         out.append(text)
         last = end

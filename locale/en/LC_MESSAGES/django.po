@@ -8237,3 +8237,8 @@ msgstr "outside your group"
 #, python-format
 msgid "«%(name)s» vuelve a estar en tu grupo."
 msgstr "\"%(name)s\" is back in your group."
+
+#: backoffice/sql.py
+#, python-format
+msgid "La consulta es demasiado larga (máximo %(max)s caracteres)."
+msgstr "The query is too long (maximum %(max)s characters)."

@@ -46,7 +46,7 @@ jobs:
           cache: pip
 
       - name: Instalar dependencias
-        run: pip install -r requirements.txt
+        run: pip install --only-binary ':all:' --require-hashes -r requirements.txt
 
       - name: Las migraciones están al día con los modelos
         run: python manage.py makemigrations --check --dry-run

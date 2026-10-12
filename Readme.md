@@ -294,7 +294,7 @@ equipo, que aparece en la ficha del club) o con
 ### Desplegar esta versión
 
 ```bash
-pip install -r requirements.txt   # instala django-allauth
+pip install -r requirements.txt   # versiones y hashes fijados (se editan en requirements.in)
 python manage.py migrate          # crea core_invitation y las tablas de allauth
 ```
 

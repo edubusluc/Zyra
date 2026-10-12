@@ -565,6 +565,11 @@ class SqlConsoleTests(TestCase):
         # La conexión vuelve a admitir escrituras después de una consulta.
         Club.objects.create(name="Club B")
 
+    def test_overlong_query_is_rejected(self):
+        from . import sql
+        with self.assertRaisesMessage(sql.QueryError, "demasiado larga"):
+            sql.run("SELECT 1 -- " + "x" * sql.MAX_LENGTH)
+
     def test_sensitive_data_is_hidden(self):
         from . import sql
         with self.assertRaises(sql.QueryError):

@@ -182,7 +182,7 @@ WSGI_APPLICATION = 'zyra.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 # Con DATABASE_URL se usa esa base de datos (PostgreSQL en producción), por ejemplo
-#   DATABASE_URL=postgres://usuario:contraseña@localhost:5432/zyra
+#   DATABASE_URL=<esquema postgres con usuario, contraseña, servidor, puerto y nombre de la base>
 # Sin ella, el fichero SQLite db.sqlite3 junto a manage.py (cómodo para desarrollar).
 DATABASE_URL = config('DATABASE_URL', default='')
 if DATABASE_URL:

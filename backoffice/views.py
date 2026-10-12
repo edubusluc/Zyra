@@ -17,6 +17,7 @@ from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator
 from django.db.models import Count, F, Q
 from django.http import Http404, HttpResponse, JsonResponse
+from django.urls import reverse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -452,7 +453,7 @@ def sql_console(request):
                     messages.success(request, _("Consulta «%(name)s» guardada.") % {"name": saved.name})
                 else:
                     messages.success(request, _("Consulta «%(name)s» actualizada.") % {"name": saved.name})
-                return redirect(f"{request.path}?saved={saved.public_id}")
+                return redirect(f'{reverse("backoffice:sql_console")}?saved={saved.public_id}')
 
     return render(request, "backoffice/sql_console.html", {
         "section": "sql", "query": query or "", "result": result, "error": error, "saved": saved,
