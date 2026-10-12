@@ -2427,3 +2427,4 @@ a.z-account-player .btn { flex-shrink: 0; }
     .z-account-btn-text { display: none; }
     .z-account-row > .btn, a.z-account-player .btn { width: 2.5rem; height: 2.5rem; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
 }
+.z-row-link { cursor: pointer; }

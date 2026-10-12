@@ -102,7 +102,7 @@
         </thead>
         <tbody>
             {% for player in players %}
-            <tr style="cursor: pointer;" data-selector-item data-key="{{ player.public_id }}" data-name="{{ player.full_name }}" onclick="window.location='{% url 'show_player' player.public_id %}'">
+            <tr class="z-row-link" data-selector-item data-key="{{ player.public_id }}" data-name="{{ player.full_name }}" data-href="{% url 'show_player' player.public_id %}">
                 <td>
                     {% if player.photo %}
                     <img src="{{ player.photo.url }}" alt="" class="table-avatar">
@@ -119,7 +119,7 @@
                 <td>
                     {% if player.in_team %}<span class="z-badge z-badge--lime">{% translate "En el equipo" %}</span>{% else %}<span class="z-badge z-badge--danger">{% translate "Fuera" %}</span>{% endif %}
                 </td>
-                <td onclick="event.stopPropagation();">
+                <td data-row-ignore>
                     <a href="{% url 'edit_player' player.public_id %}" class="z-edit position-static" aria-label="{% translate 'Editar' %}"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
                 </td>
                 {% endif %}
@@ -240,6 +240,12 @@
 {% endif %}
 
 <script>
+    // Toda la fila abre la ficha (el nombre sigue siendo un enlace para teclado y lectores)
+    document.getElementById('table-view').addEventListener('click', function (e) {
+        const row = e.target.closest('tr[data-href]');
+        if (row && !e.target.closest('a, [data-row-ignore]')) window.location = row.dataset.href;
+    });
+
     // Vista tarjetas / tabla (se recuerda la última elegida)
     const btnCards = document.getElementById('btn-view-cards');
     const btnTable = document.getElementById('btn-view-table');
