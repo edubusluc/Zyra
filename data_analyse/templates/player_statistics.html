@@ -11,7 +11,7 @@
       <div>
         <h1 class="st-title">{% if selected_player %}{{ player.full_name }}{% else %}{% translate "Estadísticas de jugadores" %}{% endif %}</h1>
         {% if selected_player %}
-          <p class="st-subtitle">{% blocktranslate trimmed with played=s.played count n=seasons_asc|length %}{{ played }} partidos jugados en {{ n }} temporada{% plural %}{{ played }} partidos jugados en {{ n }} temporadas{% endblocktranslate %}</p>
+          <p class="st-subtitle">{% if selected_season %}{% blocktranslate trimmed with played=s.played season=selected_season count n=s.played %}{{ n }} partido jugado en la temporada {{ season }}{% plural %}{{ n }} partidos jugados en la temporada {{ season }}{% endblocktranslate %}{% else %}{% blocktranslate trimmed with played=s.played count n=seasons_asc|length %}{{ played }} partidos jugados en {{ n }} temporada{% plural %}{{ played }} partidos jugados en {{ n }} temporadas{% endblocktranslate %}{% endif %}</p>
         {% endif %}
       </div>
 
@@ -28,6 +28,7 @@
         <noscript><button class="st-btn" type="submit">{% translate "Ver" %}</button></noscript>
       </form>
     </header>
+    {% if selected_player %}{% include 'includes/season_filter.html' %}{% endif %}
     {% include 'includes/match_type_filter.html' %}
 
     {% if not selected_player %}
@@ -149,8 +150,6 @@
       {# ============ 2. POR TEMPORADAS ============ #}
       <section aria-labelledby="seasons-title" class="st-section" id="temporadas">
         <h2 class="st-section-title" id="seasons-title">{% translate "Por temporadas" %}</h2>
-
-        {% include 'includes/season_filter.html' %}
 
         {# ---- Detalle de la temporada elegida ---- #}
         {% if selected_season %}

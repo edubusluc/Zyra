@@ -165,6 +165,27 @@ class PairStatisticsTests(TestCase):
         ])
         self.assertEqual(games[1]["sets"], "3-6 4-6")
 
+    def test_pair_view_filters_by_season_and_keeps_match_type(self):
+        url = reverse("pair_statistics")
+        response = self.client.get(url, {"p1": self.a.public_id, "p2": self.b.public_id, "season": "2024-2025"})
+        self.assertEqual(response.context["selected_season"], "2024-2025")
+        self.assertEqual((response.context["s"]["played"], response.context["s"]["wins"]), (3, 2))
+        self.assertEqual({g["season"] for g in response.context["last_games"]}, {"2024-2025"})
+        self.assertEqual(len(response.context["last_games"]), 3)
+        self.assertContains(response, '<input type="hidden" name="season" value="2024-2025">')
+        links = {o["label"]: o["url"] for o in response.context["match_types"]}
+        self.assertIn("season=2024-2025", links["Amistosos"])
+        # Sin temporada o con una desconocida: todas
+        for params in ({}, {"season": "1999-2000"}):
+            response = self.client.get(url, {"p1": self.a.public_id, "p2": self.b.public_id, **params})
+            self.assertIsNone(response.context["selected_season"])
+            self.assertEqual(response.context["s"]["played"], 4)
+
+    def test_pair_rankings_page_accepts_season(self):
+        response = self.client.get(reverse("pair_statistics"), {"season": "2025-2026"})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["selected_season"], "2025-2026")
+
     def test_pair_view_rejects_other_club_players(self):
         other = create_club("Club B", "Madrid", User.objects.create_user("b", password="x"))
         foreign = Player.objects.create(club=other, name="X", last_name="Y")
@@ -395,13 +416,32 @@ class SeasonFilterTests(TestCase):
         response = self.client.get(url, {"player": self.a.public_id, "season": "2021-2022", "match_type": Match.AMISTOSO})
         self.assertEqual(response.context["s"]["played"], 1)
         self.assertEqual(response.context["season_all"]["url"],
-                         f"{url}?player={self.a.public_id}&match_type=amistoso#temporadas")
+                         f"{url}?player={self.a.public_id}&match_type=amistoso")
         self.assertIn("match_type=amistoso", response.context["season_chips"][0]["url"])
         self.assertEqual(response.context["season_keep"],
                          [("player", self.a.public_id), ("match_type", Match.AMISTOSO)])
         # Cambiar el tipo de partido conserva la temporada
         links = {o["label"]: o["url"] for o in response.context["match_types"]}
         self.assertIn("season=2021-2022", links["Competitivos"])
+
+    def test_player_summary_and_affinity_follow_season(self):
+        url = reverse("player_statistics")
+        all_ctx = self.client.get(url, {"player": self.a.public_id}).context
+        self.assertEqual(all_ctx["s"]["played"], 5)
+        response = self.client.get(url, {"player": self.a.public_id, "season": "2025-2026", "match_type": pair_stats.COMPETITIVE})
+        self.assertEqual(response.context["s"]["played"], 1)
+        self.assertEqual(response.context["selected_season"], "2025-2026")
+        # La evolución por temporadas sigue mostrando todas
+        self.assertEqual(len(response.context["seasons_asc"]), 4)
+        self.assertEqual(response.context["season_all"]["url"], f"{url}?player={self.a.public_id}&match_type={pair_stats.COMPETITIVE}")
+
+    def test_degree_of_affinity_by_season(self):
+        from data_analyse.views import degree_of_affinity
+        partner = Player.objects.create(club=self.club, name="P", last_name="Pson")
+        Game.objects.filter(match__season="2021-2022").update(player_2_local=partner)
+        self.assertEqual([r["games"] for r in degree_of_affinity(self.a)], [1])
+        self.assertEqual([r["games"] for r in degree_of_affinity(self.a, season="2021-2022")], [1])
+        self.assertEqual(degree_of_affinity(self.a, season="2025-2026"), [])
 
     def test_unknown_season_shows_all(self):
         response = self.client.get(reverse("team_statistics"), {"season": "1999-2000"})
