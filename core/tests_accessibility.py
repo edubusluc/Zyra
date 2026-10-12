@@ -219,3 +219,12 @@ class AccessibilityTests(TestCase):
         for expected in ("sin atributo alt", "salto de encabezado h1 -> h3", "enlace <a href='/x'>",
                          "icono", "<input name='q'> sin <label>", "<th> vacío", "lang", "Saltar al contenido"):
             self.assertIn(expected, text)
+
+    def test_selects_use_custom_dropdown(self):
+        """Las páginas del club y del back-office cargan el desplegable propio de los <select>."""
+        self.client.login(username="capi", password="pass-12345")
+        for url in (reverse("create_match"), reverse("manage_teams"), reverse("backoffice:club_list")):
+            with self.subTest(url=url):
+                html = self.client.get(url).content.decode()
+                self.assertIn("<select", html)
+                self.assertIn("js/custom-select.js", html)

@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 12/10/2026 · Desplegables propios
+
+- Todos los selectores desplegables (tipo de partido, equipos, categoría, filtros del back-office…) usan un desplegable propio de Zyra, con fondo oscuro y acento lima, en vez del del navegador. Funciona con teclado (flechas, Enter, Esc, escribir para saltar) y en móvil; el `<select>` original sigue enviándose con el formulario
+
 ## 12/10/2026 · Seguridad y cuentas
 
 - Seguridad: Django 5.2 LTS y Pillow 12.3; frenos de abuso (login, registro, invitaciones, contraseña) en caché compartida con la IP real; verificación de email con enlace (y protección frente a tomar una cuenta no verificada vía Google); ruta del admin obligatoria en producción; Bootstrap, Font Awesome y Chart.js servidos desde `static/vendor/`; `pip-audit` en CI

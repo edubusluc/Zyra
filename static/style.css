@@ -570,6 +570,7 @@ input[type="search"],
 input[type="tel"],
 input[type="url"],
 select,
+.z-select-trigger,
 textarea {
     display: block;
     width: 100%;
@@ -584,16 +585,16 @@ textarea {
     transition: border-color .2s var(--z-ease), box-shadow .2s var(--z-ease), background-color .2s var(--z-ease);
 }
 .form-control:hover:not(:focus):not(:disabled), .form-select:hover:not(:focus):not(:disabled),
-input:hover:not(:focus):not(:disabled), select:hover:not(:focus):not(:disabled), textarea:hover:not(:focus):not(:disabled) { border-color: var(--z-border-strong); }
+input:hover:not(:focus):not(:disabled), select:hover:not(:focus):not(:disabled), .z-select-trigger:hover:not(:focus):not(:disabled), textarea:hover:not(:focus):not(:disabled) { border-color: var(--z-border-strong); }
 .form-control::placeholder, input::placeholder, textarea::placeholder { color: #8C8C8C; }
-.form-control:focus, .form-select:focus, input:focus, select:focus, textarea:focus {
+.form-control:focus, .form-select:focus, input:focus, select:focus, .z-select-trigger:focus-visible, textarea:focus {
     color: #FFFFFF;
     background-color: var(--z-surface-2);
     border-color: var(--z-lime);
     outline: none;
     box-shadow: 0 0 0 4px rgba(var(--z-lime-rgb), .16);
 }
-select, .form-select {
+select, .form-select, .z-select-trigger {
     padding-right: 2.5rem;
     appearance: none;
     -webkit-appearance: none;
@@ -2133,7 +2134,7 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
     .z-table-stack tbody tr:last-child { border-bottom: 0; }
     .table.z-table-stack > :not(caption) > * > * { padding: 4px 0; border: 0; text-align: left; }
     .z-table-stack td:first-child { font-weight: 700; color: #FFFFFF; }
-    .z-table-stack input, .z-table-stack select { max-width: none !important; }
+    .z-table-stack input, .z-table-stack select, .z-table-stack .z-select-trigger { max-width: none !important; }
     .z-table-stack form.d-flex > * { flex: 1 1 100%; }
     .z-table-stack .text-end .btn { width: 100%; }
 }
@@ -2215,7 +2216,7 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 /* Estadísticas: selector de tipo dentro de "Competitivos" */
 .st-type-filter .st-seasons:has(+ .st-type-select) { margin-bottom: 10px; }
 .st-type-select { margin: 0 0 20px; }
-.st-type-select select { width: auto; min-width: 220px; max-width: 100%; padding-top: 7px; padding-bottom: 7px; font-size: .85rem; font-weight: 700; border-radius: 999px; }
+.st-type-select select, .st-type-select .z-select-trigger { width: auto; min-width: 220px; max-width: 100%; padding-top: 7px; padding-bottom: 7px; font-size: .85rem; font-weight: 700; border-radius: 999px; }
 
 /* Estadísticas: selector de temporadas (Todas + tres últimas + buscador) */
 .st-season-filter { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; margin: 0 0 20px; }
@@ -2429,3 +2430,64 @@ a.z-account-player .btn { flex-shrink: 0; }
     .z-account-row > .btn, a.z-account-player .btn { width: 2.5rem; height: 2.5rem; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
 }
 .z-row-link { cursor: pointer; }
+
+/* ---------- Desplegable propio de los <select> (static/js/custom-select.js) ---------- */
+.z-select { display: contents; }
+/* El <select> real sigue en el DOM (fuente de verdad del formulario) pero no se ve ni se pulsa */
+select.z-select-native {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    margin: -1px !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    clip-path: inset(50%) !important;
+}
+.z-select-trigger { text-align: left; line-height: 1.5; text-transform: none; letter-spacing: normal; }
+.z-select-trigger .z-select-text { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.z-select-trigger.is-placeholder { color: var(--z-muted); }
+.z-select-trigger:disabled { opacity: .55; cursor: not-allowed; }
+.z-select.is-open > .z-select-trigger { border-color: var(--z-lime); box-shadow: 0 0 0 4px rgba(var(--z-lime-rgb), .16); }
+.z-select.is-open > .z-select-trigger { background-position: right 1rem center; }
+.z-select-list {
+    position: fixed;
+    z-index: 1060;
+    margin: 0;
+    padding: 6px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    list-style: none;
+    color: var(--z-text);
+    background: var(--z-surface-2);
+    border: 1px solid var(--z-border-strong);
+    border-radius: 14px;
+    box-shadow: var(--z-edge), var(--z-shadow-pop);
+}
+.z-select-list[hidden] { display: none; }
+.z-select-option {
+    padding: 9px 12px;
+    font-size: .95rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    overflow-wrap: anywhere;
+}
+.z-select-option.is-empty { color: var(--z-muted); }
+.z-select-option[aria-selected="true"]:not(.is-active) { color: var(--z-lime); }
+.z-select-option[aria-selected="true"]::after { content: "\2713"; float: right; margin-left: 12px; font-weight: 800; }
+.z-select-option.is-active { color: var(--z-ink); background: var(--z-lime); }
+.z-select-option.is-disabled { opacity: .4; cursor: not-allowed; }
+.z-select-option.is-disabled.is-active { color: inherit; background: none; }
+.z-select-group { padding: 8px 12px 4px; font-size: .72rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--z-muted); }
+/* Card de equipo del formulario de partido: el botón transparente cubre toda la card */
+.z-team-card .z-select-trigger {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    opacity: 0;
+    cursor: pointer;
+}
