@@ -39,6 +39,7 @@
                 {% endif %}
                 <li><a href="{% url 'backoffice:club_list' %}" class="{% if section == 'clubs' %}is-active{% endif %}"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> {% translate "Clubes" %}</a></li>
                 <li><a href="{% url 'backoffice:user_list' %}" class="{% if section == 'users' %}is-active{% endif %}"><i class="fa-solid fa-users" aria-hidden="true"></i> {% translate "Usuarios" %}</a></li>
+                <li><a href="{% url 'backoffice:unverified_list' %}" class="{% if section == 'unverified' %}is-active{% endif %}"><i class="fa-solid fa-envelope-open-text" aria-hidden="true"></i> {% translate "Emails sin confirmar" %}</a></li>
                 <li><a href="{% url 'backoffice:photo_list' %}" class="{% if section == 'photos' %}is-active{% endif %}"><i class="fa-solid fa-image" aria-hidden="true"></i> {% translate "Fotos" %}</a></li>
                 <li><a href="{% url 'backoffice:blocked_email_list' %}" class="{% if section == 'blocked' %}is-active{% endif %}"><i class="fa-solid fa-envelope-circle-check" aria-hidden="true"></i> {% translate "Emails bloqueados" %}</a></li>
             </ul>

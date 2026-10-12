@@ -39,6 +39,7 @@ el club activo: lo de otro club da 404. Sin permiso, la página «Sin permiso» 
   es el único miembro, al irse se elimina el club con todos sus datos (equipos, jugadores,
   fotos, partidos, convocatorias, sanciones y cuenta SNP); el popup lo avisa y pide escribir el
   nombre del club para confirmar.
+- **Emails sin confirmar**: en el back-office, listado de cuentas cuyo email no se ha confirmado (con su fecha de registro), aviso por correo con el enlace de confirmación y un plazo, y eliminación de la cuenta una vez vencido; todo queda registrado con fecha y autor.
 - **Suspensiones y emails bloqueados**: el personal puede suspender un club o una cuenta y bloquear
   emails para que no se registren ([`core.blocklist`](referencia/core/blocklist.md)).
 - **Idioma**: español o inglés con el selector de la cabecera.

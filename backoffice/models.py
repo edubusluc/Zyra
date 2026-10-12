@@ -215,3 +215,36 @@ class ImportJob(PublicIdModel):
     def __str__(self):
         """Fichero, objeto importado y estado."""
         return f"{self.filename} → {self.entity} ({self.get_status_display()})"
+
+
+class AccountNoticeLog(models.Model):
+    """
+    Constancia de lo que el personal hace con las cuentas sin confirmar: cada aviso enviado
+    (con el plazo que se dio) y cada eliminación, con fecha y quién lo hizo. Guarda copias del
+    usuario y del email porque la cuenta eliminada ya no existe (``user`` queda a nulo).
+    """
+    WARNING = "warning"
+    DELETED = "deleted"
+    ACTIONS = [(WARNING, _("Aviso enviado")), (DELETED, _("Cuenta eliminada"))]
+
+    action = models.CharField(max_length=10, choices=ACTIONS)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+    username = models.CharField(max_length=150)
+    email = models.CharField(max_length=254, blank=True)
+    # Cuándo se registró la cuenta, para saber cuánto llevaba sin confirmar.
+    joined_at = models.DateTimeField(null=True, blank=True)
+    # Solo en los avisos: fecha límite que se comunicó y si el correo llegó a salir.
+    deadline_at = models.DateTimeField(null=True, blank=True)
+    email_sent = models.BooleanField(default=False)
+    performed_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+    performed_by_name = models.CharField(max_length=150, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = _("registro de cuentas sin confirmar")
+        verbose_name_plural = _("registros de cuentas sin confirmar")
+
+    def __str__(self):
+        """Acción, cuenta y fecha."""
+        return f"{self.get_action_display()}: {self.username} ({self.created_at:%d/%m/%Y})"

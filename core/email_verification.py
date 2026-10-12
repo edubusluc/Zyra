@@ -46,3 +46,36 @@ def start_verification(request, user, *, verified=False):
         logger.exception("No se pudo enviar el correo de confirmación a la cuenta %s", user.pk)
         return False
     return True
+
+
+def unverified_users():
+    """
+    Cuentas con email que aún no lo han confirmado (sin contar al personal): quien se registró
+    con usuario y contraseña y nunca abrió el enlace. Las de Google nacen verificadas.
+    """
+    from django.contrib.auth import get_user_model
+    from django.db.models import Exists, OuterRef
+
+    verified = EmailAddress.objects.filter(user=OuterRef("pk"), verified=True, email__iexact=OuterRef("email"))
+    return (
+        get_user_model().objects.exclude(email="").filter(is_staff=False, is_superuser=False)
+        .exclude(Exists(verified)).order_by("date_joined")
+    )
+
+
+def confirmation_url(request, user):
+    """
+    Enlace absoluto para confirmar el email actual de ``user`` (registra la dirección en allauth
+    si faltaba, como en las cuentas anteriores a la verificación). None si ya está verificado.
+    """
+    from allauth.account.adapter import get_adapter
+    from allauth.account.models import EmailConfirmationHMAC
+
+    email = user.email.strip().lower()
+    address = EmailAddress.objects.filter(user=user, email__iexact=email).first()
+    if address is None:
+        EmailAddress.objects.filter(user=user, primary=True).update(primary=False)
+        address = EmailAddress.objects.create(user=user, email=email, verified=False, primary=True)
+    if address.verified:
+        return None
+    return get_adapter(request).get_email_confirmation_url(request, EmailConfirmationHMAC(address))

@@ -15,7 +15,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator
-from django.db.models import Count, F, Q
+from django.db.models import Count, F, OuterRef, Q, Subquery
 from django.http import Http404, HttpResponse, JsonResponse
 from django.urls import reverse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -25,10 +25,11 @@ from django.utils.text import slugify
 from django.utils.translation import gettext as _, ngettext
 from django.views.decorators.http import require_POST
 
-from core import blocklist, moderation
-from core.emails import send_photo_removed_email
+from core import blocklist, email_verification, moderation
+from core.emails import send_photo_removed_email, send_unverified_account_email
 from core.models import BlockedEmail, Club, Invitation, Membership, PhotoCheck, PhotoRemoval, ServiceSwitch
 from match.models import Match
+from core.services import CaptaincyError, delete_account
 from players import snp_service
 from players.models import Player, SnpTeamImport
 
@@ -39,7 +40,7 @@ from .metrics import (
     online_users, usage_metrics,
 )
 from .middleware import SLOW_MS, flush_metrics
-from .models import ImportJob, JobRun, QueryLog, SavedQuery, ScheduledJob
+from .models import AccountNoticeLog, ImportJob, JobRun, QueryLog, SavedQuery, ScheduledJob
 from .scheduler import SCHEDULER_TIME_ZONE, scheduler_is_late, start_manual_run, sync_jobs
 from .templatetags.backoffice_tags import duration as duration_filter
 
@@ -909,3 +910,105 @@ def blocked_email_delete(request, blocked_id):
     blocked.delete()
     messages.success(request, _("%(email)s desbloqueado.") % {"email": blocked.original_email})
     return _back_to(request, "backoffice:blocked_email_list")
+
+
+# ---------- Cuentas con el email sin confirmar ----------
+
+def _deadline_days(request):
+    """Días de plazo del aviso: el ``days`` del formulario (1 a 60) o el valor por defecto de los ajustes."""
+    raw = request.POST.get("days", "")
+    if raw.isdigit() and 1 <= int(raw) <= 60:
+        return int(raw)
+    return settings.UNVERIFIED_ACCOUNT_DEADLINE_DAYS
+
+
+def _with_last_deadline(users):
+    """Anota en cada cuenta ``last_deadline``: el plazo de su último aviso (None si no se le ha avisado)."""
+    last = AccountNoticeLog.objects.filter(action=AccountNoticeLog.WARNING, user=OuterRef("pk")).order_by("-created_at")
+    return users.annotate(last_deadline=Subquery(last.values("deadline_at")[:1]))
+
+
+def _pending_user_or_404(user_id):
+    """Cuenta sin confirmar con ese id (con ``last_deadline``); 404 si no existe, ya está confirmada o es del personal."""
+    return get_object_or_404(_with_last_deadline(email_verification.unverified_users()), pk=user_id)
+
+
+@staff_required
+def unverified_list(request):
+    """
+    Cuentas con el email sin confirmar (solo personal): cuándo se registraron, el último aviso
+    enviado y su plazo, con las acciones de avisar y eliminar, y debajo el registro de avisos y
+    eliminaciones. Filtros por GET: ``q`` (usuario o email) y ``state`` (``no_notice`` sin avisar,
+    ``waiting`` avisadas dentro de plazo, ``overdue`` avisadas con el plazo vencido).
+    """
+    q = request.GET.get("q", "").strip()
+    state = request.GET.get("state", "")
+    now = timezone.now()
+    users = _with_last_deadline(email_verification.unverified_users())
+    if q:
+        users = users.filter(Q(username__icontains=q) | Q(email__icontains=q))
+    if state == "no_notice":
+        users = users.filter(last_deadline__isnull=True)
+    elif state == "waiting":
+        users = users.filter(last_deadline__gt=now)
+    elif state == "overdue":
+        users = users.filter(last_deadline__lte=now)
+    page = _page(request, users)
+    for u in page:
+        u.overdue = bool(u.last_deadline and u.last_deadline <= now)
+    return render(request, "backoffice/unverified_list.html", {
+        "section": "unverified", "page": page, "q": q, "state": state, "extra": _extra(request, "q", "state"),
+        "default_days": settings.UNVERIFIED_ACCOUNT_DEADLINE_DAYS,
+        "log": AccountNoticeLog.objects.all()[:50],
+    })
+
+
+@staff_required
+@require_POST
+def unverified_warn(request, user_id):
+    """
+    Envía el aviso de cuenta sin confirmar (solo personal, POST): el correo lleva el enlace de
+    confirmación y el plazo (``days``, por defecto el de los ajustes) tras el cual se podrá eliminar la
+    cuenta. Queda anotado en el registro con quién lo envió, aunque el correo falle.
+    """
+    member = _pending_user_or_404(user_id)
+    deadline = timezone.now() + datetime.timedelta(days=_deadline_days(request))
+    sent = send_unverified_account_email(member, email_verification.confirmation_url(request, member), deadline)
+    AccountNoticeLog.objects.create(
+        action=AccountNoticeLog.WARNING, user=member, username=member.username, email=member.email,
+        joined_at=member.date_joined, deadline_at=deadline, email_sent=sent,
+        performed_by=request.user, performed_by_name=request.user.username,
+    )
+    if sent:
+        messages.success(request, _("Aviso enviado a %(email)s.") % {"email": member.email})
+    else:
+        messages.error(request, _("No se pudo enviar el correo a %(email)s; queda anotado en el registro.") % {"email": member.email})
+    return _back_to(request, "backoffice:unverified_list")
+
+
+@staff_required
+@require_POST
+def unverified_delete(request, user_id):
+    """
+    Elimina una cuenta sin confirmar (solo personal, POST). Solo se permite si su último aviso ya
+    venció, y hay que repetir su nombre de usuario como confirmación. Se usa ``delete_account``, así que
+    una cuenta con capitanía pendiente no se borra. Queda anotado en el registro.
+    """
+    member = _pending_user_or_404(user_id)
+    if member.last_deadline is None or member.last_deadline > timezone.now():
+        messages.error(request, _("Solo se puede eliminar una cuenta a la que se ha avisado y cuyo plazo ha vencido."))
+    elif request.POST.get("confirm", "").strip().casefold() != member.username.casefold():
+        messages.error(request, _("Escribe el nombre de usuario para confirmar la eliminación."))
+    else:
+        entry = AccountNoticeLog(
+            action=AccountNoticeLog.DELETED, username=member.username, email=member.email, joined_at=member.date_joined,
+            performed_by=request.user, performed_by_name=request.user.username,
+        )
+        try:
+            delete_account(member)
+        except CaptaincyError as error:
+            messages.error(request, str(error))
+        else:
+            entry.save()
+            messages.success(request, _("Cuenta %(username)s eliminada.") % {"username": entry.username})
+    return _back_to(request, "backoffice:unverified_list")

@@ -167,3 +167,26 @@ def send_photo_removed_email(user, subjects, reason="", removals=1, site_url="")
         logger.exception("No se pudo enviar el aviso de foto eliminada a %s", user.email)
         return False
     return True
+
+
+def send_unverified_account_email(user, confirm_url, deadline):
+    """
+    Avisa a ``user`` de que su email sigue sin confirmar y de que, si no lo confirma antes de
+    ``deadline``, su cuenta se eliminará. Incluye el enlace de confirmación. Devuelve True si
+    el correo salió.
+    """
+    if not user or not user.email:
+        return False
+    context = {"user": user, "confirm_url": confirm_url, "deadline": deadline}
+    email = build_email(
+        _("Confirma tu email en Zyra o eliminaremos tu cuenta"),
+        render_to_string("emails/unverified_account.txt", context),
+        render_to_string("emails/unverified_account.html", context),
+        to=[user.email],
+    )
+    try:
+        email.send(fail_silently=False)
+    except Exception:  # SMTP caído, credenciales mal configuradas...
+        logger.exception("No se pudo enviar el aviso de cuenta sin confirmar a %s", user.email)
+        return False
+    return True
