@@ -5,6 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 12/10/2026
 
+- Partidos: filtro por tipo de partido (Todos, Competitivos, Amistosos y, dentro de Competitivos, enfrentamientos, retos o play offs), con los mismos chips que las estadísticas. Se combina con la temporada, el rival y el buscador, y se mantiene al paginar
 - Informe mensual por email: cada jugador con cuenta enlazada recibe el día 1 un PDF con sus estadísticas del mes anterior (partidos, victorias, sets, parejas y detalle). En «Mi perfil» se activa o desactiva y se elige si cuentan todos los partidos o solo los competitivos, y el correo incluye un enlace para desactivarlo sin iniciar sesión. Comando `send_monthly_reports` (idempotente, no repite un mes ya enviado)
 - Crear partido: nuevo selector «Datos del informe PDF» (todos los datos o solo partidos competitivos). Con «solo competitivos» el informe de la convocatoria (rendimiento, rachas, forma, Jug./Conv., último, balance y precedentes) deja fuera los amistosos. Bajo el selector, «Edita tus preferencias» lleva a «Mi perfil», donde se guarda la opción por defecto de la cuenta
 
