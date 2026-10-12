@@ -1,4 +1,4 @@
-{% load i18n %}<h1 style="margin:0 0 16px; font-size:22px; color:#0B0B0B;">{% blocktranslate with username=user.username %}Hola, {{ username }}{% endblocktranslate %}</h1>
+{% load i18n %}{% include "emails/_title_start.html" %}{% blocktranslate with username=user.username %}Hola, {{ username }}{% endblocktranslate %}</h1>
 <p style="margin:0 0 12px;">{% blocktranslate trimmed count n=subjects|length %}El equipo de Zyra ha revisado esta imagen y la ha eliminado porque no cumple los términos y condiciones de uso:{% plural %}El equipo de Zyra ha revisado estas imágenes y las ha eliminado porque no cumplen los términos y condiciones de uso:{% endblocktranslate %}</p>
 <ul style="margin:0 0 12px; padding-left:20px;">{% for s in subjects %}<li>{{ s }}</li>{% endfor %}</ul>
 {% if reason %}<p style="margin:0 0 12px;"><strong>{% translate "Motivo" %}:</strong> {{ reason }}</p>{% endif %}

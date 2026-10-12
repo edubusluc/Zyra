@@ -1,4 +1,4 @@
-{% load i18n %}<h1 style="margin:0 0 16px; font-size:22px; color:#0B0B0B;">{% blocktranslate with username=user.username %}¡Bienvenido a Zyra, {{ username }}!{% endblocktranslate %}</h1>
+{% load i18n %}{% include "emails/_title_start.html" %}{% blocktranslate with username=user.username %}¡Bienvenido a Zyra, {{ username }}!{% endblocktranslate %}</h1>
 {% if created %}
 <p style="margin:0 0 12px;">{% blocktranslate trimmed with club=club.name %}Tu registro se ha completado y has creado el equipo <strong>{{ club }}</strong>. Como capitán puedes gestionar jugadores, partidos, convocatorias y estadísticas, e invitar al resto del equipo desde <em>Miembros del club</em>.{% endblocktranslate %}</p>
 {% else %}

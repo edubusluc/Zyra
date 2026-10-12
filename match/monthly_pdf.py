@@ -13,8 +13,8 @@ from reportlab.platypus import BaseDocTemplate, Frame, PageTemplate, Paragraph, 
 
 from .monthly_report import MAX_GAME_ROWS
 from .report_pdf import (
-    BG, BORDER, BOTTOM_MARGIN, CONTENT_W, GUTTER, HEADING_GAP, LOGO, MARGIN, MUTED, PAGE_H, PAGE_W,
-    SECTION_GAP, TEXT, TOP_MARGIN, _data_table, _fit, _kpis, _panel, _pips, _record, _register_fonts,
+    draw_page_header, BOTTOM_MARGIN, CONTENT_W, GUTTER, HEADING_GAP, MARGIN, PAGE_H, PAGE_W,
+    SECTION_GAP, TOP_MARGIN, _data_table, _fit, _kpis, _panel, _pips, _record, _register_fonts,
     _streak_label, _styles, esc,
 )
 from core.models import REPORT_SCOPE_COMPETITIVE
@@ -40,20 +40,7 @@ def scope_label(report):
 def _on_page(canvas, doc, report):
     """Fondo, cabecera (logo, club y mes) y pie del informe mensual."""
     canvas.saveState()
-    canvas.setFillColor(BG)
-    canvas.rect(0, 0, PAGE_W, PAGE_H, stroke=0, fill=1)
-    top = PAGE_H - 11 * mm
-    if LOGO.exists():
-        canvas.drawImage(str(LOGO), MARGIN, top - 3.2 * mm, width=7 * mm, height=7 * mm, mask="auto")
-    canvas.setFillColor(TEXT)
-    canvas.setFont("Syncopate", 12)
-    canvas.drawString(MARGIN + 9 * mm, top - 1.3 * mm, "ZYRA")
-    canvas.setFont("Archivo-Bold", 8)
-    canvas.setFillColor(MUTED)
-    canvas.drawRightString(PAGE_W - MARGIN, top, report["club"].name.upper())
-    canvas.drawRightString(PAGE_W - MARGIN, top - 3.8 * mm, month_label(report["month"]).upper())
-    canvas.setStrokeColor(BORDER)
-    canvas.line(MARGIN, top - 6 * mm, PAGE_W - MARGIN, top - 6 * mm)
+    draw_page_header(canvas, report["club"].name, month_label(report["month"]).upper())
     canvas.setFont("Archivo", 7)
     canvas.drawString(MARGIN, 8 * mm, _("Informe mensual automático · Zyra"))
     canvas.restoreState()
