@@ -392,7 +392,7 @@ class SnpBatchTests(TestCase):
         caller = threading.get_ident()
         seen = []
 
-        def fake_scrape(username, password, team_id, log, browser, country, team_name=None, with_group_teams=False):
+        def fake_scrape(username, password, team_id, log, browser, country, team_name=None, with_group_teams=False, group_only=False):
             seen.append(threading.get_ident())
             return [{"name": "Ana A", "score": 5.0}]
 
