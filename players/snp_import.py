@@ -240,6 +240,25 @@ def confirm(team_import):
     return team_import
 
 
+@transaction.atomic
+def apply_group_teams(team_import):
+    """
+    Como ``confirm`` pero solo con los equipos del grupo: crea los que faltan y da de alta en el
+    grupo los existentes, sin crear jugadores ni tocar sus puntos. Es el proceso «add_group_teams»
+    del back-office.
+    """
+    team_import = SnpTeamImport.objects.select_for_update().get(pk=team_import.pk)
+    if team_import.status != SnpTeamImport.READY:
+        return team_import
+    team_import.created_teams = _create_group_teams(team_import.club, team_import.teams_to_add, team_import.teams_existing)
+    team_import.status = SnpTeamImport.DONE
+    team_import.finished_at = timezone.now()
+    team_import.message = ngettext("%(n)s equipo del grupo añadido.", "%(n)s equipos del grupo añadidos.",
+                                   len(team_import.created_teams)) % {"n": len(team_import.created_teams)}
+    team_import.save()
+    return team_import
+
+
 # ---------- Límites (solo desde la web del club) ----------
 
 def is_unlimited(club):

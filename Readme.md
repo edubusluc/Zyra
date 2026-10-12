@@ -289,7 +289,8 @@ que la actualización de puntos). Al confirmar solo se crean jugadores nuevos; l
 existentes nunca se modifican. Desde la web se puede hacer una vez al mes. El staff lo
 lanza sin ese límite desde el back-office (proceso `complete_snp_team`, pide el id `TEA...` del
 equipo, que aparece en la ficha del club) o con
-`python manage.py complete_snp_team <id del equipo> [--dry-run]`.
+`python manage.py complete_snp_team <id del equipo> [--dry-run]`. Para traer solo los equipos del grupo
+(sin jugadores) está el proceso `add_group_teams`, con el mismo id: `python manage.py add_group_teams <id del equipo> [--dry-run]`.
 
 ### Desplegar esta versión
 

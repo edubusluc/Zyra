@@ -119,6 +119,13 @@ JOBS = [
         command="complete_snp_team",
         params=(JobParam("team_id", _("Id del equipo"), _("Id del equipo propio del club en Zyra, TEA... (aparece en la ficha del club).")),),
     ),
+    JobSpec(
+        name="add_group_teams",
+        description=_("Añade al grupo los equipos de la clasificación de SNP de un club: crea los que todavía no existen "
+                      "en Zyra y da de alta en el grupo los que estaban fuera. No toca los jugadores. Solo a mano y sin los límites de la web."),
+        command="add_group_teams",
+        params=(JobParam("team_id", _("Id del equipo"), _("Id del equipo propio del club en Zyra, TEA... (aparece en la ficha del club).")),),
+    ),
 ]
 
 
