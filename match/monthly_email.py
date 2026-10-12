@@ -149,6 +149,44 @@ def send_monthly_reports(month, dry_run=False, limit=None):
     return summary
 
 
+class ManualSendError(Exception):
+    """El informe no se puede enviar a mano (sin cuenta, sin jugador, sin email o sin partidos ese mes)."""
+
+
+def send_monthly_report_manually(email, month):
+    """
+    Envía a mano el informe de ``month`` a la cuenta con ese ``email``, aunque ya se haya enviado.
+
+    Es la salida de emergencia del backoffice: se salta la idempotencia (y la baja de los
+    correos automáticos, porque lo pide el personal), pero deja constancia en
+    ``MonthlyReportDelivery`` (``manual_sends`` y ``last_manual_at``). Respeta el alcance
+    (todos/competitivos) elegido en «Mi perfil». Devuelve la cuenta; lanza ``ManualSendError``
+    si no se puede enviar y propaga el error del correo si falla.
+    """
+    player = next((p for p in recipient_players() if p.user.email.lower() == email.strip().lower()), None)
+    if player is None:
+        raise ManualSendError(f"No hay ninguna cuenta activa con ese email enlazada a un jugador: {email}")
+    user = player.user
+    _enabled, scope = UserPreference.monthly_for(user)
+    report = build_monthly_report(player, month, scope)
+    if not report["played"]:
+        raise ManualSendError(f"{user.email} no jugó partidos en {month:%Y-%m}: no hay informe que enviar.")
+    connection = get_connection(fail_silently=False)
+    try:
+        connection.open()
+        connection.send_messages([build_message(report, user.email, absolute_unsubscribe_url(user))])
+    finally:
+        _close(connection)
+    now = timezone.now()
+    delivery, created = MonthlyReportDelivery.objects.get_or_create(
+        user=user, month=month, defaults={"email": user.email, "sent_at": now})
+    delivery.email, delivery.sent_at = user.email, now
+    delivery.manual_sends += 1
+    delivery.last_manual_at = now
+    delivery.save(update_fields=["email", "sent_at", "manual_sends", "last_manual_at"])
+    return user
+
+
 def _close(connection):
     """Cierra la conexión SMTP si existe, ignorando errores."""
     if connection is not None:

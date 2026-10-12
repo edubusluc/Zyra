@@ -13,9 +13,14 @@ from django.db.models import Q
 from core.models import REPORT_SCOPE_COMPETITIVE
 from data_analyse.pairs import COMPETITIVE, _current_run, match_type_lookup
 from data_analyse.sets import own_sets, set_stats
+from call.models import Call
 from match.models import Game
+from players.models import SnpScoreHistory
+
+CALL_PLAYED, CALL_BENCHED, CALL_ABSENT = "played", "benched", "absent"
 
 MAX_GAME_ROWS = 14  # filas del detalle de partidos en el PDF; el resto se cuenta
+MAX_CALL_ROWS = 10  # filas del listado de convocatorias en el PDF; el resto se cuenta
 
 
 def previous_month(today=None):
@@ -45,6 +50,43 @@ def _partner_and_side(game, player):
     return "", None, None
 
 
+def monthly_calls(player, start, end, scope=None):
+    """
+    Convocatorias cerradas del club con partido entre ``start`` y ``end``, en orden cronológico.
+
+    Cada una lleva ``status``: ``CALL_PLAYED`` (se apuntó y lo alinearon en algún partido),
+    ``CALL_BENCHED`` (se apuntó pero no jugó: no convocado) o ``CALL_ABSENT`` (no se apuntó).
+    """
+    calls = (
+        Call.objects.filter(match__club=player.club, match__start_date__range=(start, end), draft_mode=False)
+        .filter(**match_type_lookup(COMPETITIVE if scope == REPORT_SCOPE_COMPETITIVE else None, "match__"))
+        .select_related("match__local", "match__visiting")
+        .order_by("match__start_date", "match_id")
+    )
+    signed = set(Call.objects.filter(pk__in=[c.pk for c in calls], players=player).values_list("pk", flat=True))
+    played = set(
+        Game.objects.filter(
+            Q(player_1_local=player) | Q(player_2_local=player) | Q(player_1_visiting=player) | Q(player_2_visiting=player),
+            match_id__in=[c.match_id for c in calls],
+        ).values_list("match_id", flat=True)
+    )
+    rows = []
+    for call in calls:
+        if call.pk not in signed:
+            status = CALL_ABSENT
+        else:
+            status = CALL_PLAYED if call.match_id in played else CALL_BENCHED
+        rows.append({"date": call.match.start_date, "rival": call.match.rival_label,
+                     "match_type": call.match.get_match_type_display(), "status": status})
+    return rows
+
+
+def monthly_snp(player, start, end):
+    """Puntos SNP del jugador en el mes: [(fecha, puntos)] de ``SnpScoreHistory``, por fecha."""
+    return list(SnpScoreHistory.objects.filter(player=player, date__range=(start, end))
+                .order_by("date").values_list("date", "score"))
+
+
 def build_monthly_report(player, month, scope=None):
     """
     Estadísticas de ``player`` en el mes que empieza en ``month``.
@@ -54,7 +96,9 @@ def build_monthly_report(player, month, scope=None):
     número, sets, ganado y puntos), ``played``/``wins``/``losses``/``pct``, ``points``,
     ``sets`` (ver data_analyse.sets.set_stats), ``partners`` (por pareja: jugados y
     victorias, la mejor primero), ``form`` (resultados, el último al final), ``streak`` y
-    ``matches`` (enfrentamientos distintos en los que jugó). Con ``played == 0`` no hay informe.
+    ``matches`` (enfrentamientos distintos en los que jugó), ``calls`` (convocatorias del mes
+    con su estado, ver ``monthly_calls``), ``call_counts`` (cuántas por estado) y ``snp``
+    (puntos SNP del mes, ver ``monthly_snp``). Con ``played == 0`` no hay informe.
     """
     start, end = month_range(month)
     games = (
@@ -91,6 +135,7 @@ def build_monthly_report(player, month, scope=None):
         entry["wins"] += won
     wins = sum(r["won"] for r in rows)
     played = len(rows)
+    calls = monthly_calls(player, start, end, scope)
     form = [r["won"] for r in rows]
     return {
         "player": player, "club": player.club, "month": month, "scope": scope,
@@ -102,4 +147,7 @@ def build_monthly_report(player, month, scope=None):
                            key=lambda p: (-p["wins"] / p["played"], -p["played"], p["name"])),
         "form": form, "streak": _current_run(form),
         "matches": len({r["match_id"] for r in rows}),
+        "calls": calls,
+        "call_counts": {s: sum(c["status"] == s for c in calls) for s in (CALL_PLAYED, CALL_BENCHED, CALL_ABSENT)},
+        "snp": monthly_snp(player, start, end),
     }

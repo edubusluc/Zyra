@@ -110,6 +110,12 @@ JOBS = [
         schedule="0 9 1 * *",
         options=(
             JobOption("dry", _("Simulacro"), "--dry-run", _("Solo lista a quién se enviaría, sin enviar nada.")),
+            JobOption("month", _("Mes"), "--month", _("AAAA-MM; por defecto, el mes natural anterior."),
+                      pattern=r"\d{4}-(0[1-9]|1[0-2])"),
+            JobOption("user", _("Enviar solo a este email"), "--user",
+                      _("Envío manual a una cuenta, aunque ya haya recibido el informe de ese mes (queda anotado). "
+                        "Ignora que haya desactivado los correos."),
+                      pattern=r"[^\s@]+@[^\s@]+\.[^\s@]+"),
         ),
     ),
     JobSpec(

@@ -67,6 +67,9 @@ class MonthlyReportDelivery(models.Model):
     email = models.EmailField()
     created_at = models.DateTimeField(auto_now_add=True)
     sent_at = models.DateTimeField(null=True, blank=True)
+    # Reenvíos a mano desde el backoffice (se saltan la idempotencia): cuántos y el último.
+    manual_sends = models.PositiveSmallIntegerField(default=0)
+    last_manual_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=["user", "month"], name="unique_monthly_report_per_user_month")]

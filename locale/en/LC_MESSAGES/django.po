@@ -8245,6 +8245,74 @@ msgstr "outside your group"
 msgid "«%(name)s» vuelve a estar en tu grupo."
 msgstr "\"%(name)s\" is back in your group."
 
+#: match/monthly_pdf.py
+msgid "Convocatorias del mes"
+msgstr "Call-ups this month"
+
+#: match/monthly_pdf.py
+msgid "Apuntado"
+msgstr "Signed up"
+
+#: match/monthly_pdf.py
+msgid "Convocado"
+msgstr "Called up"
+
+#: match/monthly_pdf.py
+msgid "No convocado"
+msgstr "Not called up"
+
+#: match/monthly_pdf.py
+msgid "No apuntado"
+msgstr "Not signed up"
+
+#: match/monthly_pdf.py
+msgid "Apuntado y convocado"
+msgstr "Signed up and called up"
+
+#: match/monthly_pdf.py
+msgid "Apuntado, no convocado"
+msgstr "Signed up, not called up"
+
+#: match/monthly_pdf.py
+msgid "Tu estado"
+msgstr "Your status"
+
+#: match/monthly_pdf.py
+#, python-format
+msgid "Y %(n)s convocatorias más."
+msgstr "And %(n)s more call-ups."
+
+#: match/monthly_pdf.py
+msgid "No hubo convocatorias cerradas este mes."
+msgstr "There were no closed call-ups this month."
+
+#: match/monthly_pdf.py
+msgid "Evolución de tus puntos SNP"
+msgstr "Your SNP points this month"
+
+#: match/monthly_pdf.py
+msgid "No hay actualizaciones de puntos SNP este mes."
+msgstr "There are no SNP points updates this month."
+
+#: match/monthly_pdf.py
+#, python-format
+msgid "De %(start)s a %(end)s puntos (%(delta)s)"
+msgstr "From %(start)s to %(end)s points (%(delta)s)"
+
+#: match/monthly_pdf.py
+#, python-format
+msgid "%(end)s puntos a fecha %(date)s"
+msgstr "%(end)s points as of %(date)s"
+
+#: match/monthly_pdf.py
+msgid "Cómo respondes en los momentos decisivos: tercer set, tie-breaks y remontadas."
+msgstr "How you respond in decisive moments: third set, tie-breaks and comebacks."
+
+#: match/monthly_pdf.py
+#, python-format
+msgid "Llegan al tercer set: %(share)s %%"
+msgstr "Reach a third set: %(share)s %%"
+
 #: backoffice/sql.py
 #, python-format
 msgid "La consulta es demasiado larga (máximo %(max)s caracteres)."
