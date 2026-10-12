@@ -254,12 +254,10 @@ def _kpis(items, st):
     return t
 
 
-def _on_page(canvas, doc, report, total):
-    """Dibuja el fondo, la cabecera (logo, club y fecha) y el pie («Página n de ``total``»)."""
-    canvas.saveState()
+def draw_page_header(canvas, club_name, right_text):
+    """Dibuja el fondo y la cabecera (logo, ZYRA en cursiva, club y ``right_text``) con su filete."""
     canvas.setFillColor(BG)
     canvas.rect(0, 0, PAGE_W, PAGE_H, stroke=0, fill=1)
-    # Cabecera: logo + ZYRA a la izquierda, club y fecha a la derecha
     top = PAGE_H - 11 * mm
     if LOGO.exists():
         canvas.drawImage(str(LOGO), MARGIN, top - 3.2 * mm, width=7 * mm, height=7 * mm, mask="auto")
@@ -268,11 +266,17 @@ def _on_page(canvas, doc, report, total):
     canvas.drawString(MARGIN + 9 * mm, top - 1.3 * mm, "ZYRA")
     canvas.setFont("Archivo-Bold", 8)
     canvas.setFillColor(MUTED)
-    canvas.drawRightString(PAGE_W - MARGIN, top, report["club"].name.upper())
-    canvas.drawRightString(PAGE_W - MARGIN, top - 3.8 * mm,
-                           _("Generado el %(date)s") % {"date": timezone.localtime().strftime("%d/%m/%Y %H:%M")})
+    canvas.drawRightString(PAGE_W - MARGIN, top, club_name.upper())
+    canvas.drawRightString(PAGE_W - MARGIN, top - 3.8 * mm, right_text)
     canvas.setStrokeColor(BORDER)
     canvas.line(MARGIN, top - 6 * mm, PAGE_W - MARGIN, top - 6 * mm)
+
+
+def _on_page(canvas, doc, report, total):
+    """Dibuja el fondo, la cabecera (logo, club y fecha) y el pie («Página n de ``total``»)."""
+    canvas.saveState()
+    draw_page_header(canvas, report["club"].name,
+                     _("Generado el %(date)s") % {"date": timezone.localtime().strftime("%d/%m/%Y %H:%M")})
     # Pie
     canvas.setFont("Archivo", 7)
     canvas.drawString(MARGIN, 8 * mm, _("Informe automático de convocatoria · Zyra"))
