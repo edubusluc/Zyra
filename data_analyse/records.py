@@ -5,14 +5,13 @@ Los récords salen de los enfrentamientos cerrados del club y del log de partido
 (data_analyse.pairs.club_game_log), con los mismos filtros de temporada y tipo que el
 resto de la página de equipo.
 """
+from match import outcomes
 from match.models import Match
 from players.models import Player, SnpScoreHistory
 
 from . import pairs as pair_stats
 
-LOCAL_WIN = "Victoria Local"
-VISITING_WIN = "Victoria Visitante"
-DRAW = "EMPATE"
+from match.outcomes import DRAW, LOCAL_WIN, VISITING_WIN
 
 # Una temporada necesita al menos estos enfrentamientos para ser "la mejor".
 MIN_MATCHES_BEST_SEASON = 3
@@ -33,9 +32,9 @@ def _points(match):
     """(puntos del club, puntos del rival) sumando el valor de los partidos ganados por cada lado."""
     own = rival = 0
     for g in match.games.all():
-        if g.winner not in ('Local', 'Visitante') or not g.score:
+        if g.winner not in outcomes.WINNERS or not g.score:
             continue
-        if (g.winner == 'Local') == match.own_is_local:
+        if (g.winner == outcomes.WINNER_LOCAL) == match.own_is_local:
             own += g.score
         else:
             rival += g.score

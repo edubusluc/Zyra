@@ -82,6 +82,11 @@ def match_scores(players, scores):
         levels = [(_match_level(tokens[p.pk], snp_tokens), p) for p in players]
         best = max((level for level, _ in levels), default=0)
         best_players = [p for level, p in levels if level == best and level > 0]
+        if len(best_players) > 1:
+            # Con dos jugadores igual de parecidos, si solo uno sigue en la plantilla es el de SNP.
+            active = [p for p in best_players if p.in_team]
+            if len(active) == 1:
+                best_players = active
         if not best_players:
             unmatched.append(entry["name"])
         elif len(best_players) > 1:

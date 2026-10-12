@@ -3,6 +3,14 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 12/10/2026 · Seguridad y cuentas
+
+- Seguridad: Django 5.2 LTS y Pillow 12.3; frenos de abuso (login, registro, invitaciones, contraseña) en caché compartida con la IP real; verificación de email con enlace (y protección frente a tomar una cuenta no verificada vía Google); ruta del admin obligatoria en producción; Bootstrap, Font Awesome y Chart.js servidos desde `static/vendor/`; `pip-audit` en CI
+- Cuentas: un único capitán por club con «Hacer capitán» (solo a jugadores enlazados) y «Eliminar mi cuenta» en «Mi perfil»
+- Actas: se pueden reabrir desde la convocatoria y el cierre es atómico; los resultados se guardan con valores estándar
+- SNP: «Completar equipo» se encola y lo procesa un trabajo aparte; el límite se quita por club desde el back-office (ya no por nombre); nuevo apartado «Servicios» para apagar SNP y aviso por email si cae
+- La temporada empieza el 1 de agosto; la validación automática de fotos con AWS queda apagada; política de privacidad actualizada
+
 ## 12/10/2026
 
 - SNP: «Competiciones/Competencias» se abre justo después de elegir el país (antes de «Mis equipos»). El proceso `add_group_teams` ya no lee jugadores: solo entra en Competiciones y lee la clasificación. En el registro y «Completar equipo» la clasificación se lee antes de los jugadores

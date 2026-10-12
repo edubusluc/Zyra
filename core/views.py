@@ -545,8 +545,10 @@ def _change_own_email(request, user, email):
     email = email.lower()
     if email == (user.email or "").lower():
         return None
+    if not email:
+        return _("El email es obligatorio: lo necesitas para recuperar tu contraseña y recibir los informes.")
     try:
-        validate_email(email) if email else None
+        validate_email(email)
     except ValidationError:
         return _("'%(email)s' no es un email válido.") % {"email": email}
     if email and User.objects.filter(email__iexact=email).exclude(pk=user.pk).exists():
@@ -643,9 +645,11 @@ def delete_account_view(request):
         if not confirmed:
             error = _("La contraseña no es correcta.") if needs_password else _("Escribe tu nombre de usuario tal cual para confirmar.")
         else:
-            with transaction.atomic():
-                delete_account(user, delete_player=request.POST.get("delete_player") == "on")
+            delete_player = request.POST.get("delete_player") == "on"
+            # Se cierra la sesión antes de borrar: las señales de logout necesitan al usuario guardado.
             logout(request)
+            with transaction.atomic():
+                delete_account(user, delete_player=delete_player)
             messages.success(request, _("Tu cuenta se ha eliminado. Gracias por haber usado Zyra."))
             return redirect("home")
     return render(request, "delete_account.html", {
@@ -730,7 +734,7 @@ def leave_club(request):
 
 
 # Fecha de la última revisión de las páginas legales (cámbiala al editar sus textos).
-LEGAL_UPDATED = datetime.date(2026, 10, 6)
+LEGAL_UPDATED = datetime.date(2026, 10, 12)
 
 TEXT_PLAIN = "text/plain"
 

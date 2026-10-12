@@ -94,14 +94,14 @@ ejecución), `SavedQuery`, `QueryLog`, `ImportJob` (permite deshacer importacion
 
 ## Trampas de `related_name`
 
-Nombres heredados que confunden al leer consultas [V]:
+Nombres que confunden al leer consultas (los tres primeros ya se aclararon en 2026-10) [V]:
 
 | Relación | Acceso inverso real |
 |---|---|
-| `Player.team` | `team.team` (jugadores del equipo) |
+| `Player.team` | `team.team_players` (jugadores del equipo; antes `team.team`) |
 | `Call.match` | `match.match` (convocatorias del partido) |
-| `Call.players` | `player.players` (convocatorias del jugador) |
-| `Penalty.player` / `Penalty.call` | `player.player` / `call.call` |
+| `Call.players` | `player.calls` (convocatorias del jugador; antes `player.players`) |
+| `Penalty.player` / `Penalty.call` | `player.penalties` (antes `player.player`) / `call.call` |
 | `Game.player_1_local` … | `player.player_1_local`, etc. |
 | `Result.game` | `game.results` (aunque solo hay uno) |
 

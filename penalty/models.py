@@ -8,7 +8,7 @@ from call.models import Call
 class Penalty(PublicIdModel):
     """Advertencia a un jugador en una convocatoria, con su motivo."""
     PUBLIC_ID_PREFIX = "PEN"
-    player = models.ForeignKey(Player, on_delete=models.CASCADE, related_name="player")
+    player = models.ForeignKey(Player, on_delete=models.CASCADE, related_name="penalties")
     reason = models.CharField(max_length=100)
     call = models.ForeignKey(Call, on_delete=models.CASCADE, related_name="call")
 

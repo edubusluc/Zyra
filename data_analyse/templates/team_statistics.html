@@ -25,7 +25,7 @@
       column_chart_data: JSON.parse(document.getElementById('column-chart-data').textContent) || []
     };
   </script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
+  <script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
 
   <div class="st-page">
     {% include 'includes/stats_tabs.html' %}

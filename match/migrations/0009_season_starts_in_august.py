@@ -1,4 +1,4 @@
-"""La temporada empieza el 1 de agosto: los partidos de agosto pasan a la temporada que empieza ese año."""
+"""La temporada empieza el 1 de agosto (los partidos de agosto cambian de temporada) y los resultados se guardan con los valores estándar."""
 from django.db import migrations
 
 
@@ -20,6 +20,22 @@ def august_to_old_season(apps, schema_editor):
             Match.objects.filter(pk=match.pk).update(season=season)
 
 
+def standardize_results(apps, schema_editor):
+    """Los resultados guardados con otra capitalización («Empate», «Victoria visitante») pasan al valor canónico."""
+    from match import outcomes
+
+    Match = apps.get_model("match", "Match")
+    Result = apps.get_model("match", "Result")
+    for model, field in ((Match, "result"), (Result, "result")):
+        for row in model.objects.exclude(**{field: None}):
+            current = getattr(row, field)
+            if field == "result" and model is Result and current in (None, ""):
+                continue
+            canonical = outcomes.normalize(current)
+            if canonical != current:
+                model.objects.filter(pk=row.pk).update(**{field: canonical})
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -28,4 +44,5 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunPython(august_to_new_season, august_to_old_season),
+        migrations.RunPython(standardize_results, migrations.RunPython.noop),
     ]

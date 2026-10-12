@@ -21,16 +21,25 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
 
 - [V] Una cuenta pertenece a un solo club (no suspendido): `core.services.club_of`; lo comprueban
   `register_club` y `accept_invitation`. Tests: `core/tests_onboarding.py`, `core/tests_invitations.py`.
-- [V] El club siempre tiene al menos un capitán: `is_last_admin` bloquea degradar
-  (`update_member`), quitar (`remove_member`) y abandonar (`leave_club`) al último.
+- [V] Un club tiene un único capitán (restricción `unique_captain_per_club`). Se cede con
+  `transfer_captaincy` (vista `transfer_captaincy_view`) solo a un miembro enlazado a un `Player` del club
+  (`eligible_successors`); el antiguo pasa a miembro. El capitán no puede quitarse ni abandonar sin ceder antes.
+- [V] Eliminar la cuenta («Mi perfil», `delete_account`): un capitán debe ceder antes la capitanía
+  (`account_delete_blocker`); la ficha de jugador se desenlaza (o se borra si se elige). El capitán
+  solo puede eliminar el club tras desvincular todas las demás cuentas. Tests: `core/tests_account_lifecycle.py`.
+- [V] Un jugador solo puede jugar en clubes de una categoría; la pertenencia a un club es única por cuenta (regla anterior).
+- [V] No hay aprobación del capitán al unirse por enlace de invitación (decisión de producto).
 - [V] Si el único miembro abandona, el club se borra entero tras escribir su nombre exacto
   (`club_name_matches`, `delete_club`). Tests: `core/tests_delete_club.py`.
 - [V] Quitar o abandonar desenlaza su `Player` (`remove_membership`); el jugador y sus estadísticas quedan.
 - [V] Alta de club: crea equipo propio (`is_own=True`, `in_group=True`) y membresía de capitán;
   el jugador del capitán se crea escribiendo su nombre o eligiéndolo del equipo traído de SNP (`CaptainSnpForm`).
-- [V] Login con usuario o email (`ACCOUNT_LOGIN_METHODS`); sin verificación de email. Google con un
-  email existente entra en esa cuenta (`SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT`). Tests: `core/tests.py`.
-- [V] Freno de login: 5 fallos → 15 min (`LOGIN_MAX_FAILURES`, `LOGIN_LOCKOUT_SECONDS` en `core/views.py`).
+- [V] Login con usuario o email (`ACCOUNT_LOGIN_METHODS`); verificación de email opcional
+  (`ACCOUNT_EMAIL_VERIFICATION='optional'`, aviso y reenvío en «Mi perfil», `core/email_verification.py`). Google con un
+  email existente entra en esa cuenta (`SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT`); si el email local no estaba
+  verificado se invalida su contraseña (`core/adapters.py`). Tests: `core/tests.py`.
+- [V] Frenos en caché compartida (`core/ratelimit.py`, tabla `django_cache`; IP real con `TRUSTED_PROXY_COUNT`): login
+  5 fallos → 15 min, registro, invitaciones, comprobación de contraseña y reenvíos (429).
 - [V] Cambiar el email en «Mi perfil» pide la contraseña actual (`EmailChangeForm`). Tests: `core/tests_profile.py`.
 
 ### Invitaciones
@@ -83,7 +92,9 @@ Orden obligatorio del ciclo (`match/views.py`) [V], cubierto por `match/tests_fl
    gana los dos primeros; con 1-1 el tercero es obligatorio (set normal o super tie-break a 10 con
    2 de diferencia). Al guardar fija `Game.winner`.
 6. **Cerrar acta** (`close_match`, POST): acta abierta y 5 partidos con resultado. Suma puntos,
-   fija `Match.result` (`EMPATE` posible, p. ej. 6/6) y `result_points`, y cierra `Game.draft_mode`.
+   fija `Match.result` (valores canónicos en `match/outcomes.py`; `EMPATE` posible, p. ej. 6/6) y `result_points`,
+   y cierra `Game.draft_mode`. Siempre son 5 partidos: no se contempla un acta con menos. Todo en una transacción.
+7. **Reabrir acta** (`reopen_match`, POST, capitán): vuelve a borrador, resultado `NONE`, anota `reopened_at/by`.
 
 Con el acta cerrada [V]: no se borra el partido (`delete_match`) ni su convocatoria (`delete_call`),
 ni se editan parejas (`edit_game_match`).
@@ -125,8 +136,13 @@ ni se editan parejas (`edit_game_match`).
   con fallo reintentable. Fallos de usuario/contraseña no se reintentan solos (evita bloquear la
   cuenta del capitán). Para ante 429/403/503 o fallos de red seguidos.
 - [V] «Completar equipo» desde la web: 1 vez al mes, máx. 3 búsquedas al día con 5 min entre ellas
-  (`players/snp_import.py`); clubes de `SNP_IMPORT_UNLIMITED_CLUBS` (por defecto «Los Gladiadores»)
-  sin límite. Al confirmar crea los que faltan y actualiza puntos de los existentes. Además lee en SNP «Competiciones → Clasificación» y crea como `in_group` (género/país/división/sede del equipo propio) los equipos del grupo que no existan (`core.similarity.is_similar`, sin duplicar); los existentes fuera del grupo se dan de alta en él, y si el club no tiene equipo propio, el que SNP marca en negrita lo será. Si ese paso falla no bloquea la importación de jugadores. Tests: `players/tests.py`.
+  (`players/snp_import.py`); los clubes con `Club.snp_unlimited` (editable en el back-office, ficha del club)
+  no tienen límite. La búsqueda se encola (`SnpTeamImport` RUNNING sin `started_at`) y la procesa el trabajo
+  `process_snp_imports` (cada minuto), no el proceso web.
+- [V] Interruptor `ServiceSwitch` «snp» (back-office → Servicios): apagado, se bloquean sincronización y «Completar
+  equipo» y el usuario ve que el servicio no está disponible. 3 fallos seguidos avisan por email al administrador
+  (`players/snp_service.py`, repetición cada 6 h como máximo).
+- [V] La temporada empieza el 1 de agosto (`SEASON_START_MONTH`). Al confirmar crea los que faltan y actualiza puntos de los existentes. Además lee en SNP «Competiciones → Clasificación» y crea como `in_group` (género/país/división/sede del equipo propio) los equipos del grupo que no existan (`core.similarity.is_similar`, sin duplicar); los existentes fuera del grupo se dan de alta en él, y si el club no tiene equipo propio, el que SNP marca en negrita lo será. Si ese paso falla no bloquea la importación de jugadores. Tests: `players/tests.py`.
 
 ## Estadísticas
 

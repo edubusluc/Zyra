@@ -4,6 +4,7 @@ Estadísticas del club: del equipo, por jugador, por parejas y advertencias.
 Todas se calculan sobre los partidos cerrados del club y admiten filtro por temporada
 y por tipo de partido.
 """
+from match import outcomes
 from django.shortcuts import render
 from match.models import Match, Game, Result
 from django.db.models import Sum
@@ -26,10 +27,8 @@ from .sets import best_and_worst_number, by_game_number, own_sets, set_stats
 # ---------------------------------------------------------------
 # ESTADÍSTICAS EQUIPO
 # ---------------------------------------------------------------
-LOCAL_WIN = "Victoria Local"
-VISITING_WIN = "Victoria Visitante"
-# Empate a puntos en la eliminatoria (p. ej. 6-6): ni victoria ni derrota.
-DRAW = "EMPATE"
+from match.outcomes import DRAW, LOCAL_WIN, VISITING_WIN
+# DRAW: empate a puntos en la eliminatoria (p. ej. 6-6), ni victoria ni derrota.
 
 
 def get_total_season(matchs):
@@ -224,7 +223,7 @@ def column_chart(club, season, match_type=None):
         } for name in names.values()
     }
 
-    games = Game.objects.filter(match__club=club, draft_mode=False, winner__in=("Local", "Visitante"), n_game__in=[1, 2, 3, 4, 5])
+    games = Game.objects.filter(match__club=club, draft_mode=False, winner__in=outcomes.WINNERS, n_game__in=[1, 2, 3, 4, 5])
     if season:
         games = games.filter(match__season=season)
     games = _by_type(games, match_type, "match__")
@@ -373,7 +372,7 @@ def degree_of_affinity(player, match_type=None, season=None):
         Q(player_1_local=player) | Q(player_2_local=player) |
         Q(player_1_visiting=player) | Q(player_2_visiting=player),
         draft_mode=False,
-        winner__in=('Local', 'Visitante'),
+        winner__in=outcomes.WINNERS,
     )
     if season:
         games = games.filter(match__season=season)
@@ -446,10 +445,10 @@ def build_game_log(player, match_type=None):
 
     log = []
     for g in games:
-        if g.winner not in ('Local', 'Visitante'):
+        if g.winner not in outcomes.WINNERS:
             continue  # partido sin cerrar
         is_local = player.id in (g.player_1_local_id, g.player_2_local_id)
-        won = (g.winner == 'Local') == is_local
+        won = (g.winner == outcomes.WINNER_LOCAL) == is_local
 
         sets_won = sets_lost = 0
         for r in g.results.all():
@@ -497,7 +496,7 @@ def season_games(player, season, match_type=None):
             Q(player_1_local=player) | Q(player_2_local=player) |
             Q(player_1_visiting=player) | Q(player_2_visiting=player),
             draft_mode=False,
-            winner__in=('Local', 'Visitante'),
+            winner__in=outcomes.WINNERS,
             match__club=player.club,
             match__season=season,
         )
@@ -513,7 +512,7 @@ def season_games(player, season, match_type=None):
         is_local = player.id in (g.player_1_local_id, g.player_2_local_id)
         pair = (g.player_1_local, g.player_2_local) if is_local else (g.player_1_visiting, g.player_2_visiting)
         partner = next((p for p in pair if p and p.id != player.id), None)
-        won = (g.winner == 'Local') == is_local
+        won = (g.winner == outcomes.WINNER_LOCAL) == is_local
 
         rows.append({
             'match_id': g.match_id,
@@ -849,7 +848,7 @@ def pair_last_games(club, p1, p2, n=PAIR_LAST_GAMES, match_type=None, season=Non
     )
     games = (
         Game.objects
-        .filter(together, draft_mode=False, winner__in=('Local', 'Visitante'), match__club=club,
+        .filter(together, draft_mode=False, winner__in=outcomes.WINNERS, match__club=club,
                 **pair_stats.match_type_lookup(match_type, prefix='match__'))
         .select_related('match__local', 'match__visiting')
         .prefetch_related('results')
@@ -861,7 +860,7 @@ def pair_last_games(club, p1, p2, n=PAIR_LAST_GAMES, match_type=None, season=Non
     rows = []
     for g in games:
         is_local = p1.id in (g.player_1_local_id, g.player_2_local_id)
-        won = (g.winner == 'Local') == is_local
+        won = (g.winner == outcomes.WINNER_LOCAL) == is_local
         rows.append({
             'match_id': g.match_id,
             'match_public_id': g.match.public_id,

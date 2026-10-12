@@ -150,8 +150,8 @@ def delete_player(request, player_id):
     return render(request, "confirm_delete.html", {
         "player": player,
         "games": played,
-        "calls": player.players.count(),
-        "penalties": player.player.count(),
+        "calls": player.calls.count(),
+        "penalties": player.penalties.count(),
     })
 
 

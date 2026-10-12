@@ -59,7 +59,7 @@ class Team(PublicIdModel):
         super().save(*args, **kwargs)
         # Los jugadores tienen la categoría (masculino/femenino) de su equipo.
         if self.gender:
-            self.team.exclude(gender=self.gender).update(gender=self.gender)
+            self.team_players.exclude(gender=self.gender).update(gender=self.gender)
 
     def __str__(self):
         """Nombre del equipo."""

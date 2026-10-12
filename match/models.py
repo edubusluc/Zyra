@@ -14,7 +14,7 @@ from django.dispatch import receiver
 from players.models import Player, SEASON_START_MONTH
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext, gettext_lazy as _
-from . import scoring
+from . import outcomes, scoring
 from datetime import datetime
 from urllib.parse import quote
 
@@ -39,10 +39,10 @@ class Match(PublicIdModel):
     
     
     POSSIBLE_RESULT = [
-        ("Victoria Local", _("Victoria Local")),
-        ("Victoria Visitante", _("Victoria Visitante")),
-        ("EMPATE", _("Empate")),
-        ("NONE", _("Ninguno")),
+        (outcomes.LOCAL_WIN, _("Victoria Local")),
+        (outcomes.VISITING_WIN, _("Victoria Visitante")),
+        (outcomes.DRAW, _("Empate")),
+        (outcomes.NONE, _("Ninguno")),
     ]
     
     ENFRENTAMIENTO = "enfrentamiento"
@@ -59,8 +59,8 @@ class Match(PublicIdModel):
 
     start_date = models.DateField()
     match_type = models.CharField(_("Tipo de partido"), max_length=15, choices=MATCH_TYPES, default=ENFRENTAMIENTO)
-    result = models.CharField(max_length=20, choices=POSSIBLE_RESULT, blank = True, default="NONE")
-    result_points = models.CharField(max_length=20, blank = True, default="NONE")
+    result = models.CharField(max_length=20, choices=POSSIBLE_RESULT, blank = True, default=outcomes.NONE)
+    result_points = models.CharField(max_length=20, blank = True, default=outcomes.NONE)
     draft_mode = models.BooleanField(default=True)
     # Qué partidos cuentan en las estadísticas del informe PDF (se elige al crear el partido).
     report_scope = models.CharField(_("Datos del informe"), max_length=15, choices=REPORT_SCOPES,
@@ -96,6 +96,9 @@ class Match(PublicIdModel):
                     self.season = f"{self.start_date.year}-{self.start_date.year + 1}"
                 else:  # Antes de agosto (enero a julio)
                     self.season = f"{self.start_date.year - 1}-{self.start_date.year}"
+
+        # Valor canónico aunque llegue escrito de otra forma (match/outcomes.py).
+        self.result = outcomes.normalize(self.result)
 
         if not self.location and self.local_id:
             self.location = self.local.location
@@ -172,8 +175,8 @@ class Game(PublicIdModel):
     ]
 
     WINNER = [
-        ("Local", "Local"),
-        ("Visitante", "Visitante"),
+        (outcomes.WINNER_LOCAL, "Local"),
+        (outcomes.WINNER_VISITING, "Visitante"),
     ]
 
     SCORE = [
@@ -306,7 +309,7 @@ class Result(PublicIdModel):
         if winner is None:
             self.clean()
             winner = self._winner
-        return "Victoria Local" if winner == "local" else "Victoria Visitante"
+        return outcomes.LOCAL_WIN if winner == "local" else outcomes.VISITING_WIN
 
     def save(self, *args, **kwargs):
         """Valida y normaliza el resultado con clean() antes de guardarlo."""

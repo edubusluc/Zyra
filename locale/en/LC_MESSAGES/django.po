@@ -8317,3 +8317,468 @@ msgstr "Reach a third set: %(share)s %%"
 #, python-format
 msgid "La consulta es demasiado larga (máximo %(max)s caracteres)."
 msgstr "The query is too long (maximum %(max)s characters)."
+
+#: backoffice/jobs.py
+msgid ""
+"Atiende de una en una las búsquedas de «Completar equipo» pedidas desde la "
+"web (cola). Sin búsquedas pendientes termina al momento."
+msgstr ""
+"Handles the “Complete team” searches requested from the web one at a time "
+"(queue). With no pending searches it finishes immediately."
+
+#: backoffice/jobs.py
+msgid ""
+"Envía a cada jugador con cuenta su informe PDF del mes anterior (el día 1 a "
+"las 09:00). Es idempotente: no repite el correo de un mes ya enviado y "
+"reintenta los que fallaron. Hace falta SITE_URL."
+msgstr ""
+"Sends each player with an account their PDF report for the previous month "
+"(on the 1st at 09:00). It is idempotent: it does not repeat an email for a "
+"month already sent and retries the ones that failed. SITE_URL is required."
+
+#: backoffice/jobs.py
+msgid ""
+"Añade al grupo los equipos de la clasificación de SNP de un club: crea los "
+"que todavía no existen en Zyra y da de alta en el grupo los que estaban "
+"fuera. No toca los jugadores. Solo a mano y sin los límites de la web."
+msgstr ""
+"Adds the teams in a club's SNP standings to the group: creates the ones that"
+" do not exist in Zyra yet and re-adds to the group those that were outside "
+"it. It does not touch players. Manual only and without the web limits."
+
+#: backoffice/jobs.py
+msgid "Simulacro"
+msgstr "Dry run"
+
+#: backoffice/jobs.py
+msgid "Solo lista a quién se enviaría, sin enviar nada."
+msgstr "Only lists who it would send to, without sending anything."
+
+#: backoffice/jobs.py
+msgid "Mes"
+msgstr "Month"
+
+#: backoffice/jobs.py
+msgid "AAAA-MM; por defecto, el mes natural anterior."
+msgstr "YYYY-MM; by default, the previous calendar month."
+
+#: backoffice/jobs.py
+msgid "Enviar solo a este email"
+msgstr "Send only to this email"
+
+#: backoffice/jobs.py
+msgid ""
+"Envío manual a una cuenta, aunque ya haya recibido el informe de ese mes "
+"(queda anotado). Ignora que haya desactivado los correos."
+msgstr ""
+"Manual send to one account, even if it already received that month's report "
+"(it is recorded). Ignores that it turned emails off."
+
+#: backoffice/templates/backoffice/base.html
+msgid "Servicios"
+msgstr "Services"
+
+#: backoffice/templates/backoffice/club_detail.html
+msgid "Límites de «Completar equipo»"
+msgstr "“Complete team” limits"
+
+#: backoffice/templates/backoffice/club_detail.html
+msgid ""
+"Los clubes normales solo pueden completar el equipo desde SNP una vez al mes"
+" y con pocas búsquedas al día. Marca este si es un club de pruebas."
+msgstr ""
+"Regular clubs can only complete the team from SNP once a month and with few "
+"searches per day. Tick this for a test club."
+
+#: backoffice/templates/backoffice/club_detail.html
+msgid "Sin límites"
+msgstr "No limits"
+
+#: backoffice/templates/backoffice/club_detail.html
+msgid "Aplicar límites normales"
+msgstr "Apply normal limits"
+
+#: backoffice/templates/backoffice/club_detail.html
+msgid "Límites normales"
+msgstr "Normal limits"
+
+#: backoffice/templates/backoffice/club_detail.html
+msgid "Quitar los límites"
+msgstr "Remove the limits"
+
+#: backoffice/templates/backoffice/emails/snp_down.html
+msgid "La lectura de SNP está fallando"
+msgstr "Reading SNP is failing"
+
+#: backoffice/templates/backoffice/emails/snp_down.html
+msgid "Último error:"
+msgstr "Last error:"
+
+#: backoffice/templates/backoffice/emails/snp_down.html
+msgid ""
+"Puede que SNP haya cambiado su web, nos esté bloqueando o esté caído. Si "
+"hace falta, apaga el servicio para que los capitanes vean que no está "
+"disponible."
+msgstr ""
+"SNP may have changed its website, be blocking us or be down. If needed, turn"
+" the service off so captains see that it is unavailable."
+
+#: backoffice/templates/backoffice/emails/snp_down.html
+msgid "Abrir servicios"
+msgstr "Open services"
+
+#: backoffice/templates/backoffice/emails/snp_down.html
+msgid ""
+"La lectura de SNP ha fallado <strong>%(streak)s</strong> veces seguidas."
+msgstr "Reading SNP has failed <strong>%(streak)s</strong> times in a row."
+
+#: backoffice/templates/backoffice/emails/snp_down.txt
+msgid ""
+"Puede que SNP haya cambiado su web, nos esté bloqueando o esté caído. Si "
+"hace falta, apaga el servicio para que los capitanes vean que no está "
+"disponible:"
+msgstr ""
+"SNP may have changed its website, be blocking us or be down. If needed, turn"
+" the service off so captains see that it is unavailable:"
+
+#: backoffice/templates/backoffice/emails/snp_down.txt
+msgid "La lectura de SNP ha fallado %(streak)s veces seguidas."
+msgstr "Reading SNP has failed %(streak)s times in a row."
+
+#: backoffice/templates/backoffice/services.html
+msgid "Interruptores de la plataforma"
+msgstr "Platform switches"
+
+#: backoffice/templates/backoffice/services.html
+msgid "Lectura de SNP"
+msgstr "SNP reading"
+
+#: backoffice/templates/backoffice/services.html
+msgid "Activa"
+msgstr "On"
+
+#: backoffice/templates/backoffice/services.html
+msgid "Apagada"
+msgstr "Off"
+
+#: backoffice/templates/backoffice/services.html
+msgid ""
+"Es la conexión con snpgalaxy.com que actualiza los puntos y trae el equipo "
+"(«Completar equipo»). Apagada, no se lanza ninguna lectura y los capitanes "
+"ven que el servicio no está disponible. Se avisa por email al personal "
+"cuando SNP falla varias veces seguidas."
+msgstr ""
+"This is the connection to snpgalaxy.com that updates points and brings the "
+"team (“Complete team”). When off, no reading is launched and captains see "
+"that the service is unavailable. Staff are emailed when SNP fails several "
+"times in a row."
+
+#: backoffice/templates/backoffice/services.html
+msgid "Motivo (opcional, solo lo ve el personal)"
+msgstr "Reason (optional, only staff see it)"
+
+#: backoffice/templates/backoffice/services.html
+msgid "Apagar lectura de SNP"
+msgstr "Turn SNP reading off"
+
+#: backoffice/templates/backoffice/services.html
+msgid "Activar lectura de SNP"
+msgstr "Turn SNP reading on"
+
+#: backoffice/templates/backoffice/services.html
+msgid ""
+"Fallos seguidos de SNP: <strong>%(n)s</strong> (se avisa al llegar a "
+"%(max)s)."
+msgstr ""
+"Consecutive SNP failures: <strong>%(n)s</strong> (an alert is sent at "
+"%(max)s)."
+
+#: backoffice/templates/backoffice/services.html
+msgid "Búsquedas de «Completar equipo» en cola: <strong>%(n)s</strong>."
+msgstr "“Complete team” searches in the queue: <strong>%(n)s</strong>."
+
+#: backoffice/templates/backoffice/services.html
+msgid "Último aviso al personal: %(date)s."
+msgstr "Last alert to staff: %(date)s."
+
+#: backoffice/templates/backoffice/services.html
+msgid "Último cambio: %(date)s por %(user)s."
+msgstr "Last change: %(date)s by %(user)s."
+
+#: backoffice/views.py
+msgid "Este club ya no tiene límites en «Completar equipo»."
+msgstr "This club no longer has limits on “Complete team”."
+
+#: backoffice/views.py
+msgid "Este club vuelve a tener los límites normales en «Completar equipo»."
+msgstr "This club is back to the normal limits on “Complete team”."
+
+#: backoffice/views.py
+msgid "Servicio de SNP activado."
+msgstr "SNP service turned on."
+
+#: backoffice/views.py
+msgid "Servicio de SNP apagado: los capitanes verán que no está disponible."
+msgstr "SNP service turned off: captains will see that it is not available."
+
+#: core/services.py
+msgid "Las cuentas del personal de Zyra no se pueden eliminar desde aquí."
+msgstr "Zyra staff accounts cannot be deleted from here."
+
+#: core/services.py
+msgid "Solo el capitán del club puede traspasar la capitanía."
+msgstr "Only the club captain can hand over the captaincy."
+
+#: core/services.py
+msgid "Elige a otro miembro del club."
+msgstr "Choose another club member."
+
+#: core/services.py
+msgid ""
+"Solo se puede traspasar la capitanía a un miembro enlazado a un jugador del "
+"club."
+msgstr ""
+"The captaincy can only be handed over to a member linked to a player of the "
+"club."
+
+#: core/services.py
+msgid ""
+"Eres el capitán de %(club)s. Traspasa antes la capitanía a otro jugador "
+"enlazado desde «Miembros»; si quieres cerrar el club, quita antes a todos "
+"los miembros."
+msgstr ""
+"You are the captain of %(club)s. First hand the captaincy over to another "
+"linked player from “Members”; if you want to close the club, remove all the "
+"members first."
+
+#: core/services.py
+msgid ""
+"Eres el único miembro de %(club)s. Abandona el club desde el menú (se "
+"eliminará con todos sus datos) y después podrás eliminar tu cuenta."
+msgstr ""
+"You are the only member of %(club)s. Leave the club from the menu (it will "
+"be deleted with all its data) and then you will be able to delete your "
+"account."
+
+#: core/templates/429.html
+msgid "Demasiadas solicitudes"
+msgstr "Too many requests"
+
+#: core/templates/429.html
+msgid ""
+"Se han hecho demasiadas solicitudes desde tu conexión. Espera un rato y "
+"vuelve a intentarlo."
+msgstr ""
+"Too many requests have been made from your connection. Wait a while and try "
+"again."
+
+#: core/templates/account/email/email_confirmation_message.html
+msgid "Confirma tu email"
+msgstr "Confirm your email"
+
+#: core/templates/account/email/email_confirmation_message.html
+msgid "Confirmar email"
+msgstr "Confirm email"
+
+#: core/templates/account/email/email_confirmation_message.html
+msgid "Si no has creado una cuenta en Zyra, ignora este correo."
+msgstr "If you did not create a Zyra account, ignore this email."
+
+#: core/templates/account/email/email_confirmation_message.html
+msgid ""
+"Pulsa el botón para confirmar el email de tu cuenta de Zyra (usuario "
+"<strong>%(username)s</strong>)."
+msgstr ""
+"Press the button to confirm the email of your Zyra account (username "
+"<strong>%(username)s</strong>)."
+
+#: core/templates/account/email/email_confirmation_message.txt
+msgid ""
+"Para confirmar el email de tu cuenta de Zyra (usuario %(username)s) abre "
+"este enlace:"
+msgstr ""
+"To confirm the email of your Zyra account (username %(username)s) open this "
+"link:"
+
+#: core/templates/account/email/email_confirmation_signup_subject.txt
+msgid "Confirma tu email de Zyra"
+msgstr "Confirm your Zyra email"
+
+#: core/templates/account/email_confirm.html
+msgid "Confirmar"
+msgstr "Confirm"
+
+#: core/templates/account/email_confirm.html
+msgid ""
+"El enlace de confirmación ha caducado o no es válido. Pide uno nuevo desde "
+"«Mi perfil»."
+msgstr ""
+"The confirmation link has expired or is not valid. Request a new one from "
+"“My profile”."
+
+#: core/templates/account/email_confirm.html
+msgid "Confirma que <strong>%(email)s</strong> es tu email."
+msgstr "Confirm that <strong>%(email)s</strong> is your email."
+
+#: core/templates/club_members.html
+msgid "Hacer capitán"
+msgstr "Make captain"
+
+#: core/templates/club_members.html
+msgid ""
+"Un club tiene un solo capitán. Para traspasar la capitanía, el miembro tiene"
+" que estar enlazado a un jugador del club («Mi perfil»). Para eliminar el "
+"club, quita antes a todos los miembros y abandónalo desde el menú."
+msgstr ""
+"A club has a single captain. To hand over the captaincy, the member must be "
+"linked to a player of the club (“My profile”). To delete the club, first "
+"remove all the members and leave it from the menu."
+
+#: core/templates/club_members.html
+msgid "¿Traspasar la capitanía a %(username)s? Tú pasarás a ser miembro."
+msgstr "Hand the captaincy over to %(username)s? You will become a member."
+
+#: core/templates/delete_account.html
+msgid "Eliminar mi cuenta"
+msgstr "Delete my account"
+
+#: core/templates/delete_account.html
+msgid "Ir a Miembros"
+msgstr "Go to Members"
+
+#: core/templates/delete_account.html
+msgid ""
+"Se borrarán tu cuenta, tus preferencias y el acceso a tus clubes. Esta "
+"acción no se puede deshacer."
+msgstr ""
+"Your account, your preferences and your access to your clubs will be "
+"deleted. This cannot be undone."
+
+#: core/templates/delete_account.html
+msgid "Escribe tu contraseña para confirmar"
+msgstr "Type your password to confirm"
+
+#: core/templates/delete_account.html
+msgid "Escribe tu nombre de usuario para confirmar"
+msgstr "Type your username to confirm"
+
+#: core/templates/delete_account.html
+msgid ""
+"Eliminar también mi ficha de jugador (%(name)s) de %(club)s. Si no lo "
+"marcas, la ficha se queda en el club sin tu cuenta ni tu foto. Los partidos "
+"ya jugados se conservan con tu nombre."
+msgstr ""
+"Also delete my player record (%(name)s) from %(club)s. If you do not tick "
+"it, the record stays in the club without your account or photo. Matches "
+"already played are kept with your name."
+
+#: core/templates/my_profile.html
+msgid "Email sin confirmar. Abre el enlace que te enviamos."
+msgstr "Email not confirmed. Open the link we sent you."
+
+#: core/templates/my_profile.html
+msgid "Reenviar enlace"
+msgstr "Resend link"
+
+#: core/templates/my_profile.html
+msgid ""
+"Borra tu cuenta y tus preferencias. Si eres capitán, antes tienes que "
+"traspasar la capitanía a otro jugador del club."
+msgstr ""
+"Deletes your account and your preferences. If you are a captain, you must "
+"first hand the captaincy over to another player of the club."
+
+#: core/templates/register_club.html
+msgid ""
+"La conexión con SNP no está disponible ahora mismo. Puedes crear el club y "
+"traer tu equipo más tarde, desde Jugadores."
+msgstr ""
+"The connection to SNP is not available right now. You can create the club "
+"and bring your team later, from Players."
+
+#: core/views.py
+msgid ""
+"El email es obligatorio: lo necesitas para recuperar tu contraseña y recibir"
+" los informes."
+msgstr ""
+"The email is required: you need it to recover your password and receive "
+"reports."
+
+#: core/views.py
+msgid ""
+"%(username)s es ahora el capitán de %(club)s. Tú sigues en el club como "
+"miembro."
+msgstr ""
+"%(username)s is now the captain of %(club)s. You stay in the club as a "
+"member."
+
+#: core/views.py
+msgid "No puedes quitar al capitán: traspasa antes la capitanía."
+msgstr "You cannot remove the captain: hand the captaincy over first."
+
+#: core/views.py
+msgid "Te hemos enviado un enlace para confirmar tu email."
+msgstr "We have sent you a link to confirm your email."
+
+#: core/views.py
+msgid "No se pudo enviar el correo. Inténtalo de nuevo más tarde."
+msgstr "The email could not be sent. Try again later."
+
+#: core/views.py
+msgid "Escribe tu nombre de usuario tal cual para confirmar."
+msgstr "Type your username exactly to confirm."
+
+#: core/views.py
+msgid "Tu cuenta se ha eliminado. Gracias por haber usado Zyra."
+msgstr "Your account has been deleted. Thanks for using Zyra."
+
+#: core/views.py
+msgid ""
+"Eres el capitán de %(club)s: traspasa la capitanía a otro jugador enlazado "
+"antes de abandonar el club. Para eliminar el club, quita antes a todos los "
+"miembros."
+msgstr ""
+"You are the captain of %(club)s: hand the captaincy over to another linked "
+"player before leaving the club. To delete the club, first remove all the "
+"members."
+
+#: match/templates/call_for_match.html
+msgid ""
+"¿Reabrir el acta? Mientras esté abierta este enfrentamiento no cuenta en las"
+" estadísticas. Tendrás que volver a cerrarla."
+msgstr ""
+"Reopen the match report? While it is open this match does not count in the "
+"statistics. You will have to close it again."
+
+#: match/templates/call_for_match.html
+msgid "Reabrir acta para corregirla"
+msgstr "Reopen the report to correct it"
+
+#: match/views.py
+msgid "Acta reabierta. Corrige lo que haga falta y vuelve a cerrarla."
+msgstr "Match report reopened. Fix whatever is needed and close it again."
+
+#: match/views.py
+msgid "El acta ya estaba abierta."
+msgstr "The match report was already open."
+
+#: players/snp_service.py
+msgid ""
+"La conexión con SNP no está disponible ahora mismo. Inténtalo más tarde: no "
+"hace falta que cambies nada en tu cuenta."
+msgstr ""
+"The connection to SNP is not available right now. Try again later: you do "
+"not need to change anything in your account."
+
+#: players/snp_service.py
+msgid "Zyra · La lectura de SNP está fallando"
+msgstr "Zyra · Reading SNP is failing"
+
+#: players/templates/list_players.html
+msgid ""
+"La conexión con SNP no está disponible ahora mismo. Inténtalo más tarde."
+msgstr "The connection to SNP is not available right now. Try again later."
+
+#: players/templates/list_players.html
+msgid "Servicio de SNP no disponible por ahora."
+msgstr "SNP service not available for now."

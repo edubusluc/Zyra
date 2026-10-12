@@ -687,7 +687,10 @@ class CompleteTeamLimitsTests(TestCase):
     def test_test_team_has_no_limits(self):
         from . import snp_import
         from .models import SnpTeamImport
-        club = self.club("LOS GLADIADORES")
+        club = self.club("Club de pruebas")
+        self.assertFalse(snp_import.is_unlimited(club))
+        club.snp_unlimited = True
+        club.save(update_fields=["snp_unlimited"])
         self.assertTrue(snp_import.is_unlimited(club))
         for _ in range(snp_import.SEARCHES_PER_DAY + 1):
             self.client.post(reverse("complete_team_start"))

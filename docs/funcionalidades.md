@@ -78,8 +78,8 @@ estadísticas) y aviso al capitán si el club no tiene cuenta SNP
     - **Completar equipo**: trae de SNP los jugadores que faltan y actualiza los puntos SNP de los
       que ya están, para revisar y confirmar; los nuevos llegan sin posición y se avisa al capitán de
       que la complete. Una vez al mes y, para no saturar SNP, como mucho tres búsquedas al día con
-      cinco minutos entre una y otra; el club de pruebas (`SNP_IMPORT_UNLIMITED_CLUBS`, por defecto
-      Los Gladiadores) no tiene límites ([`players.snp_import`](referencia/players/snp_import.md)).
+      cinco minutos entre una y otra; los clubes marcados como «sin límites» en el back-office
+      no los tienen ([`players.snp_import`](referencia/players/snp_import.md)).
     - La cuenta solo pide usuario y contraseña: si tiene varios equipos en SNP, se usa el que se llama
       como el equipo del club.
 

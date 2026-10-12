@@ -559,7 +559,7 @@ class CopySqliteToDbTests(SimpleTestCase):
         self.assertIn("todas las tablas coinciden", result.stdout)
         # Jugadores y convocados copiados, contraseña intacta y los ids nuevos no chocan.
         check = self._manage(self.target_url, "shell", "-c", self.TARGET_CHECK)
-        self.assertEqual(check.stdout.split(), ["4", "4", "True"])
+        self.assertEqual(check.stdout.split()[-3:], ["4", "4", "True"])  # Django 5.2 antepone «N objects imported automatically»
 
         again = self._manage(self.target_url, "copy_sqlite_to_db", str(self.source), "--any-target", check=False)
         self.assertNotEqual(again.returncode, 0)

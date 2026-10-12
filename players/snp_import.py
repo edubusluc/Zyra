@@ -26,7 +26,7 @@ from core.crypto import DecryptionError
 from .models import Player, SnpScoreHistory, SnpTeamImport, current_season
 from . import snp_service
 from .scraper import SnpScrapeError, scrape_scores
-from core.similarity import is_similar, same_name
+from core.similarity import is_same_team, same_name
 
 from .snp import team_options, match_scores, save_score, split_category
 
@@ -118,7 +118,7 @@ def plan_group_teams(club, group_teams):
     teams = list(Team.objects.filter(club=club))
     to_create, existing = [], []
     for entry in group_teams or []:
-        match = next((t for t in teams if is_similar(entry["name"], t.name)), None)
+        match = next((t for t in teams if is_same_team(entry["name"], t.name)), None)
         if match is None:
             to_create.append({"snp_id": entry["snp_id"], "name": entry["name"], "own": bool(entry.get("own"))})
             continue

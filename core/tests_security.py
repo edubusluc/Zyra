@@ -147,10 +147,11 @@ class MemberEmailTests(SecurityBase):
         self.member.refresh_from_db()
         self.assertEqual(self.member.email, "member@example.com")
 
-    def test_role_still_changes_without_email(self):
+    def test_role_cannot_be_changed_from_update_member(self):
+        """El rol ya no se cambia aquí: la capitanía se traspasa con «Hacer capitán»."""
         self.client.post(reverse("update_member", args=[self.membership.public_id]), {"role": Membership.ADMIN})
         self.membership.refresh_from_db()
-        self.assertTrue(self.membership.is_admin)
+        self.assertFalse(self.membership.is_admin)
 
     def test_own_email_can_change_but_must_be_unique(self):
         url = reverse("update_member", args=[self.captain_membership.public_id])

@@ -3,12 +3,13 @@ los 5 partidos, resultados, cierre del acta e informe PDF de la convocatoria.
 
 Todas las vistas trabajan solo con datos del club activo (``request.club``).
 """
+from . import outcomes
 from django.shortcuts import render, redirect, get_object_or_404
 from core.decorators import club_required, club_admin_required
 from django.contrib import messages
 from .forms import MatchForm
 from .models import Match, Game, Result
-from . import lineup
+from . import lineup, outcomes
 from .notifications import send_call_report, report_filename
 from call.models import ReportDelivery
 from .report import build_report, suggested_lineups
@@ -65,11 +66,11 @@ ALL_SEASONS = "all"
 
 def match_outcome(match):
     """'V', 'D' o 'E' desde el punto de vista del club; None si el acta sigue abierta."""
-    if match.draft_mode or match.result in ("", "NONE", None):
+    if match.draft_mode or match.result in ("", outcomes.NONE, None):
         return None
-    if match.result == "Victoria Local":
+    if match.result == outcomes.LOCAL_WIN:
         return "V" if match.own_is_local else "D"
-    if match.result == "Victoria Visitante":
+    if match.result == outcomes.VISITING_WIN:
         return "V" if match.own_is_visiting else "D"
     return "E"
 
@@ -574,7 +575,7 @@ def _save_result(request, game, result, template):
     except ValidationError as e:
         return render(request, template, {"game": game, "result": result, "values": values, "errors": e.messages})
 
-    game.winner = "Local" if result.result == "Victoria Local" else "Visitante"
+    game.winner = outcomes.winner_of(result.result)
     game.save(update_fields=['winner'])
     return redirect('call_for_match', match_id=game.match.public_id)
 
@@ -627,7 +628,7 @@ def calculate_points(games):
     points_visiting = 0
     
     for g in games:
-        if g.winner == "Visitante":
+        if g.winner == outcomes.WINNER_VISITING:
             points_visiting = points_visiting + g.score
         else:
             points_local = points_local + g.score
@@ -636,12 +637,7 @@ def calculate_points(games):
 
 def determine_match_result(points_local, points_visiting):
     """'Victoria Local', 'Victoria Visitante' o 'EMPATE' (valor de Match.POSSIBLE_RESULT) según los puntos."""
-    if points_local > points_visiting:
-        return "Victoria Local"
-    elif points_local < points_visiting:
-        return "Victoria Visitante"
-    else:
-        return "EMPATE"
+    return outcomes.from_points(points_local, points_visiting)
    
 def valid_close_match(games,match):
     """Comprueba si se puede cerrar el acta: el enfrentamiento sigue abierto y tiene al menos
@@ -710,7 +706,7 @@ def reopen_match(request, match_id):
 
     with transaction.atomic():
         match.games.update(draft_mode=True)
-        match.result, match.result_points, match.draft_mode = "NONE", "NONE", True
+        match.result, match.result_points, match.draft_mode = outcomes.NONE, outcomes.NONE, True
         match.reopened_at, match.reopened_by = timezone.now(), request.user
         match.save()
     messages.success(request, _("Acta reabierta. Corrige lo que haga falta y vuelve a cerrarla."))
