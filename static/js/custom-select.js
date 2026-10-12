@@ -155,6 +155,9 @@
       if (select.disabled || !list.hidden) return;
       if (openInstance && openInstance !== api) openInstance.close();
       buildList();
+      // La lista cuelga del body: dentro de un panel con filter, transform o backdrop-filter
+      // el "fixed" se mediría contra ese panel y no contra la ventana
+      document.body.appendChild(list);
       list.hidden = false;
       wrap.classList.add('is-open');
       trigger.setAttribute('aria-expanded', 'true');
@@ -167,6 +170,7 @@
     function close() {
       if (list.hidden) return;
       list.hidden = true;
+      wrap.appendChild(list);
       wrap.classList.remove('is-open');
       trigger.setAttribute('aria-expanded', 'false');
       trigger.removeAttribute('aria-activedescendant');
@@ -244,7 +248,7 @@
       const i = li ? items.findIndex((item) => item.el === li) : -1;
       if (i >= 0 && i !== active && !items[i].disabled) setActive(i, false);
     });
-    trigger.addEventListener('blur', () => { setTimeout(() => { if (!wrap.contains(document.activeElement)) close(); }, 0); });
+    trigger.addEventListener('blur', () => { setTimeout(() => { if (!api.contains(document.activeElement)) close(); }, 0); });
 
     // Sincronización con cambios hechos desde fuera (otros scripts, reset del formulario)
     select.addEventListener('change', syncTrigger);
@@ -263,7 +267,7 @@
       });
     });
 
-    const api = { close, contains: (node) => wrap.contains(node), reposition: () => { if (!list.hidden) place(); } };
+    const api = { close, contains: (node) => wrap.contains(node) || list.contains(node), reposition: () => { if (!list.hidden) place(); } };
     syncTrigger();
   }
 

@@ -6,6 +6,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 ## 12/10/2026 · Desplegables propios
 
 - Todos los selectores desplegables (tipo de partido, equipos, categoría, filtros del back-office…) usan un desplegable propio de Zyra, con fondo oscuro y acento lima, en vez del del navegador. Funciona con teclado (flechas, Enter, Esc, escribir para saltar) y en móvil; el `<select>` original sigue enviándose con el formulario
+- Desplegables: la lista se abre ahora justo bajo su selector aunque la página esté dentro de un panel con efectos (se colgaba de un contenedor y salía desplazada)
 
 ## 12/10/2026 · Seguridad y cuentas
 
