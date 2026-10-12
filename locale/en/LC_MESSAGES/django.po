@@ -7454,6 +7454,24 @@ msgstr[1] "Add %(n)s players"
 msgid "Actualizar puntos SNP"
 msgstr "Update SNP points"
 
+#: players/templates/list_players.html
+msgid "Crear equipos del grupo"
+msgstr "Create group teams"
+
+#: players/templates/list_players.html
+#, python-format
+msgid "Se va a crear <strong>%(n)s</strong> equipo del grupo:"
+msgid_plural "Se van a crear <strong>%(n)s</strong> equipos del grupo:"
+msgstr[0] "<strong>%(n)s</strong> group team will be created:"
+msgstr[1] "<strong>%(n)s</strong> group teams will be created:"
+
+#: players/snp_import.py
+#, python-format
+msgid "%(n)s equipo del grupo añadido."
+msgid_plural "%(n)s equipos del grupo añadidos."
+msgstr[0] "%(n)s group team added."
+msgstr[1] "%(n)s group teams added."
+
 #: players/templates/list_players.html:212 players/views.py:335
 #, python-format
 msgid "No se ha podido leer el equipo de SNP: %(message)s"

@@ -392,7 +392,7 @@ class SnpBatchTests(TestCase):
         caller = threading.get_ident()
         seen = []
 
-        def fake_scrape(username, password, team_id, log, browser, country, team_name=None):
+        def fake_scrape(username, password, team_id, log, browser, country, team_name=None, with_group_teams=False):
             seen.append(threading.get_ident())
             return [{"name": "Ana A", "score": 5.0}]
 
@@ -913,3 +913,94 @@ class PlayerListSearchTests(TestCase):
         self.assertContains(response, "data-selector-search")
         self.assertContains(response, 'data-name="JUGADOR3 ÁLVAREZ"')
         self.assertContains(response, 'data-page-size="9"')
+
+
+GROUP_TABLE_HTML = """
+<div class="clasificacion_content panel-body"><table><tbody>
+<tr><td idequipo="2849"><a class="competicion_link" href="/equipo/view/2849"><span>NorthPadel </span> </a></td><td>15</td></tr>
+<tr><td idequipo="3910"><a class="competicion_link" href="/equipo/view/3910"><span>ICONICO 500 PLUS</span> </a></td><td>13</td></tr>
+<tr><td idequipo="4380"><a class="competicion_link" href="/equipo/view/4380"><span class="negrita">LOS GLADIADORES</span> </a></td><td>5</td></tr>
+<tr><td idequipo="3910"><a href="/equipo/view/3910"><span>ICONICO 500 PLUS</span></a></td><td>13</td></tr>
+</tbody></table></div>
+"""
+GROUP_TEAMS = [{"snp_id": "2849", "name": "NorthPadel", "own": False},
+               {"snp_id": "3910", "name": "ICONICO 500 PLUS", "own": False},
+               {"snp_id": "4380", "name": "LOS GLADIADORES", "own": True}]
+
+
+class GroupTeamsScraperTests(TestCase):
+    @staticmethod
+    def cells():
+        """Celdas ``td[idequipo]`` falsas con el HTML de GROUP_TABLE_HTML (id, nombre y clase del span)."""
+        import re
+
+        def element(attrs=None, text=""):
+            node = mock.Mock()
+            node.get_attribute.side_effect = lambda name: (attrs or {}).get(name)
+            node.inner_text.return_value = text
+            return node
+
+        out = []
+        for snp_id, cls, text in re.findall(r'<td idequipo="(\d+)">.*?<span( class="[^"]*")?>([^<]*)</span>', GROUP_TABLE_HTML):
+            cell = element({"idequipo": snp_id})
+            span = element({"class": cls[8:-1]} if cls else {}, text)
+            cell.query_selector.side_effect = lambda selector, span=span: span
+            out.append(cell)
+        return out
+
+    def test_parse_group_teams_from_classification_table(self):
+        from .scraper import parse_group_teams
+        self.assertEqual(parse_group_teams(self.cells()), GROUP_TEAMS)  # sin repetidos y con el propio en negrita
+
+
+class CompleteTeamGroupTests(TestCase):
+    def setUp(self):
+        self.admin = User.objects.create_user("admin", password="pass-12345")
+        self.club = create_club("Club A", "Sevilla", self.admin)
+        own = self.club.own_team
+        own.name, own.gender, own.country, own.division = "Los Gladiadores", "M", "ES", "500"
+        own.save()
+        account = SnpAccount(club=self.club)
+        account.username, account.password = "capitan", "secreto"
+        account.save()
+        self.client.login(username="admin", password="pass-12345")
+
+    def run_import(self, teams):
+        from . import snp_import
+        with mock.patch("players.snp_import.scrape_scores", lambda *a, **k: ([{"name": "ANA ALVAREZ", "score": 1.0}], teams)):
+            team_import = snp_import.start_search(self.club, self.admin)
+        return snp_import.confirm(team_import)
+
+    @override_settings(SNP_IMPORT_INLINE=True)
+    def test_creates_group_teams_copying_own_team_data(self):
+        team_import = self.run_import(GROUP_TEAMS)
+        # El propio ya existe (mismo nombre) y no se duplica.
+        self.assertEqual(sorted(team_import.created_teams), ["ICONICO 500 PLUS", "NorthPadel"])
+        created = Team.objects.get(club=self.club, name="NorthPadel")
+        self.assertEqual((created.in_group, created.is_own, created.gender, created.country, created.division),
+                         (True, False, "M", "ES", "500"))
+        self.assertEqual(Team.objects.filter(club=self.club, is_own=True).count(), 1)
+        self.assertIn("2 equipos del grupo añadidos", team_import.message)
+
+    @override_settings(SNP_IMPORT_INLINE=True)
+    def test_existing_similar_team_is_not_duplicated_but_joins_the_group(self):
+        rival = Team.objects.create(club=self.club, name="Northpadel", location="X", division="500")
+        self.run_import(GROUP_TEAMS)
+        self.assertEqual(Team.objects.filter(club=self.club, name__icontains="northpadel").count(), 1)
+        rival.refresh_from_db()
+        self.assertTrue(rival.in_group)
+
+    @override_settings(SNP_IMPORT_INLINE=True)
+    def test_group_step_failure_does_not_block_players(self):
+        team_import = self.run_import([])
+        self.assertEqual(team_import.status, "done")
+        self.assertEqual(Team.objects.filter(club=self.club).count(), 1)
+        self.assertEqual(Player.objects.filter(club=self.club, name="Ana").count(), 1)
+
+    def test_marks_snp_own_team_when_club_has_none(self):
+        from . import snp_import
+        Team.objects.filter(club=self.club).update(is_own=False, name="Otro nombre")
+        to_add, existing = snp_import.plan_group_teams(self.club, GROUP_TEAMS)
+        created = snp_import._create_group_teams(self.club, to_add, existing)
+        self.assertIn("LOS GLADIADORES", created)
+        self.assertTrue(Team.objects.get(club=self.club, name="LOS GLADIADORES").is_own)

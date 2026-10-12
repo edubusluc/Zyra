@@ -22,7 +22,7 @@ from core.crypto import DecryptionError
 
 from .models import Player, SnpScoreHistory, SnpTeamImport, current_season
 from .scraper import SnpScrapeError, scrape_scores
-from core.similarity import same_name
+from core.similarity import is_similar, same_name
 
 from .snp import team_options, match_scores, save_score, split_category
 
@@ -100,20 +100,79 @@ def plan_import(club, scores):
     return to_add, existing
 
 
+def plan_group_teams(club, group_teams):
+    """
+    (a_crear, ya_existentes) comparando los equipos del grupo de SNP con los del club. Un equipo
+    se considera ya existente si su nombre es igual o muy parecido al de alguno del club
+    (``core.similarity``): no se duplica, solo se da de alta en el grupo si no lo estaba. El que
+    SNP marca como propio (``own``) solo se crea con ``own`` si el club no tiene equipo propio.
+    """
+    from team.models import Team
+
+    teams = list(Team.objects.filter(club=club))
+    to_create, existing = [], []
+    for entry in group_teams or []:
+        match = next((t for t in teams if is_similar(entry["name"], t.name)), None)
+        if match is None:
+            to_create.append({"snp_id": entry["snp_id"], "name": entry["name"], "own": bool(entry.get("own"))})
+            continue
+        existing.append({"snp_id": entry["snp_id"], "name": entry["name"], "team": match.name, "team_id": match.pk,
+                         "in_group": match.in_group, "own": bool(entry.get("own"))})
+    to_create.sort(key=lambda t: t["name"].lower())
+    return to_create, existing
+
+
+def _create_group_teams(club, teams_to_add, teams_existing):
+    """
+    Crea los equipos del grupo que faltan (género, nacionalidad, división y sede del equipo
+    propio) y da de alta en el grupo los que ya existían fuera de él. Si el club no tiene equipo
+    propio, el que SNP marca como propio lo será. Devuelve los nombres de los equipos creados.
+    """
+    from team.models import Team
+
+    own = club.own_team
+    base = {f: getattr(own, f) for f in ("gender", "country", "division", "location")} if own else {"location": ""}
+    has_own = own is not None
+    created = []
+    for entry in teams_to_add:
+        division = base.get("division", "")
+        clash = Team.objects.filter(club=club, division__in=[division, ""]) if division else Team.objects.filter(club=club)
+        if any(same_name(entry["name"], t.name) for t in clash):
+            continue  # creado mientras tanto, o repetido en la división
+        make_own = bool(entry.get("own")) and not has_own
+        Team.objects.create(club=club, name=entry["name"], in_group=True, is_own=make_own, **base)
+        has_own = has_own or make_own
+        created.append(entry["name"])
+    for entry in teams_existing:
+        team = Team.objects.filter(club=club, pk=entry.get("team_id")).first()
+        if team is None:
+            continue
+        if entry.get("own") and not has_own:
+            team.is_own, has_own = True, True
+        if not team.in_group or team.is_own:
+            team.in_group = True
+            team.save()
+    return created
+
+
 def search(team_import, scraper=None, **scrape_options):
     """Descarga el equipo de SNP y guarda en ``team_import`` qué se añadiría. Nunca lanza."""
     account = getattr(team_import.club, "snp_account", None)
     try:
         if account is None:
             raise SnpScrapeError(_("El club no tiene cuenta SNP."), kind=SnpScrapeError.ACCOUNT)
-        scores = (scraper or scrape_scores)(account.username, account.password, account.team_id or None,
-                                          **team_options(account.club), **scrape_options)
+        result = (scraper or scrape_scores)(account.username, account.password, account.team_id or None,
+                                            with_group_teams=True, **team_options(account.club), **scrape_options)
+        # Un scraper sin equipos del grupo devuelve solo los jugadores.
+        scores, group_teams = result if isinstance(result, tuple) else (result, [])
     except (SnpScrapeError, DecryptionError) as exc:
         kind = exc.kind if isinstance(exc, SnpScrapeError) else SnpScrapeError.ACCOUNT
         changes = {"status": SnpTeamImport.ERROR, "message": str(exc), "error_kind": kind, "finished_at": timezone.now()}
     else:
         to_add, existing = plan_import(team_import.club, scores)
-        changes = {"status": SnpTeamImport.READY, "to_add": to_add, "existing": existing}
+        teams_to_add, teams_existing = plan_group_teams(team_import.club, group_teams)
+        changes = {"status": SnpTeamImport.READY, "to_add": to_add, "existing": existing,
+                   "teams_to_add": teams_to_add, "teams_existing": teams_existing}
     # Solo si sigue en marcha: el capitán puede haberla cancelado mientras tanto.
     SnpTeamImport.objects.filter(pk=team_import.pk, status=SnpTeamImport.RUNNING).update(**changes)
     team_import.refresh_from_db()
@@ -121,8 +180,10 @@ def search(team_import, scraper=None, **scrape_options):
 
 
 def has_changes(team_import):
-    """True si confirmar ``team_import`` hace algo: añadir jugadores o actualizar puntos de los que ya están."""
-    return bool(team_import.to_add) or any(e.get("player_id") for e in team_import.existing)
+    """True si confirmar ``team_import`` hace algo: añadir jugadores o equipos, o actualizar lo que ya está."""
+    return (bool(team_import.to_add) or bool(team_import.teams_to_add)
+            or any(not e.get("in_group") for e in team_import.teams_existing)
+            or any(e.get("player_id") for e in team_import.existing))
 
 
 def _update_existing_scores(club, existing):
@@ -163,10 +224,14 @@ def confirm(team_import):
         SnpScoreHistory.objects.get_or_create(player=player, date=today, defaults={"score": entry["score"], "season": season})
         created.append(str(player))
     updated = _update_existing_scores(club, team_import.existing)
+    team_import.created_teams = _create_group_teams(club, team_import.teams_to_add, team_import.teams_existing)
     team_import.created_players = created
     team_import.status = SnpTeamImport.DONE
     team_import.finished_at = timezone.now()
     team_import.message = ngettext("%(n)s jugador añadido.", "%(n)s jugadores añadidos.", len(created)) % {"n": len(created)}
+    if team_import.created_teams:
+        team_import.message += " " + ngettext("%(n)s equipo del grupo añadido.", "%(n)s equipos del grupo añadidos.",
+                                              len(team_import.created_teams)) % {"n": len(team_import.created_teams)}
     if updated:
         team_import.message += " " + ngettext(
             "Puntos SNP actualizados de %(n)s jugador que ya estaba.",

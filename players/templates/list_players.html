@@ -192,6 +192,12 @@
                     </table>
                 </div>
                 {% endif %}
+                {% if snp_import.teams_to_add %}
+                <p>{% blocktranslate trimmed count n=snp_import.teams_to_add|length %}Se va a crear <strong>{{ n }}</strong> equipo del grupo:{% plural %}Se van a crear <strong>{{ n }}</strong> equipos del grupo:{% endblocktranslate %}</p>
+                <ul>
+                    {% for t in snp_import.teams_to_add %}<li>{{ t.name }}{% if t.own %} <span class="badge text-bg-secondary">{% translate "Tu equipo" %}</span>{% endif %}</li>{% endfor %}
+                </ul>
+                {% endif %}
                 <p class="small text-muted mb-0">{% translate "De los jugadores que ya existen solo cambian los puntos SNP. Solo se puede completar el equipo una vez al mes." %}</p>
                 {% endif %}
             </div>
@@ -201,7 +207,7 @@
                 </form>
                 {% if snp_import.status == 'ready' and snp_import_changes %}
                 <form method="post" action="{% url 'complete_team_confirm' snp_import.public_id %}" onsubmit="this.querySelector('button').disabled = true;">{% csrf_token %}
-                    <button type="submit" class="btn btn-primary">{% if snp_import.to_add %}{% blocktranslate trimmed count n=snp_import.to_add|length %}Añadir {{ n }} jugador{% plural %}Añadir {{ n }} jugadores{% endblocktranslate %}{% else %}{% translate "Actualizar puntos SNP" %}{% endif %}</button>
+                    <button type="submit" class="btn btn-primary">{% if snp_import.to_add %}{% blocktranslate trimmed count n=snp_import.to_add|length %}Añadir {{ n }} jugador{% plural %}Añadir {{ n }} jugadores{% endblocktranslate %}{% elif snp_import.teams_to_add %}{% translate "Crear equipos del grupo" %}{% else %}{% translate "Actualizar puntos SNP" %}{% endif %}</button>
                 </form>
                 {% endif %}
             </div>

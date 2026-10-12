@@ -5,6 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 12/10/2026
 
+- Registro con SNP y «Completar equipo»: además de los jugadores, el scraper entra en «Competiciones/Competencias», lee la tabla «Clasificación» y crea los equipos del grupo que aún no existen (con la categoría, nacionalidad y división del equipo propio). No duplica equipos con el mismo nombre o muy parecido, da de alta en el grupo los que ya existían fuera y, si el club no tuviera equipo propio, marca como tal el que SNP resalta en negrita. Si este paso falla, los jugadores se importan igual
 - Equipos: «Gestionar equipos» muestra también los equipos dados de baja del grupo (filtro «Fuera de grupo») para volver a darlos de alta. Al crear un equipo, el aviso de nombre parecido incluye los dados de baja y ofrece «Dar de alta de nuevo» en vez de duplicarlo. El equipo propio ya no puede darse de baja del grupo (y los que lo estaban vuelven a estarlo)
 - Jugadores: el buscador del listado funciona igual que el de las convocatorias: filtra en vivo mientras escribes (sin recargar la página), ignora mayúsculas y tildes y busca en el nombre completo. La paginación (9 por página) también es inmediata
 - Partidos: filtro por tipo de partido (Todos, Competitivos, Amistosos y, dentro de Competitivos, enfrentamientos, retos o play offs), con los mismos chips que las estadísticas. Se combina con la temporada, el rival y el buscador, y se mantiene al paginar
