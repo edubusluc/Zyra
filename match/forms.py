@@ -2,6 +2,7 @@
 from django import forms
 from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
+from core.models import REPORT_SCOPES, UserPreference
 from .models import Match, Game, Result
 from team.models import Team
 from core.similarity import same_name
@@ -45,11 +46,13 @@ class MatchForm(forms.ModelForm):
 
     class Meta:
         model = Match
-        fields = ['match_type', 'local', 'visiting', 'rival_name', 'start_date']
+        fields = ['match_type', 'local', 'visiting', 'rival_name', 'start_date', 'report_scope']
         labels = {'local': _('Local'), 'visiting': _('Visitante'), 'rival_name': _('Nombre del rival'),
-                  'start_date': _('Fecha')}
+                  'start_date': _('Fecha'),
+                  'report_scope': _('Datos del informe')}
         widgets = {
             'match_type': forms.Select(),
+            'report_scope': forms.RadioSelect(),
             'rival_name': forms.TextInput(attrs={'placeholder': _('Ej.: Pádel Norte'), 'autocomplete': 'off'}),
             'local': TeamSelect(),
             'visiting': TeamSelect(),
@@ -59,14 +62,22 @@ class MatchForm(forms.ModelForm):
             ),
         }
 
-    def __init__(self, *args, club=None, **kwargs):
+    def __init__(self, *args, club=None, user=None, **kwargs):
         """Prepara los campos para el club ``club``.
 
-        Limita los equipos a los del club, propone el equipo propio como local en un
+        ``user`` es quien lo rellena: su preferencia de «Mi perfil» marca los datos del informe
+        por defecto. Limita los equipos a los del club, propone el equipo propio como local en un
         formulario nuevo y marca el modo amistoso al editar un amistoso.
         """
         super(MatchForm, self).__init__(*args, **kwargs)
         self.club = club
+        self.fields['report_scope'].choices = REPORT_SCOPES
+        self.fields['report_scope'].widget.choices = REPORT_SCOPES
+        # Si el formulario no lo envía, vale la preferencia de la cuenta.
+        self.default_report_scope = UserPreference.report_scope_for(user)
+        self.fields['report_scope'].required = False
+        if not self.instance.pk:
+            self.initial['report_scope'] = self.default_report_scope
         self.own_team = club.own_team if club else None
         # El equipo propio siempre se puede elegir, aunque no esté marcado "en el grupo".
         teams = Team.objects.filter(club=club).filter(Q(in_group=True) | Q(is_own=True)).order_by('-is_own', 'name')
@@ -112,6 +123,10 @@ class MatchForm(forms.ModelForm):
     def clean_match_type(self):
         """Si no se envía tipo, es un enfrentamiento."""
         return self.cleaned_data.get('match_type') or Match.ENFRENTAMIENTO
+
+    def clean_report_scope(self):
+        """Si no se envía, los datos del informe que prefiere la cuenta."""
+        return self.cleaned_data.get('report_scope') or self.default_report_scope
 
     def clean_mode(self):
         """Si no se envía modo, es competitivo."""

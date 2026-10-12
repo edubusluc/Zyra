@@ -354,6 +354,26 @@ class CreateMatchTests(TestCase):
         match = Match.objects.get(club=self.club, start_date=datetime.date(2026, 11, 15))
         self.assertRedirects(response, reverse("call_for_match", args=[match.public_id]))
 
+    def test_report_scope_defaults_to_profile_preference_and_can_be_chosen(self):
+        page = self.client.get(self.url)
+        self.assertContains(page, "Edita tus preferencias")
+        self.assertContains(page, reverse("my_profile"))
+        self.assertEqual(page.context["form"].initial["report_scope"], "todos")
+        self.client.post(reverse("my_profile"), {"report_scope": "competitivos"})
+        page = self.client.get(self.url)
+        self.assertEqual(page.context["form"].initial["report_scope"], "competitivos")
+        data = {"local": self.club.own_team.id, "visiting": self.rival.id, "start_date": "2026-11-15"}
+        self.client.post(self.url, data)  # sin enviar el campo: la preferencia
+        self.assertEqual(Match.objects.get().report_scope, "competitivos")
+        self.client.post(self.url, {**data, "start_date": "2026-11-16", "report_scope": "todos"})
+        self.assertEqual(Match.objects.get(start_date=datetime.date(2026, 11, 16)).report_scope, "todos")
+
+    def test_invalid_report_scope_is_rejected(self):
+        response = self.client.post(self.url, {"local": self.club.own_team.id, "visiting": self.rival.id,
+                                               "start_date": "2026-11-15", "report_scope": "nada"})
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Match.objects.exists())
+
     def test_missing_date_shows_error_instead_of_crashing(self):
         response = self.client.post(self.url, {"local": self.club.own_team.id, "visiting": self.rival.id})
         self.assertEqual(response.status_code, 200)

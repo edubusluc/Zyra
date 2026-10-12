@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 12/10/2026
+
+- Crear partido: nuevo selector «Datos del informe PDF» (todos los datos o solo partidos competitivos). Con «solo competitivos» el informe de la convocatoria (rendimiento, rachas, forma, Jug./Conv., último, balance y precedentes) deja fuera los amistosos. Bajo el selector, «Edita tus preferencias» lleva a «Mi perfil», donde se guarda la opción por defecto de la cuenta
+
 ## 10/10/2026
 
 - Informe PDF de convocatoria: la columna «Jug./Conv.» no cuenta la convocatoria ni el partido actuales (lo explica una nota bajo la tabla) y se redistribuyen las columnas para que los puntos SNP y los registros no salten de línea

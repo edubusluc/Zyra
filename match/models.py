@@ -21,7 +21,7 @@ from urllib.parse import quote
 
 from django.db import models
 from core.public_id import PublicIdModel
-from core.models import Club
+from core.models import Club, REPORT_SCOPES, REPORT_SCOPE_ALL, REPORT_SCOPE_COMPETITIVE
 from team.models import Team
 
 class Match(PublicIdModel):
@@ -61,6 +61,9 @@ class Match(PublicIdModel):
     result = models.CharField(max_length=20, choices=POSSIBLE_RESULT, blank = True, default="NONE")
     result_points = models.CharField(max_length=20, blank = True, default="NONE")
     draft_mode = models.BooleanField(default=True)
+    # Qué partidos cuentan en las estadísticas del informe PDF (se elige al crear el partido).
+    report_scope = models.CharField(_("Datos del informe"), max_length=15, choices=REPORT_SCOPES,
+                                    default=REPORT_SCOPE_ALL)
     season = models.CharField(max_length=9, blank = True, default="NONE")
     # Copia de la ubicación del equipo local al crear el partido. Es una copia, no un
     # enlace: si el equipo cambia de sede después, los partidos ya creados no cambian.
@@ -105,6 +108,11 @@ class Match(PublicIdModel):
     def is_friendly(self):
         """True si es un partido amistoso."""
         return self.match_type == self.AMISTOSO
+
+    @property
+    def report_competitive_only(self):
+        """True si el informe solo usa partidos competitivos (los amistosos quedan fuera)."""
+        return self.report_scope == REPORT_SCOPE_COMPETITIVE
 
     @property
     def own_is_local(self):

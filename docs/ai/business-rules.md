@@ -95,6 +95,9 @@ ni se editan parejas (`edit_game_match`).
   30 y 120 min (`RETRY_DELAYS`); tras 5 intentos queda `failed` y se avisa al personal.
 - [V] El PDF intenta caber en 2 páginas probando `LAYOUTS` cada vez más densos; si no cabe,
   numera sobre el total real (`match/report_pdf.py`, `render_report`). Tests: `match/tests_report.py`.
+- [V] `Match.report_scope` (`todos`/`competitivos`, se elige al crear el partido y no se edita; por defecto
+  `UserPreference.report_scope` de «Mi perfil») decide qué historia usa el informe: con `competitivos`
+  `match/report.py` excluye los amistosos del registro de parejas, balance, precedentes y convocatorias.
 - [V] Texto de usuario dentro del PDF se escapa (`report_pdf.esc`).
 - [V] Remitente fijo join.zyra@gmail.com; la contraseña solo por `EMAIL_HOST_PASSWORD`.
   Correos y PDF salen en el idioma del usuario; los de procesos programados, en español (`Readme.md`).

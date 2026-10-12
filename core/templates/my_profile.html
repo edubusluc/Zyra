@@ -64,6 +64,24 @@
     {% endif %}
 </div>
 
+<div class="z-panel z-account" id="preferencias">
+    <h2 class="z-section-title mt-0">{% translate "Preferencias" %}</h2>
+    <form method="post" action="{% url 'my_profile' %}">
+        {% csrf_token %}
+        <fieldset class="z-report-scope">
+            <legend class="form-label">{% translate "Datos del informe PDF al crear un partido" %}</legend>
+            {% for value, label in report_scopes %}
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="report_scope" id="scope-{{ value }}" value="{{ value }}"{% if value == report_scope %} checked{% endif %}>
+                <label class="form-check-label" for="scope-{{ value }}">{{ label }}</label>
+            </div>
+            {% endfor %}
+            <p class="form-text">{% translate "Es la opción que aparece marcada por defecto; en cada partido puedes cambiarla al crearlo." %}</p>
+        </fieldset>
+        <button type="submit" class="btn btn-primary">{% translate "Guardar preferencias" %}</button>
+    </form>
+</div>
+
 {% if current_club %}
 <div class="z-panel z-account">
     <h2 class="z-section-title mt-0">{% translate "Mi jugador" %}</h2>

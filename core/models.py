@@ -14,6 +14,37 @@ from django.utils.translation import gettext_lazy as _
 from .public_id import PublicIdModel
 
 
+# Qué partidos alimentan las estadísticas del informe PDF de una convocatoria.
+REPORT_SCOPE_ALL = "todos"
+REPORT_SCOPE_COMPETITIVE = "competitivos"
+REPORT_SCOPES = [
+    (REPORT_SCOPE_ALL, _("Todos los datos")),
+    (REPORT_SCOPE_COMPETITIVE, _("Solo partidos competitivos")),
+]
+
+
+class UserPreference(models.Model):
+    """Preferencias de una cuenta, que se editan en «Mi perfil».
+
+    ``report_scope`` es el valor que propone el formulario de crear partido para los datos
+    del informe PDF; en cada partido se puede cambiar al crearlo.
+    """
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="preference")
+    report_scope = models.CharField(max_length=15, choices=REPORT_SCOPES, default=REPORT_SCOPE_ALL)
+
+    @classmethod
+    def report_scope_for(cls, user):
+        """Datos del informe que prefiere ``user`` (todos si no ha elegido o no hay sesión)."""
+        if user is None or not getattr(user, "pk", None):
+            return REPORT_SCOPE_ALL
+        scope = cls.objects.filter(user=user).values_list("report_scope", flat=True).first()
+        return scope or REPORT_SCOPE_ALL
+
+    def __str__(self):
+        """Cuenta y datos del informe."""
+        return f"{self.user} · {self.report_scope}"
+
+
 class Club(PublicIdModel):
     """
     Cada club es un "inquilino" de la aplicación: tiene sus propios jugadores,

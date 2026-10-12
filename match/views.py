@@ -198,7 +198,7 @@ def create_match(request):
     formulario; en POST lo valida (las reglas están en MatchForm), lo guarda y
     redirige a la página del partido recién creado.
     """
-    form = MatchForm(request.POST or None, club=request.club)
+    form = MatchForm(request.POST or None, club=request.club, user=request.user)
     if request.method == "POST" and form.is_valid():
         match = form.save()
         return redirect("call_for_match", match.public_id)

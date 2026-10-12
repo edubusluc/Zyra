@@ -27,6 +27,7 @@ entero sigue siendo la clave de los FK. Excepciones sin `public_id`: `backoffice
 
 - **Club**: inquilino. `slug` único (autogenerado en `save()`), `suspended_at` (suspensión desde
   back-office, no borra nada), `onboarding_dismissed_at`. `club.own_team` → `Team(is_own=True)`.
+- **UserPreference** (`core/models.py`): `user` 1:1, `report_scope` por defecto del selector «Datos del informe» al crear partido (se edita en «Mi perfil»).
 - **Membership**: `user`, `club`, `role` ∈ {`admin` (etiqueta «Capitán»), `member`}. Única por
   (`user`, `club`). El valor guardado sigue siendo `admin` aunque la interfaz diga «Capitán».
 - **Invitation**: `token` único, `email` (vacío = enlace), `reusable` (enlace compartido, varios
@@ -67,7 +68,7 @@ entero sigue siendo la clave de los FK. Excepciones sin `public_id`: `backoffice
   (`Victoria Local`/`Victoria Visitante`/`EMPATE`/`NONE`), `result_points` (`"7/5"`; formato
   antiguo `"7-5"`, ver `match.views.split_points`), `season` y `location` (rellenos en `save()` solo
   si están vacíos; `location` es copia, no enlace), `rival_name` (amistoso con rival escrito a mano:
-  ese lado queda `NULL`). Usar `local_name`, `visiting_name`, `rival_label`, `own_is_local`, nunca `match.local.name` a pelo.
+  ese lado queda `NULL`), `report_scope` (`todos`/`competitivos`: partidos que alimentan el informe PDF). Usar `local_name`, `visiting_name`, `rival_label`, `own_is_local`, nunca `match.local.name` a pelo.
 - **Game**: `match`, `n_game` 1..5 (único por match + `CheckConstraint`), `player_1/2_local`,
   `player_1/2_visiting` (`SET_NULL`), `removed_player_names` (JSON), `score` (3 en partidos 1–2,
   2 en 3–5, `match.lineup.game_points`), `winner` (`Local`/`Visitante`), `draft_mode`.

@@ -102,6 +102,35 @@ class ReportTests(TestCase):
         self.assertEqual(len(report["precedents"]), 2)  # solo los de "Pádel Norte"
         self.assertTrue(render_report(report).startswith(b"%PDF"))
 
+    def test_competitive_scope_leaves_friendlies_out(self):
+        # Un amistoso reciente contra el mismo rival con otros jugadores ganando
+        friendly = Match.objects.create(club=self.club, local=self.rival, visiting=self.club.own_team,
+                                        match_type=Match.AMISTOSO, start_date=datetime.date(2025, 10, 20),
+                                        draft_mode=False, result="Victoria Visitante", result_points="3/9")
+        for n in range(1, 6):
+            Game.objects.create(match=friendly, n_game=n, score=3, winner="Visitante", draft_mode=False,
+                                player_1_visiting=self.players[2 * n - 2], player_2_visiting=self.players[2 * n - 1])
+        everything = build_report(self.call)
+        self.assertEqual(len(everything["precedents"]), 3)
+        self.assertEqual(everything["season"]["played"], 3)
+        self.assertFalse(everything["competitive_only"])
+        self.match.report_scope = "competitivos"
+        self.match.save()
+        self.call.refresh_from_db()
+        only = build_report(self.call)
+        self.assertTrue(only["competitive_only"])
+        self.assertEqual(len(only["precedents"]), 2)
+        self.assertEqual(only["season"]["played"], 2)
+        first = self.players[0].id
+        self.assertEqual(only["usage"][first]["games"], 2)
+        self.assertEqual(everything["usage"][first]["games"], 3)
+        self.assertEqual(only["usage"][first]["last"], datetime.date(2025, 10, 8))
+        pdf = render_report(only)
+        self.assertEqual(pdf_pages(pdf), 2)
+        self.assertIn("solo con partidos competitivos", "".join(
+            page.extract_text() for page in __import__("pypdf").PdfReader(__import__("io").BytesIO(pdf)).pages
+        ).replace("\n", " "))
+
     def test_pdf_fits_in_two_pages_with_many_players(self):
         pdf = render_report(build_report(self.call))
         self.assertTrue(pdf.startswith(b"%PDF"))
