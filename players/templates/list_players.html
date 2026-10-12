@@ -28,23 +28,20 @@
     {% endif %}
 </div>
 
+{# Mismo buscador en vivo que el selector de las convocatorias (static/js/player-selector.js) #}
+<div data-selector data-page-size="9">
 <div class="z-toolbar">
     <div class="z-toolbar-group">
-        <form method="get" class="z-search" id="search-form" role="search">
-            <input type="hidden" name="order_by" value="{{ order_by }}">
+        <div class="z-search">
             <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-            <input type="search" name="search" id="player-search" placeholder="{% translate 'Buscar jugador...' %}" value="{{ search }}" aria-label="{% translate 'Buscar jugador' %}">
-        </form>
-        {% if search %}
-        <span class="text-muted small">{% blocktranslate trimmed count n=players.paginator.count %}{{ n }} resultado{% plural %}{{ n }} resultados{% endblocktranslate %}</span>
-        <a href="?order_by={{ order_by }}" class="btn btn-outline-secondary btn-sm">{% translate "Limpiar" %}</a>
-        {% endif %}
+            <input type="search" placeholder="{% translate 'Buscar jugador...' %}" data-selector-search aria-label="{% translate 'Buscar jugador' %}">
+        </div>
     </div>
 
     <div class="z-toolbar-group">
         <div class="z-segmented" role="group" aria-label="{% translate 'Ordenar por' %}">
-            <a href="?order_by=name&search={{ search }}" class="btn btn-sm {% if order_by == 'name' %}active{% endif %}">{% translate "Nombre" %}</a>
-            <a href="?order_by=-snp_score&search={{ search }}" class="btn btn-sm {% if order_by == '-snp_score' %}active{% endif %}">SNP</a>
+            <a href="?order_by=name" class="btn btn-sm {% if order_by == 'name' %}active{% endif %}">{% translate "Nombre" %}</a>
+            <a href="?order_by=-snp_score" class="btn btn-sm {% if order_by == '-snp_score' %}active{% endif %}">SNP</a>
         </div>
         <div class="z-segmented" role="group" aria-label="{% translate 'Cambiar vista' %}">
             <button type="button" class="btn btn-sm active" id="btn-view-cards" aria-label="{% translate 'Vista de tarjetas' %}"><i class="fa-solid fa-grip" aria-hidden="true"></i></button>
@@ -56,7 +53,7 @@
 <!-- ============ VISTA TARJETAS ============ -->
 <div class="z-grid" id="cards-view">
     {% for player in players %}
-    <div class="z-card z-card--link z-player">
+    <div class="z-card z-card--link z-player" data-selector-item data-key="{{ player.public_id }}" data-name="{{ player.full_name }}">
         {% if is_club_admin %}
         <a href="{% url 'edit_player' player.public_id %}" class="z-edit" aria-label="{% blocktranslate with name=player.name|upper %}Editar a {{ name }}{% endblocktranslate %}"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
         {% endif %}
@@ -82,11 +79,11 @@
     {% empty %}
     <div class="z-empty" style="grid-column: 1 / -1;">
         <i class="fa-solid fa-user-slash" aria-hidden="true"></i>
-        {% if search %}{% blocktranslate %}No hay jugadores que coincidan con "{{ search }}".{% endblocktranslate %}{% else %}{% translate "Todavía no hay jugadores." %}
+        {% translate "Todavía no hay jugadores." %}
         {% if snp_import_enabled and not snp_import_last %}<p class="mt-2 mb-0">{% translate "Pulsa «Completar equipo» para traer los jugadores de tu equipo de SNP sin tener que crearlos uno a uno." %}</p>{% endif %}
-        {% endif %}
     </div>
     {% endfor %}
+    <p class="z-empty" data-selector-empty hidden style="grid-column: 1 / -1;"><i class="fa-solid fa-user-slash" aria-hidden="true"></i> {% translate "Ningún jugador coincide con la búsqueda." %}</p>
 </div>
 
 <!-- ============ VISTA TABLA ============ -->
@@ -105,7 +102,7 @@
         </thead>
         <tbody>
             {% for player in players %}
-            <tr style="cursor: pointer;" onclick="window.location='{% url 'show_player' player.public_id %}'">
+            <tr style="cursor: pointer;" data-selector-item data-key="{{ player.public_id }}" data-name="{{ player.full_name }}" onclick="window.location='{% url 'show_player' player.public_id %}'">
                 <td>
                     {% if player.photo %}
                     <img src="{{ player.photo.url }}" alt="" class="table-avatar">
@@ -129,18 +126,19 @@
             </tr>
             {% empty %}
             <tr>
-                <td colspan="9" class="text-center py-4 text-muted">
-                    {% if search %}{% blocktranslate %}No hay jugadores que coincidan con "{{ search }}".{% endblocktranslate %}{% else %}{% translate "Todavía no hay jugadores." %}{% endif %}
-                </td>
+                <td colspan="9" class="text-center py-4 text-muted">{% translate "Todavía no hay jugadores." %}</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
 
-{% with extra='&order_by='|add:order_by|add:'&search='|add:search %}
-{% include 'includes/pagination.html' with page=players extra=extra %}
-{% endwith %}
+<nav class="st-pager" data-selector-pager aria-label="{% translate 'Páginas de jugadores' %}" hidden>
+    <button type="button" class="st-pager-btn" data-step="-1" aria-label="{% translate 'Anterior' %}"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
+    <span class="st-pager-info" aria-live="polite"></span>
+    <button type="button" class="st-pager-btn" data-step="1" aria-label="{% translate 'Siguiente' %}"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+</nav>
+</div>
 
 {% if snp_import %}
 <div class="modal fade" id="completeTeamModal" tabindex="-1" aria-labelledby="completeTeamTitle" aria-hidden="true" data-bs-backdrop="static">
@@ -242,15 +240,6 @@
 {% endif %}
 
 <script>
-    // Buscador con recarga automática (debounce): busca en todas las páginas
-    const searchInput = document.getElementById('player-search');
-    const searchForm = document.getElementById('search-form');
-    let debounceTimer;
-    searchInput.addEventListener('input', function () {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(function () { searchForm.submit(); }, 500);
-    });
-
     // Vista tarjetas / tabla (se recuerda la última elegida)
     const btnCards = document.getElementById('btn-view-cards');
     const btnTable = document.getElementById('btn-view-table');
@@ -269,4 +258,5 @@
     btnTable.addEventListener('click', function () { setView('table'); });
     try { if (localStorage.getItem('playerListView') === 'table') setView('table'); } catch (e) {}
 </script>
+<script src="{% static 'js/player-selector.js' %}" defer></script>
 {% endblock %}

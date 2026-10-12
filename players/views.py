@@ -2,7 +2,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from core.decorators import club_required, club_admin_required
 from .forms import NewOwnPlayerForm, OwnPlayerForm, PlayerEditForm, PlayerForm, SnpAccountForm, with_placeholder
-from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.contrib import messages
 from match.models import Game
 from players.models import Player, SnpAccount, SnpTeamImport
@@ -71,14 +70,14 @@ ORDER_FIELDS = {'name', '-name', 'last_name', '-last_name', 'position', '-positi
 @club_required
 def list_players(request):
     """
-    Lista paginada de jugadores del club con búsqueda por nombre y orden (``order_by``).
-    Requiere pertenecer al club (``club_required``). Los capitanes ven también a los que
+    Lista de jugadores del club con orden (``order_by``). Se envían todos y la búsqueda en vivo y
+    la paginación (9 por página) las hace ``static/js/player-selector.js``, igual que en las
+    convocatorias. Requiere pertenecer al club (``club_required``). Los capitanes ven también a los que
     ya no están en el equipo (al final) y el estado del botón «Completar equipo».
     """
     order_by = request.GET.get('order_by', 'name')
     if order_by not in ORDER_FIELDS:
         order_by = 'name'
-    search = request.GET.get('search', '').strip()
 
     players = Player.objects.filter(club=request.club)
     if request.membership.is_admin:
@@ -86,26 +85,9 @@ def list_players(request):
     else:
         players = players.filter(in_team=True).order_by(order_by)
 
-    if search:
-        players = players.filter(
-            Q(name__icontains=search) | Q(last_name__icontains=search)
-        )
-
-    paginator = Paginator(players, 9)  # Puedes ajustar el número de jugadores por página
-
-    page = request.GET.get('page')
-
-    try:
-        players = paginator.page(page)
-    except PageNotAnInteger:
-        players = paginator.page(1)
-    except EmptyPage:
-        players = paginator.page(paginator.num_pages)
-
     context = {
         'players': players,
         'order_by': order_by,
-        'search': search,
     }
     if request.membership.is_admin:
         context.update(_complete_team_context(request.club))
