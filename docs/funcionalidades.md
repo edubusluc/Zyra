@@ -63,7 +63,8 @@ estadísticas) y aviso al capitán si el club no tiene cuenta SNP
 - **Mi perfil** (menú de la cuenta): email y contraseña de la cuenta con opción de cambiarlos (el email
   pide la contraseña actual; en las cuentas solo de Google el email lo gestiona Google) y el jugador
   enlazado, que se pulsa para editarlo, o el botón para enlazarse a uno, y las preferencias de la cuenta
-  (datos del informe PDF por defecto)
+  (datos del informe PDF por defecto) y el informe mensual por email: activarlo o desactivarlo y elegir si cuenta todos
+  los partidos o solo los competitivos; el correo trae además un enlace para darse de baja sin iniciar sesión
   ([`core.views.my_profile`](referencia/core/views.md)).
 - **Mi jugador**: cada miembro enlaza su cuenta con su jugador y sube su foto. Al elegir quién es
   ve en lima los jugadores libres y apagados los ya enlazados, el buscador filtra mientras escribe
@@ -176,6 +177,7 @@ Solo para el personal, en `/backoffice/` ([`backoffice`](referencia/backoffice/i
 | `update_snp_scores` | Actualiza los puntos SNP (lo lanza el programador). |
 | `complete_snp_team` | Trae jugadores desde SNP para un club. |
 | `send_call_reports` | Reintenta los informes de convocatoria pendientes. |
+| `send_monthly_reports` | Envía a cada jugador con cuenta su informe PDF del mes anterior (idempotente; programado el día 1; ver `--month`, `--dry-run`, `--limit`). Sin `run_scheduler`, basta un cron mensual en el servidor. |
 | `copy_sqlite_to_db` | Copia una base de datos SQLite a PostgreSQL. |
 | `adopt_repo_migrations` | Adapta bases de datos antiguas a las migraciones del repositorio. |
 | `move_photos_to_media` | Pasa fotos antiguas a `media/`. |

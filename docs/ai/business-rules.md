@@ -90,6 +90,14 @@ ni se editan parejas (`edit_game_match`).
 
 ## Informe PDF y correos
 
+- [V] Informe mensual del jugador (`match/monthly_email.py`, `match/monthly_report.py`, `match/monthly_pdf.py`): `send_monthly_reports`
+  manda el PDF del mes natural anterior a cada cuenta enlazada a un jugador (club no suspendido, email, `UserPreference.monthly_report`
+  activo) que jugó partidos ese mes; `monthly_scope` (`todos`/`competitivos`) filtra los amistosos. Idempotente por
+  `MonthlyReportDelivery(user, month)`: se reserva antes de enviar y se borra si el correo falla. El correo lleva enlace de baja con token
+  firmado sin caducidad (`core/unsubscribe.py`, vista `monthly_unsubscribe`: GET confirma, POST con CSRF desactiva; cabecera
+  `List-Unsubscribe`). Necesita `SITE_URL`. Programado en `JOBS` (`0 9 1 * *`); sin `run_scheduler`, un cron mensual del host que
+  ejecute `python manage.py send_monthly_reports`. Tests: `match/tests_monthly.py`.
+
 - [V] Al cerrar la convocatoria se encola un `ReportDelivery` por capitán con email
   (`match/notifications.py`); se intenta al momento y `send_call_reports` reintenta a los 2, 10,
   30 y 120 min (`RETRY_DELAYS`); tras 5 intentos queda `failed` y se avisa al personal.

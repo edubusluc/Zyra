@@ -25,7 +25,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from django.views.decorators.http import require_POST, require_safe
+from django.views.decorators.http import require_http_methods, require_POST, require_safe
 
 from data_analyse import pairs as pair_stats
 from match.models import Match
@@ -40,6 +40,7 @@ from .middleware import SESSION_KEY
 from .models import REPORT_SCOPES, Invitation, Membership, UserPreference
 from .onboarding import onboarding_for
 from . import seo
+from .unsubscribe import user_from_token
 from .services import (
     InvitationError, accept_invitation, club_name_matches, club_of, create_club, delete_club, is_last_admin,
     is_only_member, remove_membership,
@@ -535,9 +536,16 @@ def my_profile(request):
     google_only = not user.has_usable_password()
     email_form = None
     if request.method == "POST" and "report_scope" in request.POST:
+        defaults = {}
         scope = request.POST["report_scope"]
         if scope in dict(REPORT_SCOPES):
-            UserPreference.objects.update_or_create(user=user, defaults={"report_scope": scope})
+            defaults["report_scope"] = scope
+        if "monthly_form" in request.POST:
+            defaults["monthly_report"] = request.POST.get("monthly_report") == "on"
+            if request.POST.get("monthly_scope") in dict(REPORT_SCOPES):
+                defaults["monthly_scope"] = request.POST["monthly_scope"]
+        if defaults:
+            UserPreference.objects.update_or_create(user=user, defaults=defaults)
             messages.success(request, _("Preferencias guardadas."))
         return redirect("my_profile")
     if not google_only and (request.method == "POST" or request.GET.get("edit") == "email"):
@@ -554,8 +562,28 @@ def my_profile(request):
         "email_form": email_form,
         "report_scopes": REPORT_SCOPES,
         "report_scope": UserPreference.report_scope_for(user),
+        "monthly_report": UserPreference.monthly_for(user)[0],
+        "monthly_scope": UserPreference.monthly_for(user)[1],
         "player": Player.objects.filter(club=request.club, user=user).first() if request.club else None,
     })
+
+
+@require_http_methods(["GET", "POST"])
+def monthly_unsubscribe(request, token):
+    """
+    Baja de los correos mensuales desde el enlace del email, sin iniciar sesión.
+
+    El GET solo pide confirmación (los antivirus y clientes de correo abren los enlaces
+    solos); el POST, con el token CSRF de esa página, desactiva el correo. El token firmado de
+    la URL identifica a la cuenta.
+    """
+    user = user_from_token(token)
+    if user is None:
+        return render(request, "monthly_unsubscribe.html", {"invalid": True}, status=404)
+    if request.method == "POST":
+        UserPreference.objects.update_or_create(user=user, defaults={"monthly_report": False})
+        return render(request, "monthly_unsubscribe.html", {"done": True})
+    return render(request, "monthly_unsubscribe.html")
 
 
 @club_admin_required

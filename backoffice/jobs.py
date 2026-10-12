@@ -103,6 +103,16 @@ JOBS = [
         schedule="*/5 * * * *",
     ),
     JobSpec(
+        name="send_monthly_reports",
+        description=_("Envía a cada jugador con cuenta su informe PDF del mes anterior (el día 1 a las 09:00). Es "
+                      "idempotente: no repite el correo de un mes ya enviado y reintenta los que fallaron. Hace falta SITE_URL."),
+        command="send_monthly_reports",
+        schedule="0 9 1 * *",
+        options=(
+            JobOption("dry", _("Simulacro"), "--dry-run", _("Solo lista a quién se enviaría, sin enviar nada.")),
+        ),
+    ),
+    JobSpec(
         name="complete_snp_team",
         description=_("«Completar equipo»: da de alta los jugadores del equipo de SNP de un club que todavía "
                       "no están en Zyra y actualiza los puntos SNP de los que ya existen. Solo a mano y sin los límites de la web."),

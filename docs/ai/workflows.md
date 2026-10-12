@@ -77,6 +77,7 @@ python manage.py run_scheduler
 | `clear_sessions` | `clearsessions` (Django) | 03:30 diario |
 | `update_snp_scores` | `update_snp_scores [--club X] [--all] [--batch-size N] [--headed]` | 23:00 diario |
 | `send_call_reports` | `send_call_reports` | cada 5 min |
+| `send_monthly_reports` | `send_monthly_reports [--month AAAA-MM] [--dry-run] [--limit N]` | día 1 a las 09:00 |
 | `complete_snp_team` | `complete_snp_team <TEA...> [--dry-run]` | solo a mano |
 
 Proceso nuevo: crear el comando de Django y añadir un `JobSpec` a `JOBS`; aparece en

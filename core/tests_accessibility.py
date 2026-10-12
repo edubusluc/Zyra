@@ -18,6 +18,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from call.models import Call
+from core.unsubscribe import unsubscribe_path
 from core.services import create_club
 from match.models import Game, Match
 from players.models import Player
@@ -177,6 +178,7 @@ class AccessibilityTests(TestCase):
         self._assert_accessible([
             reverse("home"), reverse("login"), reverse("register_club"), reverse("privacy"),
             reverse("terms"), reverse("cookies"), reverse("account_reset_password"),
+            unsubscribe_path(self.user),
         ])
 
     def test_club_pages(self):
