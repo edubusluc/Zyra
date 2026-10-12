@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 12/10/2026 · Desplegables propios
+
+- Todos los selectores desplegables (tipo de partido, equipos, categoría, filtros del back-office…) usan un desplegable propio de Zyra, con fondo oscuro y acento lima, en vez del del navegador. Funciona con teclado (flechas, Enter, Esc, escribir para saltar) y en móvil; el `<select>` original sigue enviándose con el formulario
+
 ## 12/10/2026 · Seguridad y cuentas
 
 - Back-office › «Emails sin confirmar»: lista las cuentas cuyo email no se ha confirmado (con la fecha de registro), permite enviarles un aviso con el enlace de confirmación y un plazo (7 días por defecto, `UNVERIFIED_ACCOUNT_DEADLINE_DAYS`) y eliminar la cuenta una vez vencido el plazo, escribiendo su usuario. Cada aviso y eliminación queda en `AccountNoticeLog` con fecha y quién lo hizo
