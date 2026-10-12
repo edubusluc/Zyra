@@ -115,7 +115,7 @@ class InvitationTests(TestCase):
         expired = self.invite(expires_at=timezone.now() - datetime.timedelta(minutes=1))
         active = self.invite()
         self.client.login(username="capitan", password="pass-12345")
-        listed = [inv for inv, _ in self.client.get(reverse("club_members")).context["invitations"]]
+        listed = [inv for inv, *_ in self.client.get(reverse("club_members")).context["invitations"]]
         self.assertEqual(listed, [active])
         self.assertNotIn(used, listed)
         self.assertNotIn(expired, listed)
@@ -129,7 +129,7 @@ class InvitationTests(TestCase):
         self.assertContains(first, "1 de 2")
         second = self.client.get(reverse("club_members"), {"page": 2})
         self.assertEqual(len(second.context["invitations"]), 2)
-        listed = {inv for page in (first, second) for inv, _ in page.context["invitations"]}
+        listed = {inv for page in (first, second) for inv, *_ in page.context["invitations"]}
         self.assertEqual(len(listed), 12)
         # Una página fuera de rango muestra la última en lugar de fallar.
         self.assertEqual(self.client.get(reverse("club_members"), {"page": 99}).context["invitations_page"].number, 2)
@@ -143,13 +143,13 @@ class InvitationTests(TestCase):
         response = self.client.get(reverse("club_members"), {"q": "ANA"})
         self.assertEqual(response.context["invitations_page"].paginator.count, 11)
         self.assertContains(response, "?page=2&amp;q=ANA#invitaciones")
-        listed = [inv for inv, _ in self.client.get(reverse("club_members"), {"q": "ANA", "page": 2}).context["invitations"]]
+        listed = [inv for inv, *_ in self.client.get(reverse("club_members"), {"q": "ANA", "page": 2}).context["invitations"]]
         self.assertEqual(len(listed), 1)
         self.assertTrue(listed[0].email.startswith("ana"))
 
         response = self.client.get(reverse("club_members"), {"q": "luis"})
-        self.assertEqual([inv.email for inv, _ in response.context["invitations"]], ["luis@example.com"])
-        self.assertNotIn(link, [inv for inv, _ in response.context["invitations"]])
+        self.assertEqual([inv.email for inv, *_ in response.context["invitations"]], ["luis@example.com"])
+        self.assertNotIn(link, [inv for inv, *_ in response.context["invitations"]])
 
         response = self.client.get(reverse("club_members"), {"q": "nadie"})
         self.assertEqual(response.context["invitations"], [])

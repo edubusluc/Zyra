@@ -71,14 +71,14 @@
     <div class="z-table-wrap"><table class="table align-middle z-table-stack">
         <thead><tr><th>{% translate "Enviada a" %}</th><th>{% translate "Enlace" %}</th><th>{% translate "Caduca" %}</th><th><span class="visually-hidden">{% translate "Acciones" %}</span></th></tr></thead>
         <tbody>
-        {% for inv, url in invitations %}
+        {% for inv, url, wa_text in invitations %}
             <tr>
                 <td>{% if inv.email %}{{ inv.email }}{% else %}<span class="text-muted">{% translate "Enlace compartido" %}</span>{% if inv.reusable %}<br><small class="text-muted">{% blocktranslate trimmed count n=inv.use_count %}{{ n }} persona se ha unido{% plural %}{{ n }} personas se han unido{% endblocktranslate %}</small>{% endif %}{% endif %}</td>
                 <td>
                     <div class="input-group input-group-sm" style="min-width: 260px;">
                         <input type="text" class="form-control" value="{{ url }}" readonly aria-label="{% translate 'Enlace de invitación' %}" id="invite-{{ inv.id }}">
                         <button type="button" class="btn btn-outline-primary" data-copy="#invite-{{ inv.id }}"><i class="fa-regular fa-copy" aria-hidden="true"></i> {% translate "Copiar" %}</button>
-                        {% autoescape off %}{% blocktranslate asvar wa_text with club=current_club.name url=url %}Únete a {{ club }} en Zyra: {{ url }}{% endblocktranslate %}{% endautoescape %}<a class="btn btn-outline-success" target="_blank" rel="noopener" href="https://wa.me/?text={{ wa_text|urlencode }}" aria-label="{% translate 'Compartir por WhatsApp' %}"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i></a>
+                        <a class="btn btn-outline-success" target="_blank" rel="noopener" href="https://wa.me/?text={{ wa_text|urlencode }}" aria-label="{% translate 'Compartir por WhatsApp' %}"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i></a>
                     </div>
                 </td>
                 <td class="text-nowrap">{{ inv.expires_at|timezone:"Europe/Madrid"|date:"d/m H:i" }}</td>
