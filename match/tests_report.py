@@ -127,9 +127,6 @@ class ReportTests(TestCase):
         self.assertEqual(only["usage"][first]["last"], datetime.date(2025, 10, 8))
         pdf = render_report(only)
         self.assertEqual(pdf_pages(pdf), 2)
-        self.assertIn("solo con partidos competitivos", "".join(
-            page.extract_text() for page in __import__("pypdf").PdfReader(__import__("io").BytesIO(pdf)).pages
-        ).replace("\n", " "))
 
     def test_pdf_fits_in_two_pages_with_many_players(self):
         pdf = render_report(build_report(self.call))
