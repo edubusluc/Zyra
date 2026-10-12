@@ -1,0 +1,8 @@
+{% load i18n %}{% autoescape off %}{% blocktranslate trimmed %}La lectura de SNP ha fallado {{ streak }} veces seguidas.{% endblocktranslate %}
+
+{% translate "Último error:" %}
+{{ detail }}
+
+{% translate "Puede que SNP haya cambiado su web, nos esté bloqueando o esté caído. Si hace falta, apaga el servicio para que los capitanes vean que no está disponible:" %}
+{{ link }}
+{% endautoescape %}

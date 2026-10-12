@@ -7,6 +7,7 @@
 En los Game solo se guardan los jugadores del propio club, en el lado (local o
 visitante) en el que juega su equipo.
 """
+from django.conf import settings
 from django.db import models
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
@@ -71,6 +72,11 @@ class Match(PublicIdModel):
     # Rival de un amistoso que no es un equipo del grupo: solo se guarda su nombre en el
     # propio partido (no se crea ningún equipo) y ese lado (local o visiting) queda vacío.
     rival_name = models.CharField(_("Rival"), max_length=100, blank=True, default="")
+    # Última vez que un capitán reabrió el acta ya cerrada para corregirla (y quién).
+    reopened_at = models.DateTimeField(null=True, blank=True)
+    reopened_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+",
+    )
     
     class Meta:
         indexes = [

@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+
+{% block title %}{% translate "Confirmar email" %} · Zyra{% endblock %}
+
+{% block content %}
+<div class="z-auth">
+    <div class="z-auth-card text-center">
+        <img src="{% static 'zyra/logo.svg' %}" alt="Zyra" class="z-auth-logo">
+        <h1>{% translate "Confirmar email" %}</h1>
+        {% if confirmation and can_confirm %}
+        <p class="text-muted">{% blocktranslate trimmed with email=confirmation.email_address.email %}Confirma que <strong>{{ email }}</strong> es tu email.{% endblocktranslate %}</p>
+        <form method="post" action="{% url 'account_confirm_email' confirmation.key %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary btn-lg">{% translate "Confirmar" %}</button>
+        </form>
+        {% else %}
+        <p class="text-muted">{% translate "El enlace de confirmación ha caducado o no es válido. Pide uno nuevo desde «Mi perfil»." %}</p>
+        <a class="btn btn-primary btn-lg" href="{% url 'my_profile' %}">{% translate "Ir a Mi perfil" %}</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

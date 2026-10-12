@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 import datetime
+import sys
 from pathlib import Path
 import os
 import dj_database_url
@@ -80,15 +81,27 @@ LEGAL_OWNER_NAME = config('LEGAL_OWNER_NAME', default='')
 LEGAL_OWNER_ID = config('LEGAL_OWNER_ID', default='')  # NIF/DNI
 LEGAL_OWNER_ADDRESS = config('LEGAL_OWNER_ADDRESS', default='')
 
-# Ruta del Django admin (herramienta de emergencia, solo superusuarios). Se puede
-# cambiar por una menos obvia con la variable de entorno ADMIN_URL.
-ADMIN_URL = config('ADMIN_URL', default='admin/')
+# Ruta del Django admin (herramienta de emergencia, solo superusuarios). En producción es
+# obligatorio elegir una ruta propia con la variable de entorno ADMIN_URL (no vale «admin/»);
+# en local es «admin/».
+ADMIN_URL = config('ADMIN_URL', default='admin/' if DEBUG else '').strip('/ ') + '/'
+if not DEBUG and ADMIN_URL in ('/', 'admin/'):
+    raise ImproperlyConfigured(
+        "Falta ADMIN_URL o es la ruta por defecto (admin/). Elige una menos obvia, por ejemplo: "
+        "ADMIN_URL=gestion-3f9a1c/ (en tu ordenador también puedes poner DJANGO_DEBUG=True en el .env)."
+    )
 
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 LOGIN_URL = 'login'
 # Formularios rechazados por CSRF: misma página «Sin permiso» que el resto de la web.
 CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
+
+# Si el hosting pone delante un proxy que termina el https (lo habitual).
+BEHIND_PROXY = config('DJANGO_BEHIND_PROXY', default=False, cast=bool)
+# Cuántos proxies de confianza hay delante: se usa para leer la IP real del visitante
+# (core/ratelimit.py). Con DJANGO_BEHIND_PROXY=True vale 1 (Caddy/Nginx) salvo que se indique otro.
+TRUSTED_PROXY_COUNT = config('DJANGO_TRUSTED_PROXY_COUNT', default=1 if BEHIND_PROXY else 0, cast=int)
 
 # HTTPS en producción: redirección a https, cookies solo por https y HSTS.
 if not DEBUG:
@@ -105,7 +118,7 @@ if not DEBUG:
     SECURE_REFERRER_POLICY = 'same-origin'
     # Si el hosting pone delante un proxy que termina el https (lo habitual), activa
     # esto para que Django sepa que la petición original era https y no entre en bucle.
-    if config('DJANGO_BEHIND_PROXY', default=False, cast=bool):
+    if BEHIND_PROXY:
         SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Application definition
@@ -176,6 +189,24 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'zyra.wsgi.application'
+
+# Caché. En producción es una tabla de la base de datos (django_cache), compartida por todos
+# los procesos: guarda los contadores de los límites de uso (core/ratelimit.py), que con la
+# caché en memoria de cada proceso no valdrían. Se crea una vez con
+#   python manage.py createcachetable
+# En local (DJANGO_DEBUG=True) se usa la caché en memoria.
+if not DEBUG:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+            'LOCATION': 'django_cache',
+        },
+    }
+
+# Límites de uso por IP (registro de clubes, altas por invitación, comprobación de contraseña).
+# Se desactivan solos al ejecutar los tests; cada test de límites los activa a propósito.
+TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
+RATE_LIMITS_ENABLED = config('RATE_LIMITS_ENABLED', default=not TESTING, cast=bool)
 
 
 # Database
@@ -351,10 +382,7 @@ SNP_BATCH_PAUSE_SECONDS = config('SNP_BATCH_PAUSE_SECONDS', default=60, cast=flo
 SNP_MAX_CONSECUTIVE_FAILURES = config('SNP_MAX_CONSECUTIVE_FAILURES', default=5, cast=int)
 
 # «Completar equipo» desde la web: una vez al mes y pocas búsquedas al día (players/snp_import.py).
-# Los clubes de esta lista (por nombre del club o de su equipo, sin distinguir mayúsculas ni
-# tildes) no tienen esos límites: es el equipo de pruebas. Se cambia con la variable de
-# entorno SNP_IMPORT_UNLIMITED_CLUBS, nombres separados por comas.
-SNP_IMPORT_UNLIMITED_CLUBS = config('SNP_IMPORT_UNLIMITED_CLUBS', default='Los Gladiadores', cast=Csv())
+# Los clubes sin esos límites (el equipo de pruebas) los marca el personal en el back-office.
 
 
 # Inicio de sesión: con usuario o email y contraseña (formulario propio) o con
@@ -371,7 +399,13 @@ GOOGLE_LOGIN_ENABLED = bool(GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET)
 
 ACCOUNT_LOGIN_METHODS = {'username', 'email'}
 ACCOUNT_SIGNUP_FIELDS = ['username*', 'email*', 'password1*', 'password2*']
-ACCOUNT_EMAIL_VERIFICATION = 'none'
+# 'optional': allauth manda el enlace de confirmación; el alta de Zyra (core/email_verification.py)
+# lo envía al registrarse y al cambiar el email. Entrar con Google solo conecta con una cuenta
+# de contraseña si su email está verificado (core.adapters.SocialAccountAdapter).
+ACCOUNT_EMAIL_VERIFICATION = 'optional'
+ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = 'my_profile'
+ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL = 'login'
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = False
 ACCOUNT_ADAPTER = 'core.adapters.AccountAdapter'
 # Contraseña nueva (olvidada, cambio o primera de una cuenta de Google) con la lista de
 # requisitos del registro.

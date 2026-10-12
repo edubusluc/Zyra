@@ -31,6 +31,7 @@ import re
 from urllib.parse import urlencode
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.db.models import Count, Q
 from django.utils import timezone
 from data_analyse.views import season_filter_context, match_type_context, selected_match_type
@@ -677,18 +678,43 @@ def close_match(request, match_id):
     # Calcular puntos y actualizar ganadores
     points_local, points_visiting = calculate_points(games)
 
-    # Dar por finalizado los juegos
-    for game in games:
-        game.draft_mode = False
-        game.save()
+    # Todo o nada: si algo falla a medias, el acta sigue abierta y se puede volver a cerrar.
+    with transaction.atomic():
+        # Dar por finalizado los juegos
+        for game in games:
+            game.draft_mode = False
+            game.save()
 
-    # Determinar el resultado del partido
-    match.result = determine_match_result(points_local, points_visiting)
-    match.result_points = f"{points_local}/{points_visiting}"
-    match.draft_mode = False
-    match.save()
+        # Determinar el resultado del partido
+        match.result = determine_match_result(points_local, points_visiting)
+        match.result_points = f"{points_local}/{points_visiting}"
+        match.draft_mode = False
+        match.save()
 
     return redirect('list_match')
+
+
+@club_admin_required
+@require_POST
+def reopen_match(request, match_id):
+    """Reabre el acta de un enfrentamiento cerrado para corregirla (solo POST, administradores).
+
+    El partido y sus parejas vuelven a estar abiertos: se pueden editar los resultados y las
+    parejas, o eliminar el enfrentamiento. Mientras está abierto no cuenta en las estadísticas;
+    hay que volver a cerrar el acta. Queda anotado quién la reabrió y cuándo.
+    """
+    match = club_match(request, match_id)
+    if match.draft_mode:
+        messages.info(request, _("El acta ya estaba abierta."))
+        return redirect('call_for_match', match_id=match.public_id)
+
+    with transaction.atomic():
+        match.games.update(draft_mode=True)
+        match.result, match.result_points, match.draft_mode = "NONE", "NONE", True
+        match.reopened_at, match.reopened_by = timezone.now(), request.user
+        match.save()
+    messages.success(request, _("Acta reabierta. Corrige lo que haga falta y vuelve a cerrarla."))
+    return redirect('call_for_match', match_id=match.public_id)
 
 
 @club_admin_required

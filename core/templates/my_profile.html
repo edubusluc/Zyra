@@ -36,7 +36,16 @@
         <div class="z-account-body">
             <span class="z-account-label">{% translate "Email" %}</span>
             <span class="z-account-value">{{ user.email|default:"—" }}</span>
+            {% if email_unverified %}
+            <span class="z-account-note">{% translate "Email sin confirmar. Abre el enlace que te enviamos." %}</span>
+            {% endif %}
         </div>
+        {% if email_unverified %}
+        <form method="post" action="{% url 'resend_verification' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-secondary btn-sm">{% translate "Reenviar enlace" %}</button>
+        </form>
+        {% endif %}
         {% if not google_only %}
         <a href="?edit=email" class="btn btn-outline-secondary btn-sm" aria-label="{% translate 'Cambiar el email' %}"><i class="fa-solid fa-pen" aria-hidden="true"></i><span class="z-account-btn-text"> {% translate "Cambiar" %}</span></a>
         {% endif %}

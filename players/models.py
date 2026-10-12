@@ -195,6 +195,10 @@ class SnpTeamImport(PublicIdModel):
     status = models.CharField(max_length=10, choices=STATUSES, default=RUNNING)
     started_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
     created_at = models.DateTimeField(auto_now_add=True)
+    # Cuándo la cogió el proceso ``process_snp_imports``; mientras es None, la búsqueda está en cola.
+    started_at = models.DateTimeField(null=True, blank=True)
+    # Confirmar sola al terminar (alta del club con cuenta SNP).
+    auto_confirm = models.BooleanField(default=False)
     finished_at = models.DateTimeField(null=True, blank=True)
     # [{"name", "last_name", "snp_name", "score"}]
     to_add = models.JSONField(default=list, blank=True)

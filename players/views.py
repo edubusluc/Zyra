@@ -13,7 +13,7 @@ from django.db import transaction
 from django.db.models import BooleanField, ExpressionWrapper, Q
 from django.utils import timezone
 from django.utils.translation import gettext as _, gettext_lazy, ngettext
-from . import snp_import
+from . import snp_import, snp_service
 from .scraper import SnpScrapeError
 from core import similarity
 
@@ -107,6 +107,7 @@ def _complete_team_context(club):
         'snp_import_last': last,
         'snp_import_next': snp_import.next_month_start() if last else None,
         'snp_import_wait': snp_import.search_limit(club),
+        'snp_service_off': not snp_service.is_enabled(),
     }
 
 @club_admin_required
@@ -283,6 +284,9 @@ def complete_team_start(request):
     if not SnpAccount.objects.filter(club=request.club).exists():
         messages.error(request, _("Primero registra la cuenta SNP del capitán."))
         return redirect("snp_account")
+    if not snp_service.is_enabled():
+        messages.error(request, snp_service.UNAVAILABLE_MESSAGE)
+        return redirect("list_players")
     if _blocked_this_month(request) or snp_import.active_import(request.club):
         return redirect("list_players")
     wait = snp_import.search_limit(request.club)

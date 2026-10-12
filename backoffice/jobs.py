@@ -96,6 +96,13 @@ JOBS = [
         ),
     ),
     JobSpec(
+        name="process_snp_imports",
+        description=_("Atiende de una en una las búsquedas de «Completar equipo» pedidas desde la web (cola). "
+                      "Sin búsquedas pendientes termina al momento."),
+        command="process_snp_imports",
+        schedule="* * * * *",
+    ),
+    JobSpec(
         name="send_call_reports",
         description=_("Envía los informes de convocatoria pendientes y reintenta los que fallaron "
                       "(esperas crecientes; tras 5 intentos se dan por fallidos y se avisa al personal)."),

@@ -31,6 +31,7 @@
                 <li><a href="{% url 'backoffice:load' %}" class="{% if section == 'load' %}is-active{% endif %}"><i class="fa-solid fa-signal" aria-hidden="true"></i> {% translate "Carga y conectados" %}</a></li>
                 <li><a href="{% url 'backoffice:usage' %}" class="{% if section == 'usage' %}is-active{% endif %}"><i class="fa-solid fa-chart-column" aria-hidden="true"></i> {% translate "Uso de la plataforma" %}</a></li>
                 <li><a href="{% url 'backoffice:health' %}" class="{% if section == 'health' %}is-active{% endif %}"><i class="fa-solid fa-heart-pulse" aria-hidden="true"></i> {% translate "Salud de los servicios" %}</a></li>
+                <li><a href="{% url 'backoffice:services' %}" class="{% if section == 'services' %}is-active{% endif %}"><i class="fa-solid fa-plug-circle-bolt" aria-hidden="true"></i> {% translate "Servicios" %}</a></li>
                 <li><a href="{% url 'backoffice:job_list' %}" class="{% if section == 'jobs' %}is-active{% endif %}"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> {% translate "Procesos" %}</a></li>
                 {% if user.is_superuser %}
                 <li><a href="{% url 'backoffice:sql_console' %}" class="{% if section == 'sql' %}is-active{% endif %}"><i class="fa-solid fa-database" aria-hidden="true"></i> {% translate "Consola SQL" %}</a></li>

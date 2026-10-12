@@ -12,7 +12,6 @@ from django.forms.utils import ErrorDict
 from django.contrib import messages
 from django.contrib.auth import get_user_model, login
 from django.contrib.auth.views import LoginView
-from django.core.cache import cache
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
@@ -39,7 +38,8 @@ from .forms import CaptainPlayerForm, CaptainSnpForm, ClubForm, EmailChangeForm,
 from .middleware import SESSION_KEY
 from .models import REPORT_SCOPES, Invitation, Membership, UserPreference
 from .onboarding import onboarding_for
-from . import seo
+from . import email_verification, ratelimit, seo
+from players import snp_service
 from .unsubscribe import user_from_token
 from .services import (
     InvitationError, accept_invitation, club_name_matches, club_of, create_club, delete_club, is_last_admin,
@@ -62,6 +62,13 @@ User = get_user_model()
 # usuario desde la misma IP, se bloquea durante LOGIN_LOCKOUT_SECONDS.
 LOGIN_MAX_FAILURES = 5
 LOGIN_LOCKOUT_SECONDS = 15 * 60
+
+# Límites por IP (core/ratelimit.py): altas de club, altas de cuenta por invitación y
+# comprobaciones de contraseña mientras se escribe.
+REGISTER_LIMIT, REGISTER_WINDOW = 5, 60 * 60
+INVITE_SIGNUP_LIMIT, INVITE_SIGNUP_WINDOW = 10, 60 * 60
+PASSWORD_CHECK_LIMIT, PASSWORD_CHECK_WINDOW = 60, 60
+RESEND_LIMIT, RESEND_WINDOW = 5, 60 * 60
 
 
 @require_safe
@@ -118,11 +125,11 @@ class ThrottledLoginView(LoginView):
     def _key(self):
         """Clave de caché del contador de fallos: IP y usuario escrito."""
         username = (self.request.POST.get("username") or "").strip().lower()
-        return f"login-failures:{self.request.META.get('REMOTE_ADDR', '')}:{username}"
+        return f"login-failures:{ratelimit.client_ip(self.request)}:{username}"
 
     def post(self, request, *args, **kwargs):
         """Con demasiados fallos seguidos responde 429 sin comprobar la contraseña."""
-        if cache.get(self._key(), 0) >= LOGIN_MAX_FAILURES:
+        if ratelimit.get_count(self._key()) >= LOGIN_MAX_FAILURES:
             # Sin validar el formulario: validarlo comprobaría la contraseña.
             form = self.get_form()
             form._errors, form.cleaned_data = ErrorDict(), {}
@@ -132,17 +139,12 @@ class ThrottledLoginView(LoginView):
 
     def form_invalid(self, form):
         """Suma un fallo al contador (caduca a los LOGIN_LOCKOUT_SECONDS)."""
-        key = self._key()
-        cache.add(key, 0, LOGIN_LOCKOUT_SECONDS)
-        try:
-            cache.incr(key)
-        except ValueError:
-            cache.set(key, 1, LOGIN_LOCKOUT_SECONDS)
+        ratelimit.add_hit(self._key(), LOGIN_LOCKOUT_SECONDS)
         return super().form_invalid(form)
 
     def form_valid(self, form):
         """Inicio de sesión correcto: pone a cero el contador de fallos."""
-        cache.delete(self._key())
+        ratelimit.clear(self._key())
         return super().form_valid(form)
 
 
@@ -218,6 +220,8 @@ def register_club(request):
     )
 
     if request.method == "POST":
+        if ratelimit.too_many(request, "register", REGISTER_LIMIT, REGISTER_WINDOW):
+            return render(request, "429.html", status=429)
         club_form = ClubForm(request.POST)
         player_form = CaptainPlayerForm(request.POST, prefix="player")
         snp_form = CaptainSnpForm(request.POST, prefix="snp")
@@ -249,13 +253,17 @@ def register_club(request):
                     account.save()
             if anonymous:
                 login(request, user, backend=LOGIN_BACKEND)
+                email_verification.start_verification(request, user)
             request.session[SESSION_KEY] = club.id
             send_welcome_email(user, club, created=True, site_url=_site_url(request))
             messages.success(request, _("Club %(club)s creado correctamente.") % {"club": club.name})
-            if use_snp:
+            if use_snp and snp_service.is_enabled():
                 from players import snp_import
                 team_import = snp_import.start_search(club, user, auto_confirm=True)
                 return redirect("complete_team_welcome", import_id=team_import.public_id)
+            if use_snp:
+                messages.warning(request, snp_service.UNAVAILABLE_MESSAGE)
+                return redirect("my_player")
             return redirect("home")
     else:
         club_form = ClubForm()
@@ -268,7 +276,7 @@ def register_club(request):
         snp_form.fields[name].widget.attrs["class"] = "form-control"
     return render(request, "register_club.html", {
         "club_form": club_form, "user_form": user_form, "player_form": player_form, "snp_form": snp_form,
-        "google_missing_name": google_missing_name,
+        "google_missing_name": google_missing_name, "snp_service_off": not snp_service.is_enabled(),
         "google_next": f"{reverse('register_club')}?{FROM_GOOGLE_PARAM}=1",
     })
 
@@ -400,6 +408,8 @@ def password_check(request):
     servidor (parecido al usuario/email y contraseñas comunes) para la lista de
     requisitos de los formularios de registro. Solo responde sí/no por regla.
     """
+    if ratelimit.too_many(request, "password-check", PASSWORD_CHECK_LIMIT, PASSWORD_CHECK_WINDOW):
+        return JsonResponse({"error": "rate_limited"}, status=429)
     user = User(username=request.POST.get("username", ""), email=request.POST.get("email", ""))
     codes = set()
     try:
@@ -456,6 +466,8 @@ def invitation(request, token):
 
     request.session[PENDING_INVITE_KEY] = token
     if request.method == "POST":
+        if ratelimit.too_many(request, "invite-signup", INVITE_SIGNUP_LIMIT, INVITE_SIGNUP_WINDOW):
+            return render(request, "429.html", status=429)
         form = SignUpForm(request.POST)
         if form.is_valid():
             with transaction.atomic():
@@ -468,6 +480,10 @@ def invitation(request, token):
                     return redirect("invitation", token=token)
             request.session.pop(PENDING_INVITE_KEY, None)
             login(request, user, backend=LOGIN_BACKEND)
+            # El enlace llegó a ese email: quien lo abre y se registra con él lo ha demostrado.
+            email_verification.start_verification(
+                request, user, verified=bool(invitation.email) and invitation.email.lower() == user.email.lower(),
+            )
             request.session[SESSION_KEY] = club.id
             send_welcome_email(user, club, site_url=_site_url(request))
             messages.success(request, _("¡Bienvenido a %(club)s!") % {"club": club.name})
@@ -494,7 +510,7 @@ def update_member(request, membership_id):
     # cualquier miembro y, con «Entrar con Google» (que entra en la cuenta cuyo email
     # coincide), quedarse con la cuenta de ese miembro.
     if membership.user_id == request.user.id and "email" in request.POST:
-        error = _change_own_email(request.user, request.POST.get("email", "").strip())
+        error = _change_own_email(request, request.user, request.POST.get("email", "").strip())
         if error:
             messages.error(request, error)
             return redirect("club_members")
@@ -508,8 +524,11 @@ def update_member(request, membership_id):
     return redirect("club_members")
 
 
-def _change_own_email(user, email):
-    """Cambia el email del propio usuario; devuelve el mensaje de error o None."""
+def _change_own_email(request, user, email):
+    """
+    Cambia el email del propio usuario y le manda el enlace para confirmarlo; devuelve el
+    mensaje de error o None.
+    """
     email = email.lower()
     if email == (user.email or "").lower():
         return None
@@ -523,6 +542,7 @@ def _change_own_email(user, email):
     user.save(update_fields=["email"])
     # El email verificado (Google) era el anterior: allauth no debe seguir dándolo por bueno.
     EmailAddress.objects.filter(user=user).exclude(email__iexact=email).delete()
+    email_verification.start_verification(request, user)
     return None
 
 
@@ -555,7 +575,7 @@ def my_profile(request):
     if not google_only and (request.method == "POST" or request.GET.get("edit") == "email"):
         email_form = EmailChangeForm(request.POST or None, user=user)
         if email_form.is_valid():
-            _change_own_email(user, email_form.cleaned_data["email"])
+            _change_own_email(request, user, email_form.cleaned_data["email"])
             messages.success(request, _("Email actualizado."))
             return redirect("my_profile")
     elif request.method == "POST":
@@ -569,7 +589,22 @@ def my_profile(request):
         "monthly_report": UserPreference.monthly_for(user)[0],
         "monthly_scope": UserPreference.monthly_for(user)[1],
         "player": Player.objects.filter(club=request.club, user=user).first() if request.club else None,
+        "email_unverified": bool(user.email) and not google_only and not email_verification.is_verified(user),
     })
+
+
+@login_required
+@require_POST
+def resend_verification(request):
+    """Vuelve a enviar el enlace para confirmar el email de la cuenta (solo POST, con límite por IP)."""
+    if ratelimit.too_many(request, "resend-verification", RESEND_LIMIT, RESEND_WINDOW):
+        return render(request, "429.html", status=429)
+    if request.user.email and not email_verification.is_verified(request.user):
+        if email_verification.start_verification(request, request.user):
+            messages.success(request, _("Te hemos enviado un enlace para confirmar tu email."))
+        else:
+            messages.error(request, _("No se pudo enviar el correo. Inténtalo de nuevo más tarde."))
+    return redirect("my_profile")
 
 
 @require_http_methods(["GET", "POST"])
