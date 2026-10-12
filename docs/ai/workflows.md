@@ -79,6 +79,7 @@ python manage.py run_scheduler
 | `send_call_reports` | `send_call_reports` | cada 5 min |
 | `send_monthly_reports` | `send_monthly_reports [--month AAAA-MM] [--dry-run] [--limit N]` | día 1 a las 09:00 |
 | `complete_snp_team` | `complete_snp_team <TEA...> [--dry-run]` | solo a mano |
+| `add_group_teams` | `add_group_teams <TEA...> [--dry-run]` | solo a mano |
 
 Proceso nuevo: crear el comando de Django y añadir un `JobSpec` a `JOBS`; aparece en
 *Back-office → Procesos*. Ejecutar a mano desde el back-office no espera al lanzador.

@@ -8312,3 +8312,8 @@ msgstr "How you respond in decisive moments: third set, tie-breaks and comebacks
 #, python-format
 msgid "Llegan al tercer set: %(share)s %%"
 msgstr "Reach a third set: %(share)s %%"
+
+#: backoffice/sql.py
+#, python-format
+msgid "La consulta es demasiado larga (máximo %(max)s caracteres)."
+msgstr "The query is too long (maximum %(max)s characters)."

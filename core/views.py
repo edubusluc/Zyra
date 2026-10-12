@@ -64,6 +64,7 @@ LOGIN_MAX_FAILURES = 5
 LOGIN_LOCKOUT_SECONDS = 15 * 60
 
 
+@require_safe
 def home(request):
     """Portada del club: logo, próximo partido y jugador/pareja en racha."""
     if not request.user.is_authenticated:
@@ -273,6 +274,7 @@ def register_club(request):
 
 
 @login_required
+@require_safe
 def no_club(request):
     """
     Página para quien ha iniciado sesión pero no tiene club activo (requiere sesión).
@@ -320,10 +322,12 @@ def club_members(request, invite_form=None):
     if search:
         pending = pending.filter(email__icontains=search)
     page = Paginator(pending.order_by("-created_at", "-id"), INVITATIONS_PER_PAGE).get_page(request.GET.get("page"))
-    invitations = [
-        (inv, request.build_absolute_uri(reverse("invitation", args=[inv.token])))
-        for inv in page
-    ]
+    # (invitación, enlace, texto para compartir por WhatsApp). El texto se monta aquí, sin HTML,
+    # y la plantilla solo lo codifica para la URL.
+    invitations = []
+    for inv in page:
+        url = request.build_absolute_uri(reverse("invitation", args=[inv.token]))
+        invitations.append((inv, url, _("Únete a %(club)s en Zyra: %(url)s") % {"club": club.name, "url": url}))
     extra = ("&" + urlencode({"q": search}) if search else "") + "#invitaciones"
     return render(request, "club_members.html", {
         "invite_form": invite_form, "memberships": memberships, "roles": Membership.ROLES, "invitations": invitations,
