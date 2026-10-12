@@ -96,6 +96,9 @@ class Club(PublicIdModel):
     # El capitán cerró la lista de «Primeros pasos» de la portada (core.onboarding). Los
     # clubes que ya existían cuando se añadió la lista la tienen cerrada.
     onboarding_dismissed_at = models.DateTimeField(null=True, blank=True)
+    # Club sin los límites de «Completar equipo» (el equipo de pruebas). Solo lo cambia el
+    # personal desde el back-office; no depende del nombre del club.
+    snp_unlimited = models.BooleanField(default=False)
 
     @property
     def is_suspended(self):
@@ -124,8 +127,8 @@ class Club(PublicIdModel):
 
 class Membership(PublicIdModel):
     """
-    Pertenencia de un usuario a un club con su rol: capitán (puede gestionar el club)
-    o miembro (solo lectura). Un usuario solo puede tener una membresía por club.
+    Pertenencia de un usuario a un club con su rol: capitán (puede gestionar el club; uno solo
+    por club) o miembro (solo lectura). Un usuario solo puede tener una membresía por club.
     """
     PUBLIC_ID_PREFIX = "MBR"
     ADMIN = "admin"
@@ -142,6 +145,8 @@ class Membership(PublicIdModel):
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=["user", "club"], name="unique_membership_user_club"),
+            # Un club tiene un solo capitán; para cambiarlo se traspasa la capitanía (core.services).
+            models.UniqueConstraint(fields=["club"], condition=models.Q(role="admin"), name="unique_captain_per_club"),
         ]
 
     @property
@@ -373,3 +378,33 @@ class BlockedEmail(PublicIdModel):
     def __str__(self):
         """El email tal y como se escribió."""
         return self.original_email
+
+
+class ServiceSwitch(models.Model):
+    """
+    Interruptor de un servicio de la plataforma que el personal puede apagar desde el
+    back-office (hoy solo la lectura de SNP). Sin fila, el servicio está activo. Para
+    el servicio de SNP también guarda los fallos seguidos y cuándo se avisó al personal
+    (``failure_streak`` y ``alerted_at``), para no repetir el aviso a cada fallo.
+    """
+    SNP = "snp"
+    name = models.CharField(max_length=30, primary_key=True)
+    enabled = models.BooleanField(default=True)
+    # Motivo interno que anota el personal al apagarlo (no se enseña a los usuarios).
+    reason = models.CharField(max_length=300, blank=True)
+    changed_at = models.DateTimeField(null=True, blank=True)
+    changed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+",
+    )
+    failure_streak = models.PositiveIntegerField(default=0)
+    alerted_at = models.DateTimeField(null=True, blank=True)
+
+    @classmethod
+    def is_enabled(cls, name):
+        """True si el servicio ``name`` está activo (también si todavía no tiene fila)."""
+        enabled = cls.objects.filter(name=name).values_list("enabled", flat=True).first()
+        return True if enabled is None else enabled
+
+    def __str__(self):
+        """Nombre del servicio y si está activo."""
+        return f"{self.name}: {'activo' if self.enabled else 'apagado'}"

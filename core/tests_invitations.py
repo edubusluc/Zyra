@@ -194,8 +194,9 @@ class InvitationTests(TestCase):
         self.assertEqual(invitation.used_by, user)
         self.assertEqual(int(self.client.session["_auth_user_id"]), user.pk)
 
-        self.assertEqual(len(mail.outbox), 1)
-        email = mail.outbox[0]
+        # Bienvenida + enlace para confirmar el email.
+        self.assertEqual(len(mail.outbox), 2)
+        email = next(m for m in mail.outbox if "Te has unido" in m.subject)
         self.assertEqual(email.to, ["nuevo@example.com"])
         self.assertIn("Te has unido a Club A", email.subject)
         self.assertIn("Usuario: nuevo", email.body)
@@ -357,8 +358,9 @@ class LoginAndWelcomeTests(TestCase):
             "name": "Nuevo Club", "location": "Cádiz", "gender": "M", "country": "ES", "division": "future", **SIGNUP,
         })
         self.assertTrue(Club.objects.filter(name="Nuevo Club").exists())
-        self.assertEqual(len(mail.outbox), 1)
-        email = mail.outbox[0]
+        # Bienvenida + enlace para confirmar el email.
+        self.assertEqual(len(mail.outbox), 2)
+        email = next(m for m in mail.outbox if "Has creado" in m.subject)
         self.assertIn("Has creado Nuevo Club", email.subject)
         self.assertIn("Equipo creado: Nuevo Club", email.body)
         self.assertIn("Capitanes: Nuevo Jugador", email.body)
@@ -418,7 +420,15 @@ class GoogleSameAccountTests(TestCase):
             complete_social_login(request, sociallogin)
         return request
 
+    def test_google_login_with_unverified_local_email_invalidates_password(self):
+        """Si el email local nunca se confirmó, quien entra con Google no hereda la contraseña de otro."""
+        self.google_login("capitan@example.com")
+        self.admin.refresh_from_db()
+        self.assertFalse(self.admin.has_usable_password())
+
     def test_google_login_uses_existing_account_and_keeps_password(self):
+        from allauth.account.models import EmailAddress
+        EmailAddress.objects.create(user=self.admin, email="capitan@example.com", verified=True, primary=True)
         request = self.google_login("capitan@example.com")
         self.assertEqual(request.user, self.admin)
         self.assertEqual(User.objects.count(), 1)

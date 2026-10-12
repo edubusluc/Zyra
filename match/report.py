@@ -10,7 +10,7 @@ from django.utils.translation import gettext as _, pgettext
 
 from data_analyse.pairs import COMPETITIVE, club_game_log, match_type_lookup
 
-from . import advisor
+from . import advisor, outcomes
 from call.models import Call
 
 from .models import Match
@@ -21,9 +21,9 @@ MAX_PRECEDENTS = 4
 
 def _outcome(match):
     """'V', 'D' o 'E' de un partido cerrado desde el punto de vista del club."""
-    if match.result == "Victoria Local":
+    if match.result == outcomes.LOCAL_WIN:
         return "V" if match.own_is_local else "D"
-    if match.result == "Victoria Visitante":
+    if match.result == outcomes.VISITING_WIN:
         return "V" if match.own_is_visiting else "D"
     return "E"
 

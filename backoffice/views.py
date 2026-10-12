@@ -27,9 +27,10 @@ from django.views.decorators.http import require_POST
 
 from core import blocklist, moderation
 from core.emails import send_photo_removed_email
-from core.models import BlockedEmail, Club, Invitation, Membership, PhotoCheck, PhotoRemoval
+from core.models import BlockedEmail, Club, Invitation, Membership, PhotoCheck, PhotoRemoval, ServiceSwitch
 from match.models import Match
-from players.models import Player
+from players import snp_service
+from players.models import Player, SnpTeamImport
 
 from . import importer, sql
 from .decorators import staff_required, superuser_required
@@ -190,6 +191,47 @@ def club_toggle_suspended(request, club_id):
             "%(n)s email bloqueado.", "%(n)s emails bloqueados.", blocked) % {"n": blocked} if blocked else ""))
     club.save(update_fields=["suspended_at", "suspension_reason"])
     return redirect("backoffice:club_detail", club_id=club.public_id)
+
+
+@staff_required
+@require_POST
+def club_toggle_snp_unlimited(request, club_id):
+    """
+    Marca o desmarca un club como «sin límites» en «Completar equipo» (el equipo de pruebas).
+    Solo el personal puede hacerlo: ya no depende del nombre del club.
+    """
+    club = get_object_or_404(Club, public_id=club_id)
+    club.snp_unlimited = request.POST.get("action") == "enable"
+    club.save(update_fields=["snp_unlimited"])
+    messages.success(request, _("Este club ya no tiene límites en «Completar equipo».") if club.snp_unlimited
+                     else _("Este club vuelve a tener los límites normales en «Completar equipo»."))
+    return redirect("backoffice:club_detail", club_id=club.public_id)
+
+
+@staff_required
+def services(request):
+    """
+    Servicios de la plataforma que el personal puede apagar (solo personal). Hoy, la lectura de SNP:
+    muestra su estado, los fallos seguidos, la cola de búsquedas de «Completar equipo» y el interruptor.
+    """
+    switch = ServiceSwitch.objects.filter(name=ServiceSwitch.SNP).select_related("changed_by").first()
+    queued = SnpTeamImport.objects.filter(
+        source=SnpTeamImport.WEB, status=SnpTeamImport.RUNNING, started_at__isnull=True,
+    ).count()
+    return render(request, "backoffice/services.html", {
+        "section": "services", "snp_enabled": snp_service.is_enabled(), "switch": switch, "queued": queued,
+        "alert_after": snp_service.ALERT_AFTER_FAILURES,
+    })
+
+
+@staff_required
+@require_POST
+def service_snp_toggle(request):
+    """Apaga o enciende la lectura de SNP. Apagada, los capitanes ven que no está disponible y no se lanza ninguna lectura."""
+    enable = request.POST.get("action") == "enable"
+    snp_service.set_enabled(enable, user=request.user, reason=request.POST.get("reason", "").strip())
+    messages.success(request, _("Servicio de SNP activado.") if enable else _("Servicio de SNP apagado: los capitanes verán que no está disponible."))
+    return redirect("backoffice:services")
 
 
 @staff_required

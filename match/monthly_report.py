@@ -5,6 +5,7 @@ Datos del informe mensual de un jugador: sus partidos por parejas del último me
 cerrados que jugó el jugador (en el drive o en el revés, como local o visitante), con
 sus parejas, sets y rachas. Lo consumen ``monthly_pdf`` (el PDF) y ``monthly_email``.
 """
+from . import outcomes
 import datetime
 from collections import defaultdict
 
@@ -106,7 +107,7 @@ def build_monthly_report(player, month, scope=None):
         .filter(Q(player_1_local=player) | Q(player_2_local=player)
                 | Q(player_1_visiting=player) | Q(player_2_visiting=player),
                 match__club=player.club, match__start_date__range=(start, end),
-                draft_mode=False, winner__in=("Local", "Visitante"))
+                draft_mode=False, winner__in=outcomes.WINNERS)
         .filter(**match_type_lookup(COMPETITIVE if scope == REPORT_SCOPE_COMPETITIVE else None, "match__"))
         .select_related("match__local", "match__visiting", "player_1_local", "player_2_local",
                         "player_1_visiting", "player_2_visiting")
@@ -119,7 +120,7 @@ def build_monthly_report(player, month, scope=None):
         name, partner, is_local = _partner_and_side(g, player)
         if is_local is None:
             continue
-        won = (g.winner == "Local") == is_local
+        won = (g.winner == outcomes.WINNER_LOCAL) == is_local
         sets = own_sets(next(iter(g.results.all()), None), is_local)
         points = (g.score or 0) if won else 0
         rows.append({

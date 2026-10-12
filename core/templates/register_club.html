@@ -31,6 +31,7 @@
                 {% endfor %}
             </fieldset>
             <div data-mode-panel="snp">
+                {% if snp_service_off %}<div class="alert alert-warning" role="alert">{% translate "La conexión con SNP no está disponible ahora mismo. Puedes crear el club y traer tu equipo más tarde, desde Jugadores." %}</div>{% endif %}
                 <div class="alert alert-info" role="note">{% translate "Usa el usuario y la contraseña con los que entras en SNP. Traeremos a todos los jugadores de tu equipo con sus puntos; al terminar, eliges cuál de ellos eres tú." %}</div>
                 {% for field in snp_form %}{% if field.name != 'mode' %}
                 <p>

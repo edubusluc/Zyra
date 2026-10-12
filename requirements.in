@@ -1,12 +1,12 @@
 # Dependencias directas de la aplicación; requirements.txt las fija con versiones y hashes.
 gunicorn==23.0.0
-Django==5.1.2
+Django==5.2.18
 python-decouple==3.8
 playwright==1.48.0
 cryptography>=43
 django-flatpickr==2.0.3
 django-allauth[socialaccount]==65.19.5
-pillow==11.0.0
+pillow==12.3.0
 reportlab==4.2.5
 sentry-sdk[django]==2.19.2
 dj-database-url==2.3.0

@@ -340,9 +340,10 @@ A ese ritmo cada club tarda de media unos 30–40 s. 1.000 clubes son unas 10 ho
 10.000, unos 4 o 5 días, dentro de la semana del ciclo.
 
 «Completar equipo» desde la web (Jugadores) se puede usar una vez al mes y, para no saturar
-SNP, como mucho tres búsquedas al día con cinco minutos entre una y otra. Los clubes de
-`SNP_IMPORT_UNLIMITED_CLUBS` (variable de entorno, nombres separados por comas; por defecto
-`Los Gladiadores`, el club de pruebas) no tienen esos límites.
+SNP, como mucho tres búsquedas al día con cinco minutos entre una y otra. Los clubes marcados
+como «sin límites» en el back-office (ficha del club) no tienen esos límites. La búsqueda se encola y
+la procesa el trabajo `process_snp_imports` (lo lanza `run_scheduler`). En *Servicios* del back-office
+se puede apagar SNP si cae; si falla 3 veces seguidas se avisa por email a `ADMINS`/`SERVER_EMAIL`.
 
 Define una clave de cifrado propia en `.env` (obligatoria en producción; si la cambias,
 las cuentas guardadas dejan de poder leerse y hay que volver a introducirlas):
@@ -410,9 +411,10 @@ python manage.py shell -c "from django.contrib.auth.models import User; User.obj
 ```
 
 El Django admin queda como herramienta de emergencia **solo para superusuarios**. Su
-ruta es `/admin/` por defecto; en producción conviene cambiarla por una menos obvia
-con la variable de entorno `ADMIN_URL` (por ejemplo `ADMIN_URL=gestion-9f3k/`, con la
-barra final).
+ruta es `/admin/` solo en desarrollo; en producción `ADMIN_URL` es **obligatoria** (por ejemplo
+`ADMIN_URL=gestion-9f3k-larga/`) y no puede ser `admin/`. En producción ejecuta además una vez
+`python manage.py createcachetable` (frenos de abuso en caché compartida) y, si hay proxy,
+`DJANGO_TRUSTED_PROXY_COUNT` indica cuántos proxies fiables hay delante.
 
 ### Carga y usuarios conectados
 

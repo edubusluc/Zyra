@@ -247,11 +247,10 @@ class ReportTests(TestCase):
         self.assertIn("image/png", parts)
         self.assertEqual(parts[-1], "application/pdf")
 
-    def test_each_admin_gets_an_individual_email(self):
-        second = User.objects.create_user("segundo", password="pass-12345", email="segundo@example.com")
-        Membership.objects.create(user=second, club=self.club, role=Membership.ADMIN)
+    def test_the_captain_gets_an_individual_email(self):
+        """El club tiene un solo capitán: recibe su correo propio, sin copias."""
         self.client.post(reverse("close_call", args=[self.match.public_id]))
-        self.assertEqual(sorted(m.to[0] for m in mail.outbox), ["capitan@example.com", "segundo@example.com"])
+        self.assertEqual([m.to[0] for m in mail.outbox], ["capitan@example.com"])
         self.assertTrue(all(len(m.to) == 1 and not m.cc and not m.bcc for m in mail.outbox))
 
     def test_email_failure_does_not_block_closing(self):
@@ -313,16 +312,14 @@ class ReportTests(TestCase):
         page = self.client.get(reverse("call_for_match", args=[self.match.public_id]))
         self.assertContains(page, "no enviado")
 
-    def test_one_bad_recipient_does_not_block_the_others(self):
-        second = User.objects.create_user("segundo", password="pass-12345", email="segundo@example.com")
-        Membership.objects.create(user=second, club=self.club, role=Membership.ADMIN)
+    def test_a_failing_recipient_does_not_block_closing_the_call(self):
+        """Si el envío falla, la convocatoria se cierra igual y el informe queda pendiente de reintento."""
         with self.failing_smtp("capitan@example.com"):
             response = self.client.post(reverse("close_call", args=[self.match.public_id]), follow=True)
-        self.assertContains(response, "Informe enviado a segundo@example.com")
         self.assertContains(response, "No se pudo enviar el informe a capitan@example.com")
-        self.assertEqual([m.to for m in mail.outbox], [["segundo@example.com"]])
+        self.assertEqual(mail.outbox, [])
         statuses = dict(ReportDelivery.objects.values_list("email", "status"))
-        self.assertEqual(statuses, {"capitan@example.com": "pending", "segundo@example.com": "sent"})
+        self.assertEqual(statuses, {"capitan@example.com": "pending"})
 
     def test_a_delivery_is_sent_only_once(self):
         from match.notifications import deliver, queue_call_report

@@ -15,6 +15,7 @@ from django.utils.translation import gettext, gettext as _
 from core.crypto import DecryptionError
 
 from .models import Player, SnpScoreHistory, current_season
+from . import snp_service
 from .scraper import SnpBlockedError, SnpScrapeError, scrape_scores
 
 logger = logging.getLogger(__name__)
@@ -81,6 +82,11 @@ def match_scores(players, scores):
         levels = [(_match_level(tokens[p.pk], snp_tokens), p) for p in players]
         best = max((level for level, _ in levels), default=0)
         best_players = [p for level, p in levels if level == best and level > 0]
+        if len(best_players) > 1:
+            # Con dos jugadores igual de parecidos, si solo uno sigue en la plantilla es el de SNP.
+            active = [p for p in best_players if p.in_team]
+            if len(active) == 1:
+                best_players = active
         if not best_players:
             unmatched.append(entry["name"])
         elif len(best_players) > 1:
@@ -162,6 +168,12 @@ def sync_club(account, scraper=None, **scrape_options):
     except Exception as exc:  # un fallo inesperado en un club no debe parar a los demás
         logger.exception("Error inesperado al actualizar los puntos SNP de %s", account.club)
         result = SyncResult(ok=False, message=_("Error inesperado: %(error)s") % {"error": exc}, retryable=True)
+    # Un fallo pasajero (red, web de SNP cambiada, bloqueo) cuenta para el aviso al personal;
+    # los de la cuenta del capitán (contraseña, equipo) no son un fallo del servicio.
+    if result.ok:
+        snp_service.report_success()
+    elif result.retryable:
+        snp_service.report_failure(result.message)
     account.last_sync_at = timezone.now()
     account.last_sync_ok = result.ok
     account.last_sync_retryable = result.retryable

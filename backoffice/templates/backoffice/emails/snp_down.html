@@ -1,0 +1,6 @@
+{% load i18n %}<h1 style="margin:0 0 16px; font-size:22px; color:#0B0B0B;">{% translate "La lectura de SNP está fallando" %}</h1>
+<p style="margin:0 0 12px;">{% blocktranslate trimmed %}La lectura de SNP ha fallado <strong>{{ streak }}</strong> veces seguidas.{% endblocktranslate %}</p>
+<p style="margin:0 0 4px;">{% translate "Último error:" %}</p>
+<p style="margin:0 0 16px; padding:10px 14px; background-color:#F2F2F2; font-family:monospace; font-size:13px;">{{ detail }}</p>
+<p style="margin:0 0 16px;">{% translate "Puede que SNP haya cambiado su web, nos esté bloqueando o esté caído. Si hace falta, apaga el servicio para que los capitanes vean que no está disponible." %}</p>
+<p style="margin:0;"><a href="{{ link }}" style="display:inline-block; background-color:#B4F100; color:#0A0A0A; font-weight:bold; text-decoration:none; padding:10px 20px; border-radius:8px;">{% translate "Abrir servicios" %}</a></p>

@@ -14,7 +14,7 @@ class Call(PublicIdModel):
     """
     PUBLIC_ID_PREFIX = "CAL"
     match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name='match')
-    players = models.ManyToManyField(Player, related_name='players')
+    players = models.ManyToManyField(Player, related_name='calls')
     draft_mode = models.BooleanField(default=True)
 
     class Meta:

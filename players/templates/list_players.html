@@ -11,7 +11,10 @@
     {% if is_club_admin %}
     <div class="z-actions">
         {% if snp_import_enabled %}
-        {% if snp_import_last %}
+        {% if snp_service_off %}
+        <button type="button" class="btn btn-secondary" disabled title="{% translate 'La conexión con SNP no está disponible ahora mismo. Inténtalo más tarde.' %}"><i class="fa-solid fa-users-rays me-1" aria-hidden="true"></i> {% translate "Completar equipo" %}</button>
+        <span class="small text-muted align-self-center">{% translate "Servicio de SNP no disponible por ahora." %}</span>
+        {% elif snp_import_last %}
         <button type="button" class="btn btn-secondary" disabled title="{% blocktranslate with date=snp_import_next|date:'d/m/Y' %}Ya se ha completado este mes. Podrás volver a hacerlo a partir del {{ date }}.{% endblocktranslate %}"><i class="fa-solid fa-users-rays me-1" aria-hidden="true"></i> {% translate "Completar equipo" %}</button>
         {% elif snp_import_wait %}
         <button type="button" class="btn btn-secondary" disabled title="{% blocktranslate with date=snp_import_wait|date:'d/m/Y H:i' %}Has buscado tu equipo en SNP varias veces seguidas. Podrás volver a intentarlo a partir del {{ date }}.{% endblocktranslate %}"><i class="fa-solid fa-users-rays me-1" aria-hidden="true"></i> {% translate "Completar equipo" %}</button>

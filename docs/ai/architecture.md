@@ -76,7 +76,7 @@ Cuidado con imports circulares: `match.models` importa `players.models`; `player
 | SNP (snpgalaxy.com) | `players/scraper.py` | `SnpAccount` del club (credenciales cifradas con `core/crypto.py`) |
 | SMTP (Gmail por defecto) | `core/emails.py`, `match/notifications.py` | `EMAIL_HOST_PASSWORD`; sin ella, backend de consola |
 | Google OAuth | `core/adapters.py`, allauth | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` |
-| AWS Rekognition | `core/moderation.py` | `REKOGNITION_ENABLED` + claves (desactivado por defecto) |
+| AWS Rekognition | `core/moderation.py` | Desactivado a propósito (`REKOGNITION_ENABLED = False` fijo en settings); las fotos las revisa el personal |
 | S3 compatible | `zyra/settings.py` `STORAGES` | `DJANGO_MEDIA_STORAGE` |
 | Sentry | `zyra/settings.py` | `SENTRY_DSN` |
 

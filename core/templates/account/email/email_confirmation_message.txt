@@ -1,0 +1,9 @@
+{% load i18n %}{% autoescape off %}{% translate "Confirma tu email" %}
+
+{% blocktranslate trimmed with username=user.username %}Para confirmar el email de tu cuenta de Zyra (usuario {{ username }}) abre este enlace:{% endblocktranslate %}
+{{ activate_url }}
+
+{% translate "Si no has creado una cuenta en Zyra, ignora este correo." %}
+
+{% translate "Un saludo," %}
+{% translate "El equipo de Zyra" %}{% endautoescape %}

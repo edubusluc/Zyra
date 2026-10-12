@@ -32,6 +32,23 @@
 </div>
 {% endif %}
 
+<section class="z-panel" id="snp-unlimited">
+    <h2 class="h5">{% translate "Límites de «Completar equipo»" %}</h2>
+    <p class="text-muted mb-2">{% translate "Los clubes normales solo pueden completar el equipo desde SNP una vez al mes y con pocas búsquedas al día. Marca este si es un club de pruebas." %}</p>
+    <form method="post" action="{% url 'backoffice:club_toggle_snp_unlimited' club.public_id %}" class="d-flex flex-wrap gap-2 align-items-center">
+        {% csrf_token %}
+        {% if club.snp_unlimited %}
+        <span class="z-badge z-badge--lime">{% translate "Sin límites" %}</span>
+        <input type="hidden" name="action" value="disable">
+        <button class="btn btn-outline-light btn-sm">{% translate "Aplicar límites normales" %}</button>
+        {% else %}
+        <span class="z-badge">{% translate "Límites normales" %}</span>
+        <input type="hidden" name="action" value="enable">
+        <button class="btn btn-outline-light btn-sm">{% translate "Quitar los límites" %}</button>
+        {% endif %}
+    </form>
+</section>
+
 <section class="bo-kpis" aria-label="{% translate 'Resumen del club' %}">
     <div class="bo-kpi"><span class="bo-kpi-label">{% translate "Miembros" %}</span><b>{{ club.n_members|default:0 }}</b><small>{% with admins=club.n_admins|default:0 %}{% blocktranslate trimmed count n=admins %}{{ n }} capitán{% plural %}{{ n }} capitanes{% endblocktranslate %}{% endwith %}</small></div>
     <div class="bo-kpi"><span class="bo-kpi-label">{% translate "Jugadores" %}</span><b>{{ players_active }}</b><small>{% blocktranslate with total=players_total %}{{ total }} en total, contando bajas{% endblocktranslate %}</small></div>

@@ -1,0 +1,40 @@
+{% extends 'backoffice/base.html' %}
+{% load i18n %}
+{% block title %}{% translate "Servicios" %}{% endblock %}
+
+{% block content %}
+<div class="z-page-head">
+    <div>
+        <span class="z-eyebrow">{% translate "Interruptores de la plataforma" %}</span>
+        <h1>{% translate "Servicios" %}</h1>
+    </div>
+</div>
+
+{% if messages %}
+<div class="alert-message">{% for message in messages %}<p>{{ message }}</p>{% endfor %}</div>
+{% endif %}
+
+<section class="z-panel" id="snp">
+    <h2 class="h5">{% translate "Lectura de SNP" %}
+        {% if snp_enabled %}<span class="z-badge z-badge--lime">{% translate "Activa" %}</span>{% else %}<span class="z-badge z-badge--danger">{% translate "Apagada" %}</span>{% endif %}
+    </h2>
+    <p class="text-muted">{% translate "Es la conexión con snpgalaxy.com que actualiza los puntos y trae el equipo («Completar equipo»). Apagada, no se lanza ninguna lectura y los capitanes ven que el servicio no está disponible. Se avisa por email al personal cuando SNP falla varias veces seguidas." %}</p>
+    <ul class="mb-3">
+        <li>{% blocktranslate with n=switch.failure_streak|default:0 max=alert_after %}Fallos seguidos de SNP: <strong>{{ n }}</strong> (se avisa al llegar a {{ max }}).{% endblocktranslate %}</li>
+        <li>{% blocktranslate with n=queued %}Búsquedas de «Completar equipo» en cola: <strong>{{ n }}</strong>.{% endblocktranslate %}</li>
+        {% if switch.alerted_at %}<li>{% blocktranslate with date=switch.alerted_at|date:"j M Y H:i" %}Último aviso al personal: {{ date }}.{% endblocktranslate %}</li>{% endif %}
+        {% if switch.changed_at %}<li>{% blocktranslate with date=switch.changed_at|date:"j M Y H:i" user=switch.changed_by.username|default:"—" %}Último cambio: {{ date }} por {{ user }}.{% endblocktranslate %}{% if switch.reason %} {% translate "Motivo" %}: {{ switch.reason }}{% endif %}</li>{% endif %}
+    </ul>
+    <form method="post" action="{% url 'backoffice:service_snp_toggle' %}" class="bo-filters">
+        {% csrf_token %}
+        {% if snp_enabled %}
+        <input type="hidden" name="action" value="disable">
+        <input type="text" name="reason" maxlength="300" class="form-control" placeholder="{% translate 'Motivo (opcional, solo lo ve el personal)' %}" aria-label="{% translate 'Motivo' %}">
+        <button class="btn btn-outline-danger"><i class="fa-solid fa-power-off" aria-hidden="true"></i> {% translate "Apagar lectura de SNP" %}</button>
+        {% else %}
+        <input type="hidden" name="action" value="enable">
+        <button class="btn btn-primary"><i class="fa-solid fa-power-off" aria-hidden="true"></i> {% translate "Activar lectura de SNP" %}</button>
+        {% endif %}
+    </form>
+</section>
+{% endblock %}

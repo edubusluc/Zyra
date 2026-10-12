@@ -178,4 +178,10 @@
     <button type="submit" class="btn btn-primary btn-lg"><i class="fa-solid fa-flag-checkered me-1" aria-hidden="true"></i> {% translate "Cerrar acta del partido" %}</button>
 </form>
 {% endif %}
+{% if is_club_admin and not match.draft_mode %}
+<form method="POST" action="{% url 'reopen_match' match.public_id %}" class="text-center mt-4" onsubmit="return confirm('{% translate "¿Reabrir el acta? Mientras esté abierta este enfrentamiento no cuenta en las estadísticas. Tendrás que volver a cerrarla." as reopen_msg %}{{ reopen_msg|escapejs }}');">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-outline-secondary"><i class="fa-solid fa-lock-open me-1" aria-hidden="true"></i> {% translate "Reabrir acta para corregirla" %}</button>
+</form>
+{% endif %}
 {% endblock %}

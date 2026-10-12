@@ -105,9 +105,9 @@ class SocialAccountAdapter(DefaultSocialAccountAdapter):
         - El email se compara sin distinguir mayúsculas (Edu@Gmail.com = edu@gmail.com).
         - Si por datos antiguos hay varias cuentas con el mismo email, se elige la que
           pertenece a más clubes (y, a igualdad, la más antigua).
-        - El email queda marcado como verificado, porque Google lo acaba de verificar.
-          Así allauth no invalida la contraseña de la cuenta: el usuario puede seguir
-          entrando también con usuario/email y contraseña.
+        - El email queda marcado como verificado, porque Google lo acaba de verificar. Si la
+          cuenta ya lo tenía verificado, conserva su contraseña (puede seguir entrando también
+          con usuario/email y contraseña). Si no lo estaba, se anula la contraseña (ver abajo).
         """
         User = get_user_model()
         for address in sociallogin.email_addresses:
@@ -120,9 +120,20 @@ class SocialAccountAdapter(DefaultSocialAccountAdapter):
                 .first()
             )
             if user is not None:
+                if not _is_verified(user, address.email):
+                    # Nadie ha demostrado que ese email fuera suyo: quien creó la cuenta pudo
+                    # registrarla con el email de otra persona. Se anula su contraseña para que
+                    # no pueda seguir entrando; el dueño real usa Google o «Olvidé mi contraseña».
+                    user.set_unusable_password()
+                    user.save(update_fields=["password"])
                 _mark_verified(user, address.email)
                 return user, address.email
         return None
+
+
+def _is_verified(user, email):
+    """True si ``email`` ya estaba verificado para ``user`` antes de entrar con Google."""
+    return EmailAddress.objects.filter(user=user, email__iexact=email, verified=True).exists()
 
 
 def _mark_verified(user, email):

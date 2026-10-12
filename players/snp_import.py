@@ -6,23 +6,27 @@ posición y demás datos no se tocan.
 
 Desde la web del club se hace en dos pasos (buscar y confirmar), solo una vez al mes y
 con un máximo de búsquedas para no saturar SNP (``search_limit``); desde el back-office
-(comando ``complete_snp_team``) en uno solo y sin esos límites. Los clubes de
-``settings.SNP_IMPORT_UNLIMITED_CLUBS`` (el equipo de pruebas) no tienen límites.
+(comando ``complete_snp_team``) en uno solo y sin esos límites. Los clubes que el personal marca
+como ``Club.snp_unlimited`` (el equipo de pruebas) no tienen límites.
+
+La búsqueda desde la web no se ejecuta en el proceso web: se deja en cola (``start_search``) y la
+recoge el proceso programado ``process_snp_imports`` (``process_queue``), que las atiende de una
+en una. Así nunca hay más de un Chromium abierto por las búsquedas de los capitanes.
 """
 import datetime
 import logging
-import threading
 
 from django.conf import settings
-from django.db import connections, transaction
+from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext as _, ngettext
 
 from core.crypto import DecryptionError
 
 from .models import Player, SnpScoreHistory, SnpTeamImport, current_season
+from . import snp_service
 from .scraper import SnpScrapeError, scrape_scores
-from core.similarity import is_similar, same_name
+from core.similarity import is_same_team, same_name
 
 from .snp import team_options, match_scores, save_score, split_category
 
@@ -32,6 +36,8 @@ logger = logging.getLogger(__name__)
 PARTICLES = {"de", "del", "la", "las", "los", "y", "san", "van", "von", "da", "do", "dos", "di"}
 # Si una búsqueda lleva más de esto «en marcha», se da por perdida (p. ej. se reinició el servidor).
 STALE_AFTER = datetime.timedelta(minutes=10)
+# Si el proceso programado no recoge una búsqueda en cola en este tiempo, se da por perdida.
+QUEUE_STALE_AFTER = datetime.timedelta(minutes=30)
 # Búsquedas desde la web (canceladas y fallidas incluidas): como mucho SEARCHES_PER_DAY en 24 h
 # y al menos SEARCH_COOLDOWN entre una y la siguiente.
 SEARCHES_PER_DAY = 3
@@ -112,7 +118,7 @@ def plan_group_teams(club, group_teams):
     teams = list(Team.objects.filter(club=club))
     to_create, existing = [], []
     for entry in group_teams or []:
-        match = next((t for t in teams if is_similar(entry["name"], t.name)), None)
+        match = next((t for t in teams if is_same_team(entry["name"], t.name)), None)
         if match is None:
             to_create.append({"snp_id": entry["snp_id"], "name": entry["name"], "own": bool(entry.get("own"))})
             continue
@@ -159,6 +165,8 @@ def search(team_import, scraper=None, **scrape_options):
     """Descarga el equipo de SNP y guarda en ``team_import`` qué se añadiría. Nunca lanza."""
     account = getattr(team_import.club, "snp_account", None)
     try:
+        if not snp_service.is_enabled():
+            raise SnpScrapeError(str(snp_service.UNAVAILABLE_MESSAGE))
         if account is None:
             raise SnpScrapeError(_("El club no tiene cuenta SNP."), kind=SnpScrapeError.ACCOUNT)
         result = (scraper or scrape_scores)(account.username, account.password, account.team_id or None,
@@ -168,7 +176,10 @@ def search(team_import, scraper=None, **scrape_options):
     except (SnpScrapeError, DecryptionError) as exc:
         kind = exc.kind if isinstance(exc, SnpScrapeError) else SnpScrapeError.ACCOUNT
         changes = {"status": SnpTeamImport.ERROR, "message": str(exc), "error_kind": kind, "finished_at": timezone.now()}
+        if getattr(exc, "retryable", False):
+            snp_service.report_failure(str(exc))
     else:
+        snp_service.report_success()
         to_add, existing = plan_import(team_import.club, scores)
         teams_to_add, teams_existing = plan_group_teams(team_import.club, group_teams)
         changes = {"status": SnpTeamImport.READY, "to_add": to_add, "existing": existing,
@@ -263,12 +274,10 @@ def apply_group_teams(team_import):
 
 def is_unlimited(club):
     """
-    True si el club no tiene límites en «Completar equipo»: su nombre (o el de su equipo
-    propio) está en ``settings.SNP_IMPORT_UNLIMITED_CLUBS``, sin distinguir mayúsculas ni tildes.
-    Es para el equipo de pruebas (Los Gladiadores).
+    True si el club no tiene límites en «Completar equipo»: el personal lo ha marcado así en el
+    back-office (``Club.snp_unlimited``). Es para el equipo de pruebas.
     """
-    names = [club.name] + ([club.own_team.name] if club.own_team else [])
-    return any(same_name(name, allowed) for name in names for allowed in getattr(settings, "SNP_IMPORT_UNLIMITED_CLUBS", ()))
+    return club.snp_unlimited
 
 
 def search_limit(club, now=None):
@@ -320,17 +329,23 @@ def next_month_start(now=None):
 # ---------- Búsqueda en segundo plano desde la web ----------
 
 def active_import(club, now=None):
-    """La búsqueda en curso o pendiente de confirmar del club, si la hay."""
+    """
+    La búsqueda en cola, en curso o pendiente de confirmar del club, si la hay. Una en curso que
+    lleva más de ``STALE_AFTER`` o una en cola que lleva más de ``QUEUE_STALE_AFTER`` sin que la
+    recoja el proceso programado se dan por perdidas.
+    """
     now = now or timezone.now()
     current = SnpTeamImport.objects.filter(
         club=club, source=SnpTeamImport.WEB, status__in=[SnpTeamImport.RUNNING, SnpTeamImport.READY],
     ).first()
-    if current and current.status == SnpTeamImport.RUNNING and now - current.created_at > STALE_AFTER:
-        current.status = SnpTeamImport.ERROR
-        current.message = _("La búsqueda en SNP no ha terminado. Vuelve a intentarlo.")
-        current.finished_at = now
-        current.save(update_fields=["status", "message", "finished_at"])
-        return None
+    if current and current.status == SnpTeamImport.RUNNING:
+        stale = (now - current.started_at > STALE_AFTER) if current.started_at else (now - current.created_at > QUEUE_STALE_AFTER)
+        if stale:
+            current.status = SnpTeamImport.ERROR
+            current.message = _("La búsqueda en SNP no ha terminado. Vuelve a intentarlo.")
+            current.finished_at = now
+            current.save(update_fields=["status", "message", "finished_at"])
+            return None
     return current
 
 
@@ -342,29 +357,69 @@ def _search_and_maybe_confirm(team_import, auto_confirm):
     return team_import
 
 
+def _run(team_import):
+    """
+    Ejecuta una búsqueda ya cogida de la cola. Si algo inesperado falla, la marca como errónea
+    para que la página deje de esperar. Al terminar cierra las conexiones a la base de datos del hilo.
+    """
+    try:
+        return _search_and_maybe_confirm(team_import, team_import.auto_confirm)
+    except Exception:
+        logger.exception("Ha fallado la búsqueda de «Completar equipo» de %s", team_import.club)
+        SnpTeamImport.objects.filter(pk=team_import.pk).update(
+            status=SnpTeamImport.ERROR, message=_("Error inesperado al leer SNP."), finished_at=timezone.now(),
+        )
+        team_import.refresh_from_db()
+        return team_import
+
+
 def start_search(club, user, auto_confirm=False):
     """
-    Crea la búsqueda y la lanza en segundo plano (la página va preguntando cómo va). Con
-    ``auto_confirm`` se confirma sola al terminar: es la del alta del club con cuenta SNP.
+    Pone en cola la búsqueda de «Completar equipo» (la página va preguntando cómo va) y la recoge
+    el proceso programado ``process_snp_imports``. Con ``auto_confirm`` se confirma sola al
+    terminar: es la del alta del club con cuenta SNP.
     """
-    team_import = SnpTeamImport.objects.create(club=club, started_by=user, source=SnpTeamImport.WEB)
+    team_import = SnpTeamImport.objects.create(
+        club=club, started_by=user, source=SnpTeamImport.WEB, auto_confirm=auto_confirm,
+    )
     if getattr(settings, "SNP_IMPORT_INLINE", False):  # tests
-        return _search_and_maybe_confirm(team_import, auto_confirm)
-
-    def target():
-        """
-        Hilo de la búsqueda: si algo inesperado falla, la marca como errónea para que la página
-        deje de esperar. Al terminar cierra sus conexiones a la base de datos.
-        """
-        try:
-            _search_and_maybe_confirm(team_import, auto_confirm)
-        except Exception:
-            logger.exception("Ha fallado la búsqueda de «Completar equipo» de %s", club)
-            SnpTeamImport.objects.filter(pk=team_import.pk).update(
-                status=SnpTeamImport.ERROR, message=_("Error inesperado al leer SNP."), finished_at=timezone.now(),
-            )
-        finally:
-            connections.close_all()
-
-    threading.Thread(target=target, name=f"snp-import-{club.pk}", daemon=True).start()
+        team_import.started_at = timezone.now()
+        team_import.save(update_fields=["started_at"])
+        return _run(team_import)
     return team_import
+
+
+def claim_next():
+    """
+    Coge de la cola la búsqueda web más antigua que nadie ha empezado y la marca como empezada
+    (devuelve None si no hay). Es atómico: dos procesos nunca cogen la misma.
+    """
+    for candidate in SnpTeamImport.objects.filter(
+        source=SnpTeamImport.WEB, status=SnpTeamImport.RUNNING, started_at__isnull=True,
+    ).order_by("created_at", "pk"):
+        claimed = SnpTeamImport.objects.filter(
+            pk=candidate.pk, status=SnpTeamImport.RUNNING, started_at__isnull=True,
+        ).update(started_at=timezone.now())
+        if claimed:
+            candidate.refresh_from_db()
+            return candidate
+    return None
+
+
+def process_queue(max_items=10, log=None):
+    """
+    Atiende de una en una las búsquedas en cola (como mucho ``max_items``) y devuelve cuántas ha
+    hecho. Las que el capitán canceló mientras esperaban no se tocan: ``claim_next`` solo coge las
+    que siguen en espera.
+    """
+    log = log or (lambda message: None)
+    done = 0
+    while done < max_items:
+        team_import = claim_next()
+        if team_import is None:
+            break
+        log(f"Búsqueda de {team_import.club}…")
+        team_import = _run(team_import)
+        log(f"  {team_import.get_status_display()}: {team_import.message}")
+        done += 1
+    return done

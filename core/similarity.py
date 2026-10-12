@@ -43,6 +43,24 @@ def is_similar(a, b, min_subset_tokens=1):
     return SequenceMatcher(None, " ".join(ta), " ".join(tb)).ratio() >= SIMILARITY_THRESHOLD
 
 
+def _distinguishing_tokens(text):
+    """
+    Palabras que distinguen a dos equipos del mismo club aunque el resto del nombre sea igual: una
+    sola letra o un número ("Pádel Sevilla A" frente a "Pádel Sevilla B", "Tomares 2").
+    """
+    return {t for t in _tokens(text) if len(t) == 1 or t.isdigit()}
+
+
+def is_same_team(a, b):
+    """
+    True si dos nombres son del mismo equipo: iguales o muy parecidos (``is_similar``) y sin una
+    letra o un número que los distinga. Se usa al traer los equipos del grupo de SNP, donde un
+    club puede tener "X A" y "X B" y no deben fundirse en uno solo. (Al crear un equipo a mano,
+    ``is_similar`` solo avisa y el capitán decide.)
+    """
+    return is_similar(a, b) and _distinguishing_tokens(a) == _distinguishing_tokens(b)
+
+
 def similar_teams(club, name, exclude_pk=None):
     """Equipos del club con un nombre igual o parecido a ``name``."""
     from team.models import Team
