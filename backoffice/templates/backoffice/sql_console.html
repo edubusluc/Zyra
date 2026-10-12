@@ -9,7 +9,7 @@
         <h1>{% translate "Consola SQL" %}</h1>
     </div>
     <div class="z-actions">
-        <a href="{% url 'backoffice:sql_log' %}" class="btn btn-outline-light btn-sm"><i class="fa-solid fa-list"></i> {% translate "Registro de consultas" %}</a>
+        <a href="{% url 'backoffice:sql_log' %}" class="btn btn-outline-light btn-sm"><i class="fa-solid fa-list" aria-hidden="true"></i> {% translate "Registro de consultas" %}</a>
     </div>
 </div>
 
@@ -25,8 +25,8 @@
                 <textarea id="sql-input" name="sql" rows="8" spellcheck="false" class="form-control bo-sql-input" placeholder="SELECT name, created_at FROM core_club ORDER BY created_at DESC">{{ query }}</textarea>
             </div>
             <div class="bo-sql-actions">
-                <button type="submit" name="action" value="run" class="btn btn-primary"><i class="fa-solid fa-play"></i> {% translate "Ejecutar" %}</button>
-                <button type="submit" name="action" value="export" class="btn btn-outline-light"><i class="fa-solid fa-file-csv"></i> {% translate "Exportar CSV" %}</button>
+                <button type="submit" name="action" value="run" class="btn btn-primary"><i class="fa-solid fa-play" aria-hidden="true"></i> {% translate "Ejecutar" %}</button>
+                <button type="submit" name="action" value="export" class="btn btn-outline-light"><i class="fa-solid fa-file-csv" aria-hidden="true"></i> {% translate "Exportar CSV" %}</button>
                 <span class="text-muted small">{% blocktranslate trimmed %}Ctrl + Enter ejecuta · Ctrl + Espacio sugiere campos · se muestran hasta {{ display_limit }} filas y se exportan hasta {{ export_limit }} · <code>local_id.name</code> lee campos de la tabla relacionada{% endblocktranslate %}</span>
             </div>
             <details class="bo-sql-save" {% if error and not result and request.POST.action == 'save' %}open{% endif %}>
@@ -34,7 +34,7 @@
                 <div class="bo-filters mt-2 mb-0">
                     <input type="text" name="name" class="form-control" placeholder="{% translate 'Nombre' %}" value="{{ saved.name|default:'' }}" aria-label="{% translate 'Nombre de la consulta' %}">
                     <input type="text" name="description" class="form-control" placeholder="{% translate 'Descripción (opcional)' %}" value="{{ saved.description|default:'' }}" aria-label="{% translate 'Descripción' %}">
-                    <button type="submit" name="action" value="save" class="btn btn-outline-light"><i class="fa-solid fa-floppy-disk"></i> {% translate "Guardar" %}</button>
+                    <button type="submit" name="action" value="save" class="btn btn-outline-light"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> {% translate "Guardar" %}</button>
                 </div>
             </details>
         </form>
@@ -75,7 +75,7 @@
                 <li>
                     <a href="?saved={{ q.public_id }}">{{ q.name }}</a>
                     <form method="post" action="{% url 'backoffice:sql_delete_saved' q.public_id %}" class="ms-auto" onsubmit="return confirm('{% translate "¿Borrar la consulta guardada?" as t_confirm %}{{ t_confirm|escapejs }}');">
-                        {% csrf_token %}<button type="submit" class="btn btn-link btn-sm p-0 text-muted" title="{% translate 'Borrar' %}"><i class="fa-solid fa-trash"></i><span class="visually-hidden">{% blocktranslate with name=q.name %}Borrar {{ name }}{% endblocktranslate %}</span></button>
+                        {% csrf_token %}<button type="submit" class="btn btn-link btn-sm p-0 text-muted" title="{% translate 'Borrar' %}"><i class="fa-solid fa-trash" aria-hidden="true"></i><span class="visually-hidden">{% blocktranslate with name=q.name %}Borrar {{ name }}{% endblocktranslate %}</span></button>
                     </form>
                 </li>
                 {% empty %}

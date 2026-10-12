@@ -1,10 +1,11 @@
 {% extends 'base.html' %}
 {% load static i18n %}
+{% block page_title %}{% translate "Sin club" %} · {% endblock %}
 
 {% block content %}
 <div class="z-auth">
     <div class="z-auth-card text-center">
-        <img src="{% static 'zyra/logo.svg' %}" alt="" class="z-auth-logo">
+        <img src="{% static 'zyra/logo.svg' %}" alt="Zyra" class="z-auth-logo">
         {% if not suspended_clubs %}<h1>{% translate "Sin club" %}</h1>{% endif %}
         {% if suspended_clubs %}
         <h1>{% translate "Club suspendido" %}</h1>

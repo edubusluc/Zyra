@@ -25,6 +25,8 @@ PAGES = [
     ("backoffice:load", []),
     ("backoffice:job_list", []),
     ("backoffice:run_list", []),
+    ("backoffice:usage", []),
+    ("backoffice:health", []),
 ]
 
 
@@ -768,3 +770,47 @@ class SqlRelationTests(TestCase):
         match = next(t for t in sql.schema() if t["name"] == "match_match")
         local = next(c for c in match["columns"] if c["name"] == "local_id")
         self.assertEqual(local["target"], "team_team")
+
+
+class UsageAndHealthTests(TestCase):
+    """Páginas de uso de la plataforma y salud de los servicios con datos."""
+
+    def setUp(self):
+        from call.models import Call, ReportDelivery
+        from players.models import SnpAccount
+
+        self.member = User.objects.create_user("member", password="pass-12345")
+        self.club = create_club("Club A", "Sevilla", self.member)
+        today = timezone.localdate()
+        match = Match.objects.create(club=self.club, local=self.club.own_team, start_date=today, rival_name="Rival",
+                                     draft_mode=False)
+        call = Call.objects.create(match=match, draft_mode=False)
+        ReportDelivery.objects.create(call=call, email="a@example.com", status=ReportDelivery.SENT, attempts=2)
+        ReportDelivery.objects.create(call=call, email="b@example.com", status=ReportDelivery.FAILED, attempts=5,
+                                      last_error="SMTP caído")
+        account = SnpAccount(club=self.club, last_sync_ok=False, last_sync_message="Contraseña rechazada")
+        account.username = "user"
+        account.password = "secret"
+        account.save()
+        User.objects.create_user("staff", password="pass-12345", is_staff=True)
+        self.client.login(username="staff", password="pass-12345")
+
+    def test_usage(self):
+        response = self.client.get(reverse("backoffice:usage"))
+        usage = response.context["usage"]
+        self.assertEqual(usage["totals"]["matches"], 1)
+        self.assertEqual(usage["totals"]["calls"], 1)
+        features = {f["label"]: f for f in usage["features"]}
+        self.assertEqual(features["Han cerrado una convocatoria"]["pct"], 100)
+        self.assertEqual(features["Tienen cuenta SNP"]["n"], 1)
+        self.assertEqual(features["Han hecho una alineación"]["n"], 0)
+        self.assertContains(response, "Club A")
+
+    def test_health(self):
+        response = self.client.get(reverse("backoffice:health"))
+        health = response.context["health"]
+        self.assertEqual((health["reports"]["sent"], health["reports"]["failed"], health["reports"]["retried"]), (1, 1, 1))
+        self.assertEqual(health["reports"]["ok_pct"], 50)
+        self.assertEqual(health["snp"]["failed"], 1)
+        self.assertContains(response, "SMTP caído")
+        self.assertContains(response, "Contraseña rechazada")

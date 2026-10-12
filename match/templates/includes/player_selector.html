@@ -3,7 +3,7 @@
 <div class="z-selector" data-selector data-min="{{ min_players|default:0 }}" data-page-size="20">
     <div class="z-selector-tools">
         <div class="z-search">
-            <i class="fa-solid fa-magnifying-glass"></i>
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
             <input type="search" placeholder="{% translate 'Buscar jugador...' %}" data-selector-search aria-label="{% translate 'Buscar jugador' %}">
         </div>
         <div class="z-segmented" role="group" aria-label="{% translate 'Filtrar por posición' %}">
@@ -23,7 +23,7 @@
         {% for player in players %}
         <label class="z-pick" data-name="{{ player.full_name }}" data-position="{{ player.position }}">
             <input type="checkbox" name="players" value="{{ player.id }}" {% if player.id in selected %}checked{% endif %}>
-            <span class="z-pick-check" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
+            <span class="z-pick-check" aria-hidden="true"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
             <span class="z-pick-body">
                 <span class="z-pick-name">{{ player.full_name }}</span>
                 <span class="z-pick-meta">
@@ -32,7 +32,7 @@
             </span>
             {% if player.penalty_reasons %}
             <span class="z-pick-warn" title="{% for r in player.penalty_reasons %}{{ r }}{% if not forloop.last %}&#10;{% endif %}{% endfor %}">
-                <i class="fa-solid fa-triangle-exclamation"></i> {{ player.penalty_reasons|length }}
+                <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> {{ player.penalty_reasons|length }}
             </span>
             {% endif %}
         </label>

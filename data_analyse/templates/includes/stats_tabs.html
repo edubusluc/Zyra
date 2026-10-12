@@ -1,11 +1,11 @@
 {% load i18n %}
 {% with current=request.resolver_match.url_name %}
 <nav class="st-tabs z-segmented" aria-label="{% translate 'Tipo de estadística' %}">
-  <a class="btn btn-sm{% if current == 'team_statistics' %} active{% endif %}" href="{% url 'team_statistics' %}"{% if current == 'team_statistics' %} aria-current="page"{% endif %}><i class="fa-solid fa-users me-1"></i> {% translate "Equipo" %}</a>
-  <a class="btn btn-sm{% if current == 'player_statistics' %} active{% endif %}" href="{% url 'player_statistics' %}"{% if current == 'player_statistics' %} aria-current="page"{% endif %}><i class="fa-solid fa-user me-1"></i> {% translate "Jugador" %}</a>
-  <a class="btn btn-sm{% if current == 'pair_statistics' %} active{% endif %}" href="{% url 'pair_statistics' %}"{% if current == 'pair_statistics' %} aria-current="page"{% endif %}><i class="fa-solid fa-user-group me-1"></i> {% translate "Parejas" %}</a>
+  <a class="btn btn-sm{% if current == 'team_statistics' %} active{% endif %}" href="{% url 'team_statistics' %}"{% if current == 'team_statistics' %} aria-current="page"{% endif %}><i class="fa-solid fa-users me-1" aria-hidden="true"></i> {% translate "Equipo" %}</a>
+  <a class="btn btn-sm{% if current == 'player_statistics' %} active{% endif %}" href="{% url 'player_statistics' %}"{% if current == 'player_statistics' %} aria-current="page"{% endif %}><i class="fa-solid fa-user me-1" aria-hidden="true"></i> {% translate "Jugador" %}</a>
+  <a class="btn btn-sm{% if current == 'pair_statistics' %} active{% endif %}" href="{% url 'pair_statistics' %}"{% if current == 'pair_statistics' %} aria-current="page"{% endif %}><i class="fa-solid fa-user-group me-1" aria-hidden="true"></i> {% translate "Parejas" %}</a>
   {% if is_club_admin %}
-  <a class="btn btn-sm{% if current == 'warnings_statistics' %} active{% endif %}" href="{% url 'warnings_statistics' %}"{% if current == 'warnings_statistics' %} aria-current="page"{% endif %}><i class="fa-solid fa-triangle-exclamation me-1"></i> {% translate "Advertencias" %}</a>
+  <a class="btn btn-sm{% if current == 'warnings_statistics' %} active{% endif %}" href="{% url 'warnings_statistics' %}"{% if current == 'warnings_statistics' %} aria-current="page"{% endif %}><i class="fa-solid fa-triangle-exclamation me-1" aria-hidden="true"></i> {% translate "Advertencias" %}</a>
   {% endif %}
 </nav>
 {% endwith %}

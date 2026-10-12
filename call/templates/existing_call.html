@@ -1,9 +1,10 @@
 {% extends 'base.html' %}
 {% load i18n %}
+{% block page_title %}{% translate "Convocatoria existente" %} · {% endblock %}
 
 {% block content %}
 <div class="z-empty">
-    <i class="fa-solid fa-clipboard-check"></i>
+    <i class="fa-solid fa-clipboard-check" aria-hidden="true"></i>
     <h1 class="text-center">{% translate "Convocatoria existente" %}</h1>
     <p>{% translate "Ya existe una convocatoria para este partido." %}</p>
     <a href="{% url 'call_for_match' match.public_id %}" class="btn btn-primary">{% translate "Ver convocatoria" %}</a>

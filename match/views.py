@@ -11,9 +11,10 @@ from .models import Match, Game, Result
 from . import lineup
 from .notifications import send_call_report, report_filename
 from call.models import ReportDelivery
-from .report import build_report
+from .report import build_report, suggested_lineups
 from .report_pdf import render_report
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
+from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_POST
 from django.utils.translation import gettext as _, gettext_lazy
 import logging
@@ -26,10 +27,14 @@ from datetime import datetime
 from callLog.models import CallLog
 from penalty.models import Penalty
 import json
+import re
+from urllib.parse import urlencode
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.core.exceptions import ValidationError
-from django.db.models import Q
-from data_analyse.views import season_filter_context
+from django.db.models import Count, Q
+from django.utils import timezone
+from data_analyse.views import season_filter_context, match_type_context, selected_match_type
+from data_analyse.pairs import match_type_lookup
 
 
 CREATE_MATCH_HTML = "create_match.html"
@@ -68,29 +73,83 @@ def match_outcome(match):
     return "E"
 
 
+def split_points(result_points):
+    """Puntos de local y visitante a partir de ``result_points`` ('5/7'; los antiguos, '7-5').
+
+    Devuelve dos cadenas, o (None, None) si no hay marcador legible.
+    """
+    parts = re.split(r"[/-]", result_points or "")
+    if len(parts) != 2 or not all(x.strip().isdigit() for x in parts):
+        return None, None
+    return parts[0].strip(), parts[1].strip()
+
+
+def rival_names(club_matches):
+    """Rivales distintos de los partidos (equipos ajenos y rivales escritos a mano), por orden alfabético."""
+    names = set()
+    for m in club_matches:
+        if m.local_id or m.visiting_id or m.rival_name:
+            names.add(m.rival_label)
+    return sorted((n for n in names if n), key=str.casefold)
+
+
+def filter_by_rival(matches, rival):
+    """Partidos contra ``rival``: un equipo ajeno con ese nombre o un rival escrito a mano."""
+    return matches.filter(
+        Q(local__name=rival, local__is_own=False) | Q(visiting__name=rival, visiting__is_own=False) | Q(rival_name=rival)
+    )
+
+
+def search_matches(matches, text):
+    """Partidos cuyo equipo local, visitante, rival escrito a mano o ubicación contienen ``text``."""
+    query = Q()
+    for word in text.split():
+        query &= (Q(local__name__icontains=word) | Q(visiting__name__icontains=word)
+                  | Q(rival_name__icontains=word) | Q(location__icontains=word))
+    return matches.filter(query)
+
+
 @club_required
 def list_match(request):
-    """Listado paginado de los enfrentamientos del club, filtrable por temporada.
+    """Listado paginado de los enfrentamientos del club, filtrable por temporada, tipo, rival y nombre.
 
     Requiere pertenecer al club (club_required). Por GET ``season`` elige la temporada
     (por defecto la actual; 'all' muestra todas) y ``page`` la página. El selector muestra
     «Todas», las tres temporadas más recientes y un buscador para las demás
-    (data_analyse.views.season_filter_context). Renderiza list_match.html con el resultado
-    y la temporada de cada partido y un resumen de ganados, empatados, perdidos y pendientes.
+    (data_analyse.views.season_filter_context). ``rival`` deja solo los partidos contra ese
+    rival, ``match_type`` el tipo (todos, competitivos, amistosos o uno concreto; mismos valores
+    y chips que las estadísticas) y ``q`` busca por coincidencia en los nombres de los equipos y la ubicación; al
+    buscar o elegir rival sin indicar temporada se buscan en todas. Renderiza list_match.html
+    con el resultado, la temporada de cada partido y un resumen de ganados, empatados,
+    perdidos y pendientes de lo filtrado. Cada partido de la página lleva además los puntos
+    de cada lado, cuántos convocados tiene y si es un partido próximo (sin resultado y con
+    fecha de hoy en adelante) para pintar su tarjeta.
     """
     club_matches = Match.objects.filter(club=request.club).select_related('local', 'visiting')
     # Temporadas para el selector (desc), incluida la actual aunque aún no tenga partidos
     seasons = set(club_matches.values_list('season', flat=True)) | {current_season()}
     seasons = sorted((x for x in seasons if x and x != "NONE"), reverse=True)
+    rivals = rival_names(club_matches)
 
-    # Por defecto, la temporada actual; "all" muestra todas.
-    season = request.GET.get('season') or current_season()
+    search = request.GET.get('q', '').strip()[:100]
+    rival = request.GET.get('rival', '').strip()
+    if rival not in rivals:
+        rival = ''
+
+    # Por defecto, la temporada actual; "all" muestra todas. Al buscar, todas.
+    season = request.GET.get('season') or (ALL_SEASONS if search or rival else current_season())
     if season != ALL_SEASONS and season not in seasons:
         season = current_season()
 
     matches = club_matches.order_by('-start_date', '-id')
     if season != ALL_SEASONS:
         matches = matches.filter(season=season)
+    match_type = selected_match_type(request)
+    matches = matches.filter(**match_type_lookup(match_type))
+    if rival:
+        matches = filter_by_rival(matches, rival)
+    if search:
+        matches = search_matches(matches, search)
 
     outcomes = [match_outcome(m) for m in matches]
     summary = {
@@ -110,15 +169,29 @@ def list_match(request):
     except EmptyPage:
         matches = paginator.page(paginator.num_pages)
 
+    called = dict(Call.objects.filter(match__in=list(matches))
+                  .annotate(n=Count('players')).values_list('match_id', 'n'))
+    today = timezone.localdate()
     for m in matches:
         m.outcome = match_outcome(m)
+        m.local_points, m.visiting_points = split_points(m.result_points) if m.outcome else (None, None)
+        m.called = called.get(m.id)
+        m.upcoming = m.outcome is None and m.start_date >= today
 
+    # Resto de filtros para la paginación y para los formularios de búsqueda.
+    keep = {'season': season, 'q': search, 'rival': rival, 'match_type': match_type}
     return render(request, "list_match.html", {
         'matches': matches,
         'seasons': seasons,
         'selected_season': season,
         'all_seasons': ALL_SEASONS,
         'summary': summary,
+        'search': search,
+        'rival': rival,
+        'rivals': rivals,
+        'filtering': bool(search or rival or match_type),
+        **match_type_context(request, match_type),
+        'page_extra': '&' + urlencode({k: v for k, v in keep.items() if v}),
         **season_filter_context(request, seasons, season, all_value=ALL_SEASONS),
     })
 
@@ -128,12 +201,12 @@ def create_match(request):
 
     Solo para administradores del club (club_admin_required). En GET muestra el
     formulario; en POST lo valida (las reglas están en MatchForm), lo guarda y
-    redirige al listado.
+    redirige a la página del partido recién creado.
     """
-    form = MatchForm(request.POST or None, club=request.club)
+    form = MatchForm(request.POST or None, club=request.club, user=request.user)
     if request.method == "POST" and form.is_valid():
-        form.save()
-        return redirect("list_match")
+        match = form.save()
+        return redirect("call_for_match", match.public_id)
     return render(request, CREATE_MATCH_HTML, {"form": form})
 
 @club_admin_required
@@ -462,6 +535,27 @@ def create_game_for_match(request, match_id):
         "players": call.players.order_by('name', 'last_name'),
         "games_per_match": lineup.GAMES_PER_MATCH,
     })
+
+
+@club_admin_required
+@require_GET
+def suggested_lineup(request, match_id):
+    """
+    Alineaciones sugeridas (JSON) para rellenar las parejas del formulario de partidos.
+
+    Solo administradores del club y con la convocatoria cerrada. Devuelve
+    ``{"lineups": [...]}`` (ver match.report.suggested_lineups) o ``{"error": ...}``
+    con estado 400 si no se puede sugerir.
+    """
+    match = club_match(request, match_id)
+    call = Call.objects.filter(match=match).first()
+    is_valid, error_message = validate_game_for_match(call)
+    if not is_valid:
+        return JsonResponse({"error": str(error_message)}, status=400)
+    lineups = suggested_lineups(call)
+    if not lineups:
+        return JsonResponse({"error": _("Hacen falta al menos 10 convocados para sugerir una alineación.")}, status=400)
+    return JsonResponse({"lineups": lineups})
 
 
 SET_FIELDS = ('set1_local', 'set1_visiting', 'set2_local', 'set2_visiting', 'set3_local', 'set3_visiting')

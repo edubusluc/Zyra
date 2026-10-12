@@ -22,7 +22,7 @@ class Call(PublicIdModel):
 
     def __str__(self):
         """«Local vs Visitante»."""
-        return f"{self.match.local.name} vs {self.match.visiting.name}"
+        return f"{self.match.local_name} vs {self.match.visiting_name}"
 
 
 class ReportDelivery(PublicIdModel):

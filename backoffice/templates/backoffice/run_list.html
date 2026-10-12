@@ -19,7 +19,7 @@
         <option value="">{% translate "Todos los estados" %}</option>
         {% for value, label in statuses %}<option value="{{ value }}" {% if value == status %}selected{% endif %}>{{ label }}</option>{% endfor %}
     </select>
-    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-filter"></i> {% translate "Filtrar" %}</button>
+    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-filter" aria-hidden="true"></i> {% translate "Filtrar" %}</button>
 </form>
 
 {% include 'backoffice/includes/run_rows.html' with runs=page.object_list show_job=True %}

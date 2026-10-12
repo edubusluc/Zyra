@@ -1,9 +1,12 @@
-// Selector de jugadores de las convocatorias: búsqueda, filtros, paginación y contador.
+// Selector de jugadores: búsqueda en vivo, filtros, paginación y contador.
+// Lo usan las convocatorias (casillas .z-pick) y el listado de jugadores (elementos
+// [data-selector-item], sin casillas, contador ni filtros). Si un jugador aparece varias veces
+// (tarjeta y fila de tabla), comparten data-key y se muestran u ocultan juntos.
 (function () {
   const normalize = (t) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 
   document.querySelectorAll('[data-selector]').forEach(function (root) {
-    const picks = Array.from(root.querySelectorAll('.z-pick'));
+    const picks = Array.from(root.querySelectorAll('.z-pick, [data-selector-item]'));
     const search = root.querySelector('[data-selector-search]');
     const count = root.querySelector('[data-selector-count]');
     const hint = root.querySelector('[data-selector-hint]');
@@ -17,19 +20,24 @@
     let matching = [];  // jugadores que cumplen búsqueda y filtro (en todas las páginas)
 
     const box = (p) => p.querySelector('input[type="checkbox"]');
+    const checked = (p) => !!box(p) && box(p).checked;
+    const keyOf = (p) => p.dataset.key || p;
 
     function refresh() {
       const q = normalize(search.value);
+      const seen = new Set();
       matching = picks.filter(function (p) {
         const matchesText = !q || normalize(p.dataset.name).includes(q);
         const matchesPos = !position
-          || (position === 'selected' ? box(p).checked : p.dataset.position === position);
-        return matchesText && matchesPos;
+          || (position === 'selected' ? checked(p) : p.dataset.position === position);
+        if (!(matchesText && matchesPos) || seen.has(keyOf(p))) return false;
+        seen.add(keyOf(p));
+        return true;
       });
       const pages = Math.max(1, Math.ceil(matching.length / pageSize));
       page = Math.min(page, pages - 1);
-      const shown = new Set(matching.slice(page * pageSize, (page + 1) * pageSize));
-      picks.forEach((p) => { p.hidden = !shown.has(p); });
+      const shown = new Set(matching.slice(page * pageSize, (page + 1) * pageSize).map(keyOf));
+      picks.forEach((p) => { p.hidden = !shown.has(keyOf(p)); });
       empty.hidden = matching.length > 0 || !picks.length;
 
       pager.hidden = pages < 2;
@@ -41,7 +49,8 @@
         pager.querySelector('[data-step="1"]').disabled = page >= pages - 1;
       }
 
-      const n = picks.filter((p) => box(p).checked).length;
+      if (!count) return;
+      const n = picks.filter(checked).length;
       count.textContent = n;
       hint.textContent = min && n < min ? interpolate(gettext('Mínimo %(min)s para cerrar la convocatoria'), {min: min}, true) : '';
     }
@@ -65,15 +74,17 @@
       root.scrollIntoView({ block: 'start', behavior: 'smooth' });
     });
     // «Marcar visibles» marca todos los que cumplen la búsqueda y el filtro, también los de otras páginas
-    root.querySelector('[data-selector-all]').addEventListener('click', function () {
+    const all = root.querySelector('[data-selector-all]');
+    const none = root.querySelector('[data-selector-none]');
+    if (all) all.addEventListener('click', function () {
       matching.forEach((p) => { box(p).checked = true; });
       refresh();
     });
-    root.querySelector('[data-selector-none]').addEventListener('click', function () {
+    if (none) none.addEventListener('click', function () {
       picks.forEach((p) => { box(p).checked = false; });
       refresh();
     });
-    picks.forEach((p) => box(p).addEventListener('change', refresh));
+    picks.forEach((p) => { if (box(p)) box(p).addEventListener('change', refresh); });
     refresh();
   });
 })();

@@ -5,7 +5,8 @@ from .models import Team
 from django.contrib import messages
 from django.db import transaction
 from django.utils.translation import gettext as _, ngettext
-from django.views.decorators.http import require_GET, require_http_methods
+from django.urls import reverse
+from django.views.decorators.http import require_GET, require_POST, require_http_methods
 from core.decorators import club_required, club_admin_required
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import Q
@@ -62,7 +63,7 @@ def create_team(request):
             # Equipos con un nombre igual o parecido: se pregunta antes de crearlo.
             similar = similarity.similar_teams(request.club, form.cleaned_data['name'])
             if similarity.is_check_request(request):
-                return JsonResponse({"valid": True, "similar": [similar_team_label(t) for t in similar]})
+                return JsonResponse({"valid": True, "similar": [similar_team_item(t) for t in similar]})
             if not similar or similarity.confirmed(request):
                 team = form.save(commit=False)
                 team.club = request.club
@@ -83,7 +84,7 @@ def create_team(request):
     return render(request, "create_team.html", {
         "form": form,
         "own_team": request.club.own_team,
-        "similar": [similar_team_label(t) for t in similar],
+        "similar": [similar_team_item(t) for t in similar],
     })
 
 
@@ -92,6 +93,31 @@ def similar_team_label(team):
     details = " · ".join(str(d) for d in (team.get_gender_display(), team.get_country_display(),
                                           team.get_division_display()) if d)
     return f"{team.name} ({details})" if details else team.name
+
+def similar_team_item(team):
+    """
+    Equipo parecido para el aviso de creación: su etiqueta y, si está dado de baja del grupo,
+    la dirección para volver a darlo de alta (``reactivate_url``) en vez de crear otro.
+    """
+    if team.in_group:
+        return {"label": similar_team_label(team), "reactivate_url": ""}
+    return {
+        "label": "%s · %s" % (similar_team_label(team), _("fuera de tu grupo")),
+        "reactivate_url": reverse("reactivate_team", args=[team.public_id]),
+    }
+
+
+@club_admin_required
+@require_POST
+def reactivate_team(request, team_id):
+    """Vuelve a dar de alta en el grupo un equipo dado de baja. Solo capitanes y POST."""
+    team = get_object_or_404(Team, public_id=team_id, club=request.club)
+    if not team.in_group:
+        team.in_group = True
+        team.save()
+        messages.success(request, _("«%(name)s» vuelve a estar en tu grupo.") % {"name": team.name})
+    return redirect("list_teams")
+
 
 @club_admin_required
 @require_http_methods(["GET", "POST"])
@@ -131,11 +157,13 @@ BULK_FIELDS = ('gender', 'country', 'division')
 @require_http_methods(["GET", "POST"])
 def manage_teams(request):
     """
-    Cambia de una vez categoría, nacionalidad, división y grupo de los equipos del grupo.
-    No muestra el equipo propio (se edita desde su ficha) ni los equipos fuera del grupo.
+    Cambia de una vez categoría, nacionalidad, división y grupo de los equipos rivales, tanto
+    los del grupo como los dados de baja (que así se pueden volver a dar de alta). No muestra
+    el equipo propio (se edita desde su ficha y nunca puede salir del grupo).
     """
     club_teams = list(Team.objects.filter(club=request.club).order_by('name'))
-    teams = [t for t in club_teams if t.in_group and not t.is_own]
+    teams = [t for t in club_teams if not t.is_own]
+    teams.sort(key=lambda t: not t.in_group)
     rows = [{"team": t, "error": "", **{f: getattr(t, f) for f in BULK_FIELDS}, "in_group": t.in_group} for t in teams]
 
     if request.method == "POST":

@@ -13,19 +13,19 @@
         <form method="post" action="{% url 'backoffice:club_toggle_suspended' club.public_id %}" class="d-inline">
             {% csrf_token %}
             <input type="hidden" name="action" value="reactivate">
-            <button class="btn btn-outline-light btn-sm"><i class="fa-solid fa-circle-check"></i> {% translate "Reactivar club" %}</button>
+            <button class="btn btn-outline-light btn-sm"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> {% translate "Reactivar club" %}</button>
         </form>
         {% else %}
-        <a href="#suspender" class="btn btn-outline-danger btn-sm"><i class="fa-solid fa-ban"></i> {% translate "Suspender club" %}</a>
+        <a href="#suspender" class="btn btn-outline-danger btn-sm"><i class="fa-solid fa-ban" aria-hidden="true"></i> {% translate "Suspender club" %}</a>
         {% endif %}
         {% if user.is_superuser %}
-        <a href="{% url 'admin:core_club_change' club.id %}" class="btn btn-outline-light btn-sm"><i class="fa-solid fa-toolbox"></i> {% translate "Abrir en Django admin" %}</a>
+        <a href="{% url 'admin:core_club_change' club.id %}" class="btn btn-outline-light btn-sm"><i class="fa-solid fa-toolbox" aria-hidden="true"></i> {% translate "Abrir en Django admin" %}</a>
         {% endif %}
     </div>
 </div>
 {% if club.is_suspended %}
 <div class="z-panel">
-    <p class="mb-1"><i class="fa-solid fa-ban me-1"></i> {% blocktranslate trimmed with date=club.suspended_at|date:"j M Y H:i" %}Suspendido el {{ date }}.{% endblocktranslate %}{% if club.suspension_reason %} {% translate "Motivo" %}: {{ club.suspension_reason }}{% endif %}</p>
+    <p class="mb-1"><i class="fa-solid fa-ban me-1" aria-hidden="true"></i> {% blocktranslate trimmed with date=club.suspended_at|date:"j M Y H:i" %}Suspendido el {{ date }}.{% endblocktranslate %}{% if club.suspension_reason %} {% translate "Motivo" %}: {{ club.suspension_reason }}{% endif %}</p>
     {% if blocked_emails %}
     <p class="mb-0">{% translate "Emails bloqueados (no pueden crear clubes ni unirse a ninguno):" %} {% for b in blocked_emails %}{{ b.original_email }}{% if not forloop.last %}, {% endif %}{% endfor %}. {% translate "Se desbloquean al reactivar el club." %}</p>
     {% endif %}
@@ -63,7 +63,7 @@
         <h2 class="h5">{% translate "Últimos partidos" %}</h2>
         <ul class="bo-list">
             {% for m in past_matches %}
-            <li><span>{{ m.local }} – {{ m.visiting }}</span><small class="text-muted ms-auto">{{ m.start_date|date:"j M Y" }}{% if m.result_points != "NONE" %} · {{ m.result_points }}{% endif %}</small></li>
+            <li><span>{{ m.local_name }} – {{ m.visiting_name }}</span><small class="text-muted ms-auto">{{ m.start_date|date:"j M Y" }}{% if m.result_points != "NONE" %} · {{ m.result_points }}{% endif %}</small></li>
             {% empty %}
             <li class="text-muted">{% translate "Sin partidos jugados." %}</li>
             {% endfor %}
@@ -73,7 +73,7 @@
         <h2 class="h5">{% translate "Próximos partidos" %}</h2>
         <ul class="bo-list">
             {% for m in upcoming_matches %}
-            <li><span>{{ m.local }} – {{ m.visiting }}</span><small class="text-muted ms-auto">{{ m.start_date|date:"j M Y" }}</small></li>
+            <li><span>{{ m.local_name }} – {{ m.visiting_name }}</span><small class="text-muted ms-auto">{{ m.start_date|date:"j M Y" }}</small></li>
             {% empty %}
             <li class="text-muted">{% translate "Nada programado." %}</li>
             {% endfor %}
@@ -120,7 +120,7 @@
             <label class="form-check-label" for="block-{{ m.user_id }}">{{ m.user.username }} · {{ m.user.email|default:_("sin email") }}{% if m.is_admin %} · {% translate "Capitán" %}{% endif %}</label>
         </div>
         {% endfor %}
-        <button class="btn btn-outline-danger mt-3"><i class="fa-solid fa-ban"></i> {% translate "Suspender club" %}</button>
+        <button class="btn btn-outline-danger mt-3"><i class="fa-solid fa-ban" aria-hidden="true"></i> {% translate "Suspender club" %}</button>
     </form>
 </section>
 {% endif %}

@@ -2,8 +2,10 @@
 from django import forms
 from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
+from core.models import REPORT_SCOPES, UserPreference
 from .models import Match, Game, Result
 from team.models import Team
+from core.similarity import same_name
 
 class TeamSelect(forms.Select):
     """Select de equipos que lleva la foto de cada uno (data-photo) para pintar la card del formulario."""
@@ -28,15 +30,30 @@ class MatchForm(forms.ModelForm):
     FRIENDLY = "amistoso"
     MODES = [(COMPETITIVE, _("Competitivo")), (FRIENDLY, _("Amistoso"))]
 
+    GROUP = "grupo"
+    MANUAL = "manual"
+    RIVAL_SOURCES = [(GROUP, _("Equipo del grupo")), (MANUAL, _("Escribir nombre"))]
+    SIDES = [("local", _("Local")), ("visiting", _("Visitante"))]
+
     mode = forms.ChoiceField(label=_("Modo"), choices=MODES, initial=COMPETITIVE, required=False,
                              widget=forms.RadioSelect)
+    # Solo en amistosos: el rival puede ser un equipo del grupo o un nombre escrito a mano
+    # (no se crea ningún equipo; el nombre se guarda en el propio partido).
+    rival_source = forms.ChoiceField(label=_("Rival"), choices=RIVAL_SOURCES, initial=GROUP, required=False,
+                                     widget=forms.RadioSelect)
+    own_side = forms.ChoiceField(label=_("Tu equipo juega como"), choices=SIDES, initial="local", required=False,
+                                 widget=forms.RadioSelect)
 
     class Meta:
         model = Match
-        fields = ['match_type', 'local', 'visiting', 'start_date']
-        labels = {'local': _('Local'), 'visiting': _('Visitante'), 'start_date': _('Fecha')}
+        fields = ['match_type', 'local', 'visiting', 'rival_name', 'start_date', 'report_scope']
+        labels = {'local': _('Local'), 'visiting': _('Visitante'), 'rival_name': _('Nombre del rival'),
+                  'start_date': _('Fecha'),
+                  'report_scope': _('Datos del informe')}
         widgets = {
             'match_type': forms.Select(),
+            'report_scope': forms.RadioSelect(),
+            'rival_name': forms.TextInput(attrs={'placeholder': _('Ej.: Pádel Norte'), 'autocomplete': 'off'}),
             'local': TeamSelect(),
             'visiting': TeamSelect(),
             'start_date': forms.DateInput(
@@ -45,14 +62,22 @@ class MatchForm(forms.ModelForm):
             ),
         }
 
-    def __init__(self, *args, club=None, **kwargs):
+    def __init__(self, *args, club=None, user=None, **kwargs):
         """Prepara los campos para el club ``club``.
 
-        Limita los equipos a los del club, propone el equipo propio como local en un
+        ``user`` es quien lo rellena: su preferencia de «Mi perfil» marca los datos del informe
+        por defecto. Limita los equipos a los del club, propone el equipo propio como local en un
         formulario nuevo y marca el modo amistoso al editar un amistoso.
         """
         super(MatchForm, self).__init__(*args, **kwargs)
         self.club = club
+        self.fields['report_scope'].choices = REPORT_SCOPES
+        self.fields['report_scope'].widget.choices = REPORT_SCOPES
+        # Si el formulario no lo envía, vale la preferencia de la cuenta.
+        self.default_report_scope = UserPreference.report_scope_for(user)
+        self.fields['report_scope'].required = False
+        if not self.instance.pk:
+            self.initial['report_scope'] = self.default_report_scope
         self.own_team = club.own_team if club else None
         # El equipo propio siempre se puede elegir, aunque no esté marcado "en el grupo".
         teams = Team.objects.filter(club=club).filter(Q(in_group=True) | Q(is_own=True)).order_by('-is_own', 'name')
@@ -72,6 +97,7 @@ class MatchForm(forms.ModelForm):
             self.initial['mode'] = self.FRIENDLY
             self.initial['match_type'] = Match.ENFRENTAMIENTO
         self.order_fields(['mode'])
+        self.fields['rival_name'].required = False
         self.fields['match_type'].error_messages['invalid_choice'] = _("Tipo de partido no válido.")
         date_error = _("Fecha no válida. Usa el formato AAAA-MM-DD.")
         self.fields['start_date'].input_formats = ['%Y-%m-%d']
@@ -98,20 +124,63 @@ class MatchForm(forms.ModelForm):
         """Si no se envía tipo, es un enfrentamiento."""
         return self.cleaned_data.get('match_type') or Match.ENFRENTAMIENTO
 
+    def clean_report_scope(self):
+        """Si no se envía, los datos del informe que prefiere la cuenta."""
+        return self.cleaned_data.get('report_scope') or self.default_report_scope
+
     def clean_mode(self):
         """Si no se envía modo, es competitivo."""
         return self.cleaned_data.get('mode') or self.COMPETITIVE
 
+    def clean_rival_source(self):
+        """Si no se envía, el rival es un equipo del grupo."""
+        return self.cleaned_data.get('rival_source') or self.GROUP
+
+    def clean_own_side(self):
+        """Si no se envía, el equipo propio juega como local."""
+        return self.cleaned_data.get('own_side') or "local"
+
+    @property
+    def manual_rival(self):
+        """True si el formulario está en amistoso con el rival escrito a mano (para pintarlo)."""
+        mode = self['mode'].value() or self.COMPETITIVE
+        return mode == self.FRIENDLY and self['rival_source'].value() == self.MANUAL
+
+    def _clean_manual_rival(self, cleaned):
+        """Amistoso contra un rival escrito a mano: el propio en su lado y el otro vacío."""
+        for name in ('local', 'visiting'):
+            self.errors.pop(name, None)
+        rival_name = " ".join((cleaned.get('rival_name') or "").split())
+        if not rival_name:
+            self.add_error('rival_name', _("Escribe el nombre del equipo rival."))
+            return cleaned
+        if self.own_team is None:
+            raise forms.ValidationError(_("Tu club no tiene equipo propio: no se pueden crear partidos."))
+        if same_name(rival_name, self.own_team.name):
+            self.add_error('rival_name', _("El rival no puede llamarse igual que tu equipo."))
+            return cleaned
+        cleaned['rival_name'] = rival_name
+        own_local = cleaned.get('own_side') != "visiting"
+        cleaned['local'] = self.own_team if own_local else None
+        cleaned['visiting'] = None if own_local else self.own_team
+        return cleaned
+
     def clean(self):
         """Ajusta el tipo de un amistoso y comprueba los equipos.
 
-        Los dos equipos deben ser distintos y uno de ellos el propio del club.
+        Los dos equipos deben ser distintos y uno de ellos el propio del club. En un
+        amistoso el rival puede escribirse a mano: entonces ese lado queda vacío y solo se
+        guarda su nombre en el partido.
         """
         cleaned = super().clean()
         # Un amistoso no tiene tipo (enfrentamiento, reto, play off): se guarda como AMISTOSO.
         if cleaned.get('mode') == self.FRIENDLY:
             self.errors.pop('match_type', None)
             cleaned['match_type'] = Match.AMISTOSO
+            if cleaned.get('rival_source') == self.MANUAL:
+                return self._clean_manual_rival(cleaned)
+        # El nombre escrito a mano solo vale para un amistoso contra un rival fuera del grupo.
+        cleaned['rival_name'] = ""
         local, visiting = cleaned.get('local'), cleaned.get('visiting')
         if local and visiting:
             if local == visiting:

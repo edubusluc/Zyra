@@ -50,7 +50,7 @@ class Command(BaseCommand):
         to_add = [f"{p['name']} {p['last_name']}" for p in team_import.to_add]
         self.stdout.write(f"Jugadores a añadir: {len(to_add)}" + (f" ({', '.join(to_add)})" if to_add else ""))
         existing = [f"{p['snp_name']} → {p['player']}" for p in team_import.existing]
-        self.stdout.write(f"No se añaden porque ya están registrados: {len(existing)}"
+        self.stdout.write(f"Ya registrados (solo se actualizan sus puntos SNP): {len(existing)}"
                           + (f" ({', '.join(existing)})" if existing else ""))
 
         if dry_run:

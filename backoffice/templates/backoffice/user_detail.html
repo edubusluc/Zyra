@@ -14,14 +14,14 @@
             {% csrf_token %}
             <input type="hidden" name="action" value="{% if member.is_active %}suspend{% else %}activate{% endif %}">
             {% if member.is_active %}
-            <button class="btn btn-outline-danger btn-sm"><i class="fa-solid fa-user-slash"></i> {% translate "Suspender cuenta" %}</button>
+            <button class="btn btn-outline-danger btn-sm"><i class="fa-solid fa-user-slash" aria-hidden="true"></i> {% translate "Suspender cuenta" %}</button>
             {% else %}
-            <button class="btn btn-outline-light btn-sm"><i class="fa-solid fa-user-check"></i> {% translate "Reactivar cuenta" %}</button>
+            <button class="btn btn-outline-light btn-sm"><i class="fa-solid fa-user-check" aria-hidden="true"></i> {% translate "Reactivar cuenta" %}</button>
             {% endif %}
         </form>
         {% endif %}
         {% if user.is_superuser %}
-        <a href="{% url 'admin:auth_user_change' member.id %}" class="btn btn-outline-light btn-sm"><i class="fa-solid fa-toolbox"></i> {% translate "Abrir en Django admin" %}</a>
+        <a href="{% url 'admin:auth_user_change' member.id %}" class="btn btn-outline-light btn-sm"><i class="fa-solid fa-toolbox" aria-hidden="true"></i> {% translate "Abrir en Django admin" %}</a>
         {% endif %}
     </div>
 </div>
@@ -76,14 +76,14 @@
         <form method="post" action="{% url 'backoffice:user_photos_delete' member.id %}" class="d-flex flex-wrap gap-2" onsubmit="return confirm('{% translate "¿Eliminar todas sus fotos y avisarle por email?" %}')">
             {% csrf_token %}
             <input type="text" name="reason" maxlength="500" class="form-control form-control-sm" style="max-width:240px" placeholder="{% translate 'Motivo (opcional, va en el email)' %}" aria-label="{% translate 'Motivo' %}">
-            <button class="btn btn-outline-danger btn-sm"><i class="fa-solid fa-trash"></i> {% translate "Eliminar todas sus fotos" %}</button>
+            <button class="btn btn-outline-danger btn-sm"><i class="fa-solid fa-trash" aria-hidden="true"></i> {% translate "Eliminar todas sus fotos" %}</button>
         </form>
         {% endif %}
     </div>
     <div class="d-flex flex-wrap gap-3 mt-3">
         {% for c in photo_checks %}
         <figure class="m-0 text-center">
-            <a href="{{ c.subject.photo.url }}" target="_blank" rel="noopener"><img src="{{ c.subject.photo.url }}" alt="" width="96" height="96" style="object-fit:cover;border-radius:8px;"></a>
+            <a href="{{ c.subject.photo.url }}" target="_blank" rel="noopener"><img src="{{ c.subject.photo.url }}" alt="{% blocktranslate with subject=c.subject_label %}Ver la foto de {{ subject }} a tamaño completo{% endblocktranslate %}" width="96" height="96" style="object-fit:cover;border-radius:8px;"></a>
             <figcaption class="small text-muted">{{ c.subject_label }}</figcaption>
         </figure>
         {% empty %}
@@ -99,7 +99,7 @@
         {% endfor %}
     </ul>
     {% if photo_removals|length > 1 %}
-    <p class="mt-2 mb-0"><i class="fa-solid fa-triangle-exclamation me-1"></i> {% translate "Reincidente: puedes suspender su cuenta y eliminar el equipo." %}</p>
+    <p class="mt-2 mb-0"><i class="fa-solid fa-triangle-exclamation me-1" aria-hidden="true"></i> {% translate "Reincidente: puedes suspender su cuenta y eliminar el equipo." %}</p>
     {% endif %}
     {% endif %}
 </section>

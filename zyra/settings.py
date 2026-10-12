@@ -350,6 +350,12 @@ SNP_PAUSE_MAX_SECONDS = config('SNP_PAUSE_MAX_SECONDS', default=15, cast=float)
 SNP_BATCH_PAUSE_SECONDS = config('SNP_BATCH_PAUSE_SECONDS', default=60, cast=float)
 SNP_MAX_CONSECUTIVE_FAILURES = config('SNP_MAX_CONSECUTIVE_FAILURES', default=5, cast=int)
 
+# «Completar equipo» desde la web: una vez al mes y pocas búsquedas al día (players/snp_import.py).
+# Los clubes de esta lista (por nombre del club o de su equipo, sin distinguir mayúsculas ni
+# tildes) no tienen esos límites: es el equipo de pruebas. Se cambia con la variable de
+# entorno SNP_IMPORT_UNLIMITED_CLUBS, nombres separados por comas.
+SNP_IMPORT_UNLIMITED_CLUBS = config('SNP_IMPORT_UNLIMITED_CLUBS', default='Los Gladiadores', cast=Csv())
+
 
 # Inicio de sesión: con usuario o email y contraseña (formulario propio) o con
 # Google (django-allauth). El ID y el secreto de cliente de Google NUNCA van en el

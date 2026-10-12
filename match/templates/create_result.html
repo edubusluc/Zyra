@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load i18n %}
+{% block page_title %}{% translate "Resultado" %} · {% endblock %}
 
 {% block content %}
 {% include 'includes/result_form.html' with title=_("Resultado") submit=_("Guardar resultado") %}

@@ -35,7 +35,7 @@
             <label>{% translate "Fichero CSV" %}
                 <input type="file" name="file" accept=".csv,text/csv" class="form-control" required>
             </label>
-            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-arrow-right"></i> {% translate "Siguiente: emparejar columnas" %}</button>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i> {% translate "Siguiente: emparejar columnas" %}</button>
         </form>
     </section>
 
@@ -56,7 +56,7 @@
 
 <h2 class="h5 mt-2">{% translate "Historial" %}</h2>
 <div class="z-table-wrap"><table class="table align-middle">
-    <thead><tr><th>{% translate "Fecha" %}</th><th>{% translate "Fichero" %}</th><th>{% translate "Qué" %}</th><th>{% translate "Club" %}</th><th>{% translate "Resultado" %}</th><th></th></tr></thead>
+    <thead><tr><th>{% translate "Fecha" %}</th><th>{% translate "Fichero" %}</th><th>{% translate "Qué" %}</th><th>{% translate "Club" %}</th><th>{% translate "Resultado" %}</th><th><span class="visually-hidden">{% translate "Acciones" %}</span></th></tr></thead>
     <tbody>
     {% for job in page %}
         <tr>
@@ -73,7 +73,7 @@
                 {% if job.status == 'draft' %}<a href="{% url 'backoffice:import_preview' job.public_id %}">{% translate "Continuar" %}</a>
                 {% elif job.status == 'done' %}
                 <form method="post" action="{% url 'backoffice:import_undo' job.public_id %}" onsubmit="return confirm('{% translate "Se borrarán los registros creados y se restaurarán los valores anteriores de los actualizados. ¿Deshacer?" as t_confirm %}{{ t_confirm|escapejs }}');">
-                    {% csrf_token %}<button type="submit" class="btn btn-sm btn-outline-light"><i class="fa-solid fa-rotate-left"></i> {% translate "Deshacer" %}</button>
+                    {% csrf_token %}<button type="submit" class="btn btn-sm btn-outline-light"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> {% translate "Deshacer" %}</button>
                 </form>
                 {% endif %}
             </td>

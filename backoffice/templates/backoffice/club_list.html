@@ -23,7 +23,7 @@
         <option value="members" {% if order == 'members' %}selected{% endif %}>{% translate "Más miembros" %}</option>
         <option value="activity" {% if order == 'activity' %}selected{% endif %}>{% translate "Último partido" %}</option>
     </select>
-    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> {% translate "Filtrar" %}</button>
+    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> {% translate "Filtrar" %}</button>
 </form>
 
 {% translate "No hay clubes con esos filtros." as empty_text %}{% include 'backoffice/includes/club_rows.html' with clubs=page.object_list empty=empty_text %}

@@ -12,7 +12,7 @@
         {% if not job.spec.params and not job.spec.options %}
         <form method="post" action="{% url 'backoffice:job_run_now' job.name %}">{% csrf_token %}
             <input type="hidden" name="next" value="{{ request.path }}">
-            <button type="submit" class="btn btn-sm btn-primary" {% if job.running_since %}disabled{% endif %}><i class="fa-solid fa-play"></i> {% translate "Ejecutar ahora" %}</button>
+            <button type="submit" class="btn btn-sm btn-primary" {% if job.running_since %}disabled{% endif %}><i class="fa-solid fa-play" aria-hidden="true"></i> {% translate "Ejecutar ahora" %}</button>
         </form>
         {% endif %}
         {% if job.spec.schedule %}
@@ -52,7 +52,7 @@
         </div>
         {% endfor %}
         <div class="col-auto">
-            <button type="submit" class="btn btn-primary" {% if job.running_since %}disabled{% endif %}><i class="fa-solid fa-play"></i> {% translate "Ejecutar" %}</button>
+            <button type="submit" class="btn btn-primary" {% if job.running_since %}disabled{% endif %}><i class="fa-solid fa-play" aria-hidden="true"></i> {% translate "Ejecutar" %}</button>
         </div>
     </form>
 </section>

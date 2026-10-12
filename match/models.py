@@ -21,7 +21,7 @@ from urllib.parse import quote
 
 from django.db import models
 from core.public_id import PublicIdModel
-from core.models import Club
+from core.models import Club, REPORT_SCOPES, REPORT_SCOPE_ALL, REPORT_SCOPE_COMPETITIVE
 from team.models import Team
 
 class Match(PublicIdModel):
@@ -33,8 +33,8 @@ class Match(PublicIdModel):
     """
     PUBLIC_ID_PREFIX = "MAT"
     club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name='matches', null=True)
-    local = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='local_matches', null=True)
-    visiting = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='visiting_matches', null=True)
+    local = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='local_matches', null=True, blank=True)
+    visiting = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='visiting_matches', null=True, blank=True)
     
     
     POSSIBLE_RESULT = [
@@ -61,10 +61,16 @@ class Match(PublicIdModel):
     result = models.CharField(max_length=20, choices=POSSIBLE_RESULT, blank = True, default="NONE")
     result_points = models.CharField(max_length=20, blank = True, default="NONE")
     draft_mode = models.BooleanField(default=True)
+    # Qué partidos cuentan en las estadísticas del informe PDF (se elige al crear el partido).
+    report_scope = models.CharField(_("Datos del informe"), max_length=15, choices=REPORT_SCOPES,
+                                    default=REPORT_SCOPE_ALL)
     season = models.CharField(max_length=9, blank = True, default="NONE")
     # Copia de la ubicación del equipo local al crear el partido. Es una copia, no un
     # enlace: si el equipo cambia de sede después, los partidos ya creados no cambian.
     location = models.CharField(max_length=100, blank=True, default="")
+    # Rival de un amistoso que no es un equipo del grupo: solo se guarda su nombre en el
+    # propio partido (no se crea ningún equipo) y ese lado (local o visiting) queda vacío.
+    rival_name = models.CharField(_("Rival"), max_length=100, blank=True, default="")
     
     class Meta:
         indexes = [
@@ -104,6 +110,11 @@ class Match(PublicIdModel):
         return self.match_type == self.AMISTOSO
 
     @property
+    def report_competitive_only(self):
+        """True si el informe solo usa partidos competitivos (los amistosos quedan fuera)."""
+        return self.report_scope == REPORT_SCOPE_COMPETITIVE
+
+    @property
     def own_is_local(self):
         """True si el equipo propio del club juega como local."""
         return bool(self.local and self.local.is_own)
@@ -113,9 +124,28 @@ class Match(PublicIdModel):
         """True si el equipo propio del club juega como visitante."""
         return bool(self.visiting and self.visiting.is_own)
 
+    def _side_name(self, team):
+        """Nombre del equipo de un lado; si ese lado está vacío, el rival escrito a mano."""
+        return team.name if team else self.rival_name
+
+    @property
+    def local_name(self):
+        """Nombre del equipo local (o del rival escrito a mano si juega como local)."""
+        return self._side_name(self.local)
+
+    @property
+    def visiting_name(self):
+        """Nombre del equipo visitante (o del rival escrito a mano si juega como visitante)."""
+        return self._side_name(self.visiting)
+
+    @property
+    def rival_label(self):
+        """Nombre del rival del equipo propio, sea del grupo o escrito a mano."""
+        return self.visiting_name if self.own_is_local else self.local_name
+
     def __str__(self):
         """'Local - Visitante'."""
-        return f'{self.local} - {self.visiting}'
+        return f'{self.local_name} - {self.visiting_name}'
 
 
 

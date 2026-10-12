@@ -12,7 +12,7 @@
 
 {% if jobs_failed_24h or scheduler_late %}
 <div class="alert alert-warning d-flex flex-wrap gap-2 align-items-center">
-    <i class="fa-solid fa-triangle-exclamation"></i>
+    <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
     {% if jobs_failed_24h %}<span>{% blocktranslate trimmed count n=jobs_failed_24h %}{{ n }} ejecución de procesos con error en las últimas 24 h.{% plural %}{{ n }} ejecuciones de procesos con error en las últimas 24 h.{% endblocktranslate %}</span>{% endif %}
     {% if scheduler_late %}<span>{% translate "El lanzador de procesos no está en marcha." %}</span>{% endif %}
     <a href="{% url 'backoffice:job_list' %}" class="ms-auto">{% translate "Ver procesos" %}</a>

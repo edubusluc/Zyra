@@ -201,6 +201,12 @@ class SnpTeamImport(PublicIdModel):
     # [{"snp_name", "player"}]: nombres de SNP que ya tienen jugador en Zyra.
     existing = models.JSONField(default=list, blank=True)
     created_players = models.JSONField(default=list, blank=True)
+    # Equipos del grupo (tabla «Clasificación» de SNP): [{"snp_id", "name", "own"}] por crear,
+    # [{"snp_id", "name", "team", "team_id"}] los que ya existen (se dan de alta en el grupo) y
+    # los nombres de los creados al confirmar.
+    teams_to_add = models.JSONField(default=list, blank=True)
+    teams_existing = models.JSONField(default=list, blank=True)
+    created_teams = models.JSONField(default=list, blank=True)
     message = models.TextField(blank=True)
     # Si ha fallado, dónde puede arreglarlo el capitán (SnpScrapeError.kind): "account" en la
     # cuenta SNP, "team" en los datos de su equipo, o vacío.

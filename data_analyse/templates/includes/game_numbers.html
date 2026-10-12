@@ -1,0 +1,21 @@
+{% load i18n l10n %}
+{# Balance por número de partido (1 a 5). Recibe: rows (data_analyse.sets.by_game_number), title, note, best, worst (opcionales) #}
+<article class="st-card">
+  <h3 class="st-card-title">{{ title }}</h3>
+  <p class="st-card-note">{{ note }}</p>
+  <ol class="st-numbers">
+    {% for r in rows %}
+      <li class="st-number{% if best and r.n == best.n %} st-number--best{% elif worst and r.n == worst.n %} st-number--worst{% endif %}">
+        <div class="st-split-head">
+          <span>{% blocktranslate with n=r.n value=r.value %}Partido {{ n }} <small>· {{ value }} puntos</small>{% endblocktranslate %}</span>
+          <b>{% if r.pct is None %}—{% else %}{{ r.pct }}%{% endif %}</b>
+        </div>
+        <div class="st-meter"><span style="width: {{ r.pct|default:0|unlocalize }}%"></span></div>
+        <p class="st-split-foot">{% if r.played %}{% blocktranslate trimmed with wins=r.wins losses=r.losses points=r.points stake=r.stake %}{{ wins }}V – {{ losses }}D · {{ points }} de {{ stake }} puntos{% endblocktranslate %}{% else %}{% translate "Sin partidos" %}{% endif %}</p>
+      </li>
+    {% endfor %}
+  </ol>
+  {% if best and worst %}
+    <p class="st-card-note st-numbers-note">{% blocktranslate trimmed with best=best.n best_pct=best.pct worst=worst.n worst_pct=worst.pct %}Mejor en el partido {{ best }} ({{ best_pct }} %) y peor en el partido {{ worst }} ({{ worst_pct }} %).{% endblocktranslate %}</p>
+  {% endif %}
+</article>

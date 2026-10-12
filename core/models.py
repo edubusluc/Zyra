@@ -14,6 +14,68 @@ from django.utils.translation import gettext_lazy as _
 from .public_id import PublicIdModel
 
 
+# Qué partidos alimentan las estadísticas del informe PDF de una convocatoria.
+REPORT_SCOPE_ALL = "todos"
+REPORT_SCOPE_COMPETITIVE = "competitivos"
+REPORT_SCOPES = [
+    (REPORT_SCOPE_ALL, _("Todos los datos")),
+    (REPORT_SCOPE_COMPETITIVE, _("Solo partidos competitivos")),
+]
+
+
+class UserPreference(models.Model):
+    """Preferencias de una cuenta, que se editan en «Mi perfil».
+
+    ``report_scope`` es el valor que propone el formulario de crear partido para los datos
+    del informe PDF; en cada partido se puede cambiar al crearlo. ``monthly_report`` activa el
+    informe mensual por email del jugador (``send_monthly_reports``) y ``monthly_scope`` elige
+    si cuenta todos sus partidos o solo los competitivos.
+    """
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="preference")
+    report_scope = models.CharField(max_length=15, choices=REPORT_SCOPES, default=REPORT_SCOPE_ALL)
+    monthly_report = models.BooleanField(default=True)
+    monthly_scope = models.CharField(max_length=15, choices=REPORT_SCOPES, default=REPORT_SCOPE_ALL)
+
+    @classmethod
+    def report_scope_for(cls, user):
+        """Datos del informe que prefiere ``user`` (todos si no ha elegido o no hay sesión)."""
+        if user is None or not getattr(user, "pk", None):
+            return REPORT_SCOPE_ALL
+        scope = cls.objects.filter(user=user).values_list("report_scope", flat=True).first()
+        return scope or REPORT_SCOPE_ALL
+
+    @classmethod
+    def monthly_for(cls, user):
+        """(recibe_correo, datos) del informe mensual de ``user``: por defecto sí y con todos los partidos."""
+        row = cls.objects.filter(user=user).values_list("monthly_report", "monthly_scope").first()
+        return row if row else (True, REPORT_SCOPE_ALL)
+
+    def __str__(self):
+        """Cuenta y datos del informe."""
+        return f"{self.user} · {self.report_scope}"
+
+
+class MonthlyReportDelivery(models.Model):
+    """Informe mensual enviado (o reservado para enviarse) a una cuenta.
+
+    Una fila por cuenta y mes: la restricción única hace idempotente el comando
+    ``send_monthly_reports``, que reserva la fila antes de enviar y la borra si el correo falla
+    para que la siguiente pasada lo reintente. ``month`` es el primer día del mes del informe.
+    """
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="monthly_reports")
+    month = models.DateField()
+    email = models.EmailField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    sent_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["user", "month"], name="unique_monthly_report_per_user_month")]
+
+    def __str__(self):
+        """Cuenta y mes."""
+        return f"{self.user} · {self.month:%Y-%m}"
+
+
 class Club(PublicIdModel):
     """
     Cada club es un "inquilino" de la aplicación: tiene sus propios jugadores,

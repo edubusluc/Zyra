@@ -33,7 +33,7 @@ def report_filename(match):
     Solo deja letras, números, - y _: los nombres de los equipos los escribe el capitán y unas
     comillas o un punto y coma romperían la cabecera Content-Disposition de la descarga.
     """
-    name = f"convocatoria-{match.start_date:%Y%m%d}-{match.local}-vs-{match.visiting}".replace(" ", "_")
+    name = f"convocatoria-{match.start_date:%Y%m%d}-{match.local_name}-vs-{match.visiting_name}".replace(" ", "_")
     return re.sub(r"[^\w-]", "", name) + ".pdf"
 
 
@@ -48,7 +48,7 @@ def admin_emails(club):
 def _bodies(match):
     """Texto plano y HTML del correo. Un cuerpo con algo de contexto y versión HTML
     se parece más a un correo escrito por una persona y ayuda a no caer en spam."""
-    rival = match.visiting if match.own_is_local else match.local
+    rival = match.rival_label
     date = f"{match.start_date:%d/%m/%Y}"
     club = match.club.name
     greeting = _("Hola,")
@@ -58,7 +58,7 @@ def _bodies(match):
                  "contra este rival y dos alineaciones recomendadas según el formato de la SNP.")
     questions = _("Si tienes cualquier duda, responde a este correo y le llegará a quien cerró la convocatoria.")
     regards = _("Un saludo,")
-    values = {"club": club, "rival": rival, "date": date, "local": match.local, "visiting": match.visiting}
+    values = {"club": club, "rival": rival, "date": date, "local": match.local_name, "visiting": match.visiting_name}
     text = (
         f"{greeting}\n\n"
         f"{closed % values}\n\n"
@@ -176,7 +176,7 @@ def deliver(deliveries, now=None):
                     _failed(delivery, f"No se pudo generar el PDF: {exc}", now)
                 continue
             subject = _("Convocatoria cerrada · %(local)s vs %(visiting)s (%(date)s)") % {
-                "local": match.local, "visiting": match.visiting, "date": f"{match.start_date:%d/%m/%Y}"}
+                "local": match.local_name, "visiting": match.visiting_name, "date": f"{match.start_date:%d/%m/%Y}"}
             text, html = _bodies(match)
             for delivery in group:
                 email = build_email(subject, text, html, to=[delivery.email],

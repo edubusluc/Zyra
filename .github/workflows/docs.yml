@@ -34,6 +34,9 @@ jobs:
       - name: Todo el código tiene docstring
         run: python scripts/check_docstrings.py
 
+      - name: El índice para asistentes está al día
+        run: python scripts/check_ai_docs.py
+
       - name: Construir la web
         env:
           DISABLE_MKDOCS_2_WARNING: "true"

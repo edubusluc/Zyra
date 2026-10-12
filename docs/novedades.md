@@ -5,10 +5,39 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 12/10/2026
 
+- Registro con SNP y «Completar equipo»: además de los jugadores, el scraper entra en «Competiciones/Competencias», lee la tabla «Clasificación» y crea los equipos del grupo que aún no existen (con la categoría, nacionalidad y división del equipo propio). No duplica equipos con el mismo nombre o muy parecido, da de alta en el grupo los que ya existían fuera y, si el club no tuviera equipo propio, marca como tal el que SNP resalta en negrita. Si este paso falla, los jugadores se importan igual
+- Equipos: «Gestionar equipos» muestra también los equipos dados de baja del grupo (filtro «Fuera de grupo») para volver a darlos de alta. Al crear un equipo, el aviso de nombre parecido incluye los dados de baja y ofrece «Dar de alta de nuevo» en vez de duplicarlo. El equipo propio ya no puede darse de baja del grupo (y los que lo estaban vuelven a estarlo)
+- Jugadores: el buscador del listado funciona igual que el de las convocatorias: filtra en vivo mientras escribes (sin recargar la página), ignora mayúsculas y tildes y busca en el nombre completo. La paginación (9 por página) también es inmediata
+- Partidos: filtro por tipo de partido (Todos, Competitivos, Amistosos y, dentro de Competitivos, enfrentamientos, retos o play offs), con los mismos chips que las estadísticas. Se combina con la temporada, el rival y el buscador, y se mantiene al paginar
+- Informe mensual por email: cada jugador con cuenta enlazada recibe el día 1 un PDF con sus estadísticas del mes anterior (partidos, victorias, sets, parejas y detalle). En «Mi perfil» se activa o desactiva y se elige si cuentan todos los partidos o solo los competitivos, y el correo incluye un enlace para desactivarlo sin iniciar sesión. Comando `send_monthly_reports` (idempotente, no repite un mes ya enviado)
+- Crear partido: nuevo selector «Datos del informe PDF» (todos los datos o solo partidos competitivos). Con «solo competitivos» el informe de la convocatoria (rendimiento, rachas, forma, Jug./Conv., último, balance y precedentes) deja fuera los amistosos. Bajo el selector, «Edita tus preferencias» lleva a «Mi perfil», donde se guarda la opción por defecto de la cuenta
+
+## 10/10/2026
+
+- Informe PDF de convocatoria: la columna «Jug./Conv.» no cuenta la convocatoria ni el partido actuales (lo explica una nota bajo la tabla) y se redistribuyen las columnas para que los puntos SNP y los registros no salten de línea
+- Partidos: al crear un partido se abre directamente su página (para hacer la convocatoria) en vez de volver al listado
+- Portada: «Volver arriba» sube hasta el principio de la página (antes se quedaba bajo la cabecera) y en móvil ya no se repite el botón de registro al final
+
+## 09/10/2026
+
+- Documentación para asistentes de IA: el índice `ZYRA_CONTEXT.md` se consulta con una búsqueda por palabra (columna de claves con sinónimos en español e inglés), cubre también la portada, la plantilla base, los estilos y los JS de cada pantalla, trae recetas de qué tocar según el tipo de cambio, y el CI comprueba que esté al día (`scripts/check_ai_docs.py`)
+- Portada: al final, en ordenador, el botón «Volver arriba» sustituye al segundo «Registrar mi club gratis»
+- Documentación para asistentes de IA: índice `ZYRA_CONTEXT.md` en la raíz, `CLAUDE.md` y `docs/ai/` (arquitectura, modelo de datos, reglas de negocio, comandos y decisiones), para retomar tareas sin recorrer todo el código
+- Accesibilidad: texto alternativo en fotos, escudos y logos, gráficos descritos para lectores de pantalla, encabezados sin saltos de nivel, título propio en cada página, enlace «Saltar al contenido», etiquetas en todos los campos, iconos decorativos ocultos, más contraste en botones de borrar y jugadores fuera del equipo, tablas desplazables con el teclado y pruebas automáticas en CI (`core/tests_accessibility.py`) más auditoría con axe-core (`scripts/auditoria_accesibilidad.py`)
+- Posicionamiento en buscadores: portada con más contenido (qué hace, cómo funciona y preguntas frecuentes), títulos y descripciones con las palabras que buscan los capitanes, versión en inglés con URL propia (`?lang=en`) enlazada con hreflang en las páginas y en el sitemap, y datos estructurados (JSON-LD) de la aplicación
+- Partidos: cada partido es ahora una tarjeta (dos columnas en escritorio, una en móvil) con la fecha completa, el estado en palabras (Victoria, Derrota, Empate, Próximo o Sin resultado), un equipo por fila con sus puntos y el ganador resaltado, el lugar, los convocados de los pendientes y el enlace «Ver partido»
+- «Mi jugador» pasa a ser «Mi perfil»: muestra el email y la contraseña con opción de cambiarlos (el email pide la contraseña actual; si entras solo con Google, lo gestiona Google) y el jugador enlazado, que se pulsa para editarlo, o el botón para enlazarte a uno
+- Informe PDF de convocatoria: la tabla de convocados cambia «Posición» y «Estim.» por partidos jugados / convocatorias apuntadas (p. ej. 5/8) y la fecha del último partido; sin las tablas de jugadores con más y menos partidos, y letra más grande
+- Partidos: buscador por nombre y filtro por rival, listado más compacto y con más contraste; el resultado ya no dice quién gana cada set (solo avisa si un set no es válido); registro de club conectando la cuenta de SNP para traer el equipo y elegir después tu jugador; «Completar equipo» actualiza los puntos de los jugadores que ya estaban, avisa de completar la posición y limita las búsquedas repetidas (salvo el club de pruebas); la cuenta SNP ya no pide el equipo
+- Estadísticas nuevas: por número de partido, sets (decisivo, tie-breaks, remontadas, roscos), récords del equipo, ranking SNP de la plantilla, sets clutch y apuntado/alineado por jugador y sets de cada pareja; botón «Alineación sugerida» en las parejas; páginas de uso y salud de los servicios en el back-office
 - Seguridad (alertas de code scanning): el flujo de tests pasa a permisos de solo lectura y el estado del proceso en vivo del back-office se escribe como texto, no como HTML
 
 ## 06/10/2026
 
+- Amistoso con rival escrito a mano: el formulario ya se envía (los desplegables de equipo ocultos bloqueaban el envío)
+- [#95](https://github.com/edubusluc/Zyra/pull/95) Amistosos contra un rival escrito a mano: no se crea ningún equipo, el nombre se guarda en el partido
+- Paso entre páginas más fluido: el contenido se desvanece al salir y aparece en cascada al entrar, y las secciones principales se precargan al ir a pulsarlas
+- Móvil: los chips de temporada y de tipo de partido y los paneles de resumen de Partidos ya no se salen de la pantalla; paso suave entre páginas con un fundido que no hace perder clics
 - Recuperar y cambiar la contraseña con el estilo de la web, la lista de requisitos marcándose al escribir (como en el registro) y el correo de «¿Has olvidado tu contraseña?» con el diseño de los correos de Zyra
 - Páginas de privacidad, términos y cookies, contacto en el pie, robots.txt y sitemap, URL canónica y vista previa al compartir, un solo dominio (301 a `SITE_URL`), `/healthz/` para avisar de caídas, fuentes servidas desde la web y mejoras de accesibilidad
 

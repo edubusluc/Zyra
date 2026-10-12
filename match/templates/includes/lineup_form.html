@@ -1,10 +1,21 @@
-{# Alineación de 5 parejas. Recibe: players, slots (lista de {gameId, player1Id, player2Id}) o nada, submit_label #}
+{# Alineación de 5 parejas. Recibe: match, players, slots (lista de {gameId, player1Id, player2Id}) o nada, submit_label #}
 {# A la izquierda se eligen las parejas (buscador al escribir + desplegable); a la derecha se ve el orden por puntos SNP. #}
 {% load static i18n l10n %}
 <form method="post" data-lineup class="z-lineup">
     {% csrf_token %}
     <div class="z-lineup-main">
         <p class="text-muted small mb-3">{% translate "Escribe para buscar un jugador o abre la lista con la flecha. Solo aparecen los convocados que aún no están en otra pareja." %}</p>
+        <div class="z-lineup-suggest" data-suggest-url="{% url 'suggested_lineup' match.public_id %}">
+            <div class="z-lineup-suggest-actions">
+                <button type="button" class="btn btn-primary btn-sm" data-suggest="A" {% if players|length < 10 %}disabled{% endif %}>
+                    <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> {% translate "Alineación sugerida" %}
+                </button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-suggest="B" hidden>
+                    {% translate "Ver la alternativa" %}
+                </button>
+            </div>
+            <p class="small mb-0" data-suggest-info aria-live="polite">{% if players|length < 10 %}{% translate "Hacen falta al menos 10 convocados para sugerir una alineación." %}{% else %}{% translate "Completa las 5 parejas con la alineación que más opciones tiene de ganar según el historial del club. Después puedes cambiar cualquier pareja." %}{% endif %}</p>
+        </div>
         <div class="z-lineup-pairs">
             {% for slot in slots %}
             <fieldset data-slot data-game-id="{{ slot.gameId|default_if_none:'' }}">

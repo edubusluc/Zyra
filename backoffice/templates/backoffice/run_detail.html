@@ -11,7 +11,7 @@
     <div class="z-actions">
         <form method="post" action="{% url 'backoffice:job_run_now' run.job.name %}">{% csrf_token %}
             <input type="hidden" name="next" value="{{ request.path }}">
-            <button type="submit" class="btn btn-sm btn-outline-light" id="run-again" {% if run.status == 'running' %}disabled{% endif %}><i class="fa-solid fa-rotate-right"></i> {% translate "Ejecutar de nuevo" %}</button>
+            <button type="submit" class="btn btn-sm btn-outline-light" id="run-again" {% if run.status == 'running' %}disabled{% endif %}><i class="fa-solid fa-rotate-right" aria-hidden="true"></i> {% translate "Ejecutar de nuevo" %}</button>
         </form>
     </div>
 </div>

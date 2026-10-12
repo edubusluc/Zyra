@@ -33,7 +33,8 @@ from players.models import Player
 from . import importer, sql
 from .decorators import staff_required, superuser_required
 from .metrics import (
-    AT_RISK_DAYS, ONLINE_MINUTES, annotate_clubs, dashboard_kpis, google_user_ids, load_metrics, online_users,
+    AT_RISK_DAYS, ONLINE_MINUTES, annotate_clubs, dashboard_kpis, google_user_ids, health_metrics, load_metrics,
+    online_users, usage_metrics,
 )
 from .middleware import SLOW_MS, flush_metrics
 from .models import ImportJob, JobRun, QueryLog, SavedQuery, ScheduledJob
@@ -79,6 +80,19 @@ def load(request):
         "section": "load", "online": online_users(), "online_minutes": ONLINE_MINUTES,
         "load": load_metrics(), "slow_ms": SLOW_MS,
     })
+
+
+@staff_required
+def usage(request):
+    """Uso de la plataforma (solo personal): actividad por semana, adopción por club y clubes más activos."""
+    return render(request, "backoffice/usage.html", {"section": "usage", "usage": usage_metrics()})
+
+
+@staff_required
+def health(request):
+    """Salud de los servicios (solo personal): informes por email, sincronización SNP, procesos y errores."""
+    flush_metrics()
+    return render(request, "backoffice/health.html", {"section": "health", "health": health_metrics()})
 
 
 CLUB_ORDERINGS = {

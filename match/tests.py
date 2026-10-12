@@ -100,6 +100,31 @@ class MatchesAndCallsTests(TestCase):
         response = self.client.get(reverse("list_match"), {"season": "1999-2000"})
         self.assertEqual(response.context["selected_season"], self.current.season)
 
+    def test_match_list_cards_show_points_state_and_call(self):
+        """Cada tarjeta lleva los puntos de cada lado, el estado en palabras y, si está
+        pendiente, cuántos convocados tiene."""
+        from match.views import split_points
+        self.assertEqual(split_points("5/7"), ("5", "7"))
+        self.assertEqual(split_points("7-5"), ("7", "5"))
+        self.assertEqual(split_points("NONE"), (None, None))
+
+        self.old.draft_mode = False
+        self.old.result = "Victoria Local"
+        self.old.result_points = "9/3"
+        self.old.save()
+        self.current.start_date = datetime.date.today() + datetime.timedelta(days=3)
+        self.current.save()
+        Call.objects.create(match=self.current).players.set([self.zoe, self.ana])
+        response = self.client.get(reverse("list_match"), {"season": "all"})
+        cards = {m.id: m for m in response.context["matches"]}
+        self.assertEqual((cards[self.old.id].local_points, cards[self.old.id].visiting_points), ("9", "3"))
+        self.assertEqual(cards[self.current.id].called, 2)
+        self.assertTrue(cards[self.current.id].upcoming)
+        self.assertContains(response, "Victoria")
+        self.assertContains(response, "Próximo")
+        self.assertContains(response, "2 convocados")
+        self.assertContains(response, "Ver partido")
+
     def test_match_list_search_for_older_seasons(self):
         """Con más de tres temporadas aparece el buscador; la antigua elegida sale como chip activo."""
         start = int(self.current.season[:4])
@@ -113,6 +138,53 @@ class MatchesAndCallsTests(TestCase):
         response = self.client.get(reverse("list_match"), {"season": oldest})
         self.assertEqual([c["label"] for c in response.context["season_chips"] if c["active"]], [oldest])
         self.assertEqual(len(response.context["matches"]), 1)
+
+    def test_match_list_search_and_rival_filter(self):
+        """Buscar por nombre o elegir rival busca en todas las temporadas si no se indica una."""
+        other = Team.objects.create(club=self.club, name="Pádel Tomares", location="Tomares", in_group=True)
+        tomares = Match.objects.create(club=self.club, local=other, visiting=self.club.own_team,
+                                       start_date=self.old.start_date)
+        friendly = Match.objects.create(club=self.club, local=self.club.own_team, start_date=self.current.start_date,
+                                        match_type=Match.AMISTOSO, rival_name="Amigos FC")
+        response = self.client.get(reverse("list_match"))
+        self.assertEqual(response.context["rivals"], ["Amigos FC", "Pádel Tomares", "Rival"])
+
+        response = self.client.get(reverse("list_match"), {"rival": "Rival"})
+        self.assertEqual({m.id for m in response.context["matches"]}, {self.current.id, self.old.id})
+        self.assertTrue(response.context["season_all"]["active"])
+        self.assertIn("rival=Rival", response.context["page_extra"])
+
+        response = self.client.get(reverse("list_match"), {"q": "tomar"})
+        self.assertEqual([m.id for m in response.context["matches"]], [tomares.id])
+        response = self.client.get(reverse("list_match"), {"q": "amigos"})
+        self.assertEqual([m.id for m in response.context["matches"]], [friendly.id])
+        # Con temporada elegida, el filtro se queda en ella.
+        response = self.client.get(reverse("list_match"), {"rival": "Rival", "season": self.current.season})
+        self.assertEqual([m.id for m in response.context["matches"]], [self.current.id])
+        response = self.client.get(reverse("list_match"), {"q": "nadie"})
+        self.assertContains(response, "Ningún partido coincide con la búsqueda.")
+        # Un rival que no existe se ignora.
+        response = self.client.get(reverse("list_match"), {"rival": "Otro club"})
+        self.assertEqual(response.context["rival"], "")
+
+    def test_match_list_type_filter(self):
+        """El tipo (competitivos / amistosos / uno concreto) se combina con temporada y rival y se conserva al paginar."""
+        friendly = Match.objects.create(club=self.club, local=self.club.own_team, start_date=self.current.start_date,
+                                        match_type=Match.AMISTOSO, rival_name="Amigos FC")
+        reto = Match.objects.create(club=self.club, local=self.club.own_team, visiting=self.rival,
+                                    start_date=self.current.start_date, match_type=Match.RETO)
+        ids = lambda **params: {m.id for m in self.client.get(reverse("list_match"), params).context["matches"]}
+        self.assertEqual(ids(), {self.current.id, friendly.id, reto.id})
+        self.assertEqual(ids(match_type="amistoso"), {friendly.id})
+        self.assertEqual(ids(match_type="competitivo"), {self.current.id, reto.id})
+        self.assertEqual(ids(match_type="reto"), {reto.id})
+        self.assertEqual(ids(match_type="competitivo", season="all", rival="Rival"), {self.current.id, self.old.id, reto.id})
+        self.assertEqual(ids(match_type="amistoso", rival="Rival"), set())
+        self.assertEqual(ids(match_type="inventado"), {self.current.id, friendly.id, reto.id})
+        response = self.client.get(reverse("list_match"), {"match_type": "amistoso"})
+        self.assertIn("match_type=amistoso", response.context["page_extra"])
+        self.assertTrue(response.context["filtering"])
+        self.assertContains(response, 'aria-current="page">Amistosos')
 
     def test_long_call_groups_are_collapsed(self):
         """Con muchos convocados en una posición, se ven los primeros y el resto tras «Ver N más»."""
@@ -298,8 +370,28 @@ class CreateMatchTests(TestCase):
     def test_creates_match_with_iso_date(self):
         response = self.client.post(self.url, {"local": self.club.own_team.id, "visiting": self.rival.id,
                                                "start_date": "2026-11-15"})
-        self.assertRedirects(response, reverse("list_match"), fetch_redirect_response=False)
-        self.assertTrue(Match.objects.filter(club=self.club, start_date=datetime.date(2026, 11, 15)).exists())
+        match = Match.objects.get(club=self.club, start_date=datetime.date(2026, 11, 15))
+        self.assertRedirects(response, reverse("call_for_match", args=[match.public_id]))
+
+    def test_report_scope_defaults_to_profile_preference_and_can_be_chosen(self):
+        page = self.client.get(self.url)
+        self.assertContains(page, "Edita tus preferencias")
+        self.assertContains(page, reverse("my_profile"))
+        self.assertEqual(page.context["form"].initial["report_scope"], "todos")
+        self.client.post(reverse("my_profile"), {"report_scope": "competitivos"})
+        page = self.client.get(self.url)
+        self.assertEqual(page.context["form"].initial["report_scope"], "competitivos")
+        data = {"local": self.club.own_team.id, "visiting": self.rival.id, "start_date": "2026-11-15"}
+        self.client.post(self.url, data)  # sin enviar el campo: la preferencia
+        self.assertEqual(Match.objects.get().report_scope, "competitivos")
+        self.client.post(self.url, {**data, "start_date": "2026-11-16", "report_scope": "todos"})
+        self.assertEqual(Match.objects.get(start_date=datetime.date(2026, 11, 16)).report_scope, "todos")
+
+    def test_invalid_report_scope_is_rejected(self):
+        response = self.client.post(self.url, {"local": self.club.own_team.id, "visiting": self.rival.id,
+                                               "start_date": "2026-11-15", "report_scope": "nada"})
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Match.objects.exists())
 
     def test_missing_date_shows_error_instead_of_crashing(self):
         response = self.client.post(self.url, {"local": self.club.own_team.id, "visiting": self.rival.id})
@@ -331,8 +423,9 @@ class CreateMatchOwnTeamTests(TestCase):
 
     def test_own_team_as_visiting_is_allowed(self):
         response = self.post(self.rival, self.own)
-        self.assertRedirects(response, reverse("list_match"), fetch_redirect_response=False)
         match = Match.objects.get()
+        self.assertRedirects(response, reverse("call_for_match", args=[match.public_id]),
+                             fetch_redirect_response=False)
         self.assertEqual((match.local, match.visiting, match.club), (self.rival, self.own, self.club))
 
     def test_same_team_twice_is_rejected(self):
@@ -399,8 +492,9 @@ class CreateFriendlyMatchTests(TestCase):
 
     def test_friendly_match_ignores_type(self):
         response = self.client.post(self.url, {**self.data, "mode": "amistoso", "match_type": Match.PLAYOFF})
-        self.assertRedirects(response, reverse("list_match"), fetch_redirect_response=False)
         match = Match.objects.get()
+        self.assertRedirects(response, reverse("call_for_match", args=[match.public_id]),
+                             fetch_redirect_response=False)
         self.assertEqual(match.match_type, Match.AMISTOSO)
         self.assertTrue(match.is_friendly)
 
@@ -421,3 +515,72 @@ class CreateFriendlyMatchTests(TestCase):
         self.assertEqual(response.context["form"].local_team, self.club.own_team)
         self.assertIsNone(response.context["form"].visiting_team)
         self.assertContains(response, "js/match-form.js")
+
+
+class FriendlyManualRivalTests(TestCase):
+    """Amistoso contra un rival escrito a mano: no se crea equipo, solo se guarda su nombre."""
+
+    def setUp(self):
+        self.user = User.objects.create_user("admin", password="pass-12345")
+        self.club = create_club("Club A", "Sevilla", self.user)
+        self.own = self.club.own_team
+        self.client.force_login(self.user)
+        self.url = reverse("create_match")
+        self.data = {"mode": "amistoso", "rival_source": "manual", "own_side": "local",
+                     "rival_name": "  Pádel   Norte ", "start_date": "2026-11-15"}
+
+    def test_creates_friendly_without_creating_a_team(self):
+        teams = Team.objects.count()
+        response = self.client.post(self.url, self.data)
+        match = Match.objects.get()
+        self.assertRedirects(response, reverse("call_for_match", args=[match.public_id]),
+                             fetch_redirect_response=False)
+        self.assertEqual(Team.objects.count(), teams)
+        self.assertEqual((match.local, match.visiting), (self.own, None))
+        self.assertEqual(match.rival_name, "Pádel Norte")
+        self.assertEqual(match.match_type, Match.AMISTOSO)
+        self.assertEqual(match.rival_label, "Pádel Norte")
+        self.assertEqual(str(match), f"{self.own.name} - Pádel Norte")
+
+    def test_own_team_can_play_as_visiting(self):
+        self.client.post(self.url, {**self.data, "own_side": "visiting"})
+        match = Match.objects.get()
+        self.assertEqual((match.local, match.visiting), (None, self.own))
+        self.assertTrue(match.own_is_visiting)
+        self.assertEqual(match.local_name, "Pádel Norte")
+
+    def test_rival_name_is_required(self):
+        response = self.client.post(self.url, {**self.data, "rival_name": "  "})
+        self.assertContains(response, "Escribe el nombre del equipo rival")
+        self.assertFalse(Match.objects.exists())
+
+    def test_rival_cannot_be_named_like_own_team(self):
+        response = self.client.post(self.url, {**self.data, "rival_name": self.own.name.lower()})
+        self.assertContains(response, "no puede llamarse igual que tu equipo")
+        self.assertFalse(Match.objects.exists())
+
+    def test_competitive_match_ignores_typed_rival(self):
+        rival = Team.objects.create(club=self.club, name="Rival", location="X", in_group=True)
+        response = self.client.post(self.url, {**self.data, "mode": "competitivo", "local": self.own.id})
+        self.assertContains(response, "Por favor, completa todos los campos")
+        self.client.post(self.url, {**self.data, "mode": "competitivo", "local": self.own.id,
+                                    "visiting": rival.id})
+        match = Match.objects.get()
+        self.assertEqual((match.visiting, match.rival_name), (rival, ""))
+
+    def test_friendly_against_group_team_still_works(self):
+        rival = Team.objects.create(club=self.club, name="Rival", location="X", in_group=True)
+        self.client.post(self.url, {**self.data, "rival_source": "grupo", "local": self.own.id,
+                                    "visiting": rival.id})
+        match = Match.objects.get()
+        self.assertEqual((match.visiting, match.rival_name, match.match_type), (rival, "", Match.AMISTOSO))
+
+    def test_pages_show_typed_rival(self):
+        self.client.post(self.url, self.data)
+        match = Match.objects.get()
+        call = Call.objects.create(match=match)
+        for url in (reverse("list_match"), reverse("call_for_match", args=[match.public_id]), reverse("home")):
+            with self.subTest(url=url):
+                self.assertContains(self.client.get(url), "Pádel Norte")
+        self.assertEqual(str(call), f"{self.own.name} vs Pádel Norte")
+
