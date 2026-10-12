@@ -1,20 +1,21 @@
 """
 PDF del informe mensual de un jugador, con el mismo estilo que el informe de convocatoria
-(fondo oscuro, acento lima). Cabe en una página A4: indicadores del mes, sets, parejas y
-el detalle de sus partidos (los que no caben se cuentan en una nota).
+(fondo oscuro, acento lima). Ocupa 2 páginas A4: indicadores del mes, sets clutch, convocatorias,
+evolución de puntos SNP, parejas y el detalle de sus partidos (los que no caben se cuentan en una nota).
 """
 import io
 
 from django.utils.formats import date_format
 from django.utils.translation import gettext as _, pgettext
+from reportlab.graphics.shapes import Circle, Drawing, Line, PolyLine, String
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
-from reportlab.platypus import BaseDocTemplate, Frame, PageTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.platypus import BaseDocTemplate, Frame, PageTemplate, KeepTogether, Paragraph, Spacer, Table, TableStyle
 
-from .monthly_report import MAX_GAME_ROWS
+from .monthly_report import CALL_ABSENT, CALL_BENCHED, CALL_PLAYED, MAX_CALL_ROWS, MAX_GAME_ROWS
 from .report_pdf import (
     draw_page_header, BOTTOM_MARGIN, CONTENT_W, GUTTER, HEADING_GAP, MARGIN, PAGE_H, PAGE_W,
-    SECTION_GAP, TOP_MARGIN, _data_table, _fit, _kpis, _panel, _pips, _record, _register_fonts,
+    BORDER, LIME, MUTED, SECTION_GAP, TOP_MARGIN, _data_table, _fit, _kpis, _panel, _pips, _record, _register_fonts,
     _streak_label, _styles, esc,
 )
 from core.models import REPORT_SCOPE_COMPETITIVE
@@ -56,6 +57,124 @@ def _rate(rate):
     return f"{rate['wins']}V-{rate['losses']}D" if rate["total"] else ""
 
 
+def _score(value):
+    """Puntos SNP con separador de miles («68 500»)."""
+    return f"{value:,.0f}".replace(",", " ")
+
+
+def _snp_chart(points, width, height=34 * mm):
+    """
+    Gráfica de la evolución de los puntos SNP del mes (línea lima sobre rejilla tenue).
+
+    ``points`` es [(fecha, puntos)] ordenado. Con un solo punto dibuja solo el punto. El eje
+    vertical va de mínimo a máximo (con un margen) y el horizontal, de la primera a la
+    última fecha del mes con datos.
+    """
+    drawing = Drawing(width, height)
+    left, right, bottom, top = 30, 8, 14, 6
+    plot_w, plot_h = width - left - right, height - bottom - top
+    values = [score for _date, score in points]
+    low, high = min(values), max(values)
+    pad = (high - low) * 0.1 or max(abs(high) * 0.01, 1)
+    low, high = low - pad, high + pad
+    first, last = points[0][0], points[-1][0]
+    span = max((last - first).days, 1)
+
+    def x(day):
+        """Posición horizontal de una fecha."""
+        return left + (plot_w / 2 if last == first else (day - first).days / span * plot_w)
+
+    def y(score):
+        """Posición vertical de unos puntos."""
+        return bottom + (score - low) / (high - low) * plot_h
+
+    for frac in (0, 0.5, 1):
+        level = low + (high - low) * frac
+        drawing.add(Line(left, y(level), left + plot_w, y(level), strokeColor=BORDER, strokeWidth=0.4))
+        drawing.add(String(left - 4, y(level) - 2.5, _score(level), fontName="Archivo", fontSize=6.5,
+                           fillColor=MUTED, textAnchor="end"))
+    if len(points) > 1:
+        drawing.add(PolyLine([c for d, sc in points for c in (x(d), y(sc))], strokeColor=LIME, strokeWidth=1.6))
+    for day, score in points:
+        drawing.add(Circle(x(day), y(score), 2, fillColor=LIME, strokeColor=LIME))
+    drawing.add(String(left, 3, f"{first:%d/%m}", fontName="Archivo", fontSize=6.5, fillColor=MUTED))
+    if last != first:
+        drawing.add(String(left + plot_w, 3, f"{last:%d/%m}", fontName="Archivo", fontSize=6.5,
+                           fillColor=MUTED, textAnchor="end"))
+    return drawing
+
+
+def _snp_section(report, st):
+    """Título, resumen y gráfica de la evolución SNP del mes (o un aviso si no hay datos)."""
+    points = report["snp"]
+    story = [Paragraph(esc(_("Evolución de tus puntos SNP")), st["section"])]
+    if not points:
+        return story + [Paragraph(esc(_("No hay actualizaciones de puntos SNP este mes.")), st["muted"])]
+    start, end = points[0][1], points[-1][1]
+    if len(points) > 1:
+        delta = end - start
+        summary = _("De %(start)s a %(end)s puntos (%(delta)s)") % {
+            "start": _score(start), "end": _score(end), "delta": f"{'+' if delta > 0 else ''}{_score(delta)}"}
+    else:
+        summary = _("%(end)s puntos a fecha %(date)s") % {"end": _score(end), "date": f"{points[0][0]:%d/%m}"}
+    return story + [Paragraph(esc(summary), st["body"]), Spacer(1, HEADING_GAP),
+                    _panel(_snp_chart(points, CONTENT_W - 2 * 9))]
+
+
+def _clutch_section(report, st):
+    """Panel «Sets clutch» de las estadísticas del jugador: decisivo, tie-breaks, remontadas y más, con su V-D."""
+    sets = report["sets"]
+    story = [Paragraph(esc(_("Sets clutch")), st["section"]),
+             Paragraph(esc(_("Cómo respondes en los momentos decisivos: tercer set, tie-breaks y remontadas.")),
+                       st["muted"]), Spacer(1, HEADING_GAP)]
+    situations = [(_("Set decisivo"), "third"), (_("Tie-breaks"), "tiebreak"), (_("Remontadas"), "comeback"),
+                  (_("Cerrar el partido"), "first_set"), (_("Sets ajustados"), "close")]
+    if sets["super_tb"]["total"]:
+        situations.append((_("Super tie-break"), "super_tb"))
+    cells = []
+    for label, key in situations:
+        rate = sets[key]
+        pct = f"{rate['pct']}%" if rate["pct"] is not None else "—"
+        cells.append([Paragraph(esc(label).upper(), st["subsection"]),
+                      Paragraph(f"<b>{pct}</b> · {esc(_rate(rate)) if rate['total'] else esc(_('Ninguno'))}", st["body"])])
+    cols = 3
+    while len(cells) % cols:
+        cells.append("")
+    grid = Table([cells[i:i + cols] for i in range(0, len(cells), cols)], colWidths=[CONTENT_W / cols - 6] * cols)
+    grid.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "TOP"), ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                              ("BOTTOMPADDING", (0, 0), (-1, -1), 4)]))
+    facts = _("Llegan al tercer set: %(share)s %%") % {"share": sets["third_share"] or 0}
+    return story + [_panel([grid, Paragraph(esc(facts), st["muted"])])]
+
+
+def _calls_section(report, st):
+    """Convocatorias del mes: totales por estado y listado (apuntado y convocado, apuntado y no convocado, no apuntado)."""
+    counts, calls = report["call_counts"], report["calls"]
+    story = [Paragraph(esc(_("Convocatorias del mes")), st["section"])]
+    if not calls:
+        return story + [Paragraph(esc(_("No hubo convocatorias cerradas este mes.")), st["muted"])]
+    signed = counts[CALL_PLAYED] + counts[CALL_BENCHED]
+    story += [_kpis([
+        (_("Apuntado"), f"{signed}/{len(calls)}"),
+        (_("Convocado"), str(counts[CALL_PLAYED])),
+        (_("No convocado"), str(counts[CALL_BENCHED])),
+        (_("No apuntado"), str(counts[CALL_ABSENT])),
+    ], st), Spacer(1, HEADING_GAP)]
+    labels = {CALL_PLAYED: _("Apuntado y convocado"), CALL_BENCHED: _("Apuntado, no convocado"),
+              CALL_ABSENT: _("No apuntado")}
+    rows = [[Paragraph(f"{c['date']:%d/%m}", st["cell"]),
+             Paragraph(esc(_fit(c["rival"], 55 * mm, "Archivo-Bold", 8)), st["cell_bold"]),
+             Paragraph(esc(c["match_type"]), st["cell"]),
+             Paragraph(esc(labels[c["status"]]), st["cell_bold"] if c["status"] == CALL_PLAYED else st["cell"])]
+            for c in calls[:MAX_CALL_ROWS]]
+    story.append(_data_table([_("Fecha"), _("Rival"), _("Tipo"), _("Tu estado")], rows,
+                             [16 * mm, 62 * mm, 40 * mm, CONTENT_W - 118 * mm], st))
+    extra = len(calls) - MAX_CALL_ROWS
+    if extra > 0:
+        story += [Spacer(1, HEADING_GAP), Paragraph(esc(_("Y %(n)s convocatorias más.") % {"n": extra}), st["muted"])]
+    return story
+
+
 def _story(report):
     """Flowables del informe."""
     st = _styles()
@@ -91,15 +210,14 @@ def _story(report):
                        st["body"]),
              Paragraph(esc(_("Juegos: %(w)s a favor, %(l)s en contra") % {"w": sets["games_won"], "l": sets["games_lost"]}),
                        st["body"])]
-    for label, key in ((_("Tercer set"), "third"), (_("Tie-breaks"), "tiebreak"), (_("Remontadas"), "comeback")):
-        if sets[key]["total"]:
-            right.append(Paragraph(esc(f"{label}: {_rate(sets[key])}"), st["body"]))
     if sets["bagels_for"] or sets["bagels_against"]:
         right.append(Paragraph(esc(_("Roscos: %(f)s dados, %(a)s recibidos")
                                    % {"f": sets["bagels_for"], "a": sets["bagels_against"]}), st["body"]))
     cards = Table([[left, right]], colWidths=[CONTENT_W / 2, CONTENT_W / 2])
     cards.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "TOP"), ("LEFTPADDING", (0, 0), (-1, -1), 0)]))
     story += [_panel(cards), Spacer(1, SECTION_GAP)]
+    for section in (_clutch_section, _snp_section, _calls_section):
+        story += [KeepTogether(section(report, st)), Spacer(1, SECTION_GAP)]
 
     # Parejas
     if report["partners"]:

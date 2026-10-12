@@ -14,7 +14,8 @@ from core.unsubscribe import unsubscribe_path, unsubscribe_token
 from match.models import Game, Match, Result
 from match.monthly_pdf import render_monthly_report
 from match.monthly_report import build_monthly_report, previous_month
-from players.models import Player
+from call.models import Call
+from players.models import Player, SnpScoreHistory
 from team.models import Team
 
 User = get_user_model()
@@ -85,7 +86,39 @@ class ReportDataTests(MonthlyBase):
     def test_pdf_renders(self):
         pdf = render_monthly_report(build_monthly_report(self.ana, MONTH))
         self.assertTrue(pdf.startswith(b"%PDF"))
-        self.assertEqual(pdf.count(b"/Type /Page\n") + pdf.count(b"/Type /Page "), 1)
+        self.assertLessEqual(pdf.count(b"/Type /Page\n") + pdf.count(b"/Type /Page "), 2)
+
+    def test_calls_statuses_and_scope(self):
+        # Apuntada y alineada, apuntada sin jugar y sin apuntarse (amistoso); la abierta no cuenta
+        played = Call.objects.create(match=self.match, draft_mode=False)
+        played.players.add(self.ana)
+        benched_match = Match.objects.create(club=self.club, local=self.club.own_team, visiting=self.rival,
+                                             start_date=MONTH.replace(day=15), match_type=Match.ENFRENTAMIENTO,
+                                             draft_mode=False)
+        Call.objects.create(match=benched_match, draft_mode=False).players.add(self.ana)
+        Call.objects.create(match=self.friendly, draft_mode=False)
+        open_match = Match.objects.create(club=self.club, local=self.club.own_team, visiting=self.rival,
+                                          start_date=MONTH.replace(day=25), match_type=Match.ENFRENTAMIENTO)
+        Call.objects.create(match=open_match, draft_mode=True).players.add(self.ana)
+        report = build_monthly_report(self.ana, MONTH)
+        self.assertEqual([c["status"] for c in report["calls"]], ["played", "benched", "absent"])
+        self.assertEqual(report["call_counts"], {"played": 1, "benched": 1, "absent": 1})
+        competitive = build_monthly_report(self.ana, MONTH, "competitivos")
+        self.assertEqual([c["status"] for c in competitive["calls"]], ["played", "benched"])
+        self.assertTrue(render_monthly_report(report).startswith(b"%PDF"))
+
+    def test_snp_history_of_the_month(self):
+        for day, score in ((datetime.date(2026, 8, 31), 100), (datetime.date(2026, 9, 7), 120),
+                           (datetime.date(2026, 9, 21), 150.5), (datetime.date(2026, 10, 1), 200)):
+            SnpScoreHistory.objects.create(player=self.ana, date=day, score=score)
+        report = build_monthly_report(self.ana, MONTH)
+        self.assertEqual(report["snp"], [(datetime.date(2026, 9, 7), 120), (datetime.date(2026, 9, 21), 150.5)])
+        self.assertTrue(render_monthly_report(report).startswith(b"%PDF"))
+        # Con un solo punto o ninguno también se genera
+        SnpScoreHistory.objects.filter(date=datetime.date(2026, 9, 21)).delete()
+        self.assertTrue(render_monthly_report(build_monthly_report(self.ana, MONTH)).startswith(b"%PDF"))
+        SnpScoreHistory.objects.all().delete()
+        self.assertEqual(build_monthly_report(self.ana, MONTH)["snp"], [])
 
     def test_pdf_with_many_games(self):
         for i in range(30):
@@ -140,6 +173,31 @@ class CommandTests(MonthlyBase):
 
     def test_dry_run_sends_nothing(self):
         self.assertIn("ana@example.com", self.run_command("--month", "2026-09", "--dry-run"))
+        self.assertEqual(len(mail.outbox), 0)
+        self.assertFalse(MonthlyReportDelivery.objects.exists())
+
+    def test_manual_send_skips_idempotency_and_leaves_a_record(self):
+        self.run_command("--month", "2026-09")
+        out = self.run_command("--month", "2026-09", "--user", "ANA@example.com")
+        self.assertIn("Enviado a mano", out)
+        self.assertEqual(len(mail.outbox), 2)
+        self.assertEqual(mail.outbox[1].to, ["ana@example.com"])
+        delivery = MonthlyReportDelivery.objects.get()
+        self.assertEqual(delivery.manual_sends, 1)
+        self.assertIsNotNone(delivery.last_manual_at)
+
+    def test_manual_send_without_previous_delivery_or_with_opt_out(self):
+        UserPreference.objects.create(user=self.user, monthly_report=False)
+        self.run_command("--month", "2026-09", "--user", "ana@example.com")
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(MonthlyReportDelivery.objects.get().manual_sends, 1)
+
+    def test_manual_send_errors_and_dry_run(self):
+        with self.assertRaises(CommandError):
+            self.run_command("--month", "2026-09", "--user", "nadie@example.com")
+        with self.assertRaises(CommandError):
+            self.run_command("--month", "2026-07", "--user", "ana@example.com")
+        self.assertIn("ana@example.com", self.run_command("--month", "2026-09", "--user", "ana@example.com", "--dry-run"))
         self.assertEqual(len(mail.outbox), 0)
         self.assertFalse(MonthlyReportDelivery.objects.exists())
 

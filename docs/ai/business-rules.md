@@ -98,7 +98,10 @@ ni se editan parejas (`edit_game_match`).
   activo) que jugó partidos ese mes; `monthly_scope` (`todos`/`competitivos`) filtra los amistosos. Idempotente por
   `MonthlyReportDelivery(user, month)`: se reserva antes de enviar y se borra si el correo falla. El correo lleva enlace de baja con token
   firmado sin caducidad (`core/unsubscribe.py`, vista `monthly_unsubscribe`: GET confirma, POST con CSRF desactiva; cabecera
-  `List-Unsubscribe`). Necesita `SITE_URL`. Programado en `JOBS` (`0 9 1 * *`); sin `run_scheduler`, un cron mensual del host que
+  `List-Unsubscribe`). El PDF (2 páginas) añade convocatorias del mes (`monthly_calls`: apuntado y alineado / apuntado sin jugar /
+  no apuntado, solo cerradas), evolución de `SnpScoreHistory` del mes (`monthly_snp`) y el panel «Sets clutch» (`set_stats`).
+  Envío manual: `send_monthly_reports --user EMAIL [--month]` (opciones del job en backoffice) se salta la idempotencia y la baja,
+  respeta el alcance y suma `MonthlyReportDelivery.manual_sends`/`last_manual_at`. Necesita `SITE_URL`. Programado en `JOBS` (`0 9 1 * *`); sin `run_scheduler`, un cron mensual del host que
   ejecute `python manage.py send_monthly_reports`. Tests: `match/tests_monthly.py`.
 
 - [V] Al cerrar la convocatoria se encola un `ReportDelivery` por capitán con email

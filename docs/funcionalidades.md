@@ -177,7 +177,7 @@ Solo para el personal, en `/backoffice/` ([`backoffice`](referencia/backoffice/i
 | `update_snp_scores` | Actualiza los puntos SNP (lo lanza el programador). |
 | `complete_snp_team` | Trae jugadores desde SNP para un club. |
 | `send_call_reports` | Reintenta los informes de convocatoria pendientes. |
-| `send_monthly_reports` | Envía a cada jugador con cuenta su informe PDF del mes anterior (idempotente; programado el día 1; ver `--month`, `--dry-run`, `--limit`). Sin `run_scheduler`, basta un cron mensual en el servidor. |
+| `send_monthly_reports` | Envía a cada jugador con cuenta su informe PDF del mes anterior (idempotente; programado el día 1; ver `--month`, `--dry-run`, `--limit`; `--user EMAIL` lo envía a mano a una cuenta aunque ya lo tenga). Sin `run_scheduler`, basta un cron mensual en el servidor. |
 | `copy_sqlite_to_db` | Copia una base de datos SQLite a PostgreSQL. |
 | `adopt_repo_migrations` | Adapta bases de datos antiguas a las migraciones del repositorio. |
 | `move_photos_to_media` | Pasa fotos antiguas a `media/`. |
