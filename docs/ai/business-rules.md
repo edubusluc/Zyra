@@ -130,7 +130,7 @@ ni se editan parejas (`edit_game_match`).
 - [V] Solo cuentan partidos con el acta cerrada (`pairs.club_game_log`, `calculate_match_statistics`).
 - [V] Una pareja es la misma con independencia de quién juegue en cada lado (`pairs.pair_key`);
   los rankings exigen un mínimo de partidos (`min_games_pair`).
-- [V] Filtro de tipo: Todos / Competitivos / Amistosos (`?match_type=`); temporada `?season=`.
+- [V] Filtro de tipo: Todos / Competitivos / Amistosos (`?match_type=`); temporada `?season=` (equipo, jugador y parejas; sin ella, todas las temporadas).
 - [I] Las métricas se calculan en Python sobre el log de partidos; con muchos partidos por club
   conviene vigilar el rendimiento.
 

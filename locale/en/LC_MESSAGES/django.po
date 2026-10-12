@@ -5378,6 +5378,13 @@ msgid_plural "%(played)s partidos jugados en %(n)s temporadas"
 msgstr[0] "%(played)s matches played in %(n)s season"
 msgstr[1] "%(played)s matches played in %(n)s seasons"
 
+#: data_analyse/templates/player_statistics.html:13
+#, python-format
+msgid "%(n)s partido jugado en la temporada %(season)s"
+msgid_plural "%(n)s partidos jugados en la temporada %(season)s"
+msgstr[0] "%(n)s match played in season %(season)s"
+msgstr[1] "%(n)s matches played in season %(season)s"
+
 #: data_analyse/templates/player_statistics.html:19
 msgid "Busca o elige un jugador"
 msgstr "Search or choose a player"
