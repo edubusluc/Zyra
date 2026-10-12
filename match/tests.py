@@ -167,6 +167,25 @@ class MatchesAndCallsTests(TestCase):
         response = self.client.get(reverse("list_match"), {"rival": "Otro club"})
         self.assertEqual(response.context["rival"], "")
 
+    def test_match_list_type_filter(self):
+        """El tipo (competitivos / amistosos / uno concreto) se combina con temporada y rival y se conserva al paginar."""
+        friendly = Match.objects.create(club=self.club, local=self.club.own_team, start_date=self.current.start_date,
+                                        match_type=Match.AMISTOSO, rival_name="Amigos FC")
+        reto = Match.objects.create(club=self.club, local=self.club.own_team, visiting=self.rival,
+                                    start_date=self.current.start_date, match_type=Match.RETO)
+        ids = lambda **params: {m.id for m in self.client.get(reverse("list_match"), params).context["matches"]}
+        self.assertEqual(ids(), {self.current.id, friendly.id, reto.id})
+        self.assertEqual(ids(match_type="amistoso"), {friendly.id})
+        self.assertEqual(ids(match_type="competitivo"), {self.current.id, reto.id})
+        self.assertEqual(ids(match_type="reto"), {reto.id})
+        self.assertEqual(ids(match_type="competitivo", season="all", rival="Rival"), {self.current.id, self.old.id, reto.id})
+        self.assertEqual(ids(match_type="amistoso", rival="Rival"), set())
+        self.assertEqual(ids(match_type="inventado"), {self.current.id, friendly.id, reto.id})
+        response = self.client.get(reverse("list_match"), {"match_type": "amistoso"})
+        self.assertIn("match_type=amistoso", response.context["page_extra"])
+        self.assertTrue(response.context["filtering"])
+        self.assertContains(response, 'aria-current="page">Amistosos')
+
     def test_long_call_groups_are_collapsed(self):
         """Con muchos convocados en una posición, se ven los primeros y el resto tras «Ver N más»."""
         players = [Player.objects.create(club=self.club, name=f"P{i:02d}", last_name="X", position="Derecha")

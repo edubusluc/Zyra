@@ -33,7 +33,8 @@ from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.core.exceptions import ValidationError
 from django.db.models import Count, Q
 from django.utils import timezone
-from data_analyse.views import season_filter_context
+from data_analyse.views import season_filter_context, match_type_context, selected_match_type
+from data_analyse.pairs import match_type_lookup
 
 
 CREATE_MATCH_HTML = "create_match.html"
@@ -110,13 +111,14 @@ def search_matches(matches, text):
 
 @club_required
 def list_match(request):
-    """Listado paginado de los enfrentamientos del club, filtrable por temporada, rival y nombre.
+    """Listado paginado de los enfrentamientos del club, filtrable por temporada, tipo, rival y nombre.
 
     Requiere pertenecer al club (club_required). Por GET ``season`` elige la temporada
     (por defecto la actual; 'all' muestra todas) y ``page`` la página. El selector muestra
     «Todas», las tres temporadas más recientes y un buscador para las demás
     (data_analyse.views.season_filter_context). ``rival`` deja solo los partidos contra ese
-    rival y ``q`` busca por coincidencia en los nombres de los equipos y la ubicación; al
+    rival, ``match_type`` el tipo (todos, competitivos, amistosos o uno concreto; mismos valores
+    y chips que las estadísticas) y ``q`` busca por coincidencia en los nombres de los equipos y la ubicación; al
     buscar o elegir rival sin indicar temporada se buscan en todas. Renderiza list_match.html
     con el resultado, la temporada de cada partido y un resumen de ganados, empatados,
     perdidos y pendientes de lo filtrado. Cada partido de la página lleva además los puntos
@@ -142,6 +144,8 @@ def list_match(request):
     matches = club_matches.order_by('-start_date', '-id')
     if season != ALL_SEASONS:
         matches = matches.filter(season=season)
+    match_type = selected_match_type(request)
+    matches = matches.filter(**match_type_lookup(match_type))
     if rival:
         matches = filter_by_rival(matches, rival)
     if search:
@@ -175,7 +179,7 @@ def list_match(request):
         m.upcoming = m.outcome is None and m.start_date >= today
 
     # Resto de filtros para la paginación y para los formularios de búsqueda.
-    keep = {'season': season, 'q': search, 'rival': rival}
+    keep = {'season': season, 'q': search, 'rival': rival, 'match_type': match_type}
     return render(request, "list_match.html", {
         'matches': matches,
         'seasons': seasons,
@@ -185,7 +189,8 @@ def list_match(request):
         'search': search,
         'rival': rival,
         'rivals': rivals,
-        'filtering': bool(search or rival),
+        'filtering': bool(search or rival or match_type),
+        **match_type_context(request, match_type),
         'page_extra': '&' + urlencode({k: v for k, v in keep.items() if v}),
         **season_filter_context(request, seasons, season, all_value=ALL_SEASONS),
     })
