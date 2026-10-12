@@ -78,12 +78,11 @@ def _bodies(report, unsubscribe_url):
 
 
 def build_message(report, to, unsubscribe_url):
-    """Correo con el PDF adjunto y las cabeceras List-Unsubscribe (baja con un clic en los clientes de correo)."""
+    """Correo con el PDF adjunto y la cabecera List-Unsubscribe (los clientes de correo muestran «Cancelar suscripción»)."""
     subject = _("Tu informe de %(month)s · Zyra") % {"month": month_label(report["month"])}
     text, html = _bodies(report, unsubscribe_url)
     email = build_email(subject, text, html, to=[to])
-    email.extra_headers = {"List-Unsubscribe": f"<{unsubscribe_url}>",
-                           "List-Unsubscribe-Post": "List-Unsubscribe=One-Click"}
+    email.extra_headers = {"List-Unsubscribe": f"<{unsubscribe_url}>"}
     email.attach(report_filename(report), render_monthly_report(report), "application/pdf")
     return email
 

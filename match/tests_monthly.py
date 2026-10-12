@@ -177,11 +177,11 @@ class PreferencesAndUnsubscribeTests(MonthlyBase):
         self.assertEqual(response.status_code, 200)
         self.assertFalse(UserPreference.monthly_for(self.user)[0])
 
-    def test_unsubscribe_one_click_post_without_csrf(self):
+    def test_unsubscribe_post_requires_csrf(self):
         from django.test import Client
         client = Client(enforce_csrf_checks=True)
-        client.post(unsubscribe_path(self.user), {"List-Unsubscribe": "One-Click"})
-        self.assertFalse(UserPreference.monthly_for(self.user)[0])
+        client.post(unsubscribe_path(self.user))
+        self.assertTrue(UserPreference.monthly_for(self.user)[0])
 
     def test_bad_token(self):
         response = self.client.post(reverse("monthly_unsubscribe", args=[unsubscribe_token(self.user) + "x"]))

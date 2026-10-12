@@ -25,7 +25,6 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods, require_POST, require_safe
 
 from data_analyse import pairs as pair_stats
@@ -569,15 +568,14 @@ def my_profile(request):
     })
 
 
-@csrf_exempt
 @require_http_methods(["GET", "POST"])
 def monthly_unsubscribe(request, token):
     """
     Baja de los correos mensuales desde el enlace del email, sin iniciar sesión.
 
     El GET solo pide confirmación (los antivirus y clientes de correo abren los enlaces
-    solos); el POST desactiva el correo. Sin CSRF a propósito: el token firmado identifica a la
-    cuenta y así sirve también la baja con un clic de los clientes de correo (List-Unsubscribe-Post).
+    solos); el POST, con el token CSRF de esa página, desactiva el correo. El token firmado de
+    la URL identifica a la cuenta.
     """
     user = user_from_token(token)
     if user is None:
