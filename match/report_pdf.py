@@ -107,7 +107,8 @@ def _register_fonts():
     if _fonts_ready:
         return
     for name, file in (("Archivo", "Archivo-Regular.ttf"), ("Archivo-Bold", "Archivo-Bold.ttf"),
-                       ("Archivo-Black", "Archivo-ExtraBold.ttf"), ("Syncopate", "Syncopate-Bold.ttf")):
+                       ("Archivo-Black", "Archivo-ExtraBold.ttf"), ("Syncopate", "Syncopate-Bold.ttf"),
+                       ("Syncopate-Italic", "Syncopate-BoldItalic.ttf")):
         pdfmetrics.registerFont(TTFont(name, str(FONT_DIR / file)))
     _fonts_ready = True
 
@@ -117,7 +118,7 @@ def _styles(layout=Layout()):
     size, cell = layout.body_size, layout.cell_size
     base = dict(fontName="Archivo", fontSize=size, leading=size * 1.3, textColor=TEXT, alignment=TA_LEFT)
     return {
-        "title": ParagraphStyle("title", fontName="Syncopate", fontSize=17, leading=21, textColor=TEXT),
+        "title": ParagraphStyle("title", fontName="Syncopate-Italic", fontSize=17, leading=21, textColor=TEXT),
         "subtitle": ParagraphStyle("subtitle", **{**base, "fontSize": 11, "leading": 14, "textColor": MUTED}),
         "section": ParagraphStyle("section", fontName="Archivo-Black", fontSize=11, leading=14,
                                   textColor=TEXT, spaceAfter=layout.heading_gap),
@@ -263,7 +264,7 @@ def _on_page(canvas, doc, report, total):
     if LOGO.exists():
         canvas.drawImage(str(LOGO), MARGIN, top - 3.2 * mm, width=7 * mm, height=7 * mm, mask="auto")
     canvas.setFillColor(TEXT)
-    canvas.setFont("Syncopate", 12)
+    canvas.setFont("Syncopate-Italic", 12)
     canvas.drawString(MARGIN + 9 * mm, top - 1.3 * mm, "ZYRA")
     canvas.setFont("Archivo-Bold", 8)
     canvas.setFillColor(MUTED)

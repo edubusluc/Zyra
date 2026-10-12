@@ -46,7 +46,7 @@ def _on_page(canvas, doc, report):
     if LOGO.exists():
         canvas.drawImage(str(LOGO), MARGIN, top - 3.2 * mm, width=7 * mm, height=7 * mm, mask="auto")
     canvas.setFillColor(TEXT)
-    canvas.setFont("Syncopate", 12)
+    canvas.setFont("Syncopate-Italic", 12)
     canvas.drawString(MARGIN + 9 * mm, top - 1.3 * mm, "ZYRA")
     canvas.setFont("Archivo-Bold", 8)
     canvas.setFillColor(MUTED)

@@ -1,5 +1,9 @@
 /* Estilo de Zyra para la web de documentación: fondo oscuro, acento lima, Syncopate + Archivo. */
-@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700&family=Syncopate:wght@700&family=JetBrains+Mono:wght@400;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap");
+
+/* Syncopate Bold en cursiva real (no sintetizada), la misma que usan la web y los PDF */
+@font-face { font-family: "Syncopate"; font-weight: 700; font-display: swap; src: url("../assets/Syncopate-Bold.ttf") format("truetype"); }
+@font-face { font-family: "Syncopate"; font-style: italic; font-weight: 700; font-display: swap; src: url("../assets/Syncopate-BoldItalic.ttf") format("truetype"); }
 
 [data-md-color-scheme="slate"] {
   --z-bg: #0B0B0B;

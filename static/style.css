@@ -10,6 +10,7 @@
 @font-face { font-family: 'Archivo'; font-weight: 700; font-display: swap; src: url('zyra/fonts/Archivo-Bold.ttf') format('truetype'); }
 @font-face { font-family: 'Archivo'; font-weight: 800; font-display: swap; src: url('zyra/fonts/Archivo-ExtraBold.ttf') format('truetype'); }
 @font-face { font-family: 'Syncopate'; font-weight: 700; font-display: swap; src: url('zyra/fonts/Syncopate-Bold.ttf') format('truetype'); }
+@font-face { font-family: 'Syncopate'; font-style: italic; font-weight: 700; font-display: swap; src: url('zyra/fonts/Syncopate-BoldItalic.ttf') format('truetype'); }
 
 :root,
 [data-bs-theme="dark"] {
