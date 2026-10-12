@@ -8066,6 +8066,112 @@ msgstr "Preferences saved."
 msgid "Estadísticas calculadas solo con partidos competitivos."
 msgstr "Statistics calculated from competitive matches only."
 
+msgid "Todos los partidos, amistosos incluidos"
+msgstr "All matches, friendlies included"
+
+msgid "Informe mensual automático · Zyra"
+msgstr "Automatic monthly report · Zyra"
+
+msgid "Tu mes en pista"
+msgstr "Your month on court"
+
+msgid "% victorias"
+msgstr "% wins"
+
+msgid "Racha actual: %(streak)s"
+msgstr "Current streak: %(streak)s"
+
+msgid "Enfrentamientos jugados: %(n)s"
+msgstr "Team matches played: %(n)s"
+
+msgid "Sets: %(w)s ganados, %(l)s perdidos"
+msgstr "Sets: %(w)s won, %(l)s lost"
+
+msgid "Juegos: %(w)s a favor, %(l)s en contra"
+msgstr "Games: %(w)s for, %(l)s against"
+
+msgid "Tercer set"
+msgstr "Third set"
+
+msgid "Roscos: %(f)s dados, %(a)s recibidos"
+msgstr "Bagels: %(f)s given, %(a)s received"
+
+msgid "Tus parejas"
+msgstr "Your partners"
+
+msgid "Balance"
+msgstr "Record"
+
+msgid "Tus partidos"
+msgstr "Your matches"
+
+msgid "Nº"
+msgstr "No."
+
+msgid "Y %(n)s partidos más."
+msgstr "And %(n)s more matches."
+
+msgid "Informe mensual · %(month)s"
+msgstr "Monthly report · %(month)s"
+
+msgid "Hola %(name)s,"
+msgstr "Hi %(name)s,"
+
+msgid "Este es tu resumen de %(month)s: has jugado %(played)s partidos, ganado %(wins)s (%(pct)s%%) y sumado %(points)s puntos."
+msgstr "Here is your summary for %(month)s: you played %(played)s matches, won %(wins)s (%(pct)s%%) and scored %(points)s points."
+
+msgid "Te adjuntamos el informe en PDF con tus parejas, tus sets y el detalle de cada partido."
+msgstr "We have attached the PDF report with your partners, your sets and the detail of each match."
+
+msgid "¡Nos vemos en pista!"
+msgstr "See you on court!"
+
+msgid "Si no quieres recibir más estos correos, puedes desactivarlos aquí:"
+msgstr "If you no longer want to receive these emails, you can turn them off here:"
+
+msgid "Desactivar correos mensuales"
+msgstr "Turn off monthly emails"
+
+msgid "Tu informe de %(month)s · Zyra"
+msgstr "Your %(month)s report · Zyra"
+
+msgid "Correos mensuales"
+msgstr "Monthly emails"
+
+msgid "Este enlace de baja no es válido. Puedes desactivar los correos desde «Mi perfil»."
+msgstr "This unsubscribe link is not valid. You can turn the emails off from “My profile”."
+
+msgid "Correos desactivados"
+msgstr "Emails turned off"
+
+msgid "No te enviaremos más informes mensuales. Puedes volver a activarlos cuando quieras desde «Mi perfil»."
+msgstr "We will not send you any more monthly reports. You can turn them back on at any time from “My profile”."
+
+msgid "¿Dejar de recibir el informe mensual?"
+msgstr "Stop receiving the monthly report?"
+
+msgid "Dejaremos de enviarte por email el informe mensual con tus estadísticas."
+msgstr "We will stop emailing you the monthly report with your statistics."
+
+msgid "Desactivar correos"
+msgstr "Turn off emails"
+
+msgid "Ir a Mi perfil"
+msgstr "Go to My profile"
+
+msgid "Informe mensual por email"
+msgstr "Monthly report by email"
+
+msgid "Recibir cada mes un PDF con mis estadísticas"
+msgstr "Receive a PDF with my statistics every month"
+
+msgid "Solo se envía si tu cuenta está enlazada a un jugador y jugaste algún partido el mes anterior."
+msgstr "It is only sent if your account is linked to a player and you played a match last month."
+
+msgid "Partidos que cuenta el informe"
+msgstr "Matches the report counts"
+
+
 #~ msgid "Empezar"
 #~ msgstr "Get started"
 
