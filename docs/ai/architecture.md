@@ -63,7 +63,7 @@ Cuidado con imports circulares: `match.models` importa `players.models`; `player
    ciclo semanal) → `players.snp.sync_club` → `players.scraper.scrape_scores` (Playwright) →
    `Player.snp_score` + `SnpScoreHistory`.
 5. **Completar equipo** [V]: `complete_team_start` → `players.snp_import.start_search` (hilo en
-   segundo plano; con el ajuste `SNP_IMPORT_INLINE` corre en línea, lo usan los tests) → la página consulta `complete_team_status` →
+   segundo plano; con el ajuste `SNP_IMPORT_INLINE` corre en línea, lo usan los tests) → `scrape_scores(with_group_teams=True)` (jugadores + equipos de la Clasificación) → la página consulta `complete_team_status` →
    `complete_team_confirm` → `snp_import.confirm`.
 6. **Estadísticas** [V]: `data_analyse.views.*` construyen un log de partidos cerrados
    (`pairs.club_game_log`, `build_game_log`) y calculan en Python; filtros por temporada y tipo de

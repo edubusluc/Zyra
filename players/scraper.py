@@ -35,6 +35,9 @@ SNP_COUNTRIES = {"ES": "España", "MX": "México", "PT": "Portugal", "IT": "Ital
 DEFAULT_COUNTRY = "ES"
 MY_TEAMS = '.card-equipos'
 TEAM_LINKS = '#form_equipos table.results tbody td:first-child a[href*="/equipo/view/"]'
+# «Competiciones/Competencias» (en la página del equipo) y la tabla «Clasificación» que abre.
+COMPETITIONS_CARD = '.card-competiciones'
+GROUP_TEAM_CELLS = '.clasificacion_content table tbody td[idequipo]'
 MAX_PAGES = 30
 TIMEOUT_MS = 30_000
 # SNP rellena la tabla de jugadores después de mostrarla (y a veces tarda bastante).
@@ -382,7 +385,8 @@ def _skip_heavy_resources(route):
         route.continue_()
 
 
-def scrape_scores(username, password, team_id=None, headed=False, log=None, browser=None, country=None, team_name=None):
+def scrape_scores(username, password, team_id=None, headed=False, log=None, browser=None, country=None, team_name=None,
+                  with_group_teams=False):
     """
     Puntos SNP de los jugadores del equipo ``team_id`` (o del único equipo de la cuenta
     si no se indica). Lanza SnpScrapeError si algo falla. ``country`` es la nacionalidad
@@ -393,11 +397,57 @@ def scrape_scores(username, password, team_id=None, headed=False, log=None, brow
     ``headed`` abre el navegador a la vista (y más despacio) para seguir la ejecución;
     ``log`` recibe una línea por cada paso. ``browser`` es un SnpBrowser ya abierto que
     se reutiliza (el proceso por lotes); si no se indica, se abre y se cierra uno.
+
+    Con ``with_group_teams`` devuelve ``(jugadores, equipos_del_grupo)``: los equipos salen de
+    «Competiciones/Competencias → Clasificación» (ver ``parse_group_teams``). Si ese paso falla
+    (salvo que SNP nos bloquee) la lista queda vacía: los jugadores se leen igual.
     """
     if browser is None:
         with SnpBrowser(headed=headed) as own:
-            return own.run(_scrape, username, password, team_id, log, own, country, team_name)
-    return browser.run(_scrape, username, password, team_id, log, browser, country, team_name)
+            return own.run(_scrape, username, password, team_id, log, own, country, team_name, with_group_teams)
+    return browser.run(_scrape, username, password, team_id, log, browser, country, team_name, with_group_teams)
+
+
+def parse_group_teams(cells):
+    """
+    Equipos de la tabla «Clasificación» a partir de sus celdas (``td[idequipo]``): una lista de
+    ``{"snp_id", "name", "own"}`` sin repetir equipos. ``own`` es True en el equipo propio, que
+    SNP escribe en negrita (``span.negrita``).
+    """
+    teams, seen = [], set()
+    for cell in cells:
+        snp_id = (cell.get_attribute("idequipo") or "").strip()
+        span = cell.query_selector("a span") or cell.query_selector("span")
+        name = " ".join((span.inner_text() if span else "").split())
+        if not snp_id or not name or snp_id in seen:
+            continue
+        seen.add(snp_id)
+        classes = (span.get_attribute("class") or "").split() if span else []
+        teams.append({"snp_id": snp_id, "name": name, "own": "negrita" in classes})
+    return teams
+
+
+def _read_group_teams(page, log):
+    """
+    Desde la página del equipo, entra en «Competiciones/Competencias» y lee los equipos de la
+    tabla «Clasificación» (los del grupo del capitán). Espera a que dos lecturas seguidas coincidan.
+    """
+    _find(page, COMPETITIONS_CARD, "la tarjeta «Competiciones/Competencias»", log)[1].click()
+    page.wait_for_load_state("load", timeout=TIMEOUT_MS)
+    frame, _ = _find(page, GROUP_TEAM_CELLS, "la tabla «Clasificación»", log)
+    waited, last = 0, None
+    while waited < TABLE_TIMEOUT_MS:
+        try:
+            teams = parse_group_teams(frame.query_selector_all(GROUP_TEAM_CELLS))
+        except PlaywrightError:
+            teams = None  # la tabla se está recargando
+        if teams and teams == last:
+            log(f"Clasificación cargada: {', '.join(t['name'] for t in teams)}.")
+            return teams
+        last = teams
+        page.wait_for_timeout(500)
+        waited += 500
+    raise SnpTemporaryError("La tabla «Clasificación» de SNP no ha terminado de cargar.")
 
 
 def _read_all_pages(page, frame, log):
@@ -416,7 +466,7 @@ def _read_all_pages(page, frame, log):
     return players
 
 
-def _scrape(username, password, team_id, log, browser, country=None, team_name=None):
+def _scrape(username, password, team_id, log, browser, country=None, team_name=None, with_group_teams=False):
     """
     Lectura de un club en el hilo del navegador: inicia sesión, abre la página del equipo y
     recorre las páginas de la tabla de jugadores. Si durante la lectura SNP ha respondido que
@@ -424,7 +474,7 @@ def _scrape(username, password, team_id, log, browser, country=None, team_name=N
     a SnpTemporaryError. Devuelve los jugadores sin repetir nombres.
     """
     log = log or (lambda message: None)
-    players = []
+    players, group_teams = [], []
     blocked = []  # respuestas de SNP que indican que nos está limitando
     context = None
     try:
@@ -437,6 +487,13 @@ def _scrape(username, password, team_id, log, browser, country=None, team_name=N
         frame = _open_team_page(page, team_id, log, country, team_name)
         log(f"Página del equipo abierta: {frame.url}")
         players = _read_all_pages(page, frame, log)
+        if with_group_teams and players:
+            try:
+                group_teams = _read_group_teams(page, log)
+            except SnpBlockedError:
+                raise
+            except (SnpScrapeError, PlaywrightError) as exc:
+                log(f"No se han podido leer los equipos del grupo: {str(exc).splitlines()[0]}")
     except (SnpScrapeError, PlaywrightError) as exc:
         if blocked and not isinstance(exc, SnpBlockedError):
             raise SnpBlockedError(f"SNP ha respondido {blocked[-1]} mientras se leía el equipo: "
@@ -456,4 +513,5 @@ def _scrape(username, password, team_id, log, browser, country=None, team_name=N
     unique = {}
     for player in players:
         unique.setdefault(player["name"], player)
-    return list(unique.values())
+    players = list(unique.values())
+    return (players, group_teams) if with_group_teams else players

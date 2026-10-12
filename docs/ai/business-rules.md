@@ -123,7 +123,7 @@ ni se editan parejas (`edit_game_match`).
   cuenta del capitán). Para ante 429/403/503 o fallos de red seguidos.
 - [V] «Completar equipo» desde la web: 1 vez al mes, máx. 3 búsquedas al día con 5 min entre ellas
   (`players/snp_import.py`); clubes de `SNP_IMPORT_UNLIMITED_CLUBS` (por defecto «Los Gladiadores»)
-  sin límite. Al confirmar crea los que faltan y actualiza puntos de los existentes. Tests: `players/tests.py`.
+  sin límite. Al confirmar crea los que faltan y actualiza puntos de los existentes. Además lee en SNP «Competiciones → Clasificación» y crea como `in_group` (género/país/división/sede del equipo propio) los equipos del grupo que no existan (`core.similarity.is_similar`, sin duplicar); los existentes fuera del grupo se dan de alta en él, y si el club no tiene equipo propio, el que SNP marca en negrita lo será. Si ese paso falla no bloquea la importación de jugadores. Tests: `players/tests.py`.
 
 ## Estadísticas
 

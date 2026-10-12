@@ -60,7 +60,7 @@ entero sigue siendo la clave de los FK. Excepciones sin `public_id`: `backoffice
   `core/crypto.py`); estado de la última sincronización (`last_sync_*`).
 - **SnpScoreHistory**: un punto por jugador y día (`unique_snp_score_per_player_day`).
 - **SnpTeamImport**: búsqueda de «Completar equipo»; `status` ∈ running/ready/error/done/cancelled,
-  `source` web/backoffice, listas JSON `to_add`, `existing`, `created_players`.
+  `source` web/backoffice, listas JSON `to_add`, `existing`, `created_players` y, de los equipos del grupo, `teams_to_add`, `teams_existing`, `created_teams`.
 
 ### match (`match/models.py`)
 
