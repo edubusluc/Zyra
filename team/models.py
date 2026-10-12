@@ -50,7 +50,12 @@ class Team(PublicIdModel):
         ]
 
     def save(self, *args, **kwargs):
-        """Guarda el equipo y pasa su categoría (masculino/femenino) a sus jugadores."""
+        """
+        Guarda el equipo y pasa su categoría (masculino/femenino) a sus jugadores. El equipo
+        propio siempre está en el grupo: no puede darse de baja.
+        """
+        if self.is_own:
+            self.in_group = True
         super().save(*args, **kwargs)
         # Los jugadores tienen la categoría (masculino/femenino) de su equipo.
         if self.gender:

@@ -62,8 +62,9 @@
             </div>
 
             <div class="mb-3 form-check">
-                <input type="checkbox" id="in_group" name="in_group" class="form-check-input" {% if team.in_group %}checked{% endif %}>
+                <input type="checkbox" id="in_group" name="in_group" class="form-check-input" {% if team.in_group or team.is_own %}checked{% endif %}{% if team.is_own %} disabled{% endif %}>
                 <label for="in_group" class="form-check-label">{% translate "¿Se encuentra en tu grupo?" %}</label>
+                {% if team.is_own %}<small class="form-text text-muted d-block">{% translate "Tu equipo siempre está en tu grupo: no se puede dar de baja." %}</small>{% endif %}
             </div>
         
             <button type="submit" class="btn btn-primary">{% translate "Guardar" %}</button>

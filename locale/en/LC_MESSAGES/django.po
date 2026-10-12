@@ -7900,12 +7900,14 @@ msgstr ""
 
 #: team/templates/manage_teams.html:13
 msgid ""
-"Tu equipo no aparece aquí: sus datos se cambian desde su ficha. Si sacas un "
-"equipo del grupo, dejará de verse en esta lista al guardar."
+"Tu equipo no aparece aquí: sus datos se cambian desde su ficha y nunca puede "
+"darse de baja del grupo. Los equipos dados de baja siguen en la lista (filtro "
+"«Fuera de grupo»): activa «En tu grupo» y guarda para darlos de alta otra vez."
 msgstr ""
-"Your team is not listed here: change its details from its own page. If you "
-"take a team out of your group, it will disappear from this list when you "
-"save."
+"Your team is not listed here: change its details from its own page; it can "
+"never be removed from the group. Teams removed from the group stay in the "
+"list (\"Outside group\" filter): turn on \"In your group\" and save to "
+"add them back."
 
 #: team/templates/manage_teams.html:20
 msgid "Buscar equipo..."
@@ -7953,8 +7955,8 @@ msgid "Sin división"
 msgstr "No division"
 
 #: team/templates/manage_teams.html:81
-msgid "Todavía no hay equipos en tu grupo."
-msgstr "There are no teams in your group yet."
+msgid "Todavía no hay equipos rivales."
+msgstr "There are no rival teams yet."
 
 #: team/templates/manage_teams.html:83
 msgid "Ningún equipo coincide con la búsqueda."
@@ -8192,3 +8194,28 @@ msgstr "Matches the report counts"
 #~ msgctxt "inicial de empate"
 #~ msgid "E"
 #~ msgstr "D"
+
+#: team/templates/manage_teams.html
+msgid "Mostrar equipos"
+msgstr "Show teams"
+
+#: team/templates/manage_teams.html
+msgid "Todos los equipos"
+msgstr "All teams"
+
+#: team/templates/edit_team.html
+msgid "Tu equipo siempre está en tu grupo: no se puede dar de baja."
+msgstr "Your team is always in your group: it cannot be removed."
+
+#: core/templates/includes/similar_modal.html
+msgid "Dar de alta de nuevo"
+msgstr "Add back to the group"
+
+#: team/views.py
+msgid "fuera de tu grupo"
+msgstr "outside your group"
+
+#: team/views.py
+#, python-format
+msgid "«%(name)s» vuelve a estar en tu grupo."
+msgstr "\"%(name)s\" is back in your group."
