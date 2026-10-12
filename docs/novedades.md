@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 12/10/2026
+
+- Seguridad (alertas de code scanning): el flujo de tests pasa a permisos de solo lectura y el estado del proceso en vivo del back-office se escribe como texto, no como HTML
+
 ## 06/10/2026
 
 - Recuperar y cambiar la contraseña con el estilo de la web, la lista de requisitos marcándose al escribir (como en el registro) y el correo de «¿Has olvidado tu contraseña?» con el diseño de los correos de Zyra
