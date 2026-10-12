@@ -5,6 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 12/10/2026
 
+- Tipografía: corregido el hueco que aparecía en el título «ZYRA» («ZY RA») con la fuente en cursiva; la cursiva de Syncopate Bold se regenera con los espaciados de cada letra bien calculados
 - Estadísticas › Jugador y › Parejas: selector de temporadas (Todas, las tres últimas y buscador) como en el equipo; se combina con el tipo de partido y se mantiene al navegar
 - Tipografía: los títulos de toda la web, los PDF (convocatoria e informe mensual), la documentación y los emails usan la misma fuente, Syncopate Bold en cursiva (antes los PDF la llevaban sin cursiva). Se añade `Syncopate-BoldItalic.ttf`, una versión oblicua de la fuente (licencia libre) para que la cursiva sea idéntica en todos los sitios
 - Registro con SNP y «Completar equipo»: además de los jugadores, el scraper entra en «Competiciones/Competencias», lee la tabla «Clasificación» y crea los equipos del grupo que aún no existen (con la categoría, nacionalidad y división del equipo propio). No duplica equipos con el mismo nombre o muy parecido, da de alta en el grupo los que ya existían fuera y, si el club no tuviera equipo propio, marca como tal el que SNP resalta en negrita. Si este paso falla, los jugadores se importan igual
