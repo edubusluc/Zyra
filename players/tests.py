@@ -897,3 +897,19 @@ class SnpAccountCardTests(TestCase):
         Membership.objects.create(user=member, club=self.club, role=Membership.MEMBER)
         self.client.force_login(member)
         self.assertNotEqual(self.client.post(password_url).status_code, 200)
+
+
+class PlayerListSearchTests(TestCase):
+    """El listado envía todos los jugadores y filtra en el navegador, como el selector de convocatorias."""
+
+    def test_list_renders_every_player_for_live_search_and_paging(self):
+        admin = User.objects.create_user("admin", password="pass-12345")
+        club = create_club("Club A", "Sevilla", admin)
+        for n in range(12):
+            Player.objects.create(club=club, name=f"Jugador{n}", last_name="Álvarez")
+        self.client.force_login(admin)
+        response = self.client.get(reverse("list_players"))
+        self.assertEqual(len(response.context["players"]), 12)
+        self.assertContains(response, "data-selector-search")
+        self.assertContains(response, 'data-name="JUGADOR3 ÁLVAREZ"')
+        self.assertContains(response, 'data-page-size="9"')
