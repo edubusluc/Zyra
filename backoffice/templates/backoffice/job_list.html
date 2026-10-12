@@ -15,12 +15,7 @@
 
 {% include 'backoffice/includes/messages.html' %}
 
-{% if late %}
-<div class="alert alert-warning">
-    <strong>{% translate "El lanzador no está en marcha." %}</strong> {% translate "Hay procesos que deberían haberse ejecutado hace más de 10 minutos." %}
-    {% blocktranslate trimmed %}El servidor tiene que ejecutar <code>python manage.py run_scheduler</code> cada minuto (ver el Readme).{% endblocktranslate %}
-</div>
-{% endif %}
+{% include 'backoffice/includes/scheduler_alert.html' with hide_link=True %}
 
 <section class="bo-kpis" aria-label="{% translate 'Resumen de procesos' %}">
     <div class="bo-kpi"><span class="bo-kpi-label">{% translate "Procesos" %}</span><b>{{ jobs|length }}</b><small>{% translate "definidos en backoffice/jobs.py" %}</small></div>

@@ -60,6 +60,19 @@
 </div>
 
 <section class="z-panel">
+    <h2 class="h5">{% blocktranslate with days=funnel.days %}Embudo de los clubes creados en {{ days }} días{% endblocktranslate %}</h2>
+    <p class="text-muted small">{% translate "Cuántos de los clubes nuevos llegan a cada paso. Dónde cae la cifra es dónde se pierde la gente." %}</p>
+    <ol class="bo-funnel list-unstyled mb-0">
+        {% for step in funnel.steps %}
+        <li class="mb-2">
+            <div class="d-flex justify-content-between"><span>{{ step.label }}</span><b>{{ step.n }}{% if step.pct_prev is not None %} <small class="text-muted">({{ step.pct_prev }} % del paso anterior)</small>{% endif %}</b></div>
+            <div class="progress" role="img" aria-label="{{ step.label }}: {{ step.pct }} %"><div class="progress-bar" style="width: {{ step.pct|unlocalize }}%"></div></div>
+        </li>
+        {% endfor %}
+    </ol>
+</section>
+
+<section class="z-panel">
     <h2 class="h5">{% translate "Clubes más activos en 30 días" %}</h2>
     <div class="z-table-wrap"><table class="table align-middle">
         <thead><tr><th>{% translate "Club" %}</th><th>{% translate "Enfrentamientos (30 días)" %}</th><th>{% translate "Miembros" %}</th><th>{% translate "Jugadores" %}</th><th>{% translate "Último partido" %}</th></tr></thead>

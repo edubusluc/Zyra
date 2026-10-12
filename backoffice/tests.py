@@ -28,6 +28,10 @@ PAGES = [
     ("backoffice:usage", []),
     ("backoffice:health", []),
     ("backoffice:unverified_list", []),
+    ("backoffice:search", []),
+    ("backoffice:audit_list", []),
+    ("backoffice:email_log", []),
+    ("backoffice:task_list", []),
 ]
 
 
@@ -284,7 +288,7 @@ class ManualJobWithParamsTests(TestCase):
         job = sync_jobs().get()
         self.assertIsNone(job.next_run_at)
         self.assertEqual(run_due_jobs(), [])
-        self.assertFalse(scheduler_is_late())
+        self.assertFalse(scheduler_is_late())  # la pasada anota que el lanzador está vivo
         page = self.client.get(reverse("backoffice:job_detail", args=["param_job"]))
         self.assertContains(page, "Solo a mano")
         self.assertContains(page, 'name="days"')
@@ -425,8 +429,10 @@ class SchedulerTests(TestCase):
         self.assertGreater(ScheduledJob.objects.get(pk=job.pk).heartbeat_at, started)
 
     def test_scheduler_is_late(self):
-        from .scheduler import scheduler_is_late, sync_jobs
+        from .scheduler import scheduler_is_late, sync_jobs, touch_scheduler
         sync_jobs()
+        self.assertTrue(scheduler_is_late())  # el lanzador no ha pasado nunca
+        touch_scheduler()
         self.assertFalse(scheduler_is_late())
         ScheduledJob.objects.filter(name="ok_job").update(next_run_at=timezone.now() - datetime.timedelta(minutes=30))
         self.assertTrue(scheduler_is_late())

@@ -175,7 +175,13 @@ Solo para el personal, en `/backoffice/` ([`backoffice`](referencia/backoffice/i
 
 | Comando | Para qué |
 |---|---|
-| `run_scheduler` | Lanza los procesos programados; debe ejecutarse cada minuto en el servidor. |
+| `run_scheduler` | Lanza los procesos programados; debe ejecutarse cada minuto en el servidor, o una sola vez con `--loop [--interval N]`. |
+| `purge_backoffice_data` | Borra consultas SQL, auditoría, correos, errores y actividad diaria antiguos. |
+| `snapshot_daily_metrics` | Guarda el resumen del día (`DailyMetric`). |
+| `send_staff_alerts` | Avisa por correo al personal de problemas nuevos y resueltos. |
+| `send_staff_digest` | Envía al personal el resumen semanal (`--dry-run` solo lo muestra). |
+| `send_query_exports` | Envía por correo el CSV de las consultas SQL con exportación programada. |
+| `sql_readonly_role` | Genera (o con `--apply` crea) el rol de PostgreSQL de solo lectura de la consola SQL. |
 | `update_snp_scores` | Actualiza los puntos SNP (lo lanza el programador). |
 | `complete_snp_team` | Trae jugadores desde SNP para un club. |
 | `add_group_teams` | Crea los equipos del grupo de un club desde la clasificación de SNP (solo equipos, sin jugadores). |

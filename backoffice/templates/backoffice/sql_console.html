@@ -34,6 +34,10 @@
                 <div class="bo-filters mt-2 mb-0">
                     <input type="text" name="name" class="form-control" placeholder="{% translate 'Nombre' %}" value="{{ saved.name|default:'' }}" aria-label="{% translate 'Nombre de la consulta' %}">
                     <input type="text" name="description" class="form-control" placeholder="{% translate 'Descripción (opcional)' %}" value="{{ saved.description|default:'' }}" aria-label="{% translate 'Descripción' %}">
+                    <select name="export_every" class="form-select" aria-label="{% translate 'Enviar por correo' %}">
+                        {% for key, label in export_choices %}<option value="{{ key }}" {% if saved and saved.export_every == key %}selected{% endif %}>{% if key %}{% translate "Enviar por correo:" %} {% endif %}{{ label }}</option>{% endfor %}
+                    </select>
+                    <input type="text" name="export_to" class="form-control" placeholder="{% translate 'Emails del personal, separados por comas' %}" value="{{ saved.export_to|default:'' }}" aria-label="{% translate 'Destinatarios del envío' %}">
                     <button type="submit" name="action" value="save" class="btn btn-outline-light"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> {% translate "Guardar" %}</button>
                 </div>
             </details>

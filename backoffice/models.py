@@ -71,6 +71,12 @@ class ScheduledJob(models.Model):
     run_requested_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+",
     )
+    # Datos (JobSpec.params y opciones) con los que se pidió ese "Ejecutar ahora".
+    run_requested_args = models.JSONField(default=list, blank=True)
+    # Fallos seguidos desde la última ejecución correcta y cuándo se avisó del último: el
+    # personal recibe un correo en el primer fallo, recordatorios espaciados y otro al recuperarse.
+    consecutive_failures = models.PositiveIntegerField(default=0)
+    failure_notified_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         ordering = ["name"]
@@ -141,6 +147,11 @@ class SavedQuery(PublicIdModel):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    # Exportación programada: el CSV de la consulta se envía por correo al personal indicado.
+    EXPORT_EVERY = [("", _("Nunca")), ("daily", _("Cada día")), ("weekly", _("Cada lunes")), ("monthly", _("El día 1"))]
+    export_every = models.CharField(max_length=10, choices=EXPORT_EVERY, blank=True, default="")
+    export_to = models.CharField(max_length=500, blank=True, default="")
+    last_exported_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         ordering = ["name"]
@@ -248,3 +259,201 @@ class AccountNoticeLog(models.Model):
     def __str__(self):
         """Acción, cuenta y fecha."""
         return f"{self.get_action_display()}: {self.username} ({self.created_at:%d/%m/%Y})"
+
+
+class SchedulerState(models.Model):
+    """
+    Fila única con la hora de la última pasada del lanzador (``run_scheduler``). El back-office
+    avisa de que el lanzador no está en marcha cuando esta marca es antigua o no existe.
+    """
+    last_pass_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = _("estado del lanzador")
+        verbose_name_plural = _("estado del lanzador")
+
+    def __str__(self):
+        """Hora de la última pasada."""
+        return f"lanzador: {self.last_pass_at}"
+
+
+class AuditLog(models.Model):
+    """
+    Registro de auditoría: qué hizo cada persona del personal en el back-office, sobre qué y
+    cuándo. Guarda copias del nombre de usuario y del objeto porque ambos pueden desaparecer.
+    """
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+    username = models.CharField(max_length=150, blank=True)
+    action = models.CharField(max_length=60, db_index=True)
+    object_type = models.CharField(max_length=40, blank=True)
+    object_id = models.CharField(max_length=40, blank=True)
+    object_label = models.CharField(max_length=200, blank=True)
+    detail = models.JSONField(default=dict, blank=True)
+    ip = models.GenericIPAddressField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+        verbose_name = _("registro de auditoría")
+        verbose_name_plural = _("registros de auditoría")
+
+    def __str__(self):
+        """Quién, qué y cuándo."""
+        return f"{self.username} {self.action} {self.object_label} ({self.created_at:%Y-%m-%d %H:%M})"
+
+
+class DailyActivity(models.Model):
+    """Un usuario activo un día concreto (una fila por usuario y día): de aquí salen usuarios activos diarios, semanales y mensuales."""
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+")
+    date = models.DateField(db_index=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["user", "date"], name="unique_daily_activity")]
+        verbose_name = _("actividad diaria")
+        verbose_name_plural = _("actividad diaria")
+
+    def __str__(self):
+        """Usuario y día."""
+        return f"{self.user} {self.date}"
+
+
+class DailyMetric(models.Model):
+    """Resumen de un día (lo guarda ``snapshot_daily_metrics`` cada noche) para ver tendencias sin recalcular."""
+    date = models.DateField(unique=True)
+    clubs = models.PositiveIntegerField(default=0)
+    users = models.PositiveIntegerField(default=0)
+    dau = models.PositiveIntegerField(default=0)
+    wau = models.PositiveIntegerField(default=0)
+    mau = models.PositiveIntegerField(default=0)
+    active_clubs = models.PositiveIntegerField(default=0)
+    matches = models.PositiveIntegerField(default=0)
+    calls = models.PositiveIntegerField(default=0)
+    reports_sent = models.PositiveIntegerField(default=0)
+    requests = models.PositiveIntegerField(default=0)
+    errors_5xx = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["-date"]
+        verbose_name = _("resumen diario")
+        verbose_name_plural = _("resúmenes diarios")
+
+    def __str__(self):
+        """Día del resumen."""
+        return f"{self.date}"
+
+
+class ErrorEvent(models.Model):
+    """Petición que terminó en error 500 o que tardó demasiado: ruta, excepción y usuario, para saber qué falla."""
+    path = models.CharField(max_length=200)
+    method = models.CharField(max_length=10)
+    status = models.PositiveSmallIntegerField()
+    duration_ms = models.PositiveIntegerField(default=0)
+    exception = models.CharField(max_length=300, blank=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+        verbose_name = _("evento de error o lentitud")
+        verbose_name_plural = _("eventos de error o lentitud")
+
+    def __str__(self):
+        """Ruta, código y hora."""
+        return f"{self.status} {self.path} ({self.created_at:%Y-%m-%d %H:%M})"
+
+
+class ClubCrm(models.Model):
+    """Ficha de seguimiento comercial de un club: etapa del ciclo y persona de contacto."""
+    TRIAL, ACTIVE, AT_RISK, CHURNED = "trial", "active", "at_risk", "churned"
+    LIFECYCLES = [(TRIAL, _("En prueba")), (ACTIVE, _("Activo")), (AT_RISK, _("En riesgo")), (CHURNED, _("Baja"))]
+
+    club = models.OneToOneField("core.Club", on_delete=models.CASCADE, related_name="crm")
+    lifecycle = models.CharField(_("etapa"), max_length=10, choices=LIFECYCLES, default=TRIAL)
+    contact_name = models.CharField(_("persona de contacto"), max_length=120, blank=True)
+    contact_email = models.EmailField(_("email de contacto"), blank=True)
+    contact_phone = models.CharField(_("teléfono"), max_length=40, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = _("ficha CRM de club")
+        verbose_name_plural = _("fichas CRM de clubes")
+
+    def __str__(self):
+        """Club y etapa."""
+        return f"{self.club} · {self.get_lifecycle_display()}"
+
+
+class ClubNote(models.Model):
+    """Nota interna del personal sobre un club (llamadas, acuerdos, incidencias)."""
+    club = models.ForeignKey("core.Club", on_delete=models.CASCADE, related_name="crm_notes")
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+    author_name = models.CharField(max_length=150, blank=True)
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+        verbose_name = _("nota de club")
+        verbose_name_plural = _("notas de clubes")
+
+    def __str__(self):
+        """Club y fecha."""
+        return f"{self.club} {self.created_at:%Y-%m-%d}"
+
+
+class FollowUpTask(models.Model):
+    """Tarea de seguimiento con fecha («escribir al capitán el lunes»), opcionalmente de un club."""
+    club = models.ForeignKey("core.Club", on_delete=models.CASCADE, null=True, blank=True, related_name="crm_tasks")
+    assigned_to = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+    title = models.CharField(_("tarea"), max_length=200)
+    due_date = models.DateField(_("fecha"), db_index=True)
+    done_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["due_date", "id"]
+        verbose_name = _("tarea de seguimiento")
+        verbose_name_plural = _("tareas de seguimiento")
+
+    def __str__(self):
+        """Título y fecha."""
+        return f"{self.title} ({self.due_date})"
+
+
+class EmailLog(models.Model):
+    """Cada correo que la web intenta enviar (lo anota el backend de correo): destinatario, asunto y si salió."""
+    SENT, FAILED = "sent", "failed"
+    STATUSES = [(SENT, _("Enviado")), (FAILED, _("Fallido"))]
+
+    to = models.CharField(max_length=500)
+    subject = models.CharField(max_length=300)
+    kind = models.CharField(max_length=40, blank=True, db_index=True)
+    status = models.CharField(max_length=10, choices=STATUSES, db_index=True)
+    error = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+        verbose_name = _("correo enviado")
+        verbose_name_plural = _("correos enviados")
+
+    def __str__(self):
+        """Destinatario, asunto y estado."""
+        return f"{self.to}: {self.subject} ({self.get_status_display()})"
+
+
+class AlertState(models.Model):
+    """Estado de una alerta al personal (para avisar al empezar y al terminar, no en cada pasada)."""
+    name = models.CharField(max_length=60, unique=True)
+    active = models.BooleanField(default=False)
+    since = models.DateTimeField(null=True, blank=True)
+    notified_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = _("estado de alerta")
+        verbose_name_plural = _("estados de alertas")
+
+    def __str__(self):
+        """Nombre y si está activa."""
+        return f"{self.name}: {'activa' if self.active else 'resuelta'}"

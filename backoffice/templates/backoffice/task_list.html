@@ -1,0 +1,58 @@
+{% extends 'backoffice/base.html' %}
+{% load i18n %}
+{% block title %}{% translate "Tareas" %}{% endblock %}
+
+{% block content %}
+<div class="z-page-head">
+    <div>
+        <span class="z-eyebrow">{% translate "Seguimiento de clubes" %}</span>
+        <h1>{% translate "Tareas" %}</h1>
+    </div>
+</div>
+
+{% if messages %}
+<div class="alert-message">{% for message in messages %}<p>{{ message }}</p>{% endfor %}</div>
+{% endif %}
+
+<form method="post" action="{% url 'backoffice:task_add' %}" class="bo-filters">
+    {% csrf_token %}
+    <input type="text" name="title" required maxlength="200" class="form-control" placeholder="{% translate 'Tarea (p. ej. escribir al capitán)' %}" aria-label="{% translate 'Tarea' %}">
+    <input type="date" name="due_date" required value="{{ today|date:'Y-m-d' }}" class="form-control" aria-label="{% translate 'Fecha' %}">
+    <select name="club" class="form-select" aria-label="{% translate 'Club' %}">
+        <option value="">{% translate "Sin club" %}</option>
+        {% for c in clubs %}<option value="{{ c.public_id }}">{{ c.name }}</option>{% endfor %}
+    </select>
+    <select name="assigned_to" class="form-select" aria-label="{% translate 'Responsable' %}">
+        {% for u in staff %}<option value="{{ u.pk }}" {% if u == user %}selected{% endif %}>{{ u.username }}</option>{% endfor %}
+    </select>
+    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+    <button class="btn btn-primary"><i class="fa-solid fa-plus" aria-hidden="true"></i> {% translate "Añadir" %}</button>
+</form>
+
+<nav class="bo-filters" aria-label="{% translate 'Filtros' %}">
+    <a class="btn btn-sm {% if not done and who != 'all' %}btn-primary{% else %}btn-outline-light{% endif %}" href="?">{% translate "Mis pendientes" %}</a>
+    <a class="btn btn-sm {% if not done and who == 'all' %}btn-primary{% else %}btn-outline-light{% endif %}" href="?who=all">{% translate "Pendientes de todos" %}</a>
+    <a class="btn btn-sm {% if done %}btn-primary{% else %}btn-outline-light{% endif %}" href="?done=1&who=all">{% translate "Hechas" %}</a>
+</nav>
+
+<div class="z-table-wrap"><table class="table align-middle">
+    <thead><tr><th>{% translate "Fecha" %}</th><th>{% translate "Tarea" %}</th><th>{% translate "Club" %}</th><th>{% translate "Responsable" %}</th><th><span class="visually-hidden">{% translate "Acciones" %}</span></th></tr></thead>
+    <tbody>
+    {% for t in page %}
+        <tr>
+            <td class="text-nowrap">{{ t.due_date|date:"j M Y" }}{% if t.overdue %} <span class="z-badge z-badge--danger">{% translate "Atrasada" %}</span>{% endif %}</td>
+            <td>{{ t.title }}</td>
+            <td>{% if t.club %}<a href="{% url 'backoffice:club_detail' t.club.public_id %}">{{ t.club.name }}</a>{% else %}—{% endif %}</td>
+            <td>{{ t.assigned_to.username|default:"—" }}</td>
+            <td class="text-end text-nowrap">
+                <form method="post" action="{% url 'backoffice:task_toggle' t.pk %}" class="d-inline">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn btn-outline-light btn-sm">{% if t.done_at %}{% translate "Reabrir" %}{% else %}{% translate "Hecha" %}{% endif %}</button></form>
+                <form method="post" action="{% url 'backoffice:task_delete' t.pk %}" class="d-inline" onsubmit="return confirm('{% translate "¿Borrar esta tarea?" %}')">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn btn-outline-danger btn-sm" aria-label="{% translate 'Borrar' %}"><i class="fa-solid fa-trash" aria-hidden="true"></i></button></form>
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="5" class="text-muted">{% translate "No hay tareas." %}</td></tr>
+    {% endfor %}
+    </tbody>
+</table></div>
+<div class="mt-3">{% include 'includes/pagination.html' with page=page extra=extra %}</div>
+{% endblock %}

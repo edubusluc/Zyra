@@ -13,7 +13,7 @@ devuelven JSON para el JavaScript de la página (p. ej. `suggested_lineup`, `com
 |---|---|---|
 | Configuración | `zyra/settings.py`, `.env.example` | Todo por entorno (`python-decouple`). Sin `DJANGO_DEBUG=True`, exige `DJANGO_SECRET_KEY` (≥50) y `FIELD_ENCRYPTION_KEY` o no arranca (`ImproperlyConfigured`). [V] |
 | URLs | `zyra/urls.py` → `<app>/urls.py` | Conversor `pid` registrado en `zyra/urls.py`. `delete_call` vive en `call/views.py` pero se enruta desde `match/urls.py`. [V] |
-| Middleware | `zyra/settings.py` `MIDDLEWARE` | Propios: `core.middleware.CanonicalHostMiddleware`, `backoffice.middleware.ActivityMiddleware`, `core.middleware.LanguageMiddleware`, `core.middleware.CurrentClubMiddleware`. [V] |
+| Middleware | `zyra/settings.py` `MIDDLEWARE` | Propios: `core.middleware.CanonicalHostMiddleware`, `backoffice.middleware.ActivityMiddleware`, `backoffice.impersonation.ImpersonationMiddleware` («Entrar como»: solo lectura, 30 min, bloquea todo salvo GET/HEAD, auditado), `core.middleware.LanguageMiddleware`, `core.middleware.CurrentClubMiddleware`. [V] |
 | Control de acceso | `core/decorators.py`, `backoffice/decorators.py` | `club_required`, `club_admin_required` (403), `staff_required` (404 a no-staff), `superuser_required`. [V] |
 | Vistas (funciones) | `<app>/views.py` | Excepto `ThrottledLoginView` (clase). Mucha lógica está en las vistas, sobre todo en `match/views.py` y `data_analyse/views.py`. [V] |
 | Servicios / dominio | `core/services.py`, `match/lineup.py`, `match/scoring.py`, `match/advisor.py`, `match/notifications.py`, `players/snp.py`, `players/snp_import.py`, `data_analyse/{pairs,sets,records}.py`, `backoffice/{scheduler,metrics,sql,importer}.py` | Funciones de módulo; no hay clases de servicio. [V] |

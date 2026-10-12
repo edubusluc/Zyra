@@ -122,6 +122,133 @@
     </table></div>
 </section>
 
+<section class="z-panel" id="crm">
+    <h2 class="h5">{% translate "Seguimiento (CRM)" %}</h2>
+    <form method="post" action="{% url 'backoffice:club_crm_update' club.public_id %}" class="row g-2 align-items-end">
+        {% csrf_token %}
+        <div class="col-12 col-md-3">
+            <label class="form-label" for="crm-lifecycle">{% translate "Etapa" %}</label>
+            <select class="form-select" id="crm-lifecycle" name="lifecycle">{% for key, label in lifecycles %}<option value="{{ key }}" {% if key == crm.lifecycle %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+        </div>
+        <div class="col-12 col-md-3"><label class="form-label" for="crm-name">{% translate "Persona de contacto" %}</label><input class="form-control" id="crm-name" name="contact_name" maxlength="120" value="{{ crm.contact_name }}"></div>
+        <div class="col-12 col-md-3"><label class="form-label" for="crm-email">{% translate "Email de contacto" %}</label><input class="form-control" id="crm-email" type="email" name="contact_email" value="{{ crm.contact_email }}"></div>
+        <div class="col-12 col-md-2"><label class="form-label" for="crm-phone">{% translate "Teléfono" %}</label><input class="form-control" id="crm-phone" name="contact_phone" maxlength="40" value="{{ crm.contact_phone }}"></div>
+        <div class="col-12 col-md-1"><button class="btn btn-primary w-100">{% translate "Guardar" %}</button></div>
+    </form>
+</section>
+
+<div class="bo-grid">
+    <section class="z-panel" id="notas">
+        <h2 class="h5">{% translate "Notas" %}</h2>
+        <form method="post" action="{% url 'backoffice:club_note_add' club.public_id %}" class="mb-3">
+            {% csrf_token %}
+            <label class="visually-hidden" for="note-text">{% translate "Nueva nota" %}</label>
+            <textarea class="form-control mb-2" id="note-text" name="text" rows="2" maxlength="2000" required placeholder="{% translate 'Llamada, acuerdo, incidencia…' %}"></textarea>
+            <button class="btn btn-outline-light btn-sm">{% translate "Añadir nota" %}</button>
+        </form>
+        <ul class="bo-list">
+            {% for note in notes %}
+            <li>
+                <span>{{ note.text|linebreaksbr }}</span>
+                <small class="text-muted ms-auto text-nowrap">{{ note.author_name|default:"—" }} · {{ note.created_at|date:"j M Y" }}</small>
+                {% if note.author_id == user.pk or user.is_superuser %}<form method="post" action="{% url 'backoffice:club_note_delete' note.pk %}" class="d-inline">{% csrf_token %}<button class="btn btn-link btn-sm text-danger p-0" aria-label="{% translate 'Borrar nota' %}"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></form>{% endif %}
+            </li>
+            {% empty %}
+            <li class="text-muted">{% translate "Sin notas." %}</li>
+            {% endfor %}
+        </ul>
+    </section>
+    <section class="z-panel" id="tareas">
+        <h2 class="h5">{% translate "Tareas pendientes" %}</h2>
+        <form method="post" action="{% url 'backoffice:task_add' %}" class="d-flex flex-wrap gap-2 mb-3">
+            {% csrf_token %}
+            <input type="hidden" name="club" value="{{ club.public_id }}">
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <input class="form-control flex-grow-1" name="title" required maxlength="200" placeholder="{% translate 'Escribir al capitán…' %}" aria-label="{% translate 'Tarea' %}">
+            <input class="form-control w-auto" type="date" name="due_date" required aria-label="{% translate 'Fecha' %}">
+            <button class="btn btn-outline-light btn-sm">{% translate "Añadir" %}</button>
+        </form>
+        <ul class="bo-list">
+            {% for t in tasks %}
+            <li><span>{{ t.title }}</span><small class="text-muted ms-auto">{{ t.due_date|date:"j M Y" }}</small>
+                <form method="post" action="{% url 'backoffice:task_toggle' t.pk %}" class="d-inline">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn btn-outline-light btn-sm">{% translate "Hecha" %}</button></form></li>
+            {% empty %}
+            <li class="text-muted">{% translate "Sin tareas pendientes." %}</li>
+            {% endfor %}
+        </ul>
+    </section>
+</div>
+
+<section class="z-panel" id="contactar">
+    <h2 class="h5">{% translate "Escribir al capitán" %}</h2>
+    <p class="text-muted">{% translate "Sale con el formato de los correos de Zyra a los capitanes del club y al contacto de la ficha, y queda en «Correos enviados», en la auditoría y como nota." %}</p>
+    {{ contact_templates|json_script:"contact-templates" }}
+    <form method="post" action="{% url 'backoffice:club_contact' club.public_id %}" id="contact-form">
+        {% csrf_token %}
+        <label class="form-label" for="contact-template">{% translate "Plantilla" %}</label>
+        <select class="form-select mb-2" id="contact-template">
+            <option value="blank">{% translate "En blanco" %}</option>
+            <option value="welcome">{% translate "Bienvenida" %}</option>
+            <option value="inactive">{% translate "Club sin actividad" %}</option>
+            <option value="feedback">{% translate "Pedir opinión" %}</option>
+        </select>
+        <label class="form-label" for="contact-subject">{% translate "Asunto" %}</label>
+        <input class="form-control mb-2" id="contact-subject" name="subject" required maxlength="200">
+        <label class="form-label" for="contact-body">{% translate "Mensaje" %}</label>
+        <textarea class="form-control mb-2" id="contact-body" name="body" rows="6" required maxlength="5000"></textarea>
+        <button class="btn btn-primary"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i> {% translate "Enviar" %}</button>
+    </form>
+    <script>
+    (function () {
+        var data = JSON.parse(document.getElementById("contact-templates").textContent);
+        document.getElementById("contact-template").addEventListener("change", function () {
+            var t = data[this.value] || {subject: "", body: ""};
+            document.getElementById("contact-subject").value = t.subject;
+            document.getElementById("contact-body").value = t.body;
+        });
+    })();
+    </script>
+</section>
+
+{% if emails %}
+<section class="z-panel">
+    <h2 class="h5">{% translate "Últimos correos a sus miembros" %}</h2>
+    <ul class="bo-list">{% for e in emails %}<li><span>{{ e.subject }}</span><small class="text-muted ms-auto">{{ e.to }} · {{ e.created_at|ago }} · {{ e.get_status_display }}</small></li>{% endfor %}</ul>
+    <a href="{% url 'backoffice:email_log' %}">{% translate "Ver todos los correos" %}</a>
+</section>
+{% endif %}
+
+<section class="z-panel" id="gestion">
+    <h2 class="h5">{% translate "Gestión del club" %}</h2>
+    <form method="post" action="{% url 'backoffice:club_edit' club.public_id %}" class="d-flex flex-wrap gap-2 mb-3">
+        {% csrf_token %}
+        <label class="visually-hidden" for="club-name">{% translate "Nombre del club" %}</label>
+        <input class="form-control w-auto flex-grow-1" id="club-name" name="name" required maxlength="100" value="{{ club.name }}">
+        <button class="btn btn-outline-light btn-sm">{% translate "Cambiar nombre" %}</button>
+    </form>
+    {% if successors %}
+    <form method="post" action="{% url 'backoffice:club_transfer_captain' club.public_id %}" class="d-flex flex-wrap gap-2 mb-3" onsubmit="return confirm('{% translate "¿Traspasar la capitanía?" %}')">
+        {% csrf_token %}
+        <label class="visually-hidden" for="club-captain">{% translate "Nuevo capitán" %}</label>
+        <select class="form-select w-auto" id="club-captain" name="membership">{% for m in successors %}<option value="{{ m.public_id }}">{{ m.user.username }}</option>{% endfor %}</select>
+        <button class="btn btn-outline-light btn-sm">{% translate "Traspasar la capitanía" %}</button>
+    </form>
+    {% else %}
+    <p class="text-muted small">{% translate "Para traspasar la capitanía hace falta otro miembro enlazado a un jugador del club." %}</p>
+    {% endif %}
+    {% if user.is_superuser %}
+    <details>
+        <summary class="text-danger">{% translate "Eliminar el club" %}</summary>
+        <form method="post" action="{% url 'backoffice:club_delete' club.public_id %}" class="mt-2">
+            {% csrf_token %}
+            <p class="text-muted">{% translate "Borra el club y todo lo suyo (jugadores, partidos, convocatorias, cuenta SNP…). Las cuentas de usuario se conservan. No se puede deshacer." %}</p>
+            <input class="form-control mb-2" name="confirm" required placeholder="{% translate 'Escribe el nombre del club' %}" aria-label="{% translate 'Nombre del club para confirmar' %}">
+            <button class="btn btn-danger btn-sm">{% translate "Eliminar para siempre" %}</button>
+        </form>
+    </details>
+    {% endif %}
+</section>
+
 {% if not club.is_suspended %}
 <section class="z-panel" id="suspender">
     <h2 class="h5">{% translate "Suspender club" %}</h2>

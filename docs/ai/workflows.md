@@ -70,6 +70,13 @@ que el servidor debe ejecutar cada minuto:
 python manage.py run_scheduler
 ```
 
+o, como servicio que no termina, `python manage.py run_scheduler --loop [--interval 30]` (cada proceso
+en su hilo). Cada pasada actualiza `SchedulerState.last_pass_at`; `scheduler_status()` marca el
+lanzador como parado si pasan más de 3 min o hay procesos atrasados más de 10 min, y el aviso sale
+en el dashboard, *Salud* y *Procesos*. «Ejecutar ahora» deja el pedido (`run_requested_at`) al
+lanzador si está vivo y, si no, lo ejecuta en un hilo. Las ejecuciones sin nada que hacer
+(`JobSpec.idle_output`) no se guardan; los correos de fallo salen al primero, cada 6 h y al recuperarse.
+
 | Proceso | Comando | Horario |
 |---|---|---|
 | `purge_request_metrics` | `purge_request_metrics` | 03:00 diario |
@@ -78,11 +85,17 @@ python manage.py run_scheduler
 | `update_snp_scores` | `update_snp_scores [--club X] [--all] [--batch-size N] [--headed]` | 23:00 diario |
 | `send_call_reports` | `send_call_reports` | cada 5 min |
 | `send_monthly_reports` | `send_monthly_reports [--month AAAA-MM] [--dry-run] [--limit N]` | día 1 a las 09:00 |
+| `purge_backoffice_data` | `purge_backoffice_data` (consultas, auditoría 2 años, correos 6 meses, errores, actividad) | 03:20 diario |
+| `snapshot_daily_metrics` | `snapshot_daily_metrics` (guarda `DailyMetric`) | 23:55 diario |
+| `send_staff_alerts` | `send_staff_alerts` (avisos al personal con `AlertState`) | cada 15 min |
+| `send_staff_digest` | `send_staff_digest [--dry-run]` | lunes 08:00 |
+| `send_query_exports` | `send_query_exports` (CSV de `SavedQuery.export_every` a emails del personal) | 07:00 diario |
 | `complete_snp_team` | `complete_snp_team <TEA...> [--dry-run]` | solo a mano |
 | `add_group_teams` | `add_group_teams <TEA...> [--dry-run]` | solo a mano |
 
 `complete_snp_team` y `add_group_teams` comparten la base `_snp_import_command` (resolver equipo propio, buscar en SNP,
-mostrar el plan, `--dry-run`); `add_group_teams` solo lee la «Clasificación» (`group_only`) y no toca jugadores.
+mostrar el plan, `--dry-run`); `sql_readonly_role [--apply]` genera el rol PostgreSQL de solo lectura para la
+consola SQL (`SQL_CONSOLE_DATABASE_URL`, `SQL_CONSOLE_DB_PASSWORD`); `add_group_teams` solo lee la «Clasificación» (`group_only`) y no toca jugadores.
 
 Proceso nuevo: crear el comando de Django y añadir un `JobSpec` a `JOBS`; aparece en
 *Back-office → Procesos*. Ejecutar a mano desde el back-office no espera al lanzador.
