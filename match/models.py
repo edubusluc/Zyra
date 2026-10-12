@@ -11,7 +11,7 @@ from django.conf import settings
 from django.db import models
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
-from players.models import Player
+from players.models import Player, SEASON_START_MONTH
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext, gettext_lazy as _
 from . import scoring
@@ -86,15 +86,15 @@ class Match(PublicIdModel):
     def save(self, *args, **kwargs):
         """Rellena la temporada a partir de la fecha y copia la ubicación del equipo local.
 
-        La temporada va de septiembre a agosto (p. ej. '2024-2025'). Solo se asignan si
+        La temporada va del 1 de agosto al 31 de julio (p. ej. '2024-2025'). Solo se asignan si
         están vacías, así que no cambian en guardados posteriores.
         """
         # Asignar la temporada según la fecha de inicio
         if not self.season or self.season == "NONE":
             if self.start_date:
-                if self.start_date.month >= 9:  # Septiembre o después
+                if self.start_date.month >= SEASON_START_MONTH:  # Agosto o después
                     self.season = f"{self.start_date.year}-{self.start_date.year + 1}"
-                else:  # Antes de septiembre (enero a agosto)
+                else:  # Antes de agosto (enero a julio)
                     self.season = f"{self.start_date.year - 1}-{self.start_date.year}"
 
         if not self.location and self.local_id:

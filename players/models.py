@@ -12,9 +12,9 @@ from core.images import connect_photo_cleanup, player_photo_path
 from core.public_id import PublicIdModel
 from team.models import Team
 
-# Mes en el que empieza la temporada (9 = septiembre).
-# Con esto, entre septiembre de 2026 y agosto de 2027 la temporada actual es "2026-2027".
-SEASON_START_MONTH = 9
+# Mes en el que empieza la temporada (8 = agosto; empieza el 1 de agosto).
+# Con esto, entre agosto de 2026 y julio de 2027 la temporada actual es "2026-2027".
+SEASON_START_MONTH = 8
 
 
 def current_season():

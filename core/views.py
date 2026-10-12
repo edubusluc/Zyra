@@ -10,7 +10,7 @@ from allauth.socialaccount.models import SocialAccount
 from django.forms import Select
 from django.forms.utils import ErrorDict
 from django.contrib import messages
-from django.contrib.auth import get_user_model, login
+from django.contrib.auth import get_user_model, login, logout
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.decorators import login_required
@@ -42,8 +42,9 @@ from . import email_verification, ratelimit, seo
 from players import snp_service
 from .unsubscribe import user_from_token
 from .services import (
-    InvitationError, accept_invitation, club_name_matches, club_of, create_club, delete_club, is_last_admin,
-    is_only_member, remove_membership,
+    CaptaincyError, InvitationError, accept_invitation, account_delete_blocker, club_name_matches, club_of,
+    create_club, delete_account, delete_club, eligible_successors, is_last_admin, is_only_member,
+    remove_membership, transfer_captaincy,
 )
 
 INVITATIONS_PER_PAGE = 10
@@ -69,6 +70,7 @@ REGISTER_LIMIT, REGISTER_WINDOW = 5, 60 * 60
 INVITE_SIGNUP_LIMIT, INVITE_SIGNUP_WINDOW = 10, 60 * 60
 PASSWORD_CHECK_LIMIT, PASSWORD_CHECK_WINDOW = 60, 60
 RESEND_LIMIT, RESEND_WINDOW = 5, 60 * 60
+DELETE_ACCOUNT_LIMIT, DELETE_ACCOUNT_WINDOW = 5, 60 * 60
 
 
 @require_safe
@@ -338,7 +340,8 @@ def club_members(request, invite_form=None):
         invitations.append((inv, url, _("Únete a %(club)s en Zyra: %(url)s") % {"club": club.name, "url": url}))
     extra = ("&" + urlencode({"q": search}) if search else "") + "#invitaciones"
     return render(request, "club_members.html", {
-        "invite_form": invite_form, "memberships": memberships, "roles": Membership.ROLES, "invitations": invitations,
+        "invite_form": invite_form, "memberships": memberships, "invitations": invitations,
+        "successor_ids": set(eligible_successors(club).values_list("pk", flat=True)),
         "invitations_page": page, "has_invitations": has_invitations, "search": search, "extra": extra,
     })
 
@@ -499,13 +502,13 @@ def invitation(request, token):
 @require_POST
 def update_member(request, membership_id):
     """
-    Cambia el rol de un miembro (solo capitanes, solo POST).
+    Guarda el email del capitán en la página de miembros (solo capitanes, solo POST).
 
-    Si el capitán edita su propia fila también puede cambiar su email (el de los demás
-    no). No deja el club sin capitanes. Redirige a la página de miembros.
+    Solo se puede cambiar el email propio, nunca el de los demás. El rol ya no se cambia aquí:
+    un club tiene un solo capitán y la capitanía se traspasa con ``transfer_captaincy``.
+    Redirige a la página de miembros.
     """
     membership = get_object_or_404(Membership, public_id=membership_id, club=request.club)
-    role = request.POST.get("role")
     # Cada usuario solo puede cambiar su propio email. Antes un capitán podía cambiar el de
     # cualquier miembro y, con «Entrar con Google» (que entra en la cuenta cuyo email
     # coincide), quedarse con la cuenta de ese miembro.
@@ -513,15 +516,25 @@ def update_member(request, membership_id):
         error = _change_own_email(request, request.user, request.POST.get("email", "").strip())
         if error:
             messages.error(request, error)
-            return redirect("club_members")
-    if role not in dict(Membership.ROLES):
-        messages.error(request, _("Rol no válido."))
-    elif role != Membership.ADMIN and is_last_admin(membership):
-        messages.error(request, _("El club debe tener al menos un capitán."))
-    else:
-        membership.role = role
-        membership.save()
     return redirect("club_members")
+
+
+@club_admin_required
+@require_POST
+def transfer_captaincy_view(request, membership_id):
+    """
+    Traspasa la capitanía del club al miembro elegido (solo el capitán, solo POST). El nuevo
+    capitán tiene que estar enlazado a un jugador del club; el actual pasa a ser miembro.
+    """
+    target = get_object_or_404(Membership.objects.select_related("user"), public_id=membership_id, club=request.club)
+    try:
+        transfer_captaincy(request.club, request.membership, target)
+    except CaptaincyError as exc:
+        messages.error(request, str(exc))
+        return redirect("club_members")
+    messages.success(request, _("%(username)s es ahora el capitán de %(club)s. Tú sigues en el club como miembro.")
+                     % {"username": target.user.username, "club": request.club.name})
+    return redirect("home")
 
 
 def _change_own_email(request, user, email):
@@ -607,6 +620,39 @@ def resend_verification(request):
     return redirect("my_profile")
 
 
+@login_required
+@require_http_methods(["GET", "POST"])
+def delete_account_view(request):
+    """
+    «Eliminar mi cuenta» (desde «Mi perfil»). Un capitán no puede hasta traspasar la capitanía a otro
+    jugador enlazado (``core.services.account_delete_blocker``). Para confirmar hay que escribir la
+    contraseña o, en las cuentas de Google sin contraseña, el nombre de usuario. Opcionalmente se
+    elimina también su ficha de jugador; si no, la ficha se queda en el club sin cuenta ni foto.
+    Después se cierra la sesión.
+    """
+    user = request.user
+    blocker = account_delete_blocker(user)
+    needs_password = user.has_usable_password()
+    player = Player.objects.filter(user=user).select_related("club").first()
+    error = ""
+    if request.method == "POST" and not blocker:
+        if ratelimit.too_many(request, "delete-account", DELETE_ACCOUNT_LIMIT, DELETE_ACCOUNT_WINDOW):
+            return render(request, "429.html", status=429)
+        typed = request.POST.get("confirm", "")
+        confirmed = user.check_password(typed) if needs_password else typed.strip().lower() == user.username.lower()
+        if not confirmed:
+            error = _("La contraseña no es correcta.") if needs_password else _("Escribe tu nombre de usuario tal cual para confirmar.")
+        else:
+            with transaction.atomic():
+                delete_account(user, delete_player=request.POST.get("delete_player") == "on")
+            logout(request)
+            messages.success(request, _("Tu cuenta se ha eliminado. Gracias por haber usado Zyra."))
+            return redirect("home")
+    return render(request, "delete_account.html", {
+        "blocker": blocker, "needs_password": needs_password, "player": player, "error": error,
+    })
+
+
 @require_http_methods(["GET", "POST"])
 def monthly_unsubscribe(request, token):
     """
@@ -635,8 +681,8 @@ def remove_member(request, membership_id):
     No permite quitar al último capitán. Redirige a la página de miembros.
     """
     membership = get_object_or_404(Membership.objects.select_related("user"), public_id=membership_id, club=request.club)
-    if is_last_admin(membership):
-        messages.error(request, _("El club debe tener al menos un capitán."))
+    if is_last_admin(membership) and membership.user_id != request.user.id:
+        messages.error(request, _("No puedes quitar al capitán: traspasa antes la capitanía."))
     elif membership.user_id == request.user.id:
         # Quitarse a uno mismo es abandonar el club: se hace desde el menú, con su aviso.
         return leave_club(request)
@@ -672,7 +718,8 @@ def leave_club(request):
         messages.success(request, _("Has abandonado %(club)s y el club se ha eliminado con todos sus datos.") % {"club": club_name})
         return redirect("home")
     if is_last_admin(membership):
-        messages.error(request, _("Eres el único capitán de %(club)s: nombra a otro capitán antes de abandonar el club.")
+        messages.error(request, _("Eres el capitán de %(club)s: traspasa la capitanía a otro jugador enlazado antes de "
+                                  "abandonar el club. Para eliminar el club, quita antes a todos los miembros.")
                        % {"club": membership.club.name})
         return redirect("club_members")
     club_name = membership.club.name

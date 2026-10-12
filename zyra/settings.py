@@ -325,7 +325,9 @@ PHOTO_WEBP_QUALITY = config('PHOTO_WEBP_QUALITY', default=82, cast=int)
 # gratuito de la cuenta). Sin claves, después de esa fecha o pasado el límite, las fotos se
 # aceptan "sin validar" y el personal las revisa en el back-office (Fotos).
 # Desactivada por defecto: la revisión la hace el personal en el back-office (Fotos).
-REKOGNITION_ENABLED = config('REKOGNITION_ENABLED', default=False, cast=bool)
+# DESACTIVADA a propósito (octubre 2026): las fotos no se envían a AWS y las revisa el personal.
+# Para volver a activarla, cambia esta línea por config('REKOGNITION_ENABLED', default=False, cast=bool).
+REKOGNITION_ENABLED = False
 REKOGNITION_ACCESS_KEY_ID = config('REKOGNITION_ACCESS_KEY_ID', default='')
 REKOGNITION_SECRET_ACCESS_KEY = config('REKOGNITION_SECRET_ACCESS_KEY', default='')
 REKOGNITION_REGION = config('REKOGNITION_REGION', default='eu-west-1')

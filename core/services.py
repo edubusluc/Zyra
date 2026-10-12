@@ -1,6 +1,6 @@
 """
-Operaciones de negocio sobre clubes que usan varias vistas: crear un club, aceptar
-una invitación y dar de baja a un miembro. Cada una se ejecuta en una transacción.
+Operaciones de negocio sobre clubes y cuentas que usan varias vistas: crear un club, aceptar
+una invitación, dar de baja a un miembro, traspasar la capitanía y eliminar una cuenta. Cada una se ejecuta en una transacción.
 
 Cada cuenta pertenece a un solo club: quien ya es miembro (o capitán) de uno no puede
 registrar otro ni unirse a otro (``club_of``). Los clubes suspendidos no cuentan, porque
@@ -78,8 +78,87 @@ def accept_invitation(invitation, user):
 
 
 def is_last_admin(membership):
-    """True si ``membership`` es el único capitán de su club."""
+    """True si ``membership`` es el capitán de su club (cada club tiene uno solo, así que es «el último»)."""
     return membership.is_admin and not membership.club.memberships.filter(role=Membership.ADMIN).exclude(pk=membership.pk).exists()
+
+
+def eligible_successors(club, exclude_user=None):
+    """
+    Miembros a los que se puede traspasar la capitanía: los que no son capitán y tienen su
+    cuenta enlazada a un jugador del club. Ordenados por nombre de usuario.
+    """
+    linked = Player.objects.filter(club=club, user__isnull=False).values("user_id")
+    members = club.memberships.filter(user_id__in=linked).exclude(role=Membership.ADMIN)
+    if exclude_user is not None:
+        members = members.exclude(user=exclude_user)
+    return members.select_related("user").order_by("user__username")
+
+
+class CaptaincyError(Exception):
+    """La capitanía no se puede traspasar; el mensaje explica el motivo al usuario."""
+    pass
+
+
+@transaction.atomic
+def transfer_captaincy(club, current, target):
+    """
+    Traspasa la capitanía de ``club`` de la membresía ``current`` a ``target``: el nuevo
+    capitán pasa a serlo y el anterior queda como miembro. El nuevo capitán tiene que ser otro
+    miembro con su cuenta enlazada a un jugador del club. Un club tiene un solo capitán.
+    """
+    current = Membership.objects.select_for_update().get(pk=current.pk)
+    if current.club_id != club.pk or not current.is_admin:
+        raise CaptaincyError(_("Solo el capitán del club puede traspasar la capitanía."))
+    if target.club_id != club.pk or target.pk == current.pk:
+        raise CaptaincyError(_("Elige a otro miembro del club."))
+    if not eligible_successors(club).filter(pk=target.pk).exists():
+        raise CaptaincyError(_("Solo se puede traspasar la capitanía a un miembro enlazado a un jugador del club."))
+    current.role = Membership.MEMBER
+    current.save(update_fields=["role"])
+    target.role = Membership.ADMIN
+    target.save(update_fields=["role"])
+    return target
+
+
+def account_delete_blocker(user):
+    """
+    Motivo (texto para el usuario) por el que ``user`` aún no puede eliminar su cuenta, o None si
+    puede. Un capitán tiene que traspasar antes la capitanía a otro jugador enlazado; si es el
+    único miembro, abandonar el club (que se elimina con sus datos). Las cuentas del personal
+    de Zyra no se eliminan desde la web.
+    """
+    if user.is_staff or user.is_superuser:
+        return _("Las cuentas del personal de Zyra no se pueden eliminar desde aquí.")
+    captaincies = Membership.objects.filter(user=user, role=Membership.ADMIN).select_related("club")
+    for membership in captaincies:
+        if is_only_member(membership):
+            return _("Eres el único miembro de %(club)s. Abandona el club desde el menú (se eliminará con todos "
+                     "sus datos) y después podrás eliminar tu cuenta.") % {"club": membership.club.name}
+        return _("Eres el capitán de %(club)s. Traspasa antes la capitanía a otro jugador enlazado desde "
+                 "«Miembros»; si quieres cerrar el club, quita antes a todos los miembros.") % {"club": membership.club.name}
+    return None
+
+
+@transaction.atomic
+def delete_account(user, delete_player=False):
+    """
+    Elimina la cuenta de ``user`` y sus datos personales: membresías, preferencias, correos
+    verificados, cuenta de Google e historial de envíos mensuales. Su ficha de jugador pierde el
+    enlace y la foto y se conserva en el club (los partidos y las estadísticas son del club); con
+    ``delete_player`` se elimina también (los partidos jugados se conservan con su nombre).
+    Lanza ``CaptaincyError`` si todavía es capitán.
+    """
+    blocker = account_delete_blocker(user)
+    if blocker:
+        raise CaptaincyError(blocker)
+    for player in Player.objects.filter(user=user):
+        if delete_player:
+            player.delete()
+        else:
+            player.user = None
+            player.photo = None
+            player.save()
+    user.delete()
 
 
 def is_only_member(membership):

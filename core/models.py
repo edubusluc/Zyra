@@ -127,8 +127,8 @@ class Club(PublicIdModel):
 
 class Membership(PublicIdModel):
     """
-    Pertenencia de un usuario a un club con su rol: capitán (puede gestionar el club)
-    o miembro (solo lectura). Un usuario solo puede tener una membresía por club.
+    Pertenencia de un usuario a un club con su rol: capitán (puede gestionar el club; uno solo
+    por club) o miembro (solo lectura). Un usuario solo puede tener una membresía por club.
     """
     PUBLIC_ID_PREFIX = "MBR"
     ADMIN = "admin"
@@ -145,6 +145,8 @@ class Membership(PublicIdModel):
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=["user", "club"], name="unique_membership_user_club"),
+            # Un club tiene un solo capitán; para cambiarlo se traspasa la capitanía (core.services).
+            models.UniqueConstraint(fields=["club"], condition=models.Q(role="admin"), name="unique_captain_per_club"),
         ]
 
     @property

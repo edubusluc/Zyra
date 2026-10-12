@@ -23,24 +23,29 @@
                         {# Solo cada usuario cambia su email: así nadie puede apropiarse de la cuenta de otro. #}
                         <span class="form-control form-control-sm bg-transparent border-0 text-muted" style="max-width: 240px;">{{ m.user.email|default:"—" }}</span>
                         {% endif %}
-                        <select name="role" style="max-width: 220px;" class="form-select form-select-sm" aria-label="{% blocktranslate with username=m.user.username %}Rol de {{ username }}{% endblocktranslate %}">
-                            {% for value, label in roles %}
-                            <option value="{{ value }}" {% if m.role == value %}selected{% endif %}>{{ label }}</option>
-                            {% endfor %}
-                        </select>
-                        <button type="submit" class="btn btn-sm btn-outline-primary">{% translate "Guardar" %}</button>
+                        {% if m.is_admin %}<span class="z-badge z-badge--lime align-self-center">{% translate "Capitán" %}</span>{% else %}<span class="align-self-center text-muted">{% translate "Miembro (solo lectura)" %}</span>{% endif %}
+                        {% if m.user_id == request.user.id %}<button type="submit" class="btn btn-sm btn-outline-primary">{% translate "Guardar email" %}</button>{% endif %}
                     </form>
                 </td>
                 <td class="text-end">
+                    {% if not m.is_admin %}
+                    {% if m.pk in successor_ids %}
+                    <form method="post" action="{% url 'transfer_captaincy' m.public_id %}" class="d-inline" {% blocktranslate asvar transfer_q with username=m.user.username %}¿Traspasar la capitanía a {{ username }}? Tú pasarás a ser miembro.{% endblocktranslate %}onsubmit="return confirm('{{ transfer_q|escapejs }}');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-primary">{% translate "Hacer capitán" %}</button>
+                    </form>
+                    {% endif %}
                     <form method="post" action="{% url 'remove_member' m.public_id %}" {% blocktranslate asvar remove_q with username=m.user.username %}¿Quitar a {{ username }} del club?{% endblocktranslate %}onsubmit="return confirm('{{ remove_q|escapejs }}');">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-sm btn-danger">{% translate "Quitar" %}</button>
                     </form>
+                    {% endif %}
                 </td>
             </tr>
         {% endfor %}
         </tbody>
     </table></div>
+    <p class="text-muted small">{% translate "Un club tiene un solo capitán. Para traspasar la capitanía, el miembro tiene que estar enlazado a un jugador del club («Mi perfil»). Para eliminar el club, quita antes a todos los miembros y abandónalo desde el menú." %}</p>
 
     <h2 class="h4 z-heading-plain mt-4" id="invitaciones">{% translate "Invitar jugadores" %}</h2>
     <p class="text-muted">{% translate "Invita a un jugador por email o genera un enlace para compartirlo tú (por WhatsApp, por ejemplo). Podrá registrarse con usuario, email y contraseña o con Google, o unirse con la cuenta que ya tenga, y entrará como miembro. La invitación por email sirve para una sola persona; el enlace lo pueden usar varias. Ambos caducan a las 24 horas." %}</p>
