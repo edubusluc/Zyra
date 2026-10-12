@@ -37,7 +37,7 @@ from .decorators import club_admin_required
 from .emails import send_invitation_email, send_welcome_email
 from .forms import CaptainPlayerForm, CaptainSnpForm, ClubForm, EmailChangeForm, InviteMemberForm, SignUpForm
 from .middleware import SESSION_KEY
-from .models import Invitation, Membership
+from .models import REPORT_SCOPES, Invitation, Membership, UserPreference
 from .onboarding import onboarding_for
 from . import seo
 from .services import (
@@ -534,6 +534,12 @@ def my_profile(request):
     user = request.user
     google_only = not user.has_usable_password()
     email_form = None
+    if request.method == "POST" and "report_scope" in request.POST:
+        scope = request.POST["report_scope"]
+        if scope in dict(REPORT_SCOPES):
+            UserPreference.objects.update_or_create(user=user, defaults={"report_scope": scope})
+            messages.success(request, _("Preferencias guardadas."))
+        return redirect("my_profile")
     if not google_only and (request.method == "POST" or request.GET.get("edit") == "email"):
         email_form = EmailChangeForm(request.POST or None, user=user)
         if email_form.is_valid():
@@ -546,6 +552,8 @@ def my_profile(request):
         "google_only": google_only,
         "uses_google": SocialAccount.objects.filter(user=user, provider="google").exists(),
         "email_form": email_form,
+        "report_scopes": REPORT_SCOPES,
+        "report_scope": UserPreference.report_scope_for(user),
         "player": Player.objects.filter(club=request.club, user=user).first() if request.club else None,
     })
 

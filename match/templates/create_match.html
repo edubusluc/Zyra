@@ -62,6 +62,17 @@
         </p>
         {% for error in form.start_date.errors %}<div class="alert-message">{{ error }}</div>{% endfor %}
 
+        <fieldset class="z-mode z-report-scope">
+            <legend class="form-label">{% translate "Datos del informe PDF" %}</legend>
+            <div class="z-segmented z-mode-options">
+                {% for radio in form.report_scope %}
+                <label class="z-mode-option">{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>
+                {% endfor %}
+            </div>
+            <p class="form-text mb-0"><a href="{% url 'my_profile' %}">{% translate "Edita tus preferencias" %}</a> {% translate "para guardar esta opción por defecto." %}</p>
+            {% for error in form.report_scope.errors %}<div class="alert-message">{{ error }}</div>{% endfor %}
+        </fieldset>
+
         <button type="submit" class="btn btn-primary">{% translate "Crear Partido" %}</button>
     </form>
 </div>

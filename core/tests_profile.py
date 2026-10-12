@@ -88,3 +88,23 @@ class MyProfileTests(TestCase):
         })
         self.assertRedirects(response, reverse("my_profile"), fetch_redirect_response=False)
         self.assertContains(self.client.get(reverse("my_profile")), "Contraseña actualizada.")
+
+
+class ReportPreferenceTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user("ana", password="Vieja-clave-123", email="ana@example.com")
+        self.client.force_login(self.user)
+
+    def test_default_is_all_data_and_it_is_saved(self):
+        page = self.client.get(reverse("my_profile"))
+        self.assertContains(page, "Solo partidos competitivos")
+        self.assertEqual(page.context["report_scope"], "todos")
+        response = self.client.post(reverse("my_profile"), {"report_scope": "competitivos"})
+        self.assertRedirects(response, reverse("my_profile"))
+        self.assertEqual(self.client.get(reverse("my_profile")).context["report_scope"], "competitivos")
+        self.client.post(reverse("my_profile"), {"report_scope": "todos"})
+        self.assertEqual(self.client.get(reverse("my_profile")).context["report_scope"], "todos")
+
+    def test_invalid_value_is_ignored(self):
+        self.client.post(reverse("my_profile"), {"report_scope": "otra"})
+        self.assertEqual(self.client.get(reverse("my_profile")).context["report_scope"], "todos")

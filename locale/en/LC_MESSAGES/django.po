@@ -8030,6 +8030,42 @@ msgstr "Photo of %(name)s"
 msgid "Escudo actual del equipo"
 msgstr "Team's current crest"
 
+msgid "Todos los datos"
+msgstr "All data"
+
+msgid "Solo partidos competitivos"
+msgstr "Competitive matches only"
+
+msgid "Datos del informe"
+msgstr "Report data"
+
+msgid "Datos del informe PDF"
+msgstr "PDF report data"
+
+msgid "Edita tus preferencias"
+msgstr "Edit your preferences"
+
+msgid "para guardar esta opción por defecto."
+msgstr "to save this option as the default."
+
+msgid "Preferencias"
+msgstr "Preferences"
+
+msgid "Datos del informe PDF al crear un partido"
+msgstr "PDF report data when creating a match"
+
+msgid "Es la opción que aparece marcada por defecto; en cada partido puedes cambiarla al crearlo."
+msgstr "This is the option selected by default; you can change it for each match when you create it."
+
+msgid "Guardar preferencias"
+msgstr "Save preferences"
+
+msgid "Preferencias guardadas."
+msgstr "Preferences saved."
+
+msgid "Estadísticas calculadas solo con partidos competitivos."
+msgstr "Statistics calculated from competitive matches only."
+
 #~ msgid "Empezar"
 #~ msgstr "Get started"
 

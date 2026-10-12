@@ -13,7 +13,7 @@
   const sourceRow = form.querySelector('[data-rival-source-row]');
   const groupRival = form.querySelector('[data-group-rival]');
   const manualRival = form.querySelector('[data-manual-rival]');
-  const radios = form.querySelectorAll('input[name="mode"], input[name="rival_source"], input[name="own_side"]');
+  const radios = form.querySelectorAll('input[name="mode"], input[name="rival_source"], input[name="own_side"], input[name="report_scope"]');
   function checkedValue(name) {
     const checked = form.querySelector(`input[name="${name}"]:checked`);
     return checked ? checked.value : '';

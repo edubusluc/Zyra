@@ -62,7 +62,8 @@ estadísticas) y aviso al capitán si el club no tiene cuenta SNP
 - **Plantilla**: marcar de una vez quién está en el equipo.
 - **Mi perfil** (menú de la cuenta): email y contraseña de la cuenta con opción de cambiarlos (el email
   pide la contraseña actual; en las cuentas solo de Google el email lo gestiona Google) y el jugador
-  enlazado, que se pulsa para editarlo, o el botón para enlazarse a uno
+  enlazado, que se pulsa para editarlo, o el botón para enlazarse a uno, y las preferencias de la cuenta
+  (datos del informe PDF por defecto)
   ([`core.views.my_profile`](referencia/core/views.md)).
 - **Mi jugador**: cada miembro enlaza su cuenta con su jugador y sube su foto. Al elegir quién es
   ve en lima los jugadores libres y apagados los ya enlazados, el buscador filtra mientras escribe
@@ -96,7 +97,9 @@ El ciclo de un enfrentamiento ([`match.views`](referencia/match/views.md)):
 1. **Crear partido**: competitivo (enfrentamiento, reto o play off) o amistoso; el equipo propio
    juega siempre como local o visitante; en un amistoso el rival puede ser un equipo del grupo
    o un nombre escrito a mano (no se crea ningún equipo, el nombre se guarda en el partido);
-   calendario propio de Zyra.
+   calendario propio de Zyra. Un selector «Datos del informe PDF» elige si las estadísticas del informe usan
+   todos los partidos o solo los competitivos (los amistosos quedan fuera); su valor por defecto se guarda en
+   «Mi perfil» (enlace «Edita tus preferencias» bajo el selector).
 2. **Convocatoria**: elegir jugadores (con sus sanciones a la vista); se puede editar y cada
    cambio queda en el **registro de convocatoria** ([`callLog`](referencia/callLog/index.md)).
 3. **Cerrar convocatoria** (mínimo 10 jugadores): envía el **informe PDF** a los capitanes; lo que

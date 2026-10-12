@@ -8,7 +8,7 @@ viceversa).
 from django.db.models import Q
 from django.utils.translation import gettext as _, pgettext
 
-from data_analyse.pairs import club_game_log
+from data_analyse.pairs import COMPETITIVE, club_game_log, match_type_lookup
 
 from . import advisor
 from call.models import Call
@@ -53,7 +53,9 @@ def build_report(call):
 
     called = list(call.players.order_by("name", "last_name"))
     # Solo la historia anterior a este partido (el informe de un partido antiguo no ve el futuro)
-    log = [g for g in club_game_log(club) if g['date'] < match.start_date]
+    competitive_only = match.report_competitive_only
+    log = [g for g in club_game_log(club, match_type=COMPETITIVE if competitive_only else None)
+           if g['date'] < match.start_date]
     forms, pairs = advisor.build_forms(log, called, own_local)
     player_rows = sorted(forms.values(), key=lambda f: (f.strength, f.snp), reverse=True)
 
@@ -68,9 +70,14 @@ def build_report(call):
         reverse=True,
     )[:MAX_PAIRS_TABLE]
 
+    # Con «solo competitivos», los amistosos tampoco cuentan en balances, precedentes ni convocatorias
+    scope_filter = match_type_lookup(COMPETITIVE) if competitive_only else {}
+    call_scope_filter = match_type_lookup(COMPETITIVE, "match__") if competitive_only else {}
+
     # Balance de la temporada (general y en la sede)
     season_matches = list(
         Match.objects.filter(club=club, season=match.season, draft_mode=False, start_date__lt=match.start_date)
+        .filter(**scope_filter)
         .exclude(pk=match.pk).select_related("local", "visiting")
     )
     season = {"played": 0, "won": 0, "venue_played": 0, "venue_won": 0}
@@ -97,7 +104,7 @@ def build_report(call):
             "outcome": _outcome(m),
         }
         for m in Match.objects.filter(club=club, draft_mode=False, start_date__lt=match.start_date)
-        .filter(same_rival)
+        .filter(**scope_filter).filter(same_rival)
         .select_related("local", "visiting")
         .order_by("-start_date")[:MAX_PRECEDENTS]
     ]
@@ -113,7 +120,7 @@ def build_report(call):
                 usage[pid]["last"] = max(filter(None, (usage[pid]["last"], g["date"])))
     calls = (Call.objects.filter(match__club=club, match__season=match.season, draft_mode=False,
                                  match__start_date__lt=match.start_date)
-             .exclude(pk=call.pk).values_list("players", flat=True))
+             .filter(**call_scope_filter).exclude(pk=call.pk).values_list("players", flat=True))
     for pid in calls:
         if pid in usage:
             usage[pid]["calls"] += 1
@@ -142,6 +149,7 @@ def build_report(call):
         "precedents": precedents,
         "lineups": lineups,
         "usage": usage,  # por id de convocado: {'games', 'calls', 'last'}
+        "competitive_only": competitive_only,
         "enough_players": len(called) >= advisor.PLAYERS_PER_LINEUP,
     }
 
@@ -161,7 +169,8 @@ def suggested_lineups(call):
         return []
     own_local = match.own_is_local
     venue_label = pgettext("sede, en minúscula", "local") if own_local else pgettext("sede, en minúscula", "visitante")
-    log = [g for g in club_game_log(match.club) if g['date'] < match.start_date]
+    log = [g for g in club_game_log(match.club, match_type=COMPETITIVE if match.report_competitive_only else None)
+           if g['date'] < match.start_date]
     forms, pairs = advisor.build_forms(log, called, own_local)
     lineup_a, lineup_b = advisor.recommend(forms, pairs, [p.id for p in called])
     result = []
