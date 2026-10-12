@@ -33,6 +33,7 @@ entero sigue siendo la clave de los FK. Excepciones sin `public_id`: `backoffice
   (`user`, `club`). El valor guardado sigue siendo `admin` aunque la interfaz diga «Capitán».
 - **Invitation**: `token` único, `email` (vacío = enlace), `reusable` (enlace compartido, varios
   usos), `use_count`, `expires_at` (24 h, `INVITATION_TTL`). `Invitation.objects.pending()`.
+- **AccountNoticeLog** (`backoffice/models.py`): registro de avisos de «email sin confirmar» y de cuentas eliminadas por ese motivo; guarda copia de usuario y email, `deadline_at`, `email_sent` y quién lo hizo (`performed_by`, `SET_NULL`).
 - **PhotoCheck** (`approved`/`rejected`/`unchecked`), **PhotoRemoval**, **BlockedEmail** (`email`
   único, normalizado por `core/blocklist.py`): moderación. FKs con `SET_NULL` para conservar el registro.
 

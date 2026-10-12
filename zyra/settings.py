@@ -405,6 +405,8 @@ ACCOUNT_SIGNUP_FIELDS = ['username*', 'email*', 'password1*', 'password2*']
 # lo envía al registrarse y al cambiar el email. Entrar con Google solo conecta con una cuenta
 # de contraseña si su email está verificado (core.adapters.SocialAccountAdapter).
 ACCOUNT_EMAIL_VERIFICATION = 'optional'
+# Días que el back-office da por defecto para confirmar el email antes de eliminar la cuenta.
+UNVERIFIED_ACCOUNT_DEADLINE_DAYS = config('UNVERIFIED_ACCOUNT_DEADLINE_DAYS', default=7, cast=int)
 ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = 'my_profile'
 ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL = 'login'
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = False

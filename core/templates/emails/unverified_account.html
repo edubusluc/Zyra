@@ -1,0 +1,6 @@
+{% load i18n %}{% include "emails/_title_start.html" %}{% blocktranslate with username=user.username %}Hola, {{ username }}{% endblocktranslate %}</h1>
+<p style="margin:0 0 12px;">{% translate "Todavía no has confirmado el email de tu cuenta de Zyra." %}</p>
+<p style="margin:0 0 12px; padding:12px; background-color:#FFF4E5; border-radius:8px;"><strong>{% blocktranslate with d=deadline|date:"DATE_FORMAT" %}Si no lo confirmas antes del {{ d }}, eliminaremos tu cuenta.{% endblocktranslate %}</strong></p>
+<p style="margin:0 0 16px;"><a href="{{ confirm_url }}" style="display:inline-block; background-color:#B4F100; color:#0A0A0A; font-weight:bold; text-decoration:none; padding:10px 20px; border-radius:8px;">{% translate "Confirmar mi email" %}</a></p>
+<p style="margin:0 0 12px;">{% translate "Si no te registraste tú, puedes ignorar este correo." %}</p>
+<p style="margin:0;">{% translate "Un saludo," %}<br>{% translate "El equipo de Zyra" %}</p>

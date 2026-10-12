@@ -161,6 +161,7 @@ ni se editan parejas (`edit_game_match`).
   «Pendiente de revisar» para el personal (`PhotoCheck`). Tests: `core/test_images.py`.
 - [V] Emails bloqueados (`core/blocklist.py`) no pueden registrarse, unirse ni ser invitados.
   Tests: `core/tests_blocklist.py`.
+- [V] Cuentas sin confirmar (back-office › «Emails sin confirmar», `backoffice/views.py` `unverified_*`): se listan las cuentas no staff cuyo email no está verificado en allauth (`email_verification.unverified_users`). «Avisar» manda el enlace de confirmación y un plazo (`UNVERIFIED_ACCOUNT_DEADLINE_DAYS`, 7 por defecto, editable por aviso). Eliminar solo si el último aviso ya venció y se escribe el usuario; usa `delete_account` (un capitán pendiente no se borra). Cada aviso y eliminación queda en `AccountNoticeLog`. Sin plazo automático: todo manual. Tests: `backoffice/tests.py`.
 
 ## Idioma y accesibilidad
 

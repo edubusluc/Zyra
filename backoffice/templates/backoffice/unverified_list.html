@@ -1,0 +1,83 @@
+{% extends 'backoffice/base.html' %}
+{% load i18n %}
+{% block title %}{% translate "Emails sin confirmar" %}{% endblock %}
+
+{% block content %}
+<div class="z-page-head">
+    <div>
+        <span class="z-eyebrow">{% blocktranslate trimmed count n=page.paginator.count %}{{ n }} cuenta{% plural %}{{ n }} cuentas{% endblocktranslate %}</span>
+        <h1>{% translate "Emails sin confirmar" %}</h1>
+    </div>
+</div>
+
+{% if messages %}
+<div class="alert-message">{% for message in messages %}<p>{{ message }}</p>{% endfor %}</div>
+{% endif %}
+
+<p class="text-muted">{% translate "Cuentas registradas con usuario y contraseña cuyo email no se ha confirmado. «Avisar» manda un correo con el enlace de confirmación y el plazo, pasado el cual se podrá eliminar la cuenta; solo se puede eliminar una cuenta a la que se ha avisado y cuyo plazo ha vencido. Cada aviso y cada eliminación queda en el registro de abajo." %}</p>
+
+<form method="get" class="bo-filters" role="search">
+    <input type="search" name="q" value="{{ q }}" class="form-control" placeholder="{% translate 'Buscar por usuario o email' %}" aria-label="{% translate 'Buscar cuenta' %}">
+    <select name="state" class="form-select" aria-label="{% translate 'Estado' %}">
+        <option value="">{% translate "Todas" %}</option>
+        <option value="no_notice" {% if state == 'no_notice' %}selected{% endif %}>{% translate "Sin avisar" %}</option>
+        <option value="waiting" {% if state == 'waiting' %}selected{% endif %}>{% translate "Avisadas, dentro de plazo" %}</option>
+        <option value="overdue" {% if state == 'overdue' %}selected{% endif %}>{% translate "Avisadas, plazo vencido" %}</option>
+    </select>
+    <button class="btn btn-primary"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> {% translate "Filtrar" %}</button>
+</form>
+
+<div class="z-table-wrap"><table class="table align-middle">
+    <thead><tr><th>{% translate "Usuario" %}</th><th>{% translate "Email" %}</th><th>{% translate "Registro" %}</th><th>{% translate "Último aviso" %}</th><th><span class="visually-hidden">{% translate "Acciones" %}</span></th></tr></thead>
+    <tbody>
+    {% for u in page %}
+        <tr>
+            <td><a href="{% url 'backoffice:user_detail' u.id %}">{{ u.username }}</a></td>
+            <td>{{ u.email }}</td>
+            <td>{{ u.date_joined|date:"j M Y H:i" }}</td>
+            <td>{% if u.last_deadline %}{% blocktranslate with d=u.last_deadline|date:"j M Y" %}plazo hasta el {{ d }}{% endblocktranslate %}{% if u.overdue %} <span class="z-badge z-badge--danger">{% translate "vencido" %}</span>{% endif %}{% else %}<span class="text-muted">{% translate "sin avisar" %}</span>{% endif %}</td>
+            <td class="text-end">
+                <form method="post" action="{% url 'backoffice:unverified_warn' u.id %}" class="d-inline-flex gap-2 align-items-center" onsubmit="return confirm('{% translate "¿Enviar el aviso a este email?" %}')">
+                    {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <label class="visually-hidden" for="days-{{ u.id }}">{% translate "Días de plazo" %}</label>
+                    <input id="days-{{ u.id }}" type="number" name="days" min="1" max="60" value="{{ default_days }}" class="form-control form-control-sm" style="width:5rem" title="{% translate 'Días de plazo' %}">
+                    <button class="btn btn-outline-light btn-sm"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i> {% if u.last_deadline %}{% translate "Avisar de nuevo" %}{% else %}{% translate "Avisar" %}{% endif %}</button>
+                </form>
+                {% if u.overdue %}
+                <form method="post" action="{% url 'backoffice:unverified_delete' u.id %}" class="d-inline-flex gap-2 align-items-center">
+                    {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <label class="visually-hidden" for="confirm-{{ u.id }}">{% translate "Escribe el usuario para confirmar" %}</label>
+                    <input id="confirm-{{ u.id }}" type="text" name="confirm" required autocomplete="off" class="form-control form-control-sm" style="width:9rem" placeholder="{{ u.username }}" title="{% translate 'Escribe el usuario para confirmar' %}">
+                    <button class="btn btn-outline-danger btn-sm"><i class="fa-solid fa-user-xmark" aria-hidden="true"></i> {% translate "Eliminar" %}</button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="5" class="text-muted">{% translate "No hay cuentas con el email sin confirmar." %}</td></tr>
+    {% endfor %}
+    </tbody>
+</table></div>
+<div class="mt-3">{% include 'includes/pagination.html' with page=page extra=extra %}</div>
+
+<section class="z-panel mt-4">
+    <h2 class="h5">{% translate "Registro de avisos y eliminaciones" %}</h2>
+    <div class="z-table-wrap"><table class="table align-middle">
+        <thead><tr><th>{% translate "Fecha" %}</th><th>{% translate "Acción" %}</th><th>{% translate "Usuario" %}</th><th>{% translate "Email" %}</th><th>{% translate "Plazo" %}</th><th>{% translate "Por" %}</th></tr></thead>
+        <tbody>
+        {% for e in log %}
+            <tr>
+                <td>{{ e.created_at|date:"j M Y H:i" }}</td>
+                <td>{{ e.get_action_display }}{% if e.action == 'warning' and not e.email_sent %} <span class="z-badge z-badge--danger">{% translate "correo no enviado" %}</span>{% endif %}</td>
+                <td>{{ e.username }}</td>
+                <td>{{ e.email|default:"—" }}</td>
+                <td>{% if e.deadline_at %}{{ e.deadline_at|date:"j M Y" }}{% else %}—{% endif %}</td>
+                <td>{{ e.performed_by_name|default:"—" }}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="6" class="text-muted">{% translate "Todavía no se ha avisado ni eliminado ninguna cuenta." %}</td></tr>
+        {% endfor %}
+        </tbody>
+    </table></div>
+</section>
+{% endblock %}

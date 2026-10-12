@@ -27,6 +27,7 @@ PAGES = [
     ("backoffice:run_list", []),
     ("backoffice:usage", []),
     ("backoffice:health", []),
+    ("backoffice:unverified_list", []),
 ]
 
 
@@ -819,3 +820,77 @@ class UsageAndHealthTests(TestCase):
         self.assertEqual(health["snp"]["failed"], 1)
         self.assertContains(response, "SMTP caído")
         self.assertContains(response, "Contraseña rechazada")
+
+
+class UnverifiedAccountsTests(TestCase):
+    """Cuentas con el email sin confirmar: listado, aviso, eliminación y registro."""
+
+    def setUp(self):
+        from allauth.account.models import EmailAddress
+        self.staff = User.objects.create_user("staff", password="pass-12345", is_staff=True)
+        self.pending = User.objects.create_user("pendiente", "p@example.com", "pass-12345")
+        self.verified = User.objects.create_user("verificada", "v@example.com", "pass-12345")
+        EmailAddress.objects.create(user=self.verified, email="v@example.com", verified=True, primary=True)
+        self.client.login(username="staff", password="pass-12345")
+
+    def test_lists_only_unverified_non_staff(self):
+        response = self.client.get(reverse("backoffice:unverified_list"))
+        self.assertEqual([u.username for u in response.context["page"]], ["pendiente"])
+
+    def test_non_staff_gets_404(self):
+        self.client.login(username="verificada", password="pass-12345")
+        self.assertEqual(self.client.get(reverse("backoffice:unverified_list")).status_code, 404)
+
+    def test_warn_sends_email_with_link_and_logs(self):
+        from django.core import mail
+        from .models import AccountNoticeLog
+        self.client.post(reverse("backoffice:unverified_warn", args=[self.pending.id]), {"days": "3"})
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("/confirm-email/", mail.outbox[0].body)
+        entry = AccountNoticeLog.objects.get()
+        self.assertEqual((entry.action, entry.performed_by, entry.email_sent, entry.email), ("warning", self.staff, True, "p@example.com"))
+        self.assertAlmostEqual((entry.deadline_at - timezone.now()).days, 2, delta=1)
+
+    def test_warn_logs_even_if_email_fails(self):
+        from unittest import mock
+        from .models import AccountNoticeLog
+        with mock.patch("core.emails.EmailMultiAlternatives.send", side_effect=OSError):
+            self.client.post(reverse("backoffice:unverified_warn", args=[self.pending.id]))
+        self.assertFalse(AccountNoticeLog.objects.get().email_sent)
+
+    def test_cannot_warn_verified_account(self):
+        response = self.client.post(reverse("backoffice:unverified_warn", args=[self.verified.id]))
+        self.assertEqual(response.status_code, 404)
+
+    def test_delete_needs_expired_warning_and_typed_username(self):
+        from .models import AccountNoticeLog
+        url = reverse("backoffice:unverified_delete", args=[self.pending.id])
+        self.client.post(url, {"confirm": "pendiente"})
+        self.assertTrue(User.objects.filter(pk=self.pending.pk).exists())  # sin aviso
+        self.client.post(reverse("backoffice:unverified_warn", args=[self.pending.id]))
+        self.client.post(url, {"confirm": "pendiente"})
+        self.assertTrue(User.objects.filter(pk=self.pending.pk).exists())  # plazo vigente
+        AccountNoticeLog.objects.update(deadline_at=timezone.now() - datetime.timedelta(minutes=1))
+        self.client.post(url, {"confirm": "otro"})
+        self.assertTrue(User.objects.filter(pk=self.pending.pk).exists())  # confirmación errónea
+        self.client.post(url, {"confirm": "PENDIENTE"})
+        self.assertFalse(User.objects.filter(pk=self.pending.pk).exists())
+        entry = AccountNoticeLog.objects.filter(action="deleted").get()
+        self.assertEqual((entry.username, entry.email, entry.performed_by), ("pendiente", "p@example.com", self.staff))
+
+    def test_pending_captain_is_not_deleted(self):
+        from .models import AccountNoticeLog
+        create_club("Club B", "Sevilla", self.pending)
+        self.client.post(reverse("backoffice:unverified_warn", args=[self.pending.id]))
+        AccountNoticeLog.objects.update(deadline_at=timezone.now() - datetime.timedelta(minutes=1))
+        self.client.post(reverse("backoffice:unverified_delete", args=[self.pending.id]), {"confirm": "pendiente"})
+        self.assertTrue(User.objects.filter(pk=self.pending.pk).exists())
+        self.assertFalse(AccountNoticeLog.objects.filter(action="deleted").exists())
+
+    def test_state_filter(self):
+        from .models import AccountNoticeLog
+        self.client.post(reverse("backoffice:unverified_warn", args=[self.pending.id]))
+        names = lambda s: [u.username for u in self.client.get(reverse("backoffice:unverified_list"), {"state": s}).context["page"]]
+        self.assertEqual((names("no_notice"), names("waiting"), names("overdue")), ([], ["pendiente"], []))
+        AccountNoticeLog.objects.update(deadline_at=timezone.now() - datetime.timedelta(minutes=1))
+        self.assertEqual(names("overdue"), ["pendiente"])

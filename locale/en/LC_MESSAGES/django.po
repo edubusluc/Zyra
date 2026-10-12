@@ -8782,3 +8782,150 @@ msgstr "The connection to SNP is not available right now. Try again later."
 #: players/templates/list_players.html
 msgid "Servicio de SNP no disponible por ahora."
 msgstr "SNP service not available for now."
+
+#: backoffice/templates/backoffice/unverified_list.html
+msgid "Emails sin confirmar"
+msgstr "Unconfirmed emails"
+
+#: backoffice/templates/backoffice/unverified_list.html
+msgid "Confirma tu email en Zyra o eliminaremos tu cuenta"
+msgstr "Confirm your email on Zyra or we will delete your account"
+
+#: backoffice/templates/backoffice/unverified_list.html
+msgid "Todavía no has confirmado el email de tu cuenta de Zyra."
+msgstr "You haven't confirmed the email of your Zyra account yet."
+
+#: backoffice/templates/backoffice/unverified_list.html
+msgid "Si no lo confirmas antes del %(d)s, eliminaremos tu cuenta."
+msgstr "If you don't confirm it before %(d)s, we will delete your account."
+
+
+#: backoffice/templates/backoffice/unverified_list.html
+msgid "Confirmar mi email"
+msgstr "Confirm my email"
+
+#: backoffice/templates/backoffice/unverified_list.html
+msgid "Si no te registraste tú, puedes ignorar este correo."
+msgstr "If you didn't sign up, you can ignore this email."
+
+#: backoffice/templates/backoffice/unverified_list.html
+msgid "Aviso enviado a %(email)s."
+msgstr "Notice sent to %(email)s."
+
+#: backoffice/templates/backoffice/unverified_list.html
+msgid "No se pudo enviar el correo a %(email)s; queda anotado en el registro."
+msgstr "The email to %(email)s could not be sent; it is noted in the log."
+
+#: backoffice/templates/backoffice/unverified_list.html
+msgid "Solo se puede eliminar una cuenta a la que se ha avisado y cuyo plazo ha vencido."
+msgstr "Only an account that has been warned and whose deadline has passed can be deleted."
+
+#: backoffice/templates/backoffice/unverified_list.html
+msgid "Escribe el nombre de usuario para confirmar la eliminación."
+msgstr "Type the username to confirm the deletion."
+
+#: backoffice/templates/backoffice/unverified_list.html
+msgid "Cuenta %(username)s eliminada."
+msgstr "Account %(username)s deleted."
+
+#: backoffice/templates/backoffice/unverified_list.html
+msgid "Aviso enviado"
+msgstr "Notice sent"
+
+#: backoffice/templates/backoffice/unverified_list.html
+msgid "Cuenta eliminada"
+msgstr "Account deleted"
+
+#: backoffice/templates/backoffice/unverified_list.html
+msgid "registro de cuentas sin confirmar"
+msgstr "unconfirmed accounts log"
+
+#: backoffice/templates/backoffice/unverified_list.html
+msgid "registros de cuentas sin confirmar"
+msgstr "unconfirmed accounts logs"
+
+#: backoffice/templates/backoffice/unverified_list.html
+msgid "Cuentas registradas con usuario y contraseña cuyo email no se ha confirmado. «Avisar» manda un correo con el enlace de confirmación y el plazo, pasado el cual se podrá eliminar la cuenta; solo se puede eliminar una cuenta a la que se ha avisado y cuyo plazo ha vencido. Cada aviso y cada eliminación queda en el registro de abajo."
+msgstr "Accounts registered with username and password whose email has not been confirmed. «Warn» sends an email with the confirmation link and the deadline, after which the account can be deleted; only an account that has been warned and whose deadline has passed can be deleted. Every notice and deletion is kept in the log below."
+
+#: backoffice/templates/backoffice/unverified_list.html
+msgid "Buscar por usuario o email"
+msgstr "Search by username or email"
+
+#: backoffice/templates/backoffice/unverified_list.html
+msgid "Buscar cuenta"
+msgstr "Search account"
+
+#: backoffice/templates/backoffice/unverified_list.html
+msgid "Sin avisar"
+msgstr "Not warned"
+
+#: backoffice/templates/backoffice/unverified_list.html
+msgid "Avisadas, dentro de plazo"
+msgstr "Warned, within deadline"
+
+#: backoffice/templates/backoffice/unverified_list.html
+msgid "Avisadas, plazo vencido"
+msgstr "Warned, deadline passed"
+
+#: backoffice/templates/backoffice/unverified_list.html
+msgid "Último aviso"
+msgstr "Last notice"
+
+#: backoffice/templates/backoffice/unverified_list.html
+msgid "plazo hasta el %(d)s"
+msgstr "deadline until %(d)s"
+
+#: backoffice/templates/backoffice/unverified_list.html
+msgid "vencido"
+msgstr "expired"
+
+#: backoffice/templates/backoffice/unverified_list.html
+msgid "sin avisar"
+msgstr "not warned"
+
+#: backoffice/templates/backoffice/unverified_list.html
+msgid "¿Enviar el aviso a este email?"
+msgstr "Send the notice to this email?"
+
+#: backoffice/templates/backoffice/unverified_list.html
+msgid "Días de plazo"
+msgstr "Days of deadline"
+
+#: backoffice/templates/backoffice/unverified_list.html
+msgid "Avisar de nuevo"
+msgstr "Warn again"
+
+#: backoffice/templates/backoffice/unverified_list.html
+msgid "Avisar"
+msgstr "Warn"
+
+#: backoffice/templates/backoffice/unverified_list.html
+msgid "Escribe el usuario para confirmar"
+msgstr "Type the username to confirm"
+
+#: backoffice/templates/backoffice/unverified_list.html
+msgid "No hay cuentas con el email sin confirmar."
+msgstr "There are no accounts with an unconfirmed email."
+
+#: backoffice/templates/backoffice/unverified_list.html
+msgid "Registro de avisos y eliminaciones"
+msgstr "Log of notices and deletions"
+
+#: backoffice/templates/backoffice/unverified_list.html
+msgid "Plazo"
+msgstr "Deadline"
+
+#: backoffice/templates/backoffice/unverified_list.html
+msgid "correo no enviado"
+msgstr "email not sent"
+
+#: backoffice/templates/backoffice/unverified_list.html
+msgid "Todavía no se ha avisado ni eliminado ninguna cuenta."
+msgstr "No account has been warned or deleted yet."
+
+#: backoffice/templates/backoffice/unverified_list.html
+msgid "%(n)s cuenta"
+msgid_plural "%(n)s cuentas"
+msgstr[0] "%(n)s account"
+msgstr[1] "%(n)s accounts"

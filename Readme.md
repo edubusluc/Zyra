@@ -402,6 +402,11 @@ clubes, listado y ficha de clubes y de usuarios. Solo entra el personal de Zyra
 enlace *Back-office* en el menú de usuario. La consola SQL y la
 importación de datos son solo para superusuarios.
 
+*Back-office → Emails sin confirmar* lista las cuentas con el email sin verificar y cuándo se
+registraron. «Avisar» envía el enlace de confirmación y un plazo (`UNVERIFIED_ACCOUNT_DEADLINE_DAYS`,
+7 días por defecto); vencido el plazo se puede eliminar la cuenta (escribiendo su usuario). No hay
+borrado automático. Los avisos y eliminaciones quedan registrados con fecha y autor.
+
 Para darte acceso a ti mismo:
 
 ```bash
