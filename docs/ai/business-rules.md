@@ -60,7 +60,10 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
 - [V] No puede haber dos equipos del club con el mismo nombre normalizado (sin mayúsculas, tildes
   ni signos) en la misma división; los antiguos sin división cuentan para todas (`Teamform.clean`).
 - [V] Equipo nuevo del grupo copia categoría, país y división del propio. «Gestionar equipos»
-  (`manage_teams`) solo trata equipos del grupo.
+  (`manage_teams`) trata los rivales, del grupo y dados de baja (`in_group=False`), que se vuelven
+  a dar de alta allí o desde el aviso de nombre parecido (`reactivate_team`, POST).
+- [V] El equipo propio nunca sale del grupo: `Team.save`, `Teamform.clean` y la migración
+  `team/0006` lo fuerzan. Al crear un equipo se avisa de nombres parecidos aunque estén de baja.
 
 ## Partidos, convocatorias y actas
 

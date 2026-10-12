@@ -1,7 +1,7 @@
 {% load i18n static %}
 {# Aviso de nombres parecidos al crear un equipo o un jugador (core/similarity.py). #}
 {# Recibe: title, message, similar (lista de nombres si el servidor ya los encontró). #}
-<div class="modal fade" id="similarModal" tabindex="-1" aria-labelledby="similarModalTitle" aria-hidden="true"{% if similar %} data-open="1"{% endif %}>
+<div class="modal fade" id="similarModal" tabindex="-1" aria-labelledby="similarModalTitle" aria-hidden="true" data-reactivate-label="{% translate 'Dar de alta de nuevo' %}"{% if similar %} data-open="1"{% endif %}>
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
@@ -11,7 +11,8 @@
             <div class="modal-body">
                 <p>{{ message }}</p>
                 <ul data-similar-list>
-                    {% for name in similar %}<li>{{ name }}</li>{% endfor %}
+                    {% for item in similar %}<li>{% firstof item.label item %}
+                        {% if item.reactivate_url %}<form method="post" action="{{ item.reactivate_url }}" class="d-inline">{% csrf_token %}<button type="submit" class="btn btn-link btn-sm p-0 align-baseline">{% translate "Dar de alta de nuevo" %}</button></form>{% endif %}</li>{% endfor %}
                 </ul>
                 <p class="mb-0">{% translate "¿Quieres continuar con la creación?" %}</p>
             </div>
