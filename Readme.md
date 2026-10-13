@@ -72,7 +72,7 @@ python populate_db.py      # opcional: carga el club LOS GLADIADORES con sus dat
 
 `clear_database.py` deja la base de datos vacía con el esquema actual (`--conservar-fotos`
 no borra `media/`). `populate_db.py` pregunta el usuario, email y contraseña del capitán,
-que se crea también como superusuario. No se puede deshacer: copia antes `db.sqlite3` y `media/`.
+que se crea como usuario normal (con `--superusuario`, también como superusuario); conserva las cuentas que ya existan. `clear_database.py` no se puede deshacer: copia antes `db.sqlite3` y `media/`.
 
 ### PostgreSQL
 

@@ -35,3 +35,17 @@ repositorio `DEPLOY_ENABLED` vale `true`.
 - Las migraciones no se ejecutan al arrancar el contenedor, solo en `deploy.sh`, para que web y lanzador no choquen.
 - Si la web no queda sana, el script lo dice y da el comando para volver a la versión anterior (`./deploy.sh <sha anterior>`).
   Las migraciones destructivas no se deshacen solas: para eso están las copias de `backups/`.
+
+## Cargar los datos de partida en el servidor
+
+La imagen incluye `populate_db.py` y `populate/` (escudos). Solo se carga si todavía no hay ningún club; las
+cuentas que ya existan (por ejemplo tu superusuario) se conservan. En el servidor, en `/opt/zyra`:
+
+```bash
+export ZYRA_IMAGE=ghcr.io/edubusluc/zyra:sha-$(cat .current)
+docker compose exec web python populate_db.py --usuario USUARIO_CAPITAN --email EMAIL_CAPITAN --sin-contrasena
+```
+
+Crea el club LOS GLADIADORES y una cuenta de capitán normal (`--superusuario` si además quieres que sea
+staff). `--sin-contrasena` la deja entrar con Google (o tras `changepassword`). El usuario y el email deben
+ser nuevos: el script se niega si ya existen.

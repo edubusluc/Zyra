@@ -9,8 +9,9 @@ Se usa sobre una base de datos vacía con el esquema actual:
     python populate_db.py
 
 El script pide el usuario que será capitán del club (nombre de usuario, email y
-contraseña). Se crea como superusuario y personal, así que también entra en el
-back-office. Si el email es el de su cuenta de Google, «Entrar con Google» entra en esa
+contraseña). Se crea como usuario normal (capitán del club); con --superusuario
+también es superusuario y personal, y entra en el back-office. Las cuentas que ya
+existan (por ejemplo un superusuario creado con createsuperuser) se conservan. Si el email es el de su cuenta de Google, «Entrar con Google» entra en esa
 misma cuenta. Sin preguntas:
 
     python populate_db.py --usuario edu --email tu@email.com --sin-contrasena
@@ -43,6 +44,7 @@ import django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zyra.settings")
 django.setup()
 
+from allauth.account.models import EmailAddress  # noqa: E402
 from django.contrib.auth import get_user_model  # noqa: E402
 from django.contrib.auth.password_validation import validate_password  # noqa: E402
 from django.core.exceptions import ValidationError  # noqa: E402
@@ -700,7 +702,7 @@ MATCHES = [{'public_id': 'MATtLTtocAuOB6r',
   'visiting': 'TEAtkIX7SShWckF',
   'start_date': '2024-10-06',
   'result': 'Victoria Local',
-  'result_points': '7-5',
+  'result_points': '7/5',
   'draft_mode': False,
   'season': '2024-2025',
   'location': 'Pol. La estrella, Coria del Río'},
@@ -710,7 +712,7 @@ MATCHES = [{'public_id': 'MATtLTtocAuOB6r',
   'visiting': 'TEAbKItZd1HsCGo',
   'start_date': '2024-10-20',
   'result': 'Victoria Visitante',
-  'result_points': '3-9',
+  'result_points': '3/9',
   'draft_mode': False,
   'season': '2024-2025',
   'location': 'C. Castilla Leon, 237, 41909 Salteras, Sevilla'},
@@ -720,7 +722,7 @@ MATCHES = [{'public_id': 'MATtLTtocAuOB6r',
   'visiting': 'TEAtkIX7SShWckF',
   'start_date': '2024-10-27',
   'result': 'Victoria Local',
-  'result_points': '10-2',
+  'result_points': '10/2',
   'draft_mode': False,
   'season': '2024-2025',
   'location': 'BURGPADEL'},
@@ -730,7 +732,7 @@ MATCHES = [{'public_id': 'MATtLTtocAuOB6r',
   'visiting': 'TEAG6eAPHbSRkDt',
   'start_date': '2024-11-10',
   'result': 'Victoria Local',
-  'result_points': '7-5',
+  'result_points': '7/5',
   'draft_mode': False,
   'season': '2024-2025',
   'location': 'C. Castilla Leon, 237, 41909 Salteras, Sevilla'},
@@ -2551,14 +2553,16 @@ def ask_captain(args):
 
 
 @transaction.atomic
-def populate(username, email, password):
-    captain = User(username=username, email=email, is_staff=True, is_superuser=True)
+def populate(username, email, password, superuser=False):
+    captain = User(username=username, email=email, is_staff=superuser, is_superuser=superuser)
     if password:
         captain.set_password(password)
     else:
         captain.set_unusable_password()
     captain.save()
-    print(f"  capitán: {captain.username} ({captain.email}), también superusuario")
+    # Email principal ya verificado (allauth): sin esto «Entrar con Google» no conecta con la cuenta.
+    EmailAddress.objects.create(user=captain, email=email, verified=True, primary=True)
+    print(f"  capitán: {captain.username} ({captain.email})" + (", también superusuario" if superuser else ""))
 
     clubs = _create("clubes", Club, CLUBS, lambda r: Club(public_id=r["public_id"], name=r["name"], slug=r["slug"]),
                     keep_dates=["created_at"])
@@ -2610,12 +2614,19 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Carga los datos de partida de Zyra en una base de datos vacía.")
     parser.add_argument("--usuario", help="usuario del capitán del club (si no, se pregunta)")
     parser.add_argument("--email", help="email del capitán (si no, se pregunta)")
+    parser.add_argument("--superusuario", action="store_true",
+                        help="el capitán también es superusuario y personal (por defecto es un usuario normal)")
     parser.add_argument("--sin-contrasena", action="store_true",
                         help="el capitán no tiene contraseña: entra con Google o tras changepassword")
     args = parser.parse_args()
-    if Club.objects.exists() or User.objects.exists():
-        sys.exit("La base de datos ya tiene datos. Vacíala antes con: python clear_database.py")
-    populate(*ask_captain(args))
+    if Club.objects.exists():
+        sys.exit("La base de datos ya tiene clubes. Vacíala antes con: python clear_database.py")
+    captain_data = ask_captain(args)
+    if User.objects.filter(username__iexact=captain_data[0]).exists():
+        sys.exit(f"Ya existe un usuario «{captain_data[0]}»: elige otro nombre de usuario.")
+    if User.objects.filter(email__iexact=captain_data[1]).exists():
+        sys.exit(f"Ya existe una cuenta con el email {captain_data[1]}: usa otro email para el capitán.")
+    populate(*captain_data, superuser=args.superusuario)
     # Copia los escudos de ejemplo (populate/photos) al almacenamiento de fotos (media/).
     call_command("move_photos_to_media")
     print(f"Listo ({datetime.datetime.now():%d/%m/%Y %H:%M}). Guarda la cuenta SNP del club desde la web si la usas.")
