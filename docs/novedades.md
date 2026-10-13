@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 13/10/2026 · «Completar equipo» una sola vez y edición desde el back-office
+
+- «Completar equipo» desde la web solo se ofrece una vez (en el registro o tras registrar la cuenta SNP). Si falla se muestran los errores habituales (idioma, nombre del equipo, cuenta); tras 3 fallos se oculta, se avisa al capitán de que se ha notificado al administrador y se avisa al personal por email y auditoría. Después solo lo lanzan el back-office o el proceso automático
+- Back-office: el personal puede editar equipos, jugadores y la cuenta SNP de un club desde su ficha (con las mismas reglas que el capitán) y reponer la opción de la web; todo queda en la auditoría con el valor anterior y el nuevo. «Entrar como» sigue siendo de solo lectura
+
 ## 12/10/2026 · Back-office: operación, auditoría y «Entrar como»
 
 - Procesos: el aviso «El lanzador de procesos no está en marcha» se basa ahora en un latido real del lanzador (`SchedulerState`) y en procesos atrasados; las ejecuciones sin nada que hacer ya no llenan el historial; los correos de fallo no se repiten (primero, recordatorio cada 6 h y aviso de recuperación); `run_scheduler --loop`; «Ejecutar ahora» pasa por el lanzador si está vivo; los ids de equipo aceptan `TEA…`

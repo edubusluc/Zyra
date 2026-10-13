@@ -4,8 +4,11 @@ todavía no existen. De los que ya están (aunque se escriban algo distinto, con
 criterio que la actualización de puntos) solo se actualizan los puntos SNP: su nombre,
 posición y demás datos no se tocan.
 
-Desde la web del club se hace en dos pasos (buscar y confirmar), solo una vez al mes y
-con un máximo de búsquedas para no saturar SNP (``search_limit``); desde el back-office
+Desde la web del club se hace en dos pasos (buscar y confirmar), solo una vez: en el alta o
+tras registrar la cuenta SNP (``web_import_done``). Si falla ``MAX_FAILED_SEARCHES`` veces se
+oculta la opción y se avisa al personal (``web_blocked``); además hay un máximo de búsquedas
+seguidas para no saturar SNP (``search_limit``). Después solo lo lanza el personal o el proceso
+automático. Desde el back-office
 (comando ``complete_snp_team``) en uno solo y sin esos límites. Los clubes que el personal marca
 como ``Club.snp_unlimited`` (el equipo de pruebas) no tienen límites.
 
@@ -18,6 +21,7 @@ import logging
 
 from django.conf import settings
 from django.db import transaction
+from django.db.models import F
 from django.utils import timezone
 from django.utils.translation import gettext as _, ngettext
 
@@ -42,6 +46,8 @@ QUEUE_STALE_AFTER = datetime.timedelta(minutes=30)
 # y al menos SEARCH_COOLDOWN entre una y la siguiente.
 SEARCHES_PER_DAY = 3
 SEARCH_COOLDOWN = datetime.timedelta(minutes=5)
+# Tras tantas búsquedas fallidas desde la web se oculta «Completar equipo» y se avisa al personal.
+MAX_FAILED_SEARCHES = 3
 
 
 def _capitalize(token):
@@ -164,8 +170,10 @@ def _create_group_teams(club, teams_to_add, teams_existing):
 def search(team_import, scraper=None, **scrape_options):
     """Descarga el equipo de SNP y guarda en ``team_import`` qué se añadiría. Nunca lanza."""
     account = getattr(team_import.club, "snp_account", None)
+    service_off = False
     try:
         if not snp_service.is_enabled():
+            service_off = True  # SNP apagado a mano: no es culpa del club, no cuenta como fallo
             raise SnpScrapeError(str(snp_service.UNAVAILABLE_MESSAGE))
         if account is None:
             raise SnpScrapeError(_("El club no tiene cuenta SNP."), kind=SnpScrapeError.ACCOUNT)
@@ -185,8 +193,10 @@ def search(team_import, scraper=None, **scrape_options):
         changes = {"status": SnpTeamImport.READY, "to_add": to_add, "existing": existing,
                    "teams_to_add": teams_to_add, "teams_existing": teams_existing}
     # Solo si sigue en marcha: el capitán puede haberla cancelado mientras tanto.
-    SnpTeamImport.objects.filter(pk=team_import.pk, status=SnpTeamImport.RUNNING).update(**changes)
+    updated = SnpTeamImport.objects.filter(pk=team_import.pk, status=SnpTeamImport.RUNNING).update(**changes)
     team_import.refresh_from_db()
+    if updated and changes["status"] == SnpTeamImport.ERROR:
+        _register_failure(team_import, service_off)
     return team_import
 
 
@@ -302,28 +312,45 @@ def search_limit(club, now=None):
     return max(waits) if waits else None
 
 
-def _month_start(now=None):
-    """Primer instante del mes actual (o del de ``now``) en hora local."""
-    local = timezone.localtime(now or timezone.now())
-    return local.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-
-
-def last_import_this_month(club, now=None):
+def web_import_done(club):
     """
-    Último «Completar equipo» hecho desde la web este mes, o None si todavía no se ha hecho
-    (siempre None para los clubes sin límites).
+    El «Completar equipo» hecho desde la web (en el alta o desde Jugadores), o None si todavía no
+    se ha hecho. Solo se puede hacer una vez: después el proceso lo lanza el personal o el
+    automático. Siempre None para los clubes sin límites.
     """
     if is_unlimited(club):
         return None
-    return SnpTeamImport.objects.filter(
-        club=club, source=SnpTeamImport.WEB, status=SnpTeamImport.DONE, finished_at__gte=_month_start(now),
-    ).first()
+    return SnpTeamImport.objects.filter(club=club, source=SnpTeamImport.WEB, status=SnpTeamImport.DONE).first()
 
 
-def next_month_start(now=None):
-    """Primer día del mes siguiente: cuándo se podrá volver a completar el equipo desde la web."""
-    start = _month_start(now)
-    return (start + datetime.timedelta(days=32)).replace(day=1)
+def web_blocked(club):
+    """True si la web ya no ofrece «Completar equipo» por fallos repetidos (se avisó al personal)."""
+    return not is_unlimited(club) and club.snp_import_failures >= MAX_FAILED_SEARCHES
+
+
+def _register_failure(team_import, service_off):
+    """
+    Cuenta un fallo de una búsqueda web (no si SNP estaba apagado a mano). Al llegar al máximo anota el
+    bloqueo en la auditoría y avisa por correo al personal para que revise el proceso.
+    """
+    from core.models import Club
+    if team_import.source != SnpTeamImport.WEB or service_off:
+        return
+    Club.objects.filter(pk=team_import.club_id).update(snp_import_failures=F("snp_import_failures") + 1)
+    club = Club.objects.get(pk=team_import.club_id)
+    if club.snp_import_failures == MAX_FAILED_SEARCHES:
+        _notify_staff(club, team_import.message)
+
+
+def _notify_staff(club, reason):
+    """Avisa al personal de que a un club se le ha cerrado «Completar equipo» tras varios fallos."""
+    from backoffice.alerts import _send
+    from backoffice.audit import audit
+    audit(None, "club.snp_import_blocked", club, reason=reason[:300], failures=club.snp_import_failures)
+    text = _("El club %(club)s ha fallado %(n)s veces en «Completar equipo» (último error: %(reason)s). "
+             "Se le ha ocultado la opción: revisa su equipo y su cuenta SNP en el back-office.") % {
+        "club": club.name, "n": club.snp_import_failures, "reason": reason}
+    _send(_("Zyra · «Completar equipo» bloqueado en %(club)s") % {"club": club.name}, text)
 
 
 # ---------- Búsqueda en segundo plano desde la web ----------

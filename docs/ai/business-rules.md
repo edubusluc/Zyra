@@ -135,8 +135,12 @@ ni se editan parejas (`edit_game_match`).
 - [V] `update_snp_scores`: ciclo semanal desde el lunes 23:00 (Madrid); solo clubes pendientes o
   con fallo reintentable. Fallos de usuario/contraseña no se reintentan solos (evita bloquear la
   cuenta del capitán). Para ante 429/403/503 o fallos de red seguidos.
-- [V] «Completar equipo» desde la web: 1 vez al mes, máx. 3 búsquedas al día con 5 min entre ellas
-  (`players/snp_import.py`); los clubes con `Club.snp_unlimited` (editable en el back-office, ficha del club)
+- [V] «Completar equipo» desde la web: solo UNA vez con éxito (en el alta o con la cuenta SNP ya registrada;
+  `snp_import.web_import_done`), máx. 3 búsquedas al día con 5 min entre ellas. Cada búsqueda fallida suma a
+  `Club.snp_import_failures` (no cuenta si el servicio SNP está apagado); al llegar a `MAX_FAILED_SEARCHES` (3) la
+  opción se oculta (`web_blocked`), se avisa al capitán de que el administrador ha sido notificado y al personal
+  por email + auditoría `club.snp_import_blocked`. Después solo el back-office o el proceso automático
+  (`players/snp_import.py`); el personal repone el contador desde la ficha del club. Los clubes con `Club.snp_unlimited` (editable en el back-office, ficha del club)
   no tienen límite. La búsqueda se encola (`SnpTeamImport` RUNNING sin `started_at`) y la procesa el trabajo
   `process_snp_imports` (cada minuto), no el proceso web.
 - [V] Interruptor `ServiceSwitch` «snp» (back-office → Servicios): apagado, se bloquean sincronización y «Completar

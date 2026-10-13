@@ -286,7 +286,9 @@ Con la cuenta SNP registrada, la lista de jugadores muestra a los administradore
 botón **Completar equipo**: lee los jugadores del equipo en SNP y abre una ventana con
 los que se van a añadir y los que no porque ya están en Zyra (mismo criterio de nombres
 que la actualización de puntos). Al confirmar solo se crean jugadores nuevos; los
-existentes nunca se modifican. Desde la web se puede hacer una vez al mes. El staff lo
+existentes nunca se modifican. Desde la web solo se puede hacer una vez (al registrarse o tras registrar la cuenta SNP); si
+falla 3 veces la opción se oculta, se avisa al capitán de que se ha notificado al administrador y al
+staff por email y auditoría. Después lo lanza el staff (o el proceso automático). El staff lo
 lanza sin ese límite desde el back-office (proceso `complete_snp_team`, pide el id `TEA...` del
 equipo, que aparece en la ficha del club) o con
 `python manage.py complete_snp_team <id del equipo> [--dry-run]`. Para traer solo los equipos del grupo
@@ -339,7 +341,7 @@ Cómo se reparte el trabajo y cómo se evita que SNP nos bloquee:
 A ese ritmo cada club tarda de media unos 30–40 s. 1.000 clubes son unas 10 horas y
 10.000, unos 4 o 5 días, dentro de la semana del ciclo.
 
-«Completar equipo» desde la web (Jugadores) se puede usar una vez al mes y, para no saturar
+«Completar equipo» desde la web (Jugadores) se puede usar una sola vez (y se oculta tras 3 fallos) y, para no saturar
 SNP, como mucho tres búsquedas al día con cinco minutos entre una y otra. Los clubes marcados
 como «sin límites» en el back-office (ficha del club) no tienen esos límites. La búsqueda se encola y
 la procesa el trabajo `process_snp_imports` (lo lanza `run_scheduler`). En *Servicios* del back-office

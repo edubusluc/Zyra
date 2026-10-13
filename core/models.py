@@ -99,6 +99,9 @@ class Club(PublicIdModel):
     # Club sin los límites de «Completar equipo» (el equipo de pruebas). Solo lo cambia el
     # personal desde el back-office; no depende del nombre del club.
     snp_unlimited = models.BooleanField(default=False)
+    # Búsquedas fallidas de «Completar equipo» desde la web (no cuentan las caídas de SNP). Al llegar
+    # a ``snp_import.MAX_FAILED_SEARCHES`` la opción se oculta y se avisa al personal; lo repone el back-office.
+    snp_import_failures = models.PositiveSmallIntegerField(default=0)
 
     @property
     def is_suspended(self):
