@@ -13,7 +13,7 @@
 <p class="text-muted">{% translate "Cambia la categoría, la nacionalidad, la división o el grupo de los equipos de tu grupo y guarda todos los cambios de una vez. Marca equipos para aplicarles el mismo valor a todos." %}</p>
 <p class="form-text">{% translate "Tu equipo no aparece aquí: sus datos se cambian desde su ficha y nunca puede darse de baja del grupo. Los equipos dados de baja siguen en la lista (filtro «Fuera de grupo»): activa «En tu grupo» y guarda para darlos de alta otra vez." %}</p>
 
-<form method="post" data-teams>
+<form method="post" data-teams data-page-size="10">
     {% csrf_token %}
     <div class="z-selector-tools">
         <div class="z-search">
@@ -89,6 +89,12 @@
         <p class="z-empty" data-teams-empty hidden>{% translate "Ningún equipo coincide con la búsqueda." %}</p>
     </div>
 
+    <nav class="st-pager" data-teams-pager aria-label="{% translate 'Páginas de equipos' %}" hidden>
+        <button type="button" class="st-pager-btn" data-step="-1" aria-label="{% translate 'Anterior' %}"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
+        <span class="st-pager-info" aria-live="polite"></span>
+        <button type="button" class="st-pager-btn" data-step="1" aria-label="{% translate 'Siguiente' %}"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+    </nav>
+
     <div class="z-selector-bar">
         <div>
             {% blocktranslate trimmed with count=in_group_count %}<b data-teams-count>{{ count }}</b> en tu grupo{% endblocktranslate %}
@@ -117,19 +123,36 @@
   const search = root.querySelector('[data-teams-search]');
   const all = root.querySelector('[data-teams-all]');
   const filter = root.querySelector('[data-teams-filter]');
+  const pager = root.querySelector('[data-teams-pager]');
+  const pageSize = parseInt(root.dataset.pageSize, 10) || 10;
+  let page = 0;
 
   function refresh() {
     const q = norm(search.value);
     let visible = 0, changes = 0, count = 0, marked = 0, visibleMarked = 0;
+    const matching = [];  // equipos que cumplen búsqueda y filtro, en todas las páginas
     rows.forEach(function (r) {
       count += group(r).checked;
       const changed = fields(r).some((el) => value(el) !== el.dataset.initial);
       changes += changed;
       r.classList.toggle('is-changed', changed);
-      r.hidden = (!!q && !norm(r.dataset.name).includes(q)) || (filter.value !== '' && r.dataset.group !== filter.value);
-      if (!r.hidden) { visible++; visibleMarked += pick(r).checked; }
+      const match = (!q || norm(r.dataset.name).includes(q)) && (filter.value === '' || r.dataset.group === filter.value);
+      if (match) { matching.push(r); visible++; visibleMarked += pick(r).checked; }
       marked += pick(r).checked;
     });
+    // Solo se ocultan las filas de otras páginas: siguen en el formulario, con sus cambios y casillas.
+    const pages = Math.max(1, Math.ceil(matching.length / pageSize));
+    page = Math.min(page, pages - 1);
+    const shown = new Set(matching.slice(page * pageSize, (page + 1) * pageSize));
+    rows.forEach((r) => { r.hidden = !shown.has(r); });
+    pager.hidden = pages < 2;
+    if (pages > 1) {
+      const first = page * pageSize + 1;
+      pager.querySelector('.st-pager-info').textContent = interpolate(gettext('%(first)s–%(last)s de %(total)s'),
+        { first, last: Math.min(matching.length, first + pageSize - 1), total: matching.length }, true);
+      pager.querySelector('[data-step="-1"]').disabled = page === 0;
+      pager.querySelector('[data-step="1"]').disabled = page >= pages - 1;
+    }
     root.querySelector('[data-teams-empty]').hidden = visible > 0 || !rows.length;
     root.querySelector('[data-teams-count]').textContent = count;
     root.querySelector('[data-teams-changes]').textContent = changes ? (changes === 1 ? T.changeOne : T.changeMany).replace('{n}', changes) : T.none;
@@ -141,10 +164,23 @@
     root.querySelector('[data-teams-apply]').disabled = !(marked && anyBulk);
   }
 
-  search.addEventListener('input', refresh);
-  filter.addEventListener('change', refresh);
+  // Al cambiar la búsqueda o el filtro se vuelve a la primera página
+  const restart = () => { page = 0; refresh(); };
+  search.addEventListener('input', restart);
+  filter.addEventListener('change', restart);
+  pager.addEventListener('click', function (e) {
+    const btn = e.target.closest('[data-step]');
+    if (!btn || btn.disabled) return;
+    page += Number(btn.dataset.step);
+    refresh();
+    root.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  });
+  // «Marcar» afecta a todos los que cumplen búsqueda y filtro, también los de otras páginas
   all.addEventListener('change', function () {
-    rows.forEach((r) => { if (!r.hidden) pick(r).checked = all.checked; });
+    const q = norm(search.value);
+    rows.forEach(function (r) {
+      if ((!q || norm(r.dataset.name).includes(q)) && (filter.value === '' || r.dataset.group === filter.value)) pick(r).checked = all.checked;
+    });
     refresh();
   });
   root.querySelectorAll('[data-bulk]').forEach((s) => s.addEventListener('change', refresh));

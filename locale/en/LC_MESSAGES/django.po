@@ -7606,6 +7606,10 @@ msgstr "Sort by"
 msgid "Páginas de jugadores"
 msgstr "Player pages"
 
+#: team/templates/manage_teams.html
+msgid "Páginas de equipos"
+msgstr "Team pages"
+
 #: data_analyse/templates/warnings_statistics.html:14
 msgid "Todas las temporadas"
 msgstr "All seasons"

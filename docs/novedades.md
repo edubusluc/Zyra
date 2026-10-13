@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 13/10/2026 · Paginación en «Gestionar equipos»
+
+- Gestionar equipos: la lista de rivales se pagina (10 por página) en el navegador, con el mismo paginador que Jugadores. Las casillas marcadas y los cambios sin guardar se conservan al cambiar de página y «Guardar cambios» sigue guardando todo de una vez
+
 ## 13/10/2026 · «Completar equipo» una sola vez y edición desde el back-office
 
 - «Completar equipo» desde la web solo se ofrece una vez (en el registro o tras registrar la cuenta SNP). Si falla se muestran los errores habituales (idioma, nombre del equipo, cuenta); tras 3 fallos se oculta, se avisa al capitán de que se ha notificado al administrador y se avisa al personal por email y auditoría. Después solo lo lanzan el back-office o el proceso automático

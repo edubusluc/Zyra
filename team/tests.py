@@ -195,6 +195,12 @@ class ManageTeamsTests(TestCase):
         self.client.force_login(member)
         self.assertNotEqual(self.client.get(self.url).status_code, 200)
 
+    def test_rows_are_paginated_in_the_browser(self):
+        """Todas las filas viajan en el formulario (para guardar de una vez); el paginador las oculta en el navegador."""
+        response = self.client.get(self.url)
+        self.assertContains(response, 'data-teams-pager')
+        self.assertContains(response, 'data-page-size="10"')
+
     def test_saves_several_teams_at_once(self):
         response = self.post_form(**{f"gender_{self.c.id}": "M", f"division_{self.b.id}": "grand_slam",
                                      f"gender_{self.b.id}": "M", f"in_group_{self.b.id}": None})
