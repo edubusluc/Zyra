@@ -1,0 +1,49 @@
+"""Cuentas sin club: alta sin registrar club, página de espera y unión posterior por invitación."""
+from django.contrib.auth import get_user_model
+from django.test import TestCase
+from django.urls import reverse
+
+from .models import Invitation, Membership
+from .services import create_club
+
+User = get_user_model()
+PASSWORD = "pass-12345-xyz"
+SIGNUP = {"username": "espera", "email": "espera@example.com", "password1": PASSWORD, "password2": PASSWORD}
+
+
+class RegisterAccountTests(TestCase):
+    def test_page_offers_form_and_links(self):
+        response = self.client.get(reverse("register_account"))
+        self.assertContains(response, "Solo quiero unirme a un club por invitación")
+        self.assertContains(response, reverse("register_club"))
+
+    def test_register_club_links_to_account_only_signup(self):
+        self.assertContains(self.client.get(reverse("register_club")), reverse("register_account"))
+
+    def test_signup_creates_account_without_club_and_logs_in(self):
+        response = self.client.post(reverse("register_account"), SIGNUP)
+        self.assertRedirects(response, reverse("no_club"))
+        user = User.objects.get(username="espera")
+        self.assertFalse(Membership.objects.filter(user=user).exists())
+        self.assertEqual(self.client.get(reverse("home")).status_code, 302)
+        self.assertContains(self.client.get(reverse("no_club")), "todavía no perteneces a ningún club")
+
+    def test_duplicate_email_is_rejected(self):
+        User.objects.create_user("otro", email="espera@example.com", password=PASSWORD)
+        response = self.client.post(reverse("register_account"), SIGNUP)
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(User.objects.filter(username="espera").exists())
+
+    def test_logged_in_user_is_redirected(self):
+        self.client.post(reverse("register_account"), SIGNUP)
+        self.assertRedirects(self.client.get(reverse("register_account")), reverse("home"), fetch_redirect_response=False)
+
+    def test_clubless_account_can_join_by_invitation_and_register_club(self):
+        captain = User.objects.create_user("capi", password=PASSWORD)
+        club = create_club("Club A", "Sevilla", captain, player_name="Capi", player_last_name="Tan")
+        self.client.post(reverse("register_account"), SIGNUP)
+        self.assertEqual(self.client.get(reverse("register_club")).status_code, 200)
+        invitation = Invitation.objects.create(club=club, created_by=captain, token="tok-espera")
+        response = self.client.post(reverse("invitation", args=[invitation.token]))
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Membership.objects.filter(user__username="espera", club=club).exists())

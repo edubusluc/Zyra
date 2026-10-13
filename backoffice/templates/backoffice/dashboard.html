@@ -71,7 +71,7 @@
         <h2 class="h5">{% translate "Usuarios e invitaciones" %}</h2>
         <dl class="bo-facts">
             <div><dt>{% translate "Entran con Google" %}</dt><dd>{{ kpis.users.google }}</dd></div>
-            <div><dt>{% translate "Sin club" %}</dt><dd><a href="{% url 'backoffice:user_list' %}?kind=no_club">{{ kpis.users.without_club }}</a></dd></div>
+            <div><dt>{% translate "Sin club" %}</dt><dd><a href="{% url 'backoffice:user_list' %}?kind=no_club">{{ kpis.users.waiting }}</a>{% if kpis.users.waiting %} <small class="text-muted">{% blocktranslate trimmed with n=kpis.users.waiting_7 %}{{ n }} con más de 7 días{% endblocktranslate %}</small>{% endif %}</dd></div>
             <div><dt>{% translate "Jugadores en plantilla" %}</dt><dd>{{ kpis.activity.players }}</dd></div>
             <div><dt>{% translate "Invitaciones vigentes" %}</dt><dd>{{ kpis.invitations.pending }}</dd></div>
             <div><dt>{% translate "Invitaciones usadas (30 días)" %}</dt><dd>{% blocktranslate trimmed with used=kpis.invitations.used_30 created=kpis.invitations.created_30 %}{{ used }} de {{ created }}{% endblocktranslate %}{% if kpis.invitations.conversion_30 is not None %} · {{ kpis.invitations.conversion_30 }} %{% endif %}</dd></div>
@@ -93,6 +93,7 @@
         {% endfor %}
     </ol>
     <p class="text-muted small mb-0">{% with last=trend|last %}{% blocktranslate trimmed with wau=last.wau mau=last.mau %}Último resumen: {{ wau }} activos en 7 días y {{ mau }} en 30 días.{% endblocktranslate %}{% endwith %}</p>
+    <p class="text-muted small mb-0">{% with first=trend|first last=trend|last %}{% blocktranslate trimmed with then=first.without_club now=last.without_club since=first.date|date:"j M" %}Cuentas sin club: {{ now }} (el {{ since }}: {{ then }}).{% endblocktranslate %}{% endwith %}</p>
     {% else %}
     <p class="text-muted mb-0">{% translate "Aún no hay resúmenes diarios: se guardan cada noche (proceso snapshot_daily_metrics)." %}</p>
     {% endif %}

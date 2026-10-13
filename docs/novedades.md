@@ -3,6 +3,12 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 13/10/2026 · Cuentas sin club
+
+- Nueva opción «Solo quiero unirme a un club por invitación» en el registro (también con Google): crea la cuenta sin club y la deja en una página de espera que explica cómo unirse con una invitación o registrar un club
+- Back-office: «Sin club» en el dashboard cuenta las cuentas activas que esperan invitación (con las de más de 7 días y su evolución diaria), el filtro de usuarios las lista de la más antigua a la más reciente y el informe de uso añade las cuentas nuevas con y sin club
+- Migración `backoffice` 0005 (`DailyMetric.users_without_club`)
+
 ## 13/10/2026 · Datos de partida en producción
 
 - La imagen incluye `populate_db.py` y `populate/` para cargar los datos de partida en el servidor (PR #137); `populate_db.py` guarda ahora los puntos como `7/5`, verifica el email del capitán en allauth (para «Entrar con Google»), conserva las cuentas que ya existan (solo exige que no haya clubes) y crea el capitán como usuario normal (`--superusuario` para el comportamiento anterior)
