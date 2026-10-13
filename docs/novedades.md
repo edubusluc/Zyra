@@ -5,7 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 13/10/2026 · Despliegue: espera a la base de datos
 
-- `deploy.sh` espera a que PostgreSQL esté sana antes de la copia de seguridad (el primer despliegue fallaba porque la base de datos aún se estaba creando)
+- `deploy.sh` espera a que PostgreSQL esté sana antes de la copia de seguridad (PR #135; el primer despliegue fallaba porque la base de datos aún se estaba creando)
 
 ## 13/10/2026 · Configuración de despliegue con Docker
 
