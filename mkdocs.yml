@@ -77,5 +77,6 @@ nav:
   - Inicio: index.md
   - Funcionalidades: funcionalidades.md
   - Novedades: novedades.md
+  - Despliegue: despliegue.md
   - Mantener la documentación: mantener-documentacion.md
   - Referencia del código: referencia/

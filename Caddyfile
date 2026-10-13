@@ -1,0 +1,13 @@
+# Caddy obtiene y renueva el certificado https solo. Cambia el dominio si no es zyrapadel.com.
+zyrapadel.com {
+	encode zstd gzip
+	handle_path /media/* {
+		root * /srv/media
+		file_server
+	}
+	reverse_proxy web:8000
+}
+
+www.zyrapadel.com {
+	redir https://zyrapadel.com{uri} permanent
+}

@@ -1,0 +1,58 @@
+# Servidor único: base de datos, web, lanzador de procesos y Caddy (https + fotos).
+# Se copia a /opt/zyra del servidor junto a .env, Caddyfile y db_password.txt (ver docs/despliegue.md).
+name: zyra
+
+x-app: &app
+  image: ${ZYRA_IMAGE:-ghcr.io/edubusluc/zyra:latest}
+  restart: unless-stopped
+  env_file: .env
+  depends_on:
+    db: { condition: service_healthy }
+  volumes: [media:/app/media]
+  logging: { driver: json-file, options: { max-size: "10m", max-file: "5" } }
+
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: zyra
+      POSTGRES_USER: zyra
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    secrets: [db_password]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zyra -d zyra"]
+      interval: 10s
+      retries: 5
+
+  web:
+    <<: *app
+    healthcheck:
+      test: ["CMD", "python", "-c", "import os, urllib.request as u; u.urlopen(u.Request('http://127.0.0.1:8000/healthz/', headers={'Host': os.environ['DJANGO_ALLOWED_HOSTS'].split(',')[0], 'X-Forwarded-Proto': 'https'}))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    mem_limit: 900m
+
+  scheduler:
+    <<: *app
+    command: python manage.py run_scheduler --loop
+    ipc: host      # Chromium (Completar equipo) necesita memoria compartida
+    init: true
+    mem_limit: 1500m
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - media:/srv/media:ro
+      - caddy_data:/data
+    depends_on: [web]
+
+secrets:
+  db_password: { file: ./db_password.txt }
+
+volumes: { pgdata: , media: , caddy_data: }
