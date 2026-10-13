@@ -54,7 +54,13 @@ class JobSpec:
     args: tuple = field(default_factory=tuple)
     params: tuple = field(default_factory=tuple)
     options: tuple = field(default_factory=tuple)
+    # Salidas del comando que significan «no había nada que hacer». Una ejecución programada
+    # correcta con una de ellas no se guarda en el log (procesos que corren cada pocos minutos).
+    idle_output: tuple = field(default_factory=tuple)
 
+
+# Id de equipo del club: el público (TEA...) o el numérico interno.
+TEAM_ID_PATTERN = r"(TEA[A-Za-z0-9]{12}|\d+)"
 
 JOBS = [
     JobSpec(
@@ -70,6 +76,39 @@ JOBS = [
         command="purge_job_runs",
         args=("--days", "90"),
         schedule="10 3 * * *",
+    ),
+    JobSpec(
+        name="purge_backoffice_data",
+        description=_("Borra consultas SQL, auditoría, registro de correos, errores y actividad diaria antiguos, y vacía el contenido de las importaciones terminadas."),
+        command="purge_backoffice_data",
+        schedule="20 3 * * *",
+    ),
+    JobSpec(
+        name="snapshot_daily_metrics",
+        description=_("Guarda el resumen del día (usuarios activos, clubes, partidos, errores) para ver tendencias."),
+        command="snapshot_daily_metrics",
+        schedule="55 23 * * *",
+    ),
+    JobSpec(
+        name="send_staff_alerts",
+        description=_("Avisa por correo al personal cuando empieza un problema (informes fallidos, SNP, errores, procesos) y cuando se resuelve."),
+        command="send_staff_alerts",
+        schedule="*/15 * * * *",
+        idle_output=("Sin avisos nuevos.",),
+    ),
+    JobSpec(
+        name="send_staff_digest",
+        description=_("Envía al personal el resumen semanal de la plataforma (los lunes a las 08:00)."),
+        command="send_staff_digest",
+        schedule="0 8 * * 1",
+        options=(JobOption("dry", _("Simulacro"), "--dry-run", _("Solo muestra el resumen, sin enviarlo.")),),
+    ),
+    JobSpec(
+        name="send_query_exports",
+        description=_("Envía por correo el CSV de las consultas SQL guardadas con exportación programada (a las 07:00)."),
+        command="send_query_exports",
+        schedule="0 7 * * *",
+        idle_output=("Nada que enviar.",),
     ),
     JobSpec(
         name="clear_sessions",
@@ -101,6 +140,7 @@ JOBS = [
                       "Sin búsquedas pendientes termina al momento."),
         command="process_snp_imports",
         schedule="* * * * *",
+        idle_output=("", "Servicio de SNP apagado."),
     ),
     JobSpec(
         name="send_call_reports",
@@ -108,6 +148,7 @@ JOBS = [
                       "(esperas crecientes; tras 5 intentos se dan por fallidos y se avisa al personal)."),
         command="send_call_reports",
         schedule="*/5 * * * *",
+        idle_output=("No hay informes pendientes de enviar.",),
     ),
     JobSpec(
         name="send_monthly_reports",
@@ -130,14 +171,14 @@ JOBS = [
         description=_("«Completar equipo»: da de alta los jugadores del equipo de SNP de un club que todavía "
                       "no están en Zyra y actualiza los puntos SNP de los que ya existen. Solo a mano y sin los límites de la web."),
         command="complete_snp_team",
-        params=(JobParam("team_id", _("Id del equipo"), _("Id del equipo propio del club en Zyra, TEA... (aparece en la ficha del club).")),),
+        params=(JobParam("team_id", _("Id del equipo"), _("Id del equipo propio del club en Zyra, TEA... (aparece en la ficha del club)."), TEAM_ID_PATTERN),),
     ),
     JobSpec(
         name="add_group_teams",
         description=_("Añade al grupo los equipos de la clasificación de SNP de un club: crea los que todavía no existen "
                       "en Zyra y da de alta en el grupo los que estaban fuera. No toca los jugadores. Solo a mano y sin los límites de la web."),
         command="add_group_teams",
-        params=(JobParam("team_id", _("Id del equipo"), _("Id del equipo propio del club en Zyra, TEA... (aparece en la ficha del club).")),),
+        params=(JobParam("team_id", _("Id del equipo"), _("Id del equipo propio del club en Zyra, TEA... (aparece en la ficha del club)."), TEAM_ID_PATTERN),),
     ),
 ]
 

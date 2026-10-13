@@ -12,12 +12,16 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from call.models import Call, ReportDelivery
-from core.models import Club, Invitation, Membership
+from core import email_verification
+from core.models import Club, Invitation, Membership, PhotoCheck
 from match.models import Game, Match, Result
 from players.models import Player, SnpAccount
 
-from .models import JobRun, RequestMetric, ScheduledJob, UserActivity
-from .scheduler import scheduler_is_late
+from .models import (
+    AccountNoticeLog, DailyActivity, DailyMetric, ErrorEvent, FollowUpTask, JobRun, RequestMetric, ScheduledJob,
+    UserActivity,
+)
+from .scheduler import scheduler_status
 
 User = get_user_model()
 
@@ -91,9 +95,10 @@ def dashboard_kpis():
             "new_7": users.filter(date_joined__gte=now - datetime.timedelta(days=7)).count(),
             "new_30": users.filter(date_joined__gte=now - datetime.timedelta(days=30)).count(),
             "online": online_users().count(),
-            "active_24h": users.filter(last_login__gte=now - datetime.timedelta(hours=24)).count(),
-            "active_7": users.filter(last_login__gte=now - datetime.timedelta(days=7)).count(),
-            "active_30": users.filter(last_login__gte=now - datetime.timedelta(days=30)).count(),
+            # Usuarios distintos con actividad real (DailyActivity), no solo con inicio de sesión.
+            "active_24h": active_users(1),
+            "active_7": active_users(7),
+            "active_30": active_users(30),
             "google": users.filter(pk__in=google_user_ids()).count(),
             "without_club": users.filter(memberships__isnull=True).count(),
         },
@@ -117,6 +122,13 @@ def dashboard_kpis():
             .exclude(matches__start_date__gte=at_risk_from)
         ).order_by("name")[:10],
     }
+
+
+def active_users(days, today=None):
+    """Usuarios distintos con alguna petición en los últimos ``days`` días (hoy incluido)."""
+    today = today or timezone.localdate()
+    since = today - datetime.timedelta(days=days - 1)
+    return DailyActivity.objects.filter(date__gte=since, date__lte=today).values("user").distinct().count()
 
 
 def signups_by_week(weeks=8):
@@ -361,6 +373,133 @@ def health_metrics():
         "snp": snp,
         "snp_stale_days": SNP_STALE_DAYS,
         "jobs": jobs,
-        "scheduler_late": scheduler_is_late(),
+        "scheduler": scheduler_status(),
+        "scheduler_late": scheduler_status()["late"],
         "web": web,
     }
+
+
+# ---------- Que atender, contadores del menú y tendencias ----------
+
+def attention_counts():
+    """
+    Cuántas cosas esperan al personal: fotos sin validar, cuentas sin confirmar con el plazo
+    vencido, procesos con error en 24 h, tareas de hoy o atrasadas, clubes con SNP fallando,
+    informes fallidos en 7 días y si el lanzador está parado.
+    """
+    now = timezone.now()
+    last_notice = AccountNoticeLog.objects.filter(action=AccountNoticeLog.WARNING, user=OuterRef("pk")).order_by("-created_at")
+    overdue = (
+        email_verification.unverified_users().annotate(deadline=Subquery(last_notice.values("deadline_at")[:1]))
+        .filter(deadline__lte=now).count()
+    )
+    return {
+        "photos": PhotoCheck.objects.filter(status=PhotoCheck.UNCHECKED).exclude(photo="").count(),
+        "unverified_overdue": overdue,
+        "jobs_failed": JobRun.objects.filter(status=JobRun.ERROR, started_at__gte=now - datetime.timedelta(hours=24)).count(),
+        "tasks_due": FollowUpTask.objects.filter(done_at__isnull=True, due_date__lte=timezone.localdate()).count(),
+        "snp_failing": SnpAccount.objects.filter(last_sync_ok=False).count(),
+        "reports_failed": ReportDelivery.objects.filter(
+            status=ReportDelivery.FAILED, created_at__gte=now - datetime.timedelta(days=7)).count(),
+        "scheduler_late": scheduler_status()["late"],
+    }
+
+
+def attention_items(counts=None):
+    """
+    Bandeja de atención del dashboard: una línea por asunto pendiente (``text`` ya traducido,
+    ``url`` del back-office, ``level`` danger o warning). Vacía si no hay nada.
+    """
+    from django.urls import reverse
+    c = counts or attention_counts()
+    items = []
+
+    def add(level, text, url):
+        """Añade una línea a la bandeja."""
+        items.append({"level": level, "text": text, "url": url})
+
+    if c["jobs_failed"]:
+        add("danger", _("%(n)s ejecuciones de procesos con error en 24 h.") % {"n": c["jobs_failed"]}, reverse("backoffice:run_list") + "?status=error")
+    if c["reports_failed"]:
+        add("danger", _("%(n)s informes de convocatoria fallidos en 7 días.") % {"n": c["reports_failed"]}, reverse("backoffice:health"))
+    if c["snp_failing"]:
+        add("warning", _("%(n)s clubes con la sincronización de SNP fallando.") % {"n": c["snp_failing"]}, reverse("backoffice:health"))
+    if c["photos"]:
+        add("warning", _("%(n)s fotos por validar.") % {"n": c["photos"]}, reverse("backoffice:photo_list"))
+    if c["unverified_overdue"]:
+        add("warning", _("%(n)s cuentas sin confirmar con el plazo vencido.") % {"n": c["unverified_overdue"]}, reverse("backoffice:unverified_list") + "?state=overdue")
+    if c["tasks_due"]:
+        add("warning", _("%(n)s tareas de seguimiento para hoy o atrasadas.") % {"n": c["tasks_due"]}, reverse("backoffice:task_list"))
+    return items
+
+
+def daily_trend(days=30):
+    """Resúmenes diarios (DailyMetric) de los últimos ``days`` días, del más antiguo al más reciente, con barras relativas."""
+    rows = list(DailyMetric.objects.filter(date__gte=timezone.localdate() - datetime.timedelta(days=days)).order_by("date"))
+    peak = max((r.dau for r in rows), default=0) or 1
+    return [{"date": r.date, "dau": r.dau, "wau": r.wau, "mau": r.mau, "users": r.users, "clubs": r.clubs,
+             "errors": r.errors_5xx, "pct": round(100 * r.dau / peak)} for r in rows]
+
+
+def snapshot_daily_metrics(day=None):
+    """Calcula y guarda (o actualiza) el resumen de un día; por defecto, hoy. Devuelve el DailyMetric."""
+    day = day or timezone.localdate()
+    active_from = day - datetime.timedelta(days=ACTIVE_CLUB_DAYS)
+    metrics = RequestMetric.objects.filter(minute__date=day)
+    agg = metrics.aggregate(requests=Sum("requests"), errors=Sum("errors"))
+    values = {
+        "clubs": Club.objects.filter(created_at__date__lte=day).count(),
+        "users": User.objects.filter(date_joined__date__lte=day).count(),
+        "dau": active_users(1, day),
+        "wau": active_users(7, day),
+        "mau": active_users(30, day),
+        "active_clubs": Club.objects.filter(
+            matches__start_date__gte=active_from, matches__start_date__lte=day).distinct().count(),
+        "matches": Match.objects.filter(start_date=day).count(),
+        "calls": Call.objects.filter(draft_mode=False, match__start_date=day).count(),
+        "reports_sent": ReportDelivery.objects.filter(status=ReportDelivery.SENT, sent_at__date=day).count(),
+        "requests": agg["requests"] or 0,
+        "errors_5xx": agg["errors"] or 0,
+    }
+    metric, _created = DailyMetric.objects.update_or_create(date=day, defaults=values)
+    return metric
+
+
+def funnel(days=90):
+    """
+    Embudo de captación de los clubes creados en los últimos ``days`` días: club creado, con al menos
+    3 jugadores, con un enfrentamiento, con una convocatoria cerrada y con resultados. Cada paso
+    lleva su cifra, el porcentaje sobre el paso anterior y el ancho de su barra.
+    """
+    since = timezone.now() - datetime.timedelta(days=days)
+    clubs = set(Club.objects.filter(created_at__gte=since).values_list("pk", flat=True))
+    players = {
+        c for c, n in Player.objects.filter(club__in=clubs, in_team=True).values_list("club").annotate(n=Count("pk")) if n >= 3
+    }
+    matches = set(Match.objects.filter(club__in=clubs).values_list("club", flat=True))
+    calls = set(Call.objects.filter(draft_mode=False, match__club__in=clubs).values_list("match__club", flat=True))
+    results = set(Result.objects.filter(game__match__club__in=clubs).values_list("game__match__club", flat=True))
+    steps = [
+        (_("Club creado"), clubs), (_("Con 3 jugadores o más"), players), (_("Con un enfrentamiento"), matches),
+        (_("Con una convocatoria cerrada"), calls), (_("Con resultados"), results),
+    ]
+    out, previous, total = [], None, len(clubs)
+    for label, ids in steps:
+        n = len(ids & clubs)
+        out.append({
+            "label": label, "n": n, "pct_prev": round(100 * n / previous) if previous else None,
+            "pct": round(100 * n / total) if total else 0,
+        })
+        previous = n
+    return {"days": days, "steps": out}
+
+
+def error_summary(days=7):
+    """Errores y peticiones lentas de los últimos ``days`` días: rutas más afectadas y los últimos eventos."""
+    since = timezone.now() - datetime.timedelta(days=days)
+    events = ErrorEvent.objects.filter(created_at__gte=since)
+    paths = (
+        events.values("path").annotate(n=Count("pk"), errors=Count("pk", filter=Q(status__gte=500)), worst=Max("duration_ms"))
+        .order_by("-n")[:8]
+    )
+    return {"days": days, "paths": list(paths), "recent": list(events.select_related("user")[:15])}

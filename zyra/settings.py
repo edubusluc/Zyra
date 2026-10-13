@@ -159,6 +159,8 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    # «Entrar como» (solo lectura) del back-office: debe ir antes de CurrentClubMiddleware.
+    'backoffice.impersonation.ImpersonationMiddleware',
     'core.middleware.CurrentClubMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -183,6 +185,8 @@ TEMPLATES = [
                 'core.context_processors.navigation',
                 'core.context_processors.google_login',
                 'core.context_processors.site',
+                'backoffice.context_processors.impersonation',
+                'backoffice.context_processors.menu_counters',
             ],
         },
     },
@@ -232,6 +236,15 @@ else:
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+
+
+# Consola SQL del back-office: conexión opcional con un rol de PostgreSQL de solo lectura que
+# no puede leer las columnas protegidas (se crea con `python manage.py sql_readonly_role`).
+# Sin ella la consola usa la conexión de la aplicación, protegida solo por la lista de nombres
+# de backoffice/sql.py. Recomendado en producción.
+SQL_CONSOLE_DATABASE_URL = config('SQL_CONSOLE_DATABASE_URL', default='')
+if SQL_CONSOLE_DATABASE_URL:
+    DATABASES['sql_console'] = dj_database_url.parse(SQL_CONSOLE_DATABASE_URL, conn_max_age=0)
 
 
 # Password validation
@@ -360,11 +373,14 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER', default=ZYRA_SENDER)
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
 EMAIL_TIMEOUT = 20
-EMAIL_BACKEND = config(
+# El correo sale por EMAIL_TRANSPORT_BACKEND (la variable de entorno EMAIL_BACKEND de siempre);
+# EMAIL_BACKEND es el envoltorio que anota cada envío en el registro de correos del back-office.
+EMAIL_TRANSPORT_BACKEND = config(
     'EMAIL_BACKEND',
     default='django.core.mail.backends.smtp.EmailBackend' if EMAIL_HOST_PASSWORD
     else 'django.core.mail.backends.console.EmailBackend',
 )
+EMAIL_BACKEND = 'backoffice.email_backend.LoggingEmailBackend'
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default=f'Zyra <{ZYRA_SENDER}>')
 # Correo de contacto que se muestra en el pie y en las páginas legales.
 CONTACT_EMAIL = config('CONTACT_EMAIL', default=ZYRA_SENDER)

@@ -91,7 +91,11 @@ entero sigue siendo la clave de los FK. Excepciones sin `public_id`: `backoffice
 
 `UserActivity` (1:1 user), `RequestMetric` (una fila por minuto), `ScheduledJob` (estado de cada
 proceso de `backoffice/jobs.py`, `running_since`, `heartbeat_at`), `JobRun` (salida y estado de cada
-ejecución), `SavedQuery`, `QueryLog`, `ImportJob` (permite deshacer importaciones).
+ejecución), `SavedQuery`, `QueryLog`, `ImportJob` (permite deshacer importaciones), `SchedulerState` (último paso del lanzador),
+`AuditLog` (quién del personal hizo qué; se escribe con `backoffice.audit.audit()`), `DailyActivity` (usuario y día,
+fuente de DAU/WAU/MAU), `DailyMetric` (resumen diario), `ErrorEvent` (500 y peticiones de más de 3 s),
+`ClubCrm`/`ClubNote`/`FollowUpTask` (seguimiento comercial de clubes), `EmailLog` (cada correo, vía
+`LoggingEmailBackend`) y `AlertState` (para avisar una sola vez).
 
 ## Trampas de `related_name`
 

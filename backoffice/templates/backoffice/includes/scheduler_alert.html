@@ -1,0 +1,16 @@
+{% load i18n backoffice_tags %}
+{% if scheduler.late %}
+<div class="alert alert-warning" role="alert">
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+        <strong>{% translate "El lanzador de procesos no está en marcha." %}</strong>
+        <span>{% translate "No se envían reintentos de informes ni se sincronizan los puntos SNP." %}</span>
+        {% if not hide_link %}<a href="{% url 'backoffice:job_list' %}" class="ms-auto">{% translate "Ver procesos" %}</a>{% endif %}
+    </div>
+    <small class="d-block mt-1">
+        {% if scheduler.last_pass_at %}{% blocktranslate trimmed with minutes=scheduler.minutes %}Última pasada hace {{ minutes }} min.{% endblocktranslate %}{% else %}{% translate "El lanzador no ha pasado nunca." %}{% endif %}
+        {% if scheduler.late_jobs %}{% translate "Procesos atrasados:" %} {% for job in scheduler.late_jobs|slice:":4" %}{{ job.name }} ({{ job.minutes }} min){% if not forloop.last %}, {% endif %}{% endfor %}.{% endif %}
+        {% translate "Se arranca con:" %} <code>python manage.py run_scheduler --loop</code>
+    </small>
+</div>
+{% endif %}

@@ -10,14 +10,20 @@
     </div>
 </div>
 
-{% if jobs_failed_24h or scheduler_late %}
-<div class="alert alert-warning d-flex flex-wrap gap-2 align-items-center">
-    <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
-    {% if jobs_failed_24h %}<span>{% blocktranslate trimmed count n=jobs_failed_24h %}{{ n }} ejecución de procesos con error en las últimas 24 h.{% plural %}{{ n }} ejecuciones de procesos con error en las últimas 24 h.{% endblocktranslate %}</span>{% endif %}
-    {% if scheduler_late %}<span>{% translate "El lanzador de procesos no está en marcha." %}</span>{% endif %}
-    <a href="{% url 'backoffice:job_list' %}" class="ms-auto">{% translate "Ver procesos" %}</a>
-</div>
-{% endif %}
+{% include 'backoffice/includes/scheduler_alert.html' with hide_link=False %}
+
+<section class="z-panel" aria-labelledby="atencion-h">
+    <h2 class="h5" id="atencion-h">{% translate "Qué atender" %}</h2>
+    {% if attention %}
+    <ul class="bo-list">
+        {% for item in attention %}
+        <li><i class="fa-solid {% if item.level == 'danger' %}fa-circle-exclamation text-danger{% else %}fa-circle-info text-warning{% endif %}" aria-hidden="true"></i> <a href="{{ item.url }}">{{ item.text }}</a></li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-muted mb-0"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> {% translate "Todo en orden: no hay nada pendiente." %}</p>
+    {% endif %}
+</section>
 
 <section class="bo-kpis" aria-label="{% translate 'Indicadores principales' %}">
     <a class="bo-kpi" href="{% url 'backoffice:load' %}">
@@ -36,7 +42,7 @@
         <small>{% blocktranslate trimmed with new7=kpis.users.new_7 new30=kpis.users.new_30 %}+{{ new7 }} esta semana · +{{ new30 }} en 30 días{% endblocktranslate %}</small>
     </a>
     <div class="bo-kpi">
-        <span class="bo-kpi-label">{% translate "Con acceso en 24 h" %}</span>
+        <span class="bo-kpi-label">{% translate "Activos hoy" %}</span>
         <b>{{ kpis.users.active_24h }}</b>
         <small>{% blocktranslate trimmed with n7=kpis.users.active_7 n30=kpis.users.active_30 %}{{ n7 }} en 7 días · {{ n30 }} en 30 días{% endblocktranslate %}</small>
     </div>
@@ -72,6 +78,25 @@
         </dl>
     </section>
 </div>
+
+
+<section class="z-panel">
+    <h2 class="h5">{% translate "Usuarios activos por día (30 días)" %}</h2>
+    {% if trend %}
+    <ol class="bo-bars" aria-label="{% translate 'Usuarios activos por día' %}">
+        {% for d in trend %}
+        <li title="{{ d.date|date:'j M' }}: {{ d.dau }}">
+            <span class="bo-bar" style="--h: {{ d.pct|unlocalize }}%"></span>
+            <b>{{ d.dau }}</b>
+            <small>{{ d.date|date:"j" }}</small>
+        </li>
+        {% endfor %}
+    </ol>
+    <p class="text-muted small mb-0">{% with last=trend|last %}{% blocktranslate trimmed with wau=last.wau mau=last.mau %}Último resumen: {{ wau }} activos en 7 días y {{ mau }} en 30 días.{% endblocktranslate %}{% endwith %}</p>
+    {% else %}
+    <p class="text-muted mb-0">{% translate "Aún no hay resúmenes diarios: se guardan cada noche (proceso snapshot_daily_metrics)." %}</p>
+    {% endif %}
+</section>
 
 <div class="bo-grid">
     <section class="z-panel">

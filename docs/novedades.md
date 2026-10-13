@@ -3,6 +3,16 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 12/10/2026 · Back-office: operación, auditoría y «Entrar como»
+
+- Procesos: el aviso «El lanzador de procesos no está en marcha» se basa ahora en un latido real del lanzador (`SchedulerState`) y en procesos atrasados; las ejecuciones sin nada que hacer ya no llenan el historial; los correos de fallo no se repiten (primero, recordatorio cada 6 h y aviso de recuperación); `run_scheduler --loop`; «Ejecutar ahora» pasa por el lanzador si está vivo; los ids de equipo aceptan `TEA…`
+- Nuevos procesos: limpieza (`purge_backoffice_data`), resumen diario, avisos al personal, resumen semanal y envío por correo de consultas SQL guardadas
+- Registro de auditoría de las acciones del personal y registro de correos enviados
+- Consola SQL más estricta (bloqueos, columnas protegidas, rol de solo lectura opcional) y CSV a prueba de inyección de fórmulas
+- Métricas: activos reales por día (DAU/WAU/MAU), tendencia de 30 días, «Qué atender» en el dashboard, contadores en el menú, errores 500 y peticiones lentas con su ruta, embudo de clubes
+- Usabilidad: buscador global, menú agrupado, ficha de club con seguimiento (etapa, contacto, notas, tareas), correo a capitanes con plantillas, renombrar/eliminar club, traspasar capitanía, restablecer contraseña y reenviar confirmación
+- «Entrar como» un usuario (solo lectura, 30 minutos, con motivo y auditado) para ver lo que ve el capitán
+
 ## 12/10/2026 · Desplegables propios
 
 - Todos los selectores desplegables (tipo de partido, equipos, categoría, filtros del back-office…) usan un desplegable propio de Zyra, con fondo oscuro y acento lima, en vez del del navegador. Funciona con teclado (flechas, Enter, Esc, escribir para saltar) y en móvil; el `<select>` original sigue enviándose con el formulario

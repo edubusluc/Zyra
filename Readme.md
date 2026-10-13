@@ -407,6 +407,19 @@ registraron. «Avisar» envía el enlace de confirmación y un plazo (`UNVERIFIE
 7 días por defecto); vencido el plazo se puede eliminar la cuenta (escribiendo su usuario). No hay
 borrado automático. Los avisos y eliminaciones quedan registrados con fecha y autor.
 
+Además de eso, el back-office incluye: buscador global (nombre, email o id público), **registro de
+auditoría** (cada acción del personal, dos años), **registro de correos** (seis meses), seguimiento
+comercial de clubes (etapa, contacto, notas, tareas y correo al capitán con plantillas), avisos por
+correo al personal cuando algo falla y resumen semanal, embudo de clubes, errores 500 y peticiones
+lentas, y **«Entrar como»** un usuario: ves Zyra como él (solo lectura, 30 minutos, con motivo
+obligatorio, anotado en la auditoría y sin contar como actividad suya; no vale para cuentas de personal).
+
+Consola SQL: además de la lista de bloqueos, se recomienda un rol de PostgreSQL de solo lectura.
+`python manage.py sql_readonly_role` imprime el SQL (con `--apply` lo ejecuta); luego define
+`SQL_CONSOLE_DATABASE_URL` con ese rol. Sin ella la consola usa la base normal. El correo sale por
+`EMAIL_TRANSPORT_BACKEND` (por defecto lo que ponga `EMAIL_BACKEND` en el entorno) envuelto en
+`backoffice.email_backend.LoggingEmailBackend`, que apunta cada envío en el registro de correos.
+
 Para darte acceso a ti mismo:
 
 ```bash
@@ -455,6 +468,8 @@ Con cron, por ejemplo (ajusta las rutas):
 
 ```
 * * * * * cd /ruta/a/Zyra && /ruta/a/python manage.py run_scheduler >> /tmp/zyra-scheduler.log 2>&1
+# alternativa: un servicio que no termina
+#   python manage.py run_scheduler --loop
 ```
 
 **Ejecutar ahora** no espera al lanzador: arranca el proceso en el momento y abre su

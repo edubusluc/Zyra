@@ -1,0 +1,41 @@
+{% extends 'backoffice/base.html' %}
+{% load i18n backoffice_tags %}
+{% block title %}{% translate "Auditoría" %}{% endblock %}
+
+{% block content %}
+<div class="z-page-head">
+    <div>
+        <span class="z-eyebrow">{% blocktranslate trimmed count n=page.paginator.count %}{{ n }} acción{% plural %}{{ n }} acciones{% endblocktranslate %}</span>
+        <h1>{% translate "Auditoría" %}</h1>
+    </div>
+</div>
+
+<p class="text-muted">{% translate "Quién del personal hizo qué, sobre qué y cuándo. Los registros se guardan dos años." %}</p>
+
+<form method="get" class="bo-filters" role="search">
+    <input type="search" name="q" value="{{ q }}" class="form-control" placeholder="{% translate 'Persona, objeto o id' %}" aria-label="{% translate 'Buscar' %}">
+    <select name="action" class="form-select" aria-label="{% translate 'Acción' %}">
+        <option value="">{% translate "Todas las acciones" %}</option>
+        {% for key, label in actions %}<option value="{{ key }}" {% if key == action %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    <button class="btn btn-primary"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> {% translate "Filtrar" %}</button>
+</form>
+
+<div class="z-table-wrap"><table class="table align-middle">
+    <thead><tr><th>{% translate "Fecha" %}</th><th>{% translate "Persona" %}</th><th>{% translate "Acción" %}</th><th>{% translate "Objeto" %}</th><th>{% translate "Detalle" %}</th></tr></thead>
+    <tbody>
+    {% for log in page %}
+        <tr>
+            <td class="text-nowrap">{{ log.created_at|date:"j M Y H:i" }}</td>
+            <td>{{ log.username|default:"—" }}{% if log.ip %}<br><small class="text-muted">{{ log.ip }}</small>{% endif %}</td>
+            <td>{% for key, label in labels.items %}{% if key == log.action %}{{ label }}{% endif %}{% endfor %}<br><small class="text-muted">{{ log.action }}</small></td>
+            <td>{{ log.object_label|default:"—" }}{% if log.object_id %}<br><small class="text-muted">{{ log.object_id }}</small>{% endif %}</td>
+            <td><small class="text-muted">{% for k, v in log.detail.items %}{{ k }}: {{ v }}{% if not forloop.last %} · {% endif %}{% endfor %}</small></td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="5" class="text-muted">{% translate "Todavía no hay acciones registradas." %}</td></tr>
+    {% endfor %}
+    </tbody>
+</table></div>
+<div class="mt-3">{% include 'includes/pagination.html' with page=page extra=extra %}</div>
+{% endblock %}

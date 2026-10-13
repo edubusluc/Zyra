@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}{% translate "Modo solo lectura" %}{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width: 640px;">
+    <h1 class="h3">{% translate "Modo solo lectura" %}</h1>
+    <p>{% translate "Estás viendo Zyra como otro usuario y en este modo no se puede cambiar nada." %}</p>
+    <form method="post" action="{% url 'backoffice:impersonate_stop' %}">
+        {% csrf_token %}
+        <button class="btn btn-primary" type="submit">{% translate "Salir de «Entrar como»" %}</button>
+    </form>
+</div>
+{% endblock %}

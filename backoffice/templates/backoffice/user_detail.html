@@ -52,6 +52,34 @@
     </section>
 </div>
 
+<section class="z-panel" id="acciones">
+    <h2 class="h5">{% translate "Acciones sobre la cuenta" %}</h2>
+    <div class="d-flex flex-wrap gap-2 mb-3">
+        {% if member.email %}
+        <form method="post" action="{% url 'backoffice:user_password_reset' member.id %}">{% csrf_token %}<button class="btn btn-outline-light btn-sm"><i class="fa-solid fa-key" aria-hidden="true"></i> {% translate "Enviar restablecimiento de contraseña" %}</button></form>
+        {% endif %}
+        {% if unverified %}
+        <form method="post" action="{% url 'backoffice:unverified_warn' member.id %}"><input type="hidden" name="next" value="{{ request.get_full_path }}">{% csrf_token %}<button class="btn btn-outline-light btn-sm"><i class="fa-solid fa-envelope" aria-hidden="true"></i> {% translate "Reenviar confirmación del email" %}</button></form>
+        {% endif %}
+    </div>
+    {% if can_impersonate %}
+    <form method="post" action="{% url 'backoffice:impersonate_start' member.id %}" class="d-flex flex-wrap gap-2 align-items-center">
+        {% csrf_token %}
+        <label class="visually-hidden" for="imp-reason">{% translate "Motivo" %}</label>
+        <input class="form-control w-auto flex-grow-1" id="imp-reason" name="reason" required minlength="5" maxlength="300" placeholder="{% translate 'Motivo (queda en la auditoría)' %}">
+        <button class="btn btn-primary btn-sm"><i class="fa-solid fa-eye" aria-hidden="true"></i> {% translate "Entrar como este usuario (solo lectura)" %}</button>
+    </form>
+    <p class="text-muted small mt-1 mb-0">{% translate "Ves Zyra como la ve esta persona durante 30 minutos como máximo. No se puede cambiar nada y no cuenta como actividad suya." %}</p>
+    {% endif %}
+</section>
+
+{% if emails %}
+<section class="z-panel">
+    <h2 class="h5">{% translate "Últimos correos" %}</h2>
+    <ul class="bo-list">{% for e in emails %}<li><span>{{ e.subject }}</span><small class="text-muted ms-auto">{{ e.created_at|ago }} · {{ e.get_status_display }}</small></li>{% endfor %}</ul>
+</section>
+{% endif %}
+
 <section class="z-panel">
     <h2 class="h5">{% translate "Clubes" %}</h2>
     <div class="z-table-wrap"><table class="table align-middle">

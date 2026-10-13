@@ -29,19 +29,21 @@ from core import blocklist, email_verification, moderation
 from core.emails import send_photo_removed_email, send_unverified_account_email
 from core.models import BlockedEmail, Club, Invitation, Membership, PhotoCheck, PhotoRemoval, ServiceSwitch
 from match.models import Match
-from core.services import CaptaincyError, delete_account
+from core.services import CaptaincyError, delete_account, eligible_successors
 from players import snp_service
 from players.models import Player, SnpTeamImport
 
-from . import importer, sql
+from . import importer, sql, views_crm
+from .audit import audit
+from .csvsafe import csv_safe
 from .decorators import staff_required, superuser_required
 from .metrics import (
-    AT_RISK_DAYS, ONLINE_MINUTES, annotate_clubs, dashboard_kpis, google_user_ids, health_metrics, load_metrics,
-    online_users, usage_metrics,
+    AT_RISK_DAYS, ONLINE_MINUTES, annotate_clubs, attention_counts, attention_items, daily_trend, dashboard_kpis,
+    error_summary, funnel, google_user_ids, health_metrics, load_metrics, online_users, usage_metrics,
 )
 from .middleware import SLOW_MS, flush_metrics
-from .models import AccountNoticeLog, ImportJob, JobRun, QueryLog, SavedQuery, ScheduledJob
-from .scheduler import SCHEDULER_TIME_ZONE, scheduler_is_late, start_manual_run, sync_jobs
+from .models import AccountNoticeLog, ClubCrm, EmailLog, ImportJob, JobRun, QueryLog, SavedQuery, ScheduledJob
+from .scheduler import SCHEDULER_TIME_ZONE, request_manual_run, scheduler_status, sync_jobs
 from .templatetags.backoffice_tags import duration as duration_filter
 
 User = get_user_model()
@@ -67,11 +69,11 @@ def dashboard(request):
     muestra las cifras generales, los procesos fallidos en 24 h y si el lanzador va con retraso.
     """
     flush_metrics()
-    day_ago = timezone.now() - datetime.timedelta(hours=24)
+    counts = attention_counts()
     return render(request, "backoffice/dashboard.html", {
         "section": "dashboard", "kpis": dashboard_kpis(), "at_risk_days": AT_RISK_DAYS,
-        "jobs_failed_24h": JobRun.objects.filter(status=JobRun.ERROR, started_at__gte=day_ago).count(),
-        "scheduler_late": scheduler_is_late(),
+        "attention": attention_items(counts), "trend": daily_trend(30),
+        "scheduler": scheduler_status(),
     })
 
 
@@ -81,14 +83,14 @@ def load(request):
     flush_metrics()
     return render(request, "backoffice/load.html", {
         "section": "load", "online": online_users(), "online_minutes": ONLINE_MINUTES,
-        "load": load_metrics(), "slow_ms": SLOW_MS,
+        "load": load_metrics(), "slow_ms": SLOW_MS, "errors": error_summary(),
     })
 
 
 @staff_required
 def usage(request):
     """Uso de la plataforma (solo personal): actividad por semana, adopción por club y clubes más activos."""
-    return render(request, "backoffice/usage.html", {"section": "usage", "usage": usage_metrics()})
+    return render(request, "backoffice/usage.html", {"section": "usage", "usage": usage_metrics(), "funnel": funnel()})
 
 
 @staff_required
@@ -156,6 +158,15 @@ def club_detail(request, club_id):
         "invitations": club.invitations.select_related("created_by", "used_by")[:10],
         "blocked_emails": club.blocked_emails.all(),
         "now": timezone.now(),
+        "crm": ClubCrm.objects.filter(club=club).first() or ClubCrm(club=club),
+        "lifecycles": ClubCrm.LIFECYCLES,
+        "notes": club.crm_notes.all()[:20],
+        "tasks": club.crm_tasks.filter(done_at__isnull=True),
+        "successors": eligible_successors(club),
+        "contact_templates": {k: {"subject": subj, "body": body} for k, (subj, body) in views_crm.contact_templates(club).items()},
+        "emails": EmailLog.objects.filter(
+            Q(to__in=[m.user.email for m in club.memberships.select_related("user") if m.user.email])
+        )[:10],
     })
 
 
@@ -169,6 +180,7 @@ def club_toggle_suspended(request, club_id):
     if suspend == club.is_suspended:
         messages.info(request, _("El club ya estaba suspendido.") if suspend else _("El club ya estaba activo."))
         return redirect("backoffice:club_detail", club_id=club.public_id)
+    audit(request, "club.suspend" if suspend else "club.reactivate", club, reason=request.POST.get("reason", "").strip()[:500])
     if not suspend:
         club.suspended_at, club.suspension_reason = None, ""
         # Se desbloquean los emails que se bloquearon al suspenderlo.
@@ -204,6 +216,7 @@ def club_toggle_snp_unlimited(request, club_id):
     club = get_object_or_404(Club, public_id=club_id)
     club.snp_unlimited = request.POST.get("action") == "enable"
     club.save(update_fields=["snp_unlimited"])
+    audit(request, "club.snp_unlimited", club, enabled=club.snp_unlimited)
     messages.success(request, _("Este club ya no tiene límites en «Completar equipo».") if club.snp_unlimited
                      else _("Este club vuelve a tener los límites normales en «Completar equipo»."))
     return redirect("backoffice:club_detail", club_id=club.public_id)
@@ -231,6 +244,7 @@ def service_snp_toggle(request):
     """Apaga o enciende la lectura de SNP. Apagada, los capitanes ven que no está disponible y no se lanza ninguna lectura."""
     enable = request.POST.get("action") == "enable"
     snp_service.set_enabled(enable, user=request.user, reason=request.POST.get("reason", "").strip())
+    audit(request, "service.snp", label="SNP", enabled=enable, reason=request.POST.get("reason", "").strip()[:300])
     messages.success(request, _("Servicio de SNP activado.") if enable else _("Servicio de SNP apagado: los capitanes verán que no está disponible."))
     return redirect("backoffice:services")
 
@@ -291,17 +305,23 @@ def user_detail(request, user_id):
             c for c in PhotoCheck.objects.for_user(member).select_related("team", "player", "club") if c.in_use
         ],
         "photo_removals": PhotoRemoval.objects.filter(user=member).select_related("club", "removed_by"),
+        "emails": EmailLog.objects.filter(to__icontains=member.email)[:10] if member.email else [],
+        "unverified": email_verification.unverified_users().filter(pk=member.pk).exists(),
+        "can_impersonate": member.is_active and not member.is_staff and not member.is_superuser and member != request.user,
     })
 
 
 # ---------- Procesos programados ----------
 
 def _last_runs(jobs):
-    """Última ejecución de cada proceso, indexada por el id del proceso."""
-    last = {}
-    for run in JobRun.objects.filter(job__in=jobs).order_by("job_id", "-started_at").select_related("job"):
-        last.setdefault(run.job_id, run)
-    return last
+    """
+    Última ejecución de cada proceso, indexada por el id del proceso. Pide una sola fila por
+    proceso (sin cargar la salida ni el error de las demás ejecuciones).
+    """
+    last_pk = JobRun.objects.filter(job=OuterRef("pk")).order_by("-started_at").values("pk")[:1]
+    pks = [pk for pk in ScheduledJob.objects.filter(pk__in=[j.pk for j in jobs]).annotate(last_pk=Subquery(last_pk))
+           .values_list("last_pk", flat=True) if pk]
+    return {run.job_id: run for run in JobRun.objects.filter(pk__in=pks).defer("output", "error")}
 
 
 def _back(request):
@@ -321,7 +341,7 @@ def job_list(request):
     for job in jobs:
         job.last_run = last.get(job.pk)
     return render(request, "backoffice/job_list.html", {
-        "section": "jobs", "jobs": jobs, "late": scheduler_is_late(), "time_zone": SCHEDULER_TIME_ZONE,
+        "section": "jobs", "jobs": jobs, "scheduler": scheduler_status(), "time_zone": SCHEDULER_TIME_ZONE,
         "failed_24h": JobRun.objects.filter(status=JobRun.ERROR, started_at__gte=day_ago).count(),
         "recent_runs": JobRun.objects.select_related("job")[:10],
     })
@@ -369,6 +389,7 @@ def job_toggle(request, name):
     job = get_object_or_404(ScheduledJob, name=name)
     job.enabled = not job.enabled
     job.save(update_fields=["enabled"])
+    audit(request, "job.toggle", label=job.name, enabled=job.enabled)
     if job.enabled:
         messages.success(request, _("%(job)s: activado.") % {"job": job.name})
     else:
@@ -402,10 +423,14 @@ def job_run_now(request, name):
                 messages.error(request, _("Indica un valor válido para «%(field)s».") % {"field": option.label})
                 return redirect("backoffice:job_detail", name=job.name)
             args += [option.flag, value]
-    run = start_manual_run(job, request.user, args)
-    if run is None:
-        messages.error(request, _("%(job)s ya se está ejecutando.") % {"job": job.name})
+    run, state = request_manual_run(job, request.user, args)
+    if state == "busy":
+        messages.error(request, _("%(job)s ya se está ejecutando o ya está pedido.") % {"job": job.name})
         return _back(request)
+    audit(request, "job.run", label=job.name, args=args, queued=state == "queued")
+    if state == "queued":
+        messages.success(request, _("%(job)s pedido: el lanzador lo recogerá en menos de un minuto.") % {"job": job.name})
+        return redirect("backoffice:job_detail", name=job.name)
     return redirect("backoffice:run_detail", run_id=run.public_id)
 
 
@@ -437,9 +462,9 @@ def _csv_response(result, filename):
     response["Content-Disposition"] = f'attachment; filename="{filename}"'
     response.write("﻿")
     writer = csv.writer(response, delimiter=";")
-    writer.writerow(result.columns)
+    writer.writerow([csv_safe(c) for c in result.columns])
     for row in result.rows:
-        writer.writerow(["" if v is None else v for v in row])
+        writer.writerow([csv_safe(v) for v in row])
     return response
 
 
@@ -475,6 +500,7 @@ def sql_console(request):
         except sql.QueryError as exc:
             error = log.error = str(exc)
         log.save()
+        audit(request, "sql.export" if export else "sql.run", label=(query or "")[:150], rows=log.row_count, error=log.error[:200])
         if export and result:
             return _csv_response(result, _export_name(saved))
 
@@ -488,10 +514,21 @@ def sql_console(request):
             if not name:
                 error = _("Ponle un nombre a la consulta para guardarla.")
             else:
+                every = request.POST.get("export_every", "")
+                recipients = [e.strip().lower() for e in request.POST.get("export_to", "").replace(";", ",").split(",") if e.strip()]
+                staff_emails = set(User.objects.filter(is_staff=True, is_active=True).exclude(email="").values_list("email", flat=True))
+                staff_lower = {e.lower() for e in staff_emails}
+                if every not in dict(SavedQuery.EXPORT_EVERY):
+                    every = ""
+                if every and (not recipients or any(r not in staff_lower for r in recipients)):
+                    messages.error(request, _("La exportación programada solo puede enviarse a emails del personal de Zyra."))
+                    return redirect("backoffice:sql_console")
                 saved, created = SavedQuery.objects.update_or_create(
                     name=name, defaults={"sql": sql.clean(query), "description": request.POST.get("description", "").strip()[:255],
-                                         "created_by": request.user},
+                                         "created_by": request.user, "export_every": every,
+                                         "export_to": ", ".join(recipients) if every else ""},
                 )
+                audit(request, "sql.save", saved, label=saved.name, created=created)
                 if created:
                     messages.success(request, _("Consulta «%(name)s» guardada.") % {"name": saved.name})
                 else:
@@ -502,7 +539,7 @@ def sql_console(request):
         "section": "sql", "query": query or "", "result": result, "error": error, "saved": saved,
         "saved_queries": SavedQuery.objects.all(), "schema": sql.schema(),
         "history": QueryLog.objects.filter(user=request.user)[:15],
-        "display_limit": sql.DISPLAY_LIMIT, "export_limit": sql.EXPORT_LIMIT, "timeout": sql.TIMEOUT_SECONDS,
+        "export_choices": SavedQuery.EXPORT_EVERY, "display_limit": sql.DISPLAY_LIMIT, "export_limit": sql.EXPORT_LIMIT, "timeout": sql.TIMEOUT_SECONDS,
     })
 
 
@@ -511,6 +548,7 @@ def sql_console(request):
 def sql_delete_saved(request, query_id):
     """Borra una consulta guardada (solo superusuarios, POST) y vuelve a la consola."""
     saved = get_object_or_404(SavedQuery, public_id=query_id)
+    audit(request, "sql.delete", saved, label=saved.name)
     saved.delete()
     messages.success(request, _("Consulta «%(name)s» borrada.") % {"name": saved.name})
     return redirect("backoffice:sql_console")
@@ -635,7 +673,7 @@ def import_preview(request, job_id):
         writer.writerow([_("Línea"), _("Errores")])
         for r in results:
             if not r.ok:
-                writer.writerow([r.line, " | ".join(r.errors)])
+                writer.writerow([r.line, csv_safe(" | ".join(r.errors))])
         return response
 
     errors = [r for r in results if not r.ok]
@@ -668,6 +706,7 @@ def import_confirm(request, job_id):
         messages.error(request, _("Hay filas con errores: no se ha importado nada."))
         return redirect("backoffice:import_preview", job_id=job.public_id)
     job.status, job.finished_at = ImportJob.DONE, timezone.now()
+    audit(request, "import.confirm", job, label=job.filename, entity=job.entity, club=job.club.name, mode=job.mode)
     job.created_count = len(job.result["created"])
     job.updated_count = len(job.result["updated"])
     job.save()
@@ -683,6 +722,7 @@ def import_undo(request, job_id):
     """Deshace una importación (solo superusuarios, POST): borra lo creado y restaura lo cambiado."""
     job = get_object_or_404(ImportJob, public_id=job_id, status=ImportJob.DONE)
     deleted, restored = importer.undo_import(job)
+    audit(request, "import.undo", job, label=job.filename, deleted=deleted, restored=restored)
     job.status, job.undone_at = ImportJob.UNDONE, timezone.now()
     job.save(update_fields=["status", "undone_at"])
     messages.success(request, _("Importación deshecha: %(deleted)s borrados y %(restored)s restaurados.") % {
@@ -819,6 +859,7 @@ def photo_delete(request, check_id):
     dueño y vuelve a la página de origen.
     """
     check = get_object_or_404(PhotoCheck.objects.select_related("team", "player__user", "uploaded_by", "club"), public_id=check_id)
+    audit(request, "photo.delete", check, label=check.subject_label, reason=request.POST.get("reason", "").strip()[:500])
     _report_removal(request, *_remove_and_notify(request, [check], request.POST.get("reason", "").strip()[:500]))
     return _back_to(request, "backoffice:photo_list")
 
@@ -830,6 +871,7 @@ def photo_approve(request, check_id):
     check = get_object_or_404(PhotoCheck, public_id=check_id)
     check.status = PhotoCheck.APPROVED
     check.save(update_fields=["status"])
+    audit(request, "photo.approve", check, label=check.subject_label)
     messages.success(request, _("Foto marcada como validada."))
     return _back_to(request, "backoffice:photo_list")
 
@@ -842,6 +884,7 @@ def user_photos_delete(request, user_id):
     checks = (
         PhotoCheck.objects.for_user(member).select_related("team", "player__user", "uploaded_by", "club")
     )
+    audit(request, "user.photos_delete", member, label=member.get_username(), reason=request.POST.get("reason", "").strip()[:500])
     _report_removal(request, *_remove_and_notify(request, list(checks), request.POST.get("reason", "").strip()[:500]))
     return redirect("backoffice:user_detail", user_id=member.pk)
 
@@ -858,6 +901,7 @@ def user_toggle_active(request, user_id):
     else:
         member.is_active = not member.is_active
         member.save(update_fields=["is_active"])
+        audit(request, "user.activate" if member.is_active else "user.deactivate", member, label=member.get_username())
         messages.success(request, _("Cuenta reactivada.") if member.is_active else _("Cuenta suspendida: ya no puede iniciar sesión."))
     return redirect("backoffice:user_detail", user_id=member.pk)
 
@@ -896,6 +940,7 @@ def blocked_email_add(request):
     if "@" not in email:
         messages.error(request, _("Escribe un email válido."))
     elif blocklist.block(email, reason=request.POST.get("reason", "").strip(), blocked_by=request.user):
+        audit(request, "email.block", label=email, reason=request.POST.get("reason", "").strip()[:300])
         messages.success(request, _("%(email)s bloqueado.") % {"email": email})
     else:
         messages.info(request, _("%(email)s ya estaba bloqueado.") % {"email": email})
@@ -907,6 +952,7 @@ def blocked_email_add(request):
 def blocked_email_delete(request, blocked_id):
     """Desbloquea un email (solo personal, POST) y vuelve a la página de origen."""
     blocked = get_object_or_404(BlockedEmail, public_id=blocked_id)
+    audit(request, "email.unblock", label=blocked.original_email)
     blocked.delete()
     messages.success(request, _("%(email)s desbloqueado.") % {"email": blocked.original_email})
     return _back_to(request, "backoffice:blocked_email_list")
@@ -974,6 +1020,7 @@ def unverified_warn(request, user_id):
     member = _pending_user_or_404(user_id)
     deadline = timezone.now() + datetime.timedelta(days=_deadline_days(request))
     sent = send_unverified_account_email(member, email_verification.confirmation_url(request, member), deadline)
+    audit(request, "account.warn", member, label=member.get_username(), deadline=deadline.date().isoformat(), email_sent=sent)
     AccountNoticeLog.objects.create(
         action=AccountNoticeLog.WARNING, user=member, username=member.username, email=member.email,
         joined_at=member.date_joined, deadline_at=deadline, email_sent=sent,
@@ -1010,5 +1057,6 @@ def unverified_delete(request, user_id):
             messages.error(request, str(error))
         else:
             entry.save()
+            audit(request, "account.delete", label=entry.username, email=entry.email)
             messages.success(request, _("Cuenta %(username)s eliminada.") % {"username": entry.username})
     return _back_to(request, "backoffice:unverified_list")
