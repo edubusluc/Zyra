@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 13/10/2026 · Despliegue: llave SSH más tolerante
+
+- `DEPLOY_SSH_KEY` acepta la llave en texto o en base64 de una línea, y el workflow la valida antes de conectar (PR #136)
+
 ## 13/10/2026 · Despliegue: espera a la base de datos
 
 - `deploy.sh` espera a que PostgreSQL esté sana antes de la copia de seguridad (PR #135; el primer despliegue fallaba porque la base de datos aún se estaba creando)
