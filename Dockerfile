@@ -16,8 +16,10 @@ RUN pip install --no-cache-dir --only-binary :all: --require-hashes -r requireme
 
 # 2) Código y estáticos (se sirven con WhiteNoise, con el hash en el nombre).
 COPY . .
-RUN DJANGO_DEBUG=False DJANGO_SECRET_KEY=solo-para-collectstatic-sin-uso-real-0123456789abcdef \
-    FIELD_ENCRYPTION_KEY=MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY= \
+# Claves desechables generadas aquí mismo: collectstatic las exige pero no las usa, y no quedan en la imagen.
+RUN DJANGO_DEBUG=False \
+    DJANGO_SECRET_KEY="$(python -c 'import secrets; print(secrets.token_urlsafe(64))')" \
+    FIELD_ENCRYPTION_KEY="$(python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())')" \
     ADMIN_URL=solo-para-collectstatic/ DJANGO_ALLOWED_HOSTS=localhost \
     python manage.py collectstatic --noinput
 

@@ -59,7 +59,7 @@ jobs:
           IMAGE="$(echo "$IMAGE" | tr 'A-Z' 'a-z')"
           docker run --rm "$IMAGE" python -c "from playwright.sync_api import sync_playwright as s; p=s().start(); p.chromium.launch().close(); p.stop()"
           docker run --rm -e DJANGO_DEBUG=False -e DJANGO_SECRET_KEY="$(python3 -c 'import secrets;print(secrets.token_urlsafe(64))')" \
-            -e FIELD_ENCRYPTION_KEY=MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY= \
+            -e FIELD_ENCRYPTION_KEY="$(docker run --rm "$IMAGE" python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())')" \
             -e DJANGO_ALLOWED_HOSTS=ejemplo.com -e ADMIN_URL=panel-prueba/ \
             -e DJANGO_BEHIND_PROXY=True -e SITE_URL=https://ejemplo.com \
             "$IMAGE" python manage.py check --deploy --fail-level ERROR
