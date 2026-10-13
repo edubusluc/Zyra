@@ -24,7 +24,7 @@ repositorio `DEPLOY_ENABLED` vale `true`.
 3. Copia a `/opt/zyra`: `docker-compose.yml`, `Caddyfile`, `deploy/deploy.sh` y `deploy/backup.sh`.
 4. Crea `/opt/zyra/.env` a partir de `.env.example` (claves, dominios, `DATABASE_URL=postgres://zyra:CONTRASEÑA@db:5432/zyra`,
    `DJANGO_BEHIND_PROXY=True`, `DJANGO_TRUSTED_PROXY_COUNT=1`, correo y Google) y `db_password.txt` con la misma contraseña.
-5. En el repositorio de GitHub: secretos `DEPLOY_SSH_KEY` y `DEPLOY_HOST`, entorno `production` (con aprobación manual si quieres)
+5. En el repositorio de GitHub: secretos `DEPLOY_SSH_KEY` (la llave privada, o su base64 en una línea con `base64 -w0 llave`) y `DEPLOY_HOST`, entorno `production` (con aprobación manual si quieres)
    y variable `DEPLOY_ENABLED=true`. El paquete de GHCR debe poder leerse desde el servidor (`docker login ghcr.io`).
 6. Primer arranque: `./deploy.sh <sha-completo-del-commit>` en el servidor, o un push a `main`.
 

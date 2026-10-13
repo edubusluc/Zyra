@@ -76,5 +76,11 @@ jobs:
           HOST: ${{ secrets.DEPLOY_HOST }}
           SHA: ${{ needs.image.outputs.sha }}
         run: |
-          install -m 600 /dev/null key && printf '%s\n' "$KEY" > key
+          # DEPLOY_SSH_KEY puede ser la llave en texto (con BEGIN/END) o en base64 de una sola línea.
+          install -m 600 /dev/null key
+          case "$KEY" in
+            *BEGIN*) printf '%s\n' "$KEY" | tr -d '\r' > key ;;
+            *) printf '%s' "$KEY" | tr -d ' \r\n' | base64 -d > key ;;
+          esac
+          ssh-keygen -y -f key > /dev/null
           ssh -i key -o StrictHostKeyChecking=accept-new "zyra@$HOST" "/opt/zyra/deploy.sh $SHA"
