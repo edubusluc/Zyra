@@ -233,3 +233,23 @@ class ManageTeamsTests(TestCase):
         self.post_form(**{f"gender_{other.id}": "M"})
         other.refresh_from_db()
         self.assertEqual(other.gender, "F")
+
+
+class ListTeamsGroupFilterTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user("cap", password="pass-12345")
+        self.club = create_club("Club A", "Sevilla", self.user, gender="F", country="ES")
+        Team.objects.create(club=self.club, name="Fuera FC", location="X", gender="F", country="ES",
+                            division="500", in_group=False)
+        self.client.force_login(self.user)
+        self.url = reverse("list_teams")
+
+    def test_only_group_by_default(self):
+        response = self.client.get(self.url)
+        self.assertTrue(response.context["only_group"])
+        self.assertNotContains(response, "Fuera FC")
+
+    def test_captain_can_show_all_teams(self):
+        response = self.client.get(self.url, {"group": "0"})
+        self.assertFalse(response.context["only_group"])
+        self.assertContains(response, "Fuera FC")
