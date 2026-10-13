@@ -5,7 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 13/10/2026 · Configuración de despliegue con Docker
 
-- Imagen Docker única (web y lanzador), `docker-compose.yml` con PostgreSQL, Caddy (https y fotos), scripts de despliegue y copia de seguridad, y workflow `deploy.yml` que publica la imagen en GHCR; el despliegue por SSH queda apagado hasta tener servidor (PR #TBD)
+- Imagen Docker única (web y lanzador), `docker-compose.yml` con PostgreSQL, Caddy (https y fotos), scripts de despliegue y copia de seguridad, y workflow `deploy.yml` que publica la imagen en GHCR; el despliegue por SSH queda apagado hasta tener servidor (PR #134)
 - Estáticos de producción con WhiteNoise (con hash en el nombre); el correo de contacto de los avisos sale de `CONTACT_EMAIL` y el remitente técnico de `ZYRA_SENDER`
 - Guía de despliegue en `docs/despliegue.md`
 
