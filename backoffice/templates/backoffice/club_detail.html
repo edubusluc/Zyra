@@ -49,6 +49,31 @@
     </form>
 </section>
 
+<section class="z-panel" id="club-config">
+    <h2 class="h5">{% translate "Configuración del club" %}</h2>
+    <p class="text-muted mb-2">{% translate "Edita en persona el equipo, los jugadores y la cuenta SNP. Cada cambio queda en la auditoría." %}</p>
+    <h3 class="h6">{% translate "Completar equipo desde SNP" %}</h3>
+    <p class="mb-2">
+        {% if club.snp_import_failures >= snp_max_failures %}<span class="z-badge z-badge--danger">{% translate "Bloqueado en la web" %}</span>{% else %}<span class="z-badge">{% translate "Disponible en la web" %}</span>{% endif %}
+        {% blocktranslate with n=club.snp_import_failures max=snp_max_failures %}Fallos: {{ n }} de {{ max }}.{% endblocktranslate %}
+        {% if snp_account %}<a href="{% url 'backoffice:snp_account_edit' club.public_id %}" class="btn btn-outline-light btn-sm ms-2">{% translate "Editar cuenta SNP" %}</a>{% else %}<a href="{% url 'backoffice:snp_account_edit' club.public_id %}" class="btn btn-outline-light btn-sm ms-2">{% translate "Añadir cuenta SNP" %}</a>{% endif %}
+    </p>
+    {% if club.snp_import_failures %}
+    <form method="post" action="{% url 'backoffice:snp_import_reset' club.public_id %}" class="mb-3">
+        {% csrf_token %}
+        <button class="btn btn-outline-light btn-sm">{% translate "Reponer la opción en la web" %}</button>
+    </form>
+    {% endif %}
+    <h3 class="h6">{% translate "Equipos" %}</h3>
+    <ul class="list-unstyled mb-3">
+        {% for t in edit_teams %}<li>{{ t.name }}{% if t.is_own %} <span class="z-badge z-badge--lime">{% translate "Propio" %}</span>{% endif %} · <a href="{% url 'backoffice:team_edit' t.public_id %}">{% translate "Editar" %}</a></li>{% endfor %}
+    </ul>
+    <h3 class="h6">{% translate "Jugadores" %}</h3>
+    <ul class="list-unstyled mb-0">
+        {% for p in edit_players %}<li>{{ p.full_name }}{% if not p.in_team %} <span class="text-muted">({% translate "baja" %})</span>{% endif %} · <a href="{% url 'backoffice:player_edit' p.public_id %}">{% translate "Editar" %}</a></li>{% endfor %}
+    </ul>
+</section>
+
 <section class="bo-kpis" aria-label="{% translate 'Resumen del club' %}">
     <div class="bo-kpi"><span class="bo-kpi-label">{% translate "Miembros" %}</span><b>{{ club.n_members|default:0 }}</b><small>{% with admins=club.n_admins|default:0 %}{% blocktranslate trimmed count n=admins %}{{ n }} capitán{% plural %}{{ n }} capitanes{% endblocktranslate %}{% endwith %}</small></div>
     <div class="bo-kpi"><span class="bo-kpi-label">{% translate "Jugadores" %}</span><b>{{ players_active }}</b><small>{% blocktranslate with total=players_total %}{{ total }} en total, contando bajas{% endblocktranslate %}</small></div>

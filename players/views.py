@@ -95,17 +95,17 @@ def list_players(request):
 
 
 def _complete_team_context(club):
-    """Estado del botón «Completar equipo» (solo con cuenta SNP; una vez al mes y pocas búsquedas al día)."""
+    """Estado del botón «Completar equipo» (solo con cuenta SNP; una sola vez y, tras varios fallos, oculto)."""
     if not SnpAccount.objects.filter(club=club).exists():
         return {}
-    last = snp_import.last_import_this_month(club)
+    done = snp_import.web_import_done(club)
     active = snp_import.active_import(club)
     return {
         'snp_import_enabled': True,
         'snp_import': active,
         'snp_import_changes': bool(active) and snp_import.has_changes(active),
-        'snp_import_last': last,
-        'snp_import_next': snp_import.next_month_start() if last else None,
+        'snp_import_done': done is not None,
+        'snp_import_blocked': snp_import.web_blocked(club) and not active,
         'snp_import_wait': snp_import.search_limit(club),
         'snp_service_off': not snp_service.is_enabled(),
     }
@@ -263,13 +263,25 @@ POSITION_NOTICE = gettext_lazy(
     "alineaciones te saldrán mucho mejor."
 )
 
-def _blocked_this_month(request):
-    """True (y deja un mensaje de error) si el equipo ya se ha completado este mes desde la web."""
-    last = snp_import.last_import_this_month(request.club)
-    if last:
-        messages.error(request, _("El equipo ya se ha completado este mes. Podrás volver a hacerlo a partir del %(date)s.")
-                       % {"date": f"{snp_import.next_month_start():%d/%m/%Y}"})
-    return last is not None
+# Tras varios fallos seguidos de «Completar equipo»: la opción se oculta y el personal revisa el proceso.
+BLOCKED_NOTICE = gettext_lazy(
+    "«Completar equipo» ha fallado varias veces, así que ya no se ofrece. Hemos avisado al administrador "
+    "de Zyra para que revise el proceso; no hace falta que hagas nada más."
+)
+
+
+def _web_import_closed(request):
+    """
+    True (y deja un mensaje) si la web ya no ofrece «Completar equipo» al club: porque ya se hizo
+    una vez o porque ha fallado varias veces y se avisó al personal.
+    """
+    if snp_import.web_import_done(request.club):
+        messages.error(request, _("El equipo ya se completó desde SNP. A partir de ahora se actualiza solo."))
+        return True
+    if snp_import.web_blocked(request.club):
+        messages.error(request, BLOCKED_NOTICE)
+        return True
+    return False
 
 
 @club_admin_required
@@ -277,7 +289,7 @@ def _blocked_this_month(request):
 def complete_team_start(request):
     """
     Lanza en segundo plano la búsqueda de «Completar equipo». Solo capitanes y por POST.
-    Hace falta cuenta SNP; no se lanza si ya se completó este mes, hay otra en curso o se
+    Hace falta cuenta SNP; no se lanza si ya se completó una vez, está bloqueado por fallos, hay otra en curso o se
     han hecho demasiadas búsquedas seguidas (snp_import.search_limit).
     Redirige a la lista de jugadores, que va preguntando el estado.
     """
@@ -287,7 +299,7 @@ def complete_team_start(request):
     if not snp_service.is_enabled():
         messages.error(request, snp_service.UNAVAILABLE_MESSAGE)
         return redirect("list_players")
-    if _blocked_this_month(request) or snp_import.active_import(request.club):
+    if _web_import_closed(request) or snp_import.active_import(request.club):
         return redirect("list_players")
     wait = snp_import.search_limit(request.club)
     if wait:
@@ -330,6 +342,8 @@ def complete_team_failed(request, import_id):
         hint = _("Comprueba que la configuración de tu equipo es correcta.")
         destination = reverse("list_players")
     messages.error(request, f"{reason} {hint}")
+    if snp_import.web_blocked(request.club):
+        messages.warning(request, BLOCKED_NOTICE)
     return redirect(destination)
 
 
@@ -339,10 +353,10 @@ def complete_team_confirm(request, import_id):
     """
     Confirma una búsqueda de «Completar equipo» lista para confirmar: crea los jugadores
     nuevos y actualiza los puntos SNP de los que ya estaban. Solo capitanes y por POST;
-    respeta el límite de una vez al mes. Redirige a la lista de jugadores.
+    solo si no se completó ya desde la web. Redirige a la lista de jugadores.
     """
     team_import = get_object_or_404(SnpTeamImport, public_id=import_id, club=request.club, source=SnpTeamImport.WEB)
-    if team_import.status != SnpTeamImport.READY or not snp_import.has_changes(team_import) or _blocked_this_month(request):
+    if team_import.status != SnpTeamImport.READY or not snp_import.has_changes(team_import) or _web_import_closed(request):
         return redirect("list_players")
     team_import = snp_import.confirm(team_import)
     messages.success(request, _("Equipo completado: %(message)s") % {"message": team_import.message})

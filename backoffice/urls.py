@@ -1,7 +1,7 @@
 """Rutas del back-office (espacio de nombres ``backoffice``)."""
 from django.urls import path
 
-from . import views, views_crm
+from . import views, views_crm, views_edit
 
 app_name = "backoffice"
 
@@ -41,6 +41,10 @@ urlpatterns = [
     path("clubs/notes/<int:note_id>/delete/", views_crm.club_note_delete, name="club_note_delete"),
     path("clubs/<pid:club_id>/contact/", views_crm.club_contact, name="club_contact"),
     path("clubs/<pid:club_id>/edit/", views_crm.club_edit, name="club_edit"),
+    path("teams/<pid:team_id>/edit/", views_edit.team_edit, name="team_edit"),
+    path("players/<pid:player_id>/edit/", views_edit.player_edit, name="player_edit"),
+    path("clubs/<pid:club_id>/snp-account/", views_edit.snp_account_edit, name="snp_account_edit"),
+    path("clubs/<pid:club_id>/snp-import-reset/", views_edit.snp_import_reset, name="snp_import_reset"),
     path("clubs/<pid:club_id>/delete/", views_crm.club_delete, name="club_delete"),
     path("clubs/<pid:club_id>/transfer-captain/", views_crm.club_transfer_captain, name="club_transfer_captain"),
     path("clubs/", views.club_list, name="club_list"),

@@ -12,7 +12,8 @@ from core.models import Membership
 from core.services import create_club
 from team.models import Team
 
-from .models import Player, SnpAccount
+from . import snp_import
+from .models import Player, SnpAccount, SnpTeamImport
 from .scraper import SnpScrapeError, parse_score, parse_team_id
 from .snp import match_scores, normalize, sync_club
 
@@ -517,9 +518,10 @@ class CompleteTeamTests(TestCase):
         self.assertTrue(SnpScoreHistory.objects.filter(player=self.ana, score=42.5).exists())
         self.assertEqual(Player.objects.count(), 3)
 
-        # Solo una vez al mes.
+        # Solo una vez: después el botón desaparece y no se puede lanzar otra.
         page = self.client.get(reverse("list_players"))
-        self.assertContains(page, "Ya se ha completado este mes")
+        self.assertNotContains(page, "complete_team/\"")
+        self.assertNotContains(page, "Añade los jugadores de tu equipo de SNP")
         self.client.post(reverse("complete_team_start"))
         self.assertEqual(SnpTeamImport.objects.count(), 1)
 
@@ -532,7 +534,7 @@ class CompleteTeamTests(TestCase):
         self.assertEqual(Player.objects.filter(name="Pedro").count(), 1)
         self.assertTrue(Player.objects.filter(name="Maria Jose").exists())
 
-    def test_cancel_does_not_count_for_the_monthly_limit(self):
+    def test_cancel_does_not_close_the_option(self):
         from .models import SnpTeamImport
         self.client.post(reverse("complete_team_start"))
         team_import = SnpTeamImport.objects.get()
@@ -565,6 +567,38 @@ class CompleteTeamTests(TestCase):
         self.assertRedirects(response, reverse("edit_team", args=[self.club.own_team.public_id]))
         self.assertContains(response, "Comprueba que la configuración de tu equipo es correcta")
 
+    def test_repeated_failures_hide_the_option_and_notify_staff(self):
+        from django.core import mail
+        from backoffice.models import AuditLog
+        User.objects.create_user("staff", email="staff@example.com", password="pass-12345", is_staff=True)
+        error = SnpScrapeError("SNP no ha aceptado el usuario o la contraseña.", kind=SnpScrapeError.ACCOUNT)
+        for attempt in range(snp_import.MAX_FAILED_SEARCHES):
+            SnpTeamImport.objects.update(created_at=timezone.now() - timedelta(hours=25))  # fuera del límite diario
+            with mock.patch("players.snp_import.scrape_scores", side_effect=error):
+                self.client.post(reverse("complete_team_start"))
+            if attempt < snp_import.MAX_FAILED_SEARCHES - 1:
+                SnpTeamImport.objects.update(created_at=timezone.now() - timedelta(hours=25))
+                self.assertContains(self.client.get(reverse("list_players")), "Añade los jugadores de tu equipo de SNP")
+        self.club.refresh_from_db()
+        self.assertEqual(self.club.snp_import_failures, snp_import.MAX_FAILED_SEARCHES)
+        page = self.client.get(reverse("list_players"))
+        self.assertNotContains(page, "Añade los jugadores de tu equipo de SNP")
+        self.assertContains(page, "hemos avisado al administrador")
+        self.assertTrue(AuditLog.objects.filter(action="club.snp_import_blocked").exists())
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("staff@example.com", mail.outbox[0].to)
+        count = SnpTeamImport.objects.count()
+        response = self.client.post(reverse("complete_team_start"), follow=True)
+        self.assertContains(response, "Hemos avisado al administrador")
+        self.assertEqual(SnpTeamImport.objects.count(), count)
+
+    def test_snp_switched_off_does_not_count_as_a_failure(self):
+        from . import snp_service
+        with mock.patch.object(snp_service, "is_enabled", return_value=False):
+            self.client.post(reverse("complete_team_start"))
+        self.club.refresh_from_db()
+        self.assertEqual(self.club.snp_import_failures, 0)
+
     def test_other_errors_stay_in_the_popup_with_the_team_hint(self):
         from .scraper import SnpTemporaryError
         team_import, status = self.failed_import(SnpTemporaryError("Error del navegador al leer SNP: timeout"))
@@ -596,7 +630,7 @@ class CompleteTeamTests(TestCase):
         self.assertNotContains(self.client.get(reverse("list_players")), "Completar equipo")
         self.assertEqual(Player.objects.count(), 1)
 
-    def test_backoffice_command_uses_team_id_and_ignores_monthly_limit(self):
+    def test_backoffice_command_uses_team_id_and_ignores_web_limit(self):
         from .models import SnpTeamImport
         team_id = self.club.own_team.public_id
         out = StringIO()
@@ -697,7 +731,7 @@ class CompleteTeamLimitsTests(TestCase):
             team_import = SnpTeamImport.objects.get(status=SnpTeamImport.READY)
             self.client.post(reverse("complete_team_confirm", args=[team_import.public_id]))
         self.assertEqual(SnpTeamImport.objects.filter(status=SnpTeamImport.DONE).count(), snp_import.SEARCHES_PER_DAY + 1)
-        self.assertIsNone(snp_import.last_import_this_month(club))
+        self.assertIsNone(snp_import.web_import_done(club))
 
     def test_only_existing_players_still_updates_scores(self):
         from .models import SnpTeamImport

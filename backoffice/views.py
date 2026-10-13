@@ -30,8 +30,8 @@ from core.emails import send_photo_removed_email, send_unverified_account_email
 from core.models import BlockedEmail, Club, Invitation, Membership, PhotoCheck, PhotoRemoval, ServiceSwitch
 from match.models import Match
 from core.services import CaptaincyError, delete_account, eligible_successors
-from players import snp_service
-from players.models import Player, SnpTeamImport
+from players import snp_import, snp_service
+from players.models import Player, SnpAccount, SnpTeamImport
 
 from . import importer, sql, views_crm
 from .audit import audit
@@ -156,6 +156,10 @@ def club_detail(request, club_id):
         "past_matches": matches.filter(start_date__lte=today).order_by("-start_date")[:10],
         "upcoming_matches": matches.filter(start_date__gt=today).order_by("start_date")[:5],
         "invitations": club.invitations.select_related("created_by", "used_by")[:10],
+        "edit_teams": club.teams.order_by("-is_own", "name"),
+        "edit_players": players.order_by("-in_team", "name"),
+        "snp_account": SnpAccount.objects.filter(club=club).first(),
+        "snp_max_failures": snp_import.MAX_FAILED_SEARCHES,
         "blocked_emails": club.blocked_emails.all(),
         "now": timezone.now(),
         "crm": ClubCrm.objects.filter(club=club).first() or ClubCrm(club=club),
