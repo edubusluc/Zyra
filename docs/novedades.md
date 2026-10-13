@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 13/10/2026 · Datos de partida en producción
+
+- La imagen incluye `populate_db.py` y `populate/` para cargar los datos de partida en el servidor (PR #137); el script guarda ahora los puntos como `7/5` y verifica el email del capitán en allauth (para «Entrar con Google»)
+- `backup.sh` ya no crea el volumen de fotos si no existe (lo creaba root y la web no podía escribir)
+
 ## 13/10/2026 · Despliegue: llave SSH más tolerante
 
 - `DEPLOY_SSH_KEY` acepta la llave en texto o en base64 de una línea, y el workflow la valida antes de conectar (PR #136)

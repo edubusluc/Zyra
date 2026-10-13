@@ -43,6 +43,7 @@ import django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zyra.settings")
 django.setup()
 
+from allauth.account.models import EmailAddress  # noqa: E402
 from django.contrib.auth import get_user_model  # noqa: E402
 from django.contrib.auth.password_validation import validate_password  # noqa: E402
 from django.core.exceptions import ValidationError  # noqa: E402
@@ -700,7 +701,7 @@ MATCHES = [{'public_id': 'MATtLTtocAuOB6r',
   'visiting': 'TEAtkIX7SShWckF',
   'start_date': '2024-10-06',
   'result': 'Victoria Local',
-  'result_points': '7-5',
+  'result_points': '7/5',
   'draft_mode': False,
   'season': '2024-2025',
   'location': 'Pol. La estrella, Coria del Río'},
@@ -710,7 +711,7 @@ MATCHES = [{'public_id': 'MATtLTtocAuOB6r',
   'visiting': 'TEAbKItZd1HsCGo',
   'start_date': '2024-10-20',
   'result': 'Victoria Visitante',
-  'result_points': '3-9',
+  'result_points': '3/9',
   'draft_mode': False,
   'season': '2024-2025',
   'location': 'C. Castilla Leon, 237, 41909 Salteras, Sevilla'},
@@ -720,7 +721,7 @@ MATCHES = [{'public_id': 'MATtLTtocAuOB6r',
   'visiting': 'TEAtkIX7SShWckF',
   'start_date': '2024-10-27',
   'result': 'Victoria Local',
-  'result_points': '10-2',
+  'result_points': '10/2',
   'draft_mode': False,
   'season': '2024-2025',
   'location': 'BURGPADEL'},
@@ -730,7 +731,7 @@ MATCHES = [{'public_id': 'MATtLTtocAuOB6r',
   'visiting': 'TEAG6eAPHbSRkDt',
   'start_date': '2024-11-10',
   'result': 'Victoria Local',
-  'result_points': '7-5',
+  'result_points': '7/5',
   'draft_mode': False,
   'season': '2024-2025',
   'location': 'C. Castilla Leon, 237, 41909 Salteras, Sevilla'},
@@ -2558,6 +2559,8 @@ def populate(username, email, password):
     else:
         captain.set_unusable_password()
     captain.save()
+    # Email principal ya verificado (allauth): sin esto «Entrar con Google» no conecta con la cuenta.
+    EmailAddress.objects.create(user=captain, email=email, verified=True, primary=True)
     print(f"  capitán: {captain.username} ({captain.email}), también superusuario")
 
     clubs = _create("clubes", Club, CLUBS, lambda r: Club(public_id=r["public_id"], name=r["name"], slug=r["slug"]),

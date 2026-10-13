@@ -35,3 +35,16 @@ repositorio `DEPLOY_ENABLED` vale `true`.
 - Las migraciones no se ejecutan al arrancar el contenedor, solo en `deploy.sh`, para que web y lanzador no choquen.
 - Si la web no queda sana, el script lo dice y da el comando para volver a la versión anterior (`./deploy.sh <sha anterior>`).
   Las migraciones destructivas no se deshacen solas: para eso están las copias de `backups/`.
+
+## Cargar los datos de partida en el servidor
+
+La imagen incluye `populate_db.py` y `populate/` (escudos). Solo se usa sobre una base de datos sin clubes
+ni usuarios (el script se niega si ya hay datos). En el servidor, en `/opt/zyra`:
+
+```bash
+export ZYRA_IMAGE=ghcr.io/edubusluc/zyra:sha-$(cat .current)
+docker compose exec web python populate_db.py --usuario TU_USUARIO --email TU_EMAIL --sin-contrasena
+```
+
+`--sin-contrasena` deja al capitán entrar con Google (o tras `changepassword`). Si ya creaste un superusuario
+con `createsuperuser`, bórralo antes (o cárgalo con ese mismo usuario tras eliminarlo) para que la base esté vacía.

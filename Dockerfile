@@ -28,6 +28,9 @@ COPY match ./match
 COPY penalty ./penalty
 COPY players ./players
 COPY team ./team
+# Datos de partida (se cargan a mano con `python populate_db.py`, ver docs/despliegue.md).
+COPY populate ./populate
+COPY populate_db.py ./
 # Claves desechables generadas aquí mismo: collectstatic las exige pero no las usa, y no quedan en la imagen.
 RUN DJANGO_DEBUG=False \
     DJANGO_SECRET_KEY="$(python -c 'import secrets; print(secrets.token_urlsafe(64))')" \
