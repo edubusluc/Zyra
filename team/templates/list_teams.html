@@ -21,14 +21,16 @@
         <form method="get" class="z-search" id="search-form" role="search">
             <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
             <input type="search" name="search" id="team-search" placeholder="{% translate 'Buscar por nombre o ubicación...' %}" value="{{ search }}" aria-label="{% translate 'Buscar equipo' %}">
-            {% if is_club_admin %}
-            <input type="hidden" name="group" value="0">
-            <label class="form-check form-check-inline mb-0 ms-2 small">
-                <input type="checkbox" name="group" value="1" class="form-check-input" id="team-only-group" {% if only_group %}checked{% endif %}>
-                <span class="form-check-label">{% translate "Mostrar solo equipos de mi grupo" %}</span>
-            </label>
-            {% endif %}
         </form>
+        {% if is_club_admin %}
+        {# Interruptor propio (.z-toggle); sus campos se envían con el formulario de búsqueda (atributo form). #}
+        <input type="hidden" name="group" value="0" form="search-form">
+        <label class="z-toggle" for="team-only-group">
+            <input type="checkbox" role="switch" name="group" value="1" id="team-only-group" form="search-form" {% if only_group %}checked{% endif %}>
+            <span class="z-toggle-track" aria-hidden="true"></span>
+            <span class="z-toggle-label">{% translate "Mostrar solo equipos de mi grupo" %}</span>
+        </label>
+        {% endif %}
         {% if search %}
         <span class="text-muted small">{% blocktranslate trimmed count n=teams.paginator.count %}{{ n }} resultado{% plural %}{{ n }} resultados{% endblocktranslate %}</span>
         <a href="{% url 'list_teams' %}" class="btn btn-outline-secondary btn-sm">{% translate "Limpiar" %}</a>
