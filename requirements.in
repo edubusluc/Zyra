@@ -12,3 +12,4 @@ sentry-sdk[django]==2.19.2
 dj-database-url==2.3.0
 psycopg[binary]==3.2.3
 boto3==1.43.108
+whitenoise==6.11.0

@@ -6146,10 +6146,10 @@ msgstr "Club suspended"
 #, python-format
 msgid ""
 "El club %(club)s está suspendido por incumplir los términos y condiciones de"
-" Zyra. Si crees que es un error, escribe a join.zyra@gmail.com."
+" Zyra. Si crees que es un error, escribe a %(contact)s."
 msgstr ""
 "The club %(club)s is suspended for breaking Zyra’s terms and conditions. If "
-"you think this is a mistake, write to join.zyra@gmail.com."
+"you think this is a mistake, write to %(contact)s."
 
 #: core/templates/no_club.html:16
 msgid ""

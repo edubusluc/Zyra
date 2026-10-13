@@ -3,6 +3,12 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 13/10/2026 · Configuración de despliegue con Docker
+
+- Imagen Docker única (web y lanzador), `docker-compose.yml` con PostgreSQL, Caddy (https y fotos), scripts de despliegue y copia de seguridad, y workflow `deploy.yml` que publica la imagen en GHCR; el despliegue por SSH queda apagado hasta tener servidor (PR #TBD)
+- Estáticos de producción con WhiteNoise (con hash en el nombre); el correo de contacto de los avisos sale de `CONTACT_EMAIL` y el remitente técnico de `ZYRA_SENDER`
+- Guía de despliegue en `docs/despliegue.md`
+
 ## 13/10/2026 · Equipos: interruptor del grupo
 
 - «Mostrar solo equipos de mi grupo» (Equipos) es ahora un interruptor propio (`.z-toggle`) con los colores de Zyra, en vez de una casilla desencajada

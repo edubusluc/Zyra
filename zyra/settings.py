@@ -166,6 +166,11 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
 ]
+# En producción WhiteNoise sirve los estáticos desde STATIC_ROOT (ver más abajo). Va justo tras
+# SecurityMiddleware, antes de CanonicalHostMiddleware: así los ficheros no pasan por el resto de
+# la cadena. En local (DEBUG) los sirve runserver y WhiteNoise no se carga.
+if not DEBUG:
+    MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
 ROOT_URLCONF = 'zyra.urls'
 
@@ -297,6 +302,9 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
+# Destino de ``python manage.py collectstatic`` (la imagen Docker lo ejecuta al construirse).
+# Con DEBUG apagado, WhiteNoise sirve de aquí los estáticos comprimidos y con huella en el nombre.
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Ficheros subidos por los usuarios (escudos y fotos de jugador): nunca en static/, que es
 # solo para los ficheros del código. Se guardan en MEDIA_ROOT (carpeta media/, fuera de git)
@@ -313,6 +321,9 @@ STORAGES = {
     'default': {'BACKEND': MEDIA_STORAGE},
     'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'},
 }
+if not DEBUG:
+    # Nombre con huella (style.3f9a1c.css) + compresión: caché de un año sin servir versiones viejas.
+    STORAGES['staticfiles'] = {'BACKEND': 'core.storage.TolerantManifestStaticFilesStorage'}
 if MEDIA_STORAGE.startswith('storages.backends.s3'):
     STORAGES['default']['OPTIONS'] = {
         'bucket_name': config('AWS_STORAGE_BUCKET_NAME'),
@@ -362,11 +373,13 @@ REKOGNITION_BLOCKED_LABELS = config(
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Email (informes de convocatoria). Se envían desde join.zyra@gmail.com por
-# Gmail. La contraseña de aplicación NUNCA va en el código: se define en la
+# Email (informes de convocatoria). Por defecto se envían desde join.zyra@gmail.com por
+# Gmail; con dominio propio se cambian ZYRA_SENDER, EMAIL_HOST, EMAIL_HOST_USER y
+# DEFAULT_FROM_EMAIL por entorno. La contraseña NUNCA va en el código: se define en la
 # variable de entorno EMAIL_HOST_PASSWORD (o en .env). Mientras no exista, los
 # correos se muestran en la consola en lugar de enviarse.
-ZYRA_SENDER = 'join.zyra@gmail.com'
+# ZYRA_SENDER es el remitente de la plataforma; el contacto que ven los usuarios es CONTACT_EMAIL.
+ZYRA_SENDER = config('ZYRA_SENDER', default='join.zyra@gmail.com')
 EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
 EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default=ZYRA_SENDER)

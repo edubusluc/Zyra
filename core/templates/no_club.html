@@ -10,7 +10,7 @@
         {% if suspended_clubs %}
         <h1>{% translate "Club suspendido" %}</h1>
         {% for club in suspended_clubs %}
-        <p class="text-muted">{% blocktranslate trimmed with club=club.name %}El club {{ club }} está suspendido por incumplir los términos y condiciones de Zyra. Si crees que es un error, escribe a join.zyra@gmail.com.{% endblocktranslate %}</p>
+        <p class="text-muted">{% blocktranslate trimmed with club=club.name contact=contact_email %}El club {{ club }} está suspendido por incumplir los términos y condiciones de Zyra. Si crees que es un error, escribe a {{ contact }}.{% endblocktranslate %}</p>
         {% endfor %}
         {% else %}
         <p class="text-muted">{% translate "Todavía no perteneces a ningún club. Pide a un capitán que te añada como miembro, o registra un club nuevo." %}</p>

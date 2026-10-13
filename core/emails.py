@@ -1,5 +1,5 @@
 """
-Correos que se envían desde join.zyra@gmail.com.
+Correos que se envían desde el remitente de Zyra (``ZYRA_SENDER``, con el contacto ``CONTACT_EMAIL`` en el pie).
 
 Todos comparten el mismo diseño: el contenido de cada correo va dentro de
 ``emails/layout.html``, que añade el pie corporativo con el logo de Zyra y los
@@ -54,7 +54,7 @@ class ZyraEmail(EmailMultiAlternatives):
 
 def build_email(subject, text, html_content, to, reply_to=None):
     """Monta un correo de Zyra con el pie corporativo en texto plano y en HTML."""
-    contact = settings.ZYRA_SENDER
+    contact = settings.CONTACT_EMAIL
     footer = "\n\n--\n%s\n%s\n" % (
         _("Zyra · Gestión de equipos de pádel"),
         _("Contacto: %(contact)s") % {"contact": contact},

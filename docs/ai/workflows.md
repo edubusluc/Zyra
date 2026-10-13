@@ -114,7 +114,10 @@ Los `.po` y `.mo` de `locale/en/LC_MESSAGES/` están en git. Los msgid son el te
 
 ## Despliegue
 
-- Hosting de producción sin decidir; no hay workflow de despliegue de la app. [V]
+- Servidor aún sin comprar. Todo está listo para un VPS único con Docker Compose (`db`, `web`, `scheduler`, `caddy`): `Dockerfile`, `docker-compose.yml`, `Caddyfile`, `deploy/deploy.sh`, `deploy/backup.sh` y `.github/workflows/deploy.yml`. Guía paso a paso: `docs/despliegue.md`. [V]
+- `.github/workflows/deploy.yml`: en PR construye la imagen y comprueba Chromium y `check --deploy`; en `main` publica la imagen en GHCR (`sha-<commit>`); el despliegue por SSH solo corre con la variable de repositorio `DEPLOY_ENABLED=true`.
+- Estáticos: WhiteNoise + `core/storage.py` (manifiesto con hash, tolerante a referencias rotas de `static/vendor/`) solo con `DJANGO_DEBUG=False`; `collectstatic` se ejecuta al construir la imagen. Las fotos (`media/`) las sirve Caddy.
+- Las migraciones las lanza `deploy.sh` (no el arranque del contenedor, porque web y scheduler arrancan a la vez).
 - Lista de variables y cómo generar claves: `.env.example`. Comprobación: `python manage.py check --deploy`.
 - Pasos por versión (pip, `migrate`, comandos de relleno): secciones «Desplegar esta versión» de `Readme.md`.
 - La web de documentación se publica sola en GitHub Pages en cada push a `main` (`.github/workflows/docs.yml`).
