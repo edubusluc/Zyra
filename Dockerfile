@@ -15,7 +15,19 @@ RUN pip install --no-cache-dir --only-binary :all: --require-hashes -r requireme
  && rm -rf /var/lib/apt/lists/*
 
 # 2) Código y estáticos (se sirven con WhiteNoise, con el hash en el nombre).
-COPY . .
+COPY manage.py ./
+COPY zyra ./zyra
+COPY locale ./locale
+COPY static ./static
+COPY backoffice ./backoffice
+COPY call ./call
+COPY callLog ./callLog
+COPY core ./core
+COPY data_analyse ./data_analyse
+COPY match ./match
+COPY penalty ./penalty
+COPY players ./players
+COPY team ./team
 # Claves desechables generadas aquí mismo: collectstatic las exige pero no las usa, y no quedan en la imagen.
 RUN DJANGO_DEBUG=False \
     DJANGO_SECRET_KEY="$(python -c 'import secrets; print(secrets.token_urlsafe(64))')" \
