@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 13/10/2026 · Equipos: interruptor del grupo
+
+- «Mostrar solo equipos de mi grupo» (Equipos) es ahora un interruptor propio (`.z-toggle`) con los colores de Zyra, en vez de una casilla desencajada
+
 ## 13/10/2026 · «Completar equipo» una sola vez y edición desde el back-office
 
 - Listado de equipos: casilla «Mostrar solo equipos de mi grupo», marcada por defecto; el capitán puede desmarcarla para ver todos los equipos del club
