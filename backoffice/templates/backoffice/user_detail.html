@@ -67,9 +67,9 @@
         {% csrf_token %}
         <label class="visually-hidden" for="imp-reason">{% translate "Motivo" %}</label>
         <input class="form-control w-auto flex-grow-1" id="imp-reason" name="reason" required minlength="5" maxlength="300" placeholder="{% translate 'Motivo (queda en la auditoría)' %}">
-        <button class="btn btn-primary btn-sm"><i class="fa-solid fa-eye" aria-hidden="true"></i> {% translate "Entrar como este usuario (solo lectura)" %}</button>
+        <button class="btn btn-primary btn-sm"><i class="fa-solid fa-eye" aria-hidden="true"></i> {% translate "Entrar como este usuario (con edición)" %}</button>
     </form>
-    <p class="text-muted small mt-1 mb-0">{% translate "Ves Zyra como la ve esta persona durante 30 minutos como máximo. No se puede cambiar nada y no cuenta como actividad suya." %}</p>
+    <p class="text-muted small mt-1 mb-0">{% translate "Usas Zyra como esta persona durante 30 minutos como máximo y puedes crear y corregir datos; cada cambio queda anotado a tu nombre. No se puede tocar su cuenta (email, contraseña), abandonar o borrar el club ni ver la clave de SNP." %}</p>
     {% endif %}
 </section>
 
