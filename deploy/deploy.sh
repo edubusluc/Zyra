@@ -7,7 +7,7 @@ TAG="${1:?uso: deploy.sh <sha>}"
 export ZYRA_IMAGE="ghcr.io/edubusluc/zyra:sha-${TAG#sha-}"
 
 docker compose pull web scheduler
-docker compose up -d db
+docker compose up -d --wait db                  # espera a que PostgreSQL esté sano
 ./backup.sh                                        # copia ANTES de tocar nada
 docker compose run --rm web python manage.py check --deploy --fail-level ERROR
 docker compose run --rm web python manage.py migrate --noinput

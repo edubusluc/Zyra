@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 13/10/2026 · Despliegue: espera a la base de datos
+
+- `deploy.sh` espera a que PostgreSQL esté sana antes de la copia de seguridad (el primer despliegue fallaba porque la base de datos aún se estaba creando)
+
 ## 13/10/2026 · Configuración de despliegue con Docker
 
 - Imagen Docker única (web y lanzador), `docker-compose.yml` con PostgreSQL, Caddy (https y fotos), scripts de despliegue y copia de seguridad, y workflow `deploy.yml` que publica la imagen en GHCR; el despliegue por SSH queda apagado hasta tener servidor (PR #134)
