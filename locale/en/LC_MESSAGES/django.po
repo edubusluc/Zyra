@@ -2289,15 +2289,16 @@ msgstr "No SNP account has errors."
 
 #: backoffice/templates/backoffice/impersonation_readonly.html:3
 #: backoffice/templates/backoffice/impersonation_readonly.html:6
-msgid "Modo solo lectura"
-msgstr "Read-only mode"
+msgid "Acción no permitida"
+msgstr "Action not allowed"
 
 #: backoffice/templates/backoffice/impersonation_readonly.html:7
 msgid ""
-"Estás viendo Zyra como otro usuario y en este modo no se puede cambiar nada."
+"Estás dentro de «Entrar como» y esta acción (cuenta, email o contraseña, "
+"abandonar el club, claves de SNP) no se puede hacer como otro usuario."
 msgstr ""
-"You are viewing Zyra as another user and nothing can be changed in this "
-"mode."
+"You are inside “Log in as” and this action (account, email or password, "
+"leaving the club, SNP credentials) cannot be done as another user."
 
 #: backoffice/templates/backoffice/impersonation_readonly.html:10
 msgid "Salir de «Entrar como»"
@@ -3697,16 +3698,20 @@ msgid "Motivo (queda en la auditoría)"
 msgstr "Reason (kept in the audit log)"
 
 #: backoffice/templates/backoffice/user_detail.html:70
-msgid "Entrar como este usuario (solo lectura)"
-msgstr "Log in as this user (read-only)"
+msgid "Entrar como este usuario (con edición)"
+msgstr "Log in as this user (with editing)"
 
 #: backoffice/templates/backoffice/user_detail.html:72
 msgid ""
-"Ves Zyra como la ve esta persona durante 30 minutos como máximo. No se puede"
-" cambiar nada y no cuenta como actividad suya."
+"Usas Zyra como esta persona durante 30 minutos como máximo y puedes crear y "
+"corregir datos; cada cambio queda anotado a tu nombre. No se puede tocar su "
+"cuenta (email, contraseña), abandonar o borrar el club ni ver la clave de "
+"SNP."
 msgstr ""
-"You see Zyra as this person sees it for 30 minutes at most. Nothing can be "
-"changed and it does not count as their activity."
+"You use Zyra as this person for 30 minutes at most and can create and fix "
+"data; every change is recorded under your name. Their account (email, "
+"password), leaving or deleting the club and the SNP password stay off "
+"limits."
 
 #: backoffice/templates/backoffice/user_detail.html:78
 msgid "Últimos correos"
@@ -5667,9 +5672,11 @@ msgstr "Continue with Google"
 #: core/templates/includes/impersonation_banner.html:5
 #, python-format
 msgid ""
-"Estás viendo Zyra como <strong>%(username)s</strong> (solo lectura, queda "
-"anotado)."
+"Editando como <strong>%(username)s</strong>: lo que cambies queda anotado a "
+"tu nombre."
 msgstr ""
+"Editing as <strong>%(username)s</strong>: whatever you change is recorded "
+"under your name."
 "You are viewing Zyra as <strong>%(username)s</strong> (read-only, recorded)."
 
 #: core/templates/includes/impersonation_banner.html:8
