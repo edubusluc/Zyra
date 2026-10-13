@@ -126,3 +126,53 @@ class MatchLifecycleTests(TestCase):
         self.assertEqual(confirm.status_code, 200)
         self.client.post(reverse("delete_match", args=[match.public_id]))
         self.assertFalse(Match.objects.filter(pk=match.pk).exists())
+
+
+class NoDrawTiebreakTests(TestCase):
+    """Reto y Play Off no admiten empate: el 6-6 lo decide el ganador del partido 3."""
+
+    def setUp(self):
+        self.user = User.objects.create_user("capi", email="capi@example.com", password="pass-12345")
+        self.club = create_club("Club A", "Sevilla", self.user)
+        self.rival = Team.objects.create(club=self.club, name="Rival", location="X", in_group=True)
+        self.client.login(username="capi", password="pass-12345")
+
+    def _closed_match(self, match_type, winners):
+        """Cierra un acta con los ganadores dados por partido (3,3,2,2,2 puntos): 'L' local o 'V' visitante."""
+        match = Match.objects.create(club=self.club, local=self.club.own_team, visiting=self.rival,
+                                     start_date=datetime.date(2026, 10, 10), match_type=match_type)
+        for n, side in enumerate(winners, start=1):
+            game = Game(match=match, n_game=n, score=3 if n <= 2 else 2,
+                        winner="Local" if side == "L" else "Visitante")
+            game.save()
+            game.results.create(set1_local=6 if side == "L" else 2, set1_visiting=2 if side == "L" else 6,
+                                set2_local=6 if side == "L" else 2, set2_visiting=2 if side == "L" else 6,
+                                result="Victoria Local" if side == "L" else "Victoria Visitante")
+        self.client.post(reverse("close_match", args=[match.public_id]))
+        match.refresh_from_db()
+        return match
+
+    def test_playoff_tie_decided_by_game_three(self):
+        # Local gana 1, 2 (6 puntos) y visitante 3, 4, 5 (6 puntos): 6-6, gana el visitante (partido 3)
+        match = self._closed_match(Match.PLAYOFF, "LLVVV")
+        self.assertEqual(match.result_points, "6/6")
+        self.assertEqual(match.result, "Victoria Visitante")
+
+    def test_reto_tie_won_by_local_in_game_three(self):
+        # Local gana 1, 3 y 4 = 3+2+2 = 7; usamos 6-6: local gana 3,4,5 y visitante 1, 2
+        match = self._closed_match(Match.RETO, "VVLLL")
+        self.assertEqual(match.result_points, "6/6")
+        self.assertEqual(match.result, "Victoria Local")
+
+    def test_other_types_keep_the_draw(self):
+        match = self._closed_match(Match.ENFRENTAMIENTO, "LLVVV")
+        self.assertEqual(match.result, "EMPATE")
+
+    def test_tiebreak_stat_counts_for_and_against(self):
+        from data_analyse.views import calculate_tiebreak_stats
+        self._closed_match(Match.PLAYOFF, "VVLLL")  # a favor
+        self._closed_match(Match.RETO, "LLVVV")     # en contra
+        self._closed_match(Match.ENFRENTAMIENTO, "LLVVV")  # no cuenta
+        team = self.club.own_team
+        self.assertEqual(calculate_tiebreak_stats(None, team), {"total": 2, "for": 1, "against": 1})
+        self.assertEqual(calculate_tiebreak_stats(None, team, Match.RETO), {"total": 1, "for": 0, "against": 1})

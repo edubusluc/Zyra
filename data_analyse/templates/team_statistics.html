@@ -92,6 +92,23 @@
         </dl>
       </section>
 
+      {% if tiebreaks.total %}
+      <section aria-labelledby="tiebreak-title" class="st-section mt-4">
+        <h2 class="st-section-title" id="tiebreak-title">{% translate "Eliminatorias 6-6" %}</h2>
+        <p class="st-card-note mt-0 mb-3">{% translate "Reto y Play Off que quedaron 6-6: no hay empate y decide el ganador del partido 3." %}</p>
+        <dl class="st-facts">
+          <div class="st-fact st-fact--gold">
+            <dt>{% translate "A favor" %}</dt>
+            <dd>{{ tiebreaks.for }}</dd>
+          </div>
+          <div class="st-fact">
+            <dt>{% translate "En contra" %}</dt>
+            <dd>{{ tiebreaks.against }}</dd>
+          </div>
+        </dl>
+      </section>
+      {% endif %}
+
       <section aria-labelledby="top-title" class="st-section mt-4">
         <h2 class="st-section-title" id="top-title">{% translate "Top 5" %}{% if selected_season %} · {{ selected_season }}{% endif %}</h2>
         <p class="st-card-note mt-0 mb-3">{% translate "Solo jugadores que siguen en el equipo." %}</p>

@@ -161,6 +161,22 @@ def calculate_match_statistics(season, team, match_type=None):
             pct(total_won), pct(drawn_matches), pct(lost_matches))
 
 
+def calculate_tiebreak_stats(season, team, match_type=None):
+    """
+    Eliminatorias de Reto y Play Off que quedaron 6-6 y decidió el partido 3:
+    ``{'total', 'for', 'against'}`` según si el equipo ganó o perdió ese partido.
+    """
+    matches = _by_type(Match.objects.filter(club=team.club, draft_mode=False, match_type__in=Match.NO_DRAW_TYPES,
+                                            result_points="6/6"), match_type)
+    if season is not None:
+        matches = matches.filter(season=season)
+    in_favor = (matches.filter(local=team, result=LOCAL_WIN).count()
+                + matches.filter(visiting=team, result=VISITING_WIN).count())
+    against = (matches.filter(local=team, result=VISITING_WIN).count()
+               + matches.filter(visiting=team, result=LOCAL_WIN).count())
+    return {'total': in_favor + against, 'for': in_favor, 'against': against}
+
+
 def _games_totals(season, team, own_local, match_type=None):
     """
     Juegos ganados y perdidos por el equipo jugando en casa (own_local) o fuera,
@@ -285,6 +301,7 @@ def team_statistics(request):
     visiting_games_won, visiting_games_lost, percentage_visiting_games_won, percentage_visiting_games_lost = calculate_visiting_game_statistics(selected_season or None, team, match_type)
 
     dicc_line_chart = calculate_matches_won_per_year(team, match_type)
+    tiebreaks = calculate_tiebreak_stats(selected_season or None, team, match_type)
 
     # Top 5 (jugadores actuales del equipo), respetando la temporada y el tipo de partido elegidos
     squad = list(Player.objects.filter(club=request.club, in_team=True))
@@ -297,6 +314,7 @@ def team_statistics(request):
         'total_matches': total_matches,
         'won_matches': total_won,
         'drawn_matches': drawn_matches,
+        'tiebreaks': tiebreaks,
         'lost_matches': lost_matches,
         'local_games_won': local_games_won,
         'local_games_lost': local_games_lost,

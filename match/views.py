@@ -635,9 +635,17 @@ def calculate_points(games):
     
     return points_local, points_visiting
 
-def determine_match_result(points_local, points_visiting):
-    """'Victoria Local', 'Victoria Visitante' o 'EMPATE' (valor de Match.POSSIBLE_RESULT) según los puntos."""
-    return outcomes.from_points(points_local, points_visiting)
+def determine_match_result(points_local, points_visiting, match=None, games=()):
+    """'Victoria Local', 'Victoria Visitante' o 'EMPATE' (valor de Match.POSSIBLE_RESULT) según los puntos.
+
+    En Reto y Play Off no hay empate: si queda 6-6 gana quien ganó el partido 3.
+    """
+    result = outcomes.from_points(points_local, points_visiting)
+    if result == outcomes.DRAW and match is not None and match.no_draw:
+        tiebreak = next((g for g in games if g.n_game == Match.TIEBREAK_GAME and g.winner in outcomes.WINNERS), None)
+        if tiebreak is not None:
+            return outcomes.tiebreak_result(tiebreak.winner)
+    return result
    
 def valid_close_match(games,match):
     """Comprueba si se puede cerrar el acta: el enfrentamiento sigue abierto y tiene al menos
@@ -682,7 +690,7 @@ def close_match(request, match_id):
             game.save()
 
         # Determinar el resultado del partido
-        match.result = determine_match_result(points_local, points_visiting)
+        match.result = determine_match_result(points_local, points_visiting, match, games)
         match.result_points = f"{points_local}/{points_visiting}"
         match.draft_mode = False
         match.save()

@@ -10126,3 +10126,19 @@ msgid ""
 msgstr ""
 "Complete team is not available: we have notified the administrator to review"
 " the process."
+
+#: data_analyse/templates/team_statistics.html
+msgid "Eliminatorias 6-6"
+msgstr "6-6 ties"
+
+#: data_analyse/templates/team_statistics.html
+msgid "Reto y Play Off que quedaron 6-6: no hay empate y decide el ganador del partido 3."
+msgstr "Challenge and Play Off ties that ended 6-6: there are no draws and the winner of game 3 decides."
+
+#: data_analyse/templates/team_statistics.html
+msgid "A favor"
+msgstr "In favour"
+
+#: data_analyse/templates/team_statistics.html
+msgid "En contra"
+msgstr "Against"

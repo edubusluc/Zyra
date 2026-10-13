@@ -92,7 +92,7 @@ Orden obligatorio del ciclo (`match/views.py`) [V], cubierto por `match/tests_fl
    gana los dos primeros; con 1-1 el tercero es obligatorio (set normal o super tie-break a 10 con
    2 de diferencia). Al guardar fija `Game.winner`.
 6. **Cerrar acta** (`close_match`, POST): acta abierta y 5 partidos con resultado. Suma puntos,
-   fija `Match.result` (valores canónicos en `match/outcomes.py`; `EMPATE` posible, p. ej. 6/6) y `result_points`,
+   fija `Match.result` (valores canónicos en `match/outcomes.py`; `EMPATE` posible, p. ej. 6/6, salvo en Reto y Play Off: ahí el 6-6 lo decide el ganador del partido 3, `determine_match_result`) y `result_points`,
    y cierra `Game.draft_mode`. Siempre son 5 partidos: no se contempla un acta con menos. Todo en una transacción.
 7. **Reabrir acta** (`reopen_match`, POST, capitán): vuelve a borrador, resultado `NONE`, anota `reopened_at/by`.
 
