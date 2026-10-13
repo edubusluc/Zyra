@@ -5,7 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 13/10/2026 · Datos de partida en producción
 
-- La imagen incluye `populate_db.py` y `populate/` para cargar los datos de partida en el servidor (PR #137); el script guarda ahora los puntos como `7/5` y verifica el email del capitán en allauth (para «Entrar con Google»)
+- La imagen incluye `populate_db.py` y `populate/` para cargar los datos de partida en el servidor (PR #137); `populate_db.py` guarda ahora los puntos como `7/5`, verifica el email del capitán en allauth (para «Entrar con Google»), conserva las cuentas que ya existan (solo exige que no haya clubes) y crea el capitán como usuario normal (`--superusuario` para el comportamiento anterior)
 - `backup.sh` ya no crea el volumen de fotos si no existe (lo creaba root y la web no podía escribir)
 
 ## 13/10/2026 · Despliegue: llave SSH más tolerante

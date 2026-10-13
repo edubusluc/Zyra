@@ -38,13 +38,14 @@ repositorio `DEPLOY_ENABLED` vale `true`.
 
 ## Cargar los datos de partida en el servidor
 
-La imagen incluye `populate_db.py` y `populate/` (escudos). Solo se usa sobre una base de datos sin clubes
-ni usuarios (el script se niega si ya hay datos). En el servidor, en `/opt/zyra`:
+La imagen incluye `populate_db.py` y `populate/` (escudos). Solo se carga si todavía no hay ningún club; las
+cuentas que ya existan (por ejemplo tu superusuario) se conservan. En el servidor, en `/opt/zyra`:
 
 ```bash
 export ZYRA_IMAGE=ghcr.io/edubusluc/zyra:sha-$(cat .current)
-docker compose exec web python populate_db.py --usuario TU_USUARIO --email TU_EMAIL --sin-contrasena
+docker compose exec web python populate_db.py --usuario USUARIO_CAPITAN --email EMAIL_CAPITAN --sin-contrasena
 ```
 
-`--sin-contrasena` deja al capitán entrar con Google (o tras `changepassword`). Si ya creaste un superusuario
-con `createsuperuser`, bórralo antes (o cárgalo con ese mismo usuario tras eliminarlo) para que la base esté vacía.
+Crea el club LOS GLADIADORES y una cuenta de capitán normal (`--superusuario` si además quieres que sea
+staff). `--sin-contrasena` la deja entrar con Google (o tras `changepassword`). El usuario y el email deben
+ser nuevos: el script se niega si ya existen.
