@@ -5,6 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 13/10/2026 · «Completar equipo» una sola vez y edición desde el back-office
 
+- Listado de equipos: casilla «Mostrar solo equipos de mi grupo», marcada por defecto; el capitán puede desmarcarla para ver todos los equipos del club
 - «Completar equipo» desde la web solo se ofrece una vez (en el registro o tras registrar la cuenta SNP). Si falla se muestran los errores habituales (idioma, nombre del equipo, cuenta); tras 3 fallos se oculta, se avisa al capitán de que se ha notificado al administrador y se avisa al personal por email y auditoría. Después solo lo lanzan el back-office o el proceso automático
 - Back-office: el personal puede editar equipos, jugadores y la cuenta SNP de un club desde su ficha (con las mismas reglas que el capitán) y reponer la opción de la web; todo queda en la auditoría con el valor anterior y el nuevo. «Entrar como» sigue siendo de solo lectura
 

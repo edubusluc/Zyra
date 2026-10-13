@@ -21,6 +21,13 @@
         <form method="get" class="z-search" id="search-form" role="search">
             <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
             <input type="search" name="search" id="team-search" placeholder="{% translate 'Buscar por nombre o ubicación...' %}" value="{{ search }}" aria-label="{% translate 'Buscar equipo' %}">
+            {% if is_club_admin %}
+            <input type="hidden" name="group" value="0">
+            <label class="form-check form-check-inline mb-0 ms-2 small">
+                <input type="checkbox" name="group" value="1" class="form-check-input" id="team-only-group" {% if only_group %}checked{% endif %}>
+                <span class="form-check-label">{% translate "Mostrar solo equipos de mi grupo" %}</span>
+            </label>
+            {% endif %}
         </form>
         {% if search %}
         <span class="text-muted small">{% blocktranslate trimmed count n=teams.paginator.count %}{{ n }} resultado{% plural %}{{ n }} resultados{% endblocktranslate %}</span>
@@ -93,12 +100,18 @@
 </div>
 
 {% with extra='&search='|add:search %}
+{% if is_club_admin and not only_group %}{% with extra=extra|add:'&group=0' %}
 {% include 'includes/pagination.html' with page=teams extra=extra %}
+{% endwith %}{% else %}
+{% include 'includes/pagination.html' with page=teams extra=extra %}
+{% endif %}
 {% endwith %}
 
 <script>
     const searchInput = document.getElementById('team-search');
     const searchForm = document.getElementById('search-form');
+    const onlyGroup = document.getElementById('team-only-group');
+    if (onlyGroup) onlyGroup.addEventListener('change', function () { searchForm.submit(); });
     let debounceTimer;
     searchInput.addEventListener('input', function () {
         clearTimeout(debounceTimer);

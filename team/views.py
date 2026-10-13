@@ -19,13 +19,19 @@ from core import similarity
 def list_team(request):
     """
     Lista paginada de equipos del club con búsqueda por nombre o localidad. Requiere
-    pertenecer al club y solo GET. Los capitanes ven también los equipos fuera del grupo.
+    pertenecer al club y solo GET. Por defecto solo se listan los equipos del grupo; los
+    capitanes pueden desmarcar «solo mi grupo» (``group=0``) para ver también los de fuera.
     """
     search = request.GET.get('search', '').strip()
 
     # Los capitanes ven también los equipos fuera de grupo
+    # Casilla «solo mi grupo»: marcada por defecto; el formulario envía group=0 al desmarcarla
+    only_group = request.GET.get('group', '1') != '0'
     teams = Team.objects.filter(club=request.club)
-    teams = teams.order_by('-in_group', 'name') if request.membership.is_admin else teams.filter(in_group=True).order_by('name')
+    if request.membership.is_admin and not only_group:
+        teams = teams.order_by('-in_group', 'name')
+    else:
+        teams = teams.filter(in_group=True).order_by('name')
 
     if search:
         teams = teams.filter(
@@ -42,7 +48,8 @@ def list_team(request):
     except EmptyPage:
         teams = paginator.page(paginator.num_pages)
 
-    return render(request, "list_teams.html", {"teams": teams, "search": search})
+    return render(request, "list_teams.html",
+                  {"teams": teams, "search": search, "only_group": only_group})
 
 @club_admin_required
 @require_http_methods(["GET", "POST"])

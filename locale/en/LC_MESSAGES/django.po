@@ -9912,6 +9912,10 @@ msgstr "Team's current crest"
 msgid "Dejar vacío si no deseas cambiar la foto."
 msgstr "Leave empty if you don't want to change the photo."
 
+#: team/templates/list_teams.html:12 team/templates/manage_teams.html:8
+msgid "Mostrar solo equipos de mi grupo"
+msgstr "Show only teams in my group"
+
 #: team/templates/edit_team.html:67
 msgid "Tu equipo siempre está en tu grupo: no se puede dar de baja."
 msgstr "Your team is always in your group: it cannot be removed."
