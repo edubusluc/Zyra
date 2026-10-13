@@ -1,24 +1,30 @@
 {% extends 'base.html' %}
 {% load static i18n %}
+{% block page_title %}{% translate "Gestionar equipos" %} · {% endblock %}
 
 {% block content %}
 <div class="z-page-head">
     <div>
-        <a href="{% url 'list_teams' %}" class="z-eyebrow"><i class="fa-solid fa-arrow-left me-1"></i> {% translate "Equipos" %}</a>
+        <a href="{% url 'list_teams' %}" class="z-eyebrow"><i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i> {% translate "Equipos" %}</a>
         <h1>{% translate "Gestionar equipos" %}</h1>
     </div>
 </div>
 
 <p class="text-muted">{% translate "Cambia la categoría, la nacionalidad, la división o el grupo de los equipos de tu grupo y guarda todos los cambios de una vez. Marca equipos para aplicarles el mismo valor a todos." %}</p>
-<p class="form-text">{% translate "Tu equipo no aparece aquí: sus datos se cambian desde su ficha. Si sacas un equipo del grupo, dejará de verse en esta lista al guardar." %}</p>
+<p class="form-text">{% translate "Tu equipo no aparece aquí: sus datos se cambian desde su ficha y nunca puede darse de baja del grupo. Los equipos dados de baja siguen en la lista (filtro «Fuera de grupo»): activa «En tu grupo» y guarda para darlos de alta otra vez." %}</p>
 
 <form method="post" data-teams>
     {% csrf_token %}
     <div class="z-selector-tools">
         <div class="z-search">
-            <i class="fa-solid fa-magnifying-glass"></i>
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
             <input type="search" placeholder="{% translate 'Buscar equipo...' %}" data-teams-search aria-label="{% translate 'Buscar equipo' %}">
         </div>
+        <select class="form-select form-select-sm w-auto" data-teams-filter aria-label="{% translate 'Mostrar equipos' %}">
+            <option value="">{% translate "Todos los equipos" %}</option>
+            <option value="1">{% translate "En tu grupo" %}</option>
+            <option value="0">{% translate "Fuera de grupo" %}</option>
+        </select>
     </div>
 
     <div class="z-bulk" data-teams-bulk>
@@ -48,13 +54,13 @@
 
     <div class="z-team-rows">
         {% for row in rows %}{% with t=row.team %}
-        <div class="z-team-row{% if row.error %} has-error{% endif %}" data-name="{{ t.name }}">
+        <div class="z-team-row{% if row.error %} has-error{% endif %}" data-name="{{ t.name }}" data-group="{% if t.in_group %}1{% else %}0{% endif %}">
             <div class="z-team-row-head">
                 <input type="checkbox" class="form-check-input" data-teams-pick aria-label="{% blocktranslate with name=t.name %}Marcar {{ name }}{% endblocktranslate %}">
                 <img src="{% if t.photo %}{{ t.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="" class="table-logo">
                 <span class="z-pick-body">
                     <span class="z-pick-name">{{ t.name }}</span>
-                    <span class="z-pick-meta">{{ t.location }}</span>
+                    <span class="z-pick-meta">{{ t.location }}{% if not t.in_group %} · {% translate "Fuera de grupo" %}{% endif %}</span>
                 </span>
             </div>
             <div class="z-team-row-fields">
@@ -78,7 +84,7 @@
             {% if row.error %}<div class="text-danger small">{{ row.error }}</div>{% endif %}
         </div>
         {% endwith %}{% empty %}
-        <div class="z-empty">{% translate "Todavía no hay equipos en tu grupo." %}</div>
+        <div class="z-empty">{% translate "Todavía no hay equipos rivales." %}</div>
         {% endfor %}
         <p class="z-empty" data-teams-empty hidden>{% translate "Ningún equipo coincide con la búsqueda." %}</p>
     </div>
@@ -110,6 +116,7 @@
   const group = (r) => r.querySelector('[data-field="in_group"]');
   const search = root.querySelector('[data-teams-search]');
   const all = root.querySelector('[data-teams-all]');
+  const filter = root.querySelector('[data-teams-filter]');
 
   function refresh() {
     const q = norm(search.value);
@@ -119,7 +126,7 @@
       const changed = fields(r).some((el) => value(el) !== el.dataset.initial);
       changes += changed;
       r.classList.toggle('is-changed', changed);
-      r.hidden = !!q && !norm(r.dataset.name).includes(q);
+      r.hidden = (!!q && !norm(r.dataset.name).includes(q)) || (filter.value !== '' && r.dataset.group !== filter.value);
       if (!r.hidden) { visible++; visibleMarked += pick(r).checked; }
       marked += pick(r).checked;
     });
@@ -135,6 +142,7 @@
   }
 
   search.addEventListener('input', refresh);
+  filter.addEventListener('change', refresh);
   all.addEventListener('change', function () {
     rows.forEach((r) => { if (!r.hidden) pick(r).checked = all.checked; });
     refresh();

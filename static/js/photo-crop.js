@@ -244,7 +244,7 @@
     let el = form.querySelector('[data-photo-preview]');
     if (!el) {
       el = document.createElement('img');
-      el.alt = '';
+      el.alt = gettext('Vista previa de la foto');
       el.className = 'z-avatar z-avatar--sm';
       el.dataset.photoPreview = '';
       el.hidden = true;

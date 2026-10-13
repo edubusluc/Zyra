@@ -5,6 +5,10 @@ Páginas legales (privacidad, términos, cookies). El texto está solo en españ
 que vale legalmente. Los datos del responsable salen de LEGAL_OWNER_* y CONTACT_EMAIL.
 {% endcomment %}
 
+{# Solo hay versión en español: sin hreflang y la canónica nunca lleva ?lang= #}
+{% block canonical %}{{ default_language_url }}{% endblock %}
+{% block alternates %}{% endblock %}
+
 {% block content %}
 <article class="z-panel z-legal" lang="es">
     {% block legal %}{% endblock %}

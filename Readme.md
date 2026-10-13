@@ -286,23 +286,27 @@ Con la cuenta SNP registrada, la lista de jugadores muestra a los administradore
 botón **Completar equipo**: lee los jugadores del equipo en SNP y abre una ventana con
 los que se van a añadir y los que no porque ya están en Zyra (mismo criterio de nombres
 que la actualización de puntos). Al confirmar solo se crean jugadores nuevos; los
-existentes nunca se modifican. Desde la web se puede hacer una vez al mes. El staff lo
+existentes nunca se modifican. Desde la web solo se puede hacer una vez (al registrarse o tras registrar la cuenta SNP); si
+falla 3 veces la opción se oculta, se avisa al capitán de que se ha notificado al administrador y al
+staff por email y auditoría. Después lo lanza el staff (o el proceso automático). El staff lo
 lanza sin ese límite desde el back-office (proceso `complete_snp_team`, pide el id `TEA...` del
 equipo, que aparece en la ficha del club) o con
-`python manage.py complete_snp_team <id del equipo> [--dry-run]`.
+`python manage.py complete_snp_team <id del equipo> [--dry-run]`. Para traer solo los equipos del grupo
+(sin jugadores) está el proceso `add_group_teams`, con el mismo id: `python manage.py add_group_teams <id del equipo> [--dry-run]`.
 
 ### Desplegar esta versión
 
 ```bash
-pip install -r requirements.txt   # instala django-allauth
+pip install -r requirements.txt   # versiones y hashes fijados (se editan en requirements.in)
 python manage.py migrate          # crea core_invitation y las tablas de allauth
 ```
 
 ## Puntos SNP automáticos
 
 Cada administrador guarda en *Menú → Cuenta SNP* el usuario y la contraseña de SNP
-(snpgalaxy.com) de su capitán y, solo si la cuenta tiene varios equipos, el número del
-equipo. Usuario y contraseña se guardan cifrados (`core/crypto.py`). El proceso
+(snpgalaxy.com) de su capitán (también se puede hacer al registrar el club). Si la cuenta
+tiene varios equipos, se usa el que se llama como el equipo del club. Usuario y contraseña
+se guardan cifrados (`core/crypto.py`). El proceso
 programado `update_snp_scores` recorre los clubes, entra
 en SNP con su cuenta, navega Series Nacionales → el país de la nacionalidad del equipo (España si no tiene) → Mis equipos → el equipo, lee
 los puntos de los jugadores (`players/scraper.py`) y actualiza los «Puntos SNP». Los
@@ -336,6 +340,12 @@ Cómo se reparte el trabajo y cómo se evita que SNP nos bloquee:
 
 A ese ritmo cada club tarda de media unos 30–40 s. 1.000 clubes son unas 10 horas y
 10.000, unos 4 o 5 días, dentro de la semana del ciclo.
+
+«Completar equipo» desde la web (Jugadores) se puede usar una sola vez (y se oculta tras 3 fallos) y, para no saturar
+SNP, como mucho tres búsquedas al día con cinco minutos entre una y otra. Los clubes marcados
+como «sin límites» en el back-office (ficha del club) no tienen esos límites. La búsqueda se encola y
+la procesa el trabajo `process_snp_imports` (lo lanza `run_scheduler`). En *Servicios* del back-office
+se puede apagar SNP si cae; si falla 3 veces seguidas se avisa por email a `ADMINS`/`SERVER_EMAIL`.
 
 Define una clave de cifrado propia en `.env` (obligatoria en producción; si la cambias,
 las cuentas guardadas dejan de poder leerse y hay que volver a introducirlas):
@@ -394,6 +404,24 @@ clubes, listado y ficha de clubes y de usuarios. Solo entra el personal de Zyra
 enlace *Back-office* en el menú de usuario. La consola SQL y la
 importación de datos son solo para superusuarios.
 
+*Back-office → Emails sin confirmar* lista las cuentas con el email sin verificar y cuándo se
+registraron. «Avisar» envía el enlace de confirmación y un plazo (`UNVERIFIED_ACCOUNT_DEADLINE_DAYS`,
+7 días por defecto); vencido el plazo se puede eliminar la cuenta (escribiendo su usuario). No hay
+borrado automático. Los avisos y eliminaciones quedan registrados con fecha y autor.
+
+Además de eso, el back-office incluye: buscador global (nombre, email o id público), **registro de
+auditoría** (cada acción del personal, dos años), **registro de correos** (seis meses), seguimiento
+comercial de clubes (etapa, contacto, notas, tareas y correo al capitán con plantillas), avisos por
+correo al personal cuando algo falla y resumen semanal, embudo de clubes, errores 500 y peticiones
+lentas, y **«Entrar como»** un usuario: ves Zyra como él (solo lectura, 30 minutos, con motivo
+obligatorio, anotado en la auditoría y sin contar como actividad suya; no vale para cuentas de personal).
+
+Consola SQL: además de la lista de bloqueos, se recomienda un rol de PostgreSQL de solo lectura.
+`python manage.py sql_readonly_role` imprime el SQL (con `--apply` lo ejecuta); luego define
+`SQL_CONSOLE_DATABASE_URL` con ese rol. Sin ella la consola usa la base normal. El correo sale por
+`EMAIL_TRANSPORT_BACKEND` (por defecto lo que ponga `EMAIL_BACKEND` en el entorno) envuelto en
+`backoffice.email_backend.LoggingEmailBackend`, que apunta cada envío en el registro de correos.
+
 Para darte acceso a ti mismo:
 
 ```bash
@@ -403,9 +431,10 @@ python manage.py shell -c "from django.contrib.auth.models import User; User.obj
 ```
 
 El Django admin queda como herramienta de emergencia **solo para superusuarios**. Su
-ruta es `/admin/` por defecto; en producción conviene cambiarla por una menos obvia
-con la variable de entorno `ADMIN_URL` (por ejemplo `ADMIN_URL=gestion-9f3k/`, con la
-barra final).
+ruta es `/admin/` solo en desarrollo; en producción `ADMIN_URL` es **obligatoria** (por ejemplo
+`ADMIN_URL=gestion-9f3k-larga/`) y no puede ser `admin/`. En producción ejecuta además una vez
+`python manage.py createcachetable` (frenos de abuso en caché compartida) y, si hay proxy,
+`DJANGO_TRUSTED_PROXY_COUNT` indica cuántos proxies fiables hay delante.
 
 ### Carga y usuarios conectados
 
@@ -441,6 +470,8 @@ Con cron, por ejemplo (ajusta las rutas):
 
 ```
 * * * * * cd /ruta/a/Zyra && /ruta/a/python manage.py run_scheduler >> /tmp/zyra-scheduler.log 2>&1
+# alternativa: un servicio que no termina
+#   python manage.py run_scheduler --loop
 ```
 
 **Ejecutar ahora** no espera al lanzador: arranca el proceso en el momento y abre su

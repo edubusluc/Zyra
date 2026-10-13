@@ -115,7 +115,7 @@ class InvitationTests(TestCase):
         expired = self.invite(expires_at=timezone.now() - datetime.timedelta(minutes=1))
         active = self.invite()
         self.client.login(username="capitan", password="pass-12345")
-        listed = [inv for inv, _ in self.client.get(reverse("club_members")).context["invitations"]]
+        listed = [inv for inv, *_ in self.client.get(reverse("club_members")).context["invitations"]]
         self.assertEqual(listed, [active])
         self.assertNotIn(used, listed)
         self.assertNotIn(expired, listed)
@@ -129,7 +129,7 @@ class InvitationTests(TestCase):
         self.assertContains(first, "1 de 2")
         second = self.client.get(reverse("club_members"), {"page": 2})
         self.assertEqual(len(second.context["invitations"]), 2)
-        listed = {inv for page in (first, second) for inv, _ in page.context["invitations"]}
+        listed = {inv for page in (first, second) for inv, *_ in page.context["invitations"]}
         self.assertEqual(len(listed), 12)
         # Una página fuera de rango muestra la última en lugar de fallar.
         self.assertEqual(self.client.get(reverse("club_members"), {"page": 99}).context["invitations_page"].number, 2)
@@ -143,13 +143,13 @@ class InvitationTests(TestCase):
         response = self.client.get(reverse("club_members"), {"q": "ANA"})
         self.assertEqual(response.context["invitations_page"].paginator.count, 11)
         self.assertContains(response, "?page=2&amp;q=ANA#invitaciones")
-        listed = [inv for inv, _ in self.client.get(reverse("club_members"), {"q": "ANA", "page": 2}).context["invitations"]]
+        listed = [inv for inv, *_ in self.client.get(reverse("club_members"), {"q": "ANA", "page": 2}).context["invitations"]]
         self.assertEqual(len(listed), 1)
         self.assertTrue(listed[0].email.startswith("ana"))
 
         response = self.client.get(reverse("club_members"), {"q": "luis"})
-        self.assertEqual([inv.email for inv, _ in response.context["invitations"]], ["luis@example.com"])
-        self.assertNotIn(link, [inv for inv, _ in response.context["invitations"]])
+        self.assertEqual([inv.email for inv, *_ in response.context["invitations"]], ["luis@example.com"])
+        self.assertNotIn(link, [inv for inv, *_ in response.context["invitations"]])
 
         response = self.client.get(reverse("club_members"), {"q": "nadie"})
         self.assertEqual(response.context["invitations"], [])
@@ -194,8 +194,9 @@ class InvitationTests(TestCase):
         self.assertEqual(invitation.used_by, user)
         self.assertEqual(int(self.client.session["_auth_user_id"]), user.pk)
 
-        self.assertEqual(len(mail.outbox), 1)
-        email = mail.outbox[0]
+        # Bienvenida + enlace para confirmar el email.
+        self.assertEqual(len(mail.outbox), 2)
+        email = next(m for m in mail.outbox if "Te has unido" in m.subject)
         self.assertEqual(email.to, ["nuevo@example.com"])
         self.assertIn("Te has unido a Club A", email.subject)
         self.assertIn("Usuario: nuevo", email.body)
@@ -357,8 +358,9 @@ class LoginAndWelcomeTests(TestCase):
             "name": "Nuevo Club", "location": "Cádiz", "gender": "M", "country": "ES", "division": "future", **SIGNUP,
         })
         self.assertTrue(Club.objects.filter(name="Nuevo Club").exists())
-        self.assertEqual(len(mail.outbox), 1)
-        email = mail.outbox[0]
+        # Bienvenida + enlace para confirmar el email.
+        self.assertEqual(len(mail.outbox), 2)
+        email = next(m for m in mail.outbox if "Has creado" in m.subject)
         self.assertIn("Has creado Nuevo Club", email.subject)
         self.assertIn("Equipo creado: Nuevo Club", email.body)
         self.assertIn("Capitanes: Nuevo Jugador", email.body)
@@ -418,7 +420,15 @@ class GoogleSameAccountTests(TestCase):
             complete_social_login(request, sociallogin)
         return request
 
+    def test_google_login_with_unverified_local_email_invalidates_password(self):
+        """Si el email local nunca se confirmó, quien entra con Google no hereda la contraseña de otro."""
+        self.google_login("capitan@example.com")
+        self.admin.refresh_from_db()
+        self.assertFalse(self.admin.has_usable_password())
+
     def test_google_login_uses_existing_account_and_keeps_password(self):
+        from allauth.account.models import EmailAddress
+        EmailAddress.objects.create(user=self.admin, email="capitan@example.com", verified=True, primary=True)
         request = self.google_login("capitan@example.com")
         self.assertEqual(request.user, self.admin)
         self.assertEqual(User.objects.count(), 1)

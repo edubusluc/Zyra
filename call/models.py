@@ -14,7 +14,7 @@ class Call(PublicIdModel):
     """
     PUBLIC_ID_PREFIX = "CAL"
     match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name='match')
-    players = models.ManyToManyField(Player, related_name='players')
+    players = models.ManyToManyField(Player, related_name='calls')
     draft_mode = models.BooleanField(default=True)
 
     class Meta:
@@ -22,7 +22,7 @@ class Call(PublicIdModel):
 
     def __str__(self):
         """«Local vs Visitante»."""
-        return f"{self.match.local.name} vs {self.match.visiting.name}"
+        return f"{self.match.local_name} vs {self.match.visiting_name}"
 
 
 class ReportDelivery(PublicIdModel):

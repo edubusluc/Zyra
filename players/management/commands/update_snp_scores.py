@@ -31,6 +31,7 @@ from django.utils import timezone
 
 from backoffice.cron import Cron
 from backoffice.jobs import SCHEDULER_TIME_ZONE
+from players import snp_service
 from players.models import SnpAccount
 from players.scraper import SnpBrowser
 from players.snp import sync_club
@@ -87,6 +88,9 @@ class Command(BaseCommand):
         las procesa por lotes con pausas y para si SNP nos limita o fallan demasiados clubes
         seguidos. Lanza CommandError si se ha parado o no se ha actualizado ningún club.
         """
+        if not snp_service.is_enabled():
+            self.stdout.write("El servicio de SNP está apagado desde el back-office (Servicios): no se actualiza nada.")
+            return
         accounts = SnpAccount.objects.select_related("club")
         if club:
             accounts = accounts.filter(Q(club__slug=club) | Q(club__name__iexact=club))

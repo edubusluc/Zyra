@@ -10,6 +10,7 @@
 @font-face { font-family: 'Archivo'; font-weight: 700; font-display: swap; src: url('zyra/fonts/Archivo-Bold.ttf') format('truetype'); }
 @font-face { font-family: 'Archivo'; font-weight: 800; font-display: swap; src: url('zyra/fonts/Archivo-ExtraBold.ttf') format('truetype'); }
 @font-face { font-family: 'Syncopate'; font-weight: 700; font-display: swap; src: url('zyra/fonts/Syncopate-Bold.ttf') format('truetype'); }
+@font-face { font-family: 'Syncopate'; font-style: italic; font-weight: 700; font-display: swap; src: url('zyra/fonts/Syncopate-BoldItalic.ttf') format('truetype'); }
 
 :root,
 [data-bs-theme="dark"] {
@@ -81,6 +82,29 @@ html {
     html { scroll-behavior: smooth; }
 }
 
+/* Paso suave entre páginas (js/page-transitions.js). Solo opacidad sobre el contenido:
+   nada de View Transitions (desvían los clics mientras dura la animación) ni transform
+   o filter (mueven la zona clicable o recolocan lo fijo). La opacidad no cambia dónde
+   cae un clic, así que pulsar rápido durante el fundido sigue funcionando. Cabecera y
+   barra inferior no se animan.
+   Al salir, el contenido se desvanece; al entrar, cada bloque aparece en cascada con
+   un pequeño retardo, lo que da sensación de continuidad entre una página y la otra.
+   "backwards" y no "both": al acabar, ningún bloque se queda como contexto de apilamiento. */
+@keyframes z-page-in { from { opacity: 0; } }
+@media (prefers-reduced-motion: no-preference) {
+    .main-content { transition: opacity .2s cubic-bezier(.4, 0, .2, 1); }
+    /* Bloques: los hijos de main o, si la página lo envuelve todo en un único div, los de ese div. */
+    .main-content > :not(script, style, link, div:only-of-type),
+    .main-content > div:only-of-type > :not(script, style, link) {
+        animation: z-page-in .42s cubic-bezier(.25, .1, .25, 1) var(--z-in-delay, 0s) backwards;
+    }
+    :is(.main-content, .main-content > div:only-of-type) > :nth-child(2 of :not(script, style, link)) { --z-in-delay: .05s; }
+    :is(.main-content, .main-content > div:only-of-type) > :nth-child(3 of :not(script, style, link)) { --z-in-delay: .1s; }
+    :is(.main-content, .main-content > div:only-of-type) > :nth-child(4 of :not(script, style, link)) { --z-in-delay: .15s; }
+    :is(.main-content, .main-content > div:only-of-type) > :nth-child(n+5 of :not(script, style, link)) { --z-in-delay: .2s; }
+    body.z-leaving .main-content { opacity: .12; }
+}
+
 body {
     min-height: 100vh;
     min-height: 100dvh;
@@ -107,6 +131,10 @@ body {
 
 a { color: var(--z-lime); text-decoration: none; }
 a:hover { color: var(--z-lime-hover); }
+/* Enlaces dentro de un texto: subrayados, para no distinguirlos solo por el color (WCAG 1.4.1) */
+.z-auth-foot a, .z-legal p a, .z-legal li a, main p a:not([class]) { text-decoration: underline; text-underline-offset: .2em; }
+/* btn-outline-danger de Bootstrap (#dc3545) no llega a 4.5:1 sobre el fondo oscuro */
+.btn-outline-danger { --bs-btn-color: var(--z-danger); --bs-btn-border-color: var(--z-danger); }
 
 img { border-radius: var(--z-radius-sm); }
 
@@ -134,6 +162,8 @@ h2, .z-subtitle {
 }
 
 h3 { font-size: 1rem; font-weight: 700; }
+/* Encabezado con el tamaño de .h4/.h5 de Bootstrap pero sin las mayúsculas de h2 */
+.z-heading-plain { text-transform: none; letter-spacing: normal; font-weight: 700; }
 
 .text-muted, .text-secondary, .form-text { color: var(--z-muted) !important; }
 .text-dark { color: var(--z-text) !important; }
@@ -142,6 +172,14 @@ h3 { font-size: 1rem; font-weight: 700; }
 .text-lime { color: var(--z-lime) !important; }
 
 :focus-visible { outline: 2px solid var(--z-lime); outline-offset: 2px; }
+/* Enlace «Saltar al contenido»: oculto hasta que se llega a él con el teclado */
+.z-skip-link {
+    position: absolute; left: 12px; top: -100px; z-index: 2000;
+    padding: 10px 16px; border-radius: var(--z-radius-sm);
+    background: var(--z-lime); color: var(--z-ink); font-weight: 700;
+}
+.z-skip-link:focus { top: 12px; color: var(--z-ink); }
+main:focus { outline: none; }
 
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { transition: none !important; animation: none !important; }
@@ -532,6 +570,7 @@ input[type="search"],
 input[type="tel"],
 input[type="url"],
 select,
+.z-select-trigger,
 textarea {
     display: block;
     width: 100%;
@@ -546,16 +585,16 @@ textarea {
     transition: border-color .2s var(--z-ease), box-shadow .2s var(--z-ease), background-color .2s var(--z-ease);
 }
 .form-control:hover:not(:focus):not(:disabled), .form-select:hover:not(:focus):not(:disabled),
-input:hover:not(:focus):not(:disabled), select:hover:not(:focus):not(:disabled), textarea:hover:not(:focus):not(:disabled) { border-color: var(--z-border-strong); }
+input:hover:not(:focus):not(:disabled), select:hover:not(:focus):not(:disabled), .z-select-trigger:hover:not(:focus):not(:disabled), textarea:hover:not(:focus):not(:disabled) { border-color: var(--z-border-strong); }
 .form-control::placeholder, input::placeholder, textarea::placeholder { color: #8C8C8C; }
-.form-control:focus, .form-select:focus, input:focus, select:focus, textarea:focus {
+.form-control:focus, .form-select:focus, input:focus, select:focus, .z-select-trigger:focus-visible, textarea:focus {
     color: #FFFFFF;
     background-color: var(--z-surface-2);
     border-color: var(--z-lime);
     outline: none;
     box-shadow: 0 0 0 4px rgba(var(--z-lime-rgb), .16);
 }
-select, .form-select {
+select, .form-select, .z-select-trigger {
     padding-right: 2.5rem;
     appearance: none;
     -webkit-appearance: none;
@@ -974,11 +1013,50 @@ a.z-card:hover, .z-card--link:hover {
     border: 1px solid rgba(var(--z-lime-rgb), .25);
     border-radius: 12px;
 }
-.z-feature h2 { margin: 0 0 6px; font-size: .9rem; text-transform: uppercase; letter-spacing: .05em; }
+.z-feature h3 { margin: 0 0 6px; font-size: .9rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
 .z-feature p { margin: 0; font-size: .9rem; color: var(--z-muted); }
+
+.z-hero-subtitle {
+    display: block;
+    margin-top: 14px;
+    font-family: var(--z-body);
+    font-style: normal;
+    font-size: clamp(1rem, 2.6vw, 1.35rem);
+    letter-spacing: .08em;
+    -webkit-text-fill-color: var(--z-text);
+    color: var(--z-text);
+}
+/* Secciones de la portada bajo el primer pantallazo: qué hace, cómo funciona y preguntas */
+.z-landing-section { width: 100%; max-width: 1000px; margin: 56px auto 0; }
+.z-landing-section .z-features { margin-top: 0; }
+.z-landing-title { margin: 0 0 18px; font-size: 1.15rem; font-weight: 800; text-align: center; }
+.z-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 0; padding: 0; list-style: none; counter-reset: z-step; }
+.z-steps li { padding: 22px; color: var(--z-muted); counter-increment: z-step; }
+.z-steps li::before {
+    content: counter(z-step);
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    margin-bottom: 12px;
+    font-weight: 800;
+    color: var(--z-ink);
+    background: var(--z-lime);
+    border-radius: 50%;
+}
+.z-steps strong { display: block; margin-bottom: 4px; color: var(--z-text); }
+.z-faq { display: grid; gap: 10px; }
+.z-faq details { padding: 16px 20px; }
+.z-faq summary { cursor: pointer; }
+.z-faq summary h3 { display: inline; margin: 0; font-size: 1rem; font-weight: 700; }
+.z-faq details p { margin: 10px 0 0; color: var(--z-muted); }
+.z-landing-cta { margin-top: 28px; }
+.z-back-to-top { align-items: center; gap: 8px; }
 
 @media (max-width: 767.98px) {
     .z-hero-art img { width: 120px; }
+    .z-steps { grid-template-columns: 1fr; }
+    .z-landing-section { margin-top: 40px; }
     .z-hero-actions { width: 100%; }
     .z-hero-actions .btn { flex: 1 1 100%; }
     .z-features { grid-template-columns: 1fr; }
@@ -1043,7 +1121,7 @@ a.z-card:hover, .z-card--link:hover {
 /* Tarjeta de equipo */
 .z-team { display: flex; align-items: center; gap: 16px; padding: 16px; }
 .z-team img { width: 72px; height: 72px; flex-shrink: 0; object-fit: cover; border-radius: 14px; background: var(--z-surface-2); }
-.z-team h3 { margin: 0 0 2px; font-size: 1rem; font-weight: 800; text-transform: uppercase; }
+.z-team h2 { margin: 0 0 2px; font-size: 1rem; font-weight: 800; text-transform: uppercase; letter-spacing: normal; }
 .z-team p { margin: 0 0 8px; font-size: .85rem; color: var(--z-muted); }
 
 /* Tarjeta de enfrentamiento */
@@ -1544,7 +1622,14 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 
 @media (max-width: 900px) {
   .st-grid { grid-template-columns: 1fr; }
-  .st-board { grid-template-columns: 1fr; }
+  .st-board { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 575.98px) {
+  .st-board { padding: 18px; }
+  .st-record { justify-content: space-between; gap: 8px; }
+  .st-record-sep { font-size: 1.5rem; }
+  .st-score-cap { font-size: .62rem; letter-spacing: .04em; }
+  .st-fact { min-width: 0; padding: 12px; }
 }
 
 /* Ajustes de maquetación */
@@ -1594,71 +1679,89 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 .z-summary .is-loss b { color: var(--z-danger); }
 .z-summary .is-draw b { color: #A3A3A3; }
 
-.z-fixtures { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+/* Listado de partidos en tarjetas: fecha, tipo y estado arriba; un equipo por fila con
+   sus puntos a la derecha (el ganador resaltado); abajo lugar, convocados y «Ver partido».
+   El borde izquierdo y la etiqueta de estado llevan el color del resultado (lima victoria,
+   rojo derrota, gris empate, ámbar próximo). Toda la tarjeta es pulsable. */
+.z-fixtures { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr)); gap: 14px; margin: 0; padding: 0; list-style: none; }
 .z-fixture {
     position: relative;
-    display: grid;
-    grid-template-columns: 64px minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 16px;
-    padding: 10px 16px 10px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+    padding: 14px 16px;
     background: var(--z-surface);
     border: 1px solid var(--z-border);
     border-left: 4px solid var(--z-border-strong);
-    border-radius: 14px;
+    border-radius: var(--z-radius);
     box-shadow: var(--z-edge);
     transition: border-color .2s var(--z-ease), background-color .2s var(--z-ease);
 }
-.z-fixture:hover { background: var(--z-surface-2); border-color: var(--z-border-strong); }
+.z-fixture:hover { background-color: var(--z-surface-2); border-color: var(--z-border-strong); }
+.z-fixture:focus-within { outline: 2px solid var(--z-lime); outline-offset: 2px; }
 .z-fixture.is-win { border-left-color: var(--z-lime); }
 .z-fixture.is-loss { border-left-color: var(--z-danger); }
-.z-fixture.is-draw { border-left-color: #8A8A8A; }
-.z-fixture-main { display: grid; gap: 4px; min-width: 0; }
-.z-fixture-meta { margin: 0; font-size: .72rem; font-weight: 700; letter-spacing: .04em; color: var(--z-muted); text-align: center; }
-.z-fixture-date { display: grid; justify-items: center; padding: 6px 0; line-height: 1.05; background: var(--z-surface-2); border-radius: 10px; }
-.z-fixture-date b { font-size: 1.3rem; font-weight: 800; color: #FFFFFF; }
-.z-fixture-date span { font-size: .7rem; font-weight: 800; letter-spacing: .06em; color: var(--z-lime); }
-.z-fixture-date small { font-size: .65rem; color: var(--z-muted); }
-.z-fixture-teams { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 14px; min-width: 0; }
-.z-fixture-team { display: flex; align-items: center; gap: 10px; min-width: 0; font-weight: 700; color: var(--z-muted); }
-.z-fixture-team span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.z-fixture-team--away { justify-content: flex-end; text-align: right; }
-.z-fixture-team.is-own { color: #FFFFFF; }
-.z-fixture-team img { width: 34px; height: 34px; flex-shrink: 0; object-fit: cover; border-radius: 50%; background: var(--z-surface-2); border: 1px solid var(--z-border-strong); }
-.z-fixture-score {
-    min-width: 76px;
-    padding: 6px 12px;
-    font-size: 1.05rem;
-    font-weight: 800;
-    text-align: center;
-    color: var(--z-text);
-    background: var(--z-surface-3);
-    border-radius: 999px;
-    font-variant-numeric: tabular-nums;
-}
-.z-fixture.is-win .z-fixture-score { color: var(--z-ink); background: var(--z-lime); }
-.z-fixture-score:hover { color: inherit; }
-.z-fixture-status { display: flex; align-items: center; gap: 8px; }
-.z-fixture-status .z-edit { z-index: 2; }
+.z-fixture.is-draw { border-left-color: #A3A3A3; }
+.z-fixture.is-pending { border-left-color: var(--z-warning); }
+
+.z-fixture-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; min-width: 0; }
+.z-fixture-date { display: inline-flex; align-items: center; gap: 7px; margin-right: auto; font-size: .88rem; font-weight: 700; color: var(--z-text); white-space: nowrap; }
+.z-fixture-date i { color: var(--z-lime); font-size: .85em; }
+.z-fixture-type { padding: 3px 9px; font-size: .68rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--z-text); border: 1px solid var(--z-border-strong); border-radius: 999px; white-space: nowrap; }
+.z-fixture-state { padding: 3px 10px; font-size: .72rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; border-radius: 999px; white-space: nowrap; }
+.z-fixture-state.is-win { color: var(--z-ink); background: var(--z-lime); }
+.z-fixture-state.is-loss { color: var(--z-ink); background: var(--z-danger); }
+.z-fixture-state.is-draw { color: var(--z-ink); background: #C9CBC4; }
+.z-fixture-state.is-upcoming { color: var(--z-ink); background: var(--z-warning); }
+.z-fixture-state.is-open { color: var(--z-warning); border: 1px solid var(--z-warning); }
+
+.z-fixture-teams { display: grid; gap: 8px; }
+.z-fixture-team { display: flex; align-items: center; gap: 12px; min-width: 0; font-size: 1rem; font-weight: 700; color: #D9DBD3; }
+.z-fixture-team img { width: 36px; height: 36px; flex-shrink: 0; object-fit: cover; border-radius: 50%; background: var(--z-surface-2); border: 1px solid var(--z-border-strong); }
+.z-fixture-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.z-fixture-team.is-own .z-fixture-name { color: #FFFFFF; font-weight: 800; }
+.z-fixture-team.is-own img { border-color: var(--z-lime); }
+.z-fixture-points { min-width: 2ch; font-size: 1.5rem; font-weight: 800; line-height: 1; text-align: right; color: #FFFFFF; font-variant-numeric: tabular-nums; }
+.z-fixture-team.is-loser { color: var(--z-muted); }
+.z-fixture-team.is-loser .z-fixture-points { color: var(--z-muted); }
+.z-fixture.is-win .z-fixture-team.is-winner .z-fixture-points { color: var(--z-lime); }
+.z-fixture.is-loss .z-fixture-team.is-winner .z-fixture-points { color: var(--z-danger); }
+
+.z-fixture-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; min-height: 32px; margin-top: auto; padding-top: 10px; border-top: 1px solid var(--z-border); font-size: .82rem; color: var(--z-muted); }
+.z-fixture-meta { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
+.z-fixture-meta i { font-size: .9em; }
+.z-fixture-place { display: block; flex: 0 1 auto; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.z-fixture-place i { margin-right: 6px; }
+.z-fixture-actions { display: inline-flex; align-items: center; gap: 12px; margin-left: auto; }
+.z-fixture-open { display: inline-flex; align-items: center; gap: 6px; font-weight: 800; color: var(--z-lime); text-decoration: none; white-space: nowrap; }
+.z-fixture-open:hover { color: var(--z-lime-hover); }
+.z-fixture-open:focus-visible { outline: none; }
+.z-fixture-open i { font-size: .75em; }
+.z-fixture .z-fixture-delete { position: relative; top: auto; right: auto; }
 .z-wl { color: var(--z-text); background: var(--z-surface-3); }
+.z-wl--d { color: var(--z-ink); background: #C9CBC4; }
+
+/* Buscador y filtro por rival encima del listado */
+.z-match-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 0 0 14px; }
+.z-match-filters .z-search { flex: 1 1 260px; max-width: 420px; }
+.z-match-filters .z-picker { flex: 0 1 280px; min-width: 200px; }
+.z-match-filters-count { font-size: .85rem; color: var(--z-muted); }
 
 @media (max-width: 767.98px) {
-    .z-summary { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
-    .z-summary > div { flex-direction: column; align-items: center; gap: 4px; padding: 10px 4px; }
+    .z-summary { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
+    .z-summary > div { flex-direction: column; align-items: center; gap: 4px; min-width: 0; padding: 10px 0; }
     .z-summary b { font-size: 1.2rem; }
-    .z-summary span { font-size: .6rem; }
+    /* El texto escala con la pantalla para que "Pendientes" quepa en su panel incluso a 320 px */
+    .z-summary span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; font-size: clamp(.47rem, 2.3vw, .6rem); letter-spacing: 0; }
     .z-select-compact { min-width: 0; width: 100%; }
     .z-page-head .z-actions { width: 100%; }
     .z-page-head .z-actions form { flex: 1; }
-    .z-fixture { grid-template-columns: 48px minmax(0, 1fr) auto; gap: 10px; padding: 8px 10px 8px 8px; }
-    .z-fixture-date b { font-size: 1.05rem; }
-    .z-fixture-teams { grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto; gap: 4px 10px; }
-    .z-fixture-team, .z-fixture-team--away { grid-column: 1; justify-content: flex-start; text-align: left; font-size: .85rem; }
-    .z-fixture-team--away { flex-direction: row-reverse; }
-    .z-fixture-team img { width: 22px; height: 22px; }
-    .z-fixture-score { grid-column: 2; grid-row: 1 / span 2; min-width: 58px; padding: 6px 8px; font-size: .9rem; }
-    .z-fixture-status .z-badge { display: none; }
-    .z-fixture-meta { text-align: left; }
+    /* Móvil: una tarjeta por fila a todo el ancho, con algo menos de relleno. */
+    .z-fixtures { gap: 10px; }
+    .z-fixture { gap: 10px; padding: 12px 14px; }
+    .z-fixture-team img { width: 32px; height: 32px; }
+    .z-match-filters .z-search, .z-match-filters .z-picker { flex: 1 1 100%; max-width: none; }
 }
 
 /* ---------- Selector con búsqueda (player-picker.js) ---------- */
@@ -1895,7 +1998,9 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
     background: var(--z-surface); border: 1px solid var(--z-border); border-radius: 14px; cursor: pointer;
     transition: border-color .12s, opacity .12s;
 }
-.z-roster:not(.is-on) { opacity: .6; }
+/* Fuera del equipo: se atenúa la foto, no el texto (el texto debe mantener contraste 4.5:1) */
+.z-roster:not(.is-on) .z-avatar { opacity: .5; }
+.z-roster:not(.is-on) .z-pick-name { color: var(--z-muted); }
 .z-roster:not(.is-on) .z-avatar { border-color: var(--z-border-strong); }
 .z-roster.is-changed { border-color: var(--z-warning); opacity: 1; }
 .z-roster .form-switch .form-check-input { width: 2.6em; height: 1.4em; margin: 0; cursor: pointer; }
@@ -1940,17 +2045,6 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
     .z-result-team { font-size: .78rem; }
 }
 
-/* ---------- Partidos: columna de estado de ancho fijo (marcador alineado) ---------- */
-.z-fixture { grid-template-columns: 64px minmax(0, 1fr) 150px; }
-.z-fixture-status { justify-content: flex-end; }
-.z-fixture-teams { grid-template-columns: minmax(0, 1fr) 84px minmax(0, 1fr); }
-.z-fixture-score { width: 84px; min-width: 0; }
-@media (max-width: 767.98px) {
-    .z-fixture { grid-template-columns: 48px minmax(0, 1fr) 72px; }
-    .z-fixture-teams { grid-template-columns: minmax(0, 1fr) 64px; }
-    .z-fixture-score { width: 64px; }
-}
-
 /* ---------- Convocatoria en el detalle del partido ---------- */
 .z-call { margin-top: 8px; padding: 18px; background: var(--z-surface); border: 1px solid var(--z-border); border-radius: var(--z-radius); }
 .z-call-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-bottom: 16px; color: var(--z-muted); }
@@ -1992,7 +2086,6 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
     .st-table--wrap td { padding: 0; border: 0; }
     .st-table--wrap td:nth-child(3) { grid-column: 1 / -1; color: var(--st-muted); }
 }
-.z-fixture-status .z-edit { top: auto; right: auto; }
 
 /* Separador "o" y botón de Google en las pantallas de acceso */
 .z-or { display: flex; align-items: center; gap: 12px; margin: 18px 0; color: var(--z-muted); font-size: .85rem; }
@@ -2019,17 +2112,17 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
     }
     .st-tabs.z-segmented .btn i { margin: 0 !important; font-size: .95rem; }
 
-    .st-seasons {
-        flex-wrap: nowrap;
-        margin-left: -16px;
-        margin-right: -16px;
-        padding: 0 16px 4px;
-        overflow-x: auto;
-        scrollbar-width: none;
-        -webkit-overflow-scrolling: touch;
-    }
-    .st-seasons::-webkit-scrollbar { display: none; }
-    .st-seasons > li { flex-shrink: 0; }
+    /* Temporadas y tipo de partido: sin scroll lateral, los chips reparten el ancho
+       y si no caben pasan a la línea siguiente (nunca se salen de la pantalla). */
+    .st-seasons { gap: 6px; }
+    .st-seasons > li { flex: 1 1 auto; min-width: 0; }
+    .st-seasons .st-chip { display: block; overflow: hidden; padding: 7px 10px; font-size: .8rem; text-align: center; text-overflow: ellipsis; }
+    /* Temporadas: Todas + tres últimas en una sola fila de columnas iguales; si hay una
+       temporada antigua elegida (quinto chip), baja a una segunda fila. */
+    .st-season-filter .st-seasons { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }
+    .st-season-filter .st-seasons:has(> li:nth-child(5)) { grid-auto-flow: row; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .st-season-filter .st-chip { padding: 7px 4px; font-size: clamp(.7rem, 3.4vw, .85rem); }
+    .st-seasons > .st-filter-label { flex-basis: 100%; margin: 0 0 2px; font-size: .7rem; }
     .st-chip { white-space: nowrap; }
 }
 
@@ -2041,7 +2134,7 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
     .z-table-stack tbody tr:last-child { border-bottom: 0; }
     .table.z-table-stack > :not(caption) > * > * { padding: 4px 0; border: 0; text-align: left; }
     .z-table-stack td:first-child { font-weight: 700; color: #FFFFFF; }
-    .z-table-stack input, .z-table-stack select { max-width: none !important; }
+    .z-table-stack input, .z-table-stack select, .z-table-stack .z-select-trigger { max-width: none !important; }
     .z-table-stack form.d-flex > * { flex: 1 1 100%; }
     .z-table-stack .text-end .btn { width: 100%; }
 }
@@ -2123,7 +2216,7 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 /* Estadísticas: selector de tipo dentro de "Competitivos" */
 .st-type-filter .st-seasons:has(+ .st-type-select) { margin-bottom: 10px; }
 .st-type-select { margin: 0 0 20px; }
-.st-type-select select { width: auto; min-width: 220px; max-width: 100%; padding-top: 7px; padding-bottom: 7px; font-size: .85rem; font-weight: 700; border-radius: 999px; }
+.st-type-select select, .st-type-select .z-select-trigger { width: auto; min-width: 220px; max-width: 100%; padding-top: 7px; padding-bottom: 7px; font-size: .85rem; font-weight: 700; border-radius: 999px; }
 
 /* Estadísticas: selector de temporadas (Todas + tres últimas + buscador) */
 .st-season-filter { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; margin: 0 0 20px; }
@@ -2211,7 +2304,7 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 .z-crop-zoom .form-range::-moz-range-thumb { background-color: var(--z-lime); }
 .z-crop-zoom .form-range:focus::-webkit-slider-thumb { box-shadow: 0 0 0 1px var(--z-bg), 0 0 0 .25rem rgba(var(--z-lime-rgb), .25); }
 
-/* ---------- Avisos de error en popup (core/templates/includes/messages_modal.html) ---------- */
+/* ---------- Avisos de error en popup (core/templates/includes/messages_popup.html) ---------- */
 .z-messages-modal .modal-header { gap: 12px; justify-content: flex-start; }
 .z-messages-modal .modal-header .btn-close { margin-left: auto; }
 .z-messages-icon {
@@ -2265,4 +2358,136 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 @media (max-width: 575.98px) {
     .z-onboarding-steps li { flex-wrap: wrap; }
     .z-onboarding-steps .btn { width: 100%; }
+}
+
+/* Por número de partido, sets, récords y ranking SNP (estadísticas) */
+.st-numbers { margin: 4px 0 0; padding: 0; list-style: none; }
+.st-number .st-split-head small { font-weight: 500; color: var(--st-muted); }
+.st-number--best .st-split-head b { color: var(--z-lime); }
+.st-number--worst .st-meter span { background: var(--st-loss); }
+.st-numbers-note { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--st-line); }
+.st-facts--sets { grid-template-columns: repeat(auto-fit, minmax(min(100%, 92px), 1fr)); gap: 10px; margin-top: 16px; }
+.st-facts--sets .st-fact { padding: 12px; }
+.st-facts--sets dt { font-size: .74rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--st-muted); }
+.st-facts--sets dd { margin: 4px 0 0; font-size: 1.35rem; font-weight: 800; color: #FFFFFF; font-variant-numeric: tabular-nums; }
+.st-facts--sets .st-fact-name { font-size: 1rem; overflow-wrap: anywhere; }
+.st-sets-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 0 22px; }
+.st-records { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
+.st-record-tile { display: flex; flex-direction: column; gap: 4px; min-width: 0; padding: 16px; background: var(--st-card); border: 1px solid var(--st-line); border-radius: 16px; }
+.st-record-tile b { font-size: 1.35rem; font-weight: 800; line-height: 1.2; color: #FFFFFF; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.st-record-tile b.st-up { color: var(--st-win); }
+.st-record-tile b.st-down { color: var(--st-loss); }
+.st-record-tile small { font-size: .85rem; color: var(--st-muted); }
+.st-record-tile small a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.st-snp-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; margin-top: 16px; align-items: start; }
+.st-snp-table td:first-child { width: 2.5em; color: var(--st-muted); }
+@media (max-width: 760px) { .st-snp-layout { grid-template-columns: minmax(0, 1fr); } }
+
+/* Alineación sugerida en el formulario de parejas */
+.z-lineup-suggest { display: flex; flex-direction: column; gap: 8px; margin: 0 0 18px; padding: 14px 16px; background: rgba(var(--z-lime-rgb), .06); border: 1px solid rgba(var(--z-lime-rgb), .3); border-radius: 14px; }
+.z-lineup-suggest-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.z-lineup-suggest [data-suggest-info] { color: var(--z-muted); }
+.st-snp-table th[scope="row"], .st-snp-table thead th:nth-child(2) { text-align: left; }
+.st-snp-table th[scope="row"] { white-space: normal; overflow-wrap: anywhere; }
+@media (max-width: 575.98px) {
+  .st-snp-table th, .st-snp-table td { padding: 10px 6px; font-size: .9rem; }
+  .st-facts--sets dd { font-size: 1.1rem; }
+}
+
+/* Avisos con icono (p. ej. la posición en pista tras traer jugadores de SNP) */
+.z-callout { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; font-size: .9rem; color: var(--z-text); background: rgba(var(--z-lime-rgb), .08); border: 1px solid rgba(var(--z-lime-rgb), .35); border-radius: 12px; }
+.z-callout > i { margin-top: 3px; color: var(--z-lime); }
+
+/* Registro del club: elegir cómo se crea el jugador del capitán */
+.z-choice { display: grid; gap: 8px; margin: 0 0 16px; padding: 0; border: 0; }
+.z-choice-option { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; align-items: center; padding: 12px 14px; cursor: pointer; background: var(--z-surface-2); border: 1px solid var(--z-border); border-radius: 12px; }
+.z-choice-option:has(input:checked) { border-color: var(--z-lime); background: rgba(var(--z-lime-rgb), .07); }
+.z-choice-option input { accent-color: var(--z-lime); }
+.z-choice-option, .z-choice-option small { margin: 0; text-transform: none; letter-spacing: normal; }
+.z-choice-option span { font-weight: 700; color: var(--z-text); }
+.z-choice-option small { grid-column: 2; font-size: .8rem; color: var(--z-muted); }
+
+/* Espera mientras se trae el equipo de SNP tras registrar el club */
+.z-welcome-snp { text-align: center; }
+.z-welcome-spinner { margin: 8px 0 18px; color: var(--z-lime); }
+
+/* ---------- «Mi perfil» (core/templates/my_profile.html) ---------- */
+.z-account { max-width: 720px; }
+.z-account-row { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-top: 1px solid var(--z-border); }
+.z-account-row:first-of-type { border-top: 0; padding-top: 0; }
+.z-account-row > i { width: 1.25rem; text-align: center; color: var(--z-lime); }
+.z-account-body { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.z-account-label { font-size: .78rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--z-muted); }
+.z-account-value { font-weight: 600; overflow-wrap: anywhere; }
+.z-account-note { font-size: .82rem; color: var(--z-muted); }
+.z-account-row > .btn { flex-shrink: 0; }
+.z-account-form { max-width: 420px; }
+a.z-account-player { color: inherit; text-decoration: none; }
+a.z-account-player:hover { background: rgba(var(--z-lime-rgb), .14); }
+a.z-account-player .btn { flex-shrink: 0; }
+@media (max-width: 575.98px) {
+    .z-account-btn-text { display: none; }
+    .z-account-row > .btn, a.z-account-player .btn { width: 2.5rem; height: 2.5rem; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
+}
+.z-row-link { cursor: pointer; }
+
+/* ---------- Desplegable propio de los <select> (static/js/custom-select.js) ---------- */
+.z-select { display: contents; }
+/* El <select> real sigue en el DOM (fuente de verdad del formulario) pero no se ve ni se pulsa */
+select.z-select-native {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    margin: -1px !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    clip-path: inset(50%) !important;
+}
+.z-select-trigger { text-align: left; line-height: 1.5; text-transform: none; letter-spacing: normal; }
+.z-select-trigger .z-select-text { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.z-select-trigger.is-placeholder { color: var(--z-muted); }
+.z-select-trigger:disabled { opacity: .55; cursor: not-allowed; }
+.z-select.is-open > .z-select-trigger { border-color: var(--z-lime); box-shadow: 0 0 0 4px rgba(var(--z-lime-rgb), .16); }
+.z-select.is-open > .z-select-trigger { background-position: right 1rem center; }
+.z-select-list {
+    position: fixed;
+    z-index: 1060;
+    margin: 0;
+    padding: 6px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    list-style: none;
+    color: var(--z-text);
+    background: var(--z-surface-2);
+    border: 1px solid var(--z-border-strong);
+    border-radius: 14px;
+    box-shadow: var(--z-edge), var(--z-shadow-pop);
+}
+.z-select-list[hidden] { display: none; }
+.z-select-option {
+    padding: 9px 12px;
+    font-size: .95rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    overflow-wrap: anywhere;
+}
+.z-select-option.is-empty { color: var(--z-muted); }
+.z-select-option[aria-selected="true"]:not(.is-active) { color: var(--z-lime); }
+.z-select-option[aria-selected="true"]::after { content: "\2713"; float: right; margin-left: 12px; font-weight: 800; }
+.z-select-option.is-active { color: var(--z-ink); background: var(--z-lime); }
+.z-select-option.is-disabled { opacity: .4; cursor: not-allowed; }
+.z-select-option.is-disabled.is-active { color: inherit; background: none; }
+.z-select-group { padding: 8px 12px 4px; font-size: .72rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--z-muted); }
+/* Card de equipo del formulario de partido: el botón transparente cubre toda la card */
+.z-team-card .z-select-trigger {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    opacity: 0;
+    cursor: pointer;
 }

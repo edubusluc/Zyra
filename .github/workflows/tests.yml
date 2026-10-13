@@ -5,6 +5,10 @@ on:
     branches: [main]
   pull_request:
 
+# Mínimo privilegio: el token solo necesita leer el código.
+permissions:
+  contents: read
+
 jobs:
   tests:
     runs-on: ubuntu-latest
@@ -42,7 +46,14 @@ jobs:
           cache: pip
 
       - name: Instalar dependencias
-        run: pip install -r requirements.txt
+        run: pip install --only-binary ':all:' --require-hashes -r requirements.txt
+
+      - name: Vulnerabilidades conocidas en las dependencias (pip-audit)
+        if: matrix.database == 'sqlite'
+        run: |
+          pip install --only-binary ':all:' --require-hashes -r requirements-ci.txt
+          # oauthlib 3.3.1: el aviso solo se corrige en 4.0, que django-allauth aún no admite.
+          pip-audit --no-deps --disable-pip -r requirements.txt --ignore-vuln PYSEC-2026-4114
 
       - name: Las migraciones están al día con los modelos
         run: python manage.py makemigrations --check --dry-run
@@ -58,4 +69,5 @@ jobs:
           export DJANGO_SECRET_KEY="$(python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())')"
           export FIELD_ENCRYPTION_KEY="$(python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())')"
           export DJANGO_ALLOWED_HOSTS=zyra.example.com
+          export ADMIN_URL=panel-ci-largo-y-secreto/
           python manage.py check --deploy --fail-level WARNING

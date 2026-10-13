@@ -1,13 +1,15 @@
 """Rutas del back-office (espacio de nombres ``backoffice``)."""
 from django.urls import path
 
-from . import views
+from . import views, views_crm, views_edit
 
 app_name = "backoffice"
 
 urlpatterns = [
     path("", views.dashboard, name="dashboard"),
     path("load/", views.load, name="load"),
+    path("usage/", views.usage, name="usage"),
+    path("health/", views.health, name="health"),
     path("jobs/", views.job_list, name="job_list"),
     path("jobs/runs/", views.run_list, name="run_list"),
     path("jobs/runs/<pid:run_id>/", views.run_detail, name="run_detail"),
@@ -24,13 +26,40 @@ urlpatterns = [
     path("import/<pid:job_id>/preview/", views.import_preview, name="import_preview"),
     path("import/<pid:job_id>/confirm/", views.import_confirm, name="import_confirm"),
     path("import/<pid:job_id>/undo/", views.import_undo, name="import_undo"),
+    path("search/", views_crm.search, name="search"),
+    path("audit/", views_crm.audit_list, name="audit_list"),
+    path("emails/", views_crm.email_log, name="email_log"),
+    path("tasks/", views_crm.task_list, name="task_list"),
+    path("tasks/add/", views_crm.task_add, name="task_add"),
+    path("tasks/<int:task_id>/toggle/", views_crm.task_toggle, name="task_toggle"),
+    path("tasks/<int:task_id>/delete/", views_crm.task_delete, name="task_delete"),
+    path("impersonate/stop/", views_crm.impersonate_stop, name="impersonate_stop"),
+    path("users/<int:user_id>/impersonate/", views_crm.impersonate_start, name="impersonate_start"),
+    path("users/<int:user_id>/password-reset/", views_crm.user_password_reset, name="user_password_reset"),
+    path("clubs/<pid:club_id>/crm/", views_crm.club_crm_update, name="club_crm_update"),
+    path("clubs/<pid:club_id>/notes/add/", views_crm.club_note_add, name="club_note_add"),
+    path("clubs/notes/<int:note_id>/delete/", views_crm.club_note_delete, name="club_note_delete"),
+    path("clubs/<pid:club_id>/contact/", views_crm.club_contact, name="club_contact"),
+    path("clubs/<pid:club_id>/edit/", views_crm.club_edit, name="club_edit"),
+    path("teams/<pid:team_id>/edit/", views_edit.team_edit, name="team_edit"),
+    path("players/<pid:player_id>/edit/", views_edit.player_edit, name="player_edit"),
+    path("clubs/<pid:club_id>/snp-account/", views_edit.snp_account_edit, name="snp_account_edit"),
+    path("clubs/<pid:club_id>/snp-import-reset/", views_edit.snp_import_reset, name="snp_import_reset"),
+    path("clubs/<pid:club_id>/delete/", views_crm.club_delete, name="club_delete"),
+    path("clubs/<pid:club_id>/transfer-captain/", views_crm.club_transfer_captain, name="club_transfer_captain"),
     path("clubs/", views.club_list, name="club_list"),
     path("clubs/<pid:club_id>/", views.club_detail, name="club_detail"),
     path("clubs/<pid:club_id>/toggle-suspended/", views.club_toggle_suspended, name="club_toggle_suspended"),
+    path("clubs/<pid:club_id>/toggle-snp-unlimited/", views.club_toggle_snp_unlimited, name="club_toggle_snp_unlimited"),
+    path("services/", views.services, name="services"),
+    path("services/snp/toggle/", views.service_snp_toggle, name="service_snp_toggle"),
     path("users/", views.user_list, name="user_list"),
     path("users/<int:user_id>/", views.user_detail, name="user_detail"),
     path("users/<int:user_id>/photos/delete/", views.user_photos_delete, name="user_photos_delete"),
     path("users/<int:user_id>/toggle-active/", views.user_toggle_active, name="user_toggle_active"),
+    path("unverified/", views.unverified_list, name="unverified_list"),
+    path("unverified/<int:user_id>/warn/", views.unverified_warn, name="unverified_warn"),
+    path("unverified/<int:user_id>/delete/", views.unverified_delete, name="unverified_delete"),
     path("photos/", views.photo_list, name="photo_list"),
     path("blocked/", views.blocked_email_list, name="blocked_email_list"),
     path("blocked/add/", views.blocked_email_add, name="blocked_email_add"),

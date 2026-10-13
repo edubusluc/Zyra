@@ -51,7 +51,8 @@ class CreateTeamTests(TestCase):
     def test_similar_name_asks_before_creating(self):
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context["similar"], ["CD Tomares (Masculino · España · 500)"])
+        self.assertEqual(response.context["similar"], [{"label": "CD Tomares (Masculino · España · 500) · fuera de tu grupo",
+                                                         "reactivate_url": reverse("reactivate_team", args=[self.rival.public_id])}])
         self.assertContains(response, 'data-open="1"')
         self.assertFalse(Team.objects.filter(name="Tomares").exists())
 
@@ -61,7 +62,9 @@ class CreateTeamTests(TestCase):
 
     def test_check_request_returns_similar_names_without_creating(self):
         response = self.client.post(self.url, self.data, HTTP_X_SIMILAR_CHECK="1")
-        self.assertEqual(response.json(), {"valid": True, "similar": ["CD Tomares (Masculino · España · 500)"]})
+        self.assertEqual(response.json(), {"valid": True, "similar": [{
+            "label": "CD Tomares (Masculino · España · 500) · fuera de tu grupo",
+            "reactivate_url": reverse("reactivate_team", args=[self.rival.public_id])}]})
         response = self.client.post(self.url, {"name": ""}, HTTP_X_SIMILAR_CHECK="1")
         self.assertEqual(response.json(), {"valid": False, "similar": []})
         self.assertFalse(Team.objects.filter(name="Tomares").exists())
@@ -76,7 +79,8 @@ class CreateTeamTests(TestCase):
     def test_same_name_in_other_division_asks_and_can_be_created(self):
         data = {**self.data, "name": "CD Tomares", "division": "1000"}
         response = self.client.post(self.url, data)
-        self.assertEqual(response.context["similar"], ["CD Tomares (Masculino · España · 500)"])
+        self.assertEqual(response.context["similar"], [{"label": "CD Tomares (Masculino · España · 500) · fuera de tu grupo",
+                                                         "reactivate_url": reverse("reactivate_team", args=[self.rival.public_id])}])
         self.client.post(self.url, {**data, "confirm_similar": "1"})
         self.assertEqual(Team.objects.filter(club=self.club, name="CD Tomares").count(), 2)
 
@@ -200,15 +204,19 @@ class ManageTeamsTests(TestCase):
         self.assertEqual((self.c.gender, self.c.in_group), ("M", True))
         self.assertEqual((self.b.gender, self.b.division, self.b.in_group), ("M", "grand_slam", False))
 
-    def test_only_teams_in_group_are_shown_and_never_the_own_team(self):
+    def test_teams_out_of_group_are_shown_after_the_group_ones_but_never_the_own_team(self):
         rows = self.client.get(self.url).context["rows"]
-        self.assertEqual([r["team"] for r in rows], [self.b, self.c])
+        self.assertEqual([r["team"] for r in rows], [self.b, self.c, self.a])
 
-    def test_own_team_and_teams_out_of_group_are_not_touched(self):
-        self.post_form(**{f"gender_{self.own.id}": "M", f"in_group_{self.own.id}": None, f"gender_{self.a.id}": "M"})
-        self.own.refresh_from_db()
+    def test_team_out_of_group_can_be_given_back_to_the_group(self):
+        self.post_form(**{f"in_group_{self.a.id}": "on"})
         self.a.refresh_from_db()
-        self.assertEqual((self.own.gender, self.own.in_group, self.a.gender), ("F", True, "F"))
+        self.assertTrue(self.a.in_group)
+
+    def test_own_team_is_not_touched(self):
+        self.post_form(**{f"gender_{self.own.id}": "M", f"in_group_{self.own.id}": None})
+        self.own.refresh_from_db()
+        self.assertEqual((self.own.gender, self.own.in_group), ("F", True))
 
     def test_name_clash_with_a_team_out_of_group_is_detected(self):
         response = self.post_form(**{f"division_{self.c.id}": "500"})
@@ -233,6 +241,56 @@ class ManageTeamsTests(TestCase):
         self.post_form(**{f"gender_{other.id}": "M"})
         other.refresh_from_db()
         self.assertEqual(other.gender, "F")
+
+
+class OwnTeamStaysInGroupTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user("admin", password="pass-12345")
+        self.club = create_club("Club A", "Sevilla", self.user, gender="F", country="ES", division="500")
+        self.own = self.club.own_team
+        self.client.force_login(self.user)
+
+    def test_editing_the_own_team_cannot_take_it_out_of_the_group(self):
+        data = {"name": self.own.name, "location": "X", "gender": "F", "country": "ES", "division": "500"}
+        self.client.post(reverse("edit_team", args=[self.own.public_id]), data)
+        self.own.refresh_from_db()
+        self.assertTrue(self.own.in_group)
+
+    def test_model_never_saves_the_own_team_out_of_group(self):
+        self.own.in_group = False
+        self.own.save()
+        self.own.refresh_from_db()
+        self.assertTrue(self.own.in_group)
+
+    def test_edit_page_shows_the_checkbox_disabled(self):
+        response = self.client.get(reverse("edit_team", args=[self.own.public_id]))
+        self.assertContains(response, "no se puede dar de baja")
+
+
+class ReactivateTeamTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user("admin", password="pass-12345")
+        self.club = create_club("Club A", "Sevilla", self.user, gender="F", country="ES", division="500")
+        self.team = Team.objects.create(club=self.club, name="Tomares", location="X", division="500")
+        self.client.force_login(self.user)
+        self.url = reverse("reactivate_team", args=[self.team.public_id])
+
+    def test_post_gives_the_team_back_to_the_group(self):
+        self.assertRedirects(self.client.post(self.url), reverse("list_teams"), fetch_redirect_response=False)
+        self.team.refresh_from_db()
+        self.assertTrue(self.team.in_group)
+
+    def test_get_does_nothing(self):
+        self.assertEqual(self.client.get(self.url).status_code, 405)
+        self.team.refresh_from_db()
+        self.assertFalse(self.team.in_group)
+
+    def test_similar_active_team_has_no_reactivate_link(self):
+        self.team.in_group = True
+        self.team.save()
+        response = self.client.post(reverse("create_team"), {"name": "Tomares", "location": "X", "gender": "F",
+                                                              "country": "ES", "division": "1000"}, HTTP_X_SIMILAR_CHECK="1")
+        self.assertEqual(response.json()["similar"], [{"label": "Tomares (500)", "reactivate_url": ""}])
 
 
 class ListTeamsGroupFilterTests(TestCase):

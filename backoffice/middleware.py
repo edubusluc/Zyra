@@ -14,13 +14,17 @@ from django.db.models import F
 from django.db.models.functions import Greatest
 from django.utils import timezone
 
-from .models import RequestMetric, UserActivity
+from .models import DailyActivity, ErrorEvent, RequestMetric, UserActivity
 
 # Cada cuánto se guarda la actividad de un mismo usuario.
 ACTIVITY_EVERY = 60
 # Cada cuánto se vuelcan a la base de datos las métricas acumuladas en memoria.
 FLUSH_EVERY = 15
 SLOW_MS = 1000
+# Las peticiones de más de esto (y todas las de error 500) se anotan con su ruta en ErrorEvent,
+# como mucho MAX_EVENTS_PER_MINUTE por minuto para que un fallo en cadena no llene la tabla.
+SLOW_EVENT_MS = 3000
+MAX_EVENTS_PER_MINUTE = 30
 
 # Ficheros estáticos y subidos no cuentan como carga de la aplicación. (MEDIA_URL vale "/"
 # si no está configurado, y eso dejaría fuera todas las peticiones.)
@@ -122,10 +126,17 @@ class ActivityMiddleware:
         """Guarda la siguiente capa de la cadena de middleware."""
         self.get_response = get_response
 
+    def process_exception(self, request, exception):
+        """Guarda la excepción de la vista para anotarla si la petición acaba en error 500."""
+        request._zyra_exception = exception
+        return None
+
     def __call__(self, request):
         """
         Atiende la petición y, salvo estáticos y ficheros subidos, suma su tiempo y código a
-        las métricas y actualiza UserActivity (como mucho una vez por minuto y usuario).
+        las métricas, anota los errores y las lentas (ErrorEvent) y actualiza UserActivity
+        (como mucho una vez por minuto y usuario) y DailyActivity (una vez al día). Con
+        «Entrar como» no cuenta como actividad del usuario visto.
         """
         if request.path.startswith(_IGNORED_PREFIXES):
             return self.get_response(request)
@@ -138,12 +149,35 @@ class ActivityMiddleware:
         try:
             _buffer.add(now.replace(second=0, microsecond=0), ms, response.status_code)
             user = getattr(request, "user", None)
-            if user is not None and user.is_authenticated and cache.add(activity_cache_key(user.pk), 1, ACTIVITY_EVERY):
+            seen = (
+                user is not None and user.is_authenticated and getattr(request, "impersonator", None) is None
+            )
+            if seen and cache.add(activity_cache_key(user.pk), 1, ACTIVITY_EVERY):
                 UserActivity.objects.update_or_create(user=user, defaults={
                     "last_seen": now,
                     "last_path": request.path[:200],
                     "club": getattr(request, "club", None),
                 })
+            if seen:
+                today = timezone.localdate()
+                if cache.add(f"backoffice:day:{user.pk}:{today}", 1, 24 * 3600):
+                    DailyActivity.objects.get_or_create(user=user, date=today)
+            if response.status_code >= 500 or ms >= SLOW_EVENT_MS:
+                _record_event(request, response.status_code, ms, user)
         except Exception:  # la medición nunca debe romper una página
             pass
         return response
+
+
+def _record_event(request, status, ms, user):
+    """Anota una petición de error 500 o muy lenta, con un tope por minuto para no llenar la tabla."""
+    key = f"backoffice:events:{timezone.now():%Y%m%d%H%M}"
+    cache.add(key, 0, 120)
+    if cache.incr(key) > MAX_EVENTS_PER_MINUTE:
+        return
+    exc = getattr(request, "_zyra_exception", None)
+    ErrorEvent.objects.create(
+        path=request.path[:200], method=request.method[:10], status=status, duration_ms=ms,
+        exception=(f"{type(exc).__name__}: {exc}" if exc else "")[:300],
+        user=user if user is not None and user.is_authenticated and getattr(request, "impersonator", None) is None else None,
+    )

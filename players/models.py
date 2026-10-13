@@ -12,9 +12,9 @@ from core.images import connect_photo_cleanup, player_photo_path
 from core.public_id import PublicIdModel
 from team.models import Team
 
-# Mes en el que empieza la temporada (9 = septiembre).
-# Con esto, entre septiembre de 2026 y agosto de 2027 la temporada actual es "2026-2027".
-SEASON_START_MONTH = 9
+# Mes en el que empieza la temporada (8 = agosto; empieza el 1 de agosto).
+# Con esto, entre agosto de 2026 y julio de 2027 la temporada actual es "2026-2027".
+SEASON_START_MONTH = 8
 
 
 def current_season():
@@ -47,7 +47,7 @@ class Player(PublicIdModel):
     position = models.CharField(max_length=10, choices=POSITIONS, default="NONE")
     skillfull_hand = models.CharField(max_length=10, choices=HAND, default="NONE")
     club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name="players", null=True)
-    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="team")
+    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="team_players")
     photo = models.ImageField(upload_to=player_photo_path, null=True, blank=True)
     # Cuenta del jugador: puede editar su posición, mano hábil y foto. Se enlaza al
     # aceptar una invitación (vista my_player) y el capitán puede desenlazarla.
@@ -195,12 +195,22 @@ class SnpTeamImport(PublicIdModel):
     status = models.CharField(max_length=10, choices=STATUSES, default=RUNNING)
     started_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
     created_at = models.DateTimeField(auto_now_add=True)
+    # Cuándo la cogió el proceso ``process_snp_imports``; mientras es None, la búsqueda está en cola.
+    started_at = models.DateTimeField(null=True, blank=True)
+    # Confirmar sola al terminar (alta del club con cuenta SNP).
+    auto_confirm = models.BooleanField(default=False)
     finished_at = models.DateTimeField(null=True, blank=True)
     # [{"name", "last_name", "snp_name", "score"}]
     to_add = models.JSONField(default=list, blank=True)
     # [{"snp_name", "player"}]: nombres de SNP que ya tienen jugador en Zyra.
     existing = models.JSONField(default=list, blank=True)
     created_players = models.JSONField(default=list, blank=True)
+    # Equipos del grupo (tabla «Clasificación» de SNP): [{"snp_id", "name", "own"}] por crear,
+    # [{"snp_id", "name", "team", "team_id"}] los que ya existen (se dan de alta en el grupo) y
+    # los nombres de los creados al confirmar.
+    teams_to_add = models.JSONField(default=list, blank=True)
+    teams_existing = models.JSONField(default=list, blank=True)
+    created_teams = models.JSONField(default=list, blank=True)
     message = models.TextField(blank=True)
     # Si ha fallado, dónde puede arreglarlo el capitán (SnpScrapeError.kind): "account" en la
     # cuenta SNP, "team" en los datos de su equipo, o vacío.

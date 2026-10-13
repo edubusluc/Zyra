@@ -1,0 +1,71 @@
+{% load i18n %}
+{# Récords del equipo. Recibe: records (data_analyse.records.team_records) #}
+{% if records %}
+  <ul class="st-records">
+    {% if records.win_streak %}
+      <li class="st-record-tile">
+        <span class="st-kpi-label">{% translate "Racha de victorias" %}</span>
+        <b>{% blocktranslate count n=records.win_streak.n %}{{ n }} enfrentamiento{% plural %}{{ n }} enfrentamientos{% endblocktranslate %}</b>
+        <small>{{ records.win_streak.from|date:"d/m/Y" }} – {{ records.win_streak.to|date:"d/m/Y" }}</small>
+      </li>
+    {% endif %}
+    {% if records.unbeaten %}
+      <li class="st-record-tile">
+        <span class="st-kpi-label">{% translate "Sin perder" %}</span>
+        <b>{% blocktranslate count n=records.unbeaten.n %}{{ n }} enfrentamiento{% plural %}{{ n }} enfrentamientos{% endblocktranslate %}</b>
+        <small>{{ records.unbeaten.from|date:"d/m/Y" }} – {{ records.unbeaten.to|date:"d/m/Y" }}</small>
+      </li>
+    {% endif %}
+    {% if records.biggest_win %}
+      <li class="st-record-tile">
+        <span class="st-kpi-label">{% translate "Mayor victoria" %}</span>
+        <b class="st-up">{{ records.biggest_win.own }}-{{ records.biggest_win.rival }}</b>
+        <small><a href="{% url 'call_for_match' records.biggest_win.public_id %}">{% blocktranslate with rival=records.biggest_win.name date=records.biggest_win.date|date:"d/m/Y" %}vs {{ rival }} · {{ date }}{% endblocktranslate %}</a></small>
+      </li>
+    {% endif %}
+    {% if records.worst_defeat %}
+      <li class="st-record-tile">
+        <span class="st-kpi-label">{% translate "Peor derrota" %}</span>
+        <b class="st-down">{{ records.worst_defeat.own }}-{{ records.worst_defeat.rival }}</b>
+        <small><a href="{% url 'call_for_match' records.worst_defeat.public_id %}">{% blocktranslate with rival=records.worst_defeat.name date=records.worst_defeat.date|date:"d/m/Y" %}vs {{ rival }} · {{ date }}{% endblocktranslate %}</a></small>
+      </li>
+    {% endif %}
+    {% if records.best_season %}
+      <li class="st-record-tile">
+        <span class="st-kpi-label">{% translate "Mejor temporada" %}</span>
+        <b>{{ records.best_season.season }}</b>
+        <small>{% blocktranslate with pct=records.best_season.pct wins=records.best_season.wins played=records.best_season.played %}{{ pct }} % · {{ wins }} de {{ played }} ganados{% endblocktranslate %}</small>
+      </li>
+    {% endif %}
+    {% if records.game_streak %}
+      <li class="st-record-tile">
+        <span class="st-kpi-label">{% translate "Partidos ganados seguidos" %}</span>
+        <b>{{ records.game_streak.n }}</b>
+        <small>{{ records.game_streak.from|date:"d/m/Y" }} – {{ records.game_streak.to|date:"d/m/Y" }}</small>
+      </li>
+    {% endif %}
+    {% if records.top_player %}
+      <li class="st-record-tile">
+        <span class="st-kpi-label">{% translate "Más victorias" %}</span>
+        <b>{{ records.top_player.name }}</b>
+        <small>{% blocktranslate count n=records.top_player.n %}{{ n }} partido ganado{% plural %}{{ n }} partidos ganados{% endblocktranslate %}</small>
+      </li>
+    {% endif %}
+    {% if records.top_pair %}
+      <li class="st-record-tile">
+        <span class="st-kpi-label">{% translate "Pareja con más victorias" %}</span>
+        <b>{{ records.top_pair.name }}</b>
+        <small>{% blocktranslate count n=records.top_pair.n %}{{ n }} partido ganado{% plural %}{{ n }} partidos ganados{% endblocktranslate %}</small>
+      </li>
+    {% endif %}
+    {% if records.most_games %}
+      <li class="st-record-tile">
+        <span class="st-kpi-label">{% translate "Más partidos jugados" %}</span>
+        <b>{{ records.most_games.name }}</b>
+        <small>{% blocktranslate count n=records.most_games.n %}{{ n }} partido{% plural %}{{ n }} partidos{% endblocktranslate %}</small>
+      </li>
+    {% endif %}
+  </ul>
+{% else %}
+  <p class="st-muted">{% translate "Todavía no hay récords con estos filtros." %}</p>
+{% endif %}

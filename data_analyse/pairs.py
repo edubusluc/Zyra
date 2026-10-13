@@ -5,9 +5,12 @@ Todo parte de un único "log" cronológico con los partidos (Game) cerrados del
 club. En cada Game solo figuran los jugadores del propio club, en el lado local
 o en el visitante, así que la pareja es siempre la del lado que tiene jugadores.
 """
+from match import outcomes
 from django.db.models import Q
 
 from match.models import Game, Match
+
+from .sets import own_sets
 
 # Mínimo de partidos para entrar en un top 5 (evita que un 1/1 = 100 % encabece la tabla).
 MIN_GAMES_PLAYER = 2
@@ -71,12 +74,14 @@ def _current_run(results):
 def club_game_log(club, season=None, match_type=None):
     """
     Partidos cerrados del club en orden cronológico (de un tipo de partido si se indica). Cada elemento:
-    {'pair': (id, id), 'local': bool, 'won': bool, 'season', 'match_id', 'points'}
+    {'pair': (id, id), 'local': bool, 'won': bool, 'season', 'match_id', 'date', 'n_game',
+    'points', 'sets'} (``sets``: sets jugados desde el lado del club, ver data_analyse.sets).
     """
     games = (
         Game.objects
-        .filter(match__club=club, draft_mode=False, winner__in=('Local', 'Visitante'))
+        .filter(match__club=club, draft_mode=False, winner__in=outcomes.WINNERS)
         .select_related('match')
+        .prefetch_related('results')
         .order_by('match__start_date', 'match_id', 'n_game')
     )
     if season:
@@ -91,7 +96,7 @@ def club_game_log(club, season=None, match_type=None):
             is_local, a, b = False, g.player_1_visiting_id, g.player_2_visiting_id
         else:
             continue  # partido sin pareja completa
-        won = (g.winner == 'Local') == is_local
+        won = (g.winner == outcomes.WINNER_LOCAL) == is_local
         log.append({
             'pair': pair_key(a, b),
             'local': is_local,
@@ -99,7 +104,9 @@ def club_game_log(club, season=None, match_type=None):
             'season': g.match.season,
             'match_id': g.match_id,
             'date': g.match.start_date,
+            'n_game': g.n_game,
             'points': (g.score or 0) if won else 0,
+            'sets': own_sets(next(iter(g.results.all()), None), is_local),
         })
     return log
 

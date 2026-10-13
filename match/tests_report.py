@@ -89,6 +89,45 @@ class ReportTests(TestCase):
         a, b = (item["lineup"] for item in report["lineups"])
         self.assertGreaterEqual(len(b.keys - a.keys), 1)
 
+    def test_report_with_rival_typed_by_hand(self):
+        # Amistosos contra un rival fuera del grupo: no hay equipo, solo su nombre en el partido
+        Match.objects.filter(club=self.club).update(local=None, rival_name="Pádel Norte",
+                                                    match_type=Match.AMISTOSO)
+        Match.objects.create(club=self.club, visiting=self.club.own_team, rival_name="Otro Rival",
+                             start_date=datetime.date(2025, 10, 20), draft_mode=False,
+                             result="Victoria Visitante", result_points="3/9")
+        self.match.refresh_from_db()
+        report = build_report(self.call)
+        self.assertEqual(report["rival"], "Pádel Norte")
+        self.assertEqual(len(report["precedents"]), 2)  # solo los de "Pádel Norte"
+        self.assertTrue(render_report(report).startswith(b"%PDF"))
+
+    def test_competitive_scope_leaves_friendlies_out(self):
+        # Un amistoso reciente contra el mismo rival con otros jugadores ganando
+        friendly = Match.objects.create(club=self.club, local=self.rival, visiting=self.club.own_team,
+                                        match_type=Match.AMISTOSO, start_date=datetime.date(2025, 10, 20),
+                                        draft_mode=False, result="Victoria Visitante", result_points="3/9")
+        for n in range(1, 6):
+            Game.objects.create(match=friendly, n_game=n, score=3, winner="Visitante", draft_mode=False,
+                                player_1_visiting=self.players[2 * n - 2], player_2_visiting=self.players[2 * n - 1])
+        everything = build_report(self.call)
+        self.assertEqual(len(everything["precedents"]), 3)
+        self.assertEqual(everything["season"]["played"], 3)
+        self.assertFalse(everything["competitive_only"])
+        self.match.report_scope = "competitivos"
+        self.match.save()
+        self.call.refresh_from_db()
+        only = build_report(self.call)
+        self.assertTrue(only["competitive_only"])
+        self.assertEqual(len(only["precedents"]), 2)
+        self.assertEqual(only["season"]["played"], 2)
+        first = self.players[0].id
+        self.assertEqual(only["usage"][first]["games"], 2)
+        self.assertEqual(everything["usage"][first]["games"], 3)
+        self.assertEqual(only["usage"][first]["last"], datetime.date(2025, 10, 8))
+        pdf = render_report(only)
+        self.assertEqual(pdf_pages(pdf), 2)
+
     def test_pdf_fits_in_two_pages_with_many_players(self):
         pdf = render_report(build_report(self.call))
         self.assertTrue(pdf.startswith(b"%PDF"))
@@ -161,6 +200,25 @@ class ReportTests(TestCase):
         self.assertLessEqual(pdfmetrics.stringWidth(label, "Archivo-Bold", 8), width)
         self.assertEqual(report_pdf._player_label(Player(name="Ana", last_name="Gil"), width), "ANA GIL")
 
+    def test_player_table_cells_never_wrap(self):
+        # SNP con decimales, registros de dos cifras y fechas caben en su columna con el cuerpo más grande
+        pad = 10  # relleno lateral de las celdas
+        for col, text in ((1, "14062.5"), (2, "10V-9D · 100%"), (3, "10V-9D · 100%"), (5, "27/09/26"), (6, "10V")):
+            with self.subTest(text=text):
+                width = pdfmetrics.stringWidth(text, "Archivo", 9.5)
+                self.assertLessEqual(width + pad, report_pdf.PLAYER_COLS[col])
+        for col, header in ((2, "COMO VISITANTE"), (4, "JUG./CONV."), (6, "RACHA")):
+            with self.subTest(header=header):
+                width = pdfmetrics.stringWidth(header, "Archivo-Bold", 7.5)
+                self.assertLessEqual(width + pad, report_pdf.PLAYER_COLS[col])
+
+    def test_titles_use_the_italic_display_font(self):
+        """El PDF registra Syncopate en cursiva (como los títulos de la web) y la usa en el título."""
+        from match.report_pdf import _register_fonts, _styles
+        _register_fonts()
+        self.assertIn("Syncopate-Italic", pdfmetrics.getRegisteredFontNames())
+        self.assertEqual(_styles()["title"].fontName, "Syncopate-Italic")
+
     def test_not_enough_players(self):
         self.call.players.set(self.players[:6])
         report = build_report(self.call)
@@ -189,11 +247,10 @@ class ReportTests(TestCase):
         self.assertIn("image/png", parts)
         self.assertEqual(parts[-1], "application/pdf")
 
-    def test_each_admin_gets_an_individual_email(self):
-        second = User.objects.create_user("segundo", password="pass-12345", email="segundo@example.com")
-        Membership.objects.create(user=second, club=self.club, role=Membership.ADMIN)
+    def test_the_captain_gets_an_individual_email(self):
+        """El club tiene un solo capitán: recibe su correo propio, sin copias."""
         self.client.post(reverse("close_call", args=[self.match.public_id]))
-        self.assertEqual(sorted(m.to[0] for m in mail.outbox), ["capitan@example.com", "segundo@example.com"])
+        self.assertEqual([m.to[0] for m in mail.outbox], ["capitan@example.com"])
         self.assertTrue(all(len(m.to) == 1 and not m.cc and not m.bcc for m in mail.outbox))
 
     def test_email_failure_does_not_block_closing(self):
@@ -255,16 +312,14 @@ class ReportTests(TestCase):
         page = self.client.get(reverse("call_for_match", args=[self.match.public_id]))
         self.assertContains(page, "no enviado")
 
-    def test_one_bad_recipient_does_not_block_the_others(self):
-        second = User.objects.create_user("segundo", password="pass-12345", email="segundo@example.com")
-        Membership.objects.create(user=second, club=self.club, role=Membership.ADMIN)
+    def test_a_failing_recipient_does_not_block_closing_the_call(self):
+        """Si el envío falla, la convocatoria se cierra igual y el informe queda pendiente de reintento."""
         with self.failing_smtp("capitan@example.com"):
             response = self.client.post(reverse("close_call", args=[self.match.public_id]), follow=True)
-        self.assertContains(response, "Informe enviado a segundo@example.com")
         self.assertContains(response, "No se pudo enviar el informe a capitan@example.com")
-        self.assertEqual([m.to for m in mail.outbox], [["segundo@example.com"]])
+        self.assertEqual(mail.outbox, [])
         statuses = dict(ReportDelivery.objects.values_list("email", "status"))
-        self.assertEqual(statuses, {"capitan@example.com": "pending", "segundo@example.com": "sent"})
+        self.assertEqual(statuses, {"capitan@example.com": "pending"})
 
     def test_a_delivery_is_sent_only_once(self):
         from match.notifications import deliver, queue_call_report
@@ -301,12 +356,11 @@ class ReportTests(TestCase):
         self.assertEqual(report["precedents"], [])
         self.assertTrue(all(f.played == 0 for f in report["players"]))
 
-    def test_usage_tables_count_whole_squad_this_season(self):
-        Player.objects.create(club=self.club, name="Suplente", last_name="Sin Jugar")
-        report = build_report(self.call)
-        least = report["least_games"]
-        self.assertEqual(len(least), 5)
-        self.assertTrue(all(u["games"] == 0 for u in least))
-        self.assertEqual(report["squad_size"], 21)             # cuenta también a quien no está convocado
-        self.assertEqual(report["most_games"][0]["games"], 2)  # jugaron los 2 enfrentamientos de la temporada
-        self.assertEqual(report["never_played"], 11)            # 10 sin jugar de los 20 + el suplente
+    def test_usage_counts_games_calls_and_last_date_of_each_called_player(self):
+        # Una convocatoria cerrada anterior con dos jugadores: uno se apuntó y jugó, el otro solo se apuntó
+        old = Match.objects.get(club=self.club, start_date=datetime.date(2025, 10, 8))
+        Call.objects.create(match=old, draft_mode=False).players.set(self.players[:1] + self.players[15:16])
+        usage = build_report(self.call)["usage"]
+        self.assertEqual(set(usage), {p.id for p in self.players})  # solo los convocados
+        self.assertEqual(usage[self.players[0].id], {"games": 2, "calls": 1, "last": datetime.date(2025, 10, 8)})
+        self.assertEqual(usage[self.players[15].id], {"games": 0, "calls": 1, "last": None})

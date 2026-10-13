@@ -14,6 +14,71 @@ from django.utils.translation import gettext_lazy as _
 from .public_id import PublicIdModel
 
 
+# Qué partidos alimentan las estadísticas del informe PDF de una convocatoria.
+REPORT_SCOPE_ALL = "todos"
+REPORT_SCOPE_COMPETITIVE = "competitivos"
+REPORT_SCOPES = [
+    (REPORT_SCOPE_ALL, _("Todos los datos")),
+    (REPORT_SCOPE_COMPETITIVE, _("Solo partidos competitivos")),
+]
+
+
+class UserPreference(models.Model):
+    """Preferencias de una cuenta, que se editan en «Mi perfil».
+
+    ``report_scope`` es el valor que propone el formulario de crear partido para los datos
+    del informe PDF; en cada partido se puede cambiar al crearlo. ``monthly_report`` activa el
+    informe mensual por email del jugador (``send_monthly_reports``) y ``monthly_scope`` elige
+    si cuenta todos sus partidos o solo los competitivos.
+    """
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="preference")
+    report_scope = models.CharField(max_length=15, choices=REPORT_SCOPES, default=REPORT_SCOPE_ALL)
+    monthly_report = models.BooleanField(default=True)
+    monthly_scope = models.CharField(max_length=15, choices=REPORT_SCOPES, default=REPORT_SCOPE_ALL)
+
+    @classmethod
+    def report_scope_for(cls, user):
+        """Datos del informe que prefiere ``user`` (todos si no ha elegido o no hay sesión)."""
+        if user is None or not getattr(user, "pk", None):
+            return REPORT_SCOPE_ALL
+        scope = cls.objects.filter(user=user).values_list("report_scope", flat=True).first()
+        return scope or REPORT_SCOPE_ALL
+
+    @classmethod
+    def monthly_for(cls, user):
+        """(recibe_correo, datos) del informe mensual de ``user``: por defecto sí y con todos los partidos."""
+        row = cls.objects.filter(user=user).values_list("monthly_report", "monthly_scope").first()
+        return row if row else (True, REPORT_SCOPE_ALL)
+
+    def __str__(self):
+        """Cuenta y datos del informe."""
+        return f"{self.user} · {self.report_scope}"
+
+
+class MonthlyReportDelivery(models.Model):
+    """Informe mensual enviado (o reservado para enviarse) a una cuenta.
+
+    Una fila por cuenta y mes: la restricción única hace idempotente el comando
+    ``send_monthly_reports``, que reserva la fila antes de enviar y la borra si el correo falla
+    para que la siguiente pasada lo reintente. ``month`` es el primer día del mes del informe.
+    """
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="monthly_reports")
+    month = models.DateField()
+    email = models.EmailField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    sent_at = models.DateTimeField(null=True, blank=True)
+    # Reenvíos a mano desde el backoffice (se saltan la idempotencia): cuántos y el último.
+    manual_sends = models.PositiveSmallIntegerField(default=0)
+    last_manual_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["user", "month"], name="unique_monthly_report_per_user_month")]
+
+    def __str__(self):
+        """Cuenta y mes."""
+        return f"{self.user} · {self.month:%Y-%m}"
+
+
 class Club(PublicIdModel):
     """
     Cada club es un "inquilino" de la aplicación: tiene sus propios jugadores,
@@ -31,6 +96,12 @@ class Club(PublicIdModel):
     # El capitán cerró la lista de «Primeros pasos» de la portada (core.onboarding). Los
     # clubes que ya existían cuando se añadió la lista la tienen cerrada.
     onboarding_dismissed_at = models.DateTimeField(null=True, blank=True)
+    # Club sin los límites de «Completar equipo» (el equipo de pruebas). Solo lo cambia el
+    # personal desde el back-office; no depende del nombre del club.
+    snp_unlimited = models.BooleanField(default=False)
+    # Búsquedas fallidas de «Completar equipo» desde la web (no cuentan las caídas de SNP). Al llegar
+    # a ``snp_import.MAX_FAILED_SEARCHES`` la opción se oculta y se avisa al personal; lo repone el back-office.
+    snp_import_failures = models.PositiveSmallIntegerField(default=0)
 
     @property
     def is_suspended(self):
@@ -59,8 +130,8 @@ class Club(PublicIdModel):
 
 class Membership(PublicIdModel):
     """
-    Pertenencia de un usuario a un club con su rol: capitán (puede gestionar el club)
-    o miembro (solo lectura). Un usuario solo puede tener una membresía por club.
+    Pertenencia de un usuario a un club con su rol: capitán (puede gestionar el club; uno solo
+    por club) o miembro (solo lectura). Un usuario solo puede tener una membresía por club.
     """
     PUBLIC_ID_PREFIX = "MBR"
     ADMIN = "admin"
@@ -77,6 +148,8 @@ class Membership(PublicIdModel):
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=["user", "club"], name="unique_membership_user_club"),
+            # Un club tiene un solo capitán; para cambiarlo se traspasa la capitanía (core.services).
+            models.UniqueConstraint(fields=["club"], condition=models.Q(role="admin"), name="unique_captain_per_club"),
         ]
 
     @property
@@ -308,3 +381,33 @@ class BlockedEmail(PublicIdModel):
     def __str__(self):
         """El email tal y como se escribió."""
         return self.original_email
+
+
+class ServiceSwitch(models.Model):
+    """
+    Interruptor de un servicio de la plataforma que el personal puede apagar desde el
+    back-office (hoy solo la lectura de SNP). Sin fila, el servicio está activo. Para
+    el servicio de SNP también guarda los fallos seguidos y cuándo se avisó al personal
+    (``failure_streak`` y ``alerted_at``), para no repetir el aviso a cada fallo.
+    """
+    SNP = "snp"
+    name = models.CharField(max_length=30, primary_key=True)
+    enabled = models.BooleanField(default=True)
+    # Motivo interno que anota el personal al apagarlo (no se enseña a los usuarios).
+    reason = models.CharField(max_length=300, blank=True)
+    changed_at = models.DateTimeField(null=True, blank=True)
+    changed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+",
+    )
+    failure_streak = models.PositiveIntegerField(default=0)
+    alerted_at = models.DateTimeField(null=True, blank=True)
+
+    @classmethod
+    def is_enabled(cls, name):
+        """True si el servicio ``name`` está activo (también si todavía no tiene fila)."""
+        enabled = cls.objects.filter(name=name).values_list("enabled", flat=True).first()
+        return True if enabled is None else enabled
+
+    def __str__(self):
+        """Nombre del servicio y si está activo."""
+        return f"{self.name}: {'activo' if self.enabled else 'apagado'}"

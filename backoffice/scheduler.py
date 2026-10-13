@@ -1,6 +1,7 @@
 """
 Lanzador de procesos programados. `python manage.py run_scheduler` debe ejecutarse
-cada minuto (cron, systemd timer o el programador del hosting); en cada pasada
+cada minuto (cron, systemd timer o el programador del hosting), o una sola vez con
+`--loop` (bucle propio, para desarrollo o un hosting sin cron); en cada pasada
 lanza los procesos a los que les toca y los pedidos con "Ejecutar ahora".
 """
 import asyncio
@@ -16,6 +17,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.db import connections as db_connections
+from django.db import models
 from django.db.models import Q
 from django.template.loader import render_to_string
 from django.utils import timezone
@@ -25,14 +27,18 @@ from core.emails import build_email
 
 from .cron import Cron
 from .jobs import JOBS, SCHEDULER_TIME_ZONE
-from .models import JobRun, ScheduledJob
+from .models import JobRun, ScheduledJob, SchedulerState
 
 logger = logging.getLogger(__name__)
 
 # Guardamos como mucho esto de la salida de cada ejecución.
 MAX_OUTPUT = 20_000
 # Si el lanzador no ha pasado en este tiempo, el back-office avisa de que no está en marcha.
+PASS_STALE_AFTER = datetime.timedelta(minutes=3)
+# Un proceso activo con la próxima ejecución así de atrasada también se avisa (aunque el lanzador pase).
 LATE_AFTER = datetime.timedelta(minutes=10)
+# Entre dos avisos de que el mismo proceso sigue fallando.
+FAILURE_REMINDER_EVERY = datetime.timedelta(hours=6)
 # Cada cuánto da señales de vida una ejecución en marcha y cuánto tiempo sin ellas hace
 # falta para darla por muerta. Una ejecución viva nunca se libera, dure lo que dure: si
 # se liberase, el lanzador arrancaría otra copia mientras la primera sigue trabajando.
@@ -222,18 +228,25 @@ def claim_job(job, trigger=JobRun.SCHEDULE, user=None, now=None, args=()):
 
 
 def execute_run(run):
-    """Ejecuta un JobRun ya reclamado, guardando la salida en directo, y libera el proceso."""
+    """
+    Ejecuta un JobRun ya reclamado, guardando la salida en directo, y libera el proceso.
+    Una ejecución programada que acaba bien y no tenía nada que hacer (``JobSpec.idle_output``)
+    no deja huella en el log: así los procesos de cada minuto no lo llenan de líneas vacías.
+    """
     job = run.job
     spec = job.spec
     out = LiveOutput(run)
     started = time.monotonic()
+    command_output = None
     try:
         if spec is None:
             raise RuntimeError(f"El proceso {job.name} ya no existe en backoffice/jobs.py.")
         args = [*spec.args, *run.args]
         out.log(f"Inicio: python manage.py {' '.join([spec.command, *args])}")
+        before = out.size
         with Heartbeat(job):
             call_command(spec.command, *args, stdout=out, stderr=out)
+        command_output = out.getvalue()[before:].strip()
         run.status = JobRun.OK
         out.log(f"Fin: correcto en {time.monotonic() - started:.1f} s")
     except BaseException as exc:  # SystemExit/CommandError incluidos: nada debe tumbar el lanzador
@@ -253,11 +266,50 @@ def execute_run(run):
         if run.trigger == JobRun.MANUAL:
             changes["run_requested_at"] = None
             changes["run_requested_by"] = None
+            changes["run_requested_args"] = []
         ScheduledJob.objects.filter(pk=job.pk).update(**changes)
 
     if run.status == JobRun.ERROR:
-        notify_failure(run)
+        _register_failure(run)
+        if _should_notify(run):
+            notify_failure(run)
+    else:
+        _register_success(run)
+        if spec and run.trigger == JobRun.SCHEDULE and command_output in spec.idle_output:
+            run.delete()
     return run
+
+
+def _register_success(run):
+    """Pone a cero los fallos seguidos del proceso y avisa de que se ha recuperado si se había avisado del fallo."""
+    job = ScheduledJob.objects.get(pk=run.job_id)
+    if job.consecutive_failures:
+        recovered = job.failure_notified_at is not None
+        ScheduledJob.objects.filter(pk=job.pk).update(consecutive_failures=0, failure_notified_at=None)
+        if recovered:
+            notify_recovery(run)
+
+
+def _register_failure(run):
+    """Suma un fallo seguido al proceso."""
+    ScheduledJob.objects.filter(pk=run.job_id).update(consecutive_failures=models.F("consecutive_failures") + 1)
+    run.job.refresh_from_db(fields=["consecutive_failures", "failure_notified_at"])
+
+
+def _should_notify(run, now=None):
+    """
+    True si toca avisar por correo de este fallo: siempre si lo lanzó una persona; si es
+    programado, solo en el primer fallo y luego como mucho un recordatorio cada FAILURE_REMINDER_EVERY.
+    """
+    now = now or timezone.now()
+    job = run.job
+    if run.trigger == JobRun.MANUAL:
+        return True
+    last = job.failure_notified_at
+    if last is None or now - last >= FAILURE_REMINDER_EVERY:
+        ScheduledJob.objects.filter(pk=job.pk).update(failure_notified_at=now)
+        return True
+    return False
 
 
 def run_job(job, trigger=JobRun.SCHEDULE, user=None, now=None):
@@ -266,9 +318,41 @@ def run_job(job, trigger=JobRun.SCHEDULE, user=None, now=None):
     return execute_run(run) if run else None
 
 
+def scheduler_is_alive(now=None):
+    """True si el lanzador ha pasado hace poco (PASS_STALE_AFTER)."""
+    now = now or timezone.now()
+    last = SchedulerState.objects.values_list("last_pass_at", flat=True).first()
+    return bool(last and now - last <= PASS_STALE_AFTER)
+
+
+def touch_scheduler(now=None):
+    """Anota que el lanzador ha pasado ahora (una sola fila)."""
+    now = now or timezone.now()
+    if not SchedulerState.objects.update(last_pass_at=now):
+        SchedulerState.objects.create(last_pass_at=now)
+
+
+def request_manual_run(job, user, args=()):
+    """
+    "Ejecutar ahora" desde el back-office. Con el lanzador en marcha, deja la petición para
+    que lo recoja en su próxima pasada (menos de un minuto) y el proceso corre fuera del
+    servidor web. Sin lanzador (desarrollo) arranca al momento en un hilo, como start_manual_run.
+
+    Devuelve ``(run, "started")``, ``(None, "queued")`` o ``(None, "busy")`` si ya estaba en
+    marcha o ya estaba pedido.
+    """
+    if getattr(settings, "BACKOFFICE_RUN_JOBS_INLINE", False) or not scheduler_is_alive():
+        run = start_manual_run(job, user, args)
+        return (run, "started") if run else (None, "busy")
+    claimed = ScheduledJob.objects.filter(
+        pk=job.pk, running_since__isnull=True, run_requested_at__isnull=True,
+    ).update(run_requested_at=timezone.now(), run_requested_by=user, run_requested_args=list(args))
+    return (None, "queued") if claimed else (None, "busy")
+
+
 def start_manual_run(job, user, args=()):
     """
-    "Ejecutar ahora" desde el back-office: el proceso arranca al momento en segundo plano
+    "Ejecutar ahora" sin lanzador: el proceso arranca al momento en segundo plano
     y la página de la ejecución muestra su salida en directo. ``args`` son los datos
     pedidos al lanzarlo (JobSpec.params). Devuelve el JobRun, o None si ya estaba en marcha.
     """
@@ -278,21 +362,29 @@ def start_manual_run(job, user, args=()):
     if getattr(settings, "BACKOFFICE_RUN_JOBS_INLINE", False):  # tests
         execute_run(run)
         return run
+    _in_thread(run)
+    return run
 
+
+def _in_thread(run):
+    """Ejecuta un JobRun ya reclamado en un hilo y cierra sus conexiones a la base de datos al terminar."""
     def target():
-        """Ejecuta el proceso en el hilo y cierra sus conexiones a la base de datos al terminar."""
+        """Cuerpo del hilo."""
         try:
             execute_run(run)
         finally:
             db_connections.close_all()
 
-    threading.Thread(target=target, name=f"job-{job.name}", daemon=True).start()
-    return run
+    threading.Thread(target=target, name=f"job-{run.job.name}", daemon=True).start()
 
 
-def run_due_jobs(now=None):
-    """Una pasada del lanzador: lanza lo que toca y lo pedido a mano. Devuelve los JobRun."""
+def run_due_jobs(now=None, parallel=False):
+    """
+    Una pasada del lanzador: lanza lo que toca y lo pedido a mano. Devuelve los JobRun (los ya
+    terminados; con ``parallel=True`` cada proceso corre en su hilo y se devuelven los reclamados).
+    """
     now = now or timezone.now()
+    touch_scheduler(now)
     jobs = sync_jobs(now)
     _release_stale_locks(now)
     runs = []
@@ -301,19 +393,42 @@ def run_due_jobs(now=None):
     )
     for job in list(due):
         manual = job.run_requested_at is not None
-        run = run_job(job, JobRun.MANUAL if manual else JobRun.SCHEDULE,
-                      user=job.run_requested_by if manual else None, now=now)
-        if run:
-            runs.append(run)
+        trigger = JobRun.MANUAL if manual else JobRun.SCHEDULE
+        user = job.run_requested_by if manual else None
+        args = job.run_requested_args if manual else ()
+        run = claim_job(job, trigger, user, now, args=args)
+        if run is None:
+            continue
+        if parallel:
+            _in_thread(run)
+        else:
+            execute_run(run)
+            touch_scheduler()  # un proceso largo no debe hacer pensar que el lanzador está parado
+        runs.append(run)
     return runs
 
 
-def scheduler_is_late(now=None):
-    """True si algún proceso activo debería haberse lanzado hace rato (el lanzador no está en marcha)."""
+def scheduler_status(now=None):
+    """
+    Estado del lanzador para el back-office: ``late`` (hay que avisar), ``last_pass_at`` y los
+    procesos activos con la próxima ejecución atrasada más de LATE_AFTER (``late_jobs``).
+    """
     now = now or timezone.now()
-    return ScheduledJob.objects.filter(
-        enabled=True, running_since__isnull=True, next_run_at__lt=now - LATE_AFTER,
-    ).exists()
+    last = SchedulerState.objects.values_list("last_pass_at", flat=True).first()
+    late_jobs = [
+        {"name": job.name, "minutes": int((now - job.next_run_at).total_seconds() // 60)}
+        for job in ScheduledJob.objects.filter(
+            enabled=True, running_since__isnull=True, next_run_at__lt=now - LATE_AFTER,
+        ).order_by("next_run_at")
+    ]
+    stale = last is None or now - last > PASS_STALE_AFTER
+    minutes = int((now - last).total_seconds() // 60) if last else None
+    return {"late": stale or bool(late_jobs), "stale": stale, "last_pass_at": last, "minutes": minutes, "late_jobs": late_jobs}
+
+
+def scheduler_is_late(now=None):
+    """True si el lanzador no está en marcha (no pasa desde hace rato o hay procesos muy atrasados)."""
+    return scheduler_status(now)["late"]
 
 
 def notify_failure(run):
@@ -334,5 +449,23 @@ def notify_failure(run):
         email.send(fail_silently=False)
     except Exception:
         logger.exception("No se pudo enviar el aviso del fallo del proceso %s", run.job.name)
+        return False
+    return True
+
+
+def notify_recovery(run):
+    """Avisa por email al personal de Zyra de que un proceso que había fallado vuelve a funcionar."""
+    recipients = list(
+        get_user_model().objects.filter(is_staff=True, is_active=True).exclude(email="").values_list("email", flat=True)
+    )
+    if not recipients:
+        return False
+    subject = _("Zyra · El proceso %(job)s vuelve a funcionar") % {"job": run.job.name}
+    text = _("El proceso %(job)s ha terminado bien después de varios fallos seguidos.") % {"job": run.job.name}
+    email = build_email(subject, text, f"<p>{text}</p>", to=recipients)
+    try:
+        email.send(fail_silently=False)
+    except Exception:
+        logger.exception("No se pudo enviar el aviso de recuperación del proceso %s", run.job.name)
         return False
     return True

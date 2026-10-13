@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 import datetime
+import sys
 from pathlib import Path
 import os
 import dj_database_url
@@ -80,15 +81,27 @@ LEGAL_OWNER_NAME = config('LEGAL_OWNER_NAME', default='')
 LEGAL_OWNER_ID = config('LEGAL_OWNER_ID', default='')  # NIF/DNI
 LEGAL_OWNER_ADDRESS = config('LEGAL_OWNER_ADDRESS', default='')
 
-# Ruta del Django admin (herramienta de emergencia, solo superusuarios). Se puede
-# cambiar por una menos obvia con la variable de entorno ADMIN_URL.
-ADMIN_URL = config('ADMIN_URL', default='admin/')
+# Ruta del Django admin (herramienta de emergencia, solo superusuarios). En producción es
+# obligatorio elegir una ruta propia con la variable de entorno ADMIN_URL (no vale «admin/»);
+# en local es «admin/».
+ADMIN_URL = config('ADMIN_URL', default='admin/' if DEBUG else '').strip('/ ') + '/'
+if not DEBUG and ADMIN_URL in ('/', 'admin/'):
+    raise ImproperlyConfigured(
+        "Falta ADMIN_URL o es la ruta por defecto (admin/). Elige una menos obvia, por ejemplo: "
+        "ADMIN_URL=gestion-3f9a1c/ (en tu ordenador también puedes poner DJANGO_DEBUG=True en el .env)."
+    )
 
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 LOGIN_URL = 'login'
 # Formularios rechazados por CSRF: misma página «Sin permiso» que el resto de la web.
 CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
+
+# Si el hosting pone delante un proxy que termina el https (lo habitual).
+BEHIND_PROXY = config('DJANGO_BEHIND_PROXY', default=False, cast=bool)
+# Cuántos proxies de confianza hay delante: se usa para leer la IP real del visitante
+# (core/ratelimit.py). Con DJANGO_BEHIND_PROXY=True vale 1 (Caddy/Nginx) salvo que se indique otro.
+TRUSTED_PROXY_COUNT = config('DJANGO_TRUSTED_PROXY_COUNT', default=1 if BEHIND_PROXY else 0, cast=int)
 
 # HTTPS en producción: redirección a https, cookies solo por https y HSTS.
 if not DEBUG:
@@ -105,7 +118,7 @@ if not DEBUG:
     SECURE_REFERRER_POLICY = 'same-origin'
     # Si el hosting pone delante un proxy que termina el https (lo habitual), activa
     # esto para que Django sepa que la petición original era https y no entre en bucle.
-    if config('DJANGO_BEHIND_PROXY', default=False, cast=bool):
+    if BEHIND_PROXY:
         SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Application definition
@@ -146,6 +159,8 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    # «Entrar como» (solo lectura) del back-office: debe ir antes de CurrentClubMiddleware.
+    'backoffice.impersonation.ImpersonationMiddleware',
     'core.middleware.CurrentClubMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -170,6 +185,8 @@ TEMPLATES = [
                 'core.context_processors.navigation',
                 'core.context_processors.google_login',
                 'core.context_processors.site',
+                'backoffice.context_processors.impersonation',
+                'backoffice.context_processors.menu_counters',
             ],
         },
     },
@@ -177,12 +194,30 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'zyra.wsgi.application'
 
+# Caché. En producción es una tabla de la base de datos (django_cache), compartida por todos
+# los procesos: guarda los contadores de los límites de uso (core/ratelimit.py), que con la
+# caché en memoria de cada proceso no valdrían. Se crea una vez con
+#   python manage.py createcachetable
+# En local (DJANGO_DEBUG=True) se usa la caché en memoria.
+if not DEBUG:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+            'LOCATION': 'django_cache',
+        },
+    }
+
+# Límites de uso por IP (registro de clubes, altas por invitación, comprobación de contraseña).
+# Se desactivan solos al ejecutar los tests; cada test de límites los activa a propósito.
+TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
+RATE_LIMITS_ENABLED = config('RATE_LIMITS_ENABLED', default=not TESTING, cast=bool)
+
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 # Con DATABASE_URL se usa esa base de datos (PostgreSQL en producción), por ejemplo
-#   DATABASE_URL=postgres://usuario:contraseña@localhost:5432/zyra
+#   DATABASE_URL=<esquema postgres con usuario, contraseña, servidor, puerto y nombre de la base>
 # Sin ella, el fichero SQLite db.sqlite3 junto a manage.py (cómodo para desarrollar).
 DATABASE_URL = config('DATABASE_URL', default='')
 if DATABASE_URL:
@@ -201,6 +236,15 @@ else:
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+
+
+# Consola SQL del back-office: conexión opcional con un rol de PostgreSQL de solo lectura que
+# no puede leer las columnas protegidas (se crea con `python manage.py sql_readonly_role`).
+# Sin ella la consola usa la conexión de la aplicación, protegida solo por la lista de nombres
+# de backoffice/sql.py. Recomendado en producción.
+SQL_CONSOLE_DATABASE_URL = config('SQL_CONSOLE_DATABASE_URL', default='')
+if SQL_CONSOLE_DATABASE_URL:
+    DATABASES['sql_console'] = dj_database_url.parse(SQL_CONSOLE_DATABASE_URL, conn_max_age=0)
 
 
 # Password validation
@@ -294,7 +338,9 @@ PHOTO_WEBP_QUALITY = config('PHOTO_WEBP_QUALITY', default=82, cast=int)
 # gratuito de la cuenta). Sin claves, después de esa fecha o pasado el límite, las fotos se
 # aceptan "sin validar" y el personal las revisa en el back-office (Fotos).
 # Desactivada por defecto: la revisión la hace el personal en el back-office (Fotos).
-REKOGNITION_ENABLED = config('REKOGNITION_ENABLED', default=False, cast=bool)
+# DESACTIVADA a propósito (octubre 2026): las fotos no se envían a AWS y las revisa el personal.
+# Para volver a activarla, cambia esta línea por config('REKOGNITION_ENABLED', default=False, cast=bool).
+REKOGNITION_ENABLED = False
 REKOGNITION_ACCESS_KEY_ID = config('REKOGNITION_ACCESS_KEY_ID', default='')
 REKOGNITION_SECRET_ACCESS_KEY = config('REKOGNITION_SECRET_ACCESS_KEY', default='')
 REKOGNITION_REGION = config('REKOGNITION_REGION', default='eu-west-1')
@@ -327,11 +373,14 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER', default=ZYRA_SENDER)
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
 EMAIL_TIMEOUT = 20
-EMAIL_BACKEND = config(
+# El correo sale por EMAIL_TRANSPORT_BACKEND (la variable de entorno EMAIL_BACKEND de siempre);
+# EMAIL_BACKEND es el envoltorio que anota cada envío en el registro de correos del back-office.
+EMAIL_TRANSPORT_BACKEND = config(
     'EMAIL_BACKEND',
     default='django.core.mail.backends.smtp.EmailBackend' if EMAIL_HOST_PASSWORD
     else 'django.core.mail.backends.console.EmailBackend',
 )
+EMAIL_BACKEND = 'backoffice.email_backend.LoggingEmailBackend'
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default=f'Zyra <{ZYRA_SENDER}>')
 # Correo de contacto que se muestra en el pie y en las páginas legales.
 CONTACT_EMAIL = config('CONTACT_EMAIL', default=ZYRA_SENDER)
@@ -350,6 +399,9 @@ SNP_PAUSE_MAX_SECONDS = config('SNP_PAUSE_MAX_SECONDS', default=15, cast=float)
 SNP_BATCH_PAUSE_SECONDS = config('SNP_BATCH_PAUSE_SECONDS', default=60, cast=float)
 SNP_MAX_CONSECUTIVE_FAILURES = config('SNP_MAX_CONSECUTIVE_FAILURES', default=5, cast=int)
 
+# «Completar equipo» desde la web: una vez al mes y pocas búsquedas al día (players/snp_import.py).
+# Los clubes sin esos límites (el equipo de pruebas) los marca el personal en el back-office.
+
 
 # Inicio de sesión: con usuario o email y contraseña (formulario propio) o con
 # Google (django-allauth). El ID y el secreto de cliente de Google NUNCA van en el
@@ -365,7 +417,15 @@ GOOGLE_LOGIN_ENABLED = bool(GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET)
 
 ACCOUNT_LOGIN_METHODS = {'username', 'email'}
 ACCOUNT_SIGNUP_FIELDS = ['username*', 'email*', 'password1*', 'password2*']
-ACCOUNT_EMAIL_VERIFICATION = 'none'
+# 'optional': allauth manda el enlace de confirmación; el alta de Zyra (core/email_verification.py)
+# lo envía al registrarse y al cambiar el email. Entrar con Google solo conecta con una cuenta
+# de contraseña si su email está verificado (core.adapters.SocialAccountAdapter).
+ACCOUNT_EMAIL_VERIFICATION = 'optional'
+# Días que el back-office da por defecto para confirmar el email antes de eliminar la cuenta.
+UNVERIFIED_ACCOUNT_DEADLINE_DAYS = config('UNVERIFIED_ACCOUNT_DEADLINE_DAYS', default=7, cast=int)
+ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = 'my_profile'
+ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL = 'login'
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = False
 ACCOUNT_ADAPTER = 'core.adapters.AccountAdapter'
 # Contraseña nueva (olvidada, cambio o primera de una cuenta de Google) con la lista de
 # requisitos del registro.

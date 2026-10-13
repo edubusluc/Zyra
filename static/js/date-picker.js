@@ -69,9 +69,9 @@
     pop.setAttribute('aria-label', gettext('Elegir fecha'));
     pop.innerHTML = `
       <div class="z-datepicker-head">
-        <button type="button" class="z-datepicker-nav" data-nav="-1" aria-label="${gettext('Mes anterior')}"><i class="fa-solid fa-chevron-left"></i></button>
+        <button type="button" class="z-datepicker-nav" data-nav="-1" aria-label="${gettext('Mes anterior')}"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
         <div class="z-datepicker-title" aria-live="polite"></div>
-        <button type="button" class="z-datepicker-nav" data-nav="1" aria-label="${gettext('Mes siguiente')}"><i class="fa-solid fa-chevron-right"></i></button>
+        <button type="button" class="z-datepicker-nav" data-nav="1" aria-label="${gettext('Mes siguiente')}"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
       </div>
       <div class="z-datepicker-weekdays" aria-hidden="true">${WEEKDAYS.map((w) => `<span>${w}</span>`).join('')}</div>
       <div class="z-datepicker-grid" role="grid"></div>

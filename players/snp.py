@@ -15,6 +15,7 @@ from django.utils.translation import gettext, gettext as _
 from core.crypto import DecryptionError
 
 from .models import Player, SnpScoreHistory, current_season
+from . import snp_service
 from .scraper import SnpBlockedError, SnpScrapeError, scrape_scores
 
 logger = logging.getLogger(__name__)
@@ -81,6 +82,11 @@ def match_scores(players, scores):
         levels = [(_match_level(tokens[p.pk], snp_tokens), p) for p in players]
         best = max((level for level, _ in levels), default=0)
         best_players = [p for level, p in levels if level == best and level > 0]
+        if len(best_players) > 1:
+            # Con dos jugadores igual de parecidos, si solo uno sigue en la plantilla es el de SNP.
+            active = [p for p in best_players if p.in_team]
+            if len(active) == 1:
+                best_players = active
         if not best_players:
             unmatched.append(entry["name"])
         elif len(best_players) > 1:
@@ -135,10 +141,13 @@ class SyncResult:
         return "\n".join(lines)
 
 
-def team_country(club):
-    """Nacionalidad del equipo propio del club (vacía en equipos antiguos: el scraper usa España)."""
+def team_options(club):
+    """
+    Datos del equipo propio que necesita el scraper: nacionalidad (vacía en equipos antiguos:
+    el scraper usa España) y nombre (para elegir equipo si la cuenta SNP tiene varios).
+    """
     team = club.own_team
-    return team.country if team else ""
+    return {"country": team.country if team else "", "team_name": team.name if team else ""}
 
 
 def sync_club(account, scraper=None, **scrape_options):
@@ -150,7 +159,7 @@ def sync_club(account, scraper=None, **scrape_options):
     """
     try:
         scores = (scraper or scrape_scores)(account.username, account.password, account.team_id or None,
-                                          country=team_country(account.club), **scrape_options)
+                                          **team_options(account.club), **scrape_options)
         with transaction.atomic():
             result = _save_scores(account, scores)
     except (SnpScrapeError, DecryptionError) as exc:
@@ -159,12 +168,28 @@ def sync_club(account, scraper=None, **scrape_options):
     except Exception as exc:  # un fallo inesperado en un club no debe parar a los demás
         logger.exception("Error inesperado al actualizar los puntos SNP de %s", account.club)
         result = SyncResult(ok=False, message=_("Error inesperado: %(error)s") % {"error": exc}, retryable=True)
+    # Un fallo pasajero (red, web de SNP cambiada, bloqueo) cuenta para el aviso al personal;
+    # los de la cuenta del capitán (contraseña, equipo) no son un fallo del servicio.
+    if result.ok:
+        snp_service.report_success()
+    elif result.retryable:
+        snp_service.report_failure(result.message)
     account.last_sync_at = timezone.now()
     account.last_sync_ok = result.ok
     account.last_sync_retryable = result.retryable
     account.last_sync_message = result.report()
     account.save(update_fields=["last_sync_at", "last_sync_ok", "last_sync_retryable", "last_sync_message"])
     return result
+
+
+def save_score(player, score):
+    """Guarda los puntos SNP de un jugador y su punto de hoy en el histórico (gráfico de la temporada)."""
+    if player.snp_score != score:
+        player.snp_score = score
+        player.save(update_fields=["snp_score"])
+    SnpScoreHistory.objects.update_or_create(
+        player=player, date=timezone.localdate(), defaults={"score": score, "season": current_season()},
+    )
 
 
 def _save_scores(account, scores):
@@ -174,15 +199,8 @@ def _save_scores(account, scores):
     """
     players = list(Player.objects.filter(club=account.club, in_team=True))
     matched, unmatched, ambiguous = match_scores(players, scores)
-    today, season = timezone.localdate(), current_season()
     for player, score, _ in matched:
-        if player.snp_score != score:
-            player.snp_score = score
-            player.save(update_fields=["snp_score"])
-        # Histórico para el gráfico de la temporada: un punto por jugador y día.
-        SnpScoreHistory.objects.update_or_create(
-            player=player, date=today, defaults={"score": score, "season": season},
-        )
+        save_score(player, score)
     matched_ids = {p.pk for p, _, _ in matched}
     return SyncResult(
         ok=True,

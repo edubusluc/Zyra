@@ -57,8 +57,8 @@ class OwnPlayerTests(MediaMixin, TestCase):
         self.assertRedirects(response, reverse("my_player"), fetch_redirect_response=False)
         self.ana.refresh_from_db()
         self.assertEqual(self.ana.user, self.user)
-        # Ya enlazado: «Mi jugador» es el formulario de su perfil y no puede enlazar otro.
-        self.assertContains(self.client.get(reverse("my_player")), "Editar mi perfil")
+        # Ya enlazado: «Mi jugador» es el formulario de su jugador y no puede enlazar otro.
+        self.assertContains(self.client.get(reverse("my_player")), "Editar mi jugador")
         self.client.post(reverse("link_player", args=[self.other.public_id]))
         self.other.refresh_from_db()
         self.assertIsNone(self.other.user)
@@ -195,8 +195,15 @@ class OwnPlayerTests(MediaMixin, TestCase):
         self.client.post(reverse("leave_club"))
         self.assertTrue(Membership.objects.filter(user=self.captain, club=self.club).exists())
 
-    def test_captain_leaves_when_there_is_another_captain(self):
-        Membership.objects.filter(user=self.user).update(role=Membership.ADMIN)
+    def test_captain_cannot_leave_without_handing_over_the_captaincy(self):
+        self.client.force_login(self.captain)
+        self.client.post(reverse("leave_club"))
+        self.assertTrue(Membership.objects.filter(user=self.captain, club=self.club).exists())
+
+    def test_captain_leaves_after_handing_over_the_captaincy(self):
+        from core.services import transfer_captaincy
+        Player.objects.filter(pk=self.ana.pk).update(user=self.user)
+        transfer_captaincy(self.club, Membership.objects.get(user=self.captain), Membership.objects.get(user=self.user))
         self.client.force_login(self.captain)
         self.client.post(reverse("leave_club"))
         self.assertFalse(Membership.objects.filter(user=self.captain, club=self.club).exists())

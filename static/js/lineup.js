@@ -74,6 +74,60 @@
       });
     });
   });
+  // «Alineación sugerida»: pide al servidor las alineaciones recomendadas (A y, si la
+  // hay, B) y rellena las 5 parejas en orden de juego. Luego se pueden cambiar a mano.
+  const suggest = form.querySelector('[data-suggest-url]');
+  if (suggest) {
+    const info = suggest.querySelector('[data-suggest-info]');
+    const buttons = suggest.querySelectorAll('[data-suggest]');
+    let lineups = null;
+
+    function apply(lineup) {
+      selects.forEach((s) => { s.value = ''; });
+      slots.forEach(function (slot, i) {
+        const pair = lineup.pairs[i] || [];
+        slot.querySelectorAll('select[data-player]').forEach(function (s, j) {
+          s.value = pair[j] != null ? String(pair[j]) : '';
+        });
+      });
+      selects.forEach((s) => s.dispatchEvent(new Event('change', { bubbles: true })));
+      info.textContent = interpolate(
+        gettext('%(title)s: %(win)s de opciones de ganar. %(explanation)s Puedes cambiar cualquier pareja antes de guardar.'),
+        { title: lineup.title, win: lineup.win + ' %', explanation: lineup.explanation }, true
+      );
+      buttons.forEach((b) => {
+        b.classList.toggle('btn-primary', b.dataset.suggest === lineup.key);
+        b.classList.toggle('btn-outline-secondary', b.dataset.suggest !== lineup.key);
+      });
+    }
+
+    buttons.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        const key = btn.dataset.suggest;
+        if (lineups) {
+          const found = lineups.find((l) => l.key === key);
+          if (found) apply(found);
+          return;
+        }
+        btn.disabled = true;
+        info.textContent = gettext('Calculando la mejor alineación…');
+        fetch(suggest.dataset.suggestUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+          .then((r) => r.json().then((data) => ({ ok: r.ok, data: data })))
+          .then(function (res) {
+            if (!res.ok || !res.data.lineups) throw new Error(res.data.error || '');
+            lineups = res.data.lineups;
+            const alt = suggest.querySelector('[data-suggest="B"]');
+            alt.hidden = !lineups.some((l) => l.key === 'B');
+            apply(lineups.find((l) => l.key === key) || lineups[0]);
+          })
+          .catch(function (err) {
+            info.textContent = err.message || gettext('No se ha podido calcular la alineación. Inténtalo de nuevo.');
+          })
+          .finally(function () { btn.disabled = false; });
+      });
+    });
+  }
+
   form.addEventListener('submit', function () {
     form.querySelector('[data-lineup-save]').disabled = true; // evita el doble envío
   });

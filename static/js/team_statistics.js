@@ -21,6 +21,46 @@ const scales = (extra = {}) => ({
   y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: Z.grid }, ...extra.y },
 });
 
+// Ranking SNP: media del equipo en cada actualización y botón para ver toda la plantilla.
+// Va antes que el resto porque la tarjeta se muestra aunque no haya partidos cerrados.
+(function () {
+  const canvas = document.getElementById('chartSnpTeam');
+  if (canvas) {
+    const snp = JSON.parse(document.getElementById('snp-team-data').textContent);
+    new Chart(canvas, {
+      type: 'line',
+      data: {
+        labels: snp.labels,
+        datasets: [{
+          label: gettext('Media del equipo'),
+          data: snp.average,
+          borderColor: Z.lime,
+          backgroundColor: 'rgba(180, 241, 0, 0.12)',
+          fill: true,
+          tension: 0.3,
+          pointRadius: 3,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: scales({ y: { beginAtZero: false, ticks: { precision: 0 } } }),
+      },
+    });
+  }
+  const more = document.querySelector('[data-snp-more]');
+  if (more) {
+    const label = more.textContent;
+    more.addEventListener('click', function () {
+      const rows = document.querySelectorAll('[data-snp-extra]');
+      const show = rows[0].hidden;
+      rows.forEach((r) => { r.hidden = !show; });
+      more.textContent = show ? more.dataset.less : label;
+    });
+  }
+})();
+
 // Partidos ganados / empatados / perdidos
 new Chart(document.getElementById('myPieChart'), {
   type: 'doughnut',

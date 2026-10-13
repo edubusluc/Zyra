@@ -7,13 +7,14 @@
 En los Game solo se guardan los jugadores del propio club, en el lado (local o
 visitante) en el que juega su equipo.
 """
+from django.conf import settings
 from django.db import models
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
-from players.models import Player
+from players.models import Player, SEASON_START_MONTH
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext, gettext_lazy as _
-from . import scoring
+from . import outcomes, scoring
 from datetime import datetime
 from urllib.parse import quote
 
@@ -21,7 +22,7 @@ from urllib.parse import quote
 
 from django.db import models
 from core.public_id import PublicIdModel
-from core.models import Club
+from core.models import Club, REPORT_SCOPES, REPORT_SCOPE_ALL, REPORT_SCOPE_COMPETITIVE
 from team.models import Team
 
 class Match(PublicIdModel):
@@ -33,15 +34,15 @@ class Match(PublicIdModel):
     """
     PUBLIC_ID_PREFIX = "MAT"
     club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name='matches', null=True)
-    local = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='local_matches', null=True)
-    visiting = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='visiting_matches', null=True)
+    local = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='local_matches', null=True, blank=True)
+    visiting = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='visiting_matches', null=True, blank=True)
     
     
     POSSIBLE_RESULT = [
-        ("Victoria Local", _("Victoria Local")),
-        ("Victoria Visitante", _("Victoria Visitante")),
-        ("EMPATE", _("Empate")),
-        ("NONE", _("Ninguno")),
+        (outcomes.LOCAL_WIN, _("Victoria Local")),
+        (outcomes.VISITING_WIN, _("Victoria Visitante")),
+        (outcomes.DRAW, _("Empate")),
+        (outcomes.NONE, _("Ninguno")),
     ]
     
     ENFRENTAMIENTO = "enfrentamiento"
@@ -58,13 +59,24 @@ class Match(PublicIdModel):
 
     start_date = models.DateField()
     match_type = models.CharField(_("Tipo de partido"), max_length=15, choices=MATCH_TYPES, default=ENFRENTAMIENTO)
-    result = models.CharField(max_length=20, choices=POSSIBLE_RESULT, blank = True, default="NONE")
-    result_points = models.CharField(max_length=20, blank = True, default="NONE")
+    result = models.CharField(max_length=20, choices=POSSIBLE_RESULT, blank = True, default=outcomes.NONE)
+    result_points = models.CharField(max_length=20, blank = True, default=outcomes.NONE)
     draft_mode = models.BooleanField(default=True)
+    # Qué partidos cuentan en las estadísticas del informe PDF (se elige al crear el partido).
+    report_scope = models.CharField(_("Datos del informe"), max_length=15, choices=REPORT_SCOPES,
+                                    default=REPORT_SCOPE_ALL)
     season = models.CharField(max_length=9, blank = True, default="NONE")
     # Copia de la ubicación del equipo local al crear el partido. Es una copia, no un
     # enlace: si el equipo cambia de sede después, los partidos ya creados no cambian.
     location = models.CharField(max_length=100, blank=True, default="")
+    # Rival de un amistoso que no es un equipo del grupo: solo se guarda su nombre en el
+    # propio partido (no se crea ningún equipo) y ese lado (local o visiting) queda vacío.
+    rival_name = models.CharField(_("Rival"), max_length=100, blank=True, default="")
+    # Última vez que un capitán reabrió el acta ya cerrada para corregirla (y quién).
+    reopened_at = models.DateTimeField(null=True, blank=True)
+    reopened_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+",
+    )
     
     class Meta:
         indexes = [
@@ -74,16 +86,19 @@ class Match(PublicIdModel):
     def save(self, *args, **kwargs):
         """Rellena la temporada a partir de la fecha y copia la ubicación del equipo local.
 
-        La temporada va de septiembre a agosto (p. ej. '2024-2025'). Solo se asignan si
+        La temporada va del 1 de agosto al 31 de julio (p. ej. '2024-2025'). Solo se asignan si
         están vacías, así que no cambian en guardados posteriores.
         """
         # Asignar la temporada según la fecha de inicio
         if not self.season or self.season == "NONE":
             if self.start_date:
-                if self.start_date.month >= 9:  # Septiembre o después
+                if self.start_date.month >= SEASON_START_MONTH:  # Agosto o después
                     self.season = f"{self.start_date.year}-{self.start_date.year + 1}"
-                else:  # Antes de septiembre (enero a agosto)
+                else:  # Antes de agosto (enero a julio)
                     self.season = f"{self.start_date.year - 1}-{self.start_date.year}"
+
+        # Valor canónico aunque llegue escrito de otra forma (match/outcomes.py).
+        self.result = outcomes.normalize(self.result)
 
         if not self.location and self.local_id:
             self.location = self.local.location
@@ -104,6 +119,11 @@ class Match(PublicIdModel):
         return self.match_type == self.AMISTOSO
 
     @property
+    def report_competitive_only(self):
+        """True si el informe solo usa partidos competitivos (los amistosos quedan fuera)."""
+        return self.report_scope == REPORT_SCOPE_COMPETITIVE
+
+    @property
     def own_is_local(self):
         """True si el equipo propio del club juega como local."""
         return bool(self.local and self.local.is_own)
@@ -113,9 +133,28 @@ class Match(PublicIdModel):
         """True si el equipo propio del club juega como visitante."""
         return bool(self.visiting and self.visiting.is_own)
 
+    def _side_name(self, team):
+        """Nombre del equipo de un lado; si ese lado está vacío, el rival escrito a mano."""
+        return team.name if team else self.rival_name
+
+    @property
+    def local_name(self):
+        """Nombre del equipo local (o del rival escrito a mano si juega como local)."""
+        return self._side_name(self.local)
+
+    @property
+    def visiting_name(self):
+        """Nombre del equipo visitante (o del rival escrito a mano si juega como visitante)."""
+        return self._side_name(self.visiting)
+
+    @property
+    def rival_label(self):
+        """Nombre del rival del equipo propio, sea del grupo o escrito a mano."""
+        return self.visiting_name if self.own_is_local else self.local_name
+
     def __str__(self):
         """'Local - Visitante'."""
-        return f'{self.local} - {self.visiting}'
+        return f'{self.local_name} - {self.visiting_name}'
 
 
 
@@ -136,8 +175,8 @@ class Game(PublicIdModel):
     ]
 
     WINNER = [
-        ("Local", "Local"),
-        ("Visitante", "Visitante"),
+        (outcomes.WINNER_LOCAL, "Local"),
+        (outcomes.WINNER_VISITING, "Visitante"),
     ]
 
     SCORE = [
@@ -270,7 +309,7 @@ class Result(PublicIdModel):
         if winner is None:
             self.clean()
             winner = self._winner
-        return "Victoria Local" if winner == "local" else "Victoria Visitante"
+        return outcomes.LOCAL_WIN if winner == "local" else outcomes.VISITING_WIN
 
     def save(self, *args, **kwargs):
         """Valida y normaliza el resultado con clean() antes de guardarlo."""

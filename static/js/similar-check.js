@@ -18,10 +18,29 @@
   const modal = () => bootstrap.Modal.getOrCreateInstance(modalEl);
   let checking = false;
 
-  function show(names) {
-    list.replaceChildren(...names.map((name) => {
+  // Cada parecido es un texto o {label, reactivate_url}: con dirección se ofrece volver a dar de alta
+  // el equipo existente (POST con el token CSRF del formulario) en vez de crear otro.
+  function show(items) {
+    const token = form.querySelector('input[name="csrfmiddlewaretoken"]');
+    list.replaceChildren(...items.map((item) => {
       const li = document.createElement('li');
-      li.textContent = name;
+      li.append(typeof item === 'string' ? item : item.label);
+      if (item.reactivate_url && token) {
+        const f = document.createElement('form');
+        f.method = 'post';
+        f.action = item.reactivate_url;
+        f.className = 'd-inline ms-1';
+        const csrf = document.createElement('input');
+        csrf.type = 'hidden';
+        csrf.name = 'csrfmiddlewaretoken';
+        csrf.value = token.value;
+        const b = document.createElement('button');
+        b.type = 'submit';
+        b.className = 'btn btn-link btn-sm p-0 align-baseline';
+        b.textContent = modalEl.dataset.reactivateLabel || 'Dar de alta de nuevo';
+        f.append(csrf, b);
+        li.append(f);
+      }
       return li;
     }));
     modal().show();

@@ -1,0 +1,40 @@
+{% extends 'backoffice/base.html' %}
+{% load i18n backoffice_tags %}
+{% block title %}{% translate "Correos enviados" %}{% endblock %}
+
+{% block content %}
+<div class="z-page-head">
+    <div>
+        <span class="z-eyebrow">{% blocktranslate trimmed count n=page.paginator.count %}{{ n }} correo{% plural %}{{ n }} correos{% endblocktranslate %}</span>
+        <h1>{% translate "Correos enviados" %}</h1>
+    </div>
+</div>
+
+<p class="text-muted">{% translate "Todos los correos que la web intenta enviar (bienvenida, invitaciones, informes, avisos), con el resultado. Sirve para contestar «no me ha llegado». Se guardan seis meses." %}</p>
+
+<form method="get" class="bo-filters" role="search">
+    <input type="search" name="q" value="{{ q }}" class="form-control" placeholder="{% translate 'Destinatario o asunto' %}" aria-label="{% translate 'Buscar' %}">
+    <select name="status" class="form-select" aria-label="{% translate 'Estado' %}">
+        <option value="">{% translate "Todos" %}</option>
+        {% for key, label in statuses %}<option value="{{ key }}" {% if key == status %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    <button class="btn btn-primary"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> {% translate "Filtrar" %}</button>
+</form>
+
+<div class="z-table-wrap"><table class="table align-middle">
+    <thead><tr><th>{% translate "Fecha" %}</th><th>{% translate "Para" %}</th><th>{% translate "Asunto" %}</th><th>{% translate "Estado" %}</th></tr></thead>
+    <tbody>
+    {% for e in page %}
+        <tr>
+            <td class="text-nowrap">{{ e.created_at|date:"j M Y H:i" }}</td>
+            <td>{{ e.to }}</td>
+            <td>{{ e.subject }}</td>
+            <td>{% if e.status == 'sent' %}<span class="z-badge z-badge--lime">{{ e.get_status_display }}</span>{% else %}<span class="z-badge z-badge--danger">{{ e.get_status_display }}</span><br><small class="text-muted">{{ e.error|truncatechars:120 }}</small>{% endif %}</td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="4" class="text-muted">{% translate "Todavía no hay correos registrados." %}</td></tr>
+    {% endfor %}
+    </tbody>
+</table></div>
+<div class="mt-3">{% include 'includes/pagination.html' with page=page extra=extra %}</div>
+{% endblock %}

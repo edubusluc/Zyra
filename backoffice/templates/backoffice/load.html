@@ -33,6 +33,29 @@
 </section>
 
 <section class="z-panel">
+    <h2 class="h5">{% blocktranslate with days=errors.days %}Errores y peticiones lentas ({{ days }} días){% endblocktranslate %}</h2>
+    <p class="text-muted small">{% translate "Se anotan los errores 500 y las peticiones de más de 3 segundos, con su ruta." %}</p>
+    {% if errors.paths %}
+    <div class="z-table-wrap"><table class="table align-middle">
+        <thead><tr><th>{% translate "Ruta" %}</th><th>{% translate "Eventos" %}</th><th>{% translate "Errores 500" %}</th><th>{% translate "Peor tiempo" %}</th></tr></thead>
+        <tbody>
+        {% for p in errors.paths %}
+            <tr><td><code>{{ p.path }}</code></td><td>{{ p.n }}</td><td>{{ p.errors }}</td><td>{{ p.worst }} ms</td></tr>
+        {% endfor %}
+        </tbody>
+    </table></div>
+    <h3 class="h6 mt-3">{% translate "Últimos eventos" %}</h3>
+    <ul class="bo-list">
+        {% for e in errors.recent %}
+        <li><span><b>{{ e.status }}</b> <code>{{ e.method }} {{ e.path }}</code>{% if e.exception %} · {{ e.exception }}{% endif %}</span><small class="text-muted ms-auto">{{ e.duration_ms }} ms · {{ e.created_at|ago }}{% if e.user %} · {{ e.user.username }}{% endif %}</small></li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-muted mb-0">{% translate "Sin errores ni peticiones lentas." %}</p>
+    {% endif %}
+</section>
+
+<section class="z-panel">
     <h2 class="h5">{% translate "Usuarios conectados" %}</h2>
     <div class="z-table-wrap"><table class="table align-middle">
         <thead><tr><th>{% translate "Usuario" %}</th><th>{% translate "Club" %}</th><th>{% translate "Última página" %}</th><th>{% translate "Última actividad" %}</th></tr></thead>

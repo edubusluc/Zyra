@@ -20,9 +20,11 @@ el club activo: lo de otro club da 404. Sin permiso, la página «Sin permiso» 
 ## Cuentas y clubes
 
 - **Registro de club**: usuario, email y contraseña (requisitos en vivo y botón para verla) o con
-  Google. La página se abre arriba, sin saltar a ningún campo. Crea el club, su equipo propio y deja a la persona como capitán,
-  con su jugador ya creado y enlazado a su cuenta (nombre y apellidos como en SNP; con Google se rellenan del
-  perfil y, si no vienen, se avisa de que hay que escribirlos)
+  Google. La página se abre arriba, sin saltar a ningún campo. Crea el club, su equipo propio y deja a la persona como capitán.
+  Su jugador se crea de una de dos formas: **conectando su cuenta de SNP**, que guarda la cuenta, trae
+  todo el equipo con sus puntos y al terminar le pide elegir cuál de esos jugadores es él («Soy yo»); o
+  escribiendo su nombre y apellidos (como en SNP; con Google se rellenan del perfil y, si no vienen, se
+  avisa de que hay que escribirlos)
   ([`core.views.register_club`](referencia/core/views.md), [`core.services`](referencia/core/services.md)).
 - **Entrar con Google**: si el email ya existe, entra en esa cuenta y no crea otra
   ([`core.adapters`](referencia/core/adapters.md)).
@@ -37,9 +39,11 @@ el club activo: lo de otro club da 404. Sin permiso, la página «Sin permiso» 
   es el único miembro, al irse se elimina el club con todos sus datos (equipos, jugadores,
   fotos, partidos, convocatorias, sanciones y cuenta SNP); el popup lo avisa y pide escribir el
   nombre del club para confirmar.
+- **Emails sin confirmar**: en el back-office, listado de cuentas cuyo email no se ha confirmado (con su fecha de registro), aviso por correo con el enlace de confirmación y un plazo, y eliminación de la cuenta una vez vencido; todo queda registrado con fecha y autor.
 - **Suspensiones y emails bloqueados**: el personal puede suspender un club o una cuenta y bloquear
   emails para que no se registren ([`core.blocklist`](referencia/core/blocklist.md)).
 - **Idioma**: español o inglés con el selector de la cabecera.
+- **Desplegables**: todos los `<select>` de la web (y del back-office) usan un desplegable propio con el estilo de Zyra (`static/js/custom-select.js`), manejable con teclado; el `<select>` original sigue siendo el que viaja en el formulario.
 
 ## Inicio del club
 
@@ -58,6 +62,12 @@ estadísticas) y aviso al capitán si el club no tiene cuenta SNP
   ([`players.views`](referencia/players/views.md)).
 - Nombres siempre en mayúsculas; posición (derecha, revés, mixto) y si sigue en el equipo.
 - **Plantilla**: marcar de una vez quién está en el equipo.
+- **Mi perfil** (menú de la cuenta): email y contraseña de la cuenta con opción de cambiarlos (el email
+  pide la contraseña actual; en las cuentas solo de Google el email lo gestiona Google) y el jugador
+  enlazado, que se pulsa para editarlo, o el botón para enlazarse a uno, y las preferencias de la cuenta
+  (datos del informe PDF por defecto) y el informe mensual por email: activarlo o desactivarlo y elegir si cuenta todos
+  los partidos o solo los competitivos; el correo trae además un enlace para darse de baja sin iniciar sesión
+  ([`core.views.my_profile`](referencia/core/views.md)).
 - **Mi jugador**: cada miembro enlaza su cuenta con su jugador y sube su foto. Al elegir quién es
   ve en lima los jugadores libres y apagados los ya enlazados, el buscador filtra mientras escribe
   y «Soy yo» pide confirmación con su nombre y apellidos. Las fotos se
@@ -67,8 +77,13 @@ estadísticas) y aviso al capitán si el club no tiene cuenta SNP
     - **Puntos SNP**: proceso diario que entra en snpgalaxy.com y actualiza los puntos de cada
       jugador, con histórico y gráfico ([`players.snp`](referencia/players/snp.md),
       [`players.scraper`](referencia/players/scraper.md)).
-    - **Completar equipo**: trae de SNP los jugadores que faltan, para revisar y confirmar
-      ([`players.snp_import`](referencia/players/snp_import.md)).
+    - **Completar equipo**: trae de SNP los jugadores que faltan y actualiza los puntos SNP de los
+      que ya están, para revisar y confirmar; los nuevos llegan sin posición y se avisa al capitán de
+      que la complete. Una vez al mes y, para no saturar SNP, como mucho tres búsquedas al día con
+      cinco minutos entre una y otra; los clubes marcados como «sin límites» en el back-office
+      no los tienen ([`players.snp_import`](referencia/players/snp_import.md)).
+    - La cuenta solo pide usuario y contraseña: si tiene varios equipos en SNP, se usa el que se llama
+      como el equipo del club.
 
 ## Equipos
 
@@ -83,7 +98,11 @@ estadísticas) y aviso al capitán si el club no tiene cuenta SNP
 El ciclo de un enfrentamiento ([`match.views`](referencia/match/views.md)):
 
 1. **Crear partido**: competitivo (enfrentamiento, reto o play off) o amistoso; el equipo propio
-   juega siempre como local o visitante; calendario propio de Zyra.
+   juega siempre como local o visitante; en un amistoso el rival puede ser un equipo del grupo
+   o un nombre escrito a mano (no se crea ningún equipo, el nombre se guarda en el partido);
+   calendario propio de Zyra. Un selector «Datos del informe PDF» elige si las estadísticas del informe usan
+   todos los partidos o solo los competitivos (los amistosos quedan fuera); su valor por defecto se guarda en
+   «Mi perfil» (enlace «Edita tus preferencias» bajo el selector).
 2. **Convocatoria**: elegir jugadores (con sus sanciones a la vista); se puede editar y cada
    cambio queda en el **registro de convocatoria** ([`callLog`](referencia/callLog/index.md)).
 3. **Cerrar convocatoria** (mínimo 10 jugadores): envía el **informe PDF** a los capitanes; lo que
@@ -94,17 +113,22 @@ El ciclo de un enfrentamiento ([`match.views`](referencia/match/views.md)):
 4. **Parejas**: 5 partidos; los dos primeros valen 3 puntos y el resto 2. Cada jugador se elige
    con un buscador que filtra al escribir o desde la lista desplegable (solo convocados que no
    están ya en otra pareja, con sus puntos SNP). A la derecha se ve en vivo el orden de juego por
-   la suma de puntos SNP. Se pueden reordenar mientras el acta está abierta
+   la suma de puntos SNP. El botón **Alineación sugerida** rellena las 5 parejas con la
+   recomendación del informe (y **Ver la alternativa**, con la segunda); después se puede cambiar
+   cualquier pareja. Se pueden reordenar mientras el acta está abierta
    ([`match.lineup`](referencia/match/lineup.md)).
-5. **Resultados** por sets, con validación ([`match.scoring`](referencia/match/scoring.md)).
+5. **Resultados** por sets, con validación ([`match.scoring`](referencia/match/scoring.md)). Mientras
+   se escribe solo se avisa de los sets no válidos y, al final, del ganador del partido.
 6. **Cerrar actas**: con los 5 resultados, calcula los puntos y el ganador; si la eliminatoria
    queda empatada a puntos (6-6), el partido queda como **empate**. Un partido cerrado ya no se
    puede cambiar ni borrar.
 
 - **Sanciones**: advertencias a jugadores desde la convocatoria ([`penalty`](referencia/penalty/index.md)).
-- Lista de partidos con resumen de ganados, empatados, perdidos y pendientes, y la temporada de
-  cada partido. Selector de temporada: la actual por defecto, «Todas», las tres más recientes y un
-  buscador para las más antiguas.
+- Lista de partidos compacta (una fila por partido, marcador en verde si se ganó, en rojo si se
+  perdió y en gris si fue empate) con resumen de ganados, empatados, perdidos y pendientes.
+  Selector de temporada: la actual por defecto, «Todas», las tres más recientes y un buscador para
+  las más antiguas. Buscador por nombre de equipo o lugar y filtro por rival (equipos del grupo y
+  rivales escritos a mano); sin temporada elegida, buscan en todas.
 - En el detalle del partido la convocatoria va por posición en varias columnas; las posiciones con
   más de 8 jugadores muestran primero los que juegan y el resto con «Ver N más».
 
@@ -114,10 +138,18 @@ Todas con filtro Todos / Competitivos / Amistosos y selector de temporada
 ([`data_analyse.views`](referencia/data_analyse/views.md), [`data_analyse.pairs`](referencia/data_analyse/pairs.md)):
 
 - **Equipo**: victorias, empates y derrotas (en total y por temporada), local / visitante,
-  mejores jugadores y parejas, gráficos.
+  mejores jugadores y parejas, gráficos, % de victorias por número de partido (1 a 5), sets
+  (set decisivo, tie-breaks, remontadas, cerrar el partido, sets ajustados, roscos), récords
+  ([`data_analyse.records`](referencia/data_analyse/records.md)) y ranking SNP de la plantilla con
+  la media del equipo en cada actualización.
 - **Jugador**: balance, con quién juega mejor, grado de afinidad (en el equipo o incluyendo
-  antiguos), evolución de puntos SNP.
-- **Parejas**: mejores y peores parejas y detalle de una pareja (rachas, temporadas, últimos partidos).
+  antiguos), evolución de puntos SNP, por número de partido, **sets clutch** y **apuntado y
+  alineado** (en cuántas convocatorias a las que se apunta acaba jugando).
+- **Parejas**: mejores y peores parejas y detalle de una pareja (rachas, temporadas, sets, últimos
+  partidos).
+
+Las reglas de sets están en [`data_analyse.sets`](referencia/data_analyse/sets.md): tie-break es un
+set 7-6, el tercer set puede ser un super tie-break a 10 y un 0-0 antiguo en el tercer set se ignora.
 - **Avisos**: sanciones por jugador y temporada.
 
 ## Back-office
@@ -125,6 +157,10 @@ Todas con filtro Todos / Competitivos / Amistosos y selector de temporada
 Solo para el personal, en `/backoffice/` ([`backoffice`](referencia/backoffice/index.md)):
 
 - Dashboard con KPIs, usuarios conectados y carga de la web por minuto.
+- **Uso de la plataforma**: enfrentamientos, convocatorias cerradas y resultados por semana, qué
+  partes de la web usan los clubes y los clubes más activos.
+- **Salud de los servicios**: informes por email enviados y fallidos, cuentas SNP con error o sin
+  sincronizar, procesos programados de la semana y errores 500 en 24 h.
 - Clubes y usuarios, con suspensión y borrado de fotos.
 - Revisión de fotos subidas.
 - **Procesos programados** (cron, hora de Madrid) con historial y traza en directo:
@@ -139,10 +175,18 @@ Solo para el personal, en `/backoffice/` ([`backoffice`](referencia/backoffice/i
 
 | Comando | Para qué |
 |---|---|
-| `run_scheduler` | Lanza los procesos programados; debe ejecutarse cada minuto en el servidor. |
+| `run_scheduler` | Lanza los procesos programados; debe ejecutarse cada minuto en el servidor, o una sola vez con `--loop [--interval N]`. |
+| `purge_backoffice_data` | Borra consultas SQL, auditoría, correos, errores y actividad diaria antiguos. |
+| `snapshot_daily_metrics` | Guarda el resumen del día (`DailyMetric`). |
+| `send_staff_alerts` | Avisa por correo al personal de problemas nuevos y resueltos. |
+| `send_staff_digest` | Envía al personal el resumen semanal (`--dry-run` solo lo muestra). |
+| `send_query_exports` | Envía por correo el CSV de las consultas SQL con exportación programada. |
+| `sql_readonly_role` | Genera (o con `--apply` crea) el rol de PostgreSQL de solo lectura de la consola SQL. |
 | `update_snp_scores` | Actualiza los puntos SNP (lo lanza el programador). |
 | `complete_snp_team` | Trae jugadores desde SNP para un club. |
+| `add_group_teams` | Crea los equipos del grupo de un club desde la clasificación de SNP (solo equipos, sin jugadores). |
 | `send_call_reports` | Reintenta los informes de convocatoria pendientes. |
+| `send_monthly_reports` | Envía a cada jugador con cuenta su informe PDF del mes anterior (idempotente; programado el día 1; ver `--month`, `--dry-run`, `--limit`; `--user EMAIL` lo envía a mano a una cuenta aunque ya lo tenga). Sin `run_scheduler`, basta un cron mensual en el servidor. |
 | `copy_sqlite_to_db` | Copia una base de datos SQLite a PostgreSQL. |
 | `adopt_repo_migrations` | Adapta bases de datos antiguas a las migraciones del repositorio. |
 | `move_photos_to_media` | Pasa fotos antiguas a `media/`. |

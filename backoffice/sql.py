@@ -7,17 +7,26 @@ La lectura está garantizada por la propia base de datos, no solo por este códi
 Además solo se admite una sentencia que empiece por SELECT o WITH, con límite de
 filas y de tiempo, y los datos sensibles (contraseñas, sesiones, tokens) no se pueden
 consultar ni aparecen en los resultados.
+
+Esas barreras de este módulo son una lista de nombres y no bastan por sí solas (un alias o
+``row_to_json(tabla)`` podrían sacar una columna protegida). La garantía de verdad está en la base
+de datos: con ``SQL_CONSOLE_DATABASE_URL`` la consola usa un rol de PostgreSQL que solo puede leer
+las tablas y columnas permitidas (se crea con ``python manage.py sql_readonly_role``).
 """
 import re
 import time
 from dataclasses import dataclass, field
 
-from django.db import connection, transaction
+from django.conf import settings
+from django.db import connection as default_connection
+from django.db import connections, transaction
 from django.utils.translation import gettext as _
 
 # Filas que se muestran en pantalla y que se exportan como máximo.
 DISPLAY_LIMIT = 500
 EXPORT_LIMIT = 50_000
+# Longitud máxima de una consulta (acota el coste de las expresiones regulares que la analizan).
+MAX_LENGTH = 20_000
 # Tiempo máximo de una consulta.
 TIMEOUT_SECONDS = 10
 
@@ -33,9 +42,17 @@ HIDDEN_TABLES = {
 BLOCKED_WORDS = HIDDEN_TABLES | {
     "password", "token", "secret", "session_key", "session_data",
     "load_extension", "readfile", "writefile", "edit", "fts3_tokenizer",
+    # Funciones que devuelven una fila entera (con sus columnas protegidas) bajo otro nombre,
+    # y las que leen ficheros o cambian la configuración de la sesión.
+    "row_to_json", "to_json", "to_jsonb", "json_agg", "jsonb_agg", "json_build_object", "jsonb_build_object",
+    "json_object", "json_group_array", "json_group_object", "json_array", "jsonb_object_agg", "row",
+    "pg_read_file", "pg_read_binary_file", "pg_ls_dir", "lo_import", "lo_export", "dblink", "set_config",
+    "pg_sleep", "pg_advisory_lock",
 }
+# Un nombre que contenga alguno de estos fragmentos tampoco se puede consultar (password_encrypted...).
+BLOCKED_FRAGMENTS = ("password", "token", "secret", "encrypted", "session_key", "session_data")
 # Columnas del resultado cuyo valor se oculta aunque lleguen por un SELECT *.
-MASKED_COLUMN = re.compile(r"password|token|secret|session", re.IGNORECASE)
+MASKED_COLUMN = re.compile(r"password|token|secret|session|encrypted", re.IGNORECASE)
 MASK = "••••••"
 
 
@@ -73,6 +90,8 @@ def clean(sql):
 
 def validate(sql):
     """Comprueba que la consulta es una única lectura y que no toca datos sensibles."""
+    if len(sql or "") > MAX_LENGTH:
+        raise QueryError(_("La consulta es demasiado larga (máximo %(max)s caracteres).") % {"max": MAX_LENGTH})
     sql = clean(sql)
     if not sql:
         raise QueryError(_("Escribe una consulta."))
@@ -84,13 +103,18 @@ def validate(sql):
     if first not in ("select", "with"):
         raise QueryError(_("Solo se admiten consultas de lectura (SELECT o WITH)."))
     words = set(re.findall(r"[a-z_][a-z0-9_]*", code.lower()))
-    blocked = sorted(words & BLOCKED_WORDS)
+    blocked = sorted((words & BLOCKED_WORDS) | {w for w in words if any(f in w for f in BLOCKED_FRAGMENTS)})
     if blocked:
         raise QueryError(
             _("Esta consulta usa datos protegidos (%(words)s), que no se pueden consultar desde aquí.")
             % {"words": ", ".join(blocked)}
         )
     return sql
+
+
+def console_connection():
+    """Conexión de la consola: la de solo lectura ``sql_console`` si está configurada; si no, la de la aplicación."""
+    return connections["sql_console"] if "sql_console" in settings.DATABASES else default_connection
 
 
 def run(sql, limit=DISPLAY_LIMIT, timeout=TIMEOUT_SECONDS):
@@ -100,10 +124,11 @@ def run(sql, limit=DISPLAY_LIMIT, timeout=TIMEOUT_SECONDS):
     sql = expand_relations(sql)
     start = time.monotonic()
     try:
+        connection = console_connection()
         if connection.vendor == "sqlite":
-            columns, rows, truncated = _run_sqlite(sql, limit, timeout)
+            columns, rows, truncated = _run_sqlite(connection, sql, limit, timeout)
         elif connection.vendor == "postgresql":
-            columns, rows, truncated = _run_postgres(sql, limit, timeout)
+            columns, rows, truncated = _run_postgres(connection, sql, limit, timeout)
         else:
             raise QueryError(_("La consola SQL no está preparada para %(vendor)s.") % {"vendor": connection.vendor})
     except QueryError:
@@ -126,7 +151,7 @@ def _fetch(cursor, limit):
     return columns, [tuple(r) for r in rows[:limit]], len(rows) > limit
 
 
-def _run_sqlite(sql, limit, timeout):
+def _run_sqlite(connection, sql, limit, timeout):
     """
     Ejecuta la consulta en SQLite con ``PRAGMA query_only`` y un manejador de progreso
     que la corta al pasar de `timeout` segundos.
@@ -148,9 +173,9 @@ def _run_sqlite(sql, limit, timeout):
         raw.set_progress_handler(None, 0)
 
 
-def _run_postgres(sql, limit, timeout):
+def _run_postgres(connection, sql, limit, timeout):
     """Ejecuta la consulta en PostgreSQL en una transacción READ ONLY con statement_timeout."""
-    with transaction.atomic(), connection.cursor() as cursor:
+    with transaction.atomic(using=connection.alias), connection.cursor() as cursor:
         cursor.execute("SET TRANSACTION READ ONLY")
         cursor.execute("SET LOCAL statement_timeout = %s", [int(timeout * 1000)])
         cursor.execute(sql)
@@ -162,6 +187,8 @@ def _explain(exc, timeout):
     text = str(exc)
     if "interrupted" in text.lower() or "statement timeout" in text.lower():
         return _("La consulta tardó más de %(seconds)s segundos y se ha cancelado.") % {"seconds": timeout}
+    if "permission denied" in text.lower():
+        return _("Esa tabla tiene columnas protegidas: escribe las columnas que necesitas en vez de «*».")
     if "readonly" in text.lower() or "read-only" in text.lower() or "query_only" in text.lower():
         return _("La consola es de solo lectura.")
     return _("Error en la consulta: %(error)s") % {"error": text}
@@ -174,6 +201,7 @@ def schema():
     """
     models = _models_by_table()
     tables = []
+    connection = default_connection
     with connection.cursor() as cursor:
         for name in sorted(connection.introspection.table_names(cursor)):
             if name in HIDDEN_TABLES:
@@ -181,7 +209,7 @@ def schema():
             model = models.get(name)
             columns = []
             for col in connection.introspection.get_table_description(cursor, name):
-                if MASKED_COLUMN.search(col.name):
+                if MASKED_COLUMN.search(col.name) or any(f in col.name.lower() for f in BLOCKED_FRAGMENTS):
                     continue
                 rel = _relation(model, col.name) if model else None
                 target = rel.related_model._meta.db_table if rel and rel.column == col.name else ""
@@ -334,7 +362,7 @@ def expand_relations(sql):
         out.append(code[last:start])
         # En la lista del SELECT, la columna del resultado se llama como se escribió.
         rest = code[end:select_end] if end <= select_end else ""
-        if original and end <= select_end and not re.match(r"\s*as\b", rest, re.IGNORECASE):
+        if original and end <= select_end and not re.match(r"as\b", rest.lstrip(), re.IGNORECASE):
             text += f' AS "{original}"'
         out.append(text)
         last = end

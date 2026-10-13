@@ -68,6 +68,49 @@ class CaptainPlayerForm(forms.Form):
         plain_text(self, "name", "last_name")
 
 
+class CaptainSnpForm(forms.Form):
+    """
+    Cómo se crea el jugador del capitán al registrar el club: escribiendo su nombre
+    (CaptainPlayerForm) o conectando su cuenta de SNP, que trae todo el equipo con sus
+    puntos; después elige cuál de esos jugadores es él. El usuario y la contraseña solo
+    son obligatorios con la opción de SNP.
+    """
+    MANUAL = "manual"
+    SNP = "snp"
+    MODES = [
+        (SNP, _("Conectar mi cuenta de SNP y traer mi equipo")),
+        (MANUAL, _("Escribir mi nombre y apellidos")),
+    ]
+    mode = forms.ChoiceField(label=_("¿Cómo quieres empezar?"), choices=MODES, initial=MANUAL,
+                             required=False, widget=forms.RadioSelect)
+    username = forms.CharField(label=_("Usuario de SNP"), max_length=150, required=False)
+    password = forms.CharField(
+        label=_("Contraseña de SNP"), required=False, widget=forms.PasswordInput(render_value=False),
+        help_text=_("Se guarda cifrada. Con ella actualizamos los puntos SNP de tu equipo cada semana."),
+    )
+
+    def __init__(self, *args, **kwargs):
+        """El usuario y la contraseña no los autocompleta el navegador con los de Zyra."""
+        super().__init__(*args, **kwargs)
+        self.fields["username"].widget.attrs["autocomplete"] = "off"
+        self.fields["password"].widget.attrs["autocomplete"] = "new-password"
+
+    @property
+    def uses_snp(self):
+        """True si el capitán ha elegido conectar su cuenta de SNP (según lo enviado)."""
+        return self.data.get(self.add_prefix("mode")) == self.SNP
+
+    def clean(self):
+        """Con la opción de SNP, el usuario y la contraseña son obligatorios."""
+        cleaned = super().clean()
+        if cleaned.get("mode") == self.SNP:
+            if not cleaned.get("username", "").strip():
+                self.add_error("username", _("Escribe tu usuario de SNP."))
+            if not cleaned.get("password"):
+                self.add_error("password", _("Escribe la contraseña de SNP."))
+        return cleaned
+
+
 class SignUpForm(UserCreationForm):
     """
     Registro de una cuenta con usuario, email y contraseña (al registrar un club o desde
@@ -127,6 +170,44 @@ class InviteMemberForm(forms.Form):
         if is_blocked(email):
             raise forms.ValidationError(gettext("No se puede invitar a este email."))
         return email
+
+
+class EmailChangeForm(forms.Form):
+    """
+    Cambio del email de la propia cuenta desde «Mi perfil». Pide la contraseña actual:
+    con el email se entra en Zyra (y con Google, que entra en la cuenta de ese email).
+    """
+    email = forms.EmailField(
+        label=_("Email nuevo"), max_length=254,
+        widget=forms.EmailInput(attrs={"autocomplete": "email", "class": "form-control"}),
+    )
+    current_password = forms.CharField(
+        label=_("Contraseña actual"), strip=False,
+        widget=forms.PasswordInput(attrs={"autocomplete": "current-password", "class": "form-control"}),
+    )
+
+    def __init__(self, *args, user=None, **kwargs):
+        """``user``: cuenta cuyo email se cambia."""
+        super().__init__(*args, **kwargs)
+        self.user = user
+
+    def clean_email(self):
+        """Normaliza el email y rechaza el actual, los de otras cuentas y los bloqueados."""
+        email = self.cleaned_data["email"].strip().lower()
+        if email == (self.user.email or "").lower():
+            raise forms.ValidationError(gettext("Ese ya es tu email."))
+        if User.objects.filter(email__iexact=email).exclude(pk=self.user.pk).exists():
+            raise forms.ValidationError(gettext("Ese email ya lo usa otra cuenta."))
+        if is_blocked(email):
+            raise forms.ValidationError(gettext("Este email no puede usarse en Zyra."))
+        return email
+
+    def clean_current_password(self):
+        """Comprueba que la contraseña actual es la de la cuenta."""
+        password = self.cleaned_data["current_password"]
+        if not self.user.check_password(password):
+            raise forms.ValidationError(gettext("La contraseña no es correcta."))
+        return password
 
 
 class PasswordRulesMixin:

@@ -10,9 +10,8 @@ from allauth.socialaccount.models import SocialAccount
 from django.forms import Select
 from django.forms.utils import ErrorDict
 from django.contrib import messages
-from django.contrib.auth import get_user_model, login
+from django.contrib.auth import get_user_model, login, logout
 from django.contrib.auth.views import LoginView
-from django.core.cache import cache
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
@@ -25,7 +24,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from django.views.decorators.http import require_POST, require_safe
+from django.views.decorators.http import require_http_methods, require_POST, require_safe
 
 from data_analyse import pairs as pair_stats
 from match.models import Match
@@ -35,13 +34,17 @@ from .adapters import GOOGLE_NEW_ACCOUNT_KEY
 from .blocklist import is_user_blocked
 from .decorators import club_admin_required
 from .emails import send_invitation_email, send_welcome_email
-from .forms import CaptainPlayerForm, ClubForm, InviteMemberForm, SignUpForm
+from .forms import CaptainPlayerForm, CaptainSnpForm, ClubForm, EmailChangeForm, InviteMemberForm, SignUpForm
 from .middleware import SESSION_KEY
-from .models import Invitation, Membership
+from .models import REPORT_SCOPES, Invitation, Membership, UserPreference
 from .onboarding import onboarding_for
+from . import email_verification, ratelimit, seo
+from players import snp_service
+from .unsubscribe import user_from_token
 from .services import (
-    InvitationError, accept_invitation, club_name_matches, club_of, create_club, delete_club, is_last_admin,
-    is_only_member, remove_membership,
+    CaptaincyError, InvitationError, accept_invitation, account_delete_blocker, club_name_matches, club_of,
+    create_club, delete_account, delete_club, eligible_successors, is_last_admin, is_only_member,
+    remove_membership, transfer_captaincy,
 )
 
 INVITATIONS_PER_PAGE = 10
@@ -61,11 +64,23 @@ User = get_user_model()
 LOGIN_MAX_FAILURES = 5
 LOGIN_LOCKOUT_SECONDS = 15 * 60
 
+# Límites por IP (core/ratelimit.py): altas de club, altas de cuenta por invitación y
+# comprobaciones de contraseña mientras se escribe.
+REGISTER_LIMIT, REGISTER_WINDOW = 5, 60 * 60
+INVITE_SIGNUP_LIMIT, INVITE_SIGNUP_WINDOW = 10, 60 * 60
+PASSWORD_CHECK_LIMIT, PASSWORD_CHECK_WINDOW = 60, 60
+RESEND_LIMIT, RESEND_WINDOW = 5, 60 * 60
+DELETE_ACCOUNT_LIMIT, DELETE_ACCOUNT_WINDOW = 5, 60 * 60
 
+
+@require_safe
 def home(request):
     """Portada del club: logo, próximo partido y jugador/pareja en racha."""
     if not request.user.is_authenticated:
-        return render(request, 'landing.html')
+        return render(request, 'landing.html', {
+            'faq': seo.landing_faq(),
+            'structured_data': seo.landing_structured_data(request),
+        })
     if request.club is None:
         return redirect('no_club')
 
@@ -112,11 +127,11 @@ class ThrottledLoginView(LoginView):
     def _key(self):
         """Clave de caché del contador de fallos: IP y usuario escrito."""
         username = (self.request.POST.get("username") or "").strip().lower()
-        return f"login-failures:{self.request.META.get('REMOTE_ADDR', '')}:{username}"
+        return f"login-failures:{ratelimit.client_ip(self.request)}:{username}"
 
     def post(self, request, *args, **kwargs):
         """Con demasiados fallos seguidos responde 429 sin comprobar la contraseña."""
-        if cache.get(self._key(), 0) >= LOGIN_MAX_FAILURES:
+        if ratelimit.get_count(self._key()) >= LOGIN_MAX_FAILURES:
             # Sin validar el formulario: validarlo comprobaría la contraseña.
             form = self.get_form()
             form._errors, form.cleaned_data = ErrorDict(), {}
@@ -126,17 +141,12 @@ class ThrottledLoginView(LoginView):
 
     def form_invalid(self, form):
         """Suma un fallo al contador (caduca a los LOGIN_LOCKOUT_SECONDS)."""
-        key = self._key()
-        cache.add(key, 0, LOGIN_LOCKOUT_SECONDS)
-        try:
-            cache.incr(key)
-        except ValueError:
-            cache.set(key, 1, LOGIN_LOCKOUT_SECONDS)
+        ratelimit.add_hit(self._key(), LOGIN_LOCKOUT_SECONDS)
         return super().form_invalid(form)
 
     def form_valid(self, form):
         """Inicio de sesión correcto: pone a cero el contador de fallos."""
-        cache.delete(self._key())
+        ratelimit.clear(self._key())
         return super().form_valid(form)
 
 
@@ -181,6 +191,10 @@ def register_club(request):
     """
     Alta de un club nuevo. Si el visitante no tiene cuenta, se le crea una. Quien ya
     pertenece a un club (como miembro o capitán) no puede registrar otro.
+
+    El jugador del capitán se crea con su nombre y apellidos o, si elige conectar su cuenta
+    de SNP (CaptainSnpForm), se guarda la cuenta y se trae el equipo de SNP con sus puntos
+    («Completar equipo» confirmado solo); al terminar elige cuál de esos jugadores es él.
     """
     anonymous = not request.user.is_authenticated
 
@@ -208,45 +222,69 @@ def register_club(request):
     )
 
     if request.method == "POST":
+        if ratelimit.too_many(request, "register", REGISTER_LIMIT, REGISTER_WINDOW):
+            return render(request, "429.html", status=429)
         club_form = ClubForm(request.POST)
         player_form = CaptainPlayerForm(request.POST, prefix="player")
+        snp_form = CaptainSnpForm(request.POST, prefix="snp")
         user_form = SignUpForm(request.POST) if anonymous else None
-        valid = all([club_form.is_valid(), player_form.is_valid(), user_form is None or user_form.is_valid()])
+        # Con SNP no hace falta escribir el nombre: el jugador se elige después de entre los de SNP.
+        valid = all([club_form.is_valid(), snp_form.is_valid(), snp_form.uses_snp or player_form.is_valid(),
+                     user_form is None or user_form.is_valid()])
         # Un email bloqueado por el personal (p. ej. de un club suspendido) no puede crear clubes.
         if valid and not anonymous and is_user_blocked(request.user):
             club_form.add_error(None, _("Tu email está bloqueado en Zyra y no puede crear clubes."))
             valid = False
         if valid:
+            use_snp = snp_form.uses_snp
             with transaction.atomic():
                 user = user_form.save() if anonymous else request.user
-                data, player = club_form.cleaned_data, player_form.cleaned_data
+                data = club_form.cleaned_data
+                player = {} if use_snp else player_form.cleaned_data
                 club = create_club(data["name"], data["location"], user, gender=data["gender"], country=data["country"],
-                                   division=data["division"], player_name=player["name"],
-                                   player_last_name=player["last_name"])
+                                   division=data["division"], player_name=player.get("name", ""),
+                                   player_last_name=player.get("last_name", ""))
                 # La cuenta se queda con el nombre del jugador si no tenía uno.
-                if not (user.first_name or user.last_name):
+                if player and not (user.first_name or user.last_name):
                     user.first_name, user.last_name = player["name"], player["last_name"]
                     user.save(update_fields=["first_name", "last_name"])
+                if use_snp:
+                    account = SnpAccount(club=club, updated_by=user)
+                    account.username = snp_form.cleaned_data["username"].strip()
+                    account.password = snp_form.cleaned_data["password"]
+                    account.save()
             if anonymous:
                 login(request, user, backend=LOGIN_BACKEND)
+                email_verification.start_verification(request, user)
             request.session[SESSION_KEY] = club.id
             send_welcome_email(user, club, created=True, site_url=_site_url(request))
             messages.success(request, _("Club %(club)s creado correctamente.") % {"club": club.name})
+            if use_snp and snp_service.is_enabled():
+                from players import snp_import
+                team_import = snp_import.start_search(club, user, auto_confirm=True)
+                return redirect("complete_team_welcome", import_id=team_import.public_id)
+            if use_snp:
+                messages.warning(request, snp_service.UNAVAILABLE_MESSAGE)
+                return redirect("my_player")
             return redirect("home")
     else:
         club_form = ClubForm()
         player_form = CaptainPlayerForm(initial=known, prefix="player")
+        snp_form = CaptainSnpForm(prefix="snp")
         user_form = SignUpForm() if anonymous else None
 
     _style(club_form, user_form, player_form)
+    for name in ("username", "password"):
+        snp_form.fields[name].widget.attrs["class"] = "form-control"
     return render(request, "register_club.html", {
-        "club_form": club_form, "user_form": user_form, "player_form": player_form,
-        "google_missing_name": google_missing_name,
+        "club_form": club_form, "user_form": user_form, "player_form": player_form, "snp_form": snp_form,
+        "google_missing_name": google_missing_name, "snp_service_off": not snp_service.is_enabled(),
         "google_next": f"{reverse('register_club')}?{FROM_GOOGLE_PARAM}=1",
     })
 
 
 @login_required
+@require_safe
 def no_club(request):
     """
     Página para quien ha iniciado sesión pero no tiene club activo (requiere sesión).
@@ -294,13 +332,16 @@ def club_members(request, invite_form=None):
     if search:
         pending = pending.filter(email__icontains=search)
     page = Paginator(pending.order_by("-created_at", "-id"), INVITATIONS_PER_PAGE).get_page(request.GET.get("page"))
-    invitations = [
-        (inv, request.build_absolute_uri(reverse("invitation", args=[inv.token])))
-        for inv in page
-    ]
+    # (invitación, enlace, texto para compartir por WhatsApp). El texto se monta aquí, sin HTML,
+    # y la plantilla solo lo codifica para la URL.
+    invitations = []
+    for inv in page:
+        url = request.build_absolute_uri(reverse("invitation", args=[inv.token]))
+        invitations.append((inv, url, _("Únete a %(club)s en Zyra: %(url)s") % {"club": club.name, "url": url}))
     extra = ("&" + urlencode({"q": search}) if search else "") + "#invitaciones"
     return render(request, "club_members.html", {
-        "invite_form": invite_form, "memberships": memberships, "roles": Membership.ROLES, "invitations": invitations,
+        "invite_form": invite_form, "memberships": memberships, "invitations": invitations,
+        "successor_ids": set(eligible_successors(club).values_list("pk", flat=True)),
         "invitations_page": page, "has_invitations": has_invitations, "search": search, "extra": extra,
     })
 
@@ -370,6 +411,8 @@ def password_check(request):
     servidor (parecido al usuario/email y contraseñas comunes) para la lista de
     requisitos de los formularios de registro. Solo responde sí/no por regla.
     """
+    if ratelimit.too_many(request, "password-check", PASSWORD_CHECK_LIMIT, PASSWORD_CHECK_WINDOW):
+        return JsonResponse({"error": "rate_limited"}, status=429)
     user = User(username=request.POST.get("username", ""), email=request.POST.get("email", ""))
     codes = set()
     try:
@@ -426,6 +469,8 @@ def invitation(request, token):
 
     request.session[PENDING_INVITE_KEY] = token
     if request.method == "POST":
+        if ratelimit.too_many(request, "invite-signup", INVITE_SIGNUP_LIMIT, INVITE_SIGNUP_WINDOW):
+            return render(request, "429.html", status=429)
         form = SignUpForm(request.POST)
         if form.is_valid():
             with transaction.atomic():
@@ -438,6 +483,10 @@ def invitation(request, token):
                     return redirect("invitation", token=token)
             request.session.pop(PENDING_INVITE_KEY, None)
             login(request, user, backend=LOGIN_BACKEND)
+            # El enlace llegó a ese email: quien lo abre y se registra con él lo ha demostrado.
+            email_verification.start_verification(
+                request, user, verified=bool(invitation.email) and invitation.email.lower() == user.email.lower(),
+            )
             request.session[SESSION_KEY] = club.id
             send_welcome_email(user, club, site_url=_site_url(request))
             messages.success(request, _("¡Bienvenido a %(club)s!") % {"club": club.name})
@@ -453,38 +502,53 @@ def invitation(request, token):
 @require_POST
 def update_member(request, membership_id):
     """
-    Cambia el rol de un miembro (solo capitanes, solo POST).
+    Guarda el email del capitán en la página de miembros (solo capitanes, solo POST).
 
-    Si el capitán edita su propia fila también puede cambiar su email (el de los demás
-    no). No deja el club sin capitanes. Redirige a la página de miembros.
+    Solo se puede cambiar el email propio, nunca el de los demás. El rol ya no se cambia aquí:
+    un club tiene un solo capitán y la capitanía se traspasa con ``transfer_captaincy``.
+    Redirige a la página de miembros.
     """
     membership = get_object_or_404(Membership, public_id=membership_id, club=request.club)
-    role = request.POST.get("role")
     # Cada usuario solo puede cambiar su propio email. Antes un capitán podía cambiar el de
     # cualquier miembro y, con «Entrar con Google» (que entra en la cuenta cuyo email
     # coincide), quedarse con la cuenta de ese miembro.
     if membership.user_id == request.user.id and "email" in request.POST:
-        error = _change_own_email(request.user, request.POST.get("email", "").strip())
+        error = _change_own_email(request, request.user, request.POST.get("email", "").strip())
         if error:
             messages.error(request, error)
-            return redirect("club_members")
-    if role not in dict(Membership.ROLES):
-        messages.error(request, _("Rol no válido."))
-    elif role != Membership.ADMIN and is_last_admin(membership):
-        messages.error(request, _("El club debe tener al menos un capitán."))
-    else:
-        membership.role = role
-        membership.save()
     return redirect("club_members")
 
 
-def _change_own_email(user, email):
-    """Cambia el email del propio usuario; devuelve el mensaje de error o None."""
+@club_admin_required
+@require_POST
+def transfer_captaincy_view(request, membership_id):
+    """
+    Traspasa la capitanía del club al miembro elegido (solo el capitán, solo POST). El nuevo
+    capitán tiene que estar enlazado a un jugador del club; el actual pasa a ser miembro.
+    """
+    target = get_object_or_404(Membership.objects.select_related("user"), public_id=membership_id, club=request.club)
+    try:
+        transfer_captaincy(request.club, request.membership, target)
+    except CaptaincyError as exc:
+        messages.error(request, str(exc))
+        return redirect("club_members")
+    messages.success(request, _("%(username)s es ahora el capitán de %(club)s. Tú sigues en el club como miembro.")
+                     % {"username": target.user.username, "club": request.club.name})
+    return redirect("home")
+
+
+def _change_own_email(request, user, email):
+    """
+    Cambia el email del propio usuario y le manda el enlace para confirmarlo; devuelve el
+    mensaje de error o None.
+    """
     email = email.lower()
     if email == (user.email or "").lower():
         return None
+    if not email:
+        return _("El email es obligatorio: lo necesitas para recuperar tu contraseña y recibir los informes.")
     try:
-        validate_email(email) if email else None
+        validate_email(email)
     except ValidationError:
         return _("'%(email)s' no es un email válido.") % {"email": email}
     if email and User.objects.filter(email__iexact=email).exclude(pk=user.pk).exists():
@@ -493,7 +557,122 @@ def _change_own_email(user, email):
     user.save(update_fields=["email"])
     # El email verificado (Google) era el anterior: allauth no debe seguir dándolo por bueno.
     EmailAddress.objects.filter(user=user).exclude(email__iexact=email).delete()
+    email_verification.start_verification(request, user)
     return None
+
+
+@login_required
+def my_profile(request):
+    """
+    «Mi perfil»: email y contraseña de la cuenta y, con club activo, su jugador.
+
+    El email se cambia aquí (``?edit=email``) pidiendo la contraseña actual; la contraseña,
+    en la página de allauth. Las cuentas creadas con Google y sin contraseña ven su email
+    sin poder cambiarlo: lo gestiona Google. Con jugador enlazado se muestra para ir a
+    editarlo; sin él, se ofrece enlazarse a uno (players.views.my_player).
+    """
+    user = request.user
+    google_only = not user.has_usable_password()
+    email_form = None
+    if request.method == "POST" and "report_scope" in request.POST:
+        defaults = {}
+        scope = request.POST["report_scope"]
+        if scope in dict(REPORT_SCOPES):
+            defaults["report_scope"] = scope
+        if "monthly_form" in request.POST:
+            defaults["monthly_report"] = request.POST.get("monthly_report") == "on"
+            if request.POST.get("monthly_scope") in dict(REPORT_SCOPES):
+                defaults["monthly_scope"] = request.POST["monthly_scope"]
+        if defaults:
+            UserPreference.objects.update_or_create(user=user, defaults=defaults)
+            messages.success(request, _("Preferencias guardadas."))
+        return redirect("my_profile")
+    if not google_only and (request.method == "POST" or request.GET.get("edit") == "email"):
+        email_form = EmailChangeForm(request.POST or None, user=user)
+        if email_form.is_valid():
+            _change_own_email(request, user, email_form.cleaned_data["email"])
+            messages.success(request, _("Email actualizado."))
+            return redirect("my_profile")
+    elif request.method == "POST":
+        return redirect("my_profile")
+    return render(request, "my_profile.html", {
+        "google_only": google_only,
+        "uses_google": SocialAccount.objects.filter(user=user, provider="google").exists(),
+        "email_form": email_form,
+        "report_scopes": REPORT_SCOPES,
+        "report_scope": UserPreference.report_scope_for(user),
+        "monthly_report": UserPreference.monthly_for(user)[0],
+        "monthly_scope": UserPreference.monthly_for(user)[1],
+        "player": Player.objects.filter(club=request.club, user=user).first() if request.club else None,
+        "email_unverified": bool(user.email) and not google_only and not email_verification.is_verified(user),
+    })
+
+
+@login_required
+@require_POST
+def resend_verification(request):
+    """Vuelve a enviar el enlace para confirmar el email de la cuenta (solo POST, con límite por IP)."""
+    if ratelimit.too_many(request, "resend-verification", RESEND_LIMIT, RESEND_WINDOW):
+        return render(request, "429.html", status=429)
+    if request.user.email and not email_verification.is_verified(request.user):
+        if email_verification.start_verification(request, request.user):
+            messages.success(request, _("Te hemos enviado un enlace para confirmar tu email."))
+        else:
+            messages.error(request, _("No se pudo enviar el correo. Inténtalo de nuevo más tarde."))
+    return redirect("my_profile")
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def delete_account_view(request):
+    """
+    «Eliminar mi cuenta» (desde «Mi perfil»). Un capitán no puede hasta traspasar la capitanía a otro
+    jugador enlazado (``core.services.account_delete_blocker``). Para confirmar hay que escribir la
+    contraseña o, en las cuentas de Google sin contraseña, el nombre de usuario. Opcionalmente se
+    elimina también su ficha de jugador; si no, la ficha se queda en el club sin cuenta ni foto.
+    Después se cierra la sesión.
+    """
+    user = request.user
+    blocker = account_delete_blocker(user)
+    needs_password = user.has_usable_password()
+    player = Player.objects.filter(user=user).select_related("club").first()
+    error = ""
+    if request.method == "POST" and not blocker:
+        if ratelimit.too_many(request, "delete-account", DELETE_ACCOUNT_LIMIT, DELETE_ACCOUNT_WINDOW):
+            return render(request, "429.html", status=429)
+        typed = request.POST.get("confirm", "")
+        confirmed = user.check_password(typed) if needs_password else typed.strip().lower() == user.username.lower()
+        if not confirmed:
+            error = _("La contraseña no es correcta.") if needs_password else _("Escribe tu nombre de usuario tal cual para confirmar.")
+        else:
+            delete_player = request.POST.get("delete_player") == "on"
+            # Se cierra la sesión antes de borrar: las señales de logout necesitan al usuario guardado.
+            logout(request)
+            with transaction.atomic():
+                delete_account(user, delete_player=delete_player)
+            messages.success(request, _("Tu cuenta se ha eliminado. Gracias por haber usado Zyra."))
+            return redirect("home")
+    return render(request, "delete_account.html", {
+        "blocker": blocker, "needs_password": needs_password, "player": player, "error": error,
+    })
+
+
+@require_http_methods(["GET", "POST"])
+def monthly_unsubscribe(request, token):
+    """
+    Baja de los correos mensuales desde el enlace del email, sin iniciar sesión.
+
+    El GET solo pide confirmación (los antivirus y clientes de correo abren los enlaces
+    solos); el POST, con el token CSRF de esa página, desactiva el correo. El token firmado de
+    la URL identifica a la cuenta.
+    """
+    user = user_from_token(token)
+    if user is None:
+        return render(request, "monthly_unsubscribe.html", {"invalid": True}, status=404)
+    if request.method == "POST":
+        UserPreference.objects.update_or_create(user=user, defaults={"monthly_report": False})
+        return render(request, "monthly_unsubscribe.html", {"done": True})
+    return render(request, "monthly_unsubscribe.html")
 
 
 @club_admin_required
@@ -506,8 +685,8 @@ def remove_member(request, membership_id):
     No permite quitar al último capitán. Redirige a la página de miembros.
     """
     membership = get_object_or_404(Membership.objects.select_related("user"), public_id=membership_id, club=request.club)
-    if is_last_admin(membership):
-        messages.error(request, _("El club debe tener al menos un capitán."))
+    if is_last_admin(membership) and membership.user_id != request.user.id:
+        messages.error(request, _("No puedes quitar al capitán: traspasa antes la capitanía."))
     elif membership.user_id == request.user.id:
         # Quitarse a uno mismo es abandonar el club: se hace desde el menú, con su aviso.
         return leave_club(request)
@@ -543,7 +722,8 @@ def leave_club(request):
         messages.success(request, _("Has abandonado %(club)s y el club se ha eliminado con todos sus datos.") % {"club": club_name})
         return redirect("home")
     if is_last_admin(membership):
-        messages.error(request, _("Eres el único capitán de %(club)s: nombra a otro capitán antes de abandonar el club.")
+        messages.error(request, _("Eres el capitán de %(club)s: traspasa la capitanía a otro jugador enlazado antes de "
+                                  "abandonar el club. Para eliminar el club, quita antes a todos los miembros.")
                        % {"club": membership.club.name})
         return redirect("club_members")
     club_name = membership.club.name
@@ -554,7 +734,7 @@ def leave_club(request):
 
 
 # Fecha de la última revisión de las páginas legales (cámbiala al editar sus textos).
-LEGAL_UPDATED = datetime.date(2026, 10, 6)
+LEGAL_UPDATED = datetime.date(2026, 10, 12)
 
 TEXT_PLAIN = "text/plain"
 

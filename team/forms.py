@@ -69,6 +69,8 @@ class Teamform (forms.ModelForm):
                 cleaned[field] = getattr(self.own_team, field)
                 setattr(self.instance, field, cleaned[field])
                 self.errors.pop(field, None)
+        if self.instance.is_own:
+            cleaned['in_group'] = True  # el equipo propio nunca sale del grupo
         name, division = cleaned.get('name'), cleaned.get('division')
         if name and division:
             others = Team.objects.filter(club=self.club, division__in=[division, ""]).exclude(pk=self.instance.pk)

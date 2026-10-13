@@ -1,0 +1,11 @@
+{# Barras por semana. Uso: {% include 'backoffice/includes/week_bars.html' with rows=... label="..." %} (rows: {'week', 'n', 'pct'}) #}
+{% load i18n l10n %}
+<ol class="bo-bars bo-bars--weeks" style="--n: {{ rows|length }}" aria-label="{{ label }}">
+    {% for w in rows %}
+    {% with week=w.week|date:'j M' %}<li title="{% blocktranslate with n=w.n %}Semana del {{ week }}: {{ n }}{% endblocktranslate %}">{% endwith %}
+        <span class="bo-bar" style="--h: {{ w.pct|unlocalize }}%"></span>
+        <b>{{ w.n }}</b>
+        <small>{{ w.week|date:"j/n" }}</small>
+    </li>
+    {% endfor %}
+</ol>

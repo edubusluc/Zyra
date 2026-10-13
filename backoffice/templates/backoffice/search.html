@@ -1,0 +1,40 @@
+{% extends 'backoffice/base.html' %}
+{% load i18n %}
+{% block title %}{% translate "Buscar" %}{% endblock %}
+
+{% block content %}
+<div class="z-page-head">
+    <div>
+        <span class="z-eyebrow">{% translate "Clubes, usuarios, equipos y jugadores" %}</span>
+        <h1>{% translate "Buscar" %}</h1>
+    </div>
+</div>
+
+<form method="get" class="bo-filters" role="search">
+    <input type="search" name="q" value="{{ q }}" class="form-control" minlength="2" autofocus placeholder="{% translate 'Nombre, email o id público (CLB…, TEA…, PLY…, RUN…)' %}" aria-label="{% translate 'Buscar' %}">
+    <button class="btn btn-primary"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> {% translate "Buscar" %}</button>
+</form>
+
+{% if q and not total %}<p class="text-muted">{% translate "Sin resultados." %}</p>{% endif %}
+
+{% if results.clubs %}
+<section class="z-panel"><h2 class="h5">{% translate "Clubes" %}</h2><ul class="bo-list">
+    {% for c in results.clubs %}<li><a href="{% url 'backoffice:club_detail' c.public_id %}">{{ c.name }}</a><small class="text-muted ms-auto">{{ c.public_id }}</small></li>{% endfor %}
+</ul></section>
+{% endif %}
+{% if results.users %}
+<section class="z-panel"><h2 class="h5">{% translate "Usuarios" %}</h2><ul class="bo-list">
+    {% for u in results.users %}<li><a href="{% url 'backoffice:user_detail' u.id %}">{{ u.username }}</a><span class="text-muted">{{ u.email|default:"—" }}</span></li>{% endfor %}
+</ul></section>
+{% endif %}
+{% if results.teams %}
+<section class="z-panel"><h2 class="h5">{% translate "Equipos" %}</h2><ul class="bo-list">
+    {% for t in results.teams %}<li>{% if t.club %}<a href="{% url 'backoffice:club_detail' t.club.public_id %}">{{ t.name }}</a> <span class="text-muted">{{ t.club.name }}</span>{% else %}{{ t.name }}{% endif %}<small class="text-muted ms-auto">{{ t.public_id }}</small></li>{% endfor %}
+</ul></section>
+{% endif %}
+{% if results.players %}
+<section class="z-panel"><h2 class="h5">{% translate "Jugadores" %}</h2><ul class="bo-list">
+    {% for p in results.players %}<li>{% if p.club %}<a href="{% url 'backoffice:club_detail' p.club.public_id %}">{{ p.full_name }}</a> <span class="text-muted">{{ p.club.name }}</span>{% else %}{{ p.full_name }}{% endif %}<small class="text-muted ms-auto">{{ p.public_id }}</small></li>{% endfor %}
+</ul></section>
+{% endif %}
+{% endblock %}

@@ -25,6 +25,13 @@ PAGES = [
     ("backoffice:load", []),
     ("backoffice:job_list", []),
     ("backoffice:run_list", []),
+    ("backoffice:usage", []),
+    ("backoffice:health", []),
+    ("backoffice:unverified_list", []),
+    ("backoffice:search", []),
+    ("backoffice:audit_list", []),
+    ("backoffice:email_log", []),
+    ("backoffice:task_list", []),
 ]
 
 
@@ -281,7 +288,7 @@ class ManualJobWithParamsTests(TestCase):
         job = sync_jobs().get()
         self.assertIsNone(job.next_run_at)
         self.assertEqual(run_due_jobs(), [])
-        self.assertFalse(scheduler_is_late())
+        self.assertFalse(scheduler_is_late())  # la pasada anota que el lanzador está vivo
         page = self.client.get(reverse("backoffice:job_detail", args=["param_job"]))
         self.assertContains(page, "Solo a mano")
         self.assertContains(page, 'name="days"')
@@ -422,8 +429,10 @@ class SchedulerTests(TestCase):
         self.assertGreater(ScheduledJob.objects.get(pk=job.pk).heartbeat_at, started)
 
     def test_scheduler_is_late(self):
-        from .scheduler import scheduler_is_late, sync_jobs
+        from .scheduler import scheduler_is_late, sync_jobs, touch_scheduler
         sync_jobs()
+        self.assertTrue(scheduler_is_late())  # el lanzador no ha pasado nunca
+        touch_scheduler()
         self.assertFalse(scheduler_is_late())
         ScheduledJob.objects.filter(name="ok_job").update(next_run_at=timezone.now() - datetime.timedelta(minutes=30))
         self.assertTrue(scheduler_is_late())
@@ -562,6 +571,11 @@ class SqlConsoleTests(TestCase):
         self.assertTrue(Club.objects.filter(name="Club A").exists())
         # La conexión vuelve a admitir escrituras después de una consulta.
         Club.objects.create(name="Club B")
+
+    def test_overlong_query_is_rejected(self):
+        from . import sql
+        with self.assertRaisesMessage(sql.QueryError, "demasiado larga"):
+            sql.run("SELECT 1 -- " + "x" * sql.MAX_LENGTH)
 
     def test_sensitive_data_is_hidden(self):
         from . import sql
@@ -768,3 +782,121 @@ class SqlRelationTests(TestCase):
         match = next(t for t in sql.schema() if t["name"] == "match_match")
         local = next(c for c in match["columns"] if c["name"] == "local_id")
         self.assertEqual(local["target"], "team_team")
+
+
+class UsageAndHealthTests(TestCase):
+    """Páginas de uso de la plataforma y salud de los servicios con datos."""
+
+    def setUp(self):
+        from call.models import Call, ReportDelivery
+        from players.models import SnpAccount
+
+        self.member = User.objects.create_user("member", password="pass-12345")
+        self.club = create_club("Club A", "Sevilla", self.member)
+        today = timezone.localdate()
+        match = Match.objects.create(club=self.club, local=self.club.own_team, start_date=today, rival_name="Rival",
+                                     draft_mode=False)
+        call = Call.objects.create(match=match, draft_mode=False)
+        ReportDelivery.objects.create(call=call, email="a@example.com", status=ReportDelivery.SENT, attempts=2)
+        ReportDelivery.objects.create(call=call, email="b@example.com", status=ReportDelivery.FAILED, attempts=5,
+                                      last_error="SMTP caído")
+        account = SnpAccount(club=self.club, last_sync_ok=False, last_sync_message="Contraseña rechazada")
+        account.username = "user"
+        account.password = "secret"
+        account.save()
+        User.objects.create_user("staff", password="pass-12345", is_staff=True)
+        self.client.login(username="staff", password="pass-12345")
+
+    def test_usage(self):
+        response = self.client.get(reverse("backoffice:usage"))
+        usage = response.context["usage"]
+        self.assertEqual(usage["totals"]["matches"], 1)
+        self.assertEqual(usage["totals"]["calls"], 1)
+        features = {f["label"]: f for f in usage["features"]}
+        self.assertEqual(features["Han cerrado una convocatoria"]["pct"], 100)
+        self.assertEqual(features["Tienen cuenta SNP"]["n"], 1)
+        self.assertEqual(features["Han hecho una alineación"]["n"], 0)
+        self.assertContains(response, "Club A")
+
+    def test_health(self):
+        response = self.client.get(reverse("backoffice:health"))
+        health = response.context["health"]
+        self.assertEqual((health["reports"]["sent"], health["reports"]["failed"], health["reports"]["retried"]), (1, 1, 1))
+        self.assertEqual(health["reports"]["ok_pct"], 50)
+        self.assertEqual(health["snp"]["failed"], 1)
+        self.assertContains(response, "SMTP caído")
+        self.assertContains(response, "Contraseña rechazada")
+
+
+class UnverifiedAccountsTests(TestCase):
+    """Cuentas con el email sin confirmar: listado, aviso, eliminación y registro."""
+
+    def setUp(self):
+        from allauth.account.models import EmailAddress
+        self.staff = User.objects.create_user("staff", password="pass-12345", is_staff=True)
+        self.pending = User.objects.create_user("pendiente", "p@example.com", "pass-12345")
+        self.verified = User.objects.create_user("verificada", "v@example.com", "pass-12345")
+        EmailAddress.objects.create(user=self.verified, email="v@example.com", verified=True, primary=True)
+        self.client.login(username="staff", password="pass-12345")
+
+    def test_lists_only_unverified_non_staff(self):
+        response = self.client.get(reverse("backoffice:unverified_list"))
+        self.assertEqual([u.username for u in response.context["page"]], ["pendiente"])
+
+    def test_non_staff_gets_404(self):
+        self.client.login(username="verificada", password="pass-12345")
+        self.assertEqual(self.client.get(reverse("backoffice:unverified_list")).status_code, 404)
+
+    def test_warn_sends_email_with_link_and_logs(self):
+        from django.core import mail
+        from .models import AccountNoticeLog
+        self.client.post(reverse("backoffice:unverified_warn", args=[self.pending.id]), {"days": "3"})
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("/confirm-email/", mail.outbox[0].body)
+        entry = AccountNoticeLog.objects.get()
+        self.assertEqual((entry.action, entry.performed_by, entry.email_sent, entry.email), ("warning", self.staff, True, "p@example.com"))
+        self.assertAlmostEqual((entry.deadline_at - timezone.now()).days, 2, delta=1)
+
+    def test_warn_logs_even_if_email_fails(self):
+        from unittest import mock
+        from .models import AccountNoticeLog
+        with mock.patch("core.emails.EmailMultiAlternatives.send", side_effect=OSError):
+            self.client.post(reverse("backoffice:unverified_warn", args=[self.pending.id]))
+        self.assertFalse(AccountNoticeLog.objects.get().email_sent)
+
+    def test_cannot_warn_verified_account(self):
+        response = self.client.post(reverse("backoffice:unverified_warn", args=[self.verified.id]))
+        self.assertEqual(response.status_code, 404)
+
+    def test_delete_needs_expired_warning_and_typed_username(self):
+        from .models import AccountNoticeLog
+        url = reverse("backoffice:unverified_delete", args=[self.pending.id])
+        self.client.post(url, {"confirm": "pendiente"})
+        self.assertTrue(User.objects.filter(pk=self.pending.pk).exists())  # sin aviso
+        self.client.post(reverse("backoffice:unverified_warn", args=[self.pending.id]))
+        self.client.post(url, {"confirm": "pendiente"})
+        self.assertTrue(User.objects.filter(pk=self.pending.pk).exists())  # plazo vigente
+        AccountNoticeLog.objects.update(deadline_at=timezone.now() - datetime.timedelta(minutes=1))
+        self.client.post(url, {"confirm": "otro"})
+        self.assertTrue(User.objects.filter(pk=self.pending.pk).exists())  # confirmación errónea
+        self.client.post(url, {"confirm": "PENDIENTE"})
+        self.assertFalse(User.objects.filter(pk=self.pending.pk).exists())
+        entry = AccountNoticeLog.objects.filter(action="deleted").get()
+        self.assertEqual((entry.username, entry.email, entry.performed_by), ("pendiente", "p@example.com", self.staff))
+
+    def test_pending_captain_is_not_deleted(self):
+        from .models import AccountNoticeLog
+        create_club("Club B", "Sevilla", self.pending)
+        self.client.post(reverse("backoffice:unverified_warn", args=[self.pending.id]))
+        AccountNoticeLog.objects.update(deadline_at=timezone.now() - datetime.timedelta(minutes=1))
+        self.client.post(reverse("backoffice:unverified_delete", args=[self.pending.id]), {"confirm": "pendiente"})
+        self.assertTrue(User.objects.filter(pk=self.pending.pk).exists())
+        self.assertFalse(AccountNoticeLog.objects.filter(action="deleted").exists())
+
+    def test_state_filter(self):
+        from .models import AccountNoticeLog
+        self.client.post(reverse("backoffice:unverified_warn", args=[self.pending.id]))
+        names = lambda s: [u.username for u in self.client.get(reverse("backoffice:unverified_list"), {"state": s}).context["page"]]
+        self.assertEqual((names("no_notice"), names("waiting"), names("overdue")), ([], ["pendiente"], []))
+        AccountNoticeLog.objects.update(deadline_at=timezone.now() - datetime.timedelta(minutes=1))
+        self.assertEqual(names("overdue"), ["pendiente"])

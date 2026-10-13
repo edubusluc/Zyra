@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static i18n %}
+{% block page_title %}{% translate "Jugadores" %} · {% endblock %}
 
 {% block content %}
 <div class="z-page-head">
@@ -10,41 +11,46 @@
     {% if is_club_admin %}
     <div class="z-actions">
         {% if snp_import_enabled %}
-        {% if snp_import_last %}
-        <button type="button" class="btn btn-secondary" disabled title="{% blocktranslate with date=snp_import_next|date:'d/m/Y' %}Ya se ha completado este mes. Podrás volver a hacerlo a partir del {{ date }}.{% endblocktranslate %}"><i class="fa-solid fa-users-rays me-1"></i> {% translate "Completar equipo" %}</button>
+        {% if snp_import_done %}
+        {# Ya se completó desde la web: a partir de ahora lo hace el proceso automático. #}
+        {% elif snp_import_blocked %}
+        <span class="small text-muted align-self-center">{% translate "Completar equipo no está disponible: hemos avisado al administrador para que revise el proceso." %}</span>
+        {% elif snp_service_off %}
+        <button type="button" class="btn btn-secondary" disabled title="{% translate 'La conexión con SNP no está disponible ahora mismo. Inténtalo más tarde.' %}"><i class="fa-solid fa-users-rays me-1" aria-hidden="true"></i> {% translate "Completar equipo" %}</button>
+        <span class="small text-muted align-self-center">{% translate "Servicio de SNP no disponible por ahora." %}</span>
+        {% elif snp_import_wait %}
+        <button type="button" class="btn btn-secondary" disabled title="{% blocktranslate with date=snp_import_wait|date:'d/m/Y H:i' %}Has buscado tu equipo en SNP varias veces seguidas. Podrás volver a intentarlo a partir del {{ date }}.{% endblocktranslate %}"><i class="fa-solid fa-users-rays me-1" aria-hidden="true"></i> {% translate "Completar equipo" %}</button>
         {% else %}
-        <form method="post" action="{% url 'complete_team_start' %}" class="d-inline">{% csrf_token %}
-            <button type="submit" class="btn btn-secondary" title="{% translate 'Añade los jugadores de tu equipo de SNP que todavía no están en Zyra' %}"><i class="fa-solid fa-users-rays me-1"></i> {% translate "Completar equipo" %}</button>
+        {# Se desactiva al enviarlo: un doble clic no lanza dos búsquedas en SNP. #}
+        <form method="post" action="{% url 'complete_team_start' %}" class="d-inline" onsubmit="this.querySelector('button').disabled = true;">{% csrf_token %}
+            <button type="submit" class="btn btn-secondary" title="{% translate 'Añade los jugadores de tu equipo de SNP que todavía no están en Zyra y actualiza los puntos de los que ya están' %}"><i class="fa-solid fa-users-rays me-1" aria-hidden="true"></i> {% translate "Completar equipo" %}</button>
         </form>
         {% endif %}
         {% endif %}
-        <a href="{% url 'manage_roster' %}" class="btn btn-secondary"><i class="fa-solid fa-user-check me-1"></i> {% translate "Gestionar plantilla" %}</a>
-        <a href="{% url 'create_player' %}" class="btn btn-primary"><i class="fa-solid fa-plus me-1"></i> {% translate "Nuevo jugador" %}</a>
+        <a href="{% url 'manage_roster' %}" class="btn btn-secondary"><i class="fa-solid fa-user-check me-1" aria-hidden="true"></i> {% translate "Gestionar plantilla" %}</a>
+        <a href="{% url 'create_player' %}" class="btn btn-primary"><i class="fa-solid fa-plus me-1" aria-hidden="true"></i> {% translate "Nuevo jugador" %}</a>
     </div>
     {% endif %}
 </div>
 
+{# Mismo buscador en vivo que el selector de las convocatorias (static/js/player-selector.js) #}
+<div data-selector data-page-size="9">
 <div class="z-toolbar">
     <div class="z-toolbar-group">
-        <form method="get" class="z-search" id="search-form" role="search">
-            <input type="hidden" name="order_by" value="{{ order_by }}">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="search" name="search" id="player-search" placeholder="{% translate 'Buscar jugador...' %}" value="{{ search }}" aria-label="{% translate 'Buscar jugador' %}">
-        </form>
-        {% if search %}
-        <span class="text-muted small">{% blocktranslate trimmed count n=players.paginator.count %}{{ n }} resultado{% plural %}{{ n }} resultados{% endblocktranslate %}</span>
-        <a href="?order_by={{ order_by }}" class="btn btn-outline-secondary btn-sm">{% translate "Limpiar" %}</a>
-        {% endif %}
+        <div class="z-search">
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+            <input type="search" placeholder="{% translate 'Buscar jugador...' %}" data-selector-search aria-label="{% translate 'Buscar jugador' %}">
+        </div>
     </div>
 
     <div class="z-toolbar-group">
         <div class="z-segmented" role="group" aria-label="{% translate 'Ordenar por' %}">
-            <a href="?order_by=name&search={{ search }}" class="btn btn-sm {% if order_by == 'name' %}active{% endif %}">{% translate "Nombre" %}</a>
-            <a href="?order_by=-snp_score&search={{ search }}" class="btn btn-sm {% if order_by == '-snp_score' %}active{% endif %}">SNP</a>
+            <a href="?order_by=name" class="btn btn-sm {% if order_by == 'name' %}active{% endif %}">{% translate "Nombre" %}</a>
+            <a href="?order_by=-snp_score" class="btn btn-sm {% if order_by == '-snp_score' %}active{% endif %}">SNP</a>
         </div>
         <div class="z-segmented" role="group" aria-label="{% translate 'Cambiar vista' %}">
-            <button type="button" class="btn btn-sm active" id="btn-view-cards" aria-label="{% translate 'Vista de tarjetas' %}"><i class="fa-solid fa-grip"></i></button>
-            <button type="button" class="btn btn-sm" id="btn-view-table" aria-label="{% translate 'Vista de tabla' %}"><i class="fa-solid fa-list"></i></button>
+            <button type="button" class="btn btn-sm active" id="btn-view-cards" aria-label="{% translate 'Vista de tarjetas' %}"><i class="fa-solid fa-grip" aria-hidden="true"></i></button>
+            <button type="button" class="btn btn-sm" id="btn-view-table" aria-label="{% translate 'Vista de tabla' %}"><i class="fa-solid fa-list" aria-hidden="true"></i></button>
         </div>
     </div>
 </div>
@@ -52,9 +58,9 @@
 <!-- ============ VISTA TARJETAS ============ -->
 <div class="z-grid" id="cards-view">
     {% for player in players %}
-    <div class="z-card z-card--link z-player">
+    <div class="z-card z-card--link z-player" data-selector-item data-key="{{ player.public_id }}" data-name="{{ player.full_name }}">
         {% if is_club_admin %}
-        <a href="{% url 'edit_player' player.public_id %}" class="z-edit" aria-label="{% blocktranslate with name=player.name|upper %}Editar a {{ name }}{% endblocktranslate %}"><i class="fa-solid fa-pen"></i></a>
+        <a href="{% url 'edit_player' player.public_id %}" class="z-edit" aria-label="{% blocktranslate with name=player.name|upper %}Editar a {{ name }}{% endblocktranslate %}"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
         {% endif %}
         {% if player.photo %}
         <img src="{{ player.photo.url }}" alt="" class="z-avatar z-avatar--lg">
@@ -64,9 +70,9 @@
         <div class="min-w-0">
             <h2 class="z-player-name"><a href="{% url 'show_player' player.public_id %}" class="stretched-link text-reset">{{ player.short_name }}</a></h2>
             <p class="z-player-meta">
-                <span><i class="fa-solid fa-location-crosshairs"></i>{{ player.get_position_display }}</span>
-                <span><i class="fa-solid fa-hand"></i>{{ player.get_skillfull_hand_display }}</span>
-                <span><i class="fa-solid fa-trophy"></i>SNP {{ player.snp_score|default:"-" }}</span>
+                <span><i class="fa-solid fa-location-crosshairs" aria-hidden="true"></i>{{ player.get_position_display }}</span>
+                <span><i class="fa-solid fa-hand" aria-hidden="true"></i>{{ player.get_skillfull_hand_display }}</span>
+                <span><i class="fa-solid fa-trophy" aria-hidden="true"></i>SNP {{ player.snp_score|default:"-" }}</span>
             </p>
             <div class="z-player-tags">
                 {% if is_club_admin and not player.in_team %}
@@ -77,12 +83,12 @@
     </div>
     {% empty %}
     <div class="z-empty" style="grid-column: 1 / -1;">
-        <i class="fa-solid fa-user-slash"></i>
-        {% if search %}{% blocktranslate %}No hay jugadores que coincidan con "{{ search }}".{% endblocktranslate %}{% else %}{% translate "Todavía no hay jugadores." %}
-        {% if snp_import_enabled and not snp_import_last %}<p class="mt-2 mb-0">{% translate "Pulsa «Completar equipo» para traer los jugadores de tu equipo de SNP sin tener que crearlos uno a uno." %}</p>{% endif %}
-        {% endif %}
+        <i class="fa-solid fa-user-slash" aria-hidden="true"></i>
+        {% translate "Todavía no hay jugadores." %}
+        {% if snp_import_enabled and not snp_import_done and not snp_import_blocked %}<p class="mt-2 mb-0">{% translate "Pulsa «Completar equipo» para traer los jugadores de tu equipo de SNP sin tener que crearlos uno a uno." %}</p>{% endif %}
     </div>
     {% endfor %}
+    <p class="z-empty" data-selector-empty hidden style="grid-column: 1 / -1;"><i class="fa-solid fa-user-slash" aria-hidden="true"></i> {% translate "Ningún jugador coincide con la búsqueda." %}</p>
 </div>
 
 <!-- ============ VISTA TABLA ============ -->
@@ -90,18 +96,18 @@
     <table class="table table-hover">
         <thead>
             <tr>
-                <th></th>
+                <th><span class="visually-hidden">{% translate "Foto" %}</span></th>
                 <th>{% translate "Nombre" %}</th>
                 <th>{% translate "Posición" %}</th>
                 <th>{% translate "Mano" %}</th>
                 <th>SNP</th>
                 <th>{% translate "Temporada" %}</th>
-                {% if is_club_admin %}<th>{% translate "Equipo" %}</th><th></th>{% endif %}
+                {% if is_club_admin %}<th>{% translate "Equipo" %}</th><th><span class="visually-hidden">{% translate "Acciones" %}</span></th>{% endif %}
             </tr>
         </thead>
         <tbody>
             {% for player in players %}
-            <tr style="cursor: pointer;" onclick="window.location='{% url 'show_player' player.public_id %}'">
+            <tr class="z-row-link" data-selector-item data-key="{{ player.public_id }}" data-name="{{ player.full_name }}" data-href="{% url 'show_player' player.public_id %}">
                 <td>
                     {% if player.photo %}
                     <img src="{{ player.photo.url }}" alt="" class="table-avatar">
@@ -118,25 +124,26 @@
                 <td>
                     {% if player.in_team %}<span class="z-badge z-badge--lime">{% translate "En el equipo" %}</span>{% else %}<span class="z-badge z-badge--danger">{% translate "Fuera" %}</span>{% endif %}
                 </td>
-                <td onclick="event.stopPropagation();">
-                    <a href="{% url 'edit_player' player.public_id %}" class="z-edit position-static" aria-label="{% translate 'Editar' %}"><i class="fa-solid fa-pen"></i></a>
+                <td data-row-ignore>
+                    <a href="{% url 'edit_player' player.public_id %}" class="z-edit position-static" aria-label="{% translate 'Editar' %}"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
                 </td>
                 {% endif %}
             </tr>
             {% empty %}
             <tr>
-                <td colspan="9" class="text-center py-4 text-muted">
-                    {% if search %}{% blocktranslate %}No hay jugadores que coincidan con "{{ search }}".{% endblocktranslate %}{% else %}{% translate "Todavía no hay jugadores." %}{% endif %}
-                </td>
+                <td colspan="9" class="text-center py-4 text-muted">{% translate "Todavía no hay jugadores." %}</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
 
-{% with extra='&order_by='|add:order_by|add:'&search='|add:search %}
-{% include 'includes/pagination.html' with page=players extra=extra %}
-{% endwith %}
+<nav class="st-pager" data-selector-pager aria-label="{% translate 'Páginas de jugadores' %}" hidden>
+    <button type="button" class="st-pager-btn" data-step="-1" aria-label="{% translate 'Anterior' %}"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
+    <span class="st-pager-info" aria-live="polite"></span>
+    <button type="button" class="st-pager-btn" data-step="1" aria-label="{% translate 'Siguiente' %}"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+</nav>
+</div>
 
 {% if snp_import %}
 <div class="modal fade" id="completeTeamModal" tabindex="-1" aria-labelledby="completeTeamTitle" aria-hidden="true" data-bs-backdrop="static">
@@ -169,33 +176,43 @@
                         </tbody>
                     </table>
                 </div>
+                <div class="z-callout z-callout--info my-3">
+                    <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                    <p class="mb-0">{% translate "Un detalle: SNP no dice en qué lado de la pista juega cada uno, así que los jugadores nuevos llegarán sin posición. Después, edita cada uno y elige su posición: te ayudará a montar mejor las parejas y las alineaciones." %}</p>
+                </div>
                 {% else %}
                 <p>{% translate "Todos los jugadores de tu equipo de SNP ya están en Zyra: no hay nadie nuevo que añadir." %}</p>
                 {% endif %}
                 {% if snp_import.existing %}
-                <p>{% blocktranslate with n=snp_import.existing|length %}No se añaden porque ya están registrados en el equipo ({{ n }}):{% endblocktranslate %}</p>
+                <p>{% blocktranslate with n=snp_import.existing|length %}Ya están registrados en el equipo; solo se actualizan sus puntos SNP ({{ n }}):{% endblocktranslate %}</p>
                 <div class="z-import-wrap">
                     <table class="z-import-table">
-                        <colgroup><col><col class="z-import-cat"><col class="z-import-last"></colgroup>
-                        <thead><tr><th>{% translate "Nombre en SNP" %}</th><th>{% translate "Categoría" %}</th><th>{% translate "Jugador en Zyra" %}</th></tr></thead>
+                        <colgroup><col><col><col class="z-import-cat"></colgroup>
+                        <thead><tr><th>{% translate "Nombre en SNP" %}</th><th>{% translate "Jugador en Zyra" %}</th><th class="text-end">{% translate "Puntos SNP" %}</th></tr></thead>
                         <tbody>
                         {% for p in snp_import.existing %}
-                        <tr><td>{{ p.snp_name|upper }}</td><td>{% include 'includes/snp_category.html' with category=p.category %}</td><td class="text-muted">{{ p.player }}</td></tr>
+                        <tr><td>{{ p.snp_name|upper }}</td><td class="text-muted">{{ p.player }}</td><td class="text-end">{% if p.player_id %}{{ p.score|floatformat:"-1" }}{% else %}<span class="text-muted">—</span>{% endif %}</td></tr>
                         {% endfor %}
                         </tbody>
                     </table>
                 </div>
                 {% endif %}
-                <p class="small text-muted mb-0">{% translate "Los jugadores que ya existen no se modifican. Solo se puede completar el equipo una vez al mes." %}</p>
+                {% if snp_import.teams_to_add %}
+                <p>{% blocktranslate trimmed count n=snp_import.teams_to_add|length %}Se va a crear <strong>{{ n }}</strong> equipo del grupo:{% plural %}Se van a crear <strong>{{ n }}</strong> equipos del grupo:{% endblocktranslate %}</p>
+                <ul>
+                    {% for t in snp_import.teams_to_add %}<li>{{ t.name }}{% if t.own %} <span class="badge text-bg-secondary">{% translate "Tu equipo" %}</span>{% endif %}</li>{% endfor %}
+                </ul>
+                {% endif %}
+                <p class="small text-muted mb-0">{% translate "De los jugadores que ya existen solo cambian los puntos SNP. Solo se puede completar el equipo una vez al mes." %}</p>
                 {% endif %}
             </div>
             <div class="modal-footer">
                 <form method="post" action="{% url 'complete_team_cancel' snp_import.public_id %}">{% csrf_token %}
-                    <button type="submit" class="btn btn-outline-secondary">{% if snp_import.to_add or snp_import.status == 'running' %}{% translate "Cancelar" %}{% else %}{% translate "Cerrar" %}{% endif %}</button>
+                    <button type="submit" class="btn btn-outline-secondary">{% if snp_import_changes or snp_import.status == 'running' %}{% translate "Cancelar" %}{% else %}{% translate "Cerrar" %}{% endif %}</button>
                 </form>
-                {% if snp_import.status == 'ready' and snp_import.to_add %}
-                <form method="post" action="{% url 'complete_team_confirm' snp_import.public_id %}">{% csrf_token %}
-                    <button type="submit" class="btn btn-primary">{% blocktranslate trimmed count n=snp_import.to_add|length %}Añadir {{ n }} jugador{% plural %}Añadir {{ n }} jugadores{% endblocktranslate %}</button>
+                {% if snp_import.status == 'ready' and snp_import_changes %}
+                <form method="post" action="{% url 'complete_team_confirm' snp_import.public_id %}" onsubmit="this.querySelector('button').disabled = true;">{% csrf_token %}
+                    <button type="submit" class="btn btn-primary">{% if snp_import.to_add %}{% blocktranslate trimmed count n=snp_import.to_add|length %}Añadir {{ n }} jugador{% plural %}Añadir {{ n }} jugadores{% endblocktranslate %}{% elif snp_import.teams_to_add %}{% translate "Crear equipos del grupo" %}{% else %}{% translate "Actualizar puntos SNP" %}{% endif %}</button>
                 </form>
                 {% endif %}
             </div>
@@ -234,13 +251,10 @@
 {% endif %}
 
 <script>
-    // Buscador con recarga automática (debounce): busca en todas las páginas
-    const searchInput = document.getElementById('player-search');
-    const searchForm = document.getElementById('search-form');
-    let debounceTimer;
-    searchInput.addEventListener('input', function () {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(function () { searchForm.submit(); }, 500);
+    // Toda la fila abre la ficha (el nombre sigue siendo un enlace para teclado y lectores)
+    document.getElementById('table-view').addEventListener('click', function (e) {
+        const row = e.target.closest('tr[data-href]');
+        if (row && !e.target.closest('a, [data-row-ignore]')) window.location = row.dataset.href;
     });
 
     // Vista tarjetas / tabla (se recuerda la última elegida)
@@ -261,4 +275,5 @@
     btnTable.addEventListener('click', function () { setView('table'); });
     try { if (localStorage.getItem('playerListView') === 'table') setView('table'); } catch (e) {}
 </script>
+<script src="{% static 'js/player-selector.js' %}" defer></script>
 {% endblock %}

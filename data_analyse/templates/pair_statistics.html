@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static i18n l10n %}
+{% block page_title %}{% if s %}{{ p1.short_name }} / {{ p2.short_name }}{% else %}{% translate "Estadísticas por parejas" %}{% endif %} · {% endblock %}
 
 {% block content %}
   <script src="{% static 'js/player-picker.js' %}" defer></script>
@@ -10,7 +11,7 @@
       <div>
         <h1 class="st-title">{% if s %}{{ p1.short_name }} / {{ p2.short_name }}{% else %}{% translate "Estadísticas por parejas" %}{% endif %}</h1>
         {% if s %}
-          <p class="st-subtitle">{% blocktranslate trimmed count n=s.played %}{{ n }} partido juntos{% plural %}{{ n }} partidos juntos{% endblocktranslate %} {% blocktranslate trimmed count n=s.matches %}en {{ n }} enfrentamiento{% plural %}en {{ n }} enfrentamientos{% endblocktranslate %} · <a href="{% url 'pair_statistics' %}{% if selected_match_type %}?match_type={{ selected_match_type }}{% endif %}">{% translate "Ver mejores y peores parejas" %}</a></p>
+          <p class="st-subtitle">{% blocktranslate trimmed count n=s.played %}{{ n }} partido juntos{% plural %}{{ n }} partidos juntos{% endblocktranslate %} {% blocktranslate trimmed count n=s.matches %}en {{ n }} enfrentamiento{% plural %}en {{ n }} enfrentamientos{% endblocktranslate %} · <a href="{% url 'pair_statistics' %}{% if selected_season or selected_match_type %}?{% if selected_season %}season={{ selected_season|urlencode:'' }}{% endif %}{% if selected_season and selected_match_type %}&amp;{% endif %}{% if selected_match_type %}match_type={{ selected_match_type }}{% endif %}{% endif %}">{% translate "Ver mejores y peores parejas" %}</a></p>
         {% else %}
           <p class="st-subtitle">{% translate "Busca dos jugadores para ver cómo rinden juntos." %}</p>
         {% endif %}
@@ -31,6 +32,7 @@
             <option value="{{ p.public_id }}" {% if p.public_id == selected_p2 %}selected{% endif %}>{{ p.full_name }}{% if not p.in_team %} {% translate "(fuera del equipo)" %}{% endif %}</option>
           {% endfor %}
         </select>
+        {% if selected_season %}<input type="hidden" name="season" value="{{ selected_season }}">{% endif %}
         {% if selected_match_type %}<input type="hidden" name="match_type" value="{{ selected_match_type }}">{% endif %}
         <button class="st-btn" type="submit">{% translate "Ver pareja" %}</button>
       </form>
@@ -43,6 +45,7 @@
         });
       </script>
     </header>
+    {% include 'includes/season_filter.html' %}
     {% include 'includes/match_type_filter.html' %}
 
     {% if error %}
@@ -117,6 +120,13 @@
         </div>
       </section>
 
+      {# ============ 1b. SETS ============ #}
+      <section aria-labelledby="pair-sets-title" class="st-section">
+        <h2 class="st-section-title" id="pair-sets-title">{% translate "Sets de la pareja" %}</h2>
+        {% translate "Sets" as t_title %}{% translate "Tercer set, tie-breaks, remontadas y roscos de la pareja jugando junta." as t_note %}
+        {% include 'includes/set_stats.html' with st=pair_sets title=t_title note=t_note %}
+      </section>
+
       {# ============ 2. ÚLTIMOS PARTIDOS ============ #}
       <section aria-labelledby="last-title" class="st-section">
         <h2 class="st-section-title" id="last-title">{% blocktranslate trimmed count n=last_games|length %}Últimos {{ n }} partido{% plural %}Últimos {{ n }} partidos{% endblocktranslate %}</h2>
@@ -161,12 +171,12 @@
           <article class="st-card">
             <h3 class="st-card-title">{% translate "Partidos jugados" %}</h3>
             <p class="st-card-note">{% translate "Ganados y perdidos en cada temporada." %}</p>
-            <div class="st-chart"><canvas id="chartPlayed"></canvas></div>
+            <div class="st-chart"><canvas id="chartPlayed" role="img" aria-label="{% translate "Partidos jugados" %}"></canvas></div>
           </article>
           <article class="st-card">
             <h3 class="st-card-title">{% translate "Evolución del % de victorias" %}</h3>
             <p class="st-card-note">{% translate "Porcentaje de partidos ganados juntos por temporada." %}</p>
-            <div class="st-chart"><canvas id="chartPct"></canvas></div>
+            <div class="st-chart"><canvas id="chartPct" role="img" aria-label="{% translate "Evolución del % de victorias" %}"></canvas></div>
           </article>
         </div>
 
@@ -211,7 +221,7 @@
       </section>
 
       {{ chart_seasons|json_script:"data-seasons" }}
-      <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
+      <script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
       <script src="{% static 'js/pair_statistics.js' %}"></script>
       {% endif %}
     {% endif %}
