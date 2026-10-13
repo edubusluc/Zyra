@@ -1,5 +1,6 @@
 """Pruebas del informe mensual por email (data, PDF, comando, preferencias y baja)."""
 import datetime
+import re
 from io import StringIO
 
 from django.contrib.auth import get_user_model
@@ -10,7 +11,7 @@ from django.urls import reverse
 
 from core.models import MonthlyReportDelivery, UserPreference
 from core.services import create_club
-from core.unsubscribe import unsubscribe_path, unsubscribe_token
+from core.unsubscribe import unsubscribe_path, unsubscribe_token, user_from_token
 from match.models import Game, Match, Result
 from match.monthly_pdf import render_monthly_report
 from match.monthly_report import build_monthly_report, previous_month
@@ -142,7 +143,11 @@ class CommandTests(MonthlyBase):
         self.assertEqual(message.to, ["ana@example.com"])
         self.assertEqual(message.attachments[0][0], "informe-mensual-2026-09.pdf")
         self.assertEqual(message.attachments[0][2], "application/pdf")
-        self.assertIn("https://zyra.example" + unsubscribe_path(self.user), message.body)
+        # El token lleva marca de tiempo: se valida el enlace, no se compara el texto exacto.
+        link = re.search(r"https://zyra\.example(/core/monthly-report/unsubscribe/[^/\s]+/)", message.body)
+        self.assertIsNotNone(link)
+        token = link.group(1).rstrip("/").rsplit("/", 1)[1]
+        self.assertEqual(user_from_token(token), self.user)
         self.assertIn("List-Unsubscribe", message.extra_headers)
         self.assertEqual(MonthlyReportDelivery.objects.get().sent_at is not None, True)
         # Segunda pasada: no repite
