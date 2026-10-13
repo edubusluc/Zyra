@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 13/10/2026 · «Entrar como» con edición
+
+- Con «Entrar como» el personal ya puede crear y corregir datos como el usuario para resolver incidencias sin pasar por la consola SQL: banner «Editando como…», motivo obligatorio, 30 minutos y cada cambio (POST/PUT/PATCH/DELETE) anotado en la auditoría como `impersonate.write` a nombre del personal real. Siguen bloqueados el perfil/cuenta (email, contraseña), abandonar o borrar el club y ver la clave de SNP
+
 ## 13/10/2026 · Back-office: salida a la web siempre visible
 
 - El menú lateral del back-office se desplaza por su cuenta y «Volver a la web» queda fijo al pie, así que ya no se pierde en pantallas bajas; en móvil el pie envuelve en varias líneas
