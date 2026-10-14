@@ -26,7 +26,8 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
   Tests: `core/tests_account_without_club.py`, `AccountsWithoutClubTests` en `backoffice/tests_ops.py`.
 - [V] Un club tiene un único capitán (restricción `unique_captain_per_club`). Se cede con
   `transfer_captaincy` (vista `transfer_captaincy_view`) solo a un miembro enlazado a un `Player` del club
-  (`eligible_successors`); el antiguo pasa a miembro. El capitán no puede quitarse ni abandonar sin ceder antes.
+  (`eligible_successors`); el antiguo pasa a miembro y se borra la `SnpAccount` del club (eran sus credenciales) y se reabre «Primeros pasos»
+  (`onboarding_dismissed_at=None`), que incluye la tarea «Registra tu cuenta de SNP». El capitán no puede quitarse ni abandonar sin ceder antes.
 - [V] Eliminar la cuenta («Mi perfil», `delete_account`): un capitán debe ceder antes la capitanía
   (`account_delete_blocker`); la ficha de jugador se desenlaza (o se borra si se elige). El capitán
   solo puede eliminar el club tras desvincular todas las demás cuentas. Tests: `core/tests_account_lifecycle.py`.

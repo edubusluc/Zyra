@@ -45,7 +45,7 @@
             {% if status == 'rejected' %}<td class="text-muted">{{ c.reason|default:"—" }}</td>{% endif %}
             <td class="text-end">
                 {% if c.in_use %}
-                <form method="post" action="{% url 'backoffice:photo_delete' c.public_id %}" class="d-flex flex-wrap gap-2 justify-content-end mb-2" onsubmit="return confirm('{% translate "¿Eliminar esta foto y avisar al usuario por email?" %}')">
+                <form method="post" action="{% url 'backoffice:photo_delete' c.public_id %}" class="d-flex flex-wrap gap-2 justify-content-end mb-2" data-confirm="{% translate "¿Eliminar esta foto y avisar al usuario por email?" %}">
                     {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
                     <input type="text" name="reason" maxlength="500" class="form-control form-control-sm" style="max-width:220px" placeholder="{% translate 'Motivo (opcional, va en el email)' %}" aria-label="{% translate 'Motivo' %}">
                     <button class="btn btn-outline-danger btn-sm"><i class="fa-solid fa-trash" aria-hidden="true"></i> {% translate "Eliminar y avisar" %}</button>

@@ -46,7 +46,7 @@
             <td>{{ t.assigned_to.username|default:"—" }}</td>
             <td class="text-end text-nowrap">
                 <form method="post" action="{% url 'backoffice:task_toggle' t.pk %}" class="d-inline">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn btn-outline-light btn-sm">{% if t.done_at %}{% translate "Reabrir" %}{% else %}{% translate "Hecha" %}{% endif %}</button></form>
-                <form method="post" action="{% url 'backoffice:task_delete' t.pk %}" class="d-inline" onsubmit="return confirm('{% translate "¿Borrar esta tarea?" %}')">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn btn-outline-danger btn-sm" aria-label="{% translate 'Borrar' %}"><i class="fa-solid fa-trash" aria-hidden="true"></i></button></form>
+                <form method="post" action="{% url 'backoffice:task_delete' t.pk %}" class="d-inline" data-confirm="{% translate "¿Borrar esta tarea?" %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn btn-outline-danger btn-sm" aria-label="{% translate 'Borrar' %}"><i class="fa-solid fa-trash" aria-hidden="true"></i></button></form>
             </td>
         </tr>
     {% empty %}
