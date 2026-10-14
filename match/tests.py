@@ -584,3 +584,85 @@ class FriendlyManualRivalTests(TestCase):
                 self.assertContains(self.client.get(url), "Pádel Norte")
         self.assertEqual(str(call), f"{self.own.name} vs Pádel Norte")
 
+
+
+class EditMatchDateTests(TestCase):
+    """Cambio de fecha de un partido ya creado."""
+
+    def setUp(self):
+        self.user = User.objects.create_user("admin", password="pass-12345")
+        self.club = create_club("Club A", "Sevilla", self.user)
+        self.rival = Team.objects.create(club=self.club, name="Rival", location="X", in_group=True)
+        self.match = Match.objects.create(club=self.club, local=self.club.own_team, visiting=self.rival,
+                                          start_date=datetime.date(2026, 3, 1))
+        self.client.force_login(self.user)
+        self.url = reverse("edit_match_date", args=[self.match.public_id])
+
+    def test_changes_date_and_recalculates_season(self):
+        self.assertEqual(self.match.season, "2025-2026")
+        response = self.client.post(self.url, {"start_date": "2026-11-15"})
+        self.assertRedirects(response, reverse("call_for_match", args=[self.match.public_id]))
+        self.match.refresh_from_db()
+        self.assertEqual(self.match.start_date, datetime.date(2026, 11, 15))
+        self.assertEqual(self.match.season, "2026-2027")
+
+    def test_invalid_date_shows_error(self):
+        response = self.client.post(self.url, {"start_date": "15/11/2026"})
+        self.assertContains(response, "Fecha no válida")
+        self.match.refresh_from_db()
+        self.assertEqual(self.match.start_date, datetime.date(2026, 3, 1))
+
+    def test_closed_match_cannot_change_date(self):
+        Match.objects.filter(pk=self.match.pk).update(draft_mode=False)
+        self.client.post(self.url, {"start_date": "2026-11-15"})
+        self.match.refresh_from_db()
+        self.assertEqual(self.match.start_date, datetime.date(2026, 3, 1))
+
+    def test_other_club_cannot_change_date(self):
+        other = User.objects.create_user("other", password="pass-12345")
+        create_club("Club B", "Madrid", other)
+        self.client.force_login(other)
+        self.client.post(self.url, {"start_date": "2026-11-15"})
+        self.match.refresh_from_db()
+        self.assertEqual(self.match.start_date, datetime.date(2026, 3, 1))
+
+    def test_link_shown_only_while_open(self):
+        page = self.client.get(reverse("call_for_match", args=[self.match.public_id]))
+        self.assertContains(page, self.url)
+        Match.objects.filter(pk=self.match.pk).update(draft_mode=False)
+        page = self.client.get(reverse("call_for_match", args=[self.match.public_id]))
+        self.assertNotContains(page, self.url)
+
+
+class PendingCloseLabelTests(TestCase):
+    """Etiqueta de la tarjeta: «Pdt. cerrar acta» con todos los resultados puestos, «Sin resultado» si falta alguno."""
+
+    def setUp(self):
+        self.user = User.objects.create_user("admin", password="pass-12345")
+        self.club = create_club("Club A", "Sevilla", self.user)
+        rival = Team.objects.create(club=self.club, name="Rival", location="X", in_group=True)
+        self.match = Match.objects.create(club=self.club, local=self.club.own_team, visiting=rival,
+                                          start_date=datetime.date(2020, 1, 10))
+        self.client.force_login(self.user)
+
+    def _games(self, with_results):
+        for n in range(1, 6):
+            game = Game.objects.create(match=self.match, n_game=n)
+            if n <= with_results:
+                Result.objects.create(game=game, set1_local="6", set1_visiting="2", set2_local="6", set2_visiting="3")
+
+    def test_all_results_shows_pending_close(self):
+        self._games(5)
+        page = self.client.get(reverse("list_match"), {"season": "all"})
+        self.assertContains(page, "Pdt. cerrar acta")
+        self.assertNotContains(page, "Sin resultado")
+
+    def test_missing_results_keeps_no_result(self):
+        self._games(4)
+        page = self.client.get(reverse("list_match"), {"season": "all"})
+        self.assertContains(page, "Sin resultado")
+        self.assertNotContains(page, "Pdt. cerrar acta")
+
+    def test_no_games_keeps_no_result(self):
+        page = self.client.get(reverse("list_match"), {"season": "all"})
+        self.assertContains(page, "Sin resultado")

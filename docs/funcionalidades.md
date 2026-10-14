@@ -103,6 +103,8 @@ El ciclo de un enfrentamiento ([`match.views`](referencia/match/views.md)):
    calendario propio de Zyra. Un selector «Datos del informe PDF» elige si las estadísticas del informe usan
    todos los partidos o solo los competitivos (los amistosos quedan fuera); su valor por defecto se guarda en
    «Mi perfil» (enlace «Edita tus preferencias» bajo el selector).
+   La fecha se puede cambiar después (lápiz junto a la fecha en la página del partido) mientras el acta no esté
+   cerrada; la temporada se recalcula y los listados, estadísticas e informe usan la nueva fecha.
 2. **Convocatoria**: elegir jugadores (con sus sanciones a la vista); se puede editar y cada
    cambio queda en el **registro de convocatoria** ([`callLog`](referencia/callLog/index.md)).
 3. **Cerrar convocatoria** (mínimo 10 jugadores): envía el **informe PDF** a los capitanes; lo que

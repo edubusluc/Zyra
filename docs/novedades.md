@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 14/10/2026 · Fecha editable
+
+- Partidos: la tarjeta del listado muestra «Pdt. cerrar acta» cuando todos los partidos del acta abierta ya tienen resultado (y «Sin resultado» mientras falte alguno)
+- Partidos: se puede cambiar la fecha de un partido creado (lápiz junto a la fecha, solo con el acta abierta); la temporada se recalcula
+
 ## 14/10/2026 · Contraseña para cuentas de Google
 
 - Las cuentas creadas con Google ven en «Mi perfil» el botón «Añadir contraseña» (sin pedir la actual, con la lista de requisitos en vivo y el ojo para mostrarla) y así pueden entrar también con usuario o email; el acceso con Google sigue funcionando

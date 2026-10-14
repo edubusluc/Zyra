@@ -7,7 +7,7 @@ from . import outcomes
 from django.shortcuts import render, redirect, get_object_or_404
 from core.decorators import club_required, club_admin_required
 from django.contrib import messages
-from .forms import MatchForm
+from .forms import MatchForm, MatchDateForm
 from .models import Match, Game, Result
 from . import lineup, outcomes
 from .notifications import send_call_report, report_filename
@@ -125,7 +125,8 @@ def list_match(request):
     con el resultado, la temporada de cada partido y un resumen de ganados, empatados,
     perdidos y pendientes de lo filtrado. Cada partido de la página lleva además los puntos
     de cada lado, cuántos convocados tiene y si es un partido próximo (sin resultado y con
-    fecha de hoy en adelante) para pintar su tarjeta.
+    fecha de hoy en adelante) y si solo le falta cerrar el acta (``pending_close``: 5 o más partidos,
+    todos con resultado) para pintar su tarjeta.
     """
     club_matches = Match.objects.filter(club=request.club).select_related('local', 'visiting')
     # Temporadas para el selector (desc), incluida la actual aunque aún no tenga partidos
@@ -178,13 +179,21 @@ def list_match(request):
     tiebreak_pairs = {
         g.match_id: g.pair_label for g in Game.objects.filter(
             match__in=[m for m in matches if m.no_draw and m.result_points == "6/6"], n_game=Match.TIEBREAK_GAME)}
+    # Actas abiertas con 5 partidos y todos con resultado: solo falta cerrarlas (dos consultas).
+    open_ids = [m.id for m in matches if m.draft_mode]
+    games_count = dict(Game.objects.filter(match_id__in=open_ids).values('match_id').annotate(n=Count('id'))
+                       .values_list('match_id', 'n'))
+    with_result = dict(Game.objects.filter(match_id__in=open_ids, results__isnull=False).values('match_id')
+                       .annotate(n=Count('id', distinct=True)).values_list('match_id', 'n'))
     for m in matches:
         m.outcome = match_outcome(m)
+        n = games_count.get(m.id, 0)
+        m.pending_close = m.draft_mode and n >= 5 and with_result.get(m.id, 0) == n
         m.tiebreak = m.id in tiebreak_pairs and m.outcome in ("V", "D")
         m.tiebreak_pair = tiebreak_pairs.get(m.id, "")
         m.local_points, m.visiting_points = split_points(m.result_points) if m.outcome else (None, None)
         m.called = called.get(m.id)
-        m.upcoming = m.outcome is None and m.start_date >= today
+        m.upcoming = m.outcome is None and not m.pending_close and m.start_date >= today
 
     # Resto de filtros para la paginación y para los formularios de búsqueda.
     keep = {'season': season, 'q': search, 'rival': rival, 'match_type': match_type}
@@ -216,6 +225,24 @@ def create_match(request):
         match = form.save()
         return redirect("call_for_match", match.public_id)
     return render(request, CREATE_MATCH_HTML, {"form": form})
+
+@club_admin_required
+def edit_match_date(request, match_id):
+    """Cambia la fecha de un partido que aún no está cerrado.
+
+    Solo para administradores del club. Con el acta cerrada hay que reabrirla antes (el acta
+    cerrada es inmutable). Recalcula la temporada y vuelve a la página del partido.
+    """
+    match = club_match(request, match_id)
+    if not match.draft_mode:
+        messages.error(request, _("Reabre el acta para cambiar la fecha del partido."))
+        return redirect("call_for_match", match.public_id)
+    form = MatchDateForm(request.POST or None, instance=match)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, _("Fecha del partido actualizada."))
+        return redirect("call_for_match", match.public_id)
+    return render(request, "edit_match_date.html", {"form": form, "match": match})
 
 @club_admin_required
 def delete_match(request, match_id):

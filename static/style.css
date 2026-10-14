@@ -1189,6 +1189,8 @@ a.z-card:hover, .z-card--link:hover {
 .z-versus-mid { text-align: center; }
 .z-versus-vs { font-family: var(--z-display); font-style: italic; font-weight: 700; font-size: 1.2rem; color: var(--z-lime); }
 .z-versus-date { font-size: .8rem; color: var(--z-muted); }
+.z-edit-date { margin-left: .35rem; color: var(--z-muted); }
+.z-edit-date:hover, .z-edit-date:focus-visible { color: var(--z-text, inherit); }
 
 .z-positions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .z-positions .z-card { padding: 16px; }
@@ -1745,6 +1747,7 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 .z-fixture-state.is-loss { color: var(--z-ink); background: var(--z-danger); }
 .z-fixture-state.is-draw { color: var(--z-ink); background: #C9CBC4; }
 .z-fixture-state.is-upcoming { color: var(--z-ink); background: var(--z-warning); }
+.z-fixture-state.is-pending-close { color: var(--z-ink); background: var(--z-lime); }
 .z-fixture-state.is-open { color: var(--z-warning); border: 1px solid var(--z-warning); }
 
 .z-fixture-teams { display: grid; gap: 8px; }

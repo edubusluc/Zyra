@@ -187,6 +187,7 @@ class AccessibilityTests(TestCase):
         titles = self._assert_accessible([
             reverse("home"), reverse("list_match"), reverse("create_match"),
             reverse("call_for_match", args=[self.match.public_id]),
+            reverse("edit_match_date", args=[self.match.public_id]),
             reverse("edit_call", args=[self.call.public_id]),
             reverse("list_players"), reverse("create_player"), reverse("show_player", args=[p]),
             reverse("edit_player", args=[p]), reverse("manage_roster"), reverse("snp_account"),

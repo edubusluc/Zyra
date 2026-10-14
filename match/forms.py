@@ -203,6 +203,35 @@ class MatchForm(forms.ModelForm):
             match.save()
         return match
 
+class MatchDateForm(forms.ModelForm):
+    """Cambio de la fecha de un partido ya creado (mismo campo, formato y mensajes que el alta).
+
+    Al cambiar la fecha se recalcula la temporada, que se deriva de ella.
+    """
+
+    class Meta:
+        model = Match
+        fields = ['start_date']
+        labels = {'start_date': _('Fecha')}
+        widgets = {'start_date': MatchForm.Meta.widgets['start_date']}
+
+    def __init__(self, *args, **kwargs):
+        """Fija el formato ISO y el mensaje de fecha no válida, como en ``MatchForm``."""
+        super().__init__(*args, **kwargs)
+        date_error = _("Fecha no válida. Usa el formato AAAA-MM-DD.")
+        self.fields['start_date'].input_formats = ['%Y-%m-%d']
+        self.fields['start_date'].error_messages.update(required=date_error, invalid=date_error)
+
+    def save(self, commit=True):
+        """Guarda la fecha y, si cambió, deja que ``Match.save`` recalcule la temporada."""
+        match = super().save(commit=False)
+        if 'start_date' in self.changed_data:
+            match.season = ""
+        if commit:
+            match.save()
+        return match
+
+
 class GameForm (forms.ModelForm):
     """Formulario de un partido por parejas (número y jugadores)."""
     class Meta:

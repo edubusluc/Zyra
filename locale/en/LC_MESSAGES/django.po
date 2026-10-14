@@ -10297,3 +10297,24 @@ msgstr[1] "%(n)s ties"
 #, python-format
 msgid "%(a)s %% a favor y %(b)s %% en contra"
 msgstr "%(a)s %% in favour and %(b)s %% against"
+
+msgid "Cambiar fecha"
+msgstr "Change date"
+
+msgid "Reabre el acta para cambiar la fecha del partido."
+msgstr "Reopen the match sheet to change the match date."
+
+msgid "Fecha del partido actualizada."
+msgstr "Match date updated."
+
+msgid "Partido entre <strong>%(local)s</strong> y <strong>%(visiting)s</strong>."
+msgstr "Match between <strong>%(local)s</strong> and <strong>%(visiting)s</strong>."
+
+msgid "La temporada se recalcula con la nueva fecha. Si ya enviaste el informe de la convocatoria, reenvíalo para que lleve la fecha correcta."
+msgstr "The season is recalculated from the new date. If you already sent the call-up report, resend it so it shows the right date."
+
+msgid "Guardar fecha"
+msgstr "Save date"
+
+msgid "Pdt. cerrar acta"
+msgstr "Pending sign-off"

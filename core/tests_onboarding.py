@@ -256,3 +256,15 @@ class ConfirmModalTests(TestCase):
         self.assertContains(response, "data-confirm=")
         self.assertContains(response, "confirm-modal.js")
         self.assertNotContains(response, "return confirm(")
+
+
+class NoNativeDialogsTests(TestCase):
+    """Ninguna plantilla ni JS propio usa los diálogos del navegador (confirm, alert, prompt)."""
+
+    def test_no_native_dialogs(self):
+        import pathlib, re
+        root = pathlib.Path(__file__).resolve().parent.parent
+        pattern = re.compile(r"(?<![\w.])(confirm|alert|prompt)\s*\(")
+        found = [str(p.relative_to(root)) for p in list(root.glob("**/templates/**/*.html")) + list(root.glob("static/js/*.js"))
+                 if pattern.search(p.read_text(encoding="utf-8"))]
+        self.assertEqual(found, [])
