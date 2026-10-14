@@ -174,8 +174,14 @@ def list_match(request):
     called = dict(Call.objects.filter(match__in=list(matches))
                   .annotate(n=Count('players')).values_list('match_id', 'n'))
     today = timezone.localdate()
+    # Reto y Play Off cerrados 6-6: la pareja del partido 3 decidió la eliminatoria (una sola consulta).
+    tiebreak_pairs = {
+        g.match_id: g.pair_label for g in Game.objects.filter(
+            match__in=[m for m in matches if m.no_draw and m.result_points == "6/6"], n_game=Match.TIEBREAK_GAME)}
     for m in matches:
         m.outcome = match_outcome(m)
+        m.tiebreak = m.id in tiebreak_pairs and m.outcome in ("V", "D")
+        m.tiebreak_pair = tiebreak_pairs.get(m.id, "")
         m.local_points, m.visiting_points = split_points(m.result_points) if m.outcome else (None, None)
         m.called = called.get(m.id)
         m.upcoming = m.outcome is None and m.start_date >= today

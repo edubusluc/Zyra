@@ -176,3 +176,10 @@ class NoDrawTiebreakTests(TestCase):
         team = self.club.own_team
         self.assertEqual(calculate_tiebreak_stats(None, team), {"total": 2, "for": 1, "against": 1})
         self.assertEqual(calculate_tiebreak_stats(None, team, Match.RETO), {"total": 1, "for": 0, "against": 1})
+
+    def test_card_explains_tiebreak_only_for_no_draw_types(self):
+        self._closed_match(Match.PLAYOFF, "VVLLL")
+        self._closed_match(Match.ENFRENTAMIENTO, "LLVVV")
+        html = self.client.get(reverse("list_match") + "?season=all").content.decode()
+        self.assertEqual(html.count("z-fixture-tiebreak"), 1)  # solo el Play Off, no el enfrentamiento
+        self.assertIn("la pareja 3 ganó su partido y desempató", html)

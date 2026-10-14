@@ -10252,3 +10252,16 @@ msgstr "Sign up"
 
 msgid "Volver a elegir cómo registrarme"
 msgstr "Back to choosing how to sign up"
+
+#: match/templates/list_match.html
+#, python-format
+msgid "6-6: la pareja 3 ganó su partido y desempató (%(pair)s)"
+msgstr "6-6: pair 3 won their game and broke the tie (%(pair)s)"
+
+#: match/templates/list_match.html
+msgid "6-6: la pareja 3 ganó su partido y desempató"
+msgstr "6-6: pair 3 won their game and broke the tie"
+
+#: match/templates/list_match.html
+msgid "6-6: la pareja 3 perdió su partido y desempató el rival"
+msgstr "6-6: pair 3 lost their game and the opponent broke the tie"
