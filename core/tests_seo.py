@@ -39,7 +39,7 @@ class PublicPagesTests(TestCase):
     def test_landing_has_canonical_and_share_preview_and_no_noindex(self):
         response = self.client.get(reverse("home") + "?utm_source=x")
         self.assertContains(response, '<link rel="canonical" href="http://testserver/">')
-        self.assertContains(response, 'property="og:image" content="http://testserver/static/zyra/og-image.png"')
+        self.assertContains(response, 'property="og:image" content="http://testserver/static/zyra/og-image-v2.png"')
         self.assertContains(response, 'name="twitter:card" content="summary_large_image"')
         self.assertNotContains(response, "noindex")
         self.assertNotContains(response, "fonts.googleapis.com")
@@ -157,7 +157,7 @@ class GuideTests(TestCase):
         self.assertEqual({n["@type"] for n in nodes}, {"Article", "BreadcrumbList"})
         article = next(n for n in nodes if n["@type"] == "Article")
         self.assertEqual(article["inLanguage"], "es")
-        self.assertTrue(article["image"].endswith("/static/zyra/og-image.png"))
+        self.assertTrue(article["image"].endswith("/static/zyra/og-image-v2.png"))
 
     @override_settings(SITE_URL="https://zyra.es", ALLOWED_HOSTS=["zyra.es"])
     def test_sitemap_lists_guides_with_english_alternates(self):
