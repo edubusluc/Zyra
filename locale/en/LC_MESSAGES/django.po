@@ -10265,3 +10265,15 @@ msgstr "6-6: pair 3 won their game and broke the tie"
 #: match/templates/list_match.html
 msgid "6-6: la pareja 3 perdió su partido y desempató el rival"
 msgstr "6-6: pair 3 lost their game and the opponent broke the tie"
+
+#: data_analyse/templates/team_statistics.html
+#, python-format
+msgid "%(n)s eliminatoria"
+msgid_plural "%(n)s eliminatorias"
+msgstr[0] "%(n)s tie"
+msgstr[1] "%(n)s ties"
+
+#: data_analyse/templates/team_statistics.html
+#, python-format
+msgid "%(a)s %% a favor y %(b)s %% en contra"
+msgstr "%(a)s %% in favour and %(b)s %% against"

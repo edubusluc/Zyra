@@ -174,8 +174,10 @@ class NoDrawTiebreakTests(TestCase):
         self._closed_match(Match.RETO, "LLVVV")     # en contra
         self._closed_match(Match.ENFRENTAMIENTO, "LLVVV")  # no cuenta
         team = self.club.own_team
-        self.assertEqual(calculate_tiebreak_stats(None, team), {"total": 2, "for": 1, "against": 1})
-        self.assertEqual(calculate_tiebreak_stats(None, team, Match.RETO), {"total": 1, "for": 0, "against": 1})
+        self.assertEqual(calculate_tiebreak_stats(None, team), {"total": 2, "for": 1, "against": 1,
+                                                                      "for_pct": 50, "against_pct": 50})
+        self.assertEqual(calculate_tiebreak_stats(None, team, Match.RETO), {"total": 1, "for": 0, "against": 1,
+                                                                              "for_pct": 0, "against_pct": 100})
 
     def test_card_explains_tiebreak_only_for_no_draw_types(self):
         self._closed_match(Match.PLAYOFF, "VVLLL")

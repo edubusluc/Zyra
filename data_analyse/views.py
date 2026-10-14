@@ -164,7 +164,8 @@ def calculate_match_statistics(season, team, match_type=None):
 def calculate_tiebreak_stats(season, team, match_type=None):
     """
     Eliminatorias de Reto y Play Off que quedaron 6-6 y decidió el partido 3:
-    ``{'total', 'for', 'against'}`` según si el equipo ganó o perdió ese partido.
+    ``{'total', 'for', 'against', 'for_pct', 'against_pct'}`` según si el equipo ganó o perdió ese
+    partido (porcentajes sobre el total, que suman 100).
     """
     matches = _by_type(Match.objects.filter(club=team.club, draft_mode=False, match_type__in=Match.NO_DRAW_TYPES,
                                             result_points="6/6"), match_type)
@@ -174,7 +175,10 @@ def calculate_tiebreak_stats(season, team, match_type=None):
                 + matches.filter(visiting=team, result=VISITING_WIN).count())
     against = (matches.filter(local=team, result=VISITING_WIN).count()
                + matches.filter(visiting=team, result=LOCAL_WIN).count())
-    return {'total': in_favor + against, 'for': in_favor, 'against': against}
+    total = in_favor + against
+    for_pct = round(in_favor / total * 100) if total else 0
+    return {'total': total, 'for': in_favor, 'against': against,
+            'for_pct': for_pct, 'against_pct': 100 - for_pct if total else 0}
 
 
 def _games_totals(season, team, own_local, match_type=None):

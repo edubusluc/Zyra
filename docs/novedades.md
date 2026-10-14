@@ -6,7 +6,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 ## 13/10/2026 · Reto y Play Off sin empate
 
 - En partidos de Reto y Play Off no hay empate: si la eliminatoria queda 6-6 al cerrar el acta, gana quien ganó el partido 3; el resto de tipos sigue admitiendo empate
-- Estadísticas de equipo: nueva tarjeta «Eliminatorias 6-6» con las que cayeron a favor y en contra (respeta el filtro de temporada y tipo)
+- Estadísticas de equipo: nueva tarjeta «Eliminatorias 6-6» con el porcentaje (y barra) de las que cayeron a favor y en contra (respeta el filtro de temporada y tipo)
 - En la tarjeta de un Reto o Play Off cerrado 6-6 se indica que la pareja 3 ganó (o perdió) su partido y desempató para entender de un vistazo por qué consta como ganado o perdido
 
 ## 13/10/2026 · Cuentas sin club
