@@ -601,3 +601,42 @@ class QueryExportTests(StaffTestCase):
         query.export_every = "monthly"
         self.assertTrue(is_due(query, datetime.date(2026, 11, 1)))
         self.assertFalse(is_due(query, datetime.date(2026, 11, 2)))
+
+
+class AccountsWithoutClubTests(StaffTestCase):
+    """Cuentas sin club: KPI, antigüedad, filtro, histórico y embudo."""
+
+    def setUp(self):
+        super().setUp()
+        self.waiting = User.objects.create_user("espera", password=PASSWORD, email="espera@example.com")
+        self.old = User.objects.create_user("vieja", password=PASSWORD)
+        User.objects.filter(pk=self.old.pk).update(date_joined=timezone.now() - datetime.timedelta(days=10))
+        User.objects.create_user("baja", password=PASSWORD, is_active=False)
+
+    def test_kpi_ignores_staff_inactive_and_members(self):
+        from .metrics import dashboard_kpis
+        users = dashboard_kpis()["users"]
+        self.assertEqual(users["waiting"], 2)
+        self.assertEqual(users["waiting_7"], 1)
+        self.assertEqual(users["waiting_new_7"], 1)
+
+    def test_dashboard_shows_count_linking_to_filter(self):
+        response = self.client.get(reverse("backoffice:dashboard"))
+        self.assertContains(response, "1 con más de 7 días")
+        self.assertContains(response, "kind=no_club")
+
+    def test_user_list_filter_oldest_first(self):
+        response = self.client.get(reverse("backoffice:user_list") + "?kind=no_club")
+        self.assertEqual([u.username for u in response.context["page"]], ["vieja", "espera"])
+
+    def test_snapshot_stores_accounts_without_club(self):
+        from .metrics import daily_trend, snapshot_daily_metrics
+        snapshot_daily_metrics()
+        self.assertEqual(daily_trend()[-1]["without_club"], 2)
+
+    def test_funnel_counts_new_accounts(self):
+        from .metrics import funnel
+        accounts = funnel()["accounts"]
+        self.assertEqual(accounts["waiting"], 2)
+        self.assertEqual(accounts["with_club"], 1)
+        self.assertContains(self.client.get(reverse("backoffice:usage")), "esperan una invitación")

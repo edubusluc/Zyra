@@ -130,7 +130,7 @@ class BackofficeDataTests(TestCase):
         names = lambda **p: [u.username for u in self.client.get(url, p).context["page"]]
         self.assertEqual(names(q="ana@"), ["ana"])
         self.assertEqual(names(kind="google"), ["bea"])
-        self.assertEqual(names(kind="no_club"), ["staff"])
+        self.assertEqual(names(kind="no_club"), [])
         self.assertEqual(names(kind="staff"), ["staff"])
 
     def test_detail_pages_show_club_data(self):
