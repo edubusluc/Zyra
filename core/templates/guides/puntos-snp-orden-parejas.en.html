@@ -1,0 +1,32 @@
+<p>If you play or captain a team in the SNP (Series Nacionales de Pádel, the Spanish national team padel series), sooner or later you ask how the pairs are ordered and how many points are at stake. This guide explains it as Zyra models it. <strong>Zyra is an independent project and is not affiliated with the SNP: the current rulebook is always the one the organisers publish on their website.</strong></p>
+
+<h2>What SNP points are</h2>
+<p>Every player has SNP points, a value that reflects their level within the competition and changes with results. They are used to compare players with each other and, in the team format, to order the pairs of a tie.</p>
+
+<h2>What a tie looks like</h2>
+<p>A tie between two teams is <strong>5 games between pairs</strong>. They are not all worth the same:</p>
+<table class="table table-sm">
+    <thead><tr><th scope="col">Game</th><th scope="col">Points at stake</th></tr></thead>
+    <tbody>
+        <tr><td>1</td><td>3</td></tr>
+        <tr><td>2</td><td>3</td></tr>
+        <tr><td>3</td><td>2</td></tr>
+        <tr><td>4</td><td>2</td></tr>
+        <tr><td>5</td><td>2</td></tr>
+    </tbody>
+</table>
+<p>There are <strong>12 points</strong> in total. Whoever reaches 7 or more wins the tie; 6-6 is a draw. That is why winning three games is not always enough: winning both 3-point games and one 2-point game gives 8 points, but winning only the three 2-point games gives 6, a draw.</p>
+
+<h2>How the pairs are ordered</h2>
+<p>The order of the games is <strong>not chosen by the captain</strong>: pairs are ordered by the <strong>sum of the SNP points of their two players</strong>. The pair with the highest sum plays game 1, the next one game 2, and so on up to game 5.</p>
+<p>The captain's real decision is <strong>how to form the pairs</strong>: by splitting the players up you indirectly decide which pairs play the 3-point games. To choose well, look at each pair's performance, not just points (see the <a href="{% url 'guide_detail' 'organizar-parejas-equipo-padel' %}">guide on how to set the pairs</a>).</p>
+
+<h2>Example</h2>
+<p>With ten players called up there are many possible sets of five pairs. If you put your two highest-scoring players together, that pair plays game 1, but the others will have lower sums and you may lose the 2-point games. Spreading them out often gives a more even lineup, although it depends on the history of each combination.</p>
+
+<h2>How Zyra helps</h2>
+<ul>
+    <li>It fetches your players' SNP points (with the club's SNP account) and keeps them up to date.</li>
+    <li>It orders the pairs of the lineup by the points sum and shows it live as you build them.</li>
+    <li>It computes the <strong>suggested lineup</strong>: the combinations most likely to reach 7 points based on your club's history.</li>
+</ul>

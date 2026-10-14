@@ -21,13 +21,13 @@
     <meta property="og:title" content="{% block og_title %}Zyra · {% translate 'Gestión de equipos de pádel' %}{% endblock %}">
     <meta property="og:description" content="{% block og_description %}{% translate 'Gestiona tu equipo de pádel: jugadores, convocatorias, partidos y estadísticas, en privado para cada club.' %}{% endblock %}">
     <meta property="og:url" content="{{ canonical_url }}">
-    <meta property="og:image" content="{{ site_url }}{% static 'zyra/icon-512.png' %}">
-    <meta property="og:image:width" content="512">
-    <meta property="og:image:height" content="512">
+    <meta property="og:image" content="{{ site_url }}{% static 'zyra/og-image.png' %}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
     <meta property="og:image:alt" content="{% translate 'Logotipo de Zyra' %}">
     <meta property="og:locale" content="{% if LANGUAGE_CODE == 'en' %}en_GB{% else %}es_ES{% endif %}">
     <meta property="og:locale:alternate" content="{% if LANGUAGE_CODE == 'en' %}es_ES{% else %}en_GB{% endif %}">
-    <meta name="twitter:card" content="summary">
+    <meta name="twitter:card" content="summary_large_image">
     <meta name="theme-color" content="#0A0B09">
     <link rel="icon" href="{% static 'zyra/logo.svg' %}" type="image/svg+xml">
     <link rel="icon" href="{% static 'zyra/favicon-32.png' %}" sizes="32x32" type="image/png">
@@ -152,6 +152,7 @@
     <a href="{% url 'privacy' %}">{% translate "Privacidad" %}</a>
     <a href="{% url 'terms' %}">{% translate "Términos" %}</a>
     <a href="{% url 'cookies' %}">{% translate "Cookies" %}</a>
+    <a href="{% url 'guide_index' %}">{% translate "Guías" %}</a>
     <a href="mailto:{{ contact_email }}">{% translate "Contacto" %}</a>
   </nav>
   <p>&copy; {% now "Y" %} Zyra{% if current_club %} · {{ current_club.name }}{% endif %}</p>

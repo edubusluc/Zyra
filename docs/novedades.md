@@ -7,6 +7,14 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 - El listado de jugadores tiene el interruptor «Mostrar solo jugadores de mi equipo» (marcado por defecto, solo capitanes), igual que el de equipos; al desmarcarlo se ven también los que ya no están en el equipo
 
+## 14/10/2026 · SEO: guías, imagen para compartir y «Hecho con Zyra»
+
+- Nueva sección pública `/guia/` con tres guías para capitanes (organizar parejas, puntos SNP y plantilla de convocatoria), en español e inglés, con sitemap, hreflang y datos estructurados; enlazada desde la portada y el pie
+- Plantilla de convocatoria en PDF descargable sin registro (`/guia/plantilla-convocatoria-padel.pdf`)
+- Imagen para compartir de 1200×630 (`og-image.png`) y `twitter:card=summary_large_image`
+- Pie «Hecho con Zyra · dominio» (con enlace) en el informe de convocatoria, el informe mensual y los correos
+- `/BingSiteAuth.xml` en la raíz para verificar el dominio en Bing Webmaster Tools
+
 ## 14/10/2026 · Tarjetas de sets legibles
 
 - Estadísticas · Jugador: «Apuntado y alineado» muestra también a cuántas convocatorias cerradas se apunta y a cuántas no, con los mismos filtros (temporada y tipo de partido)

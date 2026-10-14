@@ -4,6 +4,7 @@ from django.contrib.sitemaps import Sitemap
 from django.urls import reverse
 from django.utils.translation import get_language
 
+from .guides import GUIDES
 from .seo import language_url
 
 # Páginas legales: solo en español (es el texto que vale legalmente).
@@ -22,7 +23,7 @@ class PublicPagesSitemap(Sitemap):
 
     def items(self):
         """Nombres de URL de las páginas públicas."""
-        return ["home", "register_club", "login", "privacy", "terms", "cookies"]
+        return ["home", "register_club", "login", "guide_index", "privacy", "terms", "cookies"]
 
     def get_languages_for_item(self, item):
         """Las páginas legales solo existen en español; el resto, en todos los idiomas."""
@@ -36,7 +37,7 @@ class PublicPagesSitemap(Sitemap):
 
     def priority(self, item):
         """La portada y el alta de club son las páginas que interesa posicionar."""
-        return {"home": 1.0, "register_club": 0.8}.get(item, 0.3)
+        return {"home": 1.0, "register_club": 0.8, "guide_index": 0.7}.get(item, 0.3)
 
     def get_domain(self, site=None):
         """Dominio de SITE_URL (no usa django.contrib.sites)."""
@@ -47,3 +48,23 @@ class PublicPagesSitemap(Sitemap):
     def get_protocol(self, protocol=None):
         """https en producción."""
         return "http" if settings.DEBUG and not settings.SITE_URL else "https"
+
+
+class GuidesSitemap(PublicPagesSitemap):
+    """Una entrada por guía pública (``/guia/<slug>/``) y por idioma, con fecha de actualización."""
+
+    def items(self):
+        """Las guías de ``core.guides``."""
+        return GUIDES
+
+    def location(self, item):
+        """Ruta de la guía en el idioma activo."""
+        return language_url(reverse("guide_detail", args=[item.slug]), get_language())
+
+    def lastmod(self, item):
+        """Última actualización de la guía."""
+        return item.updated
+
+    def priority(self, item):
+        """Las guías son el contenido que más interesa posicionar después de la portada."""
+        return 0.7
