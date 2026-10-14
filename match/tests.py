@@ -632,3 +632,37 @@ class EditMatchDateTests(TestCase):
         Match.objects.filter(pk=self.match.pk).update(draft_mode=False)
         page = self.client.get(reverse("call_for_match", args=[self.match.public_id]))
         self.assertNotContains(page, self.url)
+
+
+class PendingCloseLabelTests(TestCase):
+    """Etiqueta de la tarjeta: «Pdt. cerrar acta» con todos los resultados puestos, «Sin resultado» si falta alguno."""
+
+    def setUp(self):
+        self.user = User.objects.create_user("admin", password="pass-12345")
+        self.club = create_club("Club A", "Sevilla", self.user)
+        rival = Team.objects.create(club=self.club, name="Rival", location="X", in_group=True)
+        self.match = Match.objects.create(club=self.club, local=self.club.own_team, visiting=rival,
+                                          start_date=datetime.date(2020, 1, 10))
+        self.client.force_login(self.user)
+
+    def _games(self, with_results):
+        for n in range(1, 6):
+            game = Game.objects.create(match=self.match, n_game=n)
+            if n <= with_results:
+                Result.objects.create(game=game, set1_local="6", set1_visiting="2", set2_local="6", set2_visiting="3")
+
+    def test_all_results_shows_pending_close(self):
+        self._games(5)
+        page = self.client.get(reverse("list_match"), {"season": "all"})
+        self.assertContains(page, "Pdt. cerrar acta")
+        self.assertNotContains(page, "Sin resultado")
+
+    def test_missing_results_keeps_no_result(self):
+        self._games(4)
+        page = self.client.get(reverse("list_match"), {"season": "all"})
+        self.assertContains(page, "Sin resultado")
+        self.assertNotContains(page, "Pdt. cerrar acta")
+
+    def test_no_games_keeps_no_result(self):
+        page = self.client.get(reverse("list_match"), {"season": "all"})
+        self.assertContains(page, "Sin resultado")

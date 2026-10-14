@@ -10315,3 +10315,6 @@ msgstr "The season is recalculated from the new date. If you already sent the ca
 
 msgid "Guardar fecha"
 msgstr "Save date"
+
+msgid "Pdt. cerrar acta"
+msgstr "Pending sign-off"

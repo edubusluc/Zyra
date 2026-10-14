@@ -1747,6 +1747,7 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 .z-fixture-state.is-loss { color: var(--z-ink); background: var(--z-danger); }
 .z-fixture-state.is-draw { color: var(--z-ink); background: #C9CBC4; }
 .z-fixture-state.is-upcoming { color: var(--z-ink); background: var(--z-warning); }
+.z-fixture-state.is-pending-close { color: var(--z-ink); background: var(--z-lime); }
 .z-fixture-state.is-open { color: var(--z-warning); border: 1px solid var(--z-warning); }
 
 .z-fixture-teams { display: grid; gap: 8px; }

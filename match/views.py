@@ -125,7 +125,8 @@ def list_match(request):
     con el resultado, la temporada de cada partido y un resumen de ganados, empatados,
     perdidos y pendientes de lo filtrado. Cada partido de la página lleva además los puntos
     de cada lado, cuántos convocados tiene y si es un partido próximo (sin resultado y con
-    fecha de hoy en adelante) para pintar su tarjeta.
+    fecha de hoy en adelante) y si solo le falta cerrar el acta (``pending_close``: 5 o más partidos,
+    todos con resultado) para pintar su tarjeta.
     """
     club_matches = Match.objects.filter(club=request.club).select_related('local', 'visiting')
     # Temporadas para el selector (desc), incluida la actual aunque aún no tenga partidos
@@ -178,13 +179,21 @@ def list_match(request):
     tiebreak_pairs = {
         g.match_id: g.pair_label for g in Game.objects.filter(
             match__in=[m for m in matches if m.no_draw and m.result_points == "6/6"], n_game=Match.TIEBREAK_GAME)}
+    # Actas abiertas con 5 partidos y todos con resultado: solo falta cerrarlas (dos consultas).
+    open_ids = [m.id for m in matches if m.draft_mode]
+    games_count = dict(Game.objects.filter(match_id__in=open_ids).values('match_id').annotate(n=Count('id'))
+                       .values_list('match_id', 'n'))
+    with_result = dict(Game.objects.filter(match_id__in=open_ids, results__isnull=False).values('match_id')
+                       .annotate(n=Count('id', distinct=True)).values_list('match_id', 'n'))
     for m in matches:
         m.outcome = match_outcome(m)
+        n = games_count.get(m.id, 0)
+        m.pending_close = m.draft_mode and n >= 5 and with_result.get(m.id, 0) == n
         m.tiebreak = m.id in tiebreak_pairs and m.outcome in ("V", "D")
         m.tiebreak_pair = tiebreak_pairs.get(m.id, "")
         m.local_points, m.visiting_points = split_points(m.result_points) if m.outcome else (None, None)
         m.called = called.get(m.id)
-        m.upcoming = m.outcome is None and m.start_date >= today
+        m.upcoming = m.outcome is None and not m.pending_close and m.start_date >= today
 
     # Resto de filtros para la paginación y para los formularios de búsqueda.
     keep = {'season': season, 'q': search, 'rival': rival, 'match_type': match_type}

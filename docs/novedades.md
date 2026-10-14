@@ -5,6 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 14/10/2026 · Fecha editable
 
+- Partidos: la tarjeta del listado muestra «Pdt. cerrar acta» cuando todos los partidos del acta abierta ya tienen resultado (y «Sin resultado» mientras falte alguno)
 - Partidos: se puede cambiar la fecha de un partido creado (lápiz junto a la fecha, solo con el acta abierta); la temporada se recalcula
 
 ## 14/10/2026 · Contraseña para cuentas de Google
