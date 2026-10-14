@@ -5,7 +5,9 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 14/10/2026 · Selectores con buscador en el móvil
 
+- Al elegir una opción del buscador (`player-picker.js`) se descartan durante 600 ms los clics siguientes (clic emulado del móvil o doble toque), para que ninguno caiga sobre el enlace de un partido de la tabla
 - Elegir una temporada (o un jugador) en el buscador ya no abre el partido que había debajo: la opción se elige en `click` y no en `mousedown`, así el click emulado del móvil no cae sobre el enlace de debajo (`player-picker.js`, también el autocompletado SQL del back-office)
+
 ## 14/10/2026 · Logo de Zyra en los resultados de Google
 
 - `/favicon.ico` responde 200 en la raíz (antes daba 404) y la cabecera enlaza iconos PNG de 48, 96 y 192 px (múltiplos de 48 que pide Google) generados desde `favicon.svg`; el SVG ya no es el primero de la lista
