@@ -43,6 +43,8 @@ el club activo: lo de otro club da 404. Sin permiso, la página «Sin permiso» 
 - **Suspensiones y emails bloqueados**: el personal puede suspender un club o una cuenta y bloquear
   emails para que no se registren ([`core.blocklist`](referencia/core/blocklist.md)).
 - **Idioma**: español o inglés con el selector de la cabecera.
+- **Guías para capitanes** (`/guia/`, públicas, en español e inglés): cómo organizar las parejas, cómo funcionan los puntos SNP y una plantilla de convocatoria en PDF para imprimir (`/guia/plantilla-convocatoria-padel.pdf`, sin registro). Enlazadas desde la portada y el pie.
+- **«Hecho con Zyra»**: el pie del informe de convocatoria, del informe mensual y de los correos enlaza a la web.
 - **Desplegables**: todos los `<select>` de la web (y del back-office) usan un desplegable propio con el estilo de Zyra (`static/js/custom-select.js`), manejable con teclado; el `<select>` original sigue siendo el que viaja en el formulario.
 
 ## Inicio del club

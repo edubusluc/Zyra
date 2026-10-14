@@ -175,4 +175,11 @@ ni se editan parejas (`edit_game_match`).
 
 - [V] Español por defecto; inglés solo si se elige en el selector (cookie) o con `?lang=en` en la URL.
   No se mira el idioma del navegador (`LanguageMiddleware`). Tests: `core/tests_i18n.py`, `core/tests_seo.py`.
+- [V] Guías públicas `/guia/` (`core/guides.py`, `GUIDES`): cada guía existe en es y en en como plantilla
+  `core/templates/guides/<slug>.<idioma>.html` (no pasa por `.po`); título y descripción por idioma en `GUIDES`. Entran en el sitemap
+  (`GuidesSitemap`) con hreflang y llevan JSON-LD `Article` + `BreadcrumbList` (`seo.guide_structured_data`). Una guía nueva: añadirla a `GUIDES`,
+  crear sus dos plantillas y su URL aparece sola en sitemap, portada y tests de accesibilidad. `/guia/plantilla-convocatoria-padel.pdf` es un PDF
+  en blanco público (`build_template_pdf`). La imagen para compartir es `static/zyra/og-image.png` (1200×630, `scripts/make_og_image.py`).
+- [V] Pie «Hecho con Zyra · dominio» en el PDF de convocatoria, el informe mensual y los correos (`match.report_pdf.draw_made_with`,
+  `core/emails.build_email`); sin `SITE_URL` solo el texto, sin enlace. Tests: `core/tests_seo.py`.
 - [V] Cada página nueva debe añadirse a `core/tests_accessibility.py` (ver `docs/mantener-documentacion.md`).

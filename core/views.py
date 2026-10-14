@@ -34,6 +34,7 @@ from .adapters import GOOGLE_NEW_ACCOUNT_KEY
 from .blocklist import is_user_blocked
 from .decorators import club_admin_required
 from .emails import send_invitation_email, send_welcome_email
+from . import guides
 from .forms import CaptainPlayerForm, CaptainSnpForm, ClubForm, EmailChangeForm, InviteMemberForm, SignUpForm
 from .middleware import SESSION_KEY
 from .models import REPORT_SCOPES, Invitation, Membership, UserPreference
@@ -79,6 +80,7 @@ def home(request):
     if not request.user.is_authenticated:
         return render(request, 'landing.html', {
             'faq': seo.landing_faq(),
+            'guides': [(g, g.title_for(guides.language_code())) for g in guides.GUIDES],
             'structured_data': seo.landing_structured_data(request),
         })
     if request.club is None:
@@ -797,6 +799,12 @@ def legal_page(request, template):
 def robots_txt(request):
     """robots.txt: qué secciones no deben rastrear los buscadores y dónde está el sitemap."""
     return render(request, "robots.txt", content_type=TEXT_PLAIN)
+
+
+@require_safe
+def bing_site_auth(request):
+    """BingSiteAuth.xml: archivo de verificación de Bing Webmaster Tools (el código es público)."""
+    return render(request, "BingSiteAuth.xml", content_type="application/xml")
 
 
 @require_safe
