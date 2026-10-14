@@ -122,11 +122,13 @@
       {# ============ 1b. PARTIDOS, SETS Y CONVOCATORIAS ============ #}
       <section aria-labelledby="clutch-title" class="st-section">
         <h2 class="st-section-title" id="clutch-title">{% translate "Partidos y sets" %}</h2>
-        <div class="st-row">
+        <div class="st-row st-row--pair">
           {% translate "Por número de partido" as t_title %}{% translate "% de victorias en cada partido del enfrentamiento (el 1 lo juega la pareja con más puntos SNP)." as t_note %}
           {% include 'includes/game_numbers.html' with rows=game_numbers title=t_title note=t_note %}
           {% translate "Sets clutch" as t_title %}{% translate "Cómo responde en los momentos decisivos: tercer set, tie-breaks y remontadas." as t_note %}
           {% include 'includes/set_stats.html' with st=clutch title=t_title note=t_note %}
+        </div>
+        <div class="st-row st-row--pair">
           <article class="st-card">
             <h3 class="st-card-title">{% translate "Apuntado y alineado" %}</h3>
             <p class="st-card-note">{% translate "De las convocatorias a las que se apunta, en cuántas acaba jugando." %}</p>

@@ -1446,6 +1446,9 @@ a.z-location:hover span { text-decoration: underline; }
   gap: 14px; margin-bottom: 14px;
 }
 
+/* Dos tarjetas por fila (la de sets necesita ancho para sus dos columnas) */
+.st-row--pair { grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); }
+
 .st-card {
   display: flex; flex-direction: column; min-width: 0;
   padding: 22px; background: var(--st-card); border: 1px solid var(--st-line); border-radius: var(--z-radius);
