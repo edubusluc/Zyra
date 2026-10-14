@@ -4,24 +4,45 @@ from django.utils.translation import gettext_lazy as _
 from core.images import clean_photo_field
 from core.similarity import same_name
 from core.validators import plain_text
-from .models import Player
+from .models import Player, current_season, season_choices
 
 def with_placeholder(choices):
     """Las opciones con «NONE» (sin indicar) al principio y rotulada «Elige una opción»."""
     return [("NONE", _("Elige una opción"))] + [c for c in choices if c[0] != "NONE"]
 
 
+def season_field(form, club, current=None):
+    """
+    Cambia ``joined_season`` por un desplegable con búsqueda (``static/js/player-picker.js``) cuyas
+    únicas opciones válidas son las temporadas de ``season_choices``; ``current`` (valor antiguo
+    del jugador) se conserva como opción para no impedir guardar otros cambios.
+    """
+    extra = [current] if current else []
+    form.fields['joined_season'] = forms.ChoiceField(
+        label=_("Temporada en la que se unió"),
+        choices=[(s, s) for s in season_choices(club, extra)],
+        initial=current or current_season(),
+        required=False,  # vacío = temporada actual (el valor por defecto del modelo)
+        error_messages={"invalid_choice": _("Elige una de las temporadas de la lista.")},
+        widget=forms.Select(attrs={
+            "data-picker": "", "data-picker-toggle": "", "data-placeholder": _("Busca o elige una temporada"),
+        }),
+    )
+    form.clean_joined_season = lambda: form.cleaned_data.get('joined_season') or current_season()
+
+
 class PlayerForm (forms.ModelForm):
-    """Alta de un jugador por el capitán: nombre, apellidos, posición, mano hábil y foto."""
+    """Alta de un jugador por el capitán: nombre, apellidos, posición, mano hábil, temporada de incorporación y foto."""
     class Meta:
         model = Player
-        fields = ['name', 'last_name', 'position', 'skillfull_hand', 'photo']
+        fields = ['name', 'last_name', 'position', 'skillfull_hand', 'joined_season', 'photo']
 
-    def __init__(self, *args, **kwargs):
-        """Pone «Elige una opción» en posición y mano hábil y limpia el texto de nombre y apellidos."""
+    def __init__(self, *args, club=None, **kwargs):
+        """Pone «Elige una opción» en posición y mano hábil, el selector de temporada y limpia nombre y apellidos."""
         super().__init__(*args, **kwargs)
         self.fields['position'].choices = with_placeholder(Player.POSITIONS)
         self.fields['skillfull_hand'].choices = with_placeholder(Player.HAND)
+        season_field(self, club)
         plain_text(self, 'name', 'last_name')
 
     def clean_photo(self):
@@ -46,6 +67,7 @@ class PlayerEditForm(forms.ModelForm):
         self.fields['position'].choices = with_placeholder(Player.POSITIONS)
         self.fields['skillfull_hand'].choices = with_placeholder(Player.HAND)
         self.fields['photo'].widget = forms.FileInput(attrs={"class": "form-control", "accept": "image/*"})
+        season_field(self, self.instance.club, self.instance.joined_season)
         plain_text(self, 'name', 'last_name')
 
     def clean_photo(self):

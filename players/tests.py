@@ -13,7 +13,7 @@ from core.services import create_club
 from team.models import Team
 
 from . import snp_import
-from .models import Player, SnpAccount, SnpTeamImport
+from .models import Player, SnpAccount, SnpTeamImport, current_season
 from .scraper import SnpScrapeError, parse_score, parse_team_id
 from .snp import match_scores, normalize, sync_club
 
@@ -263,7 +263,8 @@ class SnpAccountTests(TestCase):
         self.assertNotContains(self.client.get(reverse("home")), "Registra tu cuenta de SNP")
         self.make_account()
         self.client.login(username="admin", password="pass-12345")
-        self.assertNotContains(self.client.get(reverse("home")), "Registra tu cuenta de SNP")
+        # La tarea sigue en «Primeros pasos», pero ya hecha y sin botón.
+        self.assertNotContains(self.client.get(reverse("home")), "Registrar cuenta")
 
     def test_snp_job_runs_every_night_and_cycle_starts_on_monday(self):
         from backoffice.jobs import get_spec
@@ -1109,3 +1110,51 @@ class GroupOnlyScrapeTests(TestCase):
         result, calls = self.run_scrape(with_group_teams=True)
         self.assertEqual(result[1], GROUP_TEAMS)
         self.assertEqual(calls, ["login", "country", "competiciones", "mis equipos", "jugadores"])
+
+
+class JoinedSeasonSelectorTests(TestCase):
+    """«Temporada en la que se unió»: solo valores de la lista y estadísticas coherentes con ella."""
+
+    def test_helpers(self):
+        from players.models import joined_by, season_choices, season_start
+        self.assertEqual(season_start("2025-2026"), 2025)
+        self.assertIsNone(season_start("abc"))
+        self.assertTrue(joined_by("2025-2026", "2025-2026"))
+        self.assertFalse(joined_by("2025-2026", "2024-2025"))
+        self.assertTrue(joined_by("", "2020-2021"))
+        choices = season_choices(extra=["1999-2000", "raro"])
+        self.assertEqual(choices[0], current_season())  # nunca hay temporadas futuras
+        self.assertIn("1999-2000", choices)
+        self.assertNotIn("raro", choices)
+
+    def test_form_rejects_free_text_and_keeps_old_value(self):
+        from players.forms import PlayerEditForm
+        club = create_club("Club", "Sevilla", get_user_model().objects.create_user("c", "c@x.com", "pass-12345"))
+        p = Player.objects.create(club=club, name="Ana", last_name="Ruiz", joined_season="1999-2000")
+        data = {"name": "Ana", "last_name": "Ruiz", "position": "NONE", "skillfull_hand": "NONE", "in_team": "on"}
+        self.assertTrue(PlayerEditForm({**data, "joined_season": "1999-2000"}, instance=p).is_valid())
+        self.assertTrue(PlayerEditForm({**data, "joined_season": "2024-2025"}, instance=p).is_valid())
+        self.assertFalse(PlayerEditForm({**data, "joined_season": "2024-2026"}, instance=p).is_valid())
+        self.assertFalse(PlayerEditForm({**data, "joined_season": "hola"}, instance=p).is_valid())
+
+class ListPlayersTeamToggleTests(TestCase):
+    """Interruptor «solo jugadores de mi equipo» del listado: por defecto solo los del equipo."""
+
+    def setUp(self):
+        self.user = User.objects.create_user("capi", password="pass-12345")
+        self.club = create_club("Club A", "Sevilla", self.user)
+        Player.objects.create(club=self.club, name="Ana", last_name="López", in_team=True)
+        Player.objects.create(club=self.club, name="Bea", last_name="Ruiz", in_team=False)
+        self.client.force_login(self.user)
+
+    def test_default_only_team(self):
+        page = self.client.get(reverse("list_players"))
+        self.assertTrue(page.context["only_team"])
+        self.assertEqual([p.name for p in page.context["players"]], ["Ana"])
+        self.assertContains(page, "Mostrar solo jugadores de mi equipo")
+
+    def test_captain_sees_all_unchecked(self):
+        page = self.client.get(reverse("list_players"), {"team": "0", "order_by": "-snp_score"})
+        self.assertFalse(page.context["only_team"])
+        self.assertEqual([p.name for p in page.context["players"]], ["Ana", "Bea"])
+        self.assertContains(page, "?order_by=name&amp;team=0")

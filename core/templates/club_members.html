@@ -30,12 +30,12 @@
                 <td class="text-end">
                     {% if not m.is_admin %}
                     {% if m.pk in successor_ids %}
-                    <form method="post" action="{% url 'transfer_captaincy' m.public_id %}" class="d-inline" {% blocktranslate asvar transfer_q with username=m.user.username %}¿Traspasar la capitanía a {{ username }}? Tú pasarás a ser miembro.{% endblocktranslate %}onsubmit="return confirm('{{ transfer_q|escapejs }}');">
+                    <form method="post" action="{% url 'transfer_captaincy' m.public_id %}" class="d-inline" data-confirm="{% blocktranslate with username=m.user.username %}¿Traspasar la capitanía a {{ username }}? Tú pasarás a ser miembro.{% endblocktranslate %}">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-sm btn-outline-primary">{% translate "Hacer capitán" %}</button>
                     </form>
                     {% endif %}
-                    <form method="post" action="{% url 'remove_member' m.public_id %}" {% blocktranslate asvar remove_q with username=m.user.username %}¿Quitar a {{ username }} del club?{% endblocktranslate %}onsubmit="return confirm('{{ remove_q|escapejs }}');">
+                    <form method="post" action="{% url 'remove_member' m.public_id %}" data-confirm-danger data-confirm-action="{% translate 'Quitar' %}" data-confirm="{% blocktranslate with username=m.user.username %}¿Quitar a {{ username }} del club?{% endblocktranslate %}">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-sm btn-danger">{% translate "Quitar" %}</button>
                     </form>

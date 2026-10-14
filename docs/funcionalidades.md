@@ -43,6 +43,8 @@ el club activo: lo de otro club da 404. Sin permiso, la página «Sin permiso» 
 - **Suspensiones y emails bloqueados**: el personal puede suspender un club o una cuenta y bloquear
   emails para que no se registren ([`core.blocklist`](referencia/core/blocklist.md)).
 - **Idioma**: español o inglés con el selector de la cabecera.
+- **Guías para capitanes** (`/guia/`, públicas, en español e inglés): cómo organizar las parejas, cómo funcionan los puntos SNP y una plantilla de convocatoria en PDF para imprimir (`/guia/plantilla-convocatoria-padel.pdf`, sin registro). Enlazadas desde la portada y el pie.
+- **«Hecho con Zyra»**: el pie del informe de convocatoria, del informe mensual y de los correos enlaza a la web.
 - **Desplegables**: todos los `<select>` de la web (y del back-office) usan un desplegable propio con el estilo de Zyra (`static/js/custom-select.js`), manejable con teclado; el `<select>` original sigue siendo el que viaja en el formulario.
 
 ## Inicio del club
@@ -63,7 +65,7 @@ estadísticas) y aviso al capitán si el club no tiene cuenta SNP
 - Nombres siempre en mayúsculas; posición (derecha, revés, mixto) y si sigue en el equipo.
 - **Plantilla**: marcar de una vez quién está en el equipo.
 - **Mi perfil** (menú de la cuenta): email y contraseña de la cuenta con opción de cambiarlos (el email
-  pide la contraseña actual; en las cuentas solo de Google el email lo gestiona Google) y el jugador
+  pide la contraseña actual; en las cuentas solo de Google el email lo gestiona Google y se puede añadir una contraseña sin pedir la actual, sin perder el acceso con Google) y el jugador
   enlazado, que se pulsa para editarlo, o el botón para enlazarse a uno, y las preferencias de la cuenta
   (datos del informe PDF por defecto) y el informe mensual por email: activarlo o desactivarlo y elegir si cuenta todos
   los partidos o solo los competitivos; el correo trae además un enlace para darse de baja sin iniciar sesión
@@ -103,6 +105,8 @@ El ciclo de un enfrentamiento ([`match.views`](referencia/match/views.md)):
    calendario propio de Zyra. Un selector «Datos del informe PDF» elige si las estadísticas del informe usan
    todos los partidos o solo los competitivos (los amistosos quedan fuera); su valor por defecto se guarda en
    «Mi perfil» (enlace «Edita tus preferencias» bajo el selector).
+   La fecha se puede cambiar después (lápiz junto a la fecha en la página del partido) mientras el acta no esté
+   cerrada; la temporada se recalcula y los listados, estadísticas e informe usan la nueva fecha.
 2. **Convocatoria**: elegir jugadores (con sus sanciones a la vista); se puede editar y cada
    cambio queda en el **registro de convocatoria** ([`callLog`](referencia/callLog/index.md)).
 3. **Cerrar convocatoria** (mínimo 10 jugadores): envía el **informe PDF** a los capitanes; lo que
@@ -120,7 +124,7 @@ El ciclo de un enfrentamiento ([`match.views`](referencia/match/views.md)):
 5. **Resultados** por sets, con validación ([`match.scoring`](referencia/match/scoring.md)). Mientras
    se escribe solo se avisa de los sets no válidos y, al final, del ganador del partido.
 6. **Cerrar actas**: con los 5 resultados, calcula los puntos y el ganador; si la eliminatoria
-   queda empatada a puntos (6-6), el partido queda como **empate**. Un partido cerrado ya no se
+   queda empatada a puntos (6-6), el partido queda como **empate**; en **Reto y Play Off** no hay empate y gana quien ganó el partido 3. Un partido cerrado ya no se
    puede cambiar ni borrar.
 
 - **Sanciones**: advertencias a jugadores desde la convocatoria ([`penalty`](referencia/penalty/index.md)).
@@ -137,7 +141,7 @@ El ciclo de un enfrentamiento ([`match.views`](referencia/match/views.md)):
 Todas con filtro Todos / Competitivos / Amistosos y selector de temporada
 ([`data_analyse.views`](referencia/data_analyse/views.md), [`data_analyse.pairs`](referencia/data_analyse/pairs.md)):
 
-- **Equipo**: victorias, empates y derrotas (en total y por temporada), local / visitante,
+- **Equipo**: eliminatorias 6-6 de Reto y Play Off a favor y en contra, victorias, empates y derrotas (en total y por temporada), local / visitante,
   mejores jugadores y parejas, gráficos, % de victorias por número de partido (1 a 5), sets
   (set decisivo, tie-breaks, remontadas, cerrar el partido, sets ajustados, roscos), récords
   ([`data_analyse.records`](referencia/data_analyse/records.md)) y ranking SNP de la plantilla con

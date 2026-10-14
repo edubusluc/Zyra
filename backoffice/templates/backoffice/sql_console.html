@@ -78,7 +78,7 @@
                 {% for q in saved_queries %}
                 <li>
                     <a href="?saved={{ q.public_id }}">{{ q.name }}</a>
-                    <form method="post" action="{% url 'backoffice:sql_delete_saved' q.public_id %}" class="ms-auto" onsubmit="return confirm('{% translate "¿Borrar la consulta guardada?" as t_confirm %}{{ t_confirm|escapejs }}');">
+                    <form method="post" action="{% url 'backoffice:sql_delete_saved' q.public_id %}" class="ms-auto" data-confirm="{% translate "¿Borrar la consulta guardada?" %}">
                         {% csrf_token %}<button type="submit" class="btn btn-link btn-sm p-0 text-muted" title="{% translate 'Borrar' %}"><i class="fa-solid fa-trash" aria-hidden="true"></i><span class="visually-hidden">{% blocktranslate with name=q.name %}Borrar {{ name }}{% endblocktranslate %}</span></button>
                     </form>
                 </li>

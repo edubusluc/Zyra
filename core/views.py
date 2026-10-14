@@ -18,6 +18,7 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.paginator import Paginator
 from django.core.validators import validate_email
 from django.conf import settings
+from django.contrib.staticfiles import finders
 from django.db import DatabaseError, connection, transaction
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
@@ -34,6 +35,7 @@ from .adapters import GOOGLE_NEW_ACCOUNT_KEY
 from .blocklist import is_user_blocked
 from .decorators import club_admin_required
 from .emails import send_invitation_email, send_welcome_email
+from . import guides
 from .forms import CaptainPlayerForm, CaptainSnpForm, ClubForm, EmailChangeForm, InviteMemberForm, SignUpForm
 from .middleware import SESSION_KEY
 from .models import REPORT_SCOPES, Invitation, Membership, UserPreference
@@ -79,6 +81,7 @@ def home(request):
     if not request.user.is_authenticated:
         return render(request, 'landing.html', {
             'faq': seo.landing_faq(),
+            'guides': [(g, g.title_for(guides.language_code())) for g in guides.GUIDES],
             'structured_data': seo.landing_structured_data(request),
         })
     if request.club is None:
@@ -95,6 +98,7 @@ def home(request):
     players = Player.objects.filter(club=club, in_team=True)
     hot_player, hot_pair = pair_stats.hot_streaks(pair_stats.club_game_log(club), players)
 
+    onboarding = onboarding_for(request.membership)
     return render(request, 'home.html', {
         'own_team': club.own_team,
         'season': current_season(),
@@ -102,10 +106,12 @@ def home(request):
         'days_left': (next_match.start_date - today).days if next_match else None,
         'hot_player': hot_player,
         'hot_pair': hot_pair,
-        # Aviso al capitán mientras no haya registrado la cuenta SNP del club.
-        'snp_missing': request.membership.is_admin and not SnpAccount.objects.filter(club=club).exists(),
-        # Primeros pasos del capitán de un club nuevo (core.onboarding).
-        'onboarding': onboarding_for(request.membership),
+        # Aviso al capitán mientras no haya registrado la cuenta SNP del club (si se muestran los
+        # primeros pasos, la tarea de SNP ya va dentro de la lista).
+        'snp_missing': (request.membership.is_admin and onboarding is None
+                        and not SnpAccount.objects.filter(club=club).exists()),
+        # Primeros pasos del capitán (core.onboarding).
+        'onboarding': onboarding,
     })
 
 
@@ -281,6 +287,44 @@ def register_club(request):
         "google_missing_name": google_missing_name, "snp_service_off": not snp_service.is_enabled(),
         "google_next": f"{reverse('register_club')}?{FROM_GOOGLE_PARAM}=1",
     })
+
+
+@require_safe
+def register(request):
+    """
+    Primera pantalla del registro: elegir entre unirse como jugador (cuenta sin club,
+    ``register_account``) o registrarse como capitán (crear el club, ``register_club``).
+    Quien ya tiene sesión no la necesita y va a su portada.
+    """
+    if request.user.is_authenticated:
+        return redirect("home")
+    return render(request, "register_choose.html")
+
+
+@require_http_methods(["GET", "POST"])
+def register_account(request):
+    """
+    Alta de una cuenta sin club, para quien espera a que un capitán lo invite (enlace
+    compartido o email). Quien ya tiene sesión no se registra de nuevo: va a su portada
+    o, si no tiene club, a la página de espera. Más tarde puede registrar un club
+    (``register_club``) o aceptar una invitación.
+    """
+    if request.user.is_authenticated:
+        return redirect("home")
+    if request.method == "POST":
+        if ratelimit.too_many(request, "register-account", REGISTER_LIMIT, REGISTER_WINDOW):
+            return render(request, "429.html", status=429)
+        form = SignUpForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user, backend=LOGIN_BACKEND)
+            email_verification.start_verification(request, user)
+            messages.success(request, _("Cuenta creada. Ya puedes unirte a un club cuando te inviten."))
+            return redirect("no_club")
+    else:
+        form = SignUpForm()
+    _style(form)
+    return render(request, "register_account.html", {"form": form, "google_next": reverse("no_club")})
 
 
 @login_required
@@ -756,6 +800,22 @@ def legal_page(request, template):
 def robots_txt(request):
     """robots.txt: qué secciones no deben rastrear los buscadores y dónde está el sitemap."""
     return render(request, "robots.txt", content_type=TEXT_PLAIN)
+
+
+@require_safe
+def favicon_ico(request):
+    """/favicon.ico en la raíz (200, sin redirección): es donde los buscadores lo piden por defecto."""
+    path = finders.find("zyra/favicon.ico")
+    with open(path, "rb") as f:
+        response = HttpResponse(f.read(), content_type="image/x-icon")
+    response["Cache-Control"] = "public, max-age=86400"
+    return response
+
+
+@require_safe
+def bing_site_auth(request):
+    """BingSiteAuth.xml: archivo de verificación de Bing Webmaster Tools (el código es público)."""
+    return render(request, "BingSiteAuth.xml", content_type="application/xml")
 
 
 @require_safe

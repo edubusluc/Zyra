@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% comment %}
+Una guía pública. El texto va en guides/<slug>.<idioma>.html (variable guide_body); aquí están
+la cabecera SEO, las migas de pan, la llamada a registrarse y las otras guías.
+{% endcomment %}
+
+{% block title %}{{ guide_title }} · Zyra{% endblock %}
+{% block description %}{{ guide_description }}{% endblock %}
+{% block og_title %}{{ guide_title }}{% endblock %}
+{% block og_description %}{{ guide_description }}{% endblock %}
+
+{% block content %}
+<article class="z-panel z-legal">
+    <nav aria-label="{% translate 'Ruta de navegación' %}" class="small mb-3">
+        <a href="{% url 'home' %}">Zyra</a> › <a href="{% url 'guide_index' %}">{% translate "Guías" %}</a>
+    </nav>
+    <h1>{{ guide_title }}</h1>
+    <p class="text-muted"><small>{% blocktranslate with date=guide.updated|date:"j F Y" %}Actualizado el {{ date }}{% endblocktranslate %}</small></p>
+    {% include guide_body %}
+
+    <div class="z-card p-3 mt-4">
+        <h2 class="h5 mb-2">{% translate "Automatiza tu equipo con Zyra" %}</h2>
+        <p class="text-muted">{% translate "Convocatorias, parejas por puntos SNP, resultados y estadísticas de cada pareja, gratis para capitanes y clubes." %}</p>
+        <a class="btn btn-primary" href="{% url 'register' %}">{% translate "Registrar mi club gratis" %}</a>
+    </div>
+
+    <h2 class="h5 mt-4">{% translate "Otras guías" %}</h2>
+    <ul>
+        {% for other, title in others %}
+        <li><a href="{% url 'guide_detail' other.slug %}">{{ title }}</a></li>
+        {% endfor %}
+    </ul>
+</article>
+{{ structured_data }}
+{% endblock %}
