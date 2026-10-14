@@ -41,12 +41,24 @@
             <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
             <input type="search" placeholder="{% translate 'Buscar jugador...' %}" data-selector-search aria-label="{% translate 'Buscar jugador' %}">
         </div>
+        {% if is_club_admin %}
+        {# Interruptor propio (.z-toggle); al cambiarlo se recarga conservando el orden. #}
+        <form method="get" id="team-filter-form">
+            <input type="hidden" name="order_by" value="{{ order_by }}">
+            <input type="hidden" name="team" value="0">
+            <label class="z-toggle" for="player-only-team">
+                <input type="checkbox" role="switch" name="team" value="1" id="player-only-team" {% if only_team %}checked{% endif %} onchange="this.form.submit()">
+                <span class="z-toggle-track" aria-hidden="true"></span>
+                <span class="z-toggle-label">{% translate "Mostrar solo jugadores de mi equipo" %}</span>
+            </label>
+        </form>
+        {% endif %}
     </div>
 
     <div class="z-toolbar-group">
         <div class="z-segmented" role="group" aria-label="{% translate 'Ordenar por' %}">
-            <a href="?order_by=name" class="btn btn-sm {% if order_by == 'name' %}active{% endif %}">{% translate "Nombre" %}</a>
-            <a href="?order_by=-snp_score" class="btn btn-sm {% if order_by == '-snp_score' %}active{% endif %}">SNP</a>
+            <a href="?order_by=name{% if is_club_admin and not only_team %}&amp;team=0{% endif %}" class="btn btn-sm {% if order_by == 'name' %}active{% endif %}">{% translate "Nombre" %}</a>
+            <a href="?order_by=-snp_score{% if is_club_admin and not only_team %}&amp;team=0{% endif %}" class="btn btn-sm {% if order_by == '-snp_score' %}active{% endif %}">SNP</a>
         </div>
         <div class="z-segmented" role="group" aria-label="{% translate 'Cambiar vista' %}">
             <button type="button" class="btn btn-sm active" id="btn-view-cards" aria-label="{% translate 'Vista de tarjetas' %}"><i class="fa-solid fa-grip" aria-hidden="true"></i></button>

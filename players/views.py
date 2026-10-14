@@ -72,15 +72,19 @@ def list_players(request):
     """
     Lista de jugadores del club con orden (``order_by``). Se envían todos y la búsqueda en vivo y
     la paginación (9 por página) las hace ``static/js/player-selector.js``, igual que en las
-    convocatorias. Requiere pertenecer al club (``club_required``). Los capitanes ven también a los que
+    convocatorias. Requiere pertenecer al club (``club_required``). Por defecto solo se listan los del equipo; los
+    capitanes pueden desmarcar «solo mi equipo» (``team=0``) para ver también a los que
     ya no están en el equipo (al final) y el estado del botón «Completar equipo».
     """
     order_by = request.GET.get('order_by', 'name')
     if order_by not in ORDER_FIELDS:
         order_by = 'name'
 
+    # Interruptor «solo mi equipo»: marcado por defecto; el formulario envía team=0 al desmarcarlo.
+    # Solo los capitanes pueden verlo desmarcado (el resto nunca ve a los que ya no están).
+    only_team = request.GET.get('team', '1') != '0'
     players = Player.objects.filter(club=request.club)
-    if request.membership.is_admin:
+    if request.membership.is_admin and not only_team:
         players = players.order_by('-in_team', order_by)
     else:
         players = players.filter(in_team=True).order_by(order_by)
@@ -88,6 +92,7 @@ def list_players(request):
     context = {
         'players': players,
         'order_by': order_by,
+        'only_team': only_team,
     }
     if request.membership.is_admin:
         context.update(_complete_team_context(request.club))
