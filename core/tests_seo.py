@@ -103,6 +103,15 @@ class PublicPagesTests(TestCase):
         self.assertEqual(response.content.decode().count("<h1"), 1)
         self.assertContains(response, "<title>Zyra · App para gestionar equipos de pádel</title>", html=False)
 
+    def test_favicon_ico_answers_200_at_root_and_head_links_48px_multiples(self):
+        """Google exige /favicon.ico sin redirección e iconos de lado múltiplo de 48 px."""
+        response = self.client.get("/favicon.ico")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "image/x-icon")
+        html = self.client.get("/").content.decode()
+        for size in (48, 96, 192):
+            self.assertIn(f'sizes="{size}x{size}"', html)
+
     def test_healthz(self):
         response = self.client.get("/healthz/")
         self.assertEqual(response.status_code, 200)
