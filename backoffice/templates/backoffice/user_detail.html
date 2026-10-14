@@ -10,7 +10,7 @@
     </div>
     <div class="z-actions">
         {% if member != user and not member.is_superuser %}
-        <form method="post" action="{% url 'backoffice:user_toggle_active' member.id %}" class="d-inline" {% if member.is_active %}onsubmit="return confirm('{% translate "¿Suspender esta cuenta? No podrá iniciar sesión hasta que la reactives." %}')"{% endif %}>
+        <form method="post" action="{% url 'backoffice:user_toggle_active' member.id %}" class="d-inline" {% if member.is_active %}data-confirm="{% translate "¿Suspender esta cuenta? No podrá iniciar sesión hasta que la reactives." %}"{% endif %}>
             {% csrf_token %}
             <input type="hidden" name="action" value="{% if member.is_active %}suspend{% else %}activate{% endif %}">
             {% if member.is_active %}
@@ -101,7 +101,7 @@
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
         <h2 class="h5 mb-0">{% translate "Fotos" %}</h2>
         {% if photo_checks %}
-        <form method="post" action="{% url 'backoffice:user_photos_delete' member.id %}" class="d-flex flex-wrap gap-2" onsubmit="return confirm('{% translate "¿Eliminar todas sus fotos y avisarle por email?" %}')">
+        <form method="post" action="{% url 'backoffice:user_photos_delete' member.id %}" class="d-flex flex-wrap gap-2" data-confirm="{% translate "¿Eliminar todas sus fotos y avisarle por email?" %}">
             {% csrf_token %}
             <input type="text" name="reason" maxlength="500" class="form-control form-control-sm" style="max-width:240px" placeholder="{% translate 'Motivo (opcional, va en el email)' %}" aria-label="{% translate 'Motivo' %}">
             <button class="btn btn-outline-danger btn-sm"><i class="fa-solid fa-trash" aria-hidden="true"></i> {% translate "Eliminar todas sus fotos" %}</button>

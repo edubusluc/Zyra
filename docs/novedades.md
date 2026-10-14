@@ -6,6 +6,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 ## 14/10/2026 · Traspaso de capitanía y cuenta SNP
 
 - Al traspasar la capitanía se borran las credenciales SNP guardadas y el nuevo capitán ve de nuevo «Primeros pasos» con la tarea «Registra tu cuenta de SNP» (que ahora forma parte de la lista)
+- Las confirmaciones (traspasar capitanía, quitar miembro, borrar cuenta SNP, reabrir acta y las del back-office) salen en un popup de Zyra (`data-confirm` + `confirm-modal.js`) en vez del diálogo del navegador
 
 ## 13/10/2026 · Datos de partida en producción
 

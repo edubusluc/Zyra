@@ -240,3 +240,19 @@ class CaptaincyTransferSnpTests(TestCase):
         steps = {s["key"]: s["done"] for s in response.context["onboarding"]}
         self.assertFalse(steps["snp"])
         self.assertContains(response, "Primeros pasos")
+
+
+class ConfirmModalTests(TestCase):
+    """Las confirmaciones usan el popup de Zyra, no ``confirm()`` del navegador."""
+
+    def test_transfer_form_uses_custom_confirm(self):
+        old = User.objects.create_user("cap3", "cap3@example.com", "pass-12345")
+        club = create_club("Club Tres", "Sevilla", old, gender="M")
+        member = User.objects.create_user("miembro3", "m3@example.com", "pass-12345")
+        Membership.objects.create(user=member, club=club, role=Membership.MEMBER)
+        Player.objects.create(club=club, name="Eva", last_name="Sanz", user=member)
+        self.client.force_login(old)
+        response = self.client.get(reverse("club_members"))
+        self.assertContains(response, "data-confirm=")
+        self.assertContains(response, "confirm-modal.js")
+        self.assertNotContains(response, "return confirm(")
