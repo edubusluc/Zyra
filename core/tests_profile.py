@@ -29,6 +29,8 @@ class MyProfileTests(TestCase):
     def test_unlinked_shows_account_and_offers_link(self):
         page = self.client.get(reverse("my_profile"))
         self.assertContains(page, "ana@example.com")
+        self.assertContains(page, "Nombre de perfil")
+        self.assertContains(page, "ana</span>")
         self.assertContains(page, reverse("account_change_password"))
         self.assertContains(page, "Enlazarme a un jugador")
         self.assertContains(page, reverse("my_player"))

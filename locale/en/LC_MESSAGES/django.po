@@ -1316,6 +1316,14 @@ msgstr "Search email"
 msgid "Email"
 msgstr "Email"
 
+#: core/templates/my_profile.html:37
+msgid "Correo electrónico"
+msgstr "Email"
+
+#: core/templates/my_profile.html:57
+msgid "Nombre de perfil"
+msgstr "Profile name"
+
 #: backoffice/templates/backoffice/blocked_email_list.html:32
 #: backoffice/templates/backoffice/health.html:77
 #: backoffice/templates/backoffice/health.html:98
