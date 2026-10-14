@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 14/10/2026 · Estadísticas: un toque en el móvil ya no abre un partido
+
+- La fila de las tablas de partidos (jugador y pareja) ya no usa un enlace estirado con `::after`: en algunos Safari el enlace no se quedaba dentro de su fila y cubría toda la página, así que cualquier toque (temporadas, «Todas», selectores) abría un partido. Ahora `a11y.js` abre el enlace de la fila al pulsarla
+
 ## 14/10/2026 · Selectores con buscador en el móvil
 
 - Al elegir una opción del buscador (`player-picker.js`) se descartan durante 600 ms los clics siguientes (clic emulado del móvil o doble toque), para que ninguno caiga sobre el enlace de un partido de la tabla

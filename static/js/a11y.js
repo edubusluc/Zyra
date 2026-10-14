@@ -53,3 +53,15 @@ document.querySelectorAll('[data-scroll-top]').forEach((link) => {
     if (target) target.focus({ preventScroll: true });
   });
 });
+
+// Filas enlazadas (tablas de partidos de las estadísticas): pulsar en cualquier punto de la fila
+// abre el partido de su primer enlace. El enlace sigue siendo el que usa el teclado y los lectores.
+(function () {
+  document.addEventListener('click', function (event) {
+    if (event.defaultPrevented || event.button !== 0) return;
+    const row = event.target.closest && event.target.closest('.st-table--links tbody tr');
+    if (!row || event.target.closest('a, button, input, select, textarea')) return;
+    const link = row.querySelector('a[href]');
+    if (link) link.click();
+  });
+})();
