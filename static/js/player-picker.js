@@ -15,6 +15,15 @@
 (function () {
   const normalize = (text) => text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 
+  // Tras elegir una opción la página va a recargarse: durante un instante se descartan los clics
+  // (el emulado del móvil o un doble toque) para que no caigan sobre un enlace de debajo, p. ej.
+  // un partido de la tabla de estadísticas.
+  function swallowStrayClicks() {
+    const stop = (e) => { e.preventDefault(); e.stopPropagation(); };
+    document.addEventListener('click', stop, true);
+    setTimeout(() => document.removeEventListener('click', stop, true), 600);
+  }
+
   function enhance(select) {
     if (select.dataset.pickerReady) return;
     select.dataset.pickerReady = '1';
@@ -126,7 +135,10 @@
       select.value = o.value;
       close();
       input.blur();
-      if (changed) select.dispatchEvent(new Event('change', { bubbles: true }));
+      if (changed) {
+        swallowStrayClicks();
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+      }
     }
 
     input.addEventListener('focus', () => { input.select(); render(''); open(); });
