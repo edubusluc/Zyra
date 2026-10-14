@@ -1123,7 +1123,7 @@ class JoinedSeasonSelectorTests(TestCase):
         self.assertFalse(joined_by("2025-2026", "2024-2025"))
         self.assertTrue(joined_by("", "2020-2021"))
         choices = season_choices(extra=["1999-2000", "raro"])
-        self.assertEqual(choices[0], f"{int(current_season()[:4]) + 1}-{int(current_season()[:4]) + 2}")
+        self.assertEqual(choices[0], current_season())  # nunca hay temporadas futuras
         self.assertIn("1999-2000", choices)
         self.assertNotIn("raro", choices)
 

@@ -35,16 +35,17 @@ def season_start(season):
 def season_choices(club=None, extra=()):
     """
     Temporadas elegibles como «temporada en la que se unió»: de la más nueva a la más antigua, desde
-    2015-2016 hasta la siguiente a la actual, más las que ya existan en el club (partidos y jugadores)
-    y ``extra`` (un valor antiguo que se conserva al editar).
+    2015-2016 hasta la actual (nunca futuras), más las pasadas que ya existan en el club (partidos y
+    jugadores) y ``extra`` (un valor antiguo del jugador que se conserva al editar).
     """
     first = 2015
-    last = season_start(current_season()) + 1
+    last = season_start(current_season())
     seasons = {f"{y}-{y + 1}" for y in range(first, last + 1)}
     if club is not None:
         from match.models import Match
         seasons |= set(Match.objects.filter(club=club).values_list("season", flat=True))
         seasons |= set(Player.objects.filter(club=club).values_list("joined_season", flat=True))
+    seasons = {s for s in seasons if (season_start(s) or 0) <= last}  # sin temporadas futuras
     seasons |= set(extra)
     return sorted((s for s in seasons if season_start(s) is not None), key=season_start, reverse=True)
 
