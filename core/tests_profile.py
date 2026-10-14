@@ -78,6 +78,7 @@ class MyProfileTests(TestCase):
         self.assertNotContains(page, "Guardar email")
         self.assertNotContains(page, 'href="?edit=email"')
         self.assertNotContains(page, reverse("account_change_password"))
+        self.assertContains(page, reverse("account_set_password"))
         self.client.post(reverse("my_profile"), {"email": "otra@example.com", "current_password": ""})
         self.user.refresh_from_db()
         self.assertEqual(self.user.email, "ana@example.com")
@@ -88,6 +89,29 @@ class MyProfileTests(TestCase):
         })
         self.assertRedirects(response, reverse("my_profile"), fetch_redirect_response=False)
         self.assertContains(self.client.get(reverse("my_profile")), "Contraseña actualizada.")
+
+    def test_google_only_account_can_add_password_without_current_one(self):
+        self.user.set_unusable_password()
+        self.user.save()
+        SocialAccount.objects.create(user=self.user, provider="google", uid="123")
+        self.client.force_login(self.user)  # quitar la contraseña invalida la sesión
+        page = self.client.get(reverse("account_set_password"))
+        self.assertNotContains(page, "Contraseña actual")
+        self.assertContains(page, "data-password-rules")
+        response = self.client.post(reverse("account_set_password"), {
+            "password1": "Nueva-clave-456", "password2": "Nueva-clave-456",
+        })
+        self.assertRedirects(response, reverse("my_profile"), fetch_redirect_response=False)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password("Nueva-clave-456"))
+        self.assertTrue(SocialAccount.objects.filter(user=self.user, provider="google").exists())
+        page = self.client.get(reverse("my_profile"))
+        self.assertContains(page, reverse("account_change_password"))
+        self.assertContains(page, "También puedes entrar con Google.")
+
+    def test_account_with_password_is_sent_to_change_form(self):
+        response = self.client.get(reverse("account_set_password"))
+        self.assertRedirects(response, reverse("account_change_password"), fetch_redirect_response=False)
 
 
 class ReportPreferenceTests(TestCase):

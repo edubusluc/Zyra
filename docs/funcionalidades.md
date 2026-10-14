@@ -63,7 +63,7 @@ estadísticas) y aviso al capitán si el club no tiene cuenta SNP
 - Nombres siempre en mayúsculas; posición (derecha, revés, mixto) y si sigue en el equipo.
 - **Plantilla**: marcar de una vez quién está en el equipo.
 - **Mi perfil** (menú de la cuenta): email y contraseña de la cuenta con opción de cambiarlos (el email
-  pide la contraseña actual; en las cuentas solo de Google el email lo gestiona Google) y el jugador
+  pide la contraseña actual; en las cuentas solo de Google el email lo gestiona Google y se puede añadir una contraseña sin pedir la actual, sin perder el acceso con Google) y el jugador
   enlazado, que se pulsa para editarlo, o el botón para enlazarse a uno, y las preferencias de la cuenta
   (datos del informe PDF por defecto) y el informe mensual por email: activarlo o desactivarlo y elegir si cuenta todos
   los partidos o solo los competitivos; el correo trae además un enlace para darse de baja sin iniciar sesión

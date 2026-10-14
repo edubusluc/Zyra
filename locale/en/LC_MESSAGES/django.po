@@ -6048,8 +6048,16 @@ msgid "Entras con Google"
 msgstr "You sign in with Google"
 
 #: core/templates/my_profile.html:60
-msgid "Tu email y tu contraseña los gestiona Google."
-msgstr "Your email and password are managed by Google."
+msgid "Aún no tienes contraseña: añádela para entrar también con tu usuario o email."
+msgstr "You don't have a password yet: add one to also sign in with your username or email."
+
+#: core/templates/my_profile.html:61
+msgid "Añadir una contraseña"
+msgstr "Add a password"
+
+#: core/templates/my_profile.html:61
+msgid "Añadir contraseña"
+msgstr "Add password"
 
 #: core/templates/my_profile.html:69
 msgid "También puedes entrar con Google."
