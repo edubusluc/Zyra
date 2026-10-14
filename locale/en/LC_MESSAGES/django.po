@@ -7274,8 +7274,8 @@ msgid "Apuntado y alineado"
 msgstr "Signed up and selected"
 
 #: data_analyse/templates/player_statistics.html:132
-msgid "De las convocatorias a las que se apunta, en cuántas acaba jugando."
-msgstr "Of the call-ups they sign up for, how many they end up playing."
+msgid "De las convocatorias cerradas, a cuáles se apunta y, de esas, en cuántas acaba jugando."
+msgstr "Of the closed call-ups, which ones they sign up for and, of those, how many they end up playing."
 
 #: data_analyse/templates/player_statistics.html:135
 msgid "Juega cuando se apunta"
@@ -10318,3 +10318,15 @@ msgstr "Save date"
 
 msgid "Pdt. cerrar acta"
 msgstr "Pending sign-off"
+
+msgid "Se apunta a las convocatorias"
+msgstr "Signs up for call-ups"
+
+msgid "Apuntado en %(signed)s de %(total)s convocatorias cerradas"
+msgstr "Signed up for %(signed)s of %(total)s closed call-ups"
+
+msgid "apuntado"
+msgstr "signed up"
+
+msgid "no apuntado"
+msgstr "not signed up"

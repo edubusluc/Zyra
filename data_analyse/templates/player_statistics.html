@@ -131,7 +131,18 @@
         <div class="st-row st-row--pair">
           <article class="st-card">
             <h3 class="st-card-title">{% translate "Apuntado y alineado" %}</h3>
-            <p class="st-card-note">{% translate "De las convocatorias a las que se apunta, en cuántas acaba jugando." %}</p>
+            <p class="st-card-note">{% translate "De las convocatorias cerradas, a cuáles se apunta y, de esas, en cuántas acaba jugando." %}</p>
+            {% if signup_rate.total %}
+              <div class="st-rate">
+                <div class="st-split-head"><span>{% translate "Se apunta a las convocatorias" %}</span><b>{{ signup_rate.pct }}%</b></div>
+                <div class="st-meter"><span style="width: {{ signup_rate.pct|unlocalize }}%"></span></div>
+                <p class="st-split-foot">{% blocktranslate trimmed with signed=signup_rate.signed total=signup_rate.total %}Apuntado en {{ signed }} de {{ total }} convocatorias cerradas{% endblocktranslate %}</p>
+              </div>
+              <div class="st-tally">
+                <span class="st-tally-item st-tally-item--neutral"><b>{{ signup_rate.signed }}</b> {% translate "apuntado" %}</span>
+                <span class="st-tally-item st-tally-item--muted"><b>{{ signup_rate.missed }}</b> {% translate "no apuntado" %}</span>
+              </div>
+            {% endif %}
             {% if lineup_rate.signed %}
               <div class="st-rate">
                 <div class="st-split-head"><span>{% translate "Juega cuando se apunta" %}</span><b>{{ lineup_rate.pct }}%</b></div>
