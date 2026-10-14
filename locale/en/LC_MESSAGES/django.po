@@ -10404,10 +10404,6 @@ msgstr "Games 1 and 2 are worth 3 points and games 3, 4 and 5 are worth 2. They 
 msgid "Puntos ganados"
 msgstr "Points won"
 
-#: data_analyse/templates/player_statistics.html
-msgid "en partidos ganados"
-msgstr "in matches won"
-
 #: players/forms.py
 msgid "Temporada en la que se unió"
 msgstr "Season they joined"

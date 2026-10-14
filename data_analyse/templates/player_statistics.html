@@ -89,7 +89,6 @@
           <article class="st-kpi st-kpi--accent">
             <h2 class="st-kpi-label">{% translate "Puntos ganados" %}</h2>
             <p class="st-kpi-value">{{ s.points }}</p>
-            <p class="st-kpi-sub">{% translate "en partidos ganados" %}</p>
           </article>
 
         </div>
@@ -109,10 +108,10 @@
             <h2 class="st-card-title">{% translate "Local y visitante" %}</h2>
             <p class="st-card-note">{% translate "% de victorias y juegos ganados según dónde juega." %}</p>
 
-            {% translate "Como local" as t_label %}
-            {% include 'includes/venue_rate.html' with label=t_label played=s.local_played pct=s.local_pct wins=s.local_wins losses=s.local_losses best=s.best_local_streak sets_won=s.local_sets_won sets_lost=s.local_sets_lost sets_total=s.local_sets_total %}
-            {% translate "Como visitante" as t_label %}
-            {% include 'includes/venue_rate.html' with label=t_label played=s.visiting_played pct=s.visiting_pct wins=s.visiting_wins losses=s.visiting_losses best=s.best_visiting_streak sets_won=s.visiting_sets_won sets_lost=s.visiting_sets_lost sets_total=s.visiting_sets_total %}
+            {% translate "Como local" as t_label %}{% translate "Juegos como local" as t_games %}
+            {% include 'includes/venue_rate.html' with label=t_label games_label=t_games played=s.local_played pct=s.local_pct wins=s.local_wins losses=s.local_losses best=s.best_local_streak sets_won=s.local_sets_won sets_lost=s.local_sets_lost sets_total=s.local_sets_total %}
+            {% translate "Como visitante" as t_label %}{% translate "Juegos como visitante" as t_games %}
+            {% include 'includes/venue_rate.html' with label=t_label games_label=t_games played=s.visiting_played pct=s.visiting_pct wins=s.visiting_wins losses=s.visiting_losses best=s.best_visiting_streak sets_won=s.visiting_sets_won sets_lost=s.visiting_sets_lost sets_total=s.visiting_sets_total %}
           </article>
         </div>
       </section>
