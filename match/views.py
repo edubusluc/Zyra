@@ -174,8 +174,14 @@ def list_match(request):
     called = dict(Call.objects.filter(match__in=list(matches))
                   .annotate(n=Count('players')).values_list('match_id', 'n'))
     today = timezone.localdate()
+    # Reto y Play Off cerrados 6-6: la pareja del partido 3 decidió la eliminatoria (una sola consulta).
+    tiebreak_pairs = {
+        g.match_id: g.pair_label for g in Game.objects.filter(
+            match__in=[m for m in matches if m.no_draw and m.result_points == "6/6"], n_game=Match.TIEBREAK_GAME)}
     for m in matches:
         m.outcome = match_outcome(m)
+        m.tiebreak = m.id in tiebreak_pairs and m.outcome in ("V", "D")
+        m.tiebreak_pair = tiebreak_pairs.get(m.id, "")
         m.local_points, m.visiting_points = split_points(m.result_points) if m.outcome else (None, None)
         m.called = called.get(m.id)
         m.upcoming = m.outcome is None and m.start_date >= today
@@ -635,9 +641,17 @@ def calculate_points(games):
     
     return points_local, points_visiting
 
-def determine_match_result(points_local, points_visiting):
-    """'Victoria Local', 'Victoria Visitante' o 'EMPATE' (valor de Match.POSSIBLE_RESULT) según los puntos."""
-    return outcomes.from_points(points_local, points_visiting)
+def determine_match_result(points_local, points_visiting, match=None, games=()):
+    """'Victoria Local', 'Victoria Visitante' o 'EMPATE' (valor de Match.POSSIBLE_RESULT) según los puntos.
+
+    En Reto y Play Off no hay empate: si queda 6-6 gana quien ganó el partido 3.
+    """
+    result = outcomes.from_points(points_local, points_visiting)
+    if result == outcomes.DRAW and match is not None and match.no_draw:
+        tiebreak = next((g for g in games if g.n_game == Match.TIEBREAK_GAME and g.winner in outcomes.WINNERS), None)
+        if tiebreak is not None:
+            return outcomes.tiebreak_result(tiebreak.winner)
+    return result
    
 def valid_close_match(games,match):
     """Comprueba si se puede cerrar el acta: el enfrentamiento sigue abierto y tiene al menos
@@ -682,7 +696,7 @@ def close_match(request, match_id):
             game.save()
 
         # Determinar el resultado del partido
-        match.result = determine_match_result(points_local, points_visiting)
+        match.result = determine_match_result(points_local, points_visiting, match, games)
         match.result_points = f"{points_local}/{points_visiting}"
         match.draft_mode = False
         match.save()

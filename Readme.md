@@ -413,8 +413,8 @@ Además de eso, el back-office incluye: buscador global (nombre, email o id púb
 auditoría** (cada acción del personal, dos años), **registro de correos** (seis meses), seguimiento
 comercial de clubes (etapa, contacto, notas, tareas y correo al capitán con plantillas), avisos por
 correo al personal cuando algo falla y resumen semanal, embudo de clubes, errores 500 y peticiones
-lentas, y **«Entrar como»** un usuario: ves Zyra como él (solo lectura, 30 minutos, con motivo
-obligatorio, anotado en la auditoría y sin contar como actividad suya; no vale para cuentas de personal).
+lentas, y **«Entrar como»** un usuario: usas Zyra como él y puedes crear y corregir datos (30 minutos, con motivo
+obligatorio, cada cambio anotado en la auditoría a nombre del personal y sin contar como actividad suya; cuenta, email/contraseña, abandonar o borrar el club y la clave de SNP siguen bloqueados; no vale para cuentas de personal).
 
 Consola SQL: además de la lista de bloqueos, se recomienda un rol de PostgreSQL de solo lectura.
 `python manage.py sql_readonly_role` imprime el SQL (con `--apply` lo ejecuta); luego define

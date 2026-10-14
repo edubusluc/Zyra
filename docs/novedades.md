@@ -8,6 +8,27 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 - Al traspasar la capitanía se borran las credenciales SNP guardadas y el nuevo capitán ve de nuevo «Primeros pasos» con la tarea «Registra tu cuenta de SNP» (que ahora forma parte de la lista)
 - Las confirmaciones (traspasar capitanía, quitar miembro, borrar cuenta SNP, reabrir acta y las del back-office) salen en un popup de Zyra (`data-confirm` + `confirm-modal.js`) en vez del diálogo del navegador
 
+## 13/10/2026 · Reto y Play Off sin empate
+
+- En partidos de Reto y Play Off no hay empate: si la eliminatoria queda 6-6 al cerrar el acta, gana quien ganó el partido 3; el resto de tipos sigue admitiendo empate
+- Estadísticas de equipo: nueva tarjeta «Eliminatorias 6-6» con el porcentaje (y barra) de las que cayeron a favor y en contra (respeta el filtro de temporada y tipo)
+- En la tarjeta de un Reto o Play Off cerrado 6-6 se indica que la pareja 3 ganó (o perdió) su partido y desempató para entender de un vistazo por qué consta como ganado o perdido
+
+## 13/10/2026 · Cuentas sin club
+
+- El registro empieza con un panel para elegir «Registrarme como jugador» (cuenta sin club) o «Registrarme como capitán» (crear club); la portada y el menú apuntan a él
+- Nueva opción «Solo quiero unirme a un club por invitación» en el registro (también con Google): crea la cuenta sin club y la deja en una página de espera que explica cómo unirse con una invitación o registrar un club
+- Back-office: «Sin club» en el dashboard cuenta las cuentas activas que esperan invitación (con las de más de 7 días y su evolución diaria), el filtro de usuarios las lista de la más antigua a la más reciente y el informe de uso añade las cuentas nuevas con y sin club
+- Migración `backoffice` 0005 (`DailyMetric.users_without_club`)
+
+## 13/10/2026 · «Entrar como» con edición
+
+- Con «Entrar como» el personal ya puede crear y corregir datos como el usuario para resolver incidencias sin pasar por la consola SQL: banner «Editando como…», motivo obligatorio, 30 minutos y cada cambio (POST/PUT/PATCH/DELETE) anotado en la auditoría como `impersonate.write` a nombre del personal real. Siguen bloqueados el perfil/cuenta (email, contraseña), abandonar o borrar el club y ver la clave de SNP
+
+## 13/10/2026 · Back-office: salida a la web siempre visible
+
+- El menú lateral del back-office se desplaza por su cuenta y «Volver a la web» queda fijo al pie, así que ya no se pierde en pantallas bajas; en móvil el pie envuelve en varias líneas
+
 ## 13/10/2026 · Datos de partida en producción
 
 - La imagen incluye `populate_db.py` y `populate/` para cargar los datos de partida en el servidor (PR #137); `populate_db.py` guarda ahora los puntos como `7/5`, verifica el email del capitán en allauth (para «Entrar con Google»), conserva las cuentas que ya existan (solo exige que no haya clubes) y crea el capitán como usuario normal (`--superusuario` para el comportamiento anterior)
