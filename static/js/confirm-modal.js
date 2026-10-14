@@ -3,7 +3,7 @@
 // Opcionales: data-confirm-title, data-confirm-action (texto del botón) y
 // data-confirm-danger (botón rojo). Sin JS el formulario se envía sin pedir confirmación.
 (function () {
-  if (!window.bootstrap) return;
+  if (!globalThis.bootstrap) return;
   const L = document.documentElement.lang === 'en'
     ? { title: 'Are you sure?', ok: 'Accept', cancel: 'Cancel', close: 'Close' }
     : { title: '¿Seguro?', ok: 'Aceptar', cancel: 'Cancelar', close: 'Cerrar' };
@@ -31,7 +31,7 @@
 
   document.addEventListener('submit', function (event) {
     const form = event.target;
-    if (!form.matches || !form.hasAttribute('data-confirm') || form.dataset.confirmed) return;
+    if (!form.hasAttribute?.('data-confirm') || form.dataset.confirmed) return;
     event.preventDefault();
     const el = modalEl || build();
     el.querySelector('#zConfirmTitle').textContent = form.dataset.confirmTitle || L.title;
@@ -39,10 +39,10 @@
     const ok = el.querySelector('[data-z-confirm-ok]');
     ok.textContent = form.dataset.confirmAction || L.ok;
     ok.className = 'btn ' + (form.hasAttribute('data-confirm-danger') ? 'btn-danger' : 'btn-primary');
-    ok.onclick = function () {
+    ok.onclick = () => {
       form.dataset.confirmed = '1';
       bootstrap.Modal.getInstance(el).hide();
-      if (event.submitter) form.requestSubmit(event.submitter); else form.requestSubmit();
+      form.requestSubmit(event.submitter || undefined);
     };
     bootstrap.Modal.getOrCreateInstance(el).show();
   }, true);
