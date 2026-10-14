@@ -29,9 +29,13 @@
     <meta property="og:locale:alternate" content="{% if LANGUAGE_CODE == 'en' %}es_ES{% else %}en_GB{% endif %}">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="theme-color" content="#0A0B09">
-    <link rel="icon" href="{% static 'zyra/logo.svg' %}" type="image/svg+xml">
+    {# Google pide un icono cuyo lado sea múltiplo de 48 px (48, 96, 192...) y no admite bien el SVG: los PNG van primero. /favicon.ico también responde 200 en la raíz. #}
+    <link rel="icon" href="{% static 'zyra/favicon-48.png' %}" sizes="48x48" type="image/png">
+    <link rel="icon" href="{% static 'zyra/favicon-96.png' %}" sizes="96x96" type="image/png">
+    <link rel="icon" href="{% static 'zyra/favicon-192.png' %}" sizes="192x192" type="image/png">
     <link rel="icon" href="{% static 'zyra/favicon-32.png' %}" sizes="32x32" type="image/png">
-    <link rel="alternate icon" href="{% static 'zyra/favicon.ico' %}" sizes="any">
+    <link rel="icon" href="{% static 'zyra/favicon.svg' %}" sizes="any" type="image/svg+xml">
+    <link rel="shortcut icon" href="/favicon.ico" sizes="48x48">
     <link rel="apple-touch-icon" href="{% static 'zyra/apple-touch-icon.png' %}">
     {# Fuentes servidas desde la propia web (style.css): sin Google Fonts no se envía la IP del visitante a Google #}
     <link rel="preload" href="{% static 'zyra/fonts/Archivo-Regular.ttf' %}" as="font" type="font/ttf" crossorigin>

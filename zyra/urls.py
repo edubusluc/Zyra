@@ -30,7 +30,7 @@ from django.contrib.sitemaps.views import sitemap
 
 from core.guides import callup_template_pdf, guide_detail, guide_index, TEMPLATE_PDF
 from core.sitemaps import GuidesSitemap, PublicPagesSitemap
-from core.views import error_403_view, error_404_view, healthz, home, bing_site_auth, legal_page, robots_txt
+from core.views import error_403_view, error_404_view, healthz, home, bing_site_auth, favicon_ico, legal_page, robots_txt
 
 # <pid:...>: identificador público de un objeto (core/public_id.py). Se registra antes de
 # cargar las URLs de cada aplicación, que lo usan.
@@ -42,6 +42,7 @@ urlpatterns = [
     path("", home, name="home"),
     # Páginas públicas para buscadores y obligaciones legales.
     path("robots.txt", robots_txt, name="robots_txt"),
+    path("favicon.ico", favicon_ico, name="favicon_ico"),
     path("BingSiteAuth.xml", bing_site_auth, name="bing_site_auth"),
     path("sitemap.xml", sitemap, {"sitemaps": {"public": PublicPagesSitemap, "guides": GuidesSitemap}}, name="sitemap"),
     path("privacidad/", legal_page, {"template": "legal/privacy.html"}, name="privacy"),

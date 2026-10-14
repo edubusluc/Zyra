@@ -18,6 +18,7 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.paginator import Paginator
 from django.core.validators import validate_email
 from django.conf import settings
+from django.contrib.staticfiles import finders
 from django.db import DatabaseError, connection, transaction
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
@@ -799,6 +800,16 @@ def legal_page(request, template):
 def robots_txt(request):
     """robots.txt: qué secciones no deben rastrear los buscadores y dónde está el sitemap."""
     return render(request, "robots.txt", content_type=TEXT_PLAIN)
+
+
+@require_safe
+def favicon_ico(request):
+    """/favicon.ico en la raíz (200, sin redirección): es donde los buscadores lo piden por defecto."""
+    path = finders.find("zyra/favicon.ico")
+    with open(path, "rb") as f:
+        response = HttpResponse(f.read(), content_type="image/x-icon")
+    response["Cache-Control"] = "public, max-age=86400"
+    return response
 
 
 @require_safe

@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 14/10/2026 · Logo de Zyra en los resultados de Google
+
+- `/favicon.ico` responde 200 en la raíz (antes daba 404) y la cabecera enlaza iconos PNG de 48, 96 y 192 px (múltiplos de 48 que pide Google) generados desde `favicon.svg`; el SVG ya no es el primero de la lista
+- Google tarda días o semanas en actualizar el icono: tras desplegar, pedir la reindexación de la portada en Search Console
+
 ## 14/10/2026 · Estadísticas de jugador más simples
 
 - Al elegir una temporada, el panel «Temporada» solo conserva el listado de partidos jugados; el resto ya se ve en el resumen superior, que sigue el filtro de temporada
