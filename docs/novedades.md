@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 14/10/2026 · Contraseña para cuentas de Google
+
+- Las cuentas creadas con Google ven en «Mi perfil» el botón «Añadir contraseña» (sin pedir la actual, con la lista de requisitos en vivo y el ojo para mostrarla) y así pueden entrar también con usuario o email; el acceso con Google sigue funcionando
+- «Mi perfil» muestra en «Cuenta» el correo electrónico, el nombre de perfil (usuario, solo lectura) y la contraseña
+
 ## 14/10/2026 · Traspaso de capitanía y cuenta SNP
 
 - Al traspasar la capitanía se borran las credenciales SNP guardadas y el nuevo capitán ve de nuevo «Primeros pasos» con la tarea «Registra tu cuenta de SNP» (que ahora forma parte de la lista)
