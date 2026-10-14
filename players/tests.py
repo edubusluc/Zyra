@@ -1110,3 +1110,26 @@ class GroupOnlyScrapeTests(TestCase):
         result, calls = self.run_scrape(with_group_teams=True)
         self.assertEqual(result[1], GROUP_TEAMS)
         self.assertEqual(calls, ["login", "country", "competiciones", "mis equipos", "jugadores"])
+
+
+class ListPlayersTeamToggleTests(TestCase):
+    """Interruptor «solo jugadores de mi equipo» del listado: por defecto solo los del equipo."""
+
+    def setUp(self):
+        self.user = User.objects.create_user("capi", password="pass-12345")
+        self.club = create_club("Club A", "Sevilla", self.user)
+        Player.objects.create(club=self.club, name="Ana", last_name="López", in_team=True)
+        Player.objects.create(club=self.club, name="Bea", last_name="Ruiz", in_team=False)
+        self.client.force_login(self.user)
+
+    def test_default_only_team(self):
+        page = self.client.get(reverse("list_players"))
+        self.assertTrue(page.context["only_team"])
+        self.assertEqual([p.name for p in page.context["players"]], ["Ana"])
+        self.assertContains(page, "Mostrar solo jugadores de mi equipo")
+
+    def test_captain_sees_all_unchecked(self):
+        page = self.client.get(reverse("list_players"), {"team": "0", "order_by": "-snp_score"})
+        self.assertFalse(page.context["only_team"])
+        self.assertEqual([p.name for p in page.context["players"]], ["Ana", "Bea"])
+        self.assertContains(page, "?order_by=name&amp;team=0")

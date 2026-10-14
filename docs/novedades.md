@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 14/10/2026 · Interruptor de jugadores en el listado
+
+- El listado de jugadores tiene el interruptor «Mostrar solo jugadores de mi equipo» (marcado por defecto, solo capitanes), igual que el de equipos; al desmarcarlo se ven también los que ya no están en el equipo
+
 ## 14/10/2026 · SEO: guías, imagen para compartir y «Hecho con Zyra»
 
 - Nueva sección pública `/guia/` con tres guías para capitanes (organizar parejas, puntos SNP y plantilla de convocatoria), en español e inglés, con sitemap, hreflang y datos estructurados; enlazada desde la portada y el pie
