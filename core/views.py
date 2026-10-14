@@ -283,6 +283,7 @@ def register_club(request):
     })
 
 
+@require_safe
 def register(request):
     """
     Primera pantalla del registro: elegir entre unirse como jugador (cuenta sin club,
@@ -294,6 +295,7 @@ def register(request):
     return render(request, "register_choose.html")
 
 
+@require_http_methods(["GET", "POST"])
 def register_account(request):
     """
     Alta de una cuenta sin club, para quien espera a que un capitán lo invite (enlace
