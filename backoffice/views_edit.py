@@ -2,7 +2,7 @@
 Edición desde el back-office de la configuración de un club: su equipo y los rivales, sus jugadores y su
 cuenta SNP. Es para corregir en persona lo que al capitán le cuesta (nacionalidad, división, nombre en
 SNP…). Solo personal y por formulario; cada cambio queda en la auditoría con lo que había y lo que hay.
-«Entrar como» sigue siendo de solo lectura: las ediciones se hacen aquí, nunca con la cuenta ajena.
+«Entrar como» también permite editar (auditado), pero sin acciones sensibles; las ediciones de personal propias se hacen aquí.
 """
 from django import forms
 from django.contrib import messages

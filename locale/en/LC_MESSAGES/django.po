@@ -1316,6 +1316,14 @@ msgstr "Search email"
 msgid "Email"
 msgstr "Email"
 
+#: core/templates/my_profile.html:37
+msgid "Correo electrónico"
+msgstr "Email"
+
+#: core/templates/my_profile.html:57
+msgid "Nombre de perfil"
+msgstr "Profile name"
+
 #: backoffice/templates/backoffice/blocked_email_list.html:32
 #: backoffice/templates/backoffice/health.html:77
 #: backoffice/templates/backoffice/health.html:98
@@ -2289,15 +2297,16 @@ msgstr "No SNP account has errors."
 
 #: backoffice/templates/backoffice/impersonation_readonly.html:3
 #: backoffice/templates/backoffice/impersonation_readonly.html:6
-msgid "Modo solo lectura"
-msgstr "Read-only mode"
+msgid "Acción no permitida"
+msgstr "Action not allowed"
 
 #: backoffice/templates/backoffice/impersonation_readonly.html:7
 msgid ""
-"Estás viendo Zyra como otro usuario y en este modo no se puede cambiar nada."
+"Estás dentro de «Entrar como» y esta acción (cuenta, email o contraseña, "
+"abandonar el club, claves de SNP) no se puede hacer como otro usuario."
 msgstr ""
-"You are viewing Zyra as another user and nothing can be changed in this "
-"mode."
+"You are inside “Log in as” and this action (account, email or password, "
+"leaving the club, SNP credentials) cannot be done as another user."
 
 #: backoffice/templates/backoffice/impersonation_readonly.html:10
 msgid "Salir de «Entrar como»"
@@ -3697,16 +3706,20 @@ msgid "Motivo (queda en la auditoría)"
 msgstr "Reason (kept in the audit log)"
 
 #: backoffice/templates/backoffice/user_detail.html:70
-msgid "Entrar como este usuario (solo lectura)"
-msgstr "Log in as this user (read-only)"
+msgid "Entrar como este usuario (con edición)"
+msgstr "Log in as this user (with editing)"
 
 #: backoffice/templates/backoffice/user_detail.html:72
 msgid ""
-"Ves Zyra como la ve esta persona durante 30 minutos como máximo. No se puede"
-" cambiar nada y no cuenta como actividad suya."
+"Usas Zyra como esta persona durante 30 minutos como máximo y puedes crear y "
+"corregir datos; cada cambio queda anotado a tu nombre. No se puede tocar su "
+"cuenta (email, contraseña), abandonar o borrar el club ni ver la clave de "
+"SNP."
 msgstr ""
-"You see Zyra as this person sees it for 30 minutes at most. Nothing can be "
-"changed and it does not count as their activity."
+"You use Zyra as this person for 30 minutes at most and can create and fix "
+"data; every change is recorded under your name. Their account (email, "
+"password), leaving or deleting the club and the SNP password stay off "
+"limits."
 
 #: backoffice/templates/backoffice/user_detail.html:78
 msgid "Últimos correos"
@@ -5667,9 +5680,11 @@ msgstr "Continue with Google"
 #: core/templates/includes/impersonation_banner.html:5
 #, python-format
 msgid ""
-"Estás viendo Zyra como <strong>%(username)s</strong> (solo lectura, queda "
-"anotado)."
+"Editando como <strong>%(username)s</strong>: lo que cambies queda anotado a "
+"tu nombre."
 msgstr ""
+"Editing as <strong>%(username)s</strong>: whatever you change is recorded "
+"under your name."
 "You are viewing Zyra as <strong>%(username)s</strong> (read-only, recorded)."
 
 #: core/templates/includes/impersonation_banner.html:8
@@ -6041,8 +6056,16 @@ msgid "Entras con Google"
 msgstr "You sign in with Google"
 
 #: core/templates/my_profile.html:60
-msgid "Tu email y tu contraseña los gestiona Google."
-msgstr "Your email and password are managed by Google."
+msgid "Aún no tienes contraseña: añádela para entrar también con tu usuario o email."
+msgstr "You don't have a password yet: add one to also sign in with your username or email."
+
+#: core/templates/my_profile.html:61
+msgid "Añadir una contraseña"
+msgstr "Add a password"
+
+#: core/templates/my_profile.html:61
+msgid "Añadir contraseña"
+msgstr "Add password"
 
 #: core/templates/my_profile.html:69
 msgid "También puedes entrar con Google."
@@ -10126,6 +10149,154 @@ msgid ""
 msgstr ""
 "Complete team is not available: we have notified the administrator to review"
 " the process."
+
+#: core/onboarding.py
+msgid "Con ella los puntos SNP de tus jugadores se actualizan solos cada semana."
+msgstr "With it, your players' SNP points update by themselves every week."
+
+#: data_analyse/templates/team_statistics.html
+msgid "Eliminatorias 6-6"
+msgstr "6-6 ties"
+
+#: data_analyse/templates/team_statistics.html
+msgid "Reto y Play Off que quedaron 6-6: no hay empate y decide el ganador del partido 3."
+msgstr "Challenge and Play Off ties that ended 6-6: there are no draws and the winner of game 3 decides."
+
+#: data_analyse/templates/team_statistics.html
+msgid "A favor"
+msgstr "In favour"
+
+#: data_analyse/templates/team_statistics.html
+msgid "En contra"
+msgstr "Against"
+
+msgid "Cuenta creada. Ya puedes unirte a un club cuando te inviten."
+msgstr "Account created. You can join a club as soon as you are invited."
+
+msgid "Crea tu cuenta de Zyra"
+msgstr "Create your Zyra account"
+
+msgid ""
+"Crea tu cuenta de Zyra sin registrar un club y únete cuando un capitán te "
+"invite."
+msgstr ""
+"Create your Zyra account without registering a club and join when a captain "
+"invites you."
+
+msgid "Crear mi cuenta"
+msgstr "Create my account"
+
+msgid ""
+"Solo quiero unirme a un club por invitación. No necesitas registrar un club:"
+" cuando un capitán te invite, entrarás en el suyo."
+msgstr ""
+"I only want to join a club by invitation. You don't need to register a club:"
+" when a captain invites you, you will join theirs."
+
+msgid "Tu cuenta está lista, pero todavía no perteneces a ningún club."
+msgstr "Your account is ready, but you don't belong to any club yet."
+
+msgid ""
+"Pide a un capitán de tu club que te invite: te llegará un email o un enlace."
+msgstr ""
+"Ask a captain of your club to invite you: you will get an email or a link."
+
+msgid ""
+"Abre ese enlace (o el del email) con esta sesión iniciada y te unirás con un"
+" clic."
+msgstr ""
+"Open that link (or the one in the email) while signed in and you will join "
+"with one click."
+
+msgid "Si eres tú quien lleva el equipo, puedes registrar un club nuevo."
+msgstr "If you run the team, you can register a new club."
+
+msgid "%(n)s con más de 7 días"
+msgstr "%(n)s for over 7 days"
+
+msgid "Cuentas nuevas en %(days)s días"
+msgstr "New accounts in %(days)s days"
+
+msgid ""
+"%(total)s cuentas: %(club)s ya están en un club y %(waiting)s esperan una "
+"invitación."
+msgstr ""
+"%(total)s accounts: %(club)s are already in a club and %(waiting)s are "
+"waiting for an invitation."
+
+msgid "Ver cuentas sin club"
+msgstr "View accounts without a club"
+
+msgid "Cuentas sin club: %(now)s (el %(since)s: %(then)s)."
+msgstr "Accounts without a club: %(now)s (on %(since)s: %(then)s)."
+
+msgid "Crea tu cuenta en Zyra"
+msgstr "Create your Zyra account"
+
+msgid ""
+"Regístrate en Zyra como jugador para unirte a un club por invitación o como "
+"capitán para crear el tuyo gratis."
+msgstr ""
+"Sign up for Zyra as a player to join a club by invitation, or as a captain "
+"to create yours for free."
+
+msgid "¿Cómo quieres usar Zyra?"
+msgstr "How do you want to use Zyra?"
+
+msgid "Elige una opción para empezar. Podrás cambiar más tarde."
+msgstr "Pick an option to get started. You can change later."
+
+msgid "Registrarme como jugador"
+msgstr "Sign up as a player"
+
+msgid ""
+"Crea tu cuenta y únete al club de tu equipo cuando un capitán te invite."
+msgstr ""
+"Create your account and join your team's club when a captain invites you."
+
+msgid "Registrarme como capitán"
+msgstr "Sign up as a captain"
+
+msgid ""
+"Crea el club de tu equipo, convoca a tus jugadores y apunta los resultados."
+msgstr "Create your team's club, call up your players and record the results."
+
+msgid "Crear mi club"
+msgstr "Create my club"
+
+msgid "Registrarme gratis"
+msgstr "Sign up for free"
+
+msgid "Registrarme"
+msgstr "Sign up"
+
+msgid "Volver a elegir cómo registrarme"
+msgstr "Back to choosing how to sign up"
+
+#: match/templates/list_match.html
+#, python-format
+msgid "6-6: la pareja 3 ganó su partido y desempató (%(pair)s)"
+msgstr "6-6: pair 3 won their game and broke the tie (%(pair)s)"
+
+#: match/templates/list_match.html
+msgid "6-6: la pareja 3 ganó su partido y desempató"
+msgstr "6-6: pair 3 won their game and broke the tie"
+
+#: match/templates/list_match.html
+msgid "6-6: la pareja 3 perdió su partido y desempató el rival"
+msgstr "6-6: pair 3 lost their game and the opponent broke the tie"
+
+#: data_analyse/templates/team_statistics.html
+#, python-format
+msgid "%(n)s eliminatoria"
+msgid_plural "%(n)s eliminatorias"
+msgstr[0] "%(n)s tie"
+msgstr[1] "%(n)s ties"
+
+#: data_analyse/templates/team_statistics.html
+#, python-format
+msgid "%(a)s %% a favor y %(b)s %% en contra"
+msgstr "%(a)s %% in favour and %(b)s %% against"
 
 msgid "Cambiar fecha"
 msgstr "Change date"

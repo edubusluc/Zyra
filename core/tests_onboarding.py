@@ -9,7 +9,7 @@ from django.utils import timezone
 from core.models import Club, Invitation, Membership
 from core.services import create_club
 from match.models import Match
-from players.models import Player
+from players.models import Player, SnpAccount
 from team.models import Team
 
 User = get_user_model()
@@ -33,12 +33,12 @@ class OnboardingTests(TestCase):
         self.client.post(reverse("register_club"), {**CLUB, **SIGNUP})
         return Club.objects.get(name="Club Nuevo")
 
-    def test_new_club_sees_the_four_steps(self):
+    def test_new_club_sees_the_steps(self):
         self.register()
         response = self.client.get(reverse("home"))
         self.assertContains(response, "Primeros pasos")
         for url in (reverse("create_team"), reverse("club_members") + "#invitaciones",
-                    reverse("create_player"), reverse("create_match")):
+                    reverse("create_player"), reverse("create_match"), reverse("snp_account")):
             self.assertContains(response, f'href="{url}"')
 
     def test_steps_are_ticked_with_club_data(self):
@@ -46,7 +46,7 @@ class OnboardingTests(TestCase):
         Team.objects.create(club=club, name="Rival", in_group=True)
         Player.objects.create(club=club, name="Eva", last_name="Sanz")
         steps = {s["key"]: s["done"] for s in self.client.get(reverse("home")).context["onboarding"]}
-        self.assertEqual(steps, {"team": True, "invite": False, "player": True, "match": False})
+        self.assertEqual(steps, {"team": True, "invite": False, "player": True, "match": False, "snp": False})
 
     def test_hidden_when_all_steps_are_done(self):
         club = self.register()
@@ -54,6 +54,9 @@ class OnboardingTests(TestCase):
         Player.objects.create(club=club, name="Eva", last_name="Sanz")
         Invitation.objects.create(club=club, reusable=True)
         Match.objects.create(club=club, local=club.own_team, visiting=rival, start_date=datetime.date.today())
+        account = SnpAccount(club=club)
+        account.username, account.password = "cap", "secreto"
+        account.save()
         self.assertNotContains(self.client.get(reverse("home")), "Primeros pasos")
 
     def test_captain_can_dismiss_it(self):
@@ -211,3 +214,45 @@ class CaptainPlayerTests(TestCase):
         self.assertEqual((player.name, player.last_name), ("Ana", "Ruiz"))
         user.refresh_from_db()
         self.assertEqual(user.first_name, "Ana")
+
+
+class CaptaincyTransferSnpTests(TestCase):
+    """Al traspasar la capitanía se borran las credenciales SNP y el nuevo capitán las vuelve a pedir."""
+
+    def setUp(self):
+        self.old = User.objects.create_user("viejo", "viejo@example.com", "pass-12345")
+        self.club = create_club("Club Dos", "Sevilla", self.old, gender="M")
+        self.new = User.objects.create_user("nuevo2", "nuevo2@example.com", "pass-12345")
+        self.target = Membership.objects.create(user=self.new, club=self.club, role=Membership.MEMBER)
+        Player.objects.create(club=self.club, name="Eva", last_name="Sanz", user=self.new)
+        account = SnpAccount(club=self.club)
+        account.username, account.password = "cap", "secreto"
+        account.save()
+        self.club.onboarding_dismissed_at = timezone.now()
+        self.club.save()
+
+    def test_transfer_deletes_snp_account_and_reopens_first_steps(self):
+        from core.services import transfer_captaincy
+        transfer_captaincy(self.club, Membership.objects.get(user=self.old), self.target)
+        self.assertFalse(SnpAccount.objects.filter(club=self.club).exists())
+        self.client.force_login(self.new)
+        response = self.client.get(reverse("home"))
+        steps = {s["key"]: s["done"] for s in response.context["onboarding"]}
+        self.assertFalse(steps["snp"])
+        self.assertContains(response, "Primeros pasos")
+
+
+class ConfirmModalTests(TestCase):
+    """Las confirmaciones usan el popup de Zyra, no ``confirm()`` del navegador."""
+
+    def test_transfer_form_uses_custom_confirm(self):
+        old = User.objects.create_user("cap3", "cap3@example.com", "pass-12345")
+        club = create_club("Club Tres", "Sevilla", old, gender="M")
+        member = User.objects.create_user("miembro3", "m3@example.com", "pass-12345")
+        Membership.objects.create(user=member, club=club, role=Membership.MEMBER)
+        Player.objects.create(club=club, name="Eva", last_name="Sanz", user=member)
+        self.client.force_login(old)
+        response = self.client.get(reverse("club_members"))
+        self.assertContains(response, "data-confirm=")
+        self.assertContains(response, "confirm-modal.js")
+        self.assertNotContains(response, "return confirm(")

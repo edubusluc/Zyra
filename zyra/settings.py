@@ -159,7 +159,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    # «Entrar como» (solo lectura) del back-office: debe ir antes de CurrentClubMiddleware.
+    # «Entrar como» (con edición auditada) del back-office: debe ir antes de CurrentClubMiddleware.
     'backoffice.impersonation.ImpersonationMiddleware',
     'core.middleware.CurrentClubMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',

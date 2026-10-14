@@ -63,7 +63,7 @@ estadísticas) y aviso al capitán si el club no tiene cuenta SNP
 - Nombres siempre en mayúsculas; posición (derecha, revés, mixto) y si sigue en el equipo.
 - **Plantilla**: marcar de una vez quién está en el equipo.
 - **Mi perfil** (menú de la cuenta): email y contraseña de la cuenta con opción de cambiarlos (el email
-  pide la contraseña actual; en las cuentas solo de Google el email lo gestiona Google) y el jugador
+  pide la contraseña actual; en las cuentas solo de Google el email lo gestiona Google y se puede añadir una contraseña sin pedir la actual, sin perder el acceso con Google) y el jugador
   enlazado, que se pulsa para editarlo, o el botón para enlazarse a uno, y las preferencias de la cuenta
   (datos del informe PDF por defecto) y el informe mensual por email: activarlo o desactivarlo y elegir si cuenta todos
   los partidos o solo los competitivos; el correo trae además un enlace para darse de baja sin iniciar sesión
@@ -122,7 +122,7 @@ El ciclo de un enfrentamiento ([`match.views`](referencia/match/views.md)):
 5. **Resultados** por sets, con validación ([`match.scoring`](referencia/match/scoring.md)). Mientras
    se escribe solo se avisa de los sets no válidos y, al final, del ganador del partido.
 6. **Cerrar actas**: con los 5 resultados, calcula los puntos y el ganador; si la eliminatoria
-   queda empatada a puntos (6-6), el partido queda como **empate**. Un partido cerrado ya no se
+   queda empatada a puntos (6-6), el partido queda como **empate**; en **Reto y Play Off** no hay empate y gana quien ganó el partido 3. Un partido cerrado ya no se
    puede cambiar ni borrar.
 
 - **Sanciones**: advertencias a jugadores desde la convocatoria ([`penalty`](referencia/penalty/index.md)).
@@ -139,7 +139,7 @@ El ciclo de un enfrentamiento ([`match.views`](referencia/match/views.md)):
 Todas con filtro Todos / Competitivos / Amistosos y selector de temporada
 ([`data_analyse.views`](referencia/data_analyse/views.md), [`data_analyse.pairs`](referencia/data_analyse/pairs.md)):
 
-- **Equipo**: victorias, empates y derrotas (en total y por temporada), local / visitante,
+- **Equipo**: eliminatorias 6-6 de Reto y Play Off a favor y en contra, victorias, empates y derrotas (en total y por temporada), local / visitante,
   mejores jugadores y parejas, gráficos, % de victorias por número de partido (1 a 5), sets
   (set decisivo, tie-breaks, remontadas, cerrar el partido, sets ajustados, roscos), récords
   ([`data_analyse.records`](referencia/data_analyse/records.md)) y ranking SNP de la plantilla con

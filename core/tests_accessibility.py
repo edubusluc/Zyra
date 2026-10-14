@@ -176,7 +176,7 @@ class AccessibilityTests(TestCase):
 
     def test_public_pages(self):
         self._assert_accessible([
-            reverse("home"), reverse("login"), reverse("register_club"), reverse("privacy"),
+            reverse("home"), reverse("login"), reverse("register"), reverse("register_club"), reverse("privacy"),
             reverse("terms"), reverse("cookies"), reverse("account_reset_password"),
             unsubscribe_path(self.user),
         ])
