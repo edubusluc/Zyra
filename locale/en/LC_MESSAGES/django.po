@@ -10133,3 +10133,106 @@ msgid ""
 msgstr ""
 "Complete team is not available: we have notified the administrator to review"
 " the process."
+
+msgid "Cuenta creada. Ya puedes unirte a un club cuando te inviten."
+msgstr "Account created. You can join a club as soon as you are invited."
+
+msgid "Crea tu cuenta de Zyra"
+msgstr "Create your Zyra account"
+
+msgid ""
+"Crea tu cuenta de Zyra sin registrar un club y únete cuando un capitán te "
+"invite."
+msgstr ""
+"Create your Zyra account without registering a club and join when a captain "
+"invites you."
+
+msgid "Crear mi cuenta"
+msgstr "Create my account"
+
+msgid ""
+"Solo quiero unirme a un club por invitación. No necesitas registrar un club:"
+" cuando un capitán te invite, entrarás en el suyo."
+msgstr ""
+"I only want to join a club by invitation. You don't need to register a club:"
+" when a captain invites you, you will join theirs."
+
+msgid "Tu cuenta está lista, pero todavía no perteneces a ningún club."
+msgstr "Your account is ready, but you don't belong to any club yet."
+
+msgid ""
+"Pide a un capitán de tu club que te invite: te llegará un email o un enlace."
+msgstr ""
+"Ask a captain of your club to invite you: you will get an email or a link."
+
+msgid ""
+"Abre ese enlace (o el del email) con esta sesión iniciada y te unirás con un"
+" clic."
+msgstr ""
+"Open that link (or the one in the email) while signed in and you will join "
+"with one click."
+
+msgid "Si eres tú quien lleva el equipo, puedes registrar un club nuevo."
+msgstr "If you run the team, you can register a new club."
+
+msgid "%(n)s con más de 7 días"
+msgstr "%(n)s for over 7 days"
+
+msgid "Cuentas nuevas en %(days)s días"
+msgstr "New accounts in %(days)s days"
+
+msgid ""
+"%(total)s cuentas: %(club)s ya están en un club y %(waiting)s esperan una "
+"invitación."
+msgstr ""
+"%(total)s accounts: %(club)s are already in a club and %(waiting)s are "
+"waiting for an invitation."
+
+msgid "Ver cuentas sin club"
+msgstr "View accounts without a club"
+
+msgid "Cuentas sin club: %(now)s (el %(since)s: %(then)s)."
+msgstr "Accounts without a club: %(now)s (on %(since)s: %(then)s)."
+
+msgid "Crea tu cuenta en Zyra"
+msgstr "Create your Zyra account"
+
+msgid ""
+"Regístrate en Zyra como jugador para unirte a un club por invitación o como "
+"capitán para crear el tuyo gratis."
+msgstr ""
+"Sign up for Zyra as a player to join a club by invitation, or as a captain "
+"to create yours for free."
+
+msgid "¿Cómo quieres usar Zyra?"
+msgstr "How do you want to use Zyra?"
+
+msgid "Elige una opción para empezar. Podrás cambiar más tarde."
+msgstr "Pick an option to get started. You can change later."
+
+msgid "Registrarme como jugador"
+msgstr "Sign up as a player"
+
+msgid ""
+"Crea tu cuenta y únete al club de tu equipo cuando un capitán te invite."
+msgstr ""
+"Create your account and join your team's club when a captain invites you."
+
+msgid "Registrarme como capitán"
+msgstr "Sign up as a captain"
+
+msgid ""
+"Crea el club de tu equipo, convoca a tus jugadores y apunta los resultados."
+msgstr "Create your team's club, call up your players and record the results."
+
+msgid "Crear mi club"
+msgstr "Create my club"
+
+msgid "Registrarme gratis"
+msgstr "Sign up for free"
+
+msgid "Registrarme"
+msgstr "Sign up"
+
+msgid "Volver a elegir cómo registrarme"
+msgstr "Back to choosing how to sign up"

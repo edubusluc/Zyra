@@ -21,6 +21,9 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
 
 - [V] Una cuenta pertenece a un solo club (no suspendido): `core.services.club_of`; lo comprueban
   `register_club` y `accept_invitation`. Tests: `core/tests_onboarding.py`, `core/tests_invitations.py`.
+- [V] Se puede crear una cuenta sin club (`register_account`, o Google desde esa página): queda en `no_club` hasta aceptar una
+  invitación o registrar un club. Back-office: KPI «Sin club» (`accounts_without_club`: activas y no staff), filtro `?kind=no_club`.
+  Tests: `core/tests_account_without_club.py`, `AccountsWithoutClubTests` en `backoffice/tests_ops.py`.
 - [V] Un club tiene un único capitán (restricción `unique_captain_per_club`). Se cede con
   `transfer_captaincy` (vista `transfer_captaincy_view`) solo a un miembro enlazado a un `Player` del club
   (`eligible_successors`); el antiguo pasa a miembro. El capitán no puede quitarse ni abandonar sin ceder antes.

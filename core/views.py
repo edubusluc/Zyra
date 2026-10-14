@@ -283,6 +283,44 @@ def register_club(request):
     })
 
 
+@require_safe
+def register(request):
+    """
+    Primera pantalla del registro: elegir entre unirse como jugador (cuenta sin club,
+    ``register_account``) o registrarse como capitán (crear el club, ``register_club``).
+    Quien ya tiene sesión no la necesita y va a su portada.
+    """
+    if request.user.is_authenticated:
+        return redirect("home")
+    return render(request, "register_choose.html")
+
+
+@require_http_methods(["GET", "POST"])
+def register_account(request):
+    """
+    Alta de una cuenta sin club, para quien espera a que un capitán lo invite (enlace
+    compartido o email). Quien ya tiene sesión no se registra de nuevo: va a su portada
+    o, si no tiene club, a la página de espera. Más tarde puede registrar un club
+    (``register_club``) o aceptar una invitación.
+    """
+    if request.user.is_authenticated:
+        return redirect("home")
+    if request.method == "POST":
+        if ratelimit.too_many(request, "register-account", REGISTER_LIMIT, REGISTER_WINDOW):
+            return render(request, "429.html", status=429)
+        form = SignUpForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user, backend=LOGIN_BACKEND)
+            email_verification.start_verification(request, user)
+            messages.success(request, _("Cuenta creada. Ya puedes unirte a un club cuando te inviten."))
+            return redirect("no_club")
+    else:
+        form = SignUpForm()
+    _style(form)
+    return render(request, "register_account.html", {"form": form, "google_next": reverse("no_club")})
+
+
 @login_required
 @require_safe
 def no_club(request):
