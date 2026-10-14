@@ -44,6 +44,7 @@ ACTIONS = {
     "import.undo": "Importación deshecha",
     "impersonate.start": "Entrar como (inicio)",
     "impersonate.stop": "Entrar como (fin)",
+    "impersonate.write": "Cambio hecho con «Entrar como»",
     "task.create": "Tarea creada",
     "note.create": "Nota creada",
 }

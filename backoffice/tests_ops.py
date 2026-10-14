@@ -326,25 +326,44 @@ class ImpersonationTests(StaffTestCase):
         self.assertNotIn("backoffice_impersonation", self.client.session)
         self.assertFalse(AuditLog.objects.filter(action="impersonate.start").exists())
 
-    def test_sees_the_site_as_the_user_read_only_and_audited(self):
+    def test_sees_the_site_as_the_user_and_audits_start(self):
         self.assertRedirects(self.start(), reverse("home"), fetch_redirect_response=False)
         audit_start = AuditLog.objects.get(action="impersonate.start")
         self.assertEqual((audit_start.username, audit_start.object_label, audit_start.detail["reason"]),
                          ("staff", "capi", "Reproducir el problema del capitán"))
         page = self.client.get(reverse("home"))
-        self.assertContains(page, "Estás viendo Zyra como")
+        self.assertContains(page, "Editando como")
         self.assertContains(page, "Club A")  # el club del capitán, no el del personal
-        # Solo lectura: cualquier POST se rechaza y no cuenta como actividad del usuario visto.
-        blocked = self.client.post(reverse("create_invitation_link") if False else reverse("switch_club"), {})
-        self.assertEqual(blocked.status_code, 403)
         self.assertFalse(DailyActivity.objects.filter(user=self.captain).exists())
+
+    def test_writes_are_allowed_and_audited_under_the_staff_member(self):
+        self.start()
+        response = self.client.post(reverse("create_invitation_link"), {})
+        self.assertNotEqual(response.status_code, 403)
+        entry = AuditLog.objects.get(action="impersonate.write")
+        self.assertEqual((entry.username, entry.object_label, entry.detail["method"]), ("staff", "capi", "POST"))
+        self.assertEqual(entry.detail["path"], reverse("create_invitation_link"))
+        self.assertFalse(DailyActivity.objects.filter(user=self.captain).exists())
+        self.client.get(reverse("home"))
+        self.assertEqual(AuditLog.objects.filter(action="impersonate.write").count(), 1)
+
+    def test_sensitive_actions_stay_blocked(self):
+        self.start()
+        for method, url in (
+            ("post", reverse("switch_club")), ("post", reverse("leave_club")), ("post", reverse("delete_account")),
+            ("post", reverse("my_profile")), ("post", reverse("snp_account_password")),
+            ("get", reverse("delete_account")),
+        ):
+            self.assertEqual(getattr(self.client, method)(url, {}).status_code, 403, url)
+        self.assertEqual(self.client.get(reverse("my_profile")).status_code, 200)
+        self.assertFalse(AuditLog.objects.filter(action="impersonate.write").exists())
 
     def test_stop_audits_and_restores_the_staff_session(self):
         self.start()
         response = self.client.post(reverse("backoffice:impersonate_stop"))
         self.assertRedirects(response, reverse("backoffice:user_detail", args=[self.captain.pk]), fetch_redirect_response=False)
         self.assertTrue(AuditLog.objects.filter(action="impersonate.stop").exists())
-        self.assertNotContains(self.client.get(reverse("backoffice:dashboard")), "solo lectura")
+        self.assertNotContains(self.client.get(reverse("backoffice:dashboard")), "Editando como")
         self.assertEqual(self.client.get(reverse("backoffice:dashboard")).status_code, 200)
 
     def test_expires_after_thirty_minutes(self):

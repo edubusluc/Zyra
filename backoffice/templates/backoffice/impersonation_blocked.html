@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 {% load i18n %}
-{% block title %}{% translate "Modo solo lectura" %}{% endblock %}
+{% block title %}{% translate "Acción no permitida" %}{% endblock %}
 {% block content %}
 <div class="container py-5" style="max-width: 640px;">
-    <h1 class="h3">{% translate "Modo solo lectura" %}</h1>
-    <p>{% translate "Estás viendo Zyra como otro usuario y en este modo no se puede cambiar nada." %}</p>
+    <h1 class="h3">{% translate "Acción no permitida" %}</h1>
+    <p>{% translate "Estás dentro de «Entrar como» y esta acción (cuenta, email o contraseña, abandonar el club, claves de SNP) no se puede hacer como otro usuario." %}</p>
     <form method="post" action="{% url 'backoffice:impersonate_stop' %}">
         {% csrf_token %}
         <button class="btn btn-primary" type="submit">{% translate "Salir de «Entrar como»" %}</button>
