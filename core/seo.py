@@ -173,7 +173,7 @@ def guide_structured_data(request, guide, language):
                 "datePublished": guide.published.isoformat(),
                 "dateModified": guide.updated.isoformat(),
                 "mainEntityOfPage": url,
-                "image": base + static("zyra/og-image.png"),
+                "image": base + static("zyra/og-image-v2.png"),
                 "author": {"@type": "Organization", "name": "Zyra", "url": home},
                 "publisher": {"@type": "Organization", "@id": home + "#organization", "name": "Zyra", "url": home,
                               "logo": {"@type": "ImageObject", "url": base + static("zyra/icon-512.png")}},
