@@ -5,7 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 14/10/2026 · Tarjetas de sets legibles
 
-- Estadísticas · Sets: las tarjetas (Set decisivo, Tie-breaks, Remontadas…) ponen título y porcentaje arriba, barra y descripción a ancho completo debajo (sin caja), sin recortes en móvil; lo mismo en «Como local / visitante» de la pareja
+- Estadísticas · Sets: las tarjetas (Set decisivo, Tie-breaks, Remontadas…) ponen título y porcentaje arriba, barra y descripción a ancho completo debajo (sin caja), sin recortes en móvil; lo mismo en «Local y visitante» (jugador y pareja) y «Apuntado y alineado»
 
 ## 14/10/2026 · Fecha editable
 
