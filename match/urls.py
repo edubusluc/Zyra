@@ -6,6 +6,7 @@ from call.views import delete_call
 urlpatterns = (
     path("create_match",create_match, name='create_match'),
     path("list_match",list_match, name='list_match'),
+    path("edit_match_date/<pid:match_id>/",edit_match_date, name='edit_match_date'),
     path("create_call/<pid:match_id>/",create_call, name='create_call'),
     path('call_for_match/<pid:match_id>/', call_for_match, name='call_for_match'),
     path("create_game/<pid:match_id>/",create_game_for_match, name='create_game'),

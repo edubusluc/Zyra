@@ -7,7 +7,7 @@ from . import outcomes
 from django.shortcuts import render, redirect, get_object_or_404
 from core.decorators import club_required, club_admin_required
 from django.contrib import messages
-from .forms import MatchForm
+from .forms import MatchForm, MatchDateForm
 from .models import Match, Game, Result
 from . import lineup, outcomes
 from .notifications import send_call_report, report_filename
@@ -210,6 +210,24 @@ def create_match(request):
         match = form.save()
         return redirect("call_for_match", match.public_id)
     return render(request, CREATE_MATCH_HTML, {"form": form})
+
+@club_admin_required
+def edit_match_date(request, match_id):
+    """Cambia la fecha de un partido que aún no está cerrado.
+
+    Solo para administradores del club. Con el acta cerrada hay que reabrirla antes (el acta
+    cerrada es inmutable). Recalcula la temporada y vuelve a la página del partido.
+    """
+    match = club_match(request, match_id)
+    if not match.draft_mode:
+        messages.error(request, _("Reabre el acta para cambiar la fecha del partido."))
+        return redirect("call_for_match", match.public_id)
+    form = MatchDateForm(request.POST or None, instance=match)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, _("Fecha del partido actualizada."))
+        return redirect("call_for_match", match.public_id)
+    return render(request, "edit_match_date.html", {"form": form, "match": match})
 
 @club_admin_required
 def delete_match(request, match_id):

@@ -54,7 +54,7 @@ Cuidado con imports circulares: `match.models` importa `players.models`; `player
 2. **Invitación** [V]: `create_invitation` (email, un uso) o `create_invitation_link` (enlace
    compartido `reusable`) → `core.views.invitation` → `core.services.accept_invitation`
    (transacción con `select_for_update`). El nuevo miembro elige su jugador en `players.views.my_player` / `link_player`.
-3. **Ciclo de un enfrentamiento** [V]: `create_match` → `create_call` / `edit_call` (escribe
+3. **Ciclo de un enfrentamiento** [V]: `create_match` (→ `edit_match_date`, solo con acta abierta; recalcula `season`) → `create_call` / `edit_call` (escribe
    `CallLog`) → `close_call` (≥10 jugadores) → `match.notifications.send_call_report` (PDF de
    `match/report.py` + `match/report_pdf.py`, cola `ReportDelivery`) → `create_game_for_match`
    (`match/lineup.py`; sugerencias con `match/advisor.py`) → `create_result` / `edit_result`

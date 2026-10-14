@@ -1189,6 +1189,8 @@ a.z-card:hover, .z-card--link:hover {
 .z-versus-mid { text-align: center; }
 .z-versus-vs { font-family: var(--z-display); font-style: italic; font-weight: 700; font-size: 1.2rem; color: var(--z-lime); }
 .z-versus-date { font-size: .8rem; color: var(--z-muted); }
+.z-edit-date { margin-left: .35rem; color: var(--z-muted); }
+.z-edit-date:hover, .z-edit-date:focus-visible { color: var(--z-text, inherit); }
 
 .z-positions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .z-positions .z-card { padding: 16px; }

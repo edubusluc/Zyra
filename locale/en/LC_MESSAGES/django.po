@@ -10126,3 +10126,21 @@ msgid ""
 msgstr ""
 "Complete team is not available: we have notified the administrator to review"
 " the process."
+
+msgid "Cambiar fecha"
+msgstr "Change date"
+
+msgid "Reabre el acta para cambiar la fecha del partido."
+msgstr "Reopen the match sheet to change the match date."
+
+msgid "Fecha del partido actualizada."
+msgstr "Match date updated."
+
+msgid "Partido entre <strong>%(local)s</strong> y <strong>%(visiting)s</strong>."
+msgstr "Match between <strong>%(local)s</strong> and <strong>%(visiting)s</strong>."
+
+msgid "La temporada se recalcula con la nueva fecha. Si ya enviaste el informe de la convocatoria, reenvíalo para que lleve la fecha correcta."
+msgstr "The season is recalculated from the new date. If you already sent the call-up report, resend it so it shows the right date."
+
+msgid "Guardar fecha"
+msgstr "Save date"

@@ -584,3 +584,51 @@ class FriendlyManualRivalTests(TestCase):
                 self.assertContains(self.client.get(url), "Pádel Norte")
         self.assertEqual(str(call), f"{self.own.name} vs Pádel Norte")
 
+
+
+class EditMatchDateTests(TestCase):
+    """Cambio de fecha de un partido ya creado."""
+
+    def setUp(self):
+        self.user = User.objects.create_user("admin", password="pass-12345")
+        self.club = create_club("Club A", "Sevilla", self.user)
+        self.rival = Team.objects.create(club=self.club, name="Rival", location="X", in_group=True)
+        self.match = Match.objects.create(club=self.club, local=self.club.own_team, visiting=self.rival,
+                                          start_date=datetime.date(2026, 3, 1))
+        self.client.force_login(self.user)
+        self.url = reverse("edit_match_date", args=[self.match.public_id])
+
+    def test_changes_date_and_recalculates_season(self):
+        self.assertEqual(self.match.season, "2025-2026")
+        response = self.client.post(self.url, {"start_date": "2026-11-15"})
+        self.assertRedirects(response, reverse("call_for_match", args=[self.match.public_id]))
+        self.match.refresh_from_db()
+        self.assertEqual(self.match.start_date, datetime.date(2026, 11, 15))
+        self.assertEqual(self.match.season, "2026-2027")
+
+    def test_invalid_date_shows_error(self):
+        response = self.client.post(self.url, {"start_date": "15/11/2026"})
+        self.assertContains(response, "Fecha no válida")
+        self.match.refresh_from_db()
+        self.assertEqual(self.match.start_date, datetime.date(2026, 3, 1))
+
+    def test_closed_match_cannot_change_date(self):
+        Match.objects.filter(pk=self.match.pk).update(draft_mode=False)
+        self.client.post(self.url, {"start_date": "2026-11-15"})
+        self.match.refresh_from_db()
+        self.assertEqual(self.match.start_date, datetime.date(2026, 3, 1))
+
+    def test_other_club_cannot_change_date(self):
+        other = User.objects.create_user("other", password="pass-12345")
+        create_club("Club B", "Madrid", other)
+        self.client.force_login(other)
+        self.client.post(self.url, {"start_date": "2026-11-15"})
+        self.match.refresh_from_db()
+        self.assertEqual(self.match.start_date, datetime.date(2026, 3, 1))
+
+    def test_link_shown_only_while_open(self):
+        page = self.client.get(reverse("call_for_match", args=[self.match.public_id]))
+        self.assertContains(page, self.url)
+        Match.objects.filter(pk=self.match.pk).update(draft_mode=False)
+        page = self.client.get(reverse("call_for_match", args=[self.match.public_id]))
+        self.assertNotContains(page, self.url)
