@@ -263,7 +263,8 @@ class SnpAccountTests(TestCase):
         self.assertNotContains(self.client.get(reverse("home")), "Registra tu cuenta de SNP")
         self.make_account()
         self.client.login(username="admin", password="pass-12345")
-        self.assertNotContains(self.client.get(reverse("home")), "Registra tu cuenta de SNP")
+        # La tarea sigue en «Primeros pasos», pero ya hecha y sin botón.
+        self.assertNotContains(self.client.get(reverse("home")), "Registrar cuenta")
 
     def test_snp_job_runs_every_night_and_cycle_starts_on_monday(self):
         from backoffice.jobs import get_spec

@@ -92,6 +92,28 @@
         </dl>
       </section>
 
+      {% if tiebreaks.total %}
+      <section aria-labelledby="tiebreak-title" class="st-section mt-4">
+        <h2 class="st-section-title" id="tiebreak-title">{% translate "Eliminatorias 6-6" %}</h2>
+        <p class="st-card-note mt-0 mb-3">{% translate "Reto y Play Off que quedaron 6-6: no hay empate y decide el ganador del partido 3." %}</p>
+        <div class="st-split">
+          <div class="st-split-side st-split-side--for">
+            <span class="st-split-label">{% translate "A favor" %}</span>
+            <b class="st-split-pct">{{ tiebreaks.for_pct }} %</b>
+            <span class="st-split-count">{% blocktranslate count n=tiebreaks.for %}{{ n }} eliminatoria{% plural %}{{ n }} eliminatorias{% endblocktranslate %}</span>
+          </div>
+          <div class="st-split-side st-split-side--against">
+            <span class="st-split-label">{% translate "En contra" %}</span>
+            <b class="st-split-pct">{{ tiebreaks.against_pct }} %</b>
+            <span class="st-split-count">{% blocktranslate count n=tiebreaks.against %}{{ n }} eliminatoria{% plural %}{{ n }} eliminatorias{% endblocktranslate %}</span>
+          </div>
+        </div>
+        <div class="st-split-bar" role="img" aria-label="{% blocktranslate with a=tiebreaks.for_pct b=tiebreaks.against_pct %}{{ a }} % a favor y {{ b }} % en contra{% endblocktranslate %}">
+          <span class="st-split-for" style="width: {{ tiebreaks.for_pct }}%"></span><span class="st-split-against" style="width: {{ tiebreaks.against_pct }}%"></span>
+        </div>
+      </section>
+      {% endif %}
+
       <section aria-labelledby="top-title" class="st-section mt-4">
         <h2 class="st-section-title" id="top-title">{% translate "Top 5" %}{% if selected_season %} · {{ selected_season }}{% endif %}</h2>
         <p class="st-card-note mt-0 mb-3">{% translate "Solo jugadores que siguen en el equipo." %}</p>

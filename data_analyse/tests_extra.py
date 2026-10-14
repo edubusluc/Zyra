@@ -167,6 +167,8 @@ class ClubSetsTests(ClubDataMixin, TestCase):
 
         response = self.client.get(reverse('player_statistics'), {'player': self.e.public_id})
         self.assertEqual(response.context['lineup_rate'], {'signed': 2, 'aligned': 0, 'benched': 2, 'pct': 0})
+        signup = response.context['signup_rate']
+        self.assertEqual((signup['signed'], signup['missed'], signup['total']), (2, signup['total'] - 2, signup['total']))
 
     def test_pair_page_sets(self):
         response = self.client.get(reverse('pair_statistics'), {'p1': self.a.public_id, 'p2': self.b.public_id})

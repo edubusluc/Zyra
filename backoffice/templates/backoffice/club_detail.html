@@ -252,7 +252,7 @@
         <button class="btn btn-outline-light btn-sm">{% translate "Cambiar nombre" %}</button>
     </form>
     {% if successors %}
-    <form method="post" action="{% url 'backoffice:club_transfer_captain' club.public_id %}" class="d-flex flex-wrap gap-2 mb-3" onsubmit="return confirm('{% translate "¿Traspasar la capitanía?" %}')">
+    <form method="post" action="{% url 'backoffice:club_transfer_captain' club.public_id %}" class="d-flex flex-wrap gap-2 mb-3" data-confirm="{% translate "¿Traspasar la capitanía?" %}">
         {% csrf_token %}
         <label class="visually-hidden" for="club-captain">{% translate "Nuevo capitán" %}</label>
         <select class="form-select w-auto" id="club-captain" name="membership">{% for m in successors %}<option value="{{ m.public_id }}">{{ m.user.username }}</option>{% endfor %}</select>
@@ -278,7 +278,7 @@
 <section class="z-panel" id="suspender">
     <h2 class="h5">{% translate "Suspender club" %}</h2>
     <p class="text-muted">{% translate "Sus miembros no podrán entrar hasta que lo reactives (no se borra nada). Los emails marcados quedan bloqueados: no podrán crear otro club, registrarse ni unirse a ningún club como jugadores." %}</p>
-    <form method="post" action="{% url 'backoffice:club_toggle_suspended' club.public_id %}" onsubmit="return confirm('{% translate "¿Suspender este club? Sus miembros no podrán entrar hasta que lo reactives." %}')">
+    <form method="post" action="{% url 'backoffice:club_toggle_suspended' club.public_id %}" data-confirm="{% translate "¿Suspender este club? Sus miembros no podrán entrar hasta que lo reactives." %}">
         {% csrf_token %}
         <input type="hidden" name="action" value="suspend">
         <input type="text" name="reason" maxlength="500" class="form-control mb-3" placeholder="{% translate 'Motivo (opcional)' %}" aria-label="{% translate 'Motivo' %}">

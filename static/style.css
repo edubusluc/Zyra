@@ -1189,6 +1189,8 @@ a.z-card:hover, .z-card--link:hover {
 .z-versus-mid { text-align: center; }
 .z-versus-vs { font-family: var(--z-display); font-style: italic; font-weight: 700; font-size: 1.2rem; color: var(--z-lime); }
 .z-versus-date { font-size: .8rem; color: var(--z-muted); }
+.z-edit-date { margin-left: .35rem; color: var(--z-muted); }
+.z-edit-date:hover, .z-edit-date:focus-visible { color: var(--z-text, inherit); }
 
 .z-positions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .z-positions .z-card { padding: 16px; }
@@ -1444,6 +1446,9 @@ a.z-location:hover span { text-decoration: underline; }
   gap: 14px; margin-bottom: 14px;
 }
 
+/* Dos tarjetas por fila (la de sets necesita ancho para sus dos columnas) */
+.st-row--pair { grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); }
+
 .st-card {
   display: flex; flex-direction: column; min-width: 0;
   padding: 22px; background: var(--st-card); border: 1px solid var(--st-line); border-radius: var(--z-radius);
@@ -1579,6 +1584,17 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 .st-bar { height: 10px; margin-top: 8px; overflow: hidden; background: rgba(255, 92, 99, .45); border-radius: 999px; }
 .st-bar { display: flex; }
 .st-bar-win { display: block; height: 100%; background: var(--z-lime); }
+.st-split { display: flex; justify-content: space-between; gap: 16px; padding: 18px 20px 0; background: var(--z-surface-2, #1B1B1B); border: 1px solid var(--st-line); border-bottom: 0; border-radius: 14px 14px 0 0; }
+.st-split-side { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.st-split-side--against { align-items: flex-end; text-align: right; }
+.st-split-label { font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--st-muted); }
+.st-split-pct { font-size: clamp(2.2rem, 7vw, 3.4rem); font-weight: 800; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.st-split-side--for .st-split-pct { color: var(--z-lime); }
+.st-split-side--against .st-split-pct { color: var(--st-loss); }
+.st-split-count { font-size: .85rem; color: var(--st-muted); padding-bottom: 14px; }
+.st-split-bar { display: flex; height: 14px; overflow: hidden; background: rgba(255, 92, 99, .25); border: 1px solid var(--st-line); border-top: 0; border-radius: 0 0 14px 14px; }
+.st-split-for { display: block; height: 100%; background: var(--z-lime); }
+.st-split-against { display: block; height: 100%; background: var(--st-loss); }
 .st-bar-draw { display: block; height: 100%; background: #8A8A8A; }
 
 /* Jugadores para elegir en las estadísticas de jugador (sin jugador elegido) */
@@ -1734,6 +1750,7 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 .z-fixture-state.is-loss { color: var(--z-ink); background: var(--z-danger); }
 .z-fixture-state.is-draw { color: var(--z-ink); background: #C9CBC4; }
 .z-fixture-state.is-upcoming { color: var(--z-ink); background: var(--z-warning); }
+.z-fixture-state.is-pending-close { color: var(--z-ink); background: var(--z-lime); }
 .z-fixture-state.is-open { color: var(--z-warning); border: 1px solid var(--z-warning); }
 
 .z-fixture-teams { display: grid; gap: 8px; }
@@ -2392,6 +2409,10 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 .st-facts--sets dd { margin: 4px 0 0; font-size: 1.35rem; font-weight: 800; color: #FFFFFF; font-variant-numeric: tabular-nums; }
 .st-facts--sets .st-fact-name { font-size: 1rem; overflow-wrap: anywhere; }
 .st-sets-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 0 22px; }
+/* Porcentaje plano (sin caja): título y cifra arriba, barra y descripción a ancho completo debajo */
+.st-rate { display: block; min-width: 0; margin-top: 18px; }
+.st-rate .st-split-head { gap: 12px; }
+.st-rate .st-split-foot { overflow-wrap: break-word; }
 .st-records { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
 .st-record-tile { display: flex; flex-direction: column; gap: 4px; min-width: 0; padding: 16px; background: var(--st-card); border: 1px solid var(--st-line); border-radius: 16px; }
 .st-record-tile b { font-size: 1.35rem; font-weight: 800; line-height: 1.2; color: #FFFFFF; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
@@ -2511,3 +2532,13 @@ select.z-select-native {
     opacity: 0;
     cursor: pointer;
 }
+
+/* Elección de rol en el registro (jugador o capitán). */
+.z-role-grid { display: grid; gap: 14px; margin: 18px 0; grid-template-columns: 1fr; }
+@media (min-width: 640px) { .z-role-grid { grid-template-columns: 1fr 1fr; } }
+.z-role-card { display: flex; flex-direction: column; gap: 6px; padding: 20px; text-decoration: none; background: var(--z-surface-2); border: 1px solid var(--z-border); border-radius: 14px; color: var(--z-text); transition: border-color .15s, background-color .15s; }
+.z-role-card:hover, .z-role-card:focus-visible { border-color: var(--z-lime); background: rgba(var(--z-lime-rgb), .07); color: var(--z-text); }
+.z-role-card > i { font-size: 1.6rem; color: var(--z-lime); }
+.z-role-card h2 { margin: 4px 0 0; font-size: 1.1rem; }
+.z-role-card p { margin: 0; color: var(--z-muted); font-size: .9rem; }
+.z-role-go { margin-top: auto; padding-top: 8px; font-weight: 700; color: var(--z-lime); }

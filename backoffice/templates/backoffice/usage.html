@@ -70,6 +70,8 @@
         </li>
         {% endfor %}
     </ol>
+    <h3 class="h6 mt-3">{% blocktranslate with days=funnel.days %}Cuentas nuevas en {{ days }} días{% endblocktranslate %}</h3>
+    <p class="mb-0">{% blocktranslate trimmed with total=funnel.accounts.total club=funnel.accounts.with_club waiting=funnel.accounts.waiting %}{{ total }} cuentas: {{ club }} ya están en un club y {{ waiting }} esperan una invitación.{% endblocktranslate %} <a href="{% url 'backoffice:user_list' %}?kind=no_club">{% translate "Ver cuentas sin club" %}</a></p>
 </section>
 
 <section class="z-panel">

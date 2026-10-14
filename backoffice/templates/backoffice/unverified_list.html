@@ -37,7 +37,7 @@
             <td>{{ u.date_joined|date:"j M Y H:i" }}</td>
             <td>{% if u.last_deadline %}{% blocktranslate with d=u.last_deadline|date:"j M Y" %}plazo hasta el {{ d }}{% endblocktranslate %}{% if u.overdue %} <span class="z-badge z-badge--danger">{% translate "vencido" %}</span>{% endif %}{% else %}<span class="text-muted">{% translate "sin avisar" %}</span>{% endif %}</td>
             <td class="text-end">
-                <form method="post" action="{% url 'backoffice:unverified_warn' u.id %}" class="d-inline-flex gap-2 align-items-center" onsubmit="return confirm('{% translate "¿Enviar el aviso a este email?" %}')">
+                <form method="post" action="{% url 'backoffice:unverified_warn' u.id %}" class="d-inline-flex gap-2 align-items-center" data-confirm="{% translate "¿Enviar el aviso a este email?" %}">
                     {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
                     <label class="visually-hidden" for="days-{{ u.id }}">{% translate "Días de plazo" %}</label>
                     <input id="days-{{ u.id }}" type="number" name="days" min="1" max="60" value="{{ default_days }}" class="form-control form-control-sm" style="width:5rem" title="{% translate 'Días de plazo' %}">

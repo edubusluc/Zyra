@@ -13,7 +13,7 @@ devuelven JSON para el JavaScript de la página (p. ej. `suggested_lineup`, `com
 |---|---|---|
 | Configuración | `zyra/settings.py`, `.env.example` | Todo por entorno (`python-decouple`). Sin `DJANGO_DEBUG=True`, exige `DJANGO_SECRET_KEY` (≥50) y `FIELD_ENCRYPTION_KEY` o no arranca (`ImproperlyConfigured`). [V] |
 | URLs | `zyra/urls.py` → `<app>/urls.py` | Conversor `pid` registrado en `zyra/urls.py`. `delete_call` vive en `call/views.py` pero se enruta desde `match/urls.py`. [V] |
-| Middleware | `zyra/settings.py` `MIDDLEWARE` | Propios: `core.middleware.CanonicalHostMiddleware`, `backoffice.middleware.ActivityMiddleware`, `backoffice.impersonation.ImpersonationMiddleware` («Entrar como»: solo lectura, 30 min, bloquea todo salvo GET/HEAD, auditado; las ediciones del personal van por `backoffice/views_edit.py`, nunca con la cuenta ajena), `core.middleware.LanguageMiddleware`, `core.middleware.CurrentClubMiddleware`. [V] |
+| Middleware | `zyra/settings.py` `MIDDLEWARE` | Propios: `core.middleware.CanonicalHostMiddleware`, `backoffice.middleware.ActivityMiddleware`, `backoffice.impersonation.ImpersonationMiddleware` («Entrar como»: edición permitida, 30 min, cada POST/PUT/PATCH/DELETE auditado como `impersonate.write` con el personal real; bloquea las acciones sensibles de `BLOCKED_PREFIXES` (cuenta, perfil, abandonar club, clave SNP); las ediciones propias del personal van por `backoffice/views_edit.py`), `core.middleware.LanguageMiddleware`, `core.middleware.CurrentClubMiddleware`. [V] |
 | Control de acceso | `core/decorators.py`, `backoffice/decorators.py` | `club_required`, `club_admin_required` (403), `staff_required` (404 a no-staff), `superuser_required`. [V] |
 | Vistas (funciones) | `<app>/views.py` | Excepto `ThrottledLoginView` (clase). Mucha lógica está en las vistas, sobre todo en `match/views.py` y `data_analyse/views.py`. [V] |
 | Servicios / dominio | `core/services.py`, `match/lineup.py`, `match/scoring.py`, `match/advisor.py`, `match/notifications.py`, `players/snp.py`, `players/snp_import.py`, `data_analyse/{pairs,sets,records}.py`, `backoffice/{scheduler,metrics,sql,importer}.py` | Funciones de módulo; no hay clases de servicio. [V] |
@@ -54,7 +54,7 @@ Cuidado con imports circulares: `match.models` importa `players.models`; `player
 2. **Invitación** [V]: `create_invitation` (email, un uso) o `create_invitation_link` (enlace
    compartido `reusable`) → `core.views.invitation` → `core.services.accept_invitation`
    (transacción con `select_for_update`). El nuevo miembro elige su jugador en `players.views.my_player` / `link_player`.
-3. **Ciclo de un enfrentamiento** [V]: `create_match` → `create_call` / `edit_call` (escribe
+3. **Ciclo de un enfrentamiento** [V]: `create_match` (→ `edit_match_date`, solo con acta abierta; recalcula `season`) → `create_call` / `edit_call` (escribe
    `CallLog`) → `close_call` (≥10 jugadores) → `match.notifications.send_call_report` (PDF de
    `match/report.py` + `match/report_pdf.py`, cola `ReportDelivery`) → `create_game_for_match`
    (`match/lineup.py`; sugerencias con `match/advisor.py`) → `create_result` / `edit_result`
