@@ -3,6 +3,14 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 14/10/2026 · Temporada de incorporación como selector
+
+- Jugador (crear y editar): «Temporada en la que se unió» pasa de texto libre a un selector con búsqueda que solo admite temporadas de la lista (2015-2016 hasta la actual, sin temporadas futuras, más las pasadas que ya existan en el club); un valor antiguo fuera de la lista se conserva al editar
+- Estadísticas · Jugador: «Apuntado y alineado» y «Se apunta a las convocatorias» (y su desglose por temporada) solo cuentan desde la temporada de incorporación; sin ella se cuenta todo
+- Estadísticas · Jugador: los chips de temporada no ofrecen las anteriores a su incorporación (salvo que haya jugado en ellas)
+- Fuente Syncopate: las tildes y la Ñ de los títulos (p. ej. RODRÍGUEZ) se ven más pequeñas y separadas de la letra
+- Informe mensual del jugador: no lista como «No apuntado» las convocatorias anteriores a su incorporación
+
 ## 14/10/2026 · Interruptor de jugadores en el listado
 
 - El listado de jugadores tiene el interruptor «Mostrar solo jugadores de mi equipo» (marcado por defecto, solo capitanes), igual que el de equipos; al desmarcarlo se ven también los que ya no están en el equipo
