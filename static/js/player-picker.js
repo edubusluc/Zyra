@@ -60,8 +60,9 @@
       toggle.tabIndex = -1;
       toggle.setAttribute('aria-label', gettext('Ver todos'));
       toggle.innerHTML = '<i class="fa-solid fa-chevron-down" aria-hidden="true"></i>';
-      toggle.addEventListener('mousedown', (e) => {
-        e.preventDefault();
+      // mousedown solo evita perder el foco; la acción va en click (ver nota en la opción)
+      toggle.addEventListener('mousedown', (e) => e.preventDefault());
+      toggle.addEventListener('click', () => {
         if (wrap.classList.contains('is-open')) { close(); input.blur(); } else { input.focus(); }
       });
       wrap.classList.add('has-toggle');
@@ -100,7 +101,10 @@
           meta.textContent = o.meta;
           li.appendChild(meta);
         }
-        li.addEventListener('mousedown', (e) => { e.preventDefault(); choose(o); });
+        // Elegir en «click», no en «mousedown»: en el móvil la lista se cierra al soltar el dedo
+        // y el click emulado caía sobre el enlace que quedaba debajo (p. ej. un partido)
+        li.addEventListener('mousedown', (e) => e.preventDefault());
+        li.addEventListener('click', () => choose(o));
         list.appendChild(li);
       });
       setActive(shown.findIndex((o) => o.value === select.value));
