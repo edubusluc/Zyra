@@ -59,7 +59,7 @@ document.querySelectorAll('[data-scroll-top]').forEach((link) => {
 (function () {
   document.addEventListener('click', function (event) {
     if (event.defaultPrevented || event.button !== 0) return;
-    const row = event.target.closest && event.target.closest('.st-table--links tbody tr');
+    const row = event.target.closest?.('.st-table--links tbody tr');
     if (!row || event.target.closest('a, button, input, select, textarea')) return;
     const link = row.querySelector('a[href]');
     if (link) link.click();
