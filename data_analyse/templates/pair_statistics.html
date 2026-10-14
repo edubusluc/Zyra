@@ -106,12 +106,12 @@
           <article class="st-card">
             <h2 class="st-card-title">{% translate "Local y visitante" %}</h2>
             <p class="st-card-note">{% translate "Victorias de la pareja según dónde juega." %}</p>
-            <div class="st-split">
+            <div class="st-rate">
               <div class="st-split-head"><span>{% translate "Como local" %}</span><b>{% if s.local_played %}{{ s.local_pct|floatformat:0 }}%{% else %}—{% endif %}</b></div>
               <div class="st-meter"><span style="width: {{ local_pct_w|unlocalize }}%"></span></div>
               <p class="st-split-foot">{% if s.local_played %}{% blocktranslate trimmed with wins=s.local_wins losses=s.local_losses count n=s.local_played %}{{ wins }}V – {{ losses }}D en {{ n }} partido{% plural %}{{ wins }}V – {{ losses }}D en {{ n }} partidos{% endblocktranslate %}{% else %}{% translate "Sin partidos todavía" %}{% endif %}</p>
             </div>
-            <div class="st-split">
+            <div class="st-rate">
               <div class="st-split-head"><span>{% translate "Como visitante" %}</span><b>{% if s.visiting_played %}{{ s.visiting_pct|floatformat:0 }}%{% else %}—{% endif %}</b></div>
               <div class="st-meter"><span style="width: {{ visiting_pct_w|unlocalize }}%"></span></div>
               <p class="st-split-foot">{% if s.visiting_played %}{% blocktranslate trimmed with wins=s.visiting_wins losses=s.visiting_losses count n=s.visiting_played %}{{ wins }}V – {{ losses }}D en {{ n }} partido{% plural %}{{ wins }}V – {{ losses }}D en {{ n }} partidos{% endblocktranslate %}{% else %}{% translate "Sin partidos todavía" %}{% endif %}</p>
