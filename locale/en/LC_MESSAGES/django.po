@@ -10330,3 +10330,68 @@ msgstr "signed up"
 
 msgid "no apuntado"
 msgstr "not signed up"
+
+msgid "Guías"
+msgstr "Guides"
+
+msgid "Guías para capitanes de equipos de pádel"
+msgstr "Guides for padel team captains"
+
+msgid "Guías prácticas para capitanes: cómo organizar las parejas, cómo funcionan los puntos SNP y una plantilla de convocatoria gratis."
+msgstr "Practical guides for captains: how to set the pairs, how SNP points work and a free call-up template."
+
+msgid "Consejos prácticos para organizar un equipo de liga por equipos, escritos desde la experiencia de un capitán."
+msgstr "Practical advice to run a team-league squad, written from a captain's experience."
+
+msgid "Ruta de navegación"
+msgstr "Breadcrumb"
+
+#, python-format
+msgid "Actualizado el %(date)s"
+msgstr "Updated on %(date)s"
+
+msgid "Automatiza tu equipo con Zyra"
+msgstr "Automate your team with Zyra"
+
+msgid "Convocatorias, parejas por puntos SNP, resultados y estadísticas de cada pareja, gratis para capitanes y clubes."
+msgstr "Call-ups, pairs by SNP points, results and statistics for every pair, free for captains and clubs."
+
+msgid "Otras guías"
+msgstr "Other guides"
+
+msgid "Guías para capitanes"
+msgstr "Guides for captains"
+
+msgid "Hecho con Zyra"
+msgstr "Made with Zyra"
+
+msgid "Fecha y hora"
+msgstr "Date and time"
+
+msgid "Lugar"
+msgstr "Venue"
+
+msgid "Jugadores de la pareja"
+msgstr "Players in the pair"
+
+msgid "Puntos en juego"
+msgstr "Points at stake"
+
+msgid "Resultado (sets)"
+msgstr "Result (sets)"
+
+msgid "Convocatoria de pádel por equipos"
+msgstr "Team padel call-up"
+
+msgid "Jugadores convocados"
+msgstr "Players called up"
+
+msgid "Parejas y resultados"
+msgstr "Pairs and results"
+
+msgid "Plantilla de convocatoria de pádel"
+msgstr "Padel call-up template"
+
+#, python-format
+msgid "Los partidos 1 y 2 valen 3 puntos y los 3, 4 y 5 valen 2. Se ordenan por la suma de puntos SNP de cada pareja y se necesitan %(win)s de %(total)s puntos para ganar la eliminatoria."
+msgstr "Games 1 and 2 are worth 3 points and games 3, 4 and 5 are worth 2. They are ordered by the SNP points sum of each pair and you need %(win)s of %(total)s points to win the tie."

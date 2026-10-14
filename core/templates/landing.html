@@ -67,6 +67,17 @@
     </ol>
 </section>
 
+<section class="z-landing-section" aria-labelledby="guides-title">
+    <h2 id="guides-title" class="z-landing-title">{% translate "Guías para capitanes" %}</h2>
+    <div class="z-features">
+        {% for guide, title in guides %}
+        <a class="z-card z-feature text-decoration-none" href="{% url 'guide_detail' guide.slug %}">
+            <h3>{{ title }}</h3>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+
 <section class="z-landing-section" aria-labelledby="faq-title">
     <h2 id="faq-title" class="z-landing-title">{% translate "Preguntas frecuentes" %}</h2>
     <div class="z-faq">
