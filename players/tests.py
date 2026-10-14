@@ -13,7 +13,7 @@ from core.services import create_club
 from team.models import Team
 
 from . import snp_import
-from .models import Player, SnpAccount, SnpTeamImport
+from .models import Player, SnpAccount, SnpTeamImport, current_season
 from .scraper import SnpScrapeError, parse_score, parse_team_id
 from .snp import match_scores, normalize, sync_club
 
@@ -1110,3 +1110,29 @@ class GroupOnlyScrapeTests(TestCase):
         result, calls = self.run_scrape(with_group_teams=True)
         self.assertEqual(result[1], GROUP_TEAMS)
         self.assertEqual(calls, ["login", "country", "competiciones", "mis equipos", "jugadores"])
+
+
+class JoinedSeasonSelectorTests(TestCase):
+    """«Temporada en la que se unió»: solo valores de la lista y estadísticas coherentes con ella."""
+
+    def test_helpers(self):
+        from players.models import joined_by, season_choices, season_start
+        self.assertEqual(season_start("2025-2026"), 2025)
+        self.assertIsNone(season_start("abc"))
+        self.assertTrue(joined_by("2025-2026", "2025-2026"))
+        self.assertFalse(joined_by("2025-2026", "2024-2025"))
+        self.assertTrue(joined_by("", "2020-2021"))
+        choices = season_choices(extra=["1999-2000", "raro"])
+        self.assertEqual(choices[0], f"{int(current_season()[:4]) + 1}-{int(current_season()[:4]) + 2}")
+        self.assertIn("1999-2000", choices)
+        self.assertNotIn("raro", choices)
+
+    def test_form_rejects_free_text_and_keeps_old_value(self):
+        from players.forms import PlayerEditForm
+        club = create_club("Club", "Sevilla", get_user_model().objects.create_user("c", "c@x.com", "pass-12345"))
+        p = Player.objects.create(club=club, name="Ana", last_name="Ruiz", joined_season="1999-2000")
+        data = {"name": "Ana", "last_name": "Ruiz", "position": "NONE", "skillfull_hand": "NONE", "in_team": "on"}
+        self.assertTrue(PlayerEditForm({**data, "joined_season": "1999-2000"}, instance=p).is_valid())
+        self.assertTrue(PlayerEditForm({**data, "joined_season": "2024-2025"}, instance=p).is_valid())
+        self.assertFalse(PlayerEditForm({**data, "joined_season": "2024-2026"}, instance=p).is_valid())
+        self.assertFalse(PlayerEditForm({**data, "joined_season": "hola"}, instance=p).is_valid())

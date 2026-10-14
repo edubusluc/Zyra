@@ -19,7 +19,7 @@ from django.http import Http404
 from django.utils.translation import gettext as _
 from core.decorators import club_required, club_admin_required
 from penalty.models import Penalty
-from players.models import current_season
+from players.models import current_season, joined_by
 from . import pairs as pair_stats
 from . import records
 from .sets import best_and_worst_number, by_game_number, own_sets, set_stats
@@ -552,14 +552,18 @@ def season_games(player, season, match_type=None):
 
 
 def calls_by_season(player, match_type=None):
-    """Convocatorias por temporada: ({temporada: a las que se apuntó}, {temporada: total})."""
+    """
+    Convocatorias por temporada: ({temporada: a las que se apuntó}, {temporada: total}). Solo cuentan
+    las de su temporada de incorporación en adelante (``Player.joined_season``): antes no estaba en el equipo.
+    """
     base = _by_type(Call.objects.filter(match__club=player.club, draft_mode=False), match_type, "match__")
     total = dict(base.order_by().values_list('match__season').annotate(n=Count('id', distinct=True)))
     present = dict(
         base.filter(players__id=player.id)
         .order_by().values_list('match__season').annotate(n=Count('id', distinct=True))
     )
-    return present, total
+    keep = lambda d: {k: v for k, v in d.items() if joined_by(player.joined_season, k)}
+    return keep(present), keep(total)
 
 
 def aligned_by_season(player, match_type=None):
@@ -580,7 +584,8 @@ def aligned_by_season(player, match_type=None):
     )
     result = {}
     for match_id in played:
-        result[seasons[match_id]] = result.get(seasons[match_id], 0) + 1
+        if joined_by(player.joined_season, seasons[match_id]):
+            result[seasons[match_id]] = result.get(seasons[match_id], 0) + 1
     return result
 
 

@@ -3,6 +3,12 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 14/10/2026 · Temporada de incorporación como selector
+
+- Jugador (crear y editar): «Temporada en la que se unió» pasa de texto libre a un selector con búsqueda que solo admite temporadas de la lista (2015-2016 hasta la siguiente a la actual, más las que ya existan en el club); un valor antiguo fuera de la lista se conserva al editar
+- Estadísticas · Jugador: «Apuntado y alineado» y «Se apunta a las convocatorias» (y su desglose por temporada) solo cuentan desde la temporada de incorporación; sin ella se cuenta todo
+- Informe mensual del jugador: no lista como «No apuntado» las convocatorias anteriores a su incorporación
+
 ## 14/10/2026 · SEO: guías, imagen para compartir y «Hecho con Zyra»
 
 - Nueva sección pública `/guia/` con tres guías para capitanes (organizar parejas, puntos SNP y plantilla de convocatoria), en español e inglés, con sitemap, hreflang y datos estructurados; enlazada desde la portada y el pie

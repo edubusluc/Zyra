@@ -33,7 +33,7 @@ def create_player(request):
     """
     similar = []
     if request.method == "POST":
-        form = PlayerForm(request.POST, request.FILES)
+        form = PlayerForm(request.POST, request.FILES, club=request.club)
         form.uploader, form.check_only = request.user, similarity.is_check_request(request)
         if form.is_valid():
             # Jugadores con nombre y apellidos iguales o parecidos: se pregunta antes de crearlo.
@@ -51,7 +51,7 @@ def create_player(request):
                 return JsonResponse({"valid": False, "similar": []})
             messages.error(request, _("Error al crear el jugador. Por favor, verifica los datos."))
     else:
-        form = PlayerForm()
+        form = PlayerForm(club=request.club)
 
     # Agregar clases a cada campo
     for field in form:
