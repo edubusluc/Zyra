@@ -10423,3 +10423,6 @@ msgstr "Search or choose a season"
 #: players/templates/edit_player.html
 msgid "Solo cuenta desde esa temporada en las estadísticas de convocatorias."
 msgstr "Call-up statistics only count from that season on."
+
+msgid "No hay resultados para mostrar"
+msgstr "No results to show"

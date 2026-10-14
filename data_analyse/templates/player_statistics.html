@@ -109,21 +109,10 @@
             <h2 class="st-card-title">{% translate "Local y visitante" %}</h2>
             <p class="st-card-note">{% translate "% de victorias y juegos ganados según dónde juega." %}</p>
 
-            <div class="st-rate">
-              <div class="st-split-head"><span>{% translate "Como local" %}</span><b>{{ s.local_pct|floatformat:0 }}%</b></div>
-              <div class="st-meter"><span style="width: {{ local_pct_w|unlocalize }}%"></span></div>
-              <p class="st-split-foot">{% blocktranslate trimmed with wins=s.local_wins losses=s.local_losses best=s.best_local_streak %}{{ wins }}V – {{ losses }}D · mejor racha {{ best }}V{% endblocktranslate %}</p>
-              <div class="st-split-head st-split-head--sub"><span>{% translate "Juegos" %}</span><span><b class="st-up">{{ s.local_sets_won }}</b> – <b class="st-down">{{ s.local_sets_lost }}</b></span></div>
-              <div class="st-vs-bar"><span style="width: {% if s.local_sets_total %}{% widthratio s.local_sets_won s.local_sets_total 100 %}{% else %}0{% endif %}%"></span></div>
-            </div>
-
-            <div class="st-rate">
-              <div class="st-split-head"><span>{% translate "Como visitante" %}</span><b>{{ s.visiting_pct|floatformat:0 }}%</b></div>
-              <div class="st-meter"><span style="width: {{ visiting_pct_w|unlocalize }}%"></span></div>
-              <p class="st-split-foot">{% blocktranslate trimmed with wins=s.visiting_wins losses=s.visiting_losses best=s.best_visiting_streak %}{{ wins }}V – {{ losses }}D · mejor racha {{ best }}V{% endblocktranslate %}</p>
-              <div class="st-split-head st-split-head--sub"><span>{% translate "Juegos" %}</span><span><b class="st-up">{{ s.visiting_sets_won }}</b> – <b class="st-down">{{ s.visiting_sets_lost }}</b></span></div>
-              <div class="st-vs-bar"><span style="width: {% if s.visiting_sets_total %}{% widthratio s.visiting_sets_won s.visiting_sets_total 100 %}{% else %}0{% endif %}%"></span></div>
-            </div>
+            {% translate "Como local" as t_label %}
+            {% include 'includes/venue_rate.html' with label=t_label played=s.local_played pct=s.local_pct wins=s.local_wins losses=s.local_losses best=s.best_local_streak sets_won=s.local_sets_won sets_lost=s.local_sets_lost sets_total=s.local_sets_total %}
+            {% translate "Como visitante" as t_label %}
+            {% include 'includes/venue_rate.html' with label=t_label played=s.visiting_played pct=s.visiting_pct wins=s.visiting_wins losses=s.visiting_losses best=s.best_visiting_streak sets_won=s.visiting_sets_won sets_lost=s.visiting_sets_lost sets_total=s.visiting_sets_total %}
           </article>
         </div>
       </section>

@@ -6,7 +6,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 ## 14/10/2026 · Estadísticas de jugador más simples
 
 - Al elegir una temporada, el panel «Temporada» solo conserva el listado de partidos jugados; el resto ya se ve en el resumen superior, que sigue el filtro de temporada
-- Nueva tarjeta «Puntos ganados» junto a «Mejor racha», y «Local y visitante» añade los juegos ganados y perdidos
+- Nueva tarjeta «Puntos ganados» junto a «Mejor racha», y «Local y visitante» añade los juegos ganados y perdidos, con leyenda de colores y «No hay resultados para mostrar» cuando no hay partidos
 
 ## 14/10/2026 · Temporada de incorporación como selector
 

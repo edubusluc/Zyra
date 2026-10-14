@@ -1,0 +1,14 @@
+{% load i18n l10n %}{# Local o visitante del jugador: % de victorias y juegos; sin partidos solo «–» y un aviso. Espera label, played, pct, wins, losses, best, sets_won, sets_lost, sets_total. #}
+<div class="st-rate">
+  <div class="st-split-head"><span>{{ label }}</span><b>{% if played %}{{ pct|floatformat:0 }}%{% else %}–{% endif %}</b></div>
+  {% if played %}
+    <div class="st-meter"><span style="width: {{ pct|floatformat:0|unlocalize }}%"></span></div>
+    <p class="st-legend"><span class="st-legend-item st-legend-item--lime">{% translate "Victorias" %}</span><span class="st-legend-item st-legend-item--track">{% translate "Derrotas" %}</span></p>
+    <p class="st-split-foot">{% blocktranslate trimmed %}{{ wins }}V – {{ losses }}D · mejor racha {{ best }}V{% endblocktranslate %}</p>
+    <div class="st-split-head st-split-head--sub"><span>{% translate "Juegos" %}</span><span><b class="st-up">{{ sets_won }}</b> – <b class="st-down">{{ sets_lost }}</b></span></div>
+    <div class="st-vs-bar"><span style="width: {% if sets_total %}{% widthratio sets_won sets_total 100 %}{% else %}0{% endif %}%"></span></div>
+    <p class="st-legend"><span class="st-legend-item st-legend-item--win">{% translate "Ganados" %}</span><span class="st-legend-item st-legend-item--loss">{% translate "Perdidos" %}</span></p>
+  {% else %}
+    <p class="st-split-foot">{% translate "No hay resultados para mostrar" %}</p>
+  {% endif %}
+</div>

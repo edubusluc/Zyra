@@ -2418,6 +2418,13 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 /* Porcentaje plano (sin caja): título y cifra arriba, barra y descripción a ancho completo debajo */
 .st-rate { display: block; min-width: 0; margin-top: 18px; }
 .st-rate .st-split-head { gap: 12px; }
+.st-legend { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 6px 0 0; font-size: .82rem; color: var(--st-muted); }
+.st-legend-item { display: inline-flex; align-items: center; gap: 6px; }
+.st-legend-item::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--st-muted); }
+.st-legend-item--lime::before { background: var(--z-lime); }
+.st-legend-item--track::before { background: var(--z-surface-3); box-shadow: inset 0 0 0 1px var(--st-line); }
+.st-legend-item--win::before { background: var(--st-win); }
+.st-legend-item--loss::before { background: rgba(255, 92, 99, .45); }
 .st-rate .st-split-head--sub { margin-top: 14px; }
 .st-rate .st-split-head--sub b { font-size: 1.15rem; }
 .st-rate .st-split-foot { overflow-wrap: break-word; }
