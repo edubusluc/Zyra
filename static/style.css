@@ -1446,6 +1446,9 @@ a.z-location:hover span { text-decoration: underline; }
   gap: 14px; margin-bottom: 14px;
 }
 
+/* Dos tarjetas por fila (la de sets necesita ancho para sus dos columnas) */
+.st-row--pair { grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); }
+
 .st-card {
   display: flex; flex-direction: column; min-width: 0;
   padding: 22px; background: var(--st-card); border: 1px solid var(--st-line); border-radius: var(--z-radius);
@@ -2406,6 +2409,10 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 .st-facts--sets dd { margin: 4px 0 0; font-size: 1.35rem; font-weight: 800; color: #FFFFFF; font-variant-numeric: tabular-nums; }
 .st-facts--sets .st-fact-name { font-size: 1rem; overflow-wrap: anywhere; }
 .st-sets-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 0 22px; }
+/* Porcentaje plano (sin caja): título y cifra arriba, barra y descripción a ancho completo debajo */
+.st-rate { display: block; min-width: 0; margin-top: 18px; }
+.st-rate .st-split-head { gap: 12px; }
+.st-rate .st-split-foot { overflow-wrap: break-word; }
 .st-records { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
 .st-record-tile { display: flex; flex-direction: column; gap: 4px; min-width: 0; padding: 16px; background: var(--st-card); border: 1px solid var(--st-line); border-radius: 16px; }
 .st-record-tile b { font-size: 1.35rem; font-weight: 800; line-height: 1.2; color: #FFFFFF; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }

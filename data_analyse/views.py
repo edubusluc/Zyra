@@ -596,6 +596,18 @@ def lineup_summary(calls_present, aligned):
     }
 
 
+def signup_summary(calls_present, calls_total):
+    """Totales de convocatorias cerradas: {'total', 'signed', 'missed', 'pct'} (pct None sin convocatorias)."""
+    total = sum(calls_total.values())
+    signed = sum(calls_present.values())
+    return {
+        'total': total,
+        'signed': signed,
+        'missed': total - signed,
+        'pct': round(signed / total * 100) if total else None,
+    }
+
+
 def _pct(wins, total):
     """Porcentaje con un decimal; 0 si no hay partidos."""
     return round(wins / total * 100, 1) if total else 0
@@ -735,6 +747,7 @@ def statistics_per_player(request):
         r['aligned'] = aligned.get(r['season'], 0)
     only = (lambda d: {k: v for k, v in d.items() if k == selected_season}) if selected_season else (lambda d: d)
     lineup_rate = lineup_summary(only(calls_present), only(aligned))
+    signup_rate = signup_summary(only(calls_present), only(calls_total))
 
     # Detalle de la temporada elegida
     detail = None
@@ -779,6 +792,7 @@ def statistics_per_player(request):
         },
         'chart_affinity': degree_of_affinity(player, match_type, selected_season),
         'lineup_rate': lineup_rate,
+        'signup_rate': signup_rate,
         'game_numbers': by_game_number(season_log),
         'clutch': set_stats(season_log),
         'snp_season': snp_season,

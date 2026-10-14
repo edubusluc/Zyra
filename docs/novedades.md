@@ -3,6 +3,12 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 14/10/2026 · Tarjetas de sets legibles
+
+- Estadísticas · Jugador: «Apuntado y alineado» muestra también a cuántas convocatorias cerradas se apunta y a cuántas no, con los mismos filtros (temporada y tipo de partido)
+- Estadísticas · Jugador: «Partidos y sets» en dos filas (Por número de partido y Sets clutch; debajo Apuntado y alineado)
+- Estadísticas · Sets: las tarjetas (Set decisivo, Tie-breaks, Remontadas…) ponen título y porcentaje arriba, barra y descripción a ancho completo debajo (sin caja), sin recortes en móvil; lo mismo en «Local y visitante» (jugador y pareja) y «Apuntado y alineado»
+
 ## 14/10/2026 · Fecha editable
 
 - Partidos: la tarjeta del listado muestra «Pdt. cerrar acta» cuando todos los partidos del acta abierta ya tienen resultado (y «Sin resultado» mientras falte alguno)
