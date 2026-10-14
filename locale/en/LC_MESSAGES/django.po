@@ -7230,8 +7230,8 @@ msgstr "Last %(n)s matches, most recent on the right."
 
 #: data_analyse/templates/player_statistics.html:105
 #, python-format
-msgid "%% de victorias según dónde juega."
-msgstr "Win %% by venue."
+msgid "%% de victorias y juegos ganados según dónde juega."
+msgstr "Win %% and games won by venue."
 
 #: data_analyse/templates/player_statistics.html:110
 #: data_analyse/templates/player_statistics.html:116
@@ -10400,6 +10400,10 @@ msgstr "Padel call-up template"
 msgid "Los partidos 1 y 2 valen 3 puntos y los 3, 4 y 5 valen 2. Se ordenan por la suma de puntos SNP de cada pareja y se necesitan %(win)s de %(total)s puntos para ganar la eliminatoria."
 msgstr "Games 1 and 2 are worth 3 points and games 3, 4 and 5 are worth 2. They are ordered by the SNP points sum of each pair and you need %(win)s of %(total)s points to win the tie."
 
+#: data_analyse/templates/player_statistics.html
+msgid "Puntos ganados"
+msgstr "Points won"
+
 #: players/forms.py
 msgid "Temporada en la que se unió"
 msgstr "Season they joined"
@@ -10415,3 +10419,6 @@ msgstr "Search or choose a season"
 #: players/templates/edit_player.html
 msgid "Solo cuenta desde esa temporada en las estadísticas de convocatorias."
 msgstr "Call-up statistics only count from that season on."
+
+msgid "No hay resultados para mostrar"
+msgstr "No results to show"
