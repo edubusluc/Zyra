@@ -186,6 +186,18 @@ class ClubSetsTests(ClubDataMixin, TestCase):
         response = self.client.get(reverse('player_statistics'), {'player': self.e.public_id})
         self.assertEqual(response.context['signup_rate']['total'], 3)
 
+    def test_season_chips_skip_seasons_before_joining(self):
+        """Los chips de temporada de la ficha no ofrecen las anteriores a su incorporación (si no jugó en ellas)."""
+        Match.objects.create(club=self.club, local=self.club.own_team, visiting=self.rival,
+                             start_date=datetime.date(2023, 10, 1), draft_mode=False)
+        self.e.joined_season = "2025-2026"
+        self.e.save()
+        seasons = self.client.get(reverse('player_statistics'), {'player': self.e.public_id}).context['seasons']
+        self.assertEqual(seasons, ["2025-2026"])
+        # Pedir a mano una temporada anterior equivale a «Todas»
+        response = self.client.get(reverse('player_statistics'), {'player': self.e.public_id, 'season': '2023-2024'})
+        self.assertIsNone(response.context['selected_season'])
+
     def test_pair_page_sets(self):
         response = self.client.get(reverse('pair_statistics'), {'p1': self.a.public_id, 'p2': self.b.public_id})
         self.assertContains(response, "Sets de la pareja")

@@ -737,11 +737,14 @@ def statistics_per_player(request):
     # Chips de temporada: todas las del club
     all_seasons = sorted(get_total_season(Match.objects.filter(club=request.club)),
                          key=lambda s: int(s.split('-')[0]), reverse=True)
+    log = build_game_log(player, match_type)
+    # Sin las temporadas anteriores a su incorporación (salvo que haya jugado en ellas)
+    played_seasons = {g['season'] for g in build_game_log(player)}
+    all_seasons = [s for s in all_seasons if joined_by(player.joined_season, s) or s in played_seasons]
     selected_season = request.GET.get('season')
     if selected_season not in all_seasons:
         selected_season = None
 
-    log = build_game_log(player, match_type)
     # Resumen y afinidad siguen la temporada elegida; la evolución por temporadas usa siempre el registro completo.
     season_log = [g for g in log if g['season'] == selected_season] if selected_season else log
     summary = summarize(season_log)
