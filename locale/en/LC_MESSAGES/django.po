@@ -9939,6 +9939,10 @@ msgstr "Leave empty if you don't want to change the photo."
 msgid "Mostrar solo equipos de mi grupo"
 msgstr "Show only teams in my group"
 
+#: players/templates/list_players.html
+msgid "Mostrar solo jugadores de mi equipo"
+msgstr "Show only players in my team"
+
 #: team/templates/edit_team.html:67
 msgid "Tu equipo siempre está en tu grupo: no se puede dar de baja."
 msgstr "Your team is always in your group: it cannot be removed."
