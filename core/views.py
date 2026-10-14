@@ -95,6 +95,7 @@ def home(request):
     players = Player.objects.filter(club=club, in_team=True)
     hot_player, hot_pair = pair_stats.hot_streaks(pair_stats.club_game_log(club), players)
 
+    onboarding = onboarding_for(request.membership)
     return render(request, 'home.html', {
         'own_team': club.own_team,
         'season': current_season(),
@@ -102,10 +103,12 @@ def home(request):
         'days_left': (next_match.start_date - today).days if next_match else None,
         'hot_player': hot_player,
         'hot_pair': hot_pair,
-        # Aviso al capitán mientras no haya registrado la cuenta SNP del club.
-        'snp_missing': request.membership.is_admin and not SnpAccount.objects.filter(club=club).exists(),
-        # Primeros pasos del capitán de un club nuevo (core.onboarding).
-        'onboarding': onboarding_for(request.membership),
+        # Aviso al capitán mientras no haya registrado la cuenta SNP del club (si se muestran los
+        # primeros pasos, la tarea de SNP ya va dentro de la lista).
+        'snp_missing': (request.membership.is_admin and onboarding is None
+                        and not SnpAccount.objects.filter(club=club).exists()),
+        # Primeros pasos del capitán (core.onboarding).
+        'onboarding': onboarding,
     })
 
 

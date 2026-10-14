@@ -10126,3 +10126,7 @@ msgid ""
 msgstr ""
 "Complete team is not available: we have notified the administrator to review"
 " the process."
+
+#: core/onboarding.py
+msgid "Con ella los puntos SNP de tus jugadores se actualizan solos cada semana."
+msgstr "With it, your players' SNP points update by themselves every week."
