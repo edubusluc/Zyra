@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 14/10/2026 · Estadísticas de jugador más simples
+
+- Al elegir una temporada, el panel «Temporada» solo conserva el listado de partidos jugados; el resto ya se ve en el resumen superior, que sigue el filtro de temporada
+- Nueva tarjeta «Puntos ganados» junto a «Mejor racha», y «Local y visitante» añade los juegos ganados y perdidos
+
 ## 14/10/2026 · Interruptor de jugadores en el listado
 
 - El listado de jugadores tiene el interruptor «Mostrar solo jugadores de mi equipo» (marcado por defecto, solo capitanes), igual que el de equipos; al desmarcarlo se ven también los que ya no están en el equipo
