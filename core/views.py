@@ -283,6 +283,17 @@ def register_club(request):
     })
 
 
+def register(request):
+    """
+    Primera pantalla del registro: elegir entre unirse como jugador (cuenta sin club,
+    ``register_account``) o registrarse como capitán (crear el club, ``register_club``).
+    Quien ya tiene sesión no la necesita y va a su portada.
+    """
+    if request.user.is_authenticated:
+        return redirect("home")
+    return render(request, "register_choose.html")
+
+
 def register_account(request):
     """
     Alta de una cuenta sin club, para quien espera a que un capitán lo invite (enlace

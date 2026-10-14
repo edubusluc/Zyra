@@ -5,6 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 13/10/2026 · Cuentas sin club
 
+- El registro empieza con un panel para elegir «Registrarme como jugador» (cuenta sin club) o «Registrarme como capitán» (crear club); la portada y el menú apuntan a él
 - Nueva opción «Solo quiero unirme a un club por invitación» en el registro (también con Google): crea la cuenta sin club y la deja en una página de espera que explica cómo unirse con una invitación o registrar un club
 - Back-office: «Sin club» en el dashboard cuenta las cuentas activas que esperan invitación (con las de más de 7 días y su evolución diaria), el filtro de usuarios las lista de la más antigua a la más reciente y el informe de uso añade las cuentas nuevas con y sin club
 - Migración `backoffice` 0005 (`DailyMetric.users_without_club`)

@@ -18,7 +18,7 @@
         {% translate "Crear mi cuenta con Google" as google_label %}
         {% include 'includes/google_button.html' with next=google_next label=google_label %}
         <p class="z-auth-foot">{% url 'login' as login_url %}{% blocktranslate trimmed %}¿Ya tienes cuenta? <a href="{{ login_url }}">Inicia sesión</a>{% endblocktranslate %}</p>
-        <p class="z-auth-foot">{% url 'register_club' as club_url %}{% blocktranslate trimmed %}¿Eres capitán? <a href="{{ club_url }}">Registra tu club</a>{% endblocktranslate %}</p>
+        <p class="z-auth-foot"><a href="{% url 'register' %}">{% translate "Volver a elegir cómo registrarme" %}</a></p>
     </div>
 </div>
 {% endblock %}

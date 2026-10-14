@@ -12,13 +12,24 @@ SIGNUP = {"username": "espera", "email": "espera@example.com", "password1": PASS
 
 
 class RegisterAccountTests(TestCase):
-    def test_page_offers_form_and_links(self):
-        response = self.client.get(reverse("register_account"))
-        self.assertContains(response, "Solo quiero unirme a un club por invitación")
-        self.assertContains(response, reverse("register_club"))
+    def test_chooser_offers_player_and_captain(self):
+        response = self.client.get(reverse("register"))
+        self.assertContains(response, "Registrarme como jugador")
+        self.assertContains(response, "Registrarme como capitán")
+        self.assertContains(response, f'href="{reverse("register_account")}"')
+        self.assertContains(response, f'href="{reverse("register_club")}"')
 
-    def test_register_club_links_to_account_only_signup(self):
-        self.assertContains(self.client.get(reverse("register_club")), reverse("register_account"))
+    def test_chooser_redirects_logged_in_users(self):
+        self.client.post(reverse("register_account"), SIGNUP)
+        self.assertRedirects(self.client.get(reverse("register")), reverse("home"), fetch_redirect_response=False)
+
+    def test_landing_and_forms_link_to_chooser(self):
+        self.assertContains(self.client.get(reverse("home")), f'href="{reverse("register")}"')
+        self.assertContains(self.client.get(reverse("register_account")), f'href="{reverse("register")}"')
+        self.assertContains(self.client.get(reverse("register_club")), f'href="{reverse("register")}"')
+
+    def test_account_page_has_form(self):
+        self.assertContains(self.client.get(reverse("register_account")), "Solo quiero unirme a un club por invitación")
 
     def test_signup_creates_account_without_club_and_logs_in(self):
         response = self.client.post(reverse("register_account"), SIGNUP)

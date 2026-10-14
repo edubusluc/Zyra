@@ -70,7 +70,7 @@
         {% include 'includes/google_button.html' with next=google_next label=google_label %}
         {% endif %}
         {% if not user.is_authenticated %}
-        <p class="z-auth-foot">{% url 'register_account' as account_url %}{% blocktranslate trimmed %}<a href="{{ account_url }}">Solo quiero unirme a un club por invitación</a>{% endblocktranslate %}</p>
+        <p class="z-auth-foot"><a href="{% url 'register' %}">{% translate "Volver a elegir cómo registrarme" %}</a></p>
         <p class="z-auth-foot">{% url 'login' as login_url %}{% blocktranslate trimmed %}¿Ya tienes cuenta? <a href="{{ login_url }}">Inicia sesión</a>{% endblocktranslate %}</p>
         {% endif %}
     </div>
