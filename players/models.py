@@ -24,6 +24,41 @@ def current_season():
     return f"{start}-{start + 1}"
 
 
+def season_start(season):
+    """Año de inicio de una temporada ("2025-2026" -> 2025); None si no tiene el formato esperado."""
+    try:
+        return int(str(season).split("-")[0])
+    except (ValueError, TypeError):
+        return None
+
+
+def season_choices(club=None, extra=()):
+    """
+    Temporadas elegibles como «temporada en la que se unió»: de la más nueva a la más antigua, desde
+    2015-2016 hasta la actual (nunca futuras), más las pasadas que ya existan en el club (partidos y
+    jugadores) y ``extra`` (un valor antiguo del jugador que se conserva al editar).
+    """
+    first = 2015
+    last = season_start(current_season())
+    seasons = {f"{y}-{y + 1}" for y in range(first, last + 1)}
+    if club is not None:
+        from match.models import Match
+        seasons |= set(Match.objects.filter(club=club).values_list("season", flat=True))
+        seasons |= set(Player.objects.filter(club=club).values_list("joined_season", flat=True))
+    seasons = {s for s in seasons if (season_start(s) or 0) <= last}  # sin temporadas futuras
+    seasons |= set(extra)
+    return sorted((s for s in seasons if season_start(s) is not None), key=season_start, reverse=True)
+
+
+def joined_by(joined_season, season):
+    """
+    ¿Ya estaba el jugador en el equipo en ``season``? Cuenta desde su temporada de incorporación
+    (inclusive). Sin temporada de incorporación o con valores ilegibles se cuenta todo.
+    """
+    joined, current = season_start(joined_season), season_start(season)
+    return joined is None or current is None or current >= joined
+
+
 class Player(PublicIdModel):
     """
     Jugador de un club. Pertenece siempre al equipo propio del club y hereda su categoría.

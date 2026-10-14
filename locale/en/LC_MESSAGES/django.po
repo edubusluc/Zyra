@@ -10407,3 +10407,19 @@ msgstr "Points won"
 #: data_analyse/templates/player_statistics.html
 msgid "en partidos ganados"
 msgstr "in matches won"
+
+#: players/forms.py
+msgid "Temporada en la que se unió"
+msgstr "Season they joined"
+
+#: players/forms.py
+msgid "Elige una de las temporadas de la lista."
+msgstr "Choose one of the seasons in the list."
+
+#: players/forms.py
+msgid "Busca o elige una temporada"
+msgstr "Search or choose a season"
+
+#: players/templates/edit_player.html
+msgid "Solo cuenta desde esa temporada en las estadísticas de convocatorias."
+msgstr "Call-up statistics only count from that season on."
