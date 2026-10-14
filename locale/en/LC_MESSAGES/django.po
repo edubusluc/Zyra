@@ -10134,6 +10134,22 @@ msgstr ""
 "Complete team is not available: we have notified the administrator to review"
 " the process."
 
+#: data_analyse/templates/team_statistics.html
+msgid "Eliminatorias 6-6"
+msgstr "6-6 ties"
+
+#: data_analyse/templates/team_statistics.html
+msgid "Reto y Play Off que quedaron 6-6: no hay empate y decide el ganador del partido 3."
+msgstr "Challenge and Play Off ties that ended 6-6: there are no draws and the winner of game 3 decides."
+
+#: data_analyse/templates/team_statistics.html
+msgid "A favor"
+msgstr "In favour"
+
+#: data_analyse/templates/team_statistics.html
+msgid "En contra"
+msgstr "Against"
+
 msgid "Cuenta creada. Ya puedes unirte a un club cuando te inviten."
 msgstr "Account created. You can join a club as soon as you are invited."
 
@@ -10236,3 +10252,28 @@ msgstr "Sign up"
 
 msgid "Volver a elegir cómo registrarme"
 msgstr "Back to choosing how to sign up"
+
+#: match/templates/list_match.html
+#, python-format
+msgid "6-6: la pareja 3 ganó su partido y desempató (%(pair)s)"
+msgstr "6-6: pair 3 won their game and broke the tie (%(pair)s)"
+
+#: match/templates/list_match.html
+msgid "6-6: la pareja 3 ganó su partido y desempató"
+msgstr "6-6: pair 3 won their game and broke the tie"
+
+#: match/templates/list_match.html
+msgid "6-6: la pareja 3 perdió su partido y desempató el rival"
+msgstr "6-6: pair 3 lost their game and the opponent broke the tie"
+
+#: data_analyse/templates/team_statistics.html
+#, python-format
+msgid "%(n)s eliminatoria"
+msgid_plural "%(n)s eliminatorias"
+msgstr[0] "%(n)s tie"
+msgstr[1] "%(n)s ties"
+
+#: data_analyse/templates/team_statistics.html
+#, python-format
+msgid "%(a)s %% a favor y %(b)s %% en contra"
+msgstr "%(a)s %% in favour and %(b)s %% against"
