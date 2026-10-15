@@ -28,12 +28,14 @@ from django.utils.translation import gettext as _
 from django.views.decorators.http import require_http_methods, require_POST, require_safe
 
 from data_analyse import pairs as pair_stats
+from call.models import Call
 from match.models import Match
+from match.phase import phases_for, player_status
 from players.models import Player, SnpAccount, current_season
 
 from .adapters import GOOGLE_NEW_ACCOUNT_KEY
 from .blocklist import is_user_blocked
-from .decorators import club_admin_required
+from .decorators import club_admin_required, club_required
 from .emails import send_invitation_email, send_welcome_email
 from . import guides
 from .forms import CaptainPlayerForm, CaptainSnpForm, ClubForm, EmailChangeForm, InviteMemberForm, SignUpForm
@@ -50,6 +52,8 @@ from .services import (
 )
 
 INVITATIONS_PER_PAGE = 10
+# Filas del bloque «Pendiente» del inicio: el resto se ve en el listado de enfrentamientos.
+HOME_PENDING_ROWS = 3
 
 # Invitación pendiente de aceptar mientras el visitante inicia sesión con Google
 PENDING_INVITE_KEY = "pending_invitation"
@@ -89,12 +93,21 @@ def home(request):
 
     club = request.club
     today = datetime.date.today()
-    next_match = (
-        Match.objects.filter(club=club, start_date__gte=today)
-        .select_related('local', 'visiting')
-        .order_by('start_date', 'id')
-        .first()
-    )
+    # Actas abiertas, las más antiguas primero: las pasadas son lo que se quedó a medias (H-02).
+    open_matches = list(Match.objects.filter(club=club, draft_mode=True).select_related('local', 'visiting')
+                        .order_by('start_date', 'id')[:30])
+    phases = phases_for(open_matches)
+    next_match = next((m for m in open_matches if m.start_date >= today), None)
+    pending = []
+    if request.membership.is_admin:
+        pending = [{"match": m, "phase": phases[m.id], "overdue": m.start_date < today} for m in open_matches]
+    my_status = None
+    my_player = Player.objects.filter(club=club, user=request.user).first()
+    if next_match and my_player:
+        games = list(next_match.games.select_related('player_1_local', 'player_2_local',
+                                                     'player_1_visiting', 'player_2_visiting'))
+        call = Call.objects.filter(match=next_match).first()
+        my_status = player_status(my_player, call, games)
     players = Player.objects.filter(club=club, in_team=True)
     hot_player, hot_pair = pair_stats.hot_streaks(pair_stats.club_game_log(club), players)
 
@@ -103,6 +116,10 @@ def home(request):
         'own_team': club.own_team,
         'season': current_season(),
         'next_match': next_match,
+        'pending': pending[:HOME_PENDING_ROWS],
+        'pending_total': len(pending),
+        'my_player': my_player,
+        'my_status': my_status,
         'days_left': (next_match.start_date - today).days if next_match else None,
         'hot_player': hot_player,
         'hot_pair': hot_pair,
@@ -110,8 +127,10 @@ def home(request):
         # primeros pasos, la tarea de SNP ya va dentro de la lista).
         'snp_missing': (request.membership.is_admin and onboarding is None
                         and not SnpAccount.objects.filter(club=club).exists()),
-        # Primeros pasos del capitán (core.onboarding).
+        # Primeros pasos del capitán (core.onboarding): solo se ve el siguiente; el resto, plegado.
         'onboarding': onboarding,
+        'onboarding_done': sum(step["done"] for step in onboarding) if onboarding else 0,
+        'onboarding_next': next((step for step in onboarding if not step["done"]), None) if onboarding else None,
     })
 
 
@@ -355,6 +374,23 @@ def switch_club(request):
     membership = get_object_or_404(Membership, user=request.user, club_id=club_id)
     request.session[SESSION_KEY] = membership.club_id
     return redirect("home")
+
+
+@club_required
+@require_safe
+def club_home(request):
+    """
+    «Club»: acceso único a lo que se configura una vez y no cada semana (H-14, H-38): miembros
+    e invitaciones y cuenta SNP (solo capitanes), el equipo propio y los rivales. Los miembros
+    ven el equipo propio y los rivales; los capitanes, además, los dos enlaces de gestión.
+    """
+    club = request.club
+    return render(request, "club.html", {
+        "own_team": club.own_team,
+        "rivals_count": club.teams.filter(is_own=False, in_group=True).count(),
+        "members_count": club.memberships.count(),
+        "snp_account": SnpAccount.objects.filter(club=club).first() if request.membership.is_admin else None,
+    })
 
 
 @club_admin_required

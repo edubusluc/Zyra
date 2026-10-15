@@ -36,7 +36,7 @@
     --z-radius-sm: 10px;
     --z-display: 'Syncopate', 'Archivo', system-ui, sans-serif;
     --z-body: 'Archivo', system-ui, -apple-system, 'Segoe UI', sans-serif;
-    --z-nav-h: 72px;
+    --z-nav-h: 88px;
     --z-ease: cubic-bezier(.22, 1, .36, 1);
     /* Relieve: filo de luz arriba + sombra tintada hacia abajo */
     --z-edge: inset 0 1px 0 rgba(255, 255, 255, .05);
@@ -353,7 +353,7 @@ main:focus { outline: none; }
     z-index: 1030;
     transform: translateX(-50%);
     width: min(440px, calc(100% - 28px));
-    padding: 8px;
+    padding: 6px;
     background: var(--z-lime);
     border-radius: 999px;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45), 0 14px 34px -8px rgba(0, 0, 0, .7), 0 8px 28px -10px rgba(var(--z-lime-rgb), .45);
@@ -365,18 +365,23 @@ main:focus { outline: none; }
     padding: 0;
     list-style: none;
 }
+.z-bottom-nav li { flex: 1 1 0; min-width: 0; }
 .z-bottom-nav a {
-    display: grid;
-    place-items: center;
-    width: 48px;
-    height: 48px;
-    font-size: 1.15rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    height: 56px;
+    font-size: 1.1rem;
     color: var(--z-ink);
-    border-radius: 50%;
+    border-radius: 999px;
     transition: background-color .2s var(--z-ease), color .2s var(--z-ease);
 }
 .z-bottom-nav a.is-active { color: var(--z-lime); background: var(--z-ink); }
-.z-bottom-nav .visually-hidden { position: absolute; }
+/* Etiqueta siempre visible bajo el icono (H-13): la barra no depende solo de iconos */
+.z-bn-label { max-width: 100%; overflow: hidden; font-size: .66rem; font-weight: 700; line-height: 1; letter-spacing: 0; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 359.98px) { .z-bn-label { font-size: .6rem; } }
 
 /* Cabecera y barra inferior se esconden al bajar y vuelven al subir (static/js/nav.js) */
 .z-header { transition: transform .35s var(--z-ease); }
@@ -2561,3 +2566,83 @@ select.z-select-native {
 .z-role-card h2 { margin: 4px 0 0; font-size: 1.1rem; }
 .z-role-card p { margin: 0; color: var(--z-muted); font-size: .9rem; }
 .z-role-go { margin-top: auto; padding-top: 8px; font-weight: 700; color: var(--z-lime); }
+
+/* ---------- Club: acceso a miembros, equipo propio, rivales y cuenta SNP (core/templates/club.html) ---------- */
+.z-hub { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 14px; margin: 0; padding: 0; list-style: none; }
+.z-hub-card { display: flex; flex-direction: column; gap: 6px; height: 100%; padding: 18px; color: inherit; text-decoration: none; background: var(--z-surface-2); border: 1px solid var(--z-border); border-radius: var(--z-radius); }
+a.z-hub-card:hover, a.z-hub-card:focus-visible { border-color: var(--z-lime); color: inherit; }
+.z-hub-card > i { font-size: 1.3rem; color: var(--z-lime); }
+.z-hub-title { font-weight: 800; color: #FFFFFF; }
+.z-hub-note { font-size: .88rem; color: var(--z-muted); }
+
+/* ---------- Enfrentamiento: fases, siguiente paso y estado del jugador (match/templates/call_for_match.html) ---------- */
+.z-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 0 0 16px; padding: 0; list-style: none; counter-reset: none; }
+.z-steps li { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 8px 10px; font-size: .82rem; font-weight: 700; color: var(--z-muted); background: var(--z-surface-2); border: 1px solid var(--z-border); border-radius: 999px; }
+.z-steps li > span:last-of-type { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.z-step-n { display: grid; place-items: center; flex-shrink: 0; width: 22px; height: 22px; font-size: .72rem; font-weight: 800; color: var(--z-muted); background: var(--z-surface-3); border-radius: 50%; }
+.z-steps .is-done { color: #FFFFFF; }
+.z-steps .is-done .z-step-n { color: var(--z-ink); background: var(--z-lime); }
+.z-steps .is-current { color: var(--z-ink); background: var(--z-lime); border-color: var(--z-lime); }
+.z-steps .is-current .z-step-n { color: var(--z-lime); background: var(--z-ink); }
+
+.z-next { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px; margin: 0 0 22px; padding: 14px; background: var(--z-surface-2); border: 1px solid var(--z-lime); border-radius: var(--z-radius); }
+.z-next-main { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0; }
+.z-next-main .btn { white-space: normal; text-align: left; }
+.z-next-hint { margin: 0; font-size: .86rem; color: var(--z-muted); }
+.z-more { position: relative; }
+.z-more summary { list-style: none; cursor: pointer; }
+.z-more summary::-webkit-details-marker { display: none; }
+.z-more ul { position: absolute; right: 0; z-index: 20; min-width: 230px; margin: 6px 0 0; padding: 6px; list-style: none; background: var(--z-surface-2); border: 1px solid var(--z-border); border-radius: var(--z-radius); box-shadow: 0 14px 34px -8px rgba(0, 0, 0, .7); }
+.z-more li a, .z-more li button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; font: inherit; color: var(--z-text, inherit); text-align: left; text-decoration: none; background: none; border: 0; border-radius: 8px; }
+.z-more li a:hover, .z-more li button:hover, .z-more li a:focus-visible, .z-more li button:focus-visible { background: var(--z-surface-3); }
+.z-more li i { width: 18px; color: var(--z-lime); text-align: center; }
+
+.z-mystatus { display: flex; align-items: flex-start; gap: 12px; margin: 0 0 16px; padding: 14px 16px; background: var(--z-surface-2); border: 1px solid var(--z-border); border-radius: var(--z-radius); }
+.z-mystatus > i { margin-top: 3px; font-size: 1.2rem; color: var(--z-muted); }
+.z-mystatus.is-in { border-color: var(--z-lime); }
+.z-mystatus.is-in > i { color: var(--z-lime); }
+.z-mystatus strong { display: block; color: #FFFFFF; }
+.z-mystatus span { display: block; font-size: .88rem; color: var(--z-muted); }
+.z-chip.is-me { outline: 2px solid var(--z-lime); outline-offset: 1px; }
+
+.z-closed { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 22px; padding: 14px 16px; background: var(--z-surface-2); border: 1px solid var(--z-border); border-left: 4px solid var(--z-muted); border-radius: var(--z-radius); }
+.z-closed.is-win { border-left-color: var(--z-lime); }
+.z-closed.is-loss { border-left-color: var(--z-danger); }
+
+.z-results-all { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr)); gap: 14px; }
+.z-result-card { margin: 0; padding: 14px 16px; }
+.z-result-legend { float: none; width: auto; margin: 0 0 8px; padding: 0; font-size: .8rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+
+@media (max-width: 575.98px) {
+    .z-steps { gap: 4px; }
+    .z-steps li { flex-direction: column; gap: 4px; padding: 8px 4px; font-size: .7rem; text-align: center; border-radius: 14px; }
+}
+/* En móvil el botón «Siguiente» se queda al alcance, justo encima de la barra inferior */
+@media (max-width: 991.98px) {
+    .z-next { position: sticky; bottom: calc(var(--z-nav-h) + 8px); z-index: 25; transition: bottom .25s ease; background: var(--z-surface-3); }
+    .z-nav-hidden .z-next { bottom: 16px; }
+    .z-more ul { bottom: calc(100% + 6px); margin: 0; }
+}
+
+/* Crear enfrentamiento: error en la card del rival y opciones plegadas */
+.z-team-card-field.has-error .z-team-card { border-color: var(--z-danger); }
+.z-more-options { margin: 0 0 8px; }
+.z-more-options > summary { padding: 6px 0; font-weight: 700; color: var(--z-lime); cursor: pointer; }
+.z-pick-warn-text { color: var(--z-warning, #F5B544); }
+
+/* Inicio: bloque «Pendiente» y estado del jugador en el próximo enfrentamiento (core/templates/home.html) */
+.z-pending { display: grid; gap: 8px; margin: 0 0 8px; padding: 0; list-style: none; }
+.z-pending-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 14px; padding: 14px 16px; color: inherit; text-decoration: none; background: var(--z-surface-2); border: 1px solid var(--z-border); border-left: 4px solid var(--z-lime); border-radius: var(--z-radius); }
+.z-pending-row:hover, .z-pending-row:focus-visible { color: inherit; border-color: var(--z-lime); }
+.z-pending-row.is-overdue { border-left-color: var(--z-danger); }
+.z-pending-main { display: grid; min-width: 0; }
+.z-pending-main strong { overflow: hidden; text-overflow: ellipsis; text-transform: uppercase; color: #FFFFFF; }
+.z-pending-main small { color: var(--z-muted); }
+.z-pending-row.is-overdue .z-pending-main small { color: var(--z-danger); }
+.z-pending-action { font-size: .88rem; font-weight: 800; color: var(--z-lime); }
+.z-next-match-me { display: flex; align-items: flex-start; gap: 8px; margin: 0; padding: 10px 14px; font-size: .9rem; color: var(--z-muted); background: var(--z-surface-3); border-radius: 10px; }
+.z-next-match-me.is-in { color: #FFFFFF; }
+.z-next-match-me.is-in i { color: var(--z-lime); }
+
+/* Campo de foto: el selector nativo queda oculto tras el botón «Subir foto» (static/js/photo-crop.js) */
+.z-file-native { position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0; pointer-events: none; }

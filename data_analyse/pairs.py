@@ -201,18 +201,21 @@ def all_pairs(log, players):
 HIGHLIGHT_N = 3
 
 
-def best_and_worst_pairs(pairs, n=HIGHLIGHT_N, min_games=MIN_GAMES_PAIR):
+# «Parejas por mejorar» exige más partidos que las mejores: con pocos, un mal resultado no dice nada.
+IMPROVE_MIN_GAMES_PAIR = 4
+
+
+def best_and_worst_pairs(pairs, n=HIGHLIGHT_N, min_games=MIN_GAMES_PAIR, worst_min_games=IMPROVE_MIN_GAMES_PAIR):
     """
-    (mejores, peores) de `all_pairs` por % de victorias, solo parejas con al menos
-    `min_games` partidos. Si hay menos de 2*n, se reparten entre las dos listas
-    para que ninguna pareja salga en ambas.
+    (mejores, por mejorar) de `all_pairs` por % de victorias. Las mejores necesitan al menos
+    `min_games` partidos y las de por mejorar `worst_min_games` (más, para no señalar a una pareja
+    por una mala tarde). Ninguna pareja sale en ambas listas.
     """
     ranked = [r for r in pairs if r['played'] >= min_games]
-    n_best = min(n, (len(ranked) + 1) // 2)
-    n_worst = min(n, len(ranked) - n_best)
+    n_best = min(n, (len(ranked) + 1) // 2) if ranked else 0
     best = sorted(ranked, key=lambda r: (-r['pct'], -r['played'], -r['wins']))[:n_best]
-    rest = [r for r in ranked if r not in best]
-    worst = sorted(rest, key=lambda r: (r['pct'], -r['played'], r['wins']))[:n_worst]
+    rest = [r for r in pairs if r['played'] >= worst_min_games and r not in best]
+    worst = sorted(rest, key=lambda r: (r['pct'], -r['played'], r['wins']))[:n]
     return best, worst
 
 

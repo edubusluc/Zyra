@@ -234,8 +234,8 @@
           <div class="st-row">
             {% translate "Mejores parejas" as t_title %}{% translate "Mayor % de victorias juntos." as t_note %}
             {% include 'includes/pair_rank_table.html' with title=t_title rows=best_pairs note=t_note %}
-            {% translate "Peores parejas" as t_title %}{% translate "Menor % de victorias juntos." as t_note %}
-            {% include 'includes/pair_rank_table.html' with title=t_title rows=worst_pairs note=t_note %}
+            {% translate "Parejas por mejorar" as t_title %}{% translate "Menor % de victorias juntos." as t_note %}
+            {% include 'includes/pair_rank_table.html' with title=t_title rows=worst_pairs note=t_note min_games_pair=worst_min_games %}
           </div>
           <p class="st-card-note">{% translate "Para ver cualquier otra pareja, búscala arriba." %}</p>
         {% else %}

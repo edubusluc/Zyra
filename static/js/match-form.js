@@ -38,6 +38,23 @@
   }));
   syncMode();
 
+  // Lugar: por defecto el del equipo local (el propio si juega en casa, el rival si juega fuera);
+  // si la persona lo ha escrito a mano, no se pisa.
+  const place = form.querySelector('input[name="location"]');
+  const rivalSelect = form.querySelector('select[name="rival"]');
+  let placeEdited = place && place.value !== '' && place.value !== (form.dataset.ownLocation || '');
+  function defaultPlace() {
+    if (checkedValue('own_side') !== 'visiting') return form.dataset.ownLocation || '';
+    const option = rivalSelect && rivalSelect.options[rivalSelect.selectedIndex];
+    return (option && option.dataset.location) || '';
+  }
+  function syncPlace() { if (place && !placeEdited) place.value = defaultPlace(); }
+  if (place) {
+    place.addEventListener('input', () => { placeEdited = true; });
+    form.querySelectorAll('input[name="own_side"]').forEach((r) => r.addEventListener('change', syncPlace));
+    if (rivalSelect) rivalSelect.addEventListener('change', syncPlace);
+  }
+
   form.querySelectorAll('[data-team-card]').forEach((card) => {
     const select = card.querySelector('select');
     const name = card.querySelector('[data-team-name]');

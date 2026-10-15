@@ -850,6 +850,7 @@ def statistics_per_pair(request):
         'best_pairs': best_pairs,
         'worst_pairs': worst_pairs,
         'min_games_pair': min_games_pair,
+        'worst_min_games': pair_stats.IMPROVE_MIN_GAMES_PAIR,
         'selected_p1': p1_id or None,
         'selected_p2': p2_id or None,
     }
