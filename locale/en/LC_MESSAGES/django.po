@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zyra\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-15 11:20+0000\n"
+"POT-Creation-Date: 2026-10-15 11:39+0000\n"
 "PO-Revision-Date: 2026-10-01 20:00+0200\n"
 "Last-Translator: Zyra\n"
 "Language-Team: English\n"
@@ -7662,10 +7662,11 @@ msgstr "Choose a player"
 
 #: data_analyse/templates/player_statistics.html:39
 msgid ""
-"Busca un jugador para abrir su ficha: resumen y estadísticas en un mismo "
-"sitio."
+"Pulsa en un jugador para ver su balance, sus rachas y cómo evoluciona "
+"temporada a temporada."
 msgstr ""
-"Look for a player to open their card: summary and statistics in one place."
+"Tap a player to see their record, their streaks and how they progress season "
+"by season."
 
 #: data_analyse/templates/player_statistics.html:54
 msgid "Todavía no hay jugadores en el equipo."
@@ -10948,6 +10949,12 @@ msgid_plural "%(n)s equipos actualizados."
 msgstr[0] "%(n)s team updated."
 msgstr[1] "%(n)s teams updated."
 
+#~ msgid ""
+#~ "Busca un jugador para abrir su ficha: resumen y estadísticas en un mismo "
+#~ "sitio."
+#~ msgstr ""
+#~ "Look for a player to open their card: summary and statistics in one place."
+
 #~ msgid "Crea un partido"
 #~ msgstr "Create a match"
 
@@ -10976,13 +10983,6 @@ msgstr[1] "%(n)s teams updated."
 #~ msgstr ""
 #~ "You don't belong to any club yet. Ask a captain to add you as a member, "
 #~ "or register a new club."
-
-#~ msgid ""
-#~ "Pulsa en un jugador para ver su balance, sus rachas y cómo evoluciona "
-#~ "temporada a temporada."
-#~ msgstr ""
-#~ "Tap a player to see their record, their streaks and how they progress "
-#~ "season by season."
 
 #, python-format
 #~ msgid "%(points)s puntos obtenidos"

@@ -9,8 +9,11 @@
 @font-face { font-family: 'Archivo'; font-weight: 400; font-display: swap; src: url('zyra/fonts/Archivo-Regular.ttf') format('truetype'); }
 @font-face { font-family: 'Archivo'; font-weight: 700; font-display: swap; src: url('zyra/fonts/Archivo-Bold.ttf') format('truetype'); }
 @font-face { font-family: 'Archivo'; font-weight: 800; font-display: swap; src: url('zyra/fonts/Archivo-ExtraBold.ttf') format('truetype'); }
-@font-face { font-family: 'Syncopate'; font-weight: 700; font-display: swap; src: url('zyra/fonts/Syncopate-Bold.ttf') format('truetype'); }
-@font-face { font-family: 'Syncopate'; font-style: italic; font-weight: 700; font-display: swap; src: url('zyra/fonts/Syncopate-BoldItalic.ttf') format('truetype'); }
+@font-face { font-family: 'Syncopate'; font-weight: 700; font-display: swap; src: url('zyra/fonts/Syncopate-Bold.ttf') format('truetype'); unicode-range: U+0000-00C0, U+00C2-00C8, U+00CA-00CC, U+00CE-00D0, U+00D2, U+00D4-00D9, U+00DB, U+00DD-10FFFF; }
+@font-face { font-family: 'Syncopate'; font-style: italic; font-weight: 700; font-display: swap; src: url('zyra/fonts/Syncopate-BoldItalic.ttf') format('truetype'); unicode-range: U+0000-00C0, U+00C2-00C8, U+00CA-00CC, U+00CE-00D0, U+00D2, U+00D4-00D9, U+00DB, U+00DD-10FFFF; }
+/* Las vocales con tilde de Syncopate (sobre todo la Í en cursiva) salen con el acento pegado a la letra siguiente:
+   esas letras se pintan con Archivo, que las dibuja bien; el resto del texto sigue en Syncopate. */
+@font-face { font-family: 'Syncopate'; font-style: normal; font-weight: 700; font-display: swap; src: url('zyra/fonts/Archivo-ExtraBold.ttf') format('truetype'); size-adjust: 112%; unicode-range: U+00C1, U+00C9, U+00CD, U+00D3, U+00DA, U+00DC, U+00D1; }
 
 :root,
 [data-bs-theme="dark"] {
@@ -1667,6 +1670,7 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 .st-fact--gold { border-color: var(--z-lime); }
 .st-fact--gold dd { color: var(--z-lime); }
 .st-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.st-grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .st-card--wide { grid-column: 1 / -1; }
 .st-vs-bar--loss span { background: var(--z-lime); }
 

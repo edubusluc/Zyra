@@ -36,14 +36,14 @@
 
       <div class="st-empty st-empty--inline">
         <strong>{% translate "Elige un jugador" %}</strong>
-        {% translate "Busca un jugador para abrir su ficha: resumen y estadísticas en un mismo sitio." %}
+        {% translate "Pulsa en un jugador para ver su balance, sus rachas y cómo evoluciona temporada a temporada." %}
       </div>
 
       {% if players %}
         <ul class="st-player-grid" aria-label="{% translate 'Jugadores' %}">
           {% for p in players %}
             <li>
-              <a class="st-player-card" href="{% url 'show_player' p.public_id %}">
+              <a class="st-player-card" href="{% url 'player_statistics' %}?player={{ p.public_id }}{{ match_type_qs }}">
                 <img src="{% if p.photo %}{{ p.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="" class="z-avatar z-avatar--sm" loading="lazy">
                 <span>{{ p.full_name }}</span>
               </a>
