@@ -119,7 +119,19 @@ class MyProfileTests(TestCase):
 class ReportPreferenceTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user("ana", password="Vieja-clave-123", email="ana@example.com")
+        self.club = create_club("Club A", "Sevilla", self.user, gender="M")
         self.client.force_login(self.user)
+
+    def test_member_does_not_see_or_change_the_call_up_report_scope(self):
+        """El informe de la convocatoria es del capitán (H-24): un miembro no lo ve ni lo cambia."""
+        member = User.objects.create_user("socio", password="Vieja-clave-123", email="socio@example.com")
+        Membership.objects.create(user=member, club=self.club, role=Membership.MEMBER)
+        self.client.force_login(member)
+        page = self.client.get(reverse("my_profile"))
+        self.assertNotContains(page, "Datos del informe PDF al crear un partido")
+        self.assertContains(page, "Informe mensual por email")
+        self.client.post(reverse("my_profile"), {"report_scope": "competitivos", "monthly_form": "1"})
+        self.assertEqual(self.client.get(reverse("my_profile")).context["report_scope"], "todos")
 
     def test_default_is_all_data_and_it_is_saved(self):
         page = self.client.get(reverse("my_profile"))

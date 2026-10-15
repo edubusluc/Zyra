@@ -546,21 +546,14 @@ def invitation(request, token):
 @require_POST
 def update_member(request, membership_id):
     """
-    Guarda el email del capitán en la página de miembros (solo capitanes, solo POST).
+    Antes guardaba el email propio desde la página de miembros; ya no cambia nada (solo POST).
 
-    Solo se puede cambiar el email propio, nunca el de los demás. El rol ya no se cambia aquí:
-    un club tiene un solo capitán y la capitanía se traspasa con ``transfer_captaincy``.
-    Redirige a la página de miembros.
+    El email solo se cambia en «Mi perfil», que pide la contraseña actual. Esta URL se
+    conserva para no romper enlaces y redirige allí. Un capitán nunca puede cambiar el email
+    de otro miembro, ni el rol: la capitanía se traspasa con ``transfer_captaincy``.
     """
-    membership = get_object_or_404(Membership, public_id=membership_id, club=request.club)
-    # Cada usuario solo puede cambiar su propio email. Antes un capitán podía cambiar el de
-    # cualquier miembro y, con «Entrar con Google» (que entra en la cuenta cuyo email
-    # coincide), quedarse con la cuenta de ese miembro.
-    if membership.user_id == request.user.id and "email" in request.POST:
-        error = _change_own_email(request, request.user, request.POST.get("email", "").strip())
-        if error:
-            messages.error(request, error)
-    return redirect("club_members")
+    get_object_or_404(Membership, public_id=membership_id, club=request.club)
+    return redirect(f"{reverse('my_profile')}?edit=email")
 
 
 @club_admin_required
@@ -618,10 +611,12 @@ def my_profile(request):
     user = request.user
     google_only = not user.has_usable_password()
     email_form = None
-    if request.method == "POST" and "report_scope" in request.POST:
+    is_captain = bool(request.membership and request.membership.is_admin)
+    if request.method == "POST" and ("report_scope" in request.POST or "monthly_form" in request.POST):
         defaults = {}
-        scope = request.POST["report_scope"]
-        if scope in dict(REPORT_SCOPES):
+        scope = request.POST.get("report_scope")
+        # El informe de la convocatoria es del capitán: un miembro no lo ve ni puede cambiarlo.
+        if is_captain and scope in dict(REPORT_SCOPES):
             defaults["report_scope"] = scope
         if "monthly_form" in request.POST:
             defaults["monthly_report"] = request.POST.get("monthly_report") == "on"
@@ -643,6 +638,7 @@ def my_profile(request):
         "google_only": google_only,
         "uses_google": SocialAccount.objects.filter(user=user, provider="google").exists(),
         "email_form": email_form,
+        "is_captain": is_captain,
         "report_scopes": REPORT_SCOPES,
         "report_scope": UserPreference.report_scope_for(user),
         "monthly_report": UserPreference.monthly_for(user)[0],
