@@ -1478,7 +1478,7 @@ a.z-location:hover span { text-decoration: underline; }
   display: grid; place-items: center; width: 38px; height: 38px;
   font-size: 1rem; font-weight: 800; border-radius: 50%;
 }
-.st-pip--w { color: var(--z-ink); background: var(--st-win); }
+.st-pip--w { color: var(--z-ink); background: var(--st-win, var(--z-lime)); }
 .st-pip--l { color: #FFFFFF; background: rgba(255, 92, 99, .35); }
 
 .st-split { margin-top: 18px; }
