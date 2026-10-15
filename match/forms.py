@@ -65,7 +65,7 @@ class MatchForm(forms.ModelForm):
             'visiting': TeamSelect(),
             'start_date': forms.DateInput(
                 format='%Y-%m-%d',
-                attrs={'type': 'date', 'data-datepicker': '', 'data-placeholder': _('Elige el día del partido')},
+                attrs={'type': 'date', 'data-datepicker': '', 'data-placeholder': _('Elige el día del enfrentamiento')},
             ),
         }
 
@@ -193,7 +193,7 @@ class MatchForm(forms.ModelForm):
             self.add_error('rival_name', _("Escribe el nombre del equipo rival."))
             return cleaned
         if self.own_team is None:
-            raise forms.ValidationError(_("Tu club no tiene equipo propio: no se pueden crear partidos."))
+            raise forms.ValidationError(_("Tu club no tiene equipo propio: no se pueden crear enfrentamientos."))
         if same_name(rival_name, self.own_team.name):
             self.add_error('rival_name', _("El rival no puede llamarse igual que tu equipo."))
             return cleaned
@@ -234,10 +234,10 @@ class MatchForm(forms.ModelForm):
                 raise forms.ValidationError(_("El equipo local y el visitante no pueden ser el mismo."))
             # El equipo del capitán (el equipo propio del club) tiene que jugar el partido.
             if self.own_team is None:
-                raise forms.ValidationError(_("Tu club no tiene equipo propio: no se pueden crear partidos."))
+                raise forms.ValidationError(_("Tu club no tiene equipo propio: no se pueden crear enfrentamientos."))
             if self.own_team not in (local, visiting):
                 raise forms.ValidationError(
-                    _("Tu equipo (%(team)s) tiene que jugar el partido: elígelo como local o visitante.")
+                    _("Tu equipo (%(team)s) tiene que jugar el enfrentamiento: elígelo como local o visitante.")
                     % {"team": self.own_team}
                 )
         return cleaned

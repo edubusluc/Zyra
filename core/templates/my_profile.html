@@ -87,7 +87,7 @@
         {% csrf_token %}
         {% if is_captain %}
         <fieldset class="z-report-scope">
-            <legend class="form-label">{% translate "Datos del informe PDF al crear un partido" %}</legend>
+            <legend class="form-label">{% translate "Datos del informe PDF al crear un enfrentamiento" %}</legend>
             {% for value, label in report_scopes %}
             <div class="form-check">
                 <input class="form-check-input" type="radio" name="report_scope" id="scope-{{ value }}" value="{{ value }}"{% if value == report_scope %} checked{% endif %}>

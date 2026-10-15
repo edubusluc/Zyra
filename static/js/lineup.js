@@ -91,10 +91,20 @@
         });
       });
       selects.forEach((s) => s.dispatchEvent(new Event('change', { bubbles: true })));
+      // Una línea con el dato clave; el porqué, plegado.
       info.textContent = interpolate(
-        gettext('%(title)s: %(win)s de opciones de ganar. %(explanation)s Puedes cambiar cualquier pareja antes de guardar.'),
-        { title: lineup.title, win: lineup.win + ' %', explanation: lineup.explanation }, true
+        gettext('%(title)s: %(win)s de opciones de ganar. '),
+        { title: lineup.title, win: lineup.win + ' %' }, true
       );
+      const why = document.createElement('details');
+      why.className = 'z-suggest-why';
+      const summary = document.createElement('summary');
+      summary.textContent = gettext('Ver por qué');
+      const detail = document.createElement('span');
+      detail.textContent = interpolate(gettext('%(explanation)s Puedes cambiar cualquier pareja antes de guardar.'),
+        { explanation: lineup.explanation }, true);
+      why.append(summary, detail);
+      info.appendChild(why);
       buttons.forEach((b) => {
         b.classList.toggle('btn-primary', b.dataset.suggest === lineup.key);
         b.classList.toggle('btn-outline-secondary', b.dataset.suggest !== lineup.key);

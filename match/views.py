@@ -279,12 +279,12 @@ def edit_match_date(request, match_id):
     """
     match = club_match(request, match_id)
     if not match.draft_mode:
-        messages.error(request, _("Reabre el acta para cambiar la fecha del partido."))
+        messages.error(request, _("Reabre el acta para cambiar la fecha del enfrentamiento."))
         return redirect("call_for_match", match.public_id)
     form = MatchDateForm(request.POST or None, instance=match)
     if request.method == "POST" and form.is_valid():
         form.save()
-        messages.success(request, _("Fecha del partido actualizada."))
+        messages.success(request, _("Fecha del enfrentamiento actualizada."))
         return redirect("call_for_match", match.public_id)
     return render(request, "edit_match_date.html", {"form": form, "match": match})
 
@@ -307,11 +307,11 @@ def delete_match(request, match_id):
 
             return render(request, 'delete_match.html', {'match': match})
         else:
-            messages.error(request, _("No se puede eliminar un partido ya confirmado"))
+            messages.error(request, _("No se puede eliminar un enfrentamiento ya confirmado"))
 
             return redirect('list_match')
     except Match.DoesNotExist:
-        messages.error(request, _("El partido no existe"))
+        messages.error(request, _("El enfrentamiento no existe"))
         return redirect('list_match')
 
 
@@ -613,11 +613,11 @@ def validate_game_for_match(call):
     al menos 10 jugadores. Devuelve (True, None) o (False, mensaje de error).
     """
     if not call:
-        return False, _("No se pueden crear partidos, no existe ninguna convocatoria.")
+        return False, _("No se pueden alinear parejas, no existe ninguna convocatoria.")
     if call.players.all().count() < 10:
-        return False, _("Para crear los partidos debes contar al menos con 10 jugadores")
+        return False, _("Para alinear las parejas debes contar al menos con 10 jugadores")
     if call.draft_mode != False:
-        return False, _("Para crear los partidos debes confirmar la convocatoria")
+        return False, _("Para alinear las parejas debes cerrar la convocatoria")
 
     
     return True, None
@@ -639,7 +639,7 @@ def create_game_for_match(request, match_id):
         return redirect('call_for_match', match_id=match_id)
 
     if match.games.exists():
-        messages.info(request, _("Los partidos ya están creados: puedes cambiar las parejas desde aquí."))
+        messages.info(request, _("Las parejas ya están alineadas: puedes cambiarlas desde aquí."))
         return redirect('edit_games_match', match_id=match.public_id)
 
     if request.method == "POST":
@@ -648,7 +648,7 @@ def create_game_for_match(request, match_id):
         except lineup.LineupError as e:
             messages.error(request, str(e))
             return redirect('create_game', match_id=match.public_id)
-        messages.success(request, _("Partidos creados."))
+        messages.success(request, _("Parejas alineadas."))
         return redirect('call_for_match', match_id=match.public_id)
 
     return render(request, "create_game.html", {
@@ -711,7 +711,7 @@ def create_result(request, game_id):
     """
     game = get_object_or_404(Game.objects.select_related('match__local', 'match__visiting'), public_id=game_id, match__club=request.club)
     if not game.match.draft_mode:
-        messages.error(request, _("No se pueden añadir resultados a un partido ya confirmado"))
+        messages.error(request, _("No se pueden añadir resultados a un enfrentamiento ya confirmado"))
         return redirect('call_for_match', match_id=game.match.public_id)
     if game.results.exists():
         return redirect('edit_result', game_id=game.public_id)
@@ -733,7 +733,7 @@ def edit_result(request, game_id):
     result = get_object_or_404(Result, game=game)
 
     if not match.draft_mode:
-        messages.error(request, _("No se pueden editar los resultados de un partido ya confirmado"))
+        messages.error(request, _("No se pueden editar los resultados de un enfrentamiento ya confirmado"))
         return redirect('call_for_match', match_id=match.public_id)
 
     if request.method == "POST":
@@ -778,7 +778,7 @@ def enter_results(request, match_id):
     """
     match = club_match(request, match_id)
     if not match.draft_mode:
-        messages.error(request, _("No se pueden editar los resultados de un partido ya confirmado"))
+        messages.error(request, _("No se pueden editar los resultados de un enfrentamiento ya confirmado"))
         return redirect('call_for_match', match_id=match.public_id)
     games = list(match.games.order_by('n_game').prefetch_related('results'))
     if not games:
@@ -850,7 +850,7 @@ def valid_close_match(games,match):
     5 partidos, todos con resultado. Devuelve (True, None) o (False, mensaje de error).
     """
     if match.draft_mode == False:
-        return False, _("No se pueden cerrar actas, el partido ya ha sido cerrado")
+        return False, _("No se pueden cerrar actas, el enfrentamiento ya ha sido cerrado")
     if len(games) < 5:
         return False, _("No se pueden cerrar actas, se requieren al menos 5 partidos.")
     

@@ -2039,6 +2039,10 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 @media (max-width: 991.98px) {
     .z-selector-bar { bottom: calc(var(--z-nav-h) + 26px); transition: bottom .25s ease; }
     .z-nav-hidden .z-selector-bar { bottom: 16px; }
+    /* Con una barra de acción fija, la de navegación se esconde: a 320 px las dos tapaban ~40 % de la pantalla (H-30) */
+    body:has(.z-selector-bar) .z-bottom-nav { display: none; }
+    body:has(.z-selector-bar) .z-selector-bar { bottom: calc(16px + env(safe-area-inset-bottom)); }
+    body:has(.z-selector-bar) .main-content { padding-bottom: 120px; }
 }
 .st-warn-count { color: var(--z-warning); }
 .st-table td:nth-child(3) a { white-space: normal; }
@@ -2646,3 +2650,19 @@ a.z-hub-card:hover, a.z-hub-card:focus-visible { border-color: var(--z-lime); co
 
 /* Campo de foto: el selector nativo queda oculto tras el botón «Subir foto» (static/js/photo-crop.js) */
 .z-file-native { position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0; pointer-events: none; }
+
+/* Alineación en móvil: el orden de juego va justo bajo la sugerencia, para ver el efecto de cada cambio (H-31) */
+@media (max-width: 991.98px) {
+    .z-lineup-main { display: contents; }
+    .z-lineup-main > .text-muted { order: 0; }
+    .z-lineup-suggest { order: 1; }
+    .z-lineup-side.pair-order-container { order: 2; margin: 0; padding: 12px 14px; }
+    .z-lineup-side h2 { margin-bottom: 6px; font-size: 1rem; }
+    .z-lineup-side > p { display: none; }
+    #pair-order-list li { padding: 6px 0; }
+    .z-lineup-pairs { order: 3; }
+    .z-lineup > .z-selector-bar { order: 4; }
+}
+.z-suggest-why { display: inline; }
+.z-suggest-why > summary { display: inline; color: var(--z-lime); cursor: pointer; }
+.z-suggest-why > span { display: block; margin-top: 4px; color: var(--z-muted); }
