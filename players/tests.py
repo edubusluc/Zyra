@@ -394,7 +394,7 @@ class SnpBatchTests(TestCase):
         caller = threading.get_ident()
         seen = []
 
-        def fake_scrape(username, password, team_id, log, browser, country, team_name=None, with_group_teams=False, group_only=False):
+        def fake_scrape(username, password, team_id, log, browser, country, team_name=None, with_group_teams=False, group_only=False, progress=None):
             seen.append(threading.get_ident())
             return [{"name": "Ana A", "score": 5.0}]
 
@@ -611,6 +611,46 @@ class CompleteTeamTests(TestCase):
         # Hecho correctamente: la tarea desaparece.
         SnpTeamImport.objects.update(status=SnpTeamImport.DONE)
         self.assertNotContains(self.client.get(reverse("home")), "Sincronizar datos")
+
+    def test_progress_bar_on_every_page_and_creation_blocked_while_syncing(self):
+        """Mientras sincroniza se navega con normalidad (barra de progreso), pero no se crean registros."""
+        with override_settings(SNP_IMPORT_INLINE=False):
+            self.client.post(reverse("complete_team_start"), {"from": "home"})
+        team_import = SnpTeamImport.objects.get()
+        SnpTeamImport.objects.update(started_at=timezone.now(), progress=40, stage="Sesión iniciada en SNP")
+        page = self.client.get(reverse("list_players"))
+        self.assertEqual(page.status_code, 200)
+        self.assertContains(page, "data-sync-bar")
+        self.assertContains(page, "Sesión iniciada en SNP")
+        self.assertNotContains(page, "completeTeamModal")
+        status = self.client.get(reverse("sync_status")).json()
+        self.assertEqual(status, {"active": True, "progress": 40, "stage": "Sesión iniciada en SNP"})
+        for url in ("create_player", "create_team", "create_match"):
+            response = self.client.get(reverse(url), follow=True)
+            self.assertRedirects(response, reverse("home"))
+            self.assertContains(response, "Estamos sincronizando tu equipo con SNP (40%)")
+        # Al terminar la barra desaparece y se puede volver a crear.
+        SnpTeamImport.objects.update(status=SnpTeamImport.DONE)
+        self.assertEqual(self.client.get(reverse("sync_status")).json(), {"active": False})
+        self.assertNotContains(self.client.get(reverse("list_players")), "data-sync-bar")
+        self.assertEqual(self.client.get(reverse("create_player")).status_code, 200)
+
+    def test_search_saves_the_progress_of_each_step(self):
+        from .models import SnpTeamImport
+        team_import = SnpTeamImport.objects.create(club=self.club, source=SnpTeamImport.WEB, started_at=timezone.now())
+        seen = []
+
+        def fake(username, password, team_id, progress=None, **options):
+            progress(30, "Sesión iniciada en SNP")
+            seen.append(SnpTeamImport.objects.get(pk=team_import.pk).progress)
+            return SNP_TEAM
+        snp_import.search(team_import, scraper=fake)
+        team_import.refresh_from_db()
+        self.assertEqual(seen, [30])
+        self.assertEqual((team_import.status, team_import.progress), (SnpTeamImport.READY, 95))
+        snp_import.confirm(team_import)
+        team_import.refresh_from_db()
+        self.assertEqual(team_import.progress, 100)
 
     def test_fixing_the_account_lifts_the_wait_and_the_block(self):
         error = SnpScrapeError("SNP no ha aceptado el usuario o la contraseña.", kind=SnpScrapeError.ACCOUNT)

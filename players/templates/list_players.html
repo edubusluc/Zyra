@@ -140,7 +140,7 @@
 </nav>
 </div>
 
-{% if snp_import %}
+{% if snp_import and snp_import.status == 'ready' %}
 <div class="modal fade" id="completeTeamModal" tabindex="-1" aria-labelledby="completeTeamTitle" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">

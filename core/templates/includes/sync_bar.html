@@ -1,0 +1,21 @@
+{% load i18n static %}
+{# Barra de progreso de la sincronización con SNP: se ve en toda la web mientras dura y no bloquea la navegación. #}
+<div class="z-sync" role="status" data-sync-bar data-sync-url="{% url 'sync_status' %}">
+    <div class="z-sync-inner">
+        <div class="z-sync-text">
+            <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+            <strong>{% translate "Sincronizando tu equipo con SNP" %}</strong>
+            <span class="z-sync-stage" data-sync-stage>{{ sync_running.stage|default:_("En cola") }}</span>
+            <span class="z-sync-pct" data-sync-pct>{{ sync_running.progress }}%</span>
+            <form method="post" action="{% url 'complete_team_cancel' sync_running.public_id %}" class="z-sync-cancel">
+                {% csrf_token %}<input type="hidden" name="from" value="home">
+                <button type="submit" class="btn btn-secondary btn-sm">{% translate "Cancelar" %}</button>
+            </form>
+        </div>
+        <div class="progress z-sync-track" role="progressbar" aria-label="{% translate 'Progreso de la sincronización' %}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ sync_running.progress }}" data-sync-track>
+            <div class="progress-bar" style="width: {{ sync_running.progress }}%" data-sync-fill></div>
+        </div>
+        <p class="z-sync-note">{% translate "Puedes seguir navegando. Mientras dure no se pueden crear jugadores, equipos ni enfrentamientos." %}</p>
+    </div>
+</div>
+<script src="{% static 'js/sync-progress.js' %}" defer></script>

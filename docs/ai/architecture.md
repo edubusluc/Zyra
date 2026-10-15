@@ -62,7 +62,7 @@ Cuidado con imports circulares: `match.models` importa `players.models`; `player
 4. **Puntos SNP** [V]: `run_scheduler` lanza `update_snp_scores` (diario 23:00 hora de Madrid,
    ciclo semanal) → `players.snp.sync_club` → `players.scraper.scrape_scores` (Playwright) →
    `Player.snp_score` + `SnpScoreHistory`.
-5. **Completar equipo** [V]: sin botón en Jugadores; lo lanza el alta del club con SNP, la tarea «Sincronizar datos» de la portada hasta que haya una búsqueda `done` (`snp_import.sync_task`: idle/running/ready/failed; «Reintentar» tras fallo o cancelación) (`complete_team_start` con `from=home`: confirma solo y lleva a `complete_team_welcome`) o el administrador desde el back-office. `complete_team_start` → `players.snp_import.start_search` (hilo en
+5. **Completar equipo** [V]: sin botón en Jugadores; lo lanza el alta del club con SNP, la tarea «Sincronizar datos» de la portada hasta que haya una búsqueda `done` (`snp_import.sync_task`: idle/running/ready/failed; «Reintentar» tras fallo o cancelación) (`start_search` despierta la cola al momento con `_wake_queue`; `complete_team_start` con `from=home`: confirma solo y lleva a `complete_team_welcome`) o el administrador desde el back-office. `complete_team_start` → `players.snp_import.start_search` (hilo en
    segundo plano; con el ajuste `SNP_IMPORT_INLINE` corre en línea, lo usan los tests) → `scrape_scores(with_group_teams=True)` (jugadores + equipos de la Clasificación) → la página consulta `complete_team_status` →
    `complete_team_confirm` → `snp_import.confirm`.
 6. **Estadísticas** [V]: `data_analyse.views.*` construyen un log de partidos cerrados

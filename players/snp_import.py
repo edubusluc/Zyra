@@ -18,6 +18,7 @@ en una. Así nunca hay más de un Chromium abierto por las búsquedas de los cap
 """
 import datetime
 import logging
+import threading
 
 from django.conf import settings
 from django.db import transaction
@@ -177,8 +178,14 @@ def search(team_import, scraper=None, **scrape_options):
             raise SnpScrapeError(str(snp_service.UNAVAILABLE_MESSAGE))
         if account is None:
             raise SnpScrapeError(_("El club no tiene cuenta SNP."), kind=SnpScrapeError.ACCOUNT)
+        def progress(percent, text):
+            """Guarda el avance para la barra de progreso (solo mientras sigue en marcha)."""
+            SnpTeamImport.objects.filter(pk=team_import.pk, status=SnpTeamImport.RUNNING).update(
+                progress=percent, stage=text)
+        progress(5, _("Conectando con SNP"))
         result = (scraper or scrape_scores)(account.username, account.password, account.team_id or None,
-                                            with_group_teams=True, **team_options(account.club), **scrape_options)
+                                            with_group_teams=True, progress=progress,
+                                            **team_options(account.club), **scrape_options)
         # Un scraper sin equipos del grupo devuelve solo los jugadores.
         scores, group_teams = result if isinstance(result, tuple) else (result, [])
     except (SnpScrapeError, DecryptionError) as exc:
@@ -191,7 +198,8 @@ def search(team_import, scraper=None, **scrape_options):
         to_add, existing = plan_import(team_import.club, scores)
         teams_to_add, teams_existing = plan_group_teams(team_import.club, group_teams)
         changes = {"status": SnpTeamImport.READY, "to_add": to_add, "existing": existing,
-                   "teams_to_add": teams_to_add, "teams_existing": teams_existing}
+                   "teams_to_add": teams_to_add, "teams_existing": teams_existing,
+                   "progress": 95, "stage": _("Creando jugadores y equipos")}
     # Solo si sigue en marcha: el capitán puede haberla cancelado mientras tanto.
     updated = SnpTeamImport.objects.filter(pk=team_import.pk, status=SnpTeamImport.RUNNING).update(**changes)
     team_import.refresh_from_db()
@@ -248,6 +256,7 @@ def confirm(team_import):
     team_import.created_teams = _create_group_teams(club, team_import.teams_to_add, team_import.teams_existing)
     team_import.created_players = created
     team_import.status = SnpTeamImport.DONE
+    team_import.progress, team_import.stage = 100, _("Equipo sincronizado")
     team_import.finished_at = timezone.now()
     team_import.message = ngettext("%(n)s jugador añadido.", "%(n)s jugadores añadidos.", len(created)) % {"n": len(created)}
     if team_import.created_teams:
@@ -457,7 +466,35 @@ def start_search(club, user, auto_confirm=False):
         team_import.started_at = timezone.now()
         team_import.save(update_fields=["started_at"])
         return _run(team_import)
+    _wake_queue()
     return team_import
+
+
+def _wake_queue():
+    """
+    Hace que la búsqueda recién puesta en cola empiece cuanto antes en vez de esperar a la pasada
+    del minuto. Con el lanzador en marcha pide una ejecución de ``process_snp_imports`` (la recoge
+    en su próxima pasada, como mucho en segundos); sin lanzador (desarrollo) la atiende en un hilo.
+    """
+    from backoffice.models import ScheduledJob
+    from backoffice.scheduler import scheduler_is_alive
+    if getattr(settings, "TESTING", False):
+        return
+    if scheduler_is_alive():
+        ScheduledJob.objects.filter(
+            name="process_snp_imports", running_since__isnull=True, run_requested_at__isnull=True,
+        ).update(run_requested_at=timezone.now())
+        return
+
+    def target():
+        """Cuerpo del hilo: atiende la cola y cierra sus conexiones a la base de datos."""
+        from django.db import connections
+        try:
+            process_queue(max_items=1)
+        finally:
+            connections.close_all()
+
+    threading.Thread(target=target, name="snp-import-queue", daemon=True).start()
 
 
 def claim_next():

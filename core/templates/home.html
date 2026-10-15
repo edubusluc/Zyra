@@ -29,17 +29,13 @@
 </section>
 {% endif %}
 
-{% if snp_sync %}
+{% if snp_sync and snp_sync.state != 'running' %}
 {# Tarea «Sincronizar datos»: hasta que «Completar equipo» devuelva un resultado correcto se puede lanzar, seguir o reintentar desde aquí. #}
 <section class="z-notice{% if snp_sync.state == 'failed' %} z-notice--warn{% endif %}" role="{% if snp_sync.state == 'failed' %}alert{% else %}status{% endif %}" aria-label="{% translate 'Sincronizar datos' %}">
-    {% if snp_sync.state == 'running' %}<span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-    {% elif snp_sync.state == 'failed' %}<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+    {% if snp_sync.state == 'failed' %}<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
     {% else %}<i class="fa-solid fa-rotate" aria-hidden="true"></i>{% endif %}
     <div class="z-notice-text">
-        {% if snp_sync.state == 'running' %}
-        <strong>{% translate "Sincronizando tu equipo con SNP" %}</strong>
-        <span>{% translate "Estamos leyendo tus jugadores y sus puntos. Puedes seguir usando Zyra; aquí verás cuando termine." %}</span>
-        {% elif snp_sync.state == 'ready' %}
+        {% if snp_sync.state == 'ready' %}
         <strong>{% translate "Tu equipo de SNP está listo para confirmar" %}</strong>
         <span>{% translate "Revisa los jugadores encontrados y confírmalos para añadirlos." %}</span>
         {% elif snp_sync.state == 'failed' %}
@@ -54,13 +50,7 @@
         {% endif %}
     </div>
     <div class="z-notice-actions">
-        {% if snp_sync.state == 'running' %}
-        <a class="btn btn-secondary btn-sm" href="{% url 'complete_team_welcome' snp_sync.import.public_id %}">{% translate "Ver progreso" %}</a>
-        <form method="post" action="{% url 'complete_team_cancel' snp_sync.import.public_id %}">
-            {% csrf_token %}<input type="hidden" name="from" value="home">
-            <button type="submit" class="btn btn-secondary btn-sm">{% translate "Cancelar" %}</button>
-        </form>
-        {% elif snp_sync.state == 'ready' %}
+        {% if snp_sync.state == 'ready' %}
         <a class="btn btn-primary btn-sm" href="{% url 'list_players' %}">{% translate "Revisar y confirmar" %}</a>
         {% else %}
         {% if snp_sync.can_retry %}

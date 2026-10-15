@@ -139,6 +139,7 @@
     </div>
 </header>
 
+{% if sync_running and request.resolver_match.url_name != 'complete_team_welcome' %}{% include 'includes/sync_bar.html' %}{% endif %}
 <main class="main-content" id="contenido" tabindex="-1">
   {% block content %}
   {% endblock %}

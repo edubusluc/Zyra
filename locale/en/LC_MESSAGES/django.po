@@ -11397,3 +11397,26 @@ msgstr "Matches the report counts"
 
 msgid "Solo enfrentamientos competitivos"
 msgstr "Competitive matches only"
+
+msgid "Progreso de la sincronización"
+msgstr "Sync progress"
+
+msgid "Puedes seguir navegando. Mientras dure no se pueden crear jugadores, equipos ni enfrentamientos."
+msgstr "You can keep browsing. While it runs you cannot create players, teams or matches."
+
+msgid "En cola"
+msgstr "Queued"
+
+msgid "Conectando con SNP"
+msgstr "Connecting to SNP"
+
+msgid "Creando jugadores y equipos"
+msgstr "Creating players and teams"
+
+msgid "Equipo sincronizado"
+msgstr "Team synced"
+
+#, python-format
+msgid "Estamos sincronizando tu equipo con SNP (%(progress)s%%). Podrás crear jugadores, equipos y enfrentamientos cuando termine."
+msgstr "We are syncing your team with SNP (%(progress)s%%). You will be able to create players, teams and matches when it finishes."
+

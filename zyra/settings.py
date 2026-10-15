@@ -188,6 +188,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'core.context_processors.club',
                 'core.context_processors.navigation',
+                'core.context_processors.sync_bar',
                 'core.context_processors.google_login',
                 'core.context_processors.site',
                 'backoffice.context_processors.impersonation',

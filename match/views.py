@@ -6,7 +6,7 @@ Todas las vistas trabajan solo con datos del club activo (``request.club``).
 from . import outcomes
 from core.season_choice import ALL_SEASONS, choose_season
 from django.shortcuts import render, redirect, get_object_or_404
-from core.decorators import club_required, club_admin_required
+from core.decorators import club_required, club_admin_required, not_while_syncing
 from django.contrib import messages
 from .forms import MatchForm, MatchDateForm
 from .models import Match, Game, Result
@@ -254,6 +254,7 @@ def list_match(request):
     })
 
 @club_admin_required
+@not_while_syncing
 def create_match(request):
     """Alta de un enfrentamiento.
 

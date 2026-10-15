@@ -1,6 +1,6 @@
 """Vistas de jugadores: alta, lista, ficha, plantilla, cuenta SNP, «Completar equipo» y perfil propio."""
 from django.shortcuts import render, redirect, get_object_or_404
-from core.decorators import club_required, club_admin_required
+from core.decorators import club_required, club_admin_required, not_while_syncing
 from core.models import Club
 from .forms import NewOwnPlayerForm, OwnPlayerForm, PlayerEditForm, PlayerForm, SnpAccountForm, with_placeholder
 from django.contrib import messages
@@ -23,6 +23,7 @@ from core import similarity
 
 
 @club_admin_required
+@not_while_syncing
 def create_player(request):
     """
     Alta de un jugador en el equipo propio del club. Solo capitanes (``club_admin_required``).
@@ -339,10 +340,25 @@ def complete_team_start(request):
 def complete_team_status(request, import_id):
     """Estado en JSON de una búsqueda de «Completar equipo» (lo consulta la lista). Solo capitanes."""
     team_import = get_object_or_404(SnpTeamImport, public_id=import_id, club=request.club)
-    data = {"status": team_import.status, "message": team_import.message, "redirect": ""}
+    data = {"status": team_import.status, "message": team_import.message, "redirect": "",
+            "progress": team_import.progress, "stage": team_import.stage}
     if team_import.status == SnpTeamImport.ERROR and team_import.error_kind in (SnpScrapeError.ACCOUNT, SnpScrapeError.TEAM):
         data["redirect"] = reverse("complete_team_failed", args=[team_import.public_id])
     return JsonResponse(data)
+
+
+@club_admin_required
+@require_GET
+def sync_status(request):
+    """
+    Estado en JSON de la sincronización con SNP en curso del club, para la barra de progreso de toda la
+    web (``static/js/sync-progress.js``). ``active`` es False cuando ya no hay ninguna en marcha: la
+    página se recarga para ver el resultado (hecha, con error o cancelada). Solo capitanes.
+    """
+    current = snp_import.active_import(request.club)
+    if current is None or current.status != SnpTeamImport.RUNNING:
+        return JsonResponse({"active": False})
+    return JsonResponse({"active": True, "progress": current.progress, "stage": current.stage or _("En cola")})
 
 
 @club_admin_required
