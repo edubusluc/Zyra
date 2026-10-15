@@ -254,3 +254,25 @@ msgstr "3 points lost"
 #: static/js/team_statistics.js:106
 msgid "2 puntos perdidos"
 msgstr "2 points lost"
+
+msgid "Este campo es obligatorio."
+msgstr "This field is required."
+
+msgid "Escribe un email válido."
+msgstr "Enter a valid email."
+
+msgid "Las contraseñas no coinciden."
+msgstr "The passwords do not match."
+
+msgid "Falta %s campo"
+msgid_plural "Faltan %s campos"
+msgstr[0] "%s field is missing"
+msgstr[1] "%s fields are missing"
+
+msgid "Revisa %s campo"
+msgid_plural "Revisa %s campos"
+msgstr[0] "Check %s field"
+msgstr[1] "Check %s fields"
+
+msgid "Paso %s de %s"
+msgstr "Step %s of %s"

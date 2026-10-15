@@ -200,6 +200,7 @@ class AccessibilityTests(TestCase):
             reverse("player_statistics") + f"?player={p}", reverse("pair_statistics"),
             reverse("pair_statistics") + f"?p1={p}&p2={q}", reverse("warnings_statistics"),
             reverse("my_profile"), reverse("club_members"), reverse("delete_account"),
+            reverse("member_welcome"), reverse("club_home"),
         ])
         # Cada página tiene su propio título (WCAG 2.4.2), salvo la misma vista con otros datos
         repeated = {t: urls for t, urls in titles.items() if len(urls) > 1}

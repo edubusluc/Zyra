@@ -46,7 +46,7 @@
     <div class="st-main">
     {% if not total_matches %}
       <div class="st-empty">
-        <strong>{% translate "Todavía no hay partidos cerrados" %}</strong>
+        <strong>{% translate "Todavía no hay enfrentamientos cerrados" %}</strong>
         {% if selected_season %}{% blocktranslate with season=selected_season %}Las estadísticas aparecerán cuando se cierre el primero de la temporada {{ season }}.{% endblocktranslate %}{% else %}{% translate "Las estadísticas aparecerán cuando se cierre el primero." %}{% endif %}
       </div>
     {% else %}
@@ -60,9 +60,9 @@
         <a href="#sec-snp">{% translate "Puntos SNP" %}</a>
       </nav>
 
-      <section id="sec-resumen" class="st-board" aria-label="{% translate 'Resumen de partidos' %}">
+      <section id="sec-resumen" class="st-board" aria-label="{% translate 'Resumen de enfrentamientos' %}">
         <div>
-          <p class="st-board-label">{% translate "Balance de partidos" %}</p>
+          <p class="st-board-label">{% translate "Balance de enfrentamientos" %}</p>
           <div class="st-record">
             <div class="st-score">
               <span class="st-record-num">{{ won_matches }}</span>
@@ -79,18 +79,18 @@
               <span class="st-score-cap">{% translate "Derrotas" %}</span>
             </div>
           </div>
-          <div class="st-bar" role="img" aria-label="{% blocktranslate with pct=percentage_won %}{{ pct }} % de partidos ganados{% endblocktranslate %}">
+          <div class="st-bar" role="img" aria-label="{% blocktranslate with pct=percentage_won %}{{ pct }} % de enfrentamientos ganados{% endblocktranslate %}">
             <span class="st-bar-win" style="width: {% widthratio won_matches total_matches 100 %}%"></span><span class="st-bar-draw" style="width: {% widthratio drawn_matches total_matches 100 %}%"></span>
           </div>
         </div>
 
         <dl class="st-facts">
           <div class="st-fact st-fact--gold">
-            <dt>{% translate "Partidos ganados" %}</dt>
+            <dt>{% translate "Enfrentamientos ganados" %}</dt>
             <dd>{{ percentage_won }} %</dd>
           </div>
           <div class="st-fact">
-            <dt>{% translate "Partidos jugados" %}</dt>
+            <dt>{% translate "Enfrentamientos jugados" %}</dt>
             <dd>{{ total_matches }}</dd>
           </div>
           <div class="st-fact">
@@ -182,10 +182,10 @@
         </section>
 
         <section class="st-card st-card--wide">
-          <h3 class="st-card-title">{% translate "Partidos ganados por año" %}</h3>
+          <h3 class="st-card-title">{% translate "Enfrentamientos ganados por año" %}</h3>
           <p class="st-card-note">{% translate "Evolución de victorias, empates y derrotas del equipo en cada temporada." %}</p>
           <div class="st-chart">
-            <canvas id="myLineChart" role="img" aria-label="{% translate "Partidos ganados por año" %}"></canvas>
+            <canvas id="myLineChart" role="img" aria-label="{% translate "Enfrentamientos ganados por año" %}"></canvas>
           </div>
         </section>
 

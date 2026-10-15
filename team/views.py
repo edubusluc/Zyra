@@ -7,7 +7,7 @@ from django.db import transaction
 from django.utils.translation import gettext as _, ngettext
 from django.urls import reverse
 from django.views.decorators.http import require_GET, require_POST, require_http_methods
-from core.decorators import club_required, club_admin_required
+from core.decorators import club_required, club_admin_required, not_while_syncing
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import Q
 from django.http import JsonResponse
@@ -56,6 +56,7 @@ def list_team(request):
                   {"teams": teams, "search": search, "only_group": only_group})
 
 @club_admin_required
+@not_while_syncing
 @require_http_methods(["GET", "POST"])
 def create_team(request):
     """

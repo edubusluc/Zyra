@@ -250,6 +250,9 @@ class SnpTeamImport(PublicIdModel):
     # Si ha fallado, dónde puede arreglarlo el capitán (SnpScrapeError.kind): "account" en la
     # cuenta SNP, "team" en los datos de su equipo, o vacío.
     error_kind = models.CharField(max_length=10, blank=True, default="")
+    # Avance de la búsqueda (0-100) y paso en curso: los pinta la barra de progreso de toda la web.
+    progress = models.PositiveSmallIntegerField(default=0)
+    stage = models.CharField(max_length=120, blank=True, default="")
 
     class Meta:
         ordering = ["-created_at"]

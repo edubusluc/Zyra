@@ -37,16 +37,33 @@ class OnboardingTests(TestCase):
         self.register()
         response = self.client.get(reverse("home"))
         self.assertContains(response, "Primeros pasos")
-        for url in (reverse("create_team"), reverse("club_members") + "#invitaciones",
-                    reverse("create_player"), reverse("create_match"), reverse("snp_account")):
-            self.assertContains(response, f'href="{url}"')
+        # Un solo botón «Siguiente paso» (el primero pendiente) y la lista completa plegada.
+        self.assertContains(response, "Siguiente paso")
+        self.assertContains(response, f'href="{reverse("snp_account")}"')
+        self.assertContains(response, f'href="{reverse("create_player")}"')  # alternativa «a mano»
+        self.assertEqual([s["key"] for s in response.context["onboarding"]], ["players", "invite", "match"])
 
     def test_steps_are_ticked_with_club_data(self):
         club = self.register()
-        Team.objects.create(club=club, name="Rival", in_group=True)
         Player.objects.create(club=club, name="Eva", last_name="Sanz")
         steps = {s["key"]: s["done"] for s in self.client.get(reverse("home")).context["onboarding"]}
-        self.assertEqual(steps, {"team": True, "invite": False, "player": True, "match": False, "snp": False})
+        self.assertEqual(steps, {"players": True, "invite": False, "match": False})
+
+    def test_connecting_snp_ticks_the_players_step_only_once_the_sync_works(self):
+        from players.models import SnpTeamImport
+        club = self.register()
+        account = SnpAccount(club=club)
+        account.username, account.password = "cap", "secreto"
+        account.save()
+        steps = {s["key"]: s["done"] for s in self.client.get(reverse("home")).context["onboarding"]}
+        self.assertFalse(steps["players"])  # cuenta guardada, pero «Completar equipo» aún no ha salido bien
+        team_import = SnpTeamImport.objects.create(club=club, source=SnpTeamImport.WEB, status=SnpTeamImport.ERROR)
+        steps = {s["key"]: s["done"] for s in self.client.get(reverse("home")).context["onboarding"]}
+        self.assertFalse(steps["players"])
+        team_import.status = SnpTeamImport.DONE
+        team_import.save()
+        steps = {s["key"]: s["done"] for s in self.client.get(reverse("home")).context["onboarding"]}
+        self.assertTrue(steps["players"])
 
     def test_hidden_when_all_steps_are_done(self):
         club = self.register()
@@ -185,7 +202,7 @@ class CaptainPlayerTests(TestCase):
     def test_captain_player_does_not_tick_create_player_step(self):
         self.client.post(reverse("register_club"), {**CLUB, **SIGNUP})
         steps = {s["key"]: s["done"] for s in self.client.get(reverse("home")).context["onboarding"]}
-        self.assertFalse(steps["player"])
+        self.assertFalse(steps["players"])
 
     def google_user(self, first_name="", last_name=""):
         from allauth.socialaccount.models import SocialAccount
@@ -238,7 +255,7 @@ class CaptaincyTransferSnpTests(TestCase):
         self.client.force_login(self.new)
         response = self.client.get(reverse("home"))
         steps = {s["key"]: s["done"] for s in response.context["onboarding"]}
-        self.assertFalse(steps["snp"])
+        self.assertFalse(steps["players"])
         self.assertContains(response, "Primeros pasos")
 
 

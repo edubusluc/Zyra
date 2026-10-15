@@ -390,7 +390,7 @@ main:focus { outline: none; }
 .z-header { transition: transform .35s var(--z-ease); }
 .z-bottom-nav { transition: transform .35s var(--z-ease); }
 .z-nav-hidden .z-header { transform: translateY(-100%); }
-.z-nav-hidden .z-bottom-nav { transform: translate(-50%, calc(100% + 24px + env(safe-area-inset-bottom))); }
+.z-nav-hidden .z-bottom-nav, .z-typing .z-bottom-nav { transform: translate(-50%, calc(100% + 24px + env(safe-area-inset-bottom))); }
 
 @media (max-width: 991.98px) {
     .z-nav, .z-header-actions .z-desktop-only { display: none !important; }
@@ -2700,3 +2700,108 @@ a.z-hub-card:hover, a.z-hub-card:focus-visible { border-color: var(--z-lime); co
   .st-side-list a.is-active { color: var(--z-lime); background: var(--z-surface-2); }
   .st-side-list a.is-active::before { content: ""; position: absolute; left: -19px; top: 6px; bottom: 6px; width: 3px; border-radius: 2px; background: var(--z-lime); }
 }
+
+/* ---- Registro de club por pasos (register-wizard.js) ---- */
+.z-wizard-progress { margin: 0 0 18px; }
+.z-wizard-count { margin: 0 0 10px; font-size: .8rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--z-lime); }
+.z-wizard-progress ol { display: flex; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.z-wizard-progress li { flex: 1 1 0; min-width: 0; display: grid; gap: 6px; font-size: .78rem; color: var(--z-muted); }
+.z-wizard-dot { display: block; height: 4px; border-radius: 4px; background: var(--z-border-strong, var(--z-border)); }
+.z-wizard-progress li.is-done .z-wizard-dot, .z-wizard-progress li.is-active .z-wizard-dot { background: var(--z-lime); }
+.z-wizard-progress li.is-active { color: var(--z-text); font-weight: 700; }
+.z-wizard-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.z-wizard-summary { margin: 0 0 14px; padding: 10px 14px; border: 1px solid var(--z-danger); border-radius: 12px; background: rgba(255, 90, 90, .08); color: var(--z-danger); font-weight: 700; font-size: .9rem; }
+.z-wizard-summary:focus { outline: none; }
+.z-wizard-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.is-wizard .z-wizard-actions { flex-direction: column-reverse; }
+[aria-invalid="true"].form-control, [aria-invalid="true"].form-select, [aria-invalid="true"].z-select-trigger { border-color: var(--z-danger); }
+.z-snp-match-note { margin: 0 0 12px; }
+@media (max-width: 480px) {
+    .z-wizard-title { display: none; }
+}
+.z-role-note { display: flex; gap: 6px; align-items: flex-start; margin-top: 8px; font-size: .82rem; color: var(--z-lime); }
+.z-role-card .z-role-note { margin-bottom: 0; }
+.z-account-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.z-account-actions form { margin: 0; }
+
+/* ---- Portada: avisos (email por confirmar, fallo de SNP) y primeros pasos ---- */
+.z-notice { display: grid; grid-template-columns: auto 1fr; gap: 10px 14px; align-items: start; margin: 0 0 16px; padding: 14px 16px; background: var(--z-surface-2); border: 1px solid var(--z-border); border-radius: 16px; }
+.z-notice > i { margin-top: 3px; font-size: 1.15rem; color: var(--z-lime); }
+.z-notice--warn { border-color: var(--z-danger); }
+.z-notice--warn > i { color: var(--z-danger); }
+.z-notice-text { display: flex; flex-direction: column; min-width: 0; overflow-wrap: anywhere; }
+.z-notice-text span { color: var(--z-muted); font-size: .9rem; }
+.z-notice-actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; }
+.z-notice-actions form { margin: 0; }
+.z-onboarding { margin-top: 0; }
+.z-onboarding-bar { height: 6px; margin: 0 0 14px; border-radius: 6px; background: var(--z-border-strong, var(--z-border)); overflow: hidden; }
+.z-onboarding-bar span { display: block; height: 100%; background: var(--z-lime); border-radius: 6px; }
+.z-onboarding-next { display: grid; gap: 12px; padding: 4px 0 12px; }
+.z-onboarding-next .btn { width: 100%; }
+.z-onboarding-alt { justify-self: center; font-size: .9rem; }
+@media (min-width: 576px) {
+    .z-notice { grid-template-columns: auto 1fr auto; align-items: center; }
+    .z-notice-actions { grid-column: auto; }
+    .z-onboarding-next { grid-template-columns: 1fr auto; align-items: center; }
+    .z-onboarding-next .btn { width: auto; }
+    .z-onboarding-alt { grid-column: 1 / -1; justify-self: start; }
+}
+.z-danger-zone { margin: 56px 0 24px; padding-top: 20px; border-top: 1px solid var(--z-border); }
+.z-danger-zone h2 { font-size: .85rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--z-danger); }
+.z-rival-empty { margin: 8px 0 0; font-size: .9rem; color: var(--z-muted); }
+
+/* El contenido enfocado o al que se salta no queda bajo la cabecera fija ni bajo la barra inferior (WCAG 2.4.11) */
+html { scroll-padding-top: 84px; scroll-padding-bottom: calc(var(--z-nav-h) + 24px); }
+
+/* ---- Estadísticas sin enfrentamientos cerrados (stats_empty.html) ---- */
+.st-zero { display: grid; gap: 14px; max-width: 640px; margin: 24px auto; }
+.st-zero h1 { margin: 0; font-size: 1.5rem; }
+.st-zero .btn { justify-self: start; }
+.st-zero-preview { position: relative; display: grid; gap: 14px; padding: 36px 18px 18px; border: 1px dashed var(--z-border-strong, var(--z-border)); border-radius: 16px; opacity: .75; }
+.st-zero-tag { position: absolute; top: 10px; right: 12px; font-size: .7rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--z-muted); }
+.st-zero-record { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.st-zero-record strong { font-size: 2rem; line-height: 1; color: var(--z-lime); }
+.st-zero-record small { color: var(--z-muted); margin-right: 6px; }
+.st-zero-bars { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.st-zero-bars li { display: grid; gap: 4px; font-size: .85rem; color: var(--z-muted); }
+.st-zero-bars i { display: block; height: 8px; border-radius: 8px; background: var(--z-lime); }
+@media (max-width: 575.98px) { .st-zero .btn { justify-self: stretch; } }
+
+/* ---- Club: accesos rápidos y estado de cada tarjeta ---- */
+.z-quick { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; padding: 0; list-style: none; }
+.z-hub-status { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; font-size: .82rem; font-weight: 800; }
+.z-hub-status.is-todo { color: var(--z-lime); }
+.z-hub-status.is-ok { color: var(--z-muted); }
+
+/* ---- Bienvenida tras aceptar una invitación ---- */
+.z-welcome-list { list-style: none; margin: 18px 0 22px; padding: 0; display: grid; gap: 12px; }
+.z-welcome-list li { display: flex; gap: 14px; align-items: flex-start; padding: 14px 16px; background: var(--z-surface-2); border: 1px solid var(--z-border); border-radius: 14px; }
+.z-welcome-list li > i { margin-top: 3px; width: 1.25rem; text-align: center; color: var(--z-lime); }
+.z-welcome-list li > div { display: flex; flex-direction: column; min-width: 0; overflow-wrap: anywhere; }
+.z-welcome-label { font-size: .75rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--z-muted); }
+.z-club-legend { margin: -4px 0 18px; font-size: .9rem; }
+
+/* Objetivos táctiles de al menos 24 × 24 px (WCAG 2.5.8) */
+.z-onboarding-alt { display: inline-flex; align-items: center; min-height: 24px; padding: 4px 0; }
+a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
+/* Casillas y radios de 24 px con hueco propio: el control flota a la izquierda y el texto no lo pisa */
+.form-check { padding-left: 2.25rem; min-height: 1.5rem; margin-bottom: .5rem; }
+.form-check .form-check-input { float: left; margin-left: -2.25rem; margin-top: 0; min-width: 1.5rem; min-height: 1.5rem; }
+.form-check .form-check-label { display: block; line-height: 1.5rem; }
+.form-check.form-switch { padding-left: 3.75rem; }
+.form-check.form-switch .form-check-input { margin-left: -3.75rem; min-width: 2.75rem; width: 2.75rem; height: 1.5rem; }
+.z-check-grid .form-check, .z-bulk .form-check, .z-team-row-head .form-check, .form-check.m-0 { padding-left: 0; min-height: 0; margin-bottom: 0; }
+.z-check-grid .form-check .form-check-input, .z-bulk .form-check .form-check-input, .z-team-row-head .form-check .form-check-input, .form-check.m-0 .form-check-input { float: none; margin-left: 0; }
+.form-check.m-0 { display: inline-flex; align-items: center; gap: .5rem; }
+.z-home-hero + .z-notice { margin-top: 16px; }
+
+/* Barra de progreso de la sincronización con SNP, visible en toda la web */
+.z-sync { background: var(--z-surface-2); border-bottom: 1px solid var(--z-border); padding: 10px 16px; }
+.z-sync-inner { max-width: 1100px; margin: 0 auto; display: grid; gap: 6px; }
+.z-sync-text { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font-size: .9rem; }
+.z-sync-stage { color: var(--z-muted); min-width: 0; overflow-wrap: anywhere; }
+.z-sync-cancel { margin: 0; }
+.z-sync-pct { margin-left: auto; font-weight: 800; color: var(--z-lime); font-variant-numeric: tabular-nums; }
+.z-sync-track { height: 8px; background: var(--z-border); border-radius: 999px; }
+.z-sync-track .progress-bar { background: var(--z-lime); border-radius: 999px; transition: width .6s ease; }
+.z-sync-note { margin: 0; font-size: .8rem; color: var(--z-muted); }

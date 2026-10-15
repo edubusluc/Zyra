@@ -3,6 +3,21 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 15/10/2026 · Primer uso sin fricción (informe de usabilidad)
+
+- Registro del club **en 3 pasos** (club → cuenta → jugador) con barra de progreso, borrador entre pasos y vista correcta en el móvil; validación al salir de cada campo, resumen «Faltan N campos» y foco en el primer error (`register-wizard.js`, `form-errors.js`, que además enlaza cada error con su campo con `aria-invalid`/`aria-describedby`)
+- Categoría y nacionalidad del equipo vienen como Masculino y España; SNP viene preseleccionado y el aviso de coincidencia exacta queda plegado bajo la opción manual; ayudas con ejemplos en categoría, nacionalidad y división
+- Aviso a quien se registra como jugador de que necesita la invitación de su capitán
+- Inicio: «Primeros pasos» (conectar SNP o añadir jugadores → invitar → primer enfrentamiento) va primero, con un solo botón «Siguiente paso» y sin los bloques vacíos mientras queden pasos; aviso único de email por confirmar con «Reenviar» y «Cambiar email»
+- «Completar equipo» ya no tiene botón en Jugadores: en la portada del capitán queda la tarea «Sincronizar datos» hasta que salga bien (pendiente, en curso con «Ver progreso» y «Cancelar», o error con «Reintentar»; explica la espera o el bloqueo). Cancelar o corregir la cuenta SNP ya no bloquea el reintento, y la pantalla de espera avisa si tarda y deja seguir en Inicio. Casillas, radios e interruptores de Preferencias sin solaparse con su texto. Mientras sincroniza, una barra de progreso por pasos (sesión iniciada, equipo abierto, jugadores leídos…) se ve en toda la web sin bloquear la navegación, se impide crear jugadores, equipos y enfrentamientos hasta que termine, y la búsqueda arranca al momento en vez de esperar al minuto. Pausa de 1 minuto tras un error; si SNP rechazó la cuenta no se relanza hasta cambiar usuario o contraseña; la tarea «Conecta SNP o añade a tus jugadores» no se da por hecha si falla; un fallo al avisar al personal ya no tapa el motivo real; las horas se muestran en hora de Madrid
+- Tras aceptar una invitación, bienvenida de una pantalla con el capitán, el equipo y la próxima convocatoria, y paso directo a elegir el jugador
+- Club: accesos rápidos (invitar, crear rival, nuevo jugador, crear enfrentamiento), estado de cada tarjeta con enlace, leyenda club/equipo/grupo y «Zona de peligro» para abandonar el club
+- Crear enfrentamiento: un solo selector «Tipo de enfrentamiento» (incluye Amistoso) y enlace «Crear rival» cuando no hay rivales; la barra inferior se esconde al escribir en un campo
+- Estadísticas sin enfrentamientos cerrados: una tarjeta «Cierra tu primer enfrentamiento y verás esto» con vista previa de ejemplo, sin pestañas ni filtros
+- Estados vacíos con verbo de acción; textos «partido» → «enfrentamiento» donde se refieren al cruce de equipos
+- Email de «Mi perfil» en línea completa con los botones debajo; invitaciones con una línea y «Más información»
+- Objetivos táctiles de al menos 24 px y `scroll-padding` bajo la cabecera fija
+
 ## 15/10/2026 · Mejoras de usabilidad de la auditoría UX
 
 - Vocabulario: «Enfrentamiento» (cruce de dos equipos) y «Partido 1-5» (cada pareja); «Alinear parejas» sustituye a «Crear partidos»

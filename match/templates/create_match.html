@@ -13,6 +13,15 @@
     <form method="POST" class="z-match-form" data-match-form novalidate data-own-location="{{ form.own_team.location|default:'' }}">
         {% csrf_token %}
 
+        {# Un solo selector (U12): static/js/match-form.js lo sincroniza con «Modo» y «Tipo de partido», que sin JavaScript se ven tal cual. #}
+        <p data-kind-row hidden>
+            <label for="id_kind">{% translate "Tipo de enfrentamiento" %}:</label>
+            <select id="id_kind" class="form-select" data-kind-select>
+                {% for value, label in form.match_type.field.choices %}<option value="{{ value }}">{{ label }}</option>{% endfor %}
+                <option value="amistoso">{% translate "Amistoso" %}</option>
+            </select>
+        </p>
+        <div data-kind-legacy>
         <fieldset class="z-mode">
             <legend class="form-label">{{ form.mode.label }}</legend>
             <div class="z-segmented z-mode-options">
@@ -26,6 +35,7 @@
             {{ form.match_type.label_tag }} {{ form.match_type }}
         </p>
         {% for error in form.match_type.errors %}<div class="alert-message">{{ error }}</div>{% endfor %}
+        </div>
 
         <fieldset class="z-mode" data-rival-source-row{% if form.mode.value != "amistoso" %} hidden{% endif %}>
             <legend class="form-label">{{ form.rival_source.label }}</legend>
@@ -38,6 +48,9 @@
 
         <div class="z-team-cards" data-group-rival{% if form.manual_rival %} hidden{% endif %}>
             {% include "includes/match_team_card.html" with field=form.rival team=form.rival_team %}
+            {% if is_club_admin and not form.rival.field.queryset.exists %}
+            <p class="z-rival-empty">{% translate "Todavía no tienes rivales en tu grupo." %} <a href="{% url 'create_team' %}">{% translate "Crear rival" %}</a></p>
+            {% endif %}
             {% for error in form.local.errors %}<div class="alert-message">{{ error }}</div>{% endfor %}
         </div>
 

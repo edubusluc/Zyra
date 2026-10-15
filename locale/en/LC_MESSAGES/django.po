@@ -11073,3 +11073,360 @@ msgstr[1] "%(n)s teams updated."
 
 #~ msgid "Nuevo equipo"
 #~ msgstr "New team"
+
+msgid "País del circuito en el que juega, por ejemplo España. Decide dónde se buscan tus jugadores en SNP."
+msgstr "Country of the circuit it plays in, for example Spain. It decides where your players are searched for in SNP."
+
+msgid "Nivel del circuito, por ejemplo Future o 500."
+msgstr "Circuit level, for example Future or 500."
+
+msgid "Conecta SNP o añade a tus jugadores"
+msgstr "Connect SNP or add your players"
+
+msgid "Con tu cuenta de SNP traemos a todo el equipo con sus puntos. Si prefieres, añade los jugadores a mano."
+msgstr "With your SNP account we bring in the whole team with their points. If you prefer, add the players by hand."
+
+msgid "Conectar SNP"
+msgstr "Connect SNP"
+
+msgid "Prefiero añadir jugadores a mano"
+msgstr "I prefer to add players by hand"
+
+msgid "Crea tu primer enfrentamiento"
+msgstr "Create your first match"
+
+msgid "Tu club reúne a los miembros que usan Zyra. Tu equipo es el que compite; tu grupo son los equipos rivales de tu liga."
+msgstr "Your club gathers the members who use Zyra. Your team is the one that competes; your group is the rival teams in your league."
+
+msgid "Accesos rápidos"
+msgstr "Quick actions"
+
+msgid "Crear rival"
+msgstr "Create rival"
+
+msgid "Invita a tu primer jugador"
+msgstr "Invite your first player"
+
+msgid "Añade tu primer rival"
+msgstr "Add your first rival"
+
+msgid "Conéctala para tener los puntos SNP al día."
+msgstr "Connect it to keep SNP points up to date."
+
+msgid "Conectada"
+msgstr "Connected"
+
+msgid "Conectar ahora"
+msgstr "Connect now"
+
+msgid "Zona de peligro"
+msgstr "Danger zone"
+
+msgid "Si abandonas el club dejarás de ver sus jugadores, enfrentamientos y estadísticas. Te pediremos confirmarlo."
+msgstr "If you leave the club you will no longer see its players, matches and statistics. We'll ask you to confirm."
+
+msgid "Invita por email o comparte un enlace. Caduca a las 24 horas."
+msgstr "Invite by email or share a link. It expires after 24 hours."
+
+msgid "Más información"
+msgstr "More information"
+
+msgid "Podrá registrarse con usuario, email y contraseña o con Google, o unirse con la cuenta que ya tenga, y entrará como miembro. La invitación por email sirve para una sola persona; el enlace lo pueden usar varias."
+msgstr "They can sign up with username, email and password or with Google, or join with the account they already have, and will enter as a member. An email invitation works for one person only; the link can be used by several."
+
+#, python-format
+msgid "Te hemos enviado un enlace a %(email)s."
+msgstr "We have sent a link to %(email)s."
+
+msgid "Reenviar"
+msgstr "Resend"
+
+msgid "No se pudo traer tu equipo de SNP"
+msgstr "Your team couldn't be brought from SNP"
+
+msgid "No hemos podido traer tu equipo de SNP"
+msgstr "We couldn't bring your team from SNP"
+
+msgid "La búsqueda no ha terminado."
+msgstr "The search did not finish."
+
+msgid "Ha fallado varias veces: hemos avisado al administrador de Zyra para que lo revise."
+msgstr "It has failed several times: we have notified the Zyra administrator to review it."
+
+msgid "La conexión con SNP no está disponible ahora mismo."
+msgstr "The connection to SNP is not available right now."
+
+#, python-format
+msgid "Podrás reintentarlo a partir del %(date)s."
+msgstr "You can try again from %(date)s."
+
+msgid "Reintentar"
+msgstr "Try again"
+
+msgid "Primeros pasos hechos"
+msgstr "Getting started steps done"
+
+msgid "Siguiente paso"
+msgstr "Next step"
+
+msgid "Programa el próximo enfrentamiento para preparar la convocatoria."
+msgstr "Schedule the next match to prepare the call-up."
+
+msgid "Cuando tu capitán programe el próximo enfrentamiento verás aquí si estás convocado, con quién juegas y cómo llegar."
+msgstr "When your captain schedules the next match you will see here whether you are called up, who you play with and how to get there."
+
+msgid "Cierra enfrentamientos para ver aquí quién encadena victorias."
+msgstr "Close matches to see here who is on a winning streak."
+
+msgid "¿Eres capitán?"
+msgstr "Are you a captain?"
+
+#, python-format
+msgid "Esta cuenta no crea ningún club y necesitarás que tu capitán te invite (por email o con un enlace). Si el capitán eres tú, <a href=\"%(club_url)s\">registra tu club</a>."
+msgstr "This account does not create a club and you will need your captain to invite you (by email or with a link). If you are the captain, <a href=\"%(club_url)s\">register your club</a>."
+
+msgid "Necesitas la invitación de tu capitán para entrar en su club."
+msgstr "You need your captain's invitation to join their club."
+
+msgid "Progreso del registro"
+msgstr "Sign-up progress"
+
+msgid "Tu club"
+msgstr "Your club"
+
+msgid "Tu cuenta"
+msgstr "Your account"
+
+msgid "Atrás"
+msgstr "Back"
+
+msgid "Importante: debe coincidir con SNP"
+msgstr "Important: it must match SNP"
+
+msgid "El nombre y los apellidos deben coincidir exactamente con los que tienes registrados en SNP. Si no coinciden, no se te podrán asignar tus puntos SNP."
+msgstr "The first and last names must match exactly those you have registered in SNP. If they do not match, your SNP points cannot be assigned to you."
+
+#, python-format
+msgid "Ya formas parte de %(club)s"
+msgstr "You are now part of %(club)s"
+
+msgid "Tu capitán"
+msgstr "Your captain"
+
+msgid "Tu próxima convocatoria"
+msgstr "Your next call-up"
+
+msgid "Todavía no hay convocatoria."
+msgstr "There is no call-up yet."
+
+msgid "Estás convocado."
+msgstr "You are called up."
+
+msgid "De momento no estás convocado."
+msgstr "You are not called up for now."
+
+msgid "Elige tu jugador para ver si estás convocado."
+msgstr "Choose your player to see whether you are called up."
+
+msgid "Aún no hay ninguna"
+msgstr "There is none yet"
+
+msgid "Cuando tu capitán programe un enfrentamiento verás aquí si estás convocado, con quién juegas y cómo llegar."
+msgstr "When your captain schedules a match you will see here whether you are called up, who you play with and how to get there."
+
+msgid "Ir al inicio"
+msgstr "Go to home"
+
+msgid "Último paso: dinos cuál eres en la plantilla para ver tus convocatorias y estadísticas."
+msgstr "Last step: tell us which one you are in the squad to see your call-ups and statistics."
+
+msgid "Elegir mi jugador"
+msgstr "Choose my player"
+
+msgid "Ahora no, ir al inicio"
+msgstr "Not now, go to home"
+
+msgid "Tipo de enfrentamiento"
+msgstr "Match type"
+
+msgid "Tipo de enfrentamiento competitivo"
+msgstr "Competitive match type"
+
+msgid "Cierra tu primer enfrentamiento y verás esto"
+msgstr "Close your first match and you will see this"
+
+msgid "Cuando cierres el primero, Zyra calcula solo el balance del equipo, las rachas, las mejores parejas y la evolución de cada jugador."
+msgstr "When you close the first one, Zyra calculates the team's balance, streaks, best pairs and each player's progress on its own."
+
+msgid "Cuando tu capitán cierre el primer enfrentamiento, aquí verás el balance del equipo, las rachas, las mejores parejas y tu evolución."
+msgstr "When your captain closes the first match, you will see here the team's balance, streaks, best pairs and your progress."
+
+msgid "Ejemplo"
+msgstr "Example"
+
+msgid "Mejor pareja"
+msgstr "Best pair"
+
+msgid "Ver mis enfrentamientos"
+msgstr "See my matches"
+
+msgid "Todavía no hay enfrentamientos cerrados"
+msgstr "There are no closed matches yet"
+
+msgid "Resumen de enfrentamientos"
+msgstr "Match summary"
+
+msgid "Balance de enfrentamientos"
+msgstr "Match balance"
+
+#, python-format
+msgid "%(pct)s %% de enfrentamientos ganados"
+msgstr "%(pct)s %% of matches won"
+
+msgid "Enfrentamientos ganados"
+msgstr "Matches won"
+
+msgid "Enfrentamientos jugados"
+msgstr "Matches played"
+
+msgid "Enfrentamientos ganados por año"
+msgstr "Matches won per year"
+
+msgid "Enfrentamientos con advertencias"
+msgstr "Matches with warnings"
+
+msgid "Todos los enfrentamientos"
+msgstr "All matches"
+
+msgid "Tipo de enfrentamiento no válido."
+msgstr "Invalid match type."
+
+#, python-format
+msgid "Se ha cerrado la convocatoria de %(club)s para el enfrentamiento contra %(rival)s del %(date)s (%(local)s vs %(visiting)s)."
+msgstr "The call-up of %(club)s for the match against %(rival)s on %(date)s (%(local)s vs %(visiting)s) has been closed."
+
+msgid "Crea la convocatoria para elegir quién juega este enfrentamiento."
+msgstr "Create the call-up to choose who plays this match."
+
+msgid "Tu capitán aún no ha creado la convocatoria de este enfrentamiento."
+msgstr "Your captain has not created the call-up for this match yet."
+
+msgid "Todavía no tienes rivales en tu grupo."
+msgstr "You don't have any rivals in your group yet."
+
+msgid "Crea tu primer enfrentamiento para preparar la convocatoria."
+msgstr "Create your first match to prepare the call-up."
+
+msgid "Cuando tu capitán cree el primer enfrentamiento lo verás aquí."
+msgstr "When your captain creates the first match you will see it here."
+
+msgid "Tu club ya está creado. Revisa tu cuenta de SNP y vuelve a intentarlo desde Inicio con «Reintentar», o crea tu jugador a mano."
+msgstr "Your club is already created. Check your SNP account and try again from Home with «Try again», or create your player by hand."
+
+msgid "Añade a tu primer jugador para empezar a preparar convocatorias."
+msgstr "Add your first player to start preparing call-ups."
+
+msgid "Añade jugadores desde «Nuevo jugador» y márcalos aquí como parte del equipo."
+msgstr "Add players from «New player» and mark them here as part of the team."
+
+msgid "Masculino o Femenino, según la competición del equipo."
+msgstr "Male or Female, according to the team's competition."
+
+msgid "País del circuito en el que juega, por ejemplo España. Decide dónde se buscan sus jugadores en SNP."
+msgstr "Country of the circuit it plays in, for example Spain. It decides where its players are searched for in SNP."
+
+msgid "Los equipos de tu grupo los ven todos los miembros y se pueden elegir al crear un enfrentamiento."
+msgstr "Your group's teams are visible to all members and can be chosen when creating a match."
+
+msgid "Añade a tu primer rival para crear enfrentamientos contra él."
+msgstr "Add your first rival to create matches against them."
+
+msgid "Ver también los de fuera de mi grupo"
+msgstr "Also show those outside my group"
+
+msgid "Añade a tu primer rival desde «Nuevo rival»."
+msgstr "Add your first rival from «New rival»."
+
+msgid "Sincronizar datos"
+msgstr "Sync data"
+
+msgid "Sincronizando tu equipo con SNP"
+msgstr "Syncing your team with SNP"
+
+msgid "Estamos leyendo tus jugadores y sus puntos. Puedes seguir usando Zyra; aquí verás cuando termine."
+msgstr "We are reading your players and their points. You can keep using Zyra; you will see here when it finishes."
+
+msgid "Tu equipo de SNP está listo para confirmar"
+msgstr "Your SNP team is ready to confirm"
+
+msgid "Revisa los jugadores encontrados y confírmalos para añadirlos."
+msgstr "Review the players found and confirm them to add them."
+
+msgid "La búsqueda se ha cancelado o no ha terminado."
+msgstr "The search was cancelled or did not finish."
+
+msgid "Sincroniza tu equipo con SNP"
+msgstr "Sync your team with SNP"
+
+msgid "Trae a tus jugadores y sus puntos de SNP de una vez. Hazlo antes de empezar la temporada."
+msgstr "Bring in your players and their SNP points at once. Do it before the season starts."
+
+msgid "Ver progreso"
+msgstr "View progress"
+
+msgid "Revisar y confirmar"
+msgstr "Review and confirm"
+
+msgid "Seguir en Inicio"
+msgstr "Continue to Home"
+
+msgid "Estamos leyendo tus jugadores y sus puntos SNP. Suele tardar menos de un minuto."
+msgstr "We are reading your players and their SNP points. It usually takes less than a minute."
+
+msgid "Está tardando más de lo normal. No hace falta esperar aquí: seguimos buscando y verás el resultado en Inicio."
+msgstr "It is taking longer than usual. There is no need to wait here: we keep searching and you will see the result on Home."
+
+msgid "Revisa tu cuenta de SNP y vuelve a intentarlo desde Inicio con «Sincronizar datos», o crea tu jugador a mano."
+msgstr "Check your SNP account and try again from Home with “Sync data”, or create your player by hand."
+
+msgid "Es la opción que aparece marcada por defecto; en cada enfrentamiento puedes cambiarla al crearlo."
+msgstr "This is the option selected by default; for each match you can change it when creating it."
+
+msgid "Enfrentamientos que cuenta el informe"
+msgstr "Matches the report counts"
+
+msgid "Solo enfrentamientos competitivos"
+msgstr "Competitive matches only"
+
+msgid "Progreso de la sincronización"
+msgstr "Sync progress"
+
+msgid "Puedes seguir navegando. Mientras dure no se pueden crear jugadores, equipos ni enfrentamientos."
+msgstr "You can keep browsing. While it runs you cannot create players, teams or matches."
+
+msgid "En cola"
+msgstr "Queued"
+
+msgid "Conectando con SNP"
+msgstr "Connecting to SNP"
+
+msgid "Creando jugadores y equipos"
+msgstr "Creating players and teams"
+
+msgid "Equipo sincronizado"
+msgstr "Team synced"
+
+#, python-format
+msgid "Estamos sincronizando tu equipo con SNP (%(progress)s%%). Podrás crear jugadores, equipos y enfrentamientos cuando termine."
+msgstr "We are syncing your team with SNP (%(progress)s%%). You will be able to create players, teams and matches when it finishes."
+
+
+msgid "SNP no aceptó el usuario o la contraseña. Cámbialos en la cuenta SNP antes de volver a intentarlo."
+msgstr "SNP did not accept the username or password. Change them in the SNP account before trying again."
+
+msgid "No has cambiado ningún dato de la cuenta SNP."
+msgstr "You have not changed any SNP account data."
+
+msgid "Cambia el usuario o la contraseña de tu cuenta SNP para poder reintentarlo."
+msgstr "Change the username or password of your SNP account to be able to try again."
+

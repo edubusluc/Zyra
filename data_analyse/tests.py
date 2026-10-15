@@ -366,7 +366,7 @@ class MatchTypeFilterTests(TestCase):
         self.assertEqual(response.context["total_matches"], 4)
         self.assertEqual([o["label"] for o in response.context["match_types"] if o["active"]], ["Competitivos"])
         self.assertEqual([o["label"] for o in response.context["competitive_types"]],
-                         ["Todos los partidos", "Enfrentamientos", "Retos", "Play offs"])
+                         ["Todos los enfrentamientos", "Enfrentamientos", "Retos", "Play offs"])
         self.assertContains(response, 'id="competitive-type"')
 
         # Un tipo concreto sigue dentro de Competitivos, con el selector en ese tipo

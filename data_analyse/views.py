@@ -25,6 +25,21 @@ from . import pairs as pair_stats
 from . import records
 from .sets import best_and_worst_number, by_game_number, own_sets, set_stats
 
+def _zero_state(request, title):
+    """
+    Con el club sin ningún enfrentamiento cerrado no hay nada que filtrar ni comparar: en vez de
+    las pestañas y los filtros vacíos se muestra una sola tarjeta que explica qué se verá y cómo
+    llegar (``stats_empty.html``). None si ya hay enfrentamientos cerrados.
+    """
+    club = request.club
+    if Match.objects.filter(club=club, draft_mode=False).exists():
+        return None
+    return render(request, 'stats_empty.html', {
+        'zero_title': title,
+        'has_open_matches': Match.objects.filter(club=club, draft_mode=True).exists(),
+    })
+
+
 # ---------------------------------------------------------------
 # ESTADÍSTICAS EQUIPO
 # ---------------------------------------------------------------
@@ -116,7 +131,7 @@ def match_type_context(request, match_type):
         {'label': _("Competitivos"), 'url': url(COMPETITIVE), 'active': competitive},
         {'label': _("Amistosos"), 'url': url(Match.AMISTOSO), 'active': match_type == Match.AMISTOSO},
     ]
-    competitive_labels = [(COMPETITIVE, _("Todos los partidos")), (Match.ENFRENTAMIENTO, _("Enfrentamientos")),
+    competitive_labels = [(COMPETITIVE, _("Todos los enfrentamientos")), (Match.ENFRENTAMIENTO, _("Enfrentamientos")),
                           (Match.RETO, _("Retos")), (Match.PLAYOFF, _("Play offs"))]
     labels = dict(competitive_labels, **{COMPETITIVE: _("Competitivos"), Match.AMISTOSO: _("Amistosos")})
     return {
@@ -284,6 +299,9 @@ def team_statistics(request):
     temporada, partidos de 2 y 3 puntos por jugador y top 5 de jugadores y parejas.
     Requiere pertenecer al club y solo GET. Filtra por temporada (``?season=``) y tipo de partido.
     """
+    zero = _zero_state(request, _("Estadísticas del equipo"))
+    if zero:
+        return zero
     seasons = get_total_season(Match.objects.filter(club=request.club))
     team = request.club.own_team
     match_type = selected_match_type(request)
@@ -731,6 +749,10 @@ def statistics_per_player(request):
     temporada, afinidad con sus compañeros, puntos SNP y, con ``?season=``, el resumen, la afinidad
     y el detalle de esa temporada (combinable con ``?match_type=``). Sin jugador muestra solo el selector. Requiere pertenecer al club y solo GET.
     """
+    # Con un jugador elegido se sigue viendo su historial de puntos SNP aunque no haya enfrentamientos cerrados.
+    zero = None if request.GET.get('player') else _zero_state(request, _("Estadísticas de jugadores"))
+    if zero:
+        return zero
     players = Player.objects.filter(club=request.club, in_team=True).order_by('name', 'last_name')
     player_id = request.GET.get('player')
     match_type = selected_match_type(request)
@@ -831,6 +853,10 @@ def statistics_per_pair(request):
     el detalle de esa pareja y sus últimos partidos. Filtra por temporada (``?season=``) y tipo de
     partido. Un jugador de otro club da 404. Requiere pertenecer al club y solo GET.
     """
+    # Con una pareja elegida (?p1=&p2=) se sigue validando que sean del club (404 si no).
+    zero = None if request.GET.get('p1') or request.GET.get('p2') else _zero_state(request, _("Estadísticas por parejas"))
+    if zero:
+        return zero
     club_players = list(Player.objects.filter(club=request.club).order_by('name', 'last_name'))
     by_public_id = {p.public_id: p for p in club_players}
     match_type = selected_match_type(request)

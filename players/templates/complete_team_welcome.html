@@ -10,7 +10,19 @@
         <div data-status-url="{% url 'complete_team_status' team_import.public_id %}" id="welcome-running">
             <div class="z-welcome-spinner"><output class="spinner-border" aria-label="{% translate 'Cargando' %}"></output></div>
             <h1>{% translate "Trayendo tu equipo de SNP" %}</h1>
-            <p class="text-muted">{% translate "Estamos leyendo tus jugadores y sus puntos SNP. Suele tardar menos de un minuto; no cierres esta página." %}</p>
+            <p class="text-muted">{% translate "Estamos leyendo tus jugadores y sus puntos SNP. Suele tardar menos de un minuto." %}</p>
+            <div class="progress z-sync-track mb-2" role="progressbar" aria-label="{% translate 'Progreso de la sincronización' %}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ team_import.progress }}" id="welcome-track">
+                <div class="progress-bar" id="welcome-fill" style="width: {{ team_import.progress }}%"></div>
+            </div>
+            <p class="small text-muted" id="welcome-stage">{{ team_import.stage|default:_("En cola") }} · {{ team_import.progress }}%</p>
+            <p class="text-muted" id="welcome-slow" hidden>{% translate "Está tardando más de lo normal. No hace falta esperar aquí: seguimos buscando y verás el resultado en Inicio." %}</p>
+            <div class="d-flex flex-wrap gap-2 justify-content-center">
+                <a href="{% url 'home' %}" class="btn btn-primary">{% translate "Seguir en Inicio" %}</a>
+                <form method="post" action="{% url 'complete_team_cancel' team_import.public_id %}">
+                    {% csrf_token %}<input type="hidden" name="from" value="home">
+                    <button type="submit" class="btn btn-outline-secondary">{% translate "Cancelar" %}</button>
+                </form>
+            </div>
         </div>
         <script>
             // Pregunta cada pocos segundos; al terminar recarga y la vista lleva al siguiente paso.
@@ -20,18 +32,25 @@
                     fetch(box.dataset.statusUrl, {headers: {'Accept': 'application/json'}})
                         .then(function (r) { return r.json(); })
                         .then(function (data) {
-                            if (data.status === 'running' || data.status === 'ready') setTimeout(poll, 2500);
+                            if (data.status === 'running' || data.status === 'ready') {
+                                document.getElementById('welcome-fill').style.width = data.progress + '%';
+                                document.getElementById('welcome-track').setAttribute('aria-valuenow', data.progress);
+                                document.getElementById('welcome-stage').textContent = (data.stage || '') + ' · ' + data.progress + '%';
+                                setTimeout(poll, 1500);
+                            }
                             else window.location.reload();
                         })
                         .catch(function () { setTimeout(poll, 5000); });
                 }
                 setTimeout(poll, 2000);
+                // Si SNP o la cola tardan, se avisa en vez de dejar el círculo girando sin fin.
+                setTimeout(function () { document.getElementById('welcome-slow').hidden = false; }, 45000);
             })();
         </script>
         {% else %}
         <h1>{% translate "No hemos podido traer tu equipo" %}</h1>
         <p class="text-danger">{{ team_import.message|default:_("La búsqueda se ha cancelado.") }}</p>
-        <p class="text-muted">{% translate "Tu club ya está creado. Revisa tu cuenta de SNP y vuelve a intentarlo desde Jugadores con «Completar equipo», o crea tu jugador a mano." %}</p>
+        <p class="text-muted">{% translate "Tu club ya está creado. Revisa tu cuenta de SNP y vuelve a intentarlo desde Inicio con «Sincronizar datos», o crea tu jugador a mano." %}</p>
         <div class="d-flex flex-wrap gap-2 justify-content-center">
             <a href="{% url 'snp_account' %}?edit=1" class="btn btn-primary">{% translate "Revisar cuenta SNP" %}</a>
             <a href="{% url 'my_player' %}" class="btn btn-outline-secondary">{% translate "Crear mi jugador" %}</a>

@@ -135,7 +135,7 @@ class ReportPreferenceTests(TestCase):
 
     def test_default_is_all_data_and_it_is_saved(self):
         page = self.client.get(reverse("my_profile"))
-        self.assertContains(page, "Solo partidos competitivos")
+        self.assertContains(page, "Solo enfrentamientos competitivos")
         self.assertEqual(page.context["report_scope"], "todos")
         response = self.client.post(reverse("my_profile"), {"report_scope": "competitivos"})
         self.assertRedirects(response, reverse("my_profile"))

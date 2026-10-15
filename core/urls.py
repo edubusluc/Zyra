@@ -15,6 +15,7 @@ urlpatterns = (
     path('no_club/', views.no_club, name='no_club'),
     path('switch_club/', views.switch_club, name='switch_club'),
     path('onboarding/dismiss/', views.dismiss_onboarding, name='dismiss_onboarding'),
+    path('welcome/', views.member_welcome, name='member_welcome'),
     path('profile/', views.my_profile, name='my_profile'),
     path('profile/verify-email/', views.resend_verification, name='resend_verification'),
     path('profile/delete/', views.delete_account_view, name='delete_account'),

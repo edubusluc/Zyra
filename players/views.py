@@ -1,6 +1,7 @@
 """Vistas de jugadores: alta, lista, ficha, plantilla, cuenta SNP, «Completar equipo» y perfil propio."""
 from django.shortcuts import render, redirect, get_object_or_404
-from core.decorators import club_required, club_admin_required
+from core.decorators import club_required, club_admin_required, not_while_syncing
+from core.models import Club
 from .forms import NewOwnPlayerForm, OwnPlayerForm, PlayerEditForm, PlayerForm, SnpAccountForm, with_placeholder
 from django.contrib import messages
 from match.models import Game
@@ -22,6 +23,7 @@ from core import similarity
 
 
 @club_admin_required
+@not_while_syncing
 def create_player(request):
     """
     Alta de un jugador en el equipo propio del club. Solo capitanes (``club_admin_required``).
@@ -227,13 +229,19 @@ def snp_account(request):
         form = SnpAccountForm(request.POST, has_password=account is not None)
         if form.is_valid():
             account = account or SnpAccount(club=request.club)
+            new_password = form.cleaned_data["password"]
+            if account.pk and not account.team_id and username == form.cleaned_data["username"] and (not new_password or _same_password(account, new_password)):
+                messages.info(request, _("No has cambiado ningún dato de la cuenta SNP."))
+                return redirect("snp_account")
             account.username = form.cleaned_data["username"]
-            if form.cleaned_data["password"]:
-                account.password = form.cleaned_data["password"]
+            if new_password:
+                account.password = new_password
             # El equipo ya no se pide: si la cuenta tiene varios, se elige por el nombre del equipo del club.
             account.team_id = ""
             account.updated_by = request.user
             account.save()
+            # Datos corregidos: el capitán vuelve a poder lanzar «Sincronizar datos» aunque hubiera fallado varias veces.
+            Club.objects.filter(pk=request.club.pk).update(snp_import_failures=0)
             messages.success(request, _("Cuenta SNP guardada. Los puntos se actualizarán cada lunes por la noche."))
             return redirect("snp_account")
     else:
@@ -243,6 +251,14 @@ def snp_account(request):
     return render(request, "snp_account.html", {
         "form": form, "account": account, "username": username, "editing": editing,
     })
+
+
+def _same_password(account, password):
+    """True si ``password`` es la contraseña SNP ya guardada (si no se puede leer, cuenta como distinta)."""
+    try:
+        return account.password == password
+    except DecryptionError:
+        return False
 
 
 @club_admin_required
@@ -305,23 +321,33 @@ def complete_team_start(request):
     Lanza en segundo plano la búsqueda de «Completar equipo». Solo capitanes y por POST.
     Hace falta cuenta SNP; no se lanza si ya se completó una vez, está bloqueado por fallos, hay otra en curso o se
     han hecho demasiadas búsquedas seguidas (snp_import.search_limit).
-    Redirige a la lista de jugadores, que va preguntando el estado.
+
+    Desde la portada (``from=home``, botón «Reintentar» tras un fallo en el alta del club) se comporta como en
+    el alta: confirma sola lo encontrado y lleva a la espera de «Trayendo tu equipo». Si no, redirige a la
+    lista de jugadores, que va preguntando el estado.
     """
+    from_home = request.POST.get("from") == "home"
+    back = "home" if from_home else "list_players"
     if not SnpAccount.objects.filter(club=request.club).exists():
         messages.error(request, _("Primero registra la cuenta SNP del capitán."))
         return redirect("snp_account")
     if not snp_service.is_enabled():
         messages.error(request, snp_service.UNAVAILABLE_MESSAGE)
-        return redirect("list_players")
+        return redirect(back)
     if _web_import_closed(request) or snp_import.active_import(request.club):
-        return redirect("list_players")
+        return redirect(back)
+    if snp_import.account_unchanged_after_failure(request.club):
+        messages.error(request, _("SNP no aceptó el usuario o la contraseña. Cámbialos en la cuenta SNP antes de volver a intentarlo."))
+        return redirect("snp_account")
     wait = snp_import.search_limit(request.club)
     if wait:
         messages.error(request, _("Has buscado tu equipo en SNP varias veces seguidas. Para no saturar SNP, "
                                   "podrás volver a intentarlo a partir del %(date)s.")
                        % {"date": f"{timezone.localtime(wait):%d/%m/%Y %H:%M}"})
-        return redirect("list_players")
-    snp_import.start_search(request.club, request.user)
+        return redirect(back)
+    team_import = snp_import.start_search(request.club, request.user, auto_confirm=from_home)
+    if from_home:
+        return redirect("complete_team_welcome", import_id=team_import.public_id)
     return redirect("list_players")
 
 
@@ -329,10 +355,25 @@ def complete_team_start(request):
 def complete_team_status(request, import_id):
     """Estado en JSON de una búsqueda de «Completar equipo» (lo consulta la lista). Solo capitanes."""
     team_import = get_object_or_404(SnpTeamImport, public_id=import_id, club=request.club)
-    data = {"status": team_import.status, "message": team_import.message, "redirect": ""}
+    data = {"status": team_import.status, "message": team_import.message, "redirect": "",
+            "progress": team_import.progress, "stage": team_import.stage}
     if team_import.status == SnpTeamImport.ERROR and team_import.error_kind in (SnpScrapeError.ACCOUNT, SnpScrapeError.TEAM):
         data["redirect"] = reverse("complete_team_failed", args=[team_import.public_id])
     return JsonResponse(data)
+
+
+@club_admin_required
+@require_GET
+def sync_status(request):
+    """
+    Estado en JSON de la sincronización con SNP en curso del club, para la barra de progreso de toda la
+    web (``static/js/sync-progress.js``). ``active`` es False cuando ya no hay ninguna en marcha: la
+    página se recarga para ver el resultado (hecha, con error o cancelada). Solo capitanes.
+    """
+    current = snp_import.active_import(request.club)
+    if current is None or current.status != SnpTeamImport.RUNNING:
+        return JsonResponse({"active": False})
+    return JsonResponse({"active": True, "progress": current.progress, "stage": current.stage or _("En cola")})
 
 
 @club_admin_required
@@ -386,7 +427,7 @@ def complete_team_cancel(request, import_id):
     SnpTeamImport.objects.filter(
         public_id=import_id, club=request.club, source=SnpTeamImport.WEB, status__in=[SnpTeamImport.RUNNING, SnpTeamImport.READY],
     ).update(status=SnpTeamImport.CANCELLED)
-    return redirect("list_players")
+    return redirect("home" if request.POST.get("from") == "home" else "list_players")
 
 
 @club_admin_required

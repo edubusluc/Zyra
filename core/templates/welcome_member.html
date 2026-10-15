@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+{% block page_title %}{% translate "Bienvenida" %} · {% endblock %}
+
+{# Una pantalla tras aceptar una invitación (core.views.member_welcome): capitán, equipo y próxima convocatoria. #}
+{% block content %}
+<div class="z-auth">
+    <div class="z-auth-card z-auth-card--wide z-welcome-member">
+        <img src="{% static 'zyra/logo.svg' %}" alt="" class="z-auth-logo">
+        <h1>{% blocktranslate with club=current_club.name %}Ya formas parte de {{ club }}{% endblocktranslate %}</h1>
+        <ul class="z-welcome-list">
+            <li>
+                <i class="fa-solid fa-user-shield" aria-hidden="true"></i>
+                <div>
+                    <span class="z-welcome-label">{% translate "Tu capitán" %}</span>
+                    <strong>{% for name in captains %}{{ name }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</strong>
+                </div>
+            </li>
+            <li>
+                <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+                <div>
+                    <span class="z-welcome-label">{% translate "Tu equipo" %}</span>
+                    <strong>{% if own_team %}{{ own_team.name }}{% if own_team.location %} · {{ own_team.location }}{% endif %}{% else %}{{ current_club.name }}{% endif %}</strong>
+                </div>
+            </li>
+            <li>
+                <i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>
+                <div>
+                    <span class="z-welcome-label">{% translate "Tu próxima convocatoria" %}</span>
+                    {% if next_match %}
+                    <strong>{{ next_match.local_name }} – {{ next_match.visiting_name }} · {{ next_match.start_date|date:"D j M" }}</strong>
+                    {% if my_status %}
+                    <span class="text-muted small">{% if not my_status.has_call %}{% translate "Todavía no hay convocatoria." %}{% elif my_status.called %}{% translate "Estás convocado." %}{% else %}{% translate "De momento no estás convocado." %}{% endif %}</span>
+                    {% else %}
+                    <span class="text-muted small">{% translate "Elige tu jugador para ver si estás convocado." %}</span>
+                    {% endif %}
+                    {% else %}
+                    <strong>{% translate "Aún no hay ninguna" %}</strong>
+                    <span class="text-muted small">{% translate "Cuando tu capitán programe un enfrentamiento verás aquí si estás convocado, con quién juegas y cómo llegar." %}</span>
+                    {% endif %}
+                </div>
+            </li>
+        </ul>
+        {% if my_player %}
+        <a href="{% url 'home' %}" class="btn btn-primary btn-lg">{% translate "Ir al inicio" %}</a>
+        {% else %}
+        <p class="text-muted small text-center">{% translate "Último paso: dinos cuál eres en la plantilla para ver tus convocatorias y estadísticas." %}</p>
+        <a href="{% url 'my_player' %}" class="btn btn-primary btn-lg">{% translate "Elegir mi jugador" %}</a>
+        <a href="{% url 'home' %}" class="z-auth-foot d-block">{% translate "Ahora no, ir al inicio" %}</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

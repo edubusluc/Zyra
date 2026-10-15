@@ -24,6 +24,7 @@ from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_http_methods, require_POST, require_safe
 
@@ -79,6 +80,11 @@ RESEND_LIMIT, RESEND_WINDOW = 5, 60 * 60
 DELETE_ACCOUNT_LIMIT, DELETE_ACCOUNT_WINDOW = 5, 60 * 60
 
 
+def email_needs_confirmation(user):
+    """True si la cuenta tiene email por confirmar (las de Google no tienen contraseña y nacen verificadas)."""
+    return bool(user.email) and user.has_usable_password() and not email_verification.is_verified(user)
+
+
 @require_safe
 def home(request):
     """Portada del club: logo, próximo partido y jugador/pareja en racha."""
@@ -112,7 +118,13 @@ def home(request):
     hot_player, hot_pair = pair_stats.hot_streaks(pair_stats.club_game_log(club), players)
 
     onboarding = onboarding_for(request.membership)
+    snp_sync = None
+    if request.membership.is_admin:
+        from players import snp_import
+        snp_sync = snp_import.sync_task(club)
     return render(request, 'home.html', {
+        'email_unverified': email_needs_confirmation(request.user),
+        'snp_sync': snp_sync,
         'own_team': club.own_team,
         'season': current_season(),
         'next_match': next_match,
@@ -130,7 +142,34 @@ def home(request):
         # Primeros pasos del capitán (core.onboarding): solo se ve el siguiente; el resto, plegado.
         'onboarding': onboarding,
         'onboarding_done': sum(step["done"] for step in onboarding) if onboarding else 0,
+        'onboarding_percent': round(100 * sum(step["done"] for step in onboarding) / len(onboarding)) if onboarding else 0,
         'onboarding_next': next((step for step in onboarding if not step["done"]), None) if onboarding else None,
+    })
+
+
+@club_required
+@require_safe
+def member_welcome(request):
+    """
+    Bienvenida de una pantalla tras aceptar una invitación: quién es su capitán, a qué equipo se ha
+    unido y cuál es su próxima convocatoria; si su cuenta aún no está enlazada a una ficha de
+    jugador, el botón principal lleva a elegirla («¿Quién eres en el equipo?»).
+    """
+    club = request.club
+    captains = [m.user.get_full_name().strip() or m.user.username
+                for m in club.memberships.filter(role=Membership.ADMIN).select_related("user")]
+    today = datetime.date.today()
+    next_match = (Match.objects.filter(club=club, draft_mode=True, start_date__gte=today)
+                  .select_related("local", "visiting").order_by("start_date", "id").first())
+    my_player = Player.objects.filter(club=club, user=request.user).first()
+    my_status = None
+    if next_match and my_player:
+        games = list(next_match.games.select_related("player_1_local", "player_2_local",
+                                                     "player_1_visiting", "player_2_visiting"))
+        my_status = player_status(my_player, Call.objects.filter(match=next_match).first(), games)
+    return render(request, "welcome_member.html", {
+        "captains": captains, "own_team": club.own_team, "next_match": next_match,
+        "my_player": my_player, "my_status": my_status,
     })
 
 
@@ -544,7 +583,7 @@ def invitation(request, token):
         from_google = request.session.pop(PENDING_INVITE_KEY, None) == token
         if request.method == "POST" or from_google:
             # Tras unirse, elige su jugador en la plantilla o lo crea (players.views.my_player).
-            return redirect("my_player" if _join(request, invitation, request.user) else "home")
+            return redirect("member_welcome" if _join(request, invitation, request.user) else "home")
         return render(request, "invitation.html", {"invitation": invitation, "club": club})
 
     request.session[PENDING_INVITE_KEY] = token
@@ -570,7 +609,7 @@ def invitation(request, token):
             request.session[SESSION_KEY] = club.id
             send_welcome_email(user, club, site_url=_site_url(request))
             messages.success(request, _("¡Bienvenido a %(club)s!") % {"club": club.name})
-            return redirect("my_player")
+            return redirect("member_welcome")
     else:
         form = SignUpForm(initial={"email": invitation.email})
 
@@ -680,7 +719,7 @@ def my_profile(request):
         "monthly_report": UserPreference.monthly_for(user)[0],
         "monthly_scope": UserPreference.monthly_for(user)[1],
         "player": Player.objects.filter(club=request.club, user=user).first() if request.club else None,
-        "email_unverified": bool(user.email) and not google_only and not email_verification.is_verified(user),
+        "email_unverified": email_needs_confirmation(user),
     })
 
 
@@ -695,6 +734,10 @@ def resend_verification(request):
             messages.success(request, _("Te hemos enviado un enlace para confirmar tu email."))
         else:
             messages.error(request, _("No se pudo enviar el correo. Inténtalo de nuevo más tarde."))
+    # El aviso de la portada reenvía desde allí y vuelve a ella; «Mi perfil» es el destino por defecto.
+    target = request.POST.get("next", "")
+    if target and url_has_allowed_host_and_scheme(target, allowed_hosts={request.get_host()}):
+        return redirect(target)
     return redirect("my_profile")
 
 

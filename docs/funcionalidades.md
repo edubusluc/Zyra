@@ -49,10 +49,17 @@ el club activo: lo de otro club da 404. Sin permiso, la página «Sin permiso» 
 
 ## Inicio del club
 
-**Primeros pasos** para el capitán de un club nuevo: añadir un equipo de su grupo, invitar a sus
-jugadores, crear un jugador y crear un partido. Cada paso se marca solo cuando el club ya lo tiene
+**Primeros pasos** para el capitán de un club nuevo: conectar SNP o añadir jugadores, invitar a sus
+jugadores y crear el primer enfrentamiento. Se muestran los primeros en la portada, con un solo botón
+«Siguiente paso» y los bloques vacíos ocultos; cada paso se marca solo cuando el club ya lo tiene
 y la lista desaparece al completarla o al cerrarla ([`core.onboarding`](referencia/core/onboarding.md)).
-Los clubes que ya existían no la ven.
+Los clubes que ya existían no la ven. Si el email no está confirmado, un aviso único ofrece
+«Reenviar» y «Cambiar email»; hasta que «Completar equipo» salga bien, otra tarjeta («Sincronizar datos») lo lanza, lo sigue o ofrece «Reintentar».
+
+El registro de un club va **en 3 pasos** (club, cuenta, jugador) con barra de progreso, validación al
+salir de cada campo, resumen «Faltan N campos» y foco en el primer error; categoría y nacionalidad vienen
+rellenas (Masculino y España) y SNP preseleccionado. Quien acepta una invitación ve una bienvenida de una
+pantalla (capitán, equipo y próxima convocatoria) antes de elegir su jugador.
 
 Próximo partido con cuenta atrás, jugador y pareja en racha de victorias (con enlace a sus
 estadísticas) y aviso al capitán si el club no tiene cuenta SNP
@@ -87,7 +94,7 @@ La página del enfrentamiento muestra las fases Convocatoria · Parejas · Resul
     - **Puntos SNP**: proceso diario que entra en snpgalaxy.com y actualiza los puntos de cada
       jugador, con histórico y gráfico ([`players.snp`](referencia/players/snp.md),
       [`players.scraper`](referencia/players/scraper.md)).
-    - **Completar equipo**: trae de SNP los jugadores que faltan y actualiza los puntos SNP de los
+    - **Completar equipo** (sin botón en Jugadores; en el alta, con «Reintentar» en la portada si falla, o desde el back-office): trae de SNP los jugadores que faltan y actualiza los puntos SNP de los
       que ya están, para revisar y confirmar; los nuevos llegan sin posición y se avisa al capitán de
       que la complete. Una vez al mes y, para no saturar SNP, como mucho tres búsquedas al día con
       cinco minutos entre una y otra; los clubes marcados como «sin límites» en el back-office

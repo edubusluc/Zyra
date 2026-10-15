@@ -23,6 +23,19 @@ def club(request):
     }
 
 
+def sync_bar(request):
+    """
+    La sincronización con SNP en marcha del club (solo para capitanes): la barra de progreso de
+    ``includes/sync_bar.html`` se ve en toda la web mientras dura. Una consulta por página de capitán.
+    """
+    membership = getattr(request, "membership", None)
+    if not (membership and membership.is_admin):
+        return {"sync_running": None}
+    from players.models import SnpTeamImport
+    return {"sync_running": SnpTeamImport.objects.filter(
+        club=request.club, source=SnpTeamImport.WEB, status=SnpTeamImport.RUNNING).first()}
+
+
 # Sección de la navegación a la que pertenece cada app
 NAV_SECTIONS = {
     "players": "players",
@@ -39,7 +52,7 @@ NAV_SECTIONS = {
 CLUB_URL_NAMES = {
     "club_home", "club_members", "create_invitation", "create_invitation_link", "revoke_invitation",
     "snp_account", "snp_account_delete", "complete_team_start", "complete_team_status",
-    "complete_team_confirm", "complete_team_cancel",
+    "complete_team_confirm", "complete_team_cancel", "sync_status",
 }
 
 
