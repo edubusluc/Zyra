@@ -574,12 +574,13 @@ class CompleteTeamTests(TestCase):
         error = SnpScrapeError("SNP no ha aceptado el usuario o la contraseña.", kind=SnpScrapeError.ACCOUNT)
         with mock.patch("players.snp_import.scrape_scores", side_effect=error):
             self.client.post(reverse("complete_team_start"))
+        # Con el plazo de espera cumplido aparece «Reintentar»; si no, solo se explica la espera.
+        SnpTeamImport.objects.update(created_at=timezone.now() - timedelta(hours=25))
         home = self.client.get(reverse("home"))
         self.assertContains(home, "No hemos podido traer tu equipo de SNP")
         self.assertContains(home, 'name="from" value="home"')
         self.assertContains(home, "Revisar cuenta SNP")
         # Reintentar desde la portada se comporta como en el alta: confirma solo y va a la espera.
-        SnpTeamImport.objects.update(created_at=timezone.now() - timedelta(hours=25))
         response = self.client.post(reverse("complete_team_start"), {"from": "home"})
         team_import = SnpTeamImport.objects.latest("created_at")
         self.assertRedirects(response, reverse("complete_team_welcome", args=[team_import.public_id]), fetch_redirect_response=False)

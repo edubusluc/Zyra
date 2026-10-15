@@ -127,7 +127,7 @@ class HomeFirstStepsTests(TestCase):
 
     def test_unconfirmed_email_shows_one_banner_with_resend_and_change(self):
         page = self.client.get(reverse("home"))
-        self.assertContains(page, "Confirma tu email", count=1, html=False)
+        self.assertContains(page, "<strong>Confirma tu email</strong>", count=1, html=False)
         self.assertContains(page, f'action="{reverse("resend_verification")}"')
         self.assertContains(page, f'href="{reverse("my_profile")}?edit=email"')
 
