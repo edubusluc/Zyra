@@ -16,6 +16,7 @@ La búsqueda desde la web no se ejecuta en el proceso web: se deja en cola (``st
 recoge el proceso programado ``process_snp_imports`` (``process_queue``), que las atiende de una
 en una. Así nunca hay más de un Chromium abierto por las búsquedas de los capitanes.
 """
+import asyncio
 import datetime
 import logging
 import threading
@@ -168,6 +169,33 @@ def _create_group_teams(club, teams_to_add, teams_existing):
     return created
 
 
+def _save_progress(pk, percent, text):
+    """
+    Guarda el avance de una búsqueda. El navegador corre con un bucle de eventos en su hilo y ahí Django
+    no deja usar la base de datos: en ese caso se escribe desde un hilo aparte. Un fallo al guardar el
+    avance nunca debe romper la búsqueda.
+    """
+    def write():
+        """Escribe el avance y cierra las conexiones del hilo."""
+        try:
+            SnpTeamImport.objects.filter(pk=pk, status=SnpTeamImport.RUNNING).update(progress=percent, stage=text)
+        except Exception:
+            logger.warning("No se ha podido guardar el avance de la búsqueda %s", pk, exc_info=True)
+        finally:
+            if threading.current_thread() is not threading.main_thread():
+                from django.db import connections
+                connections.close_all()
+
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        write()  # sin bucle de eventos: se escribe aquí mismo
+        return
+    worker = threading.Thread(target=write, name="snp-import-progress")
+    worker.start()
+    worker.join()
+
+
 def search(team_import, scraper=None, **scrape_options):
     """Descarga el equipo de SNP y guarda en ``team_import`` qué se añadiría. Nunca lanza."""
     account = getattr(team_import.club, "snp_account", None)
@@ -180,8 +208,7 @@ def search(team_import, scraper=None, **scrape_options):
             raise SnpScrapeError(_("El club no tiene cuenta SNP."), kind=SnpScrapeError.ACCOUNT)
         def progress(percent, text):
             """Guarda el avance para la barra de progreso (solo mientras sigue en marcha)."""
-            SnpTeamImport.objects.filter(pk=team_import.pk, status=SnpTeamImport.RUNNING).update(
-                progress=percent, stage=text)
+            _save_progress(team_import.pk, percent, text)
         progress(5, _("Conectando con SNP"))
         result = (scraper or scrape_scores)(account.username, account.password, account.team_id or None,
                                             with_group_teams=True, progress=progress,

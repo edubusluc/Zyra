@@ -689,6 +689,24 @@ class CompleteTeamTests(TestCase):
         self.assertEqual(team_import.status, SnpTeamImport.ERROR)
         self.assertIn("no ha aceptado el usuario", team_import.message)
 
+    def test_progress_is_saved_from_inside_an_event_loop(self):
+        """El navegador corre con un bucle de eventos: ahí Django no deja usar la base, así que se guarda desde otro hilo."""
+        import asyncio
+        team_import = SnpTeamImport.objects.create(club=self.club, source=SnpTeamImport.WEB, started_at=timezone.now())
+        targets = []
+
+        async def inside_loop():
+            snp_import._save_progress(team_import.pk, 40, "Sesión iniciada en SNP")
+        with mock.patch("players.snp_import.threading.Thread") as thread:
+            thread.side_effect = lambda target, name: targets.append(target) or mock.Mock()
+            asyncio.run(inside_loop())
+        self.assertEqual(len(targets), 1)  # dentro del bucle no escribe directamente: delega en otro hilo
+        team_import.refresh_from_db()
+        self.assertEqual(team_import.progress, 0)
+        targets[0]()  # fuera del bucle (en el hilo aparte) sí guarda
+        team_import.refresh_from_db()
+        self.assertEqual((team_import.progress, team_import.stage), (40, "Sesión iniciada en SNP"))
+
     def test_fixing_the_account_lifts_the_wait_and_the_block(self):
         error = SnpScrapeError("SNP no ha aceptado el usuario o la contraseña.", kind=SnpScrapeError.ACCOUNT)
         with mock.patch("players.snp_import.scrape_scores", side_effect=error):
