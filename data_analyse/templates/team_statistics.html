@@ -21,6 +21,7 @@
       localGamesLost: {{ local_games_lost|default:0|unlocalize }},
       visitingGamesWon: {{ visiting_games_won|default:0|unlocalize }},
       visitingGamesLost: {{ visiting_games_lost|default:0|unlocalize }},
+      currentSeason: '{{ current_season|escapejs }}',
       matchesWonPerYear: JSON.parse(document.getElementById('matches-won-per-year').textContent) || {},
       column_chart_data: JSON.parse(document.getElementById('column-chart-data').textContent) || []
     };
@@ -41,6 +42,8 @@
     {% include 'includes/season_filter.html' %}
     {% include 'includes/match_type_filter.html' %}
 
+    <div class="st-layout">
+    <div class="st-main">
     {% if not total_matches %}
       <div class="st-empty">
         <strong>{% translate "Todavía no hay partidos cerrados" %}</strong>
@@ -48,7 +51,16 @@
       </div>
     {% else %}
 
-      <section class="st-board" aria-label="{% translate 'Resumen de partidos' %}">
+      <nav class="st-index" aria-label="{% translate 'Secciones de la página' %}">
+        <a href="#sec-resumen">{% translate "Resumen" %}</a>
+        <a href="#sec-top">{% translate "Top 5" %}</a>
+        <a href="#sec-numbers">{% translate "Partidos y sets" %}</a>
+        <a href="#sec-records">{% translate "Récords" %}</a>
+        <a href="#sec-charts">{% translate "Gráficos" %}</a>
+        <a href="#sec-snp">{% translate "Puntos SNP" %}</a>
+      </nav>
+
+      <section id="sec-resumen" class="st-board" aria-label="{% translate 'Resumen de partidos' %}">
         <div>
           <p class="st-board-label">{% translate "Balance de partidos" %}</p>
           <div class="st-record">
@@ -93,7 +105,7 @@
       </section>
 
       {% if tiebreaks.total %}
-      <section aria-labelledby="tiebreak-title" class="st-section mt-4">
+      <section id="sec-tiebreak" aria-labelledby="tiebreak-title" class="st-section mt-4">
         <h2 class="st-section-title" id="tiebreak-title">{% translate "Eliminatorias 6-6" %}</h2>
         <p class="st-card-note mt-0 mb-3">{% translate "Reto y Play Off que quedaron 6-6: no hay empate y decide el ganador del partido 3." %}</p>
         <div class="st-split">
@@ -114,7 +126,7 @@
       </section>
       {% endif %}
 
-      <section aria-labelledby="top-title" class="st-section mt-4">
+      <section id="sec-top" aria-labelledby="top-title" class="st-section mt-4">
         <h2 class="st-section-title" id="top-title">{% translate "Top 5" %}{% if selected_season %} · {{ selected_season }}{% endif %}</h2>
         <p class="st-card-note mt-0 mb-3">{% translate "Solo jugadores que siguen en el equipo." %}</p>
         <div class="st-top-grid">
@@ -129,7 +141,7 @@
         </div>
       </section>
 
-      <section aria-labelledby="numbers-title" class="st-section mt-4">
+      <section id="sec-numbers" aria-labelledby="numbers-title" class="st-section mt-4">
         <h2 class="st-section-title" id="numbers-title">{% translate "Partidos y sets" %}</h2>
         <div class="st-row">
           {% translate "Por número de partido" as t_title %}{% translate "% de victorias en cada partido del enfrentamiento. Las parejas se ordenan por puntos SNP: el partido 1 lo juega la pareja que más suma." as t_note %}
@@ -139,26 +151,14 @@
         </div>
       </section>
 
-      <section aria-labelledby="records-title" class="st-section">
+      <section id="sec-records" aria-labelledby="records-title" class="st-section">
         <h2 class="st-section-title" id="records-title">{% translate "Récords del equipo" %}{% if selected_season %} · {{ selected_season }}{% endif %}</h2>
         {% include 'includes/team_records.html' %}
       </section>
 
-      <section aria-labelledby="charts-title" class="st-section">
+      <section id="sec-charts" aria-labelledby="charts-title" class="st-section">
       <h2 class="st-section-title mt-4" id="charts-title">{% translate "Gráficos" %}</h2>
-      <div class="st-grid">
-        <section class="st-card">
-          <h3 class="st-card-title">{% translate "Partidos ganados, empatados y perdidos" %}</h3>
-          <div class="st-chart">
-            <canvas id="myPieChart" role="img" aria-label="{% translate "Partidos ganados, empatados y perdidos" %}"></canvas>
-          </div>
-          <div class="st-tally">
-            <span class="st-tally-item st-tally-item--win"><b>{{ percentage_won }} %</b> {% translate "ganados" %}</span>
-            <span class="st-tally-item st-tally-item--draw"><b>{{ percentage_drawn }} %</b> {% translate "empatados" %}</span>
-            <span class="st-tally-item st-tally-item--loss"><b>{{ percentage_lost }} %</b> {% translate "perdidos" %}</span>
-          </div>
-        </section>
-
+      <div class="st-grid st-grid--2">
         <section class="st-card">
           <h3 class="st-card-title">{% translate "Juegos como local" %}</h3>
           <div class="st-chart">
@@ -213,11 +213,27 @@
     {% endif %}
 
     {% if team %}
-      <section aria-labelledby="snp-title" class="st-section">
+      <section id="sec-snp" aria-labelledby="snp-title" class="st-section">
         <h2 class="st-section-title" id="snp-title">{% translate "Puntos SNP" %}</h2>
         {% include 'includes/snp_ranking.html' %}
       </section>
     {% endif %}
+    </div>
+    {% if total_matches %}
+    {# Panel lateral (escritorio): salta de una sección a otra sin recorrer la página; la activa se marca al hacer scroll (team_statistics.js). #}
+    <aside class="st-side" aria-label="{% translate 'Secciones de la página' %}">
+      <p class="st-side-title">{% translate "En esta página" %}</p>
+      <ul class="st-side-list">
+        <li><a href="#sec-resumen">{% translate "Resumen" %}</a></li>
+        <li><a href="#sec-top">{% translate "Top 5" %}</a></li>
+        <li><a href="#sec-numbers">{% translate "Partidos y sets" %}</a></li>
+        <li><a href="#sec-records">{% translate "Récords" %}</a></li>
+        <li><a href="#sec-charts">{% translate "Gráficos" %}</a></li>
+        {% if team %}<li><a href="#sec-snp">{% translate "Puntos SNP" %}</a></li>{% endif %}
+      </ul>
+    </aside>
+    {% endif %}
+    </div>
   </div>
 
   {{ snp_chart|json_script:"snp-team-data" }}

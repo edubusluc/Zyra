@@ -1,16 +1,16 @@
 {% extends 'base.html' %}
 {% load static i18n %}
-{% block page_title %}{% translate "Partidos" %} · {% endblock %}
+{% block page_title %}{% translate "Enfrentamientos" %} · {% endblock %}
 
 {% block content %}
 <div class="z-page-head">
     <div>
         <span class="z-eyebrow">{{ current_club.name }}</span>
-        <h1>{% translate "Partidos" %}</h1>
+        <h1>{% translate "Enfrentamientos" %}</h1>
     </div>
     <div class="z-actions">
         {% if is_club_admin %}
-        <a href="{% url 'create_match' %}" class="btn btn-primary text-nowrap"><i class="fa-solid fa-plus me-1" aria-hidden="true"></i> {% translate "Nuevo partido" %}</a>
+        <a href="{% url 'create_match' %}" class="btn btn-primary text-nowrap"><i class="fa-solid fa-plus me-1" aria-hidden="true"></i> {% translate "Nuevo enfrentamiento" %}</a>
         {% endif %}
     </div>
 </div>
@@ -33,7 +33,7 @@
     {% endif %}
     <noscript><button type="submit" class="btn btn-secondary btn-sm">{% translate "Buscar" %}</button></noscript>
     {% if filtering %}
-    <span class="z-match-filters-count">{% blocktranslate trimmed count n=matches.paginator.count %}{{ n }} partido{% plural %}{{ n }} partidos{% endblocktranslate %}</span>
+    <span class="z-match-filters-count">{% blocktranslate trimmed count n=matches.paginator.count %}{{ n }} enfrentamiento{% plural %}{{ n }} enfrentamientos{% endblocktranslate %}</span>
     <a href="{{ request.path }}{% if request.GET.season %}?season={{ selected_season|urlencode }}{% endif %}" class="btn btn-outline-secondary btn-sm">{% translate "Limpiar" %}</a>
     {% endif %}
 </form>
@@ -84,9 +84,9 @@ tarjeta es pulsable).{% endcomment %}
             {% if m.tiebreak %}<span class="z-fixture-meta z-fixture-tiebreak"><i class="fa-solid fa-scale-balanced" aria-hidden="true"></i>{% if m.outcome == 'V' %}{% if m.tiebreak_pair %}{% blocktranslate trimmed with pair=m.tiebreak_pair %}6-6: la pareja 3 ganó su partido y desempató ({{ pair }}){% endblocktranslate %}{% else %}{% translate "6-6: la pareja 3 ganó su partido y desempató" %}{% endif %}{% else %}{% translate "6-6: la pareja 3 perdió su partido y desempató el rival" %}{% endif %}</span>{% endif %}
             {% if m.outcome is None %}<span class="z-fixture-meta"><i class="fa-solid fa-user-check" aria-hidden="true"></i>{% if m.called %}{% blocktranslate trimmed count n=m.called %}{{ n }} convocado{% plural %}{{ n }} convocados{% endblocktranslate %}{% else %}{% translate "Sin convocatoria" %}{% endif %}</span>{% endif %}
             <span class="z-fixture-actions">
-                <a href="{% url 'call_for_match' m.public_id %}" class="z-fixture-open stretched-link" aria-label="{% blocktranslate with local=m.local_name visiting=m.visiting_name %}Ver {{ local }} contra {{ visiting }}{% endblocktranslate %}">{% translate "Ver partido" %}<i class="fa-solid fa-chevron-right" aria-hidden="true"></i></a>
+                <a href="{% url 'call_for_match' m.public_id %}" class="z-fixture-open stretched-link" aria-label="{% blocktranslate with local=m.local_name visiting=m.visiting_name %}Ver {{ local }} contra {{ visiting }}{% endblocktranslate %}">{% translate "Ver enfrentamiento" %}<i class="fa-solid fa-chevron-right" aria-hidden="true"></i></a>
                 {% if m.draft_mode and is_club_admin %}
-                <a href="{% url 'delete_match' m.public_id %}" class="z-edit z-edit--danger z-fixture-delete" aria-label="{% translate 'Eliminar partido' %}" title="{% translate 'Eliminar partido' %}"><i class="fa-solid fa-trash" aria-hidden="true"></i></a>
+                <a href="{% url 'delete_match' m.public_id %}" class="z-edit z-edit--danger z-fixture-delete" aria-label="{% translate 'Eliminar enfrentamiento' %}" title="{% translate 'Eliminar enfrentamiento' %}"><i class="fa-solid fa-trash" aria-hidden="true"></i></a>
                 {% endif %}
             </span>
         </div>
@@ -96,8 +96,8 @@ tarjeta es pulsable).{% endcomment %}
 {% else %}
 <div class="z-empty">
     <i class="fa-solid fa-table-tennis-paddle-ball" aria-hidden="true"></i>
-    {% if filtering %}{% translate "Ningún partido coincide con la búsqueda." %}{% elif selected_season != all_seasons %}{% blocktranslate with season=selected_season %}No hay partidos en la temporada {{ season }}.{% endblocktranslate %}{% else %}{% translate "No hay partidos." %}{% endif %}
-    {% if is_club_admin %}<div class="mt-3"><a class="btn btn-primary btn-sm" href="{% url 'create_match' %}">{% translate "Crear partido" %}</a></div>{% endif %}
+    {% if filtering %}{% translate "Ningún enfrentamiento coincide con la búsqueda." %}{% elif selected_season != all_seasons %}{% blocktranslate with season=selected_season %}No hay enfrentamientos en la temporada {{ season }}.{% endblocktranslate %}{% else %}{% translate "No hay enfrentamientos." %}{% endif %}
+    {% if is_club_admin %}<div class="mt-3"><a class="btn btn-primary btn-sm" href="{% url 'create_match' %}">{% translate "Crear enfrentamiento" %}</a></div>{% endif %}
 </div>
 {% endif %}
 

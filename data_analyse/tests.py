@@ -76,6 +76,17 @@ class PairStatisticsTests(TestCase):
         everyone = list(Player.objects.filter(club=self.club))
         self.assertIsNone(pair_stats.hot_streaks(pair_stats.club_game_log(self.club), everyone)[1])
 
+    def test_hot_streak_tie_rotates_daily(self):
+        """Con empate a racha se muestra uno distinto cada día, siempre en el mismo orden."""
+        import datetime
+        history = {pid: {'results': [True, True, True], 'last': pid} for pid in (3, 1, 2)}
+        days = [datetime.date(2026, 10, 15) + datetime.timedelta(days=i) for i in range(3)]
+        shown = [pair_stats._hottest(history, d)[0] for d in days]
+        self.assertEqual(sorted(shown), [1, 2, 3])
+        self.assertEqual(pair_stats._hottest(history, days[0]), pair_stats._hottest(history, days[0]))
+        history[4] = {'results': [True] * 4, 'last': 0}
+        self.assertEqual(pair_stats._hottest(history, days[1]), (4, 4))
+
     def test_top_tables(self):
         log = pair_stats.club_game_log(self.club)
         squad = list(Player.objects.filter(club=self.club, in_team=True))
@@ -109,11 +120,11 @@ class PairStatisticsTests(TestCase):
         self.assertIn("error", same.context)
 
     def test_best_and_worst_pairs(self):
-        # A+B 3/4 y C+D 1/2; A+C solo 1 partido, no llega al mínimo
+        # A+B 3/4 y C+D 1/2; A+C solo 1 partido; «por mejorar» exige 4 partidos juntos
         response = self.client.get(reverse("pair_statistics"))
         key = lambda rows: [(r["p1"].name, r["p2"].name, r["played"], r["pct"]) for r in rows]
         self.assertEqual(key(response.context["best_pairs"]), [("A", "B", 4, 75.0)])
-        self.assertEqual(key(response.context["worst_pairs"]), [("C", "D", 2, 50.0)])
+        self.assertEqual(key(response.context["worst_pairs"]), [])
 
     def test_ranking_links_open_the_pair(self):
         """Los enlaces de mejores/peores parejas llevan identificadores públicos (antes daban 404)."""
@@ -175,11 +186,10 @@ class PairStatisticsTests(TestCase):
         self.assertContains(response, '<input type="hidden" name="season" value="2024-2025">')
         links = {o["label"]: o["url"] for o in response.context["match_types"]}
         self.assertIn("season=2024-2025", links["Amistosos"])
-        # Sin temporada o con una desconocida: todas
-        for params in ({}, {"season": "1999-2000"}):
-            response = self.client.get(url, {"p1": self.a.public_id, "p2": self.b.public_id, **params})
-            self.assertIsNone(response.context["selected_season"])
-            self.assertEqual(response.context["s"]["played"], 4)
+        # «Todas» explícito: sin filtro de temporada
+        response = self.client.get(url, {"p1": self.a.public_id, "p2": self.b.public_id, "season": "all"})
+        self.assertIsNone(response.context["selected_season"])
+        self.assertEqual(response.context["s"]["played"], 4)
 
     def test_pair_rankings_page_accepts_season(self):
         response = self.client.get(reverse("pair_statistics"), {"season": "2025-2026"})
@@ -253,7 +263,7 @@ class PairStatisticsTests(TestCase):
     def test_player_season_games_empty_and_only_selected_season(self):
         response = self.client.get(reverse("player_statistics"), {"player": self.d.public_id, "season": "2025-2026"})
         self.assertEqual([g["n_game"] for g in response.context["d"]["games"]], [2])
-        self.assertIsNone(self.client.get(reverse("player_statistics"), {"player": self.d.public_id}).context["d"])
+        self.assertIsNone(self.client.get(reverse("player_statistics"), {"player": self.d.public_id, "season": "all"}).context["d"])
 
         e = Player.objects.create(club=self.club, name="E", last_name="Eson", joined_season="2020-2021")
         response = self.client.get(reverse("player_statistics"), {"player": e.public_id, "season": "2025-2026"})
@@ -416,7 +426,7 @@ class SeasonFilterTests(TestCase):
         response = self.client.get(url, {"player": self.a.public_id, "season": "2021-2022", "match_type": Match.AMISTOSO})
         self.assertEqual(response.context["s"]["played"], 1)
         self.assertEqual(response.context["season_all"]["url"],
-                         f"{url}?player={self.a.public_id}&match_type=amistoso")
+                         f"{url}?player={self.a.public_id}&season=all&match_type=amistoso")
         self.assertIn("match_type=amistoso", response.context["season_chips"][0]["url"])
         self.assertEqual(response.context["season_keep"],
                          [("player", self.a.public_id), ("match_type", Match.AMISTOSO)])
@@ -433,7 +443,7 @@ class SeasonFilterTests(TestCase):
         self.assertEqual(response.context["selected_season"], "2025-2026")
         # La evolución por temporadas sigue mostrando todas
         self.assertEqual(len(response.context["seasons_asc"]), 4)
-        self.assertEqual(response.context["season_all"]["url"], f"{url}?player={self.a.public_id}&match_type={pair_stats.COMPETITIVE}")
+        self.assertEqual(response.context["season_all"]["url"], f"{url}?player={self.a.public_id}&season=all&match_type={pair_stats.COMPETITIVE}")
 
     def test_degree_of_affinity_by_season(self):
         from data_analyse.views import degree_of_affinity

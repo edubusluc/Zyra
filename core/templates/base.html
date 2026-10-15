@@ -58,11 +58,11 @@
         {% if current_club %}
         <nav aria-label="{% translate 'Principal' %}">
             <ul class="z-nav">
-                <li><a href="{% url 'home' %}" class="z-nav-link {% if nav_section == 'home' %}is-active{% endif %}"><i class="fa-solid fa-house" aria-hidden="true"></i> {% translate "Inicio" %}</a></li>
-                <li><a href="{% url 'list_match' %}" class="z-nav-link {% if nav_section == 'matches' %}is-active{% endif %}"><i class="fa-solid fa-table-tennis-paddle-ball" aria-hidden="true"></i> {% translate "Partidos" %}</a></li>
-                <li><a href="{% url 'list_players' %}" class="z-nav-link {% if nav_section == 'players' %}is-active{% endif %}"><i class="fa-solid fa-user" aria-hidden="true"></i> {% translate "Jugadores" %}</a></li>
-                <li><a href="{% url 'list_teams' %}" class="z-nav-link {% if nav_section == 'teams' %}is-active{% endif %}"><i class="fa-solid fa-users" aria-hidden="true"></i> {% translate "Equipos" %}</a></li>
-                <li><a href="{% url 'team_statistics' %}" class="z-nav-link {% if nav_section == 'stats' %}is-active{% endif %}"><i class="fa-solid fa-chart-simple" aria-hidden="true"></i> {% translate "Estadísticas" %}</a></li>
+                <li><a href="{% url 'home' %}" class="z-nav-link {% if nav_section == 'home' %}is-active{% endif %}"{% if nav_section == 'home' %} aria-current="page"{% endif %}><i class="fa-solid fa-house" aria-hidden="true"></i> {% translate "Inicio" %}</a></li>
+                <li><a href="{% url 'list_match' %}" class="z-nav-link {% if nav_section == 'matches' %}is-active{% endif %}"{% if nav_section == 'matches' %} aria-current="page"{% endif %}><i class="fa-solid fa-table-tennis-paddle-ball" aria-hidden="true"></i> {% translate "Enfrentamientos" %}</a></li>
+                <li><a href="{% url 'list_players' %}" class="z-nav-link {% if nav_section == 'players' %}is-active{% endif %}"{% if nav_section == 'players' %} aria-current="page"{% endif %}><i class="fa-solid fa-user" aria-hidden="true"></i> {% translate "Plantilla" context "equipo" %}</a></li>
+                <li><a href="{% url 'team_statistics' %}" class="z-nav-link {% if nav_section == 'stats' %}is-active{% endif %}"{% if nav_section == 'stats' %} aria-current="page"{% endif %}><i class="fa-solid fa-chart-simple" aria-hidden="true"></i> {% translate "Estadísticas" %}</a></li>
+                <li><a href="{% url 'club_home' %}" class="z-nav-link {% if nav_section == 'club' %}is-active{% endif %}"{% if nav_section == 'club' %} aria-current="page"{% endif %}><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> {% translate "Club" %}</a></li>
             </ul>
         </nav>
         {% endif %}
@@ -116,13 +116,6 @@
                     <li><hr class="dropdown-divider"></li>
                     {% endif %}
                     <li><a class="dropdown-item" href="{% url 'my_profile' %}"><i class="fa-solid fa-id-badge" aria-hidden="true"></i> {% translate "Mi perfil" %}</a></li>
-                    {% if is_club_admin %}
-                    <li><a class="dropdown-item" href="{% url 'club_members' %}"><i class="fa-solid fa-user-gear" aria-hidden="true"></i> {% translate "Miembros del club" %}</a></li>
-                    <li><a class="dropdown-item" href="{% url 'snp_account' %}"><i class="fa-solid fa-trophy" aria-hidden="true"></i> {% translate "Cuenta SNP" %}</a></li>
-                    {% endif %}
-                    {% if current_club %}
-                    <li><button type="button" class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#leaveClubModal"><i class="fa-solid fa-door-open" aria-hidden="true"></i> {% translate "Abandonar el club" %}</button></li>
-                    {% endif %}
                     {% if user.is_staff %}
                     <li><a class="dropdown-item" href="{% url 'backoffice:dashboard' %}"><i class="fa-solid fa-gauge-high" aria-hidden="true"></i> Back-office</a></li>
                     {% endif %}
@@ -165,11 +158,11 @@
 {% if current_club %}
 <nav class="z-bottom-nav" aria-label="{% translate 'Navegación móvil' %}">
     <ul>
-        <li><a href="{% url 'home' %}" class="{% if nav_section == 'home' %}is-active{% endif %}" {% if nav_section == 'home' %}aria-current="page"{% endif %}><i class="fa-solid fa-house" aria-hidden="true"></i><span class="visually-hidden">{% translate "Inicio" %}</span></a></li>
-        <li><a href="{% url 'team_statistics' %}" class="{% if nav_section == 'stats' %}is-active{% endif %}" {% if nav_section == 'stats' %}aria-current="page"{% endif %}><i class="fa-solid fa-chart-simple" aria-hidden="true"></i><span class="visually-hidden">{% translate "Estadísticas" %}</span></a></li>
-        <li><a href="{% url 'list_match' %}" class="{% if nav_section == 'matches' %}is-active{% endif %}" {% if nav_section == 'matches' %}aria-current="page"{% endif %}><i class="fa-solid fa-table-tennis-paddle-ball" aria-hidden="true"></i><span class="visually-hidden">{% translate "Partidos" %}</span></a></li>
-        <li><a href="{% url 'list_teams' %}" class="{% if nav_section == 'teams' %}is-active{% endif %}" {% if nav_section == 'teams' %}aria-current="page"{% endif %}><i class="fa-solid fa-users" aria-hidden="true"></i><span class="visually-hidden">{% translate "Equipos" %}</span></a></li>
-        <li><a href="{% url 'list_players' %}" class="{% if nav_section == 'players' %}is-active{% endif %}" {% if nav_section == 'players' %}aria-current="page"{% endif %}><i class="fa-solid fa-user" aria-hidden="true"></i><span class="visually-hidden">{% translate "Jugadores" %}</span></a></li>
+        <li><a href="{% url 'home' %}" class="{% if nav_section == 'home' %}is-active{% endif %}" {% if nav_section == 'home' %}aria-current="page"{% endif %}><i class="fa-solid fa-house" aria-hidden="true"></i><span class="z-bn-label">{% translate "Inicio" %}</span></a></li>
+        <li><a href="{% url 'list_match' %}" class="{% if nav_section == 'matches' %}is-active{% endif %}" {% if nav_section == 'matches' %}aria-current="page"{% endif %}><i class="fa-solid fa-table-tennis-paddle-ball" aria-hidden="true"></i><span class="z-bn-label">{% translate "Partidos" %}</span></a></li>
+        <li><a href="{% url 'list_players' %}" class="{% if nav_section == 'players' %}is-active{% endif %}" {% if nav_section == 'players' %}aria-current="page"{% endif %}><i class="fa-solid fa-user" aria-hidden="true"></i><span class="z-bn-label">{% translate "Plantilla" context "equipo" %}</span></a></li>
+        <li><a href="{% url 'team_statistics' %}" class="{% if nav_section == 'stats' %}is-active{% endif %}" {% if nav_section == 'stats' %}aria-current="page"{% endif %}><i class="fa-solid fa-chart-simple" aria-hidden="true"></i><span class="z-bn-label">{% translate "Estadísticas" %}</span></a></li>
+        <li><a href="{% url 'club_home' %}" class="{% if nav_section == 'club' %}is-active{% endif %}" {% if nav_section == 'club' %}aria-current="page"{% endif %}><i class="fa-solid fa-shield-halved" aria-hidden="true"></i><span class="z-bn-label">{% translate "Club" %}</span></a></li>
     </ul>
 </nav>
 {% endif %}

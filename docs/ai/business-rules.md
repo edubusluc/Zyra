@@ -85,7 +85,7 @@ Orden obligatorio del ciclo (`match/views.py`) [V], cubierto por `match/tests_fl
 1. **Partido** (`MatchForm`): el equipo propio juega como local o visitante; local ≠ visitante.
    Amistoso: `match_type="amistoso"`; puede tener rival escrito a mano (`rival_name`, sin crear
    `Team`, ese lado `NULL`) que no puede llamarse como el equipo propio.
-2. **Convocatoria**: una por partido; si ya existe o el acta está cerrada → `existing_call`.
+2. **Convocatoria** (mínimo 10 jugadores al crearla y al editarla, `MIN_CALL_PLAYERS` en `match/phase.py`): una por partido; si ya existe o el acta está cerrada → `existing_call`.
    Se edita mientras el acta siga abierta (`edit_call` mira `match.draft_mode`); cada cambio se anota en `CallLog`.
 3. **Cerrar convocatoria** (`close_call`, POST): ≥10 jugadores y abierta. Siempre se cierra aunque
    falle el envío del informe.
@@ -97,7 +97,9 @@ Orden obligatorio del ciclo (`match/views.py`) [V], cubierto por `match/tests_fl
    2 de diferencia). Al guardar fija `Game.winner`.
 6. **Cerrar acta** (`close_match`, POST): acta abierta y 5 partidos con resultado. Suma puntos,
    fija `Match.result` (valores canónicos en `match/outcomes.py`; `EMPATE` posible, p. ej. 6/6, salvo en Reto y Play Off: ahí el 6-6 lo decide el ganador del partido 3, `determine_match_result`) y `result_points`,
-   y cierra `Game.draft_mode`. Siempre son 5 partidos: no se contempla un acta con menos. Todo en una transacción.
+   y cierra `Game.draft_mode`. Con fecha futura exige `confirm_future`. Los resultados se pueden
+   meter de una vez en `enter_results` (guardado parcial; «Guardar y cerrar acta»). La fase y la siguiente acción salen siempre de
+   `match/phase.py` (`phase_of`/`phases_for`), que usan el inicio, el listado y la página del enfrentamiento. Siempre son 5 partidos: no se contempla un acta con menos. Todo en una transacción.
 7. **Reabrir acta** (`reopen_match`, POST, capitán): vuelve a borrador, resultado `NONE`, anota `reopened_at/by`.
 
 Con el acta cerrada [V]: no se borra el partido (`delete_match`) ni su convocatoria (`delete_call`),
@@ -184,3 +186,8 @@ ni se editan parejas (`edit_game_match`).
 - [V] Pie «Hecho con Zyra · dominio» en el PDF de convocatoria, el informe mensual y los correos (`match.report_pdf.draw_made_with`,
   `core/emails.build_email`); sin `SITE_URL` solo el texto, sin enlace. Tests: `core/tests_seo.py`.
 - [V] Cada página nueva debe añadirse a `core/tests_accessibility.py` (ver `docs/mantener-documentacion.md`).
+
+## Temporada por defecto
+
+`core/season_choice.choose_season`: `?season=` válida (o `all`) > última elección de la sesión > temporada actual > «Todas».
+Lo usan el listado de enfrentamientos, las estadísticas (equipo, jugador, pareja) y las advertencias.

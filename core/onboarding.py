@@ -2,7 +2,7 @@
 Lista de «Primeros pasos» que ve el capitán en la portada de un club recién registrado.
 
 Cada paso lleva a una parte de la aplicación y se marca solo cuando el club ya tiene
-lo que pide (un equipo de su grupo, una invitación, un jugador, un partido). La lista
+lo que pide (un equipo de su grupo, una invitación, un jugador, un enfrentamiento). La lista
 desaparece al completarla o cuando el capitán la cierra (Club.onboarding_dismissed_at).
 """
 from django.urls import reverse
@@ -20,7 +20,7 @@ def onboarding_steps(club):
         {
             "key": "team",
             "title": _("Añade un equipo de tu grupo"),
-            "help": _("Da de alta a los rivales de tu grupo para poder crear partidos contra ellos."),
+            "help": _("Da de alta a los rivales de tu grupo para poder crear enfrentamientos contra ellos."),
             "url": reverse("create_team"),
             "action": _("Añadir equipo"),
             "done": Team.objects.filter(club=club, in_group=True, is_own=False).exists(),
@@ -46,10 +46,10 @@ def onboarding_steps(club):
         },
         {
             "key": "match",
-            "title": _("Crea un partido"),
-            "help": _("Programa el próximo partido para preparar la convocatoria y las parejas."),
+            "title": _("Crea un enfrentamiento"),
+            "help": _("Programa el próximo enfrentamiento para preparar la convocatoria y las parejas."),
             "url": reverse("create_match"),
-            "action": _("Crear partido"),
+            "action": _("Crear enfrentamiento"),
             "done": Match.objects.filter(club=club).exists(),
         },
         {

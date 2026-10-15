@@ -1,0 +1,6 @@
+{# Pestañas de la ficha del jugador. Recibe: player, current ('summary' o 'stats'). #}
+{% load i18n %}
+<nav class="z-segmented z-player-tabs" aria-label="{% translate 'Secciones de la ficha del jugador' %}">
+  <a class="btn btn-sm{% if current == 'summary' %} active{% endif %}" href="{% url 'show_player' player.public_id %}"{% if current == 'summary' %} aria-current="page"{% endif %}><i class="fa-solid fa-id-card me-1" aria-hidden="true"></i> {% translate "Resumen" %}</a>
+  <a class="btn btn-sm{% if current == 'stats' %} active{% endif %}" href="{% url 'player_statistics' %}?player={{ player.public_id }}"{% if current == 'stats' %} aria-current="page"{% endif %}><i class="fa-solid fa-chart-simple me-1" aria-hidden="true"></i> {% translate "Estadísticas" %}</a>
+</nav>

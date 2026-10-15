@@ -172,7 +172,16 @@ def show_player(request, player_id):
         'match__local', 'match__visiting',
         'player_1_local', 'player_2_local', 'player_1_visiting', 'player_2_visiting',
     ).order_by('-match__start_date')[:5]
-    return render(request, "player_detail.html", {"player": player, "games": games})
+    games = list(games)
+    form = ["w" if player_won(game, player) else "l" for game in games]
+    return render(request, "player_detail.html", {"player": player, "games": games, "form": form})
+
+
+def player_won(game, player):
+    """True si ``player`` ganó el juego ``game`` (jugó en la pareja ganadora)."""
+    if game.winner == 'Local':
+        return player in (game.player_1_local, game.player_2_local)
+    return player in (game.player_1_visiting, game.player_2_visiting)
 
 
 @club_admin_required

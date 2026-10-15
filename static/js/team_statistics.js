@@ -61,21 +61,6 @@ const scales = (extra = {}) => ({
   }
 })();
 
-// Partidos ganados / empatados / perdidos
-new Chart(document.getElementById('myPieChart'), {
-  type: 'doughnut',
-  data: {
-    labels: [gettext('Ganados'), gettext('Empatados'), gettext('Perdidos')],
-    datasets: [{
-      data: [teamData.wonMatches, teamData.drawnMatches, teamData.lostMatches],
-      backgroundColor: [Z.lime, Z.draw, Z.coral],
-      borderColor: Z.card,
-      borderWidth: 4,
-    }],
-  },
-  options: { responsive: true, maintainAspectRatio: false, cutout: '68%', plugins: { legend: { position: 'bottom' } } },
-});
-
 // Juegos ganados / perdidos como local y como visitante
 const gamesBar = (id, won, lost) => new Chart(document.getElementById(id), {
   type: 'bar',
@@ -90,38 +75,15 @@ gamesBar('myVisitingBarChart', teamData.visitingGamesWon, teamData.visitingGames
 
 // Partidos ganados, empatados y perdidos por temporada
 const years = Object.keys(teamData.matchesWonPerYear);
+const seasonLabel = (y) => (y === teamData.currentSeason ? y + ' · ' + gettext('en curso') : y);
 new Chart(document.getElementById('myLineChart'), {
-  type: 'line',
+  type: 'bar',
   data: {
-    labels: years,
+    labels: years.map(seasonLabel),
     datasets: [
-      {
-        label: gettext('Ganados'),
-        data: years.map((y) => teamData.matchesWonPerYear[y].won),
-        borderColor: Z.lime,
-        backgroundColor: 'rgba(180, 241, 0, 0.18)',
-        pointBackgroundColor: Z.lime,
-        tension: 0.35,
-        fill: true,
-      },
-      {
-        label: gettext('Empatados'),
-        data: years.map((y) => teamData.matchesWonPerYear[y].drawn || 0),
-        borderColor: Z.draw,
-        backgroundColor: 'rgba(138, 138, 138, 0.08)',
-        pointBackgroundColor: Z.draw,
-        tension: 0.35,
-        fill: false,
-      },
-      {
-        label: gettext('Perdidos'),
-        data: years.map((y) => teamData.matchesWonPerYear[y].lost),
-        borderColor: Z.coral,
-        backgroundColor: 'rgba(255, 92, 99, 0.10)',
-        pointBackgroundColor: Z.coral,
-        tension: 0.35,
-        fill: true,
-      },
+      { label: gettext('Ganados'), data: years.map((y) => teamData.matchesWonPerYear[y].won), backgroundColor: Z.lime, borderRadius: 6 },
+      { label: gettext('Empatados'), data: years.map((y) => teamData.matchesWonPerYear[y].drawn || 0), backgroundColor: Z.draw, borderRadius: 6 },
+      { label: gettext('Perdidos'), data: years.map((y) => teamData.matchesWonPerYear[y].lost), backgroundColor: Z.coral, borderRadius: 6 },
     ],
   },
   options: {
@@ -254,3 +216,24 @@ document.querySelectorAll('.st-balance-sort [data-sort]').forEach((btn) => {
   });
 });
 renderBalance();
+
+// Panel lateral de secciones: marca la sección que se está viendo.
+(function () {
+  const links = Array.from(document.querySelectorAll('.st-side-list a'));
+  if (!links.length || !('IntersectionObserver' in window)) return;
+  const byId = new Map(links.map((a) => [a.getAttribute('href').slice(1), a]));
+  const visible = new Set();
+  const paint = () => {
+    const current = links.map((a) => a.getAttribute('href').slice(1)).find((id) => visible.has(id));
+    links.forEach((a) => {
+      const on = a.getAttribute('href').slice(1) === current;
+      a.classList.toggle('is-active', on);
+      if (on) a.setAttribute('aria-current', 'location'); else a.removeAttribute('aria-current');
+    });
+  };
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((e) => { if (e.isIntersecting) visible.add(e.target.id); else visible.delete(e.target.id); });
+    paint();
+  }, { rootMargin: '-90px 0px -55% 0px' });
+  byId.forEach((_, id) => { const el = document.getElementById(id); if (el) observer.observe(el); });
+})();

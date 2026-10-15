@@ -147,7 +147,7 @@
                 {% for g in last_games %}
                   <tr>
                     <th scope="row">
-                      <a href="{% url 'call_for_match' g.match_public_id %}#partido-{{ g.n_game }}">{{ g.date|date:"d/m/Y" }}</a>
+                      <a href="{% url 'call_for_match' g.match_public_id %}#partido-{{ g.n_game }}">{{ g.date|date:"D j M Y" }}</a>
                     </th>
                     <td>{{ g.rival }} <span class="st-muted">({% if g.local %}{% translate "local" %}{% else %}{% translate "visitante" %}{% endif %})</span></td>
                     <td>{{ g.n_game }}</td>
@@ -234,8 +234,8 @@
           <div class="st-row">
             {% translate "Mejores parejas" as t_title %}{% translate "Mayor % de victorias juntos." as t_note %}
             {% include 'includes/pair_rank_table.html' with title=t_title rows=best_pairs note=t_note %}
-            {% translate "Peores parejas" as t_title %}{% translate "Menor % de victorias juntos." as t_note %}
-            {% include 'includes/pair_rank_table.html' with title=t_title rows=worst_pairs note=t_note %}
+            {% translate "Parejas por mejorar" as t_title %}{% translate "Menor % de victorias juntos." as t_note %}
+            {% include 'includes/pair_rank_table.html' with title=t_title rows=worst_pairs note=t_note min_games_pair=worst_min_games %}
           </div>
           <p class="st-card-note">{% translate "Para ver cualquier otra pareja, búscala arriba." %}</p>
         {% else %}

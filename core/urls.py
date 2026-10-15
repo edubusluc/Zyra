@@ -18,6 +18,7 @@ urlpatterns = (
     path('profile/', views.my_profile, name='my_profile'),
     path('profile/verify-email/', views.resend_verification, name='resend_verification'),
     path('profile/delete/', views.delete_account_view, name='delete_account'),
+    path('club/', views.club_home, name='club_home'),
     path('members/', views.club_members, name='club_members'),
     path('members/leave/', views.leave_club, name='leave_club'),
     path('members/<pid:membership_id>/update/', views.update_member, name='update_member'),

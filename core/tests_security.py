@@ -153,24 +153,19 @@ class MemberEmailTests(SecurityBase):
         self.membership.refresh_from_db()
         self.assertFalse(self.membership.is_admin)
 
-    def test_own_email_can_change_but_must_be_unique(self):
+    def test_update_member_no_longer_changes_email(self):
+        """El email solo se cambia en «Mi perfil», con la contraseña actual (H-23)."""
         url = reverse("update_member", args=[self.captain_membership.public_id])
-        self.client.post(url, {"email": "MEMBER@example.com", "role": Membership.ADMIN})
+        response = self.client.post(url, {"email": "New@Example.com"})
+        self.assertRedirects(response, f"{reverse('my_profile')}?edit=email", fetch_redirect_response=False)
         self.captain.refresh_from_db()
         self.assertEqual(self.captain.email, "captain@example.com")
 
-        EmailAddress.objects.create(user=self.captain, email="captain@example.com", verified=True, primary=True)
-        self.client.post(url, {"email": "New@Example.com", "role": Membership.ADMIN})
-        self.captain.refresh_from_db()
-        self.assertEqual(self.captain.email, "new@example.com")
-        # El email verificado anterior deja de valer para entrar con Google
-        self.assertFalse(EmailAddress.objects.filter(user=self.captain, email="captain@example.com").exists())
-
-    def test_members_page_only_shows_own_email_input(self):
+    def test_members_page_has_no_email_inputs(self):
         response = self.client.get(reverse("club_members"))
-        self.assertContains(response, 'name="email" value="captain@example.com"')
-        self.assertNotContains(response, 'name="email" value="member@example.com"')
+        self.assertNotContains(response, 'name="email" value="captain@example.com"')
         self.assertContains(response, "member@example.com")
+        self.assertContains(response, f"{reverse('my_profile')}?edit=email")
 
 
 class SwitchClubTests(SecurityBase):

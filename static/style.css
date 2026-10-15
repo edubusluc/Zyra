@@ -9,8 +9,11 @@
 @font-face { font-family: 'Archivo'; font-weight: 400; font-display: swap; src: url('zyra/fonts/Archivo-Regular.ttf') format('truetype'); }
 @font-face { font-family: 'Archivo'; font-weight: 700; font-display: swap; src: url('zyra/fonts/Archivo-Bold.ttf') format('truetype'); }
 @font-face { font-family: 'Archivo'; font-weight: 800; font-display: swap; src: url('zyra/fonts/Archivo-ExtraBold.ttf') format('truetype'); }
-@font-face { font-family: 'Syncopate'; font-weight: 700; font-display: swap; src: url('zyra/fonts/Syncopate-Bold.ttf') format('truetype'); }
-@font-face { font-family: 'Syncopate'; font-style: italic; font-weight: 700; font-display: swap; src: url('zyra/fonts/Syncopate-BoldItalic.ttf') format('truetype'); }
+@font-face { font-family: 'Syncopate'; font-weight: 700; font-display: swap; src: url('zyra/fonts/Syncopate-Bold.ttf') format('truetype'); unicode-range: U+0000-00C0, U+00C2-00C8, U+00CA-00CC, U+00CE-00D0, U+00D2, U+00D4-00D9, U+00DB, U+00DD-10FFFF; }
+@font-face { font-family: 'Syncopate'; font-style: italic; font-weight: 700; font-display: swap; src: url('zyra/fonts/Syncopate-BoldItalic.ttf') format('truetype'); unicode-range: U+0000-00C0, U+00C2-00C8, U+00CA-00CC, U+00CE-00D0, U+00D2, U+00D4-00D9, U+00DB, U+00DD-10FFFF; }
+/* Las vocales con tilde de Syncopate (sobre todo la Í en cursiva) salen con el acento pegado a la letra siguiente:
+   esas letras se pintan con Archivo, que las dibuja bien; el resto del texto sigue en Syncopate. */
+@font-face { font-family: 'Syncopate'; font-style: normal; font-weight: 700; font-display: swap; src: url('zyra/fonts/Archivo-ExtraBold.ttf') format('truetype'); size-adjust: 112%; unicode-range: U+00C1, U+00C9, U+00CD, U+00D3, U+00DA, U+00DC, U+00D1; }
 
 :root,
 [data-bs-theme="dark"] {
@@ -36,7 +39,7 @@
     --z-radius-sm: 10px;
     --z-display: 'Syncopate', 'Archivo', system-ui, sans-serif;
     --z-body: 'Archivo', system-ui, -apple-system, 'Segoe UI', sans-serif;
-    --z-nav-h: 72px;
+    --z-nav-h: 88px;
     --z-ease: cubic-bezier(.22, 1, .36, 1);
     /* Relieve: filo de luz arriba + sombra tintada hacia abajo */
     --z-edge: inset 0 1px 0 rgba(255, 255, 255, .05);
@@ -353,7 +356,7 @@ main:focus { outline: none; }
     z-index: 1030;
     transform: translateX(-50%);
     width: min(440px, calc(100% - 28px));
-    padding: 8px;
+    padding: 6px;
     background: var(--z-lime);
     border-radius: 999px;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45), 0 14px 34px -8px rgba(0, 0, 0, .7), 0 8px 28px -10px rgba(var(--z-lime-rgb), .45);
@@ -365,18 +368,23 @@ main:focus { outline: none; }
     padding: 0;
     list-style: none;
 }
+.z-bottom-nav li { flex: 1 1 0; min-width: 0; }
 .z-bottom-nav a {
-    display: grid;
-    place-items: center;
-    width: 48px;
-    height: 48px;
-    font-size: 1.15rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    height: 56px;
+    font-size: 1.1rem;
     color: var(--z-ink);
-    border-radius: 50%;
+    border-radius: 999px;
     transition: background-color .2s var(--z-ease), color .2s var(--z-ease);
 }
 .z-bottom-nav a.is-active { color: var(--z-lime); background: var(--z-ink); }
-.z-bottom-nav .visually-hidden { position: absolute; }
+/* Etiqueta siempre visible bajo el icono (H-13): la barra no depende solo de iconos */
+.z-bn-label { max-width: 100%; overflow: hidden; font-size: .66rem; font-weight: 700; line-height: 1; letter-spacing: 0; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 359.98px) { .z-bn-label { font-size: .6rem; } }
 
 /* Cabecera y barra inferior se esconden al bajar y vuelven al subir (static/js/nav.js) */
 .z-header { transition: transform .35s var(--z-ease); }
@@ -566,6 +574,7 @@ input[type="email"],
 input[type="password"],
 input[type="number"],
 input[type="date"],
+input[type="time"],
 input[type="search"],
 input[type="tel"],
 input[type="url"],
@@ -606,7 +615,7 @@ select, .form-select, .z-select-trigger {
 }
 select[multiple] { background-image: none; padding-right: 1rem; }
 option { color: var(--z-text); background: var(--z-surface-2); }
-input[type="date"] { color-scheme: dark; }
+input[type="date"], input[type="time"] { color-scheme: dark; }
 input[type="number"] { width: 90px; text-align: center; }
 input[type="file"], .form-control[type="file"] { padding: .55rem; color: var(--z-muted); }
 input[type="file"]::file-selector-button {
@@ -1469,7 +1478,7 @@ a.z-location:hover span { text-decoration: underline; }
   display: grid; place-items: center; width: 38px; height: 38px;
   font-size: 1rem; font-weight: 800; border-radius: 50%;
 }
-.st-pip--w { color: var(--z-ink); background: var(--st-win); }
+.st-pip--w { color: var(--z-ink); background: var(--st-win, var(--z-lime)); }
 .st-pip--l { color: #FFFFFF; background: rgba(255, 92, 99, .35); }
 
 .st-split { margin-top: 18px; }
@@ -1661,6 +1670,7 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 .st-fact--gold { border-color: var(--z-lime); }
 .st-fact--gold dd { color: var(--z-lime); }
 .st-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.st-grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .st-card--wide { grid-column: 1 / -1; }
 .st-vs-bar--loss span { background: var(--z-lime); }
 
@@ -2006,7 +2016,7 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
     transition: background-color .12s, border-color .12s;
 }
 .z-pick-body { display: flex; flex-direction: column; min-width: 0; flex: 1; }
-.z-pick-name { font-size: .95rem; font-weight: 700; color: #FFFFFF; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.z-pick-name { font-size: .95rem; font-weight: 700; color: #FFFFFF; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow-wrap: anywhere; line-height: 1.2; }
 .z-pick-meta { font-size: .78rem; font-weight: 500; color: var(--z-muted); }
 .z-pick-warn { flex-shrink: 0; font-size: .78rem; font-weight: 800; color: var(--z-warning); }
 .z-pick:has(input:checked) { background: rgba(var(--z-lime-rgb), .08); border-color: var(--z-lime); }
@@ -2034,6 +2044,10 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 @media (max-width: 991.98px) {
     .z-selector-bar { bottom: calc(var(--z-nav-h) + 26px); transition: bottom .25s ease; }
     .z-nav-hidden .z-selector-bar { bottom: 16px; }
+    /* Con una barra de acción fija, la de navegación se esconde: a 320 px las dos tapaban ~40 % de la pantalla (H-30) */
+    body:has(.z-selector-bar) .z-bottom-nav { display: none; }
+    body:has(.z-selector-bar) .z-selector-bar { bottom: calc(16px + env(safe-area-inset-bottom)); }
+    body:has(.z-selector-bar) .main-content { padding-bottom: 120px; }
 }
 .st-warn-count { color: var(--z-warning); }
 .st-table td:nth-child(3) a { white-space: normal; }
@@ -2561,3 +2575,128 @@ select.z-select-native {
 .z-role-card h2 { margin: 4px 0 0; font-size: 1.1rem; }
 .z-role-card p { margin: 0; color: var(--z-muted); font-size: .9rem; }
 .z-role-go { margin-top: auto; padding-top: 8px; font-weight: 700; color: var(--z-lime); }
+
+/* ---------- Club: acceso a miembros, equipo propio, rivales y cuenta SNP (core/templates/club.html) ---------- */
+.z-hub { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 14px; margin: 0; padding: 0; list-style: none; }
+.z-hub-card { display: flex; flex-direction: column; gap: 6px; height: 100%; padding: 18px; color: inherit; text-decoration: none; background: var(--z-surface-2); border: 1px solid var(--z-border); border-radius: var(--z-radius); }
+a.z-hub-card:hover, a.z-hub-card:focus-visible { border-color: var(--z-lime); color: inherit; }
+.z-hub-card > i { font-size: 1.3rem; color: var(--z-lime); }
+.z-hub-title { font-weight: 800; color: #FFFFFF; }
+.z-hub-note { font-size: .88rem; color: var(--z-muted); }
+
+/* ---------- Enfrentamiento: fases, siguiente paso y estado del jugador (match/templates/call_for_match.html) ---------- */
+.z-phases { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 0 0 16px; padding: 0; list-style: none; counter-reset: none; }
+.z-phases li { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 8px 10px; font-size: .82rem; font-weight: 700; color: var(--z-muted); background: var(--z-surface-2); border: 1px solid var(--z-border); border-radius: 999px; }
+.z-phases li > span:last-of-type { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.z-step-n { display: grid; place-items: center; flex-shrink: 0; width: 22px; height: 22px; font-size: .72rem; font-weight: 800; color: var(--z-muted); background: var(--z-surface-3); border-radius: 50%; }
+.z-phases .is-done { color: #FFFFFF; }
+.z-phases .is-done .z-step-n { color: var(--z-ink); background: var(--z-lime); }
+.z-phases .is-current { color: var(--z-ink); background: var(--z-lime); border-color: var(--z-lime); }
+.z-phases .is-current .z-step-n { color: var(--z-lime); background: var(--z-ink); }
+
+.z-next { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px; margin: 0 0 22px; padding: 14px; background: var(--z-surface-2); border: 1px solid var(--z-lime); border-radius: var(--z-radius); }
+.z-next-main { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0; }
+.z-next-main .btn { white-space: normal; text-align: left; }
+.z-next-hint { margin: 0; font-size: .86rem; color: var(--z-muted); }
+.z-more { position: relative; }
+.z-more summary { list-style: none; cursor: pointer; }
+.z-more summary::-webkit-details-marker { display: none; }
+.z-more ul { position: absolute; right: 0; z-index: 20; min-width: 230px; margin: 6px 0 0; padding: 6px; list-style: none; background: var(--z-surface-2); border: 1px solid var(--z-border); border-radius: var(--z-radius); box-shadow: 0 14px 34px -8px rgba(0, 0, 0, .7); }
+.z-more li a, .z-more li button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; font: inherit; color: var(--z-text, inherit); text-align: left; text-decoration: none; background: none; border: 0; border-radius: 8px; }
+.z-more li a:hover, .z-more li button:hover, .z-more li a:focus-visible, .z-more li button:focus-visible { background: var(--z-surface-3); }
+.z-more li i { width: 18px; color: var(--z-lime); text-align: center; }
+
+.z-mystatus { display: flex; align-items: flex-start; gap: 12px; margin: 0 0 16px; padding: 14px 16px; background: var(--z-surface-2); border: 1px solid var(--z-border); border-radius: var(--z-radius); }
+.z-mystatus > i { margin-top: 3px; font-size: 1.2rem; color: var(--z-muted); }
+.z-mystatus.is-in { border-color: var(--z-lime); }
+.z-mystatus.is-in > i { color: var(--z-lime); }
+.z-mystatus strong { display: block; color: #FFFFFF; }
+.z-mystatus span { display: block; font-size: .88rem; color: var(--z-muted); }
+.z-chip.is-me { outline: 2px solid var(--z-lime); outline-offset: 1px; }
+
+.z-closed { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 22px; padding: 14px 16px; background: var(--z-surface-2); border: 1px solid var(--z-border); border-left: 4px solid var(--z-muted); border-radius: var(--z-radius); }
+.z-closed.is-win { border-left-color: var(--z-lime); }
+.z-closed.is-loss { border-left-color: var(--z-danger); }
+
+.z-results-all { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr)); gap: 14px; }
+.z-result-card { margin: 0; padding: 14px 16px; }
+.z-result-legend { float: none; width: auto; margin: 0 0 8px; padding: 0; font-size: .8rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+
+@media (max-width: 575.98px) {
+    .z-phases { gap: 4px; }
+    .z-phases li { flex-direction: column; gap: 4px; padding: 8px 4px; font-size: .7rem; text-align: center; border-radius: 14px; }
+}
+/* En móvil el botón «Siguiente» se queda al alcance, justo encima de la barra inferior */
+@media (max-width: 991.98px) {
+    .z-next { position: sticky; bottom: calc(var(--z-nav-h) + 8px); z-index: 25; transition: bottom .25s ease; background: var(--z-surface-3); }
+    .z-nav-hidden .z-next { bottom: 16px; }
+    .z-more ul { bottom: calc(100% + 6px); margin: 0; }
+}
+
+/* Crear enfrentamiento: error en la card del rival y opciones plegadas */
+.z-team-card-field.has-error .z-team-card { border-color: var(--z-danger); }
+.z-more-options { margin: 0 0 8px; }
+.z-more-options > summary { padding: 6px 0; font-weight: 700; color: var(--z-lime); cursor: pointer; }
+.z-pick-warn-text { color: var(--z-warning, #F5B544); }
+
+/* Inicio: bloque «Pendiente» y estado del jugador en el próximo enfrentamiento (core/templates/home.html) */
+.z-pending { display: grid; gap: 8px; margin: 0 0 8px; padding: 0; list-style: none; }
+.z-pending-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 14px; padding: 14px 16px; color: inherit; text-decoration: none; background: var(--z-surface-2); border: 1px solid var(--z-border); border-left: 4px solid var(--z-lime); border-radius: var(--z-radius); }
+.z-pending-row:hover, .z-pending-row:focus-visible { color: inherit; border-color: var(--z-lime); }
+.z-pending-row.is-overdue { border-left-color: var(--z-danger); }
+.z-pending-main { display: grid; min-width: 0; }
+.z-pending-main strong { overflow: hidden; text-overflow: ellipsis; text-transform: uppercase; color: #FFFFFF; }
+.z-pending-main small { color: var(--z-muted); }
+.z-pending-row.is-overdue .z-pending-main small { color: var(--z-danger); }
+.z-pending-action { font-size: .88rem; font-weight: 800; color: var(--z-lime); }
+.z-next-match-me { display: flex; align-items: center; gap: 8px; margin: 0; padding: 10px 14px; font-size: .9rem; color: var(--z-muted); background: var(--z-surface-3); border-radius: 10px; }
+.z-next-match-me.is-in { color: #FFFFFF; }
+.z-next-match-me.is-in i { color: var(--z-lime); }
+
+/* Campo de foto: el selector nativo queda oculto tras el botón «Subir foto» (static/js/photo-crop.js) */
+.z-file-native { position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0; pointer-events: none; }
+
+/* Alineación en móvil: el orden de juego va justo bajo la sugerencia, para ver el efecto de cada cambio (H-31) */
+@media (max-width: 991.98px) {
+    .z-lineup-main { display: contents; }
+    .z-lineup-main > .text-muted { order: 0; }
+    .z-lineup-suggest { order: 1; }
+    .z-lineup-side.pair-order-container { order: 2; margin: 0; padding: 12px 14px; }
+    .z-lineup-side h2 { margin-bottom: 6px; font-size: 1rem; }
+    .z-lineup-side > p { display: none; }
+    #pair-order-list li { padding: 6px 0; }
+    .z-lineup-pairs { order: 3; }
+    .z-lineup > .z-selector-bar { order: 4; }
+}
+.z-suggest-why { display: inline; }
+.z-suggest-why > summary { display: inline; color: var(--z-lime); cursor: pointer; }
+.z-suggest-why > span { display: block; margin-top: 4px; color: var(--z-muted); }
+
+/* Índice de secciones de las estadísticas del equipo: fijo bajo la barra superior. */
+.st-index { position: sticky; top: 0; z-index: 5; display: flex; gap: 8px; overflow-x: auto; padding: 8px 0; margin: 0 0 12px; background: var(--z-bg); scrollbar-width: none; }
+.st-index::-webkit-scrollbar { display: none; }
+.st-index a { flex: none; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--z-border); color: inherit; font-size: 13px; text-decoration: none; white-space: nowrap; }
+.st-index a:hover, .st-index a:focus-visible { border-color: var(--z-lime); }
+.st-section, .st-board { scroll-margin-top: 64px; }
+
+/* Gestionar plantilla: tres columnas en escritorio y nombre corto a dos líneas. */
+@media (min-width: 992px) { .z-selector-grid:has(.z-roster) { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+/* Ficha del jugador: pestañas Resumen / Estadísticas y racha reciente. */
+.z-player-tabs { margin: 0 0 16px; }
+.z-form-strip { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin: 0 0 16px; }
+.z-form-strip .z-eyebrow { margin-right: 6px; }
+
+/* Estadísticas del equipo en escritorio: panel lateral con las secciones, fijo al hacer scroll. */
+.st-side { display: none; }
+@media (min-width: 1200px) {
+  .st-index { display: none; }
+  .st-layout { display: grid; grid-template-columns: minmax(0, 1fr) 190px; gap: 32px; align-items: start; }
+  .st-side { display: block; position: sticky; top: 92px; padding: 16px 0 16px 18px; border-left: 1px solid var(--z-border); }
+  .st-side-title { margin: 0 0 10px; font-size: .72rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--z-muted); }
+  .st-side-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 2px; }
+  .st-side-list a { position: relative; display: block; padding: 7px 10px; border-radius: var(--z-radius-sm); font-size: .9rem; font-weight: 600; color: var(--z-muted); text-decoration: none; transition: color .15s, background-color .15s; }
+  .st-side-list a:hover, .st-side-list a:focus-visible { color: var(--z-text); background: var(--z-surface-2); }
+  .st-side-list a.is-active { color: var(--z-lime); background: var(--z-surface-2); }
+  .st-side-list a.is-active::before { content: ""; position: absolute; left: -19px; top: 6px; bottom: 6px; width: 3px; border-radius: 2px; background: var(--z-lime); }
+}

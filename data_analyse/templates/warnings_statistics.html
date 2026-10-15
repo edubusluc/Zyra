@@ -49,7 +49,7 @@
               <li class="st-top-row">
                 <span class="st-top-pos">{{ forloop.counter }}</span>
                 <span class="st-top-name">{{ r.player.full_name }}{% if not r.player.in_team %} <small class="d-inline">{% translate "(fuera del equipo)" %}</small>{% endif %}
-                  <small>{% for p in r.items %}{{ p.call.match.start_date|date:"d/m" }}{% if not forloop.last %} · {% endif %}{% endfor %}</small>
+                  <small>{% for p in r.items %}{{ p.call.match.start_date|date:"j M" }}{% if not forloop.last %} · {% endif %}{% endfor %}</small>
                 </span>
                 <b class="st-top-pct st-warn-count">{{ r.count }}</b>
               </li>
@@ -72,7 +72,7 @@
               <tbody>
                 {% for p in penalties %}
                   <tr>
-                    <td>{{ p.call.match.start_date|date:"d/m/Y" }}</td>
+                    <td>{{ p.call.match.start_date|date:"D j M Y" }}</td>
                     <td>{{ p.player.full_name }}</td>
                     <td><a href="{% url 'call_for_match' p.call.match.public_id %}">{{ p.call.match.local_name }} vs {{ p.call.match.visiting_name }}</a></td>
                   </tr>

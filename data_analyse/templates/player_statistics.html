@@ -7,6 +7,7 @@
   <div class="st-page">
     {% include 'includes/stats_tabs.html' %}
 
+    {% if selected_player %}{% include 'includes/player_tabs.html' with current='stats' %}{% endif %}
     <header class="st-head">
       <div>
         <h1 class="st-title">{% if selected_player %}{{ player.full_name }}{% else %}{% translate "Estadísticas de jugadores" %}{% endif %}</h1>
@@ -183,7 +184,7 @@
                       {% for g in d.games %}
                         <tr>
                           <th scope="row">
-                            <a href="{% url 'call_for_match' g.match_public_id %}#partido-{{ g.n_game }}">{{ g.date|date:"d/m/Y" }}</a>
+                            <a href="{% url 'call_for_match' g.match_public_id %}#partido-{{ g.n_game }}">{{ g.date|date:"D j M Y" }}</a>
                           </th>
                           <td>{{ g.rival }} <span class="st-muted">({% if g.local %}{% translate "local" %}{% else %}{% translate "visitante" %}{% endif %})</span></td>
                           <td>{{ g.n_game }}</td>

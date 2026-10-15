@@ -58,6 +58,14 @@ Próximo partido con cuenta atrás, jugador y pareja en racha de victorias (con 
 estadísticas) y aviso al capitán si el club no tiene cuenta SNP
 ([`core.views.home`](referencia/core/views.md)).
 
+## Club (menú)
+
+Sección **Club** del menú principal: Miembros e invitaciones, Mi equipo, Rivales y Cuenta SNP (`core/templates/club.html`). El menú de cuenta solo guarda Mi perfil, idioma y Cerrar sesión. El listado «Equipos» es ahora **Rivales** (sin el equipo propio, que se edita desde Club › Mi equipo).
+
+## Fases del enfrentamiento
+
+La página del enfrentamiento muestra las fases Convocatoria · Parejas · Resultados · Acta, un único botón «Siguiente: …» y un menú «Más». El inicio del capitán lista lo **Pendiente** (una fila por enfrentamiento abierto) y el del jugador indica si está convocado y con quién juega. La lógica está en `match/phase.py`. Los resultados de los 5 partidos se rellenan de una vez en «Resultados del enfrentamiento».
+
 ## Jugadores
 
 - Alta, edición (foto incluida) y baja. Al borrar un jugador sus partidos se conservan con su nombre

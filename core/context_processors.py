@@ -26,7 +26,7 @@ def club(request):
 # Sección de la navegación a la que pertenece cada app
 NAV_SECTIONS = {
     "players": "players",
-    "team": "teams",
+    "team": "club",
     "match": "matches",
     "call": "matches",
     "callLog": "matches",
@@ -35,11 +35,21 @@ NAV_SECTIONS = {
 }
 
 
+# Vistas que cuelgan de «Club» aunque vivan en otra app: miembros, invitaciones y cuenta SNP.
+CLUB_URL_NAMES = {
+    "club_home", "club_members", "create_invitation", "create_invitation_link", "revoke_invitation",
+    "snp_account", "snp_account_delete", "complete_team_start", "complete_team_status",
+    "complete_team_confirm", "complete_team_cancel",
+}
+
+
 def navigation(request):
     """Sección de la navegación que se marca como activa, según la app de la vista."""
     match = getattr(request, "resolver_match", None)
     if match and match.url_name == "home":
         return {"nav_section": "home"}
+    if match and match.url_name in CLUB_URL_NAMES:
+        return {"nav_section": "club"}
     app = match.func.__module__.split(".")[0] if match else ""
     return {"nav_section": NAV_SECTIONS.get(app, "")}
 
