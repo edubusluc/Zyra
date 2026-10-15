@@ -10,7 +10,7 @@ from django.utils.translation import gettext_lazy as _
 
 from match.models import Match
 from .models import Membership
-from players.models import Player, SnpAccount
+from players.models import Player, SnpTeamImport
 
 
 def onboarding_steps(club):
@@ -25,7 +25,9 @@ def onboarding_steps(club):
             "alt_url": reverse("create_player"),
             "alt_action": _("Prefiero añadir jugadores a mano"),
             # El jugador del capitán se crea al registrar el club: no cuenta como plantilla.
-            "done": SnpAccount.objects.filter(club=club).exists() or Player.objects.filter(club=club).exclude(
+            # La cuenta SNP solo cuenta cuando «Completar equipo» ha salido bien: si falla, la tarea sigue pendiente.
+            "done": SnpTeamImport.objects.filter(club=club, source=SnpTeamImport.WEB, status=SnpTeamImport.DONE).exists()
+            or Player.objects.filter(club=club).exclude(
                 user_id__in=club.memberships.filter(role=Membership.ADMIN).values("user_id")
             ).exists(),
         },

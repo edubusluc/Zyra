@@ -46,7 +46,7 @@ QUEUE_STALE_AFTER = datetime.timedelta(minutes=30)
 # Búsquedas desde la web (canceladas y fallidas incluidas): como mucho SEARCHES_PER_DAY en 24 h
 # y al menos SEARCH_COOLDOWN entre una y la siguiente.
 SEARCHES_PER_DAY = 3
-SEARCH_COOLDOWN = datetime.timedelta(minutes=5)
+SEARCH_COOLDOWN = datetime.timedelta(minutes=1)
 # Tras tantas búsquedas fallidas desde la web se oculta «Completar equipo» y se avisa al personal.
 MAX_FAILED_SEARCHES = 3
 
@@ -370,10 +370,24 @@ def sync_task(club):
     else:
         state, message = "idle", ""
     blocked, wait, service_off = web_blocked(club), search_limit(club), not snp_service.is_enabled()
+    same_account = account_unchanged_after_failure(club)
     return {
         "state": state, "message": message, "import": active or failed, "blocked": blocked, "wait": wait,
-        "service_off": service_off, "can_retry": not (blocked or wait or service_off),
+        "service_off": service_off, "same_account": same_account,
+        "can_retry": not (blocked or wait or service_off or same_account),
     }
+
+
+def account_unchanged_after_failure(club):
+    """
+    True si la última búsqueda web falló porque SNP rechazó el usuario o la contraseña y la cuenta SNP
+    sigue igual desde entonces: repetirla con los mismos datos fallaría igual (y arriesga el bloqueo de la cuenta).
+    """
+    latest = SnpTeamImport.objects.filter(club=club, source=SnpTeamImport.WEB).order_by("-created_at").first()
+    if not (latest and latest.status == SnpTeamImport.ERROR and latest.error_kind == SnpScrapeError.ACCOUNT):
+        return False
+    account_updated = SnpAccount.objects.filter(club=club).values_list("updated_at", flat=True).first()
+    return account_updated is None or account_updated <= latest.created_at
 
 
 def web_blocked(club):
@@ -392,7 +406,10 @@ def _register_failure(team_import, service_off):
     Club.objects.filter(pk=team_import.club_id).update(snp_import_failures=F("snp_import_failures") + 1)
     club = Club.objects.get(pk=team_import.club_id)
     if club.snp_import_failures == MAX_FAILED_SEARCHES:
-        _notify_staff(club, team_import.message)
+        try:
+            _notify_staff(club, team_import.message)
+        except Exception:  # el aviso al personal nunca debe tapar el motivo real del fallo
+            logger.exception("No se ha podido avisar al personal del bloqueo de %s", club)
 
 
 def _notify_staff(club, reason):
@@ -446,7 +463,8 @@ def _run(team_import):
         return _search_and_maybe_confirm(team_import, team_import.auto_confirm)
     except Exception:
         logger.exception("Ha fallado la búsqueda de «Completar equipo» de %s", team_import.club)
-        SnpTeamImport.objects.filter(pk=team_import.pk).update(
+        # Solo si sigue en marcha: si ya quedó con su error real, no se tapa con uno genérico.
+        SnpTeamImport.objects.filter(pk=team_import.pk, status=SnpTeamImport.RUNNING).update(
             status=SnpTeamImport.ERROR, message=_("Error inesperado al leer SNP."), finished_at=timezone.now(),
         )
         team_import.refresh_from_db()

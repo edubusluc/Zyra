@@ -49,11 +49,19 @@ class OnboardingTests(TestCase):
         steps = {s["key"]: s["done"] for s in self.client.get(reverse("home")).context["onboarding"]}
         self.assertEqual(steps, {"players": True, "invite": False, "match": False})
 
-    def test_connecting_snp_also_ticks_the_players_step(self):
+    def test_connecting_snp_ticks_the_players_step_only_once_the_sync_works(self):
+        from players.models import SnpTeamImport
         club = self.register()
         account = SnpAccount(club=club)
         account.username, account.password = "cap", "secreto"
         account.save()
+        steps = {s["key"]: s["done"] for s in self.client.get(reverse("home")).context["onboarding"]}
+        self.assertFalse(steps["players"])  # cuenta guardada, pero «Completar equipo» aún no ha salido bien
+        team_import = SnpTeamImport.objects.create(club=club, source=SnpTeamImport.WEB, status=SnpTeamImport.ERROR)
+        steps = {s["key"]: s["done"] for s in self.client.get(reverse("home")).context["onboarding"]}
+        self.assertFalse(steps["players"])
+        team_import.status = SnpTeamImport.DONE
+        team_import.save()
         steps = {s["key"]: s["done"] for s in self.client.get(reverse("home")).context["onboarding"]}
         self.assertTrue(steps["players"])
 

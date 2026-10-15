@@ -11420,3 +11420,13 @@ msgstr "Team synced"
 msgid "Estamos sincronizando tu equipo con SNP (%(progress)s%%). Podrás crear jugadores, equipos y enfrentamientos cuando termine."
 msgstr "We are syncing your team with SNP (%(progress)s%%). You will be able to create players, teams and matches when it finishes."
 
+
+msgid "SNP no aceptó el usuario o la contraseña. Cámbialos en la cuenta SNP antes de volver a intentarlo."
+msgstr "SNP did not accept the username or password. Change them in the SNP account before trying again."
+
+msgid "No has cambiado ningún dato de la cuenta SNP."
+msgstr "You have not changed any SNP account data."
+
+msgid "Cambia el usuario o la contraseña de tu cuenta SNP para poder reintentarlo."
+msgstr "Change the username or password of your SNP account to be able to try again."
+

@@ -41,7 +41,8 @@
         {% elif snp_sync.state == 'failed' %}
         <strong>{% translate "No hemos podido traer tu equipo de SNP" %}</strong>
         <span>{{ snp_sync.message|default:_("La búsqueda se ha cancelado o no ha terminado.") }}
-        {% if snp_sync.blocked %}{% translate "Ha fallado varias veces: hemos avisado al administrador de Zyra para que lo revise." %}
+        {% if snp_sync.same_account %}{% translate "Cambia el usuario o la contraseña de tu cuenta SNP para poder reintentarlo." %}
+        {% elif snp_sync.blocked %}{% translate "Ha fallado varias veces: hemos avisado al administrador de Zyra para que lo revise." %}
         {% elif snp_sync.service_off %}{% translate "La conexión con SNP no está disponible ahora mismo." %}
         {% elif snp_sync.wait %}{% blocktranslate with date=snp_sync.wait|date:"d/m/Y H:i" %}Podrás reintentarlo a partir del {{ date }}.{% endblocktranslate %}{% endif %}</span>
         {% else %}

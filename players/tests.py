@@ -652,6 +652,43 @@ class CompleteTeamTests(TestCase):
         team_import.refresh_from_db()
         self.assertEqual(team_import.progress, 100)
 
+    def test_same_rejected_credentials_are_not_retried(self):
+        """Si SNP rechazó la cuenta y sigue igual, no se relanza; al cambiarla sí, y la espera es de 1 minuto."""
+        error = SnpScrapeError("SNP no ha aceptado el usuario o la contraseña.", kind=SnpScrapeError.ACCOUNT)
+        with mock.patch("players.snp_import.scrape_scores", side_effect=error):
+            self.client.post(reverse("complete_team_start"))
+        self.assertEqual(snp_import.SEARCH_COOLDOWN, timedelta(minutes=1))
+        self.assertTrue(snp_import.account_unchanged_after_failure(self.club))
+        home = self.client.get(reverse("home"))
+        self.assertContains(home, "Cambia el usuario o la contraseña")
+        self.assertNotContains(home, 'name="from" value="home"')
+        response = self.client.post(reverse("complete_team_start"), {"from": "home"})
+        self.assertRedirects(response, reverse("snp_account"), fetch_redirect_response=False)
+        self.assertEqual(SnpTeamImport.objects.count(), 1)
+        # Guardar la cuenta sin cambiar nada no la da por corregida.
+        account = SnpAccount.objects.get(club=self.club)
+        before = account.updated_at
+        self.client.post(reverse("snp_account"), {"username": account.username, "password": ""})
+        account.refresh_from_db()
+        self.assertEqual(account.updated_at, before)
+        self.assertTrue(snp_import.account_unchanged_after_failure(self.club))
+        # Con otra contraseña sí se puede reintentar.
+        self.client.post(reverse("snp_account"), {"username": account.username, "password": "otra-clave"})
+        self.assertFalse(snp_import.account_unchanged_after_failure(self.club))
+        self.assertContains(self.client.get(reverse("home")), 'name="from" value="home"')
+
+    def test_staff_alert_failure_does_not_hide_the_real_error(self):
+        """Al llegar al máximo de fallos, un fallo del aviso al personal no cambia el motivo por «Error inesperado»."""
+        error = SnpScrapeError("SNP no ha aceptado el usuario o la contraseña.", kind=SnpScrapeError.ACCOUNT)
+        self.club.snp_import_failures = snp_import.MAX_FAILED_SEARCHES - 1
+        self.club.save(update_fields=["snp_import_failures"])
+        with mock.patch("players.snp_import.scrape_scores", side_effect=error), \
+                mock.patch("players.snp_import._notify_staff", side_effect=RuntimeError("sin correo")):
+            self.client.post(reverse("complete_team_start"))
+        team_import = SnpTeamImport.objects.get()
+        self.assertEqual(team_import.status, SnpTeamImport.ERROR)
+        self.assertIn("no ha aceptado el usuario", team_import.message)
+
     def test_fixing_the_account_lifts_the_wait_and_the_block(self):
         error = SnpScrapeError("SNP no ha aceptado el usuario o la contraseña.", kind=SnpScrapeError.ACCOUNT)
         with mock.patch("players.snp_import.scrape_scores", side_effect=error):
@@ -666,7 +703,7 @@ class CompleteTeamTests(TestCase):
         self.assertContains(self.client.get(reverse("home")), 'name="from" value="home"')
 
     def test_failure_card_explains_the_wait_when_retry_is_too_soon(self):
-        error = SnpScrapeError("SNP no ha aceptado el usuario o la contraseña.", kind=SnpScrapeError.ACCOUNT)
+        error = SnpScrapeError("No se encontraron jugadores.", kind=SnpScrapeError.TEAM)
         with mock.patch("players.snp_import.scrape_scores", side_effect=error):
             self.client.post(reverse("complete_team_start"))
         home = self.client.get(reverse("home"))
@@ -677,7 +714,7 @@ class CompleteTeamTests(TestCase):
         from django.core import mail
         from backoffice.models import AuditLog
         User.objects.create_user("staff", email="staff@example.com", password="pass-12345", is_staff=True)
-        error = SnpScrapeError("SNP no ha aceptado el usuario o la contraseña.", kind=SnpScrapeError.ACCOUNT)
+        error = SnpScrapeError("No se encontraron jugadores.", kind=SnpScrapeError.TEAM)
         for attempt in range(snp_import.MAX_FAILED_SEARCHES):
             SnpTeamImport.objects.update(created_at=timezone.now() - timedelta(hours=25))  # fuera del límite diario
             with mock.patch("players.snp_import.scrape_scores", side_effect=error):

@@ -229,9 +229,13 @@ def snp_account(request):
         form = SnpAccountForm(request.POST, has_password=account is not None)
         if form.is_valid():
             account = account or SnpAccount(club=request.club)
+            new_password = form.cleaned_data["password"]
+            if account.pk and not account.team_id and username == form.cleaned_data["username"] and (not new_password or _same_password(account, new_password)):
+                messages.info(request, _("No has cambiado ningún dato de la cuenta SNP."))
+                return redirect("snp_account")
             account.username = form.cleaned_data["username"]
-            if form.cleaned_data["password"]:
-                account.password = form.cleaned_data["password"]
+            if new_password:
+                account.password = new_password
             # El equipo ya no se pide: si la cuenta tiene varios, se elige por el nombre del equipo del club.
             account.team_id = ""
             account.updated_by = request.user
@@ -247,6 +251,14 @@ def snp_account(request):
     return render(request, "snp_account.html", {
         "form": form, "account": account, "username": username, "editing": editing,
     })
+
+
+def _same_password(account, password):
+    """True si ``password`` es la contraseña SNP ya guardada (si no se puede leer, cuenta como distinta)."""
+    try:
+        return account.password == password
+    except DecryptionError:
+        return False
 
 
 @club_admin_required
@@ -324,6 +336,9 @@ def complete_team_start(request):
         return redirect(back)
     if _web_import_closed(request) or snp_import.active_import(request.club):
         return redirect(back)
+    if snp_import.account_unchanged_after_failure(request.club):
+        messages.error(request, _("SNP no aceptó el usuario o la contraseña. Cámbialos en la cuenta SNP antes de volver a intentarlo."))
+        return redirect("snp_account")
     wait = snp_import.search_limit(request.club)
     if wait:
         messages.error(request, _("Has buscado tu equipo en SNP varias veces seguidas. Para no saturar SNP, "

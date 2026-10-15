@@ -143,7 +143,7 @@ ni se editan parejas (`edit_game_match`).
   cuenta del capitán). Para ante 429/403/503 o fallos de red seguidos.
 - [V] Mientras una búsqueda web está en marcha (`SnpTeamImport.RUNNING`) los capitanes ven en toda la web la barra de `core/templates/includes/sync_bar.html` (`progress`/`stage` del import, `sync_status`) y `not_while_syncing` bloquea `create_player`, `create_team` y `create_match`.
 - [V] «Completar equipo» desde la web: solo UNA vez con éxito (en el alta o con la cuenta SNP ya registrada;
-  `snp_import.web_import_done`), máx. 3 búsquedas al día con 5 min entre ellas (no cuentan las canceladas ni las rechazadas por cuenta SNP ya corregida; guardar la cuenta SNP pone `snp_import_failures` a 0). Cada búsqueda fallida suma a
+  `snp_import.web_import_done`), máx. 3 búsquedas al día con 1 min entre ellas (no cuentan las canceladas ni las rechazadas por cuenta SNP ya corregida; guardar la cuenta SNP con datos distintos pone `snp_import_failures` a 0). Si SNP rechazó la cuenta y no ha cambiado, no se relanza (`account_unchanged_after_failure`); la tarea «Conecta SNP o añade a tus jugadores» solo se marca con una búsqueda web hecha. Cada búsqueda fallida suma a
   `Club.snp_import_failures` (no cuenta si el servicio SNP está apagado); la portada del capitán muestra la tarea «Sincronizar datos» (`snp_import.sync_task`) hasta que haya una búsqueda web hecha: «Sincronizar datos»/«Reintentar» (si no hay bloqueo ni espera), «Ver progreso» y «Cancelar» si está en curso, y «Revisar cuenta SNP»; al llegar a `MAX_FAILED_SEARCHES` (3) la
   opción se oculta (`web_blocked`), se avisa al capitán de que el administrador ha sido notificado y al personal
   por email + auditoría `club.snp_import_blocked`. Después solo el back-office o el proceso automático
