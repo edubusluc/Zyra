@@ -2649,7 +2649,7 @@ a.z-hub-card:hover, a.z-hub-card:focus-visible { border-color: var(--z-lime); co
 .z-pending-main small { color: var(--z-muted); }
 .z-pending-row.is-overdue .z-pending-main small { color: var(--z-danger); }
 .z-pending-action { font-size: .88rem; font-weight: 800; color: var(--z-lime); }
-.z-next-match-me { display: flex; align-items: flex-start; gap: 8px; margin: 0; padding: 10px 14px; font-size: .9rem; color: var(--z-muted); background: var(--z-surface-3); border-radius: 10px; }
+.z-next-match-me { display: flex; align-items: center; gap: 8px; margin: 0; padding: 10px 14px; font-size: .9rem; color: var(--z-muted); background: var(--z-surface-3); border-radius: 10px; }
 .z-next-match-me.is-in { color: #FFFFFF; }
 .z-next-match-me.is-in i { color: var(--z-lime); }
 
@@ -2686,3 +2686,17 @@ a.z-hub-card:hover, a.z-hub-card:focus-visible { border-color: var(--z-lime); co
 .z-player-tabs { margin: 0 0 16px; }
 .z-form-strip { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin: 0 0 16px; }
 .z-form-strip .z-eyebrow { margin-right: 6px; }
+
+/* Estadísticas del equipo en escritorio: panel lateral con las secciones, fijo al hacer scroll. */
+.st-side { display: none; }
+@media (min-width: 1200px) {
+  .st-index { display: none; }
+  .st-layout { display: grid; grid-template-columns: minmax(0, 1fr) 190px; gap: 32px; align-items: start; }
+  .st-side { display: block; position: sticky; top: 92px; padding: 16px 0 16px 18px; border-left: 1px solid var(--z-border); }
+  .st-side-title { margin: 0 0 10px; font-size: .72rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--z-muted); }
+  .st-side-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 2px; }
+  .st-side-list a { position: relative; display: block; padding: 7px 10px; border-radius: var(--z-radius-sm); font-size: .9rem; font-weight: 600; color: var(--z-muted); text-decoration: none; transition: color .15s, background-color .15s; }
+  .st-side-list a:hover, .st-side-list a:focus-visible { color: var(--z-text); background: var(--z-surface-2); }
+  .st-side-list a.is-active { color: var(--z-lime); background: var(--z-surface-2); }
+  .st-side-list a.is-active::before { content: ""; position: absolute; left: -19px; top: 6px; bottom: 6px; width: 3px; border-radius: 2px; background: var(--z-lime); }
+}

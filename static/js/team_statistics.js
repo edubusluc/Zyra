@@ -216,3 +216,24 @@ document.querySelectorAll('.st-balance-sort [data-sort]').forEach((btn) => {
   });
 });
 renderBalance();
+
+// Panel lateral de secciones: marca la sección que se está viendo.
+(function () {
+  const links = Array.from(document.querySelectorAll('.st-side-list a'));
+  if (!links.length || !('IntersectionObserver' in window)) return;
+  const byId = new Map(links.map((a) => [a.getAttribute('href').slice(1), a]));
+  const visible = new Set();
+  const paint = () => {
+    const current = links.map((a) => a.getAttribute('href').slice(1)).find((id) => visible.has(id));
+    links.forEach((a) => {
+      const on = a.getAttribute('href').slice(1) === current;
+      a.classList.toggle('is-active', on);
+      if (on) a.setAttribute('aria-current', 'location'); else a.removeAttribute('aria-current');
+    });
+  };
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((e) => { if (e.isIntersecting) visible.add(e.target.id); else visible.delete(e.target.id); });
+    paint();
+  }, { rootMargin: '-90px 0px -55% 0px' });
+  byId.forEach((_, id) => { const el = document.getElementById(id); if (el) observer.observe(el); });
+})();

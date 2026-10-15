@@ -58,9 +58,9 @@
     {% if my_status %}
     <p class="z-next-match-me{% if my_status.called %} is-in{% endif %}" role="status">
         <i class="fa-solid {% if my_status.called %}fa-circle-check{% else %}fa-circle-info{% endif %}" aria-hidden="true"></i>
-        {% if not my_status.has_call %}{% translate "Todavía no hay convocatoria" %}
+        <span>{% if not my_status.has_call %}{% translate "Todavía no hay convocatoria" %}
         {% elif my_status.called %}<strong>{% translate "Estás convocado" %}</strong>{% if my_status.game %} · {% blocktranslate with n=my_status.game.n_game pts=my_status.game.score %}Partido {{ n }} · {{ pts }} pts{% endblocktranslate %}{% if my_status.partner %} · {% blocktranslate with name=my_status.partner.full_name %}con {{ name }}{% endblocktranslate %}{% endif %}{% elif my_status.closed %} · {% translate "las parejas aún no están decididas" %}{% endif %}
-        {% else %}<strong>{% translate "No estás convocado" %}</strong>{% if not my_status.closed %} · {% translate "la convocatoria sigue abierta" %}{% endif %}{% endif %}
+        {% else %}<strong>{% translate "No estás convocado" %}</strong>{% if not my_status.closed %} · {% translate "la convocatoria sigue abierta" %}{% endif %}{% endif %}</span>
     </p>
     {% elif not my_player and not is_club_admin %}
     <p class="z-next-match-me"><i class="fa-solid fa-link" aria-hidden="true"></i> <a href="{% url 'my_player' %}">{% translate "Enlaza tu cuenta con tu jugador para ver si estás convocado." %}</a></p>

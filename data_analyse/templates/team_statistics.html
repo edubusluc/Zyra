@@ -42,6 +42,8 @@
     {% include 'includes/season_filter.html' %}
     {% include 'includes/match_type_filter.html' %}
 
+    <div class="st-layout">
+    <div class="st-main">
     {% if not total_matches %}
       <div class="st-empty">
         <strong>{% translate "Todavía no hay partidos cerrados" %}</strong>
@@ -216,6 +218,22 @@
         {% include 'includes/snp_ranking.html' %}
       </section>
     {% endif %}
+    </div>
+    {% if total_matches %}
+    {# Panel lateral (escritorio): salta de una sección a otra sin recorrer la página; la activa se marca al hacer scroll (team_statistics.js). #}
+    <aside class="st-side" aria-label="{% translate 'Secciones de la página' %}">
+      <p class="st-side-title">{% translate "En esta página" %}</p>
+      <ul class="st-side-list">
+        <li><a href="#sec-resumen">{% translate "Resumen" %}</a></li>
+        <li><a href="#sec-top">{% translate "Top 5" %}</a></li>
+        <li><a href="#sec-numbers">{% translate "Partidos y sets" %}</a></li>
+        <li><a href="#sec-records">{% translate "Récords" %}</a></li>
+        <li><a href="#sec-charts">{% translate "Gráficos" %}</a></li>
+        {% if team %}<li><a href="#sec-snp">{% translate "Puntos SNP" %}</a></li>{% endif %}
+      </ul>
+    </aside>
+    {% endif %}
+    </div>
   </div>
 
   {{ snp_chart|json_script:"snp-team-data" }}

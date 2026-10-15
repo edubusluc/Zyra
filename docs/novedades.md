@@ -13,7 +13,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 - Crear enfrentamiento: tipo único, rival con casa/fuera, hora y lugar, `novalidate` con errores bajo cada campo
 - Las convocatorias exigen un mínimo de 10 jugadores
 - Selector de convocatoria: SNP, «Jugó N de M», ordenado por SNP, 30 sin paginar
-- Estadísticas del equipo: índice de secciones, sin gráfico circular, barras por temporada con «en curso»
+- Estadísticas del equipo: en escritorio, panel lateral «En esta página» que marca la sección visible; en móvil, índice de secciones, sin gráfico circular, barras por temporada con «en curso»
 - Temporada por defecto común (temporada actual, «Todas» a un toque y se recuerda en la sesión)
 - Ficha del jugador con pestañas Resumen / Estadísticas y forma reciente; «Estadísticas › Jugador» busca y abre la ficha
 - «Peores parejas» pasa a «Parejas por mejorar» (mínimo 4 partidos); puntos SNP y fechas con formato común
