@@ -1437,6 +1437,8 @@ a.z-location:hover span { text-decoration: underline; }
     conic-gradient(var(--z-lime) calc(var(--pct) * 1%), var(--z-surface-3) 0);
 }
 .st-ring span { font-size: 1.5rem; font-weight: 800; font-variant-numeric: tabular-nums; color: #FFFFFF; }
+/* 100 %: cuatro caracteres no caben a 1.5rem dentro del aro */
+.st-ring--full span { font-size: 1.15rem; }
 
 .st-row {
   display: grid;

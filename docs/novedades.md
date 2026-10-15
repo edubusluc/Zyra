@@ -3,6 +3,13 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 15/10/2026 · Estadísticas solo con partidos cerrados
+
+- Ninguna estadística (jugador, pareja, afinidad, convocatorias, informe mensual ni informe PDF) cuenta ya partidos con el acta abierta, aunque alguno de sus partidos individuales estuviera cerrado
+- El aro de «% de victorias» se lee bien con el 100 %
+- El listado de equipos muestra 6 por página
+- Estadísticas por jugador con una temporada concreta: se ocultan «Partidos jugados» y «Evolución del % de victorias» (solo tienen sentido con todas las temporadas); se mantienen los puntos SNP y el listado de partidos
+
 ## 13/10/2026 · Datos de partida en producción
 
 - La imagen incluye `populate_db.py` y `populate/` para cargar los datos de partida en el servidor (PR #137); `populate_db.py` guarda ahora los puntos como `7/5`, verifica el email del capitán en allauth (para «Entrar con Google»), conserva las cuentas que ya existan (solo exige que no haya clubes) y crea el capitán como usuario normal (`--superusuario` para el comportamiento anterior)

@@ -509,3 +509,38 @@ class DrawStatisticsTests(TestCase):
         self.assertEqual(response.context["percentage_drawn"], 33.33)
         self.assertEqual(response.context["dicc_line_chart"], {"2025-2026": {"won": 1, "drawn": 1, "lost": 1}})
         self.assertContains(response, "Empates")
+
+
+class OnlyClosedMatchesTests(TestCase):
+    """Un partido con el acta abierta (draft_mode) no cuenta en ninguna estadística."""
+
+    def setUp(self):
+        self.user = User.objects.create_user("admin", password="pass-12345")
+        self.club = create_club("Club A", "Sevilla", self.user)
+        rival = Team.objects.create(club=self.club, name="Rival", location="X", in_group=True)
+        self.a = Player.objects.create(club=self.club, name="A", last_name="Ason")
+        self.b = Player.objects.create(club=self.club, name="B", last_name="Bson")
+        for year, closed in ((2024, True), (2025, False)):
+            m = Match.objects.create(club=self.club, local=self.club.own_team, visiting=rival,
+                                     start_date=datetime.date(year, 10, 1), draft_mode=not closed,
+                                     result="Victoria Local" if closed else "")
+            # El partido individual está cerrado aunque el acta del partido siga abierta
+            Game.objects.create(match=m, n_game=1, score=3, winner='Local', draft_mode=False,
+                                player_1_local=self.a, player_2_local=self.b)
+        self.client.force_login(self.user)
+
+    def test_player_pair_and_affinity_ignore_open_match(self):
+        from data_analyse.views import degree_of_affinity
+        response = self.client.get(reverse("player_statistics"), {"player": self.a.public_id})
+        self.assertEqual(response.context["s"]["played"], 1)
+        self.assertEqual([r["games"] for r in degree_of_affinity(self.a)], [1])
+        self.assertEqual(len(pair_stats.club_game_log(self.club)), 1)
+
+    def test_player_charts_hidden_with_a_season(self):
+        url = reverse("player_statistics")
+        all_page = self.client.get(url, {"player": self.a.public_id})
+        self.assertContains(all_page, 'id="chartPlayed"')
+        self.assertContains(all_page, 'id="chartPct"')
+        season_page = self.client.get(url, {"player": self.a.public_id, "season": "2024-2025"})
+        self.assertNotContains(season_page, 'id="chartPlayed"')
+        self.assertNotContains(season_page, 'id="chartPct"')

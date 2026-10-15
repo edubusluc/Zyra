@@ -60,7 +60,7 @@
         <div class="st-kpis">
 
           <article class="st-kpi st-kpi--ring">
-            <div class="st-ring" style="--pct: {{ pct_w|unlocalize }}" role="img" aria-label="{% blocktranslate with pct=s.pct %}{{ pct }}% de victorias{% endblocktranslate %}">
+            <div class="st-ring{% if s.pct >= 100 %} st-ring--full{% endif %}" style="--pct: {{ pct_w|unlocalize }}" role="img" aria-label="{% blocktranslate with pct=s.pct %}{{ pct }}% de victorias{% endblocktranslate %}">
               <span>{{ s.pct|floatformat:0 }}%</span>
             </div>
             <div>
@@ -268,7 +268,8 @@
           </div>
         {% endif %}
 
-        {# ---- Evolución (todas las temporadas) ---- #}
+        {# ---- Evolución (solo con todas las temporadas; con una temporada concreta no aportan) ---- #}
+        {% if not selected_season %}
         <div class="st-row">
           <article class="st-card">
             <h3 class="st-card-title">{% translate "Partidos jugados" %}</h3>
@@ -282,6 +283,7 @@
             <div class="st-chart"><canvas id="chartPct" role="img" aria-label="{% translate "Evolución del % de victorias" %}"></canvas></div>
           </article>
         </div>
+        {% endif %}
 
         <article class="st-card">
           <h3 class="st-card-title">{% translate "Evolución de los puntos SNP" %}</h3>

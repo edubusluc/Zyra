@@ -118,7 +118,7 @@ def build_report(call):
                 if g["season"] == match.season:
                     usage[pid]["games"] += 1
                 usage[pid]["last"] = max(filter(None, (usage[pid]["last"], g["date"])))
-    calls = (Call.objects.filter(match__club=club, match__season=match.season, draft_mode=False,
+    calls = (Call.objects.filter(match__club=club, match__season=match.season, match__draft_mode=False, draft_mode=False,
                                  match__start_date__lt=match.start_date)
              .filter(**call_scope_filter).exclude(pk=call.pk).values_list("players", flat=True))
     for pid in calls:

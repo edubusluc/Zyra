@@ -311,3 +311,14 @@ class ListTeamsGroupFilterTests(TestCase):
         response = self.client.get(self.url, {"group": "0"})
         self.assertFalse(response.context["only_group"])
         self.assertContains(response, "Fuera FC")
+
+
+class TeamListPaginationTests(TestCase):
+    def test_six_teams_per_page(self):
+        user = User.objects.create_user("admin", password="pass-12345")
+        club = create_club("Club A", "Sevilla", user)
+        for i in range(8):
+            Team.objects.create(club=club, name=f"Rival {i}", location="X", in_group=True)
+        self.client.force_login(user)
+        response = self.client.get(reverse("list_teams"))
+        self.assertEqual(len(response.context["teams"]), 6)
