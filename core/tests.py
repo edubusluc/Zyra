@@ -379,14 +379,14 @@ class HomeTests(TestCase):
         self.assertTemplateUsed(self.client.get(reverse("home")), "landing.html")
 
     def test_landing_bottom_cta_back_to_top_only_on_desktop(self):
-        """Al final de la portada no se repite «Registrar mi club»: en ordenador se ofrece volver arriba."""
+        """Al final de la portada no se repite «Registrarme»: en ordenador se ofrece volver arriba."""
         self.client.logout()
         html = self.client.get(reverse("home")).content.decode()
         self.assertIn('class="btn btn-outline-light btn-lg d-none d-lg-inline-flex z-back-to-top" '
                       'href="#contenido" data-scroll-top', html)
         self.assertIn("Volver arriba", html)
         # El botón de registro solo está arriba, en la cabecera de la portada
-        self.assertEqual(html.count("Registrar mi club gratis"), 1)
+        self.assertEqual(html.count("Registrarme gratis"), 1)
         english = self.client.get(reverse("home") + "?lang=en").content.decode()
         self.assertIn("Back to top", english)
 

@@ -16,7 +16,7 @@ from data_analyse.pairs import COMPETITIVE, _current_run, match_type_lookup
 from data_analyse.sets import own_sets, set_stats
 from call.models import Call
 from match.models import Game
-from players.models import SnpScoreHistory
+from players.models import SnpScoreHistory, joined_by
 
 CALL_PLAYED, CALL_BENCHED, CALL_ABSENT = "played", "benched", "absent"
 
@@ -73,6 +73,8 @@ def monthly_calls(player, start, end, scope=None):
     )
     rows = []
     for call in calls:
+        if not joined_by(player.joined_season, call.match.season):
+            continue  # convocatoria de una temporada anterior a su incorporación
         if call.pk not in signed:
             status = CALL_ABSENT
         else:

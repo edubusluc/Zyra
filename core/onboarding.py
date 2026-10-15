@@ -10,7 +10,7 @@ from django.utils.translation import gettext_lazy as _
 
 from match.models import Match
 from .models import Membership
-from players.models import Player
+from players.models import Player, SnpAccount
 from team.models import Team
 
 
@@ -51,6 +51,14 @@ def onboarding_steps(club):
             "url": reverse("create_match"),
             "action": _("Crear partido"),
             "done": Match.objects.filter(club=club).exists(),
+        },
+        {
+            "key": "snp",
+            "title": _("Registra tu cuenta de SNP"),
+            "help": _("Con ella los puntos SNP de tus jugadores se actualizan solos cada semana."),
+            "url": reverse("snp_account"),
+            "action": _("Registrar cuenta"),
+            "done": SnpAccount.objects.filter(club=club).exists(),
         },
     ]
 

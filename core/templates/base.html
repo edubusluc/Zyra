@@ -21,17 +21,21 @@
     <meta property="og:title" content="{% block og_title %}Zyra · {% translate 'Gestión de equipos de pádel' %}{% endblock %}">
     <meta property="og:description" content="{% block og_description %}{% translate 'Gestiona tu equipo de pádel: jugadores, convocatorias, partidos y estadísticas, en privado para cada club.' %}{% endblock %}">
     <meta property="og:url" content="{{ canonical_url }}">
-    <meta property="og:image" content="{{ site_url }}{% static 'zyra/icon-512.png' %}">
-    <meta property="og:image:width" content="512">
-    <meta property="og:image:height" content="512">
+    <meta property="og:image" content="{{ site_url }}{% static 'zyra/og-image-v2.png' %}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
     <meta property="og:image:alt" content="{% translate 'Logotipo de Zyra' %}">
     <meta property="og:locale" content="{% if LANGUAGE_CODE == 'en' %}en_GB{% else %}es_ES{% endif %}">
     <meta property="og:locale:alternate" content="{% if LANGUAGE_CODE == 'en' %}es_ES{% else %}en_GB{% endif %}">
-    <meta name="twitter:card" content="summary">
+    <meta name="twitter:card" content="summary_large_image">
     <meta name="theme-color" content="#0A0B09">
-    <link rel="icon" href="{% static 'zyra/logo.svg' %}" type="image/svg+xml">
+    {# Google pide un icono cuyo lado sea múltiplo de 48 px (48, 96, 192...) y no admite bien el SVG: los PNG van primero. /favicon.ico también responde 200 en la raíz. #}
+    <link rel="icon" href="{% static 'zyra/favicon-48.png' %}" sizes="48x48" type="image/png">
+    <link rel="icon" href="{% static 'zyra/favicon-96.png' %}" sizes="96x96" type="image/png">
+    <link rel="icon" href="{% static 'zyra/favicon-192.png' %}" sizes="192x192" type="image/png">
     <link rel="icon" href="{% static 'zyra/favicon-32.png' %}" sizes="32x32" type="image/png">
-    <link rel="alternate icon" href="{% static 'zyra/favicon.ico' %}" sizes="any">
+    <link rel="icon" href="{% static 'zyra/favicon.svg' %}" sizes="any" type="image/svg+xml">
+    <link rel="shortcut icon" href="/favicon.ico" sizes="48x48">
     <link rel="apple-touch-icon" href="{% static 'zyra/apple-touch-icon.png' %}">
     {# Fuentes servidas desde la propia web (style.css): sin Google Fonts no se envía la IP del visitante a Google #}
     <link rel="preload" href="{% static 'zyra/fonts/Archivo-Regular.ttf' %}" as="font" type="font/ttf" crossorigin>
@@ -135,7 +139,7 @@
                 </ul>
             </div>
             {% else %}
-            <a href="{% url 'register_club' %}" class="btn btn-outline-light btn-sm z-desktop-only">{% translate "Registrar club" %}</a>
+            <a href="{% url 'register' %}" class="btn btn-outline-light btn-sm z-desktop-only">{% translate "Registrarme" %}</a>
             <a href="{% url 'login' %}" class="btn btn-primary btn-sm">{% translate "Iniciar sesión" %}</a>
             {% endif %}
         </div>
@@ -152,6 +156,7 @@
     <a href="{% url 'privacy' %}">{% translate "Privacidad" %}</a>
     <a href="{% url 'terms' %}">{% translate "Términos" %}</a>
     <a href="{% url 'cookies' %}">{% translate "Cookies" %}</a>
+    <a href="{% url 'guide_index' %}">{% translate "Guías" %}</a>
     <a href="mailto:{{ contact_email }}">{% translate "Contacto" %}</a>
   </nav>
   <p>&copy; {% now "Y" %} Zyra{% if current_club %} · {{ current_club.name }}{% endif %}</p>
@@ -213,6 +218,7 @@
 <script src="{% static 'js/password.js' %}"></script>
 <script src="{% static 'js/nav.js' %}"></script>
 <script src="{% static 'js/a11y.js' %}"></script>
+<script src="{% static 'js/confirm-modal.js' %}"></script>
 <script src="{% static 'js/custom-select.js' %}"></script>
 <script src="{% static 'js/page-transitions.js' %}"></script>
 {# Precarga las secciones principales (solo lectura) al ir a pulsarlas: la página siguiente llega antes y el paso es más fluido. Navegadores sin soporte lo ignoran. #}

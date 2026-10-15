@@ -15,7 +15,7 @@
     <div class="z-versus-team"><small>{% translate "Local" %}</small>{{ match.local_name }}</div>
     <div class="z-versus-mid">
         <div class="z-versus-vs">{% if not match.draft_mode and match.result_points != "NONE" %}{{ match.result_points }}{% else %}VS{% endif %}</div>
-        <div class="z-versus-date">{{ match.start_date|date:"d/m/Y" }}</div>
+        <div class="z-versus-date">{{ match.start_date|date:"d/m/Y" }}{% if is_club_admin and match.draft_mode %} <a href="{% url 'edit_match_date' match.public_id %}" class="z-edit-date" title="{% translate 'Cambiar fecha' %}"><i class="fa-solid fa-pen" aria-hidden="true"></i><span class="visually-hidden">{% translate "Cambiar fecha" %}</span></a>{% endif %}</div>
     </div>
     <div class="z-versus-team"><small>{% translate "Visitante" %}</small>{{ match.visiting_name }}</div>
 </div>
@@ -179,7 +179,7 @@
 </form>
 {% endif %}
 {% if is_club_admin and not match.draft_mode %}
-<form method="POST" action="{% url 'reopen_match' match.public_id %}" class="text-center mt-4" onsubmit="return confirm('{% translate "¿Reabrir el acta? Mientras esté abierta este enfrentamiento no cuenta en las estadísticas. Tendrás que volver a cerrarla." as reopen_msg %}{{ reopen_msg|escapejs }}');">
+<form method="POST" action="{% url 'reopen_match' match.public_id %}" class="text-center mt-4" data-confirm="{% translate "¿Reabrir el acta? Mientras esté abierta este enfrentamiento no cuenta en las estadísticas. Tendrás que volver a cerrarla." %}">
     {% csrf_token %}
     <button type="submit" class="btn btn-outline-secondary"><i class="fa-solid fa-lock-open me-1" aria-hidden="true"></i> {% translate "Reabrir acta para corregirla" %}</button>
 </form>

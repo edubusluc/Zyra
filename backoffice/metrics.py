@@ -84,6 +84,8 @@ def dashboard_kpis():
     inv_used_30 = invitations.filter(used_at__gte=now - datetime.timedelta(days=30)).count()
     inv_created_30 = invitations.filter(created_at__gte=now - datetime.timedelta(days=30)).count()
 
+    waiting = accounts_without_club(users)
+
     return {
         "clubs": {
             "total": clubs.count(),
@@ -101,6 +103,11 @@ def dashboard_kpis():
             "active_30": active_users(30),
             "google": users.filter(pk__in=google_user_ids()).count(),
             "without_club": users.filter(memberships__isnull=True).count(),
+            # Cuentas que esperan una invitación: sin club, ni personal ni desactivadas.
+            "waiting": waiting.count(),
+            "waiting_7": waiting.filter(date_joined__lt=now - datetime.timedelta(days=7)).count(),
+            "waiting_new_7": waiting.filter(date_joined__gte=now - datetime.timedelta(days=7)).count(),
+            "waiting_oldest": waiting.order_by("date_joined").values_list("date_joined", flat=True).first(),
         },
         "activity": {
             "players": Player.objects.filter(in_team=True).count(),
@@ -122,6 +129,12 @@ def dashboard_kpis():
             .exclude(matches__start_date__gte=at_risk_from)
         ).order_by("name")[:10],
     }
+
+
+def accounts_without_club(users=None):
+    """Cuentas activas, que no son del personal, sin ningún club: esperan a que las inviten."""
+    users = User.objects.all() if users is None else users
+    return users.filter(memberships__isnull=True, is_staff=False, is_active=True)
 
 
 def active_users(days, today=None):
@@ -437,7 +450,7 @@ def daily_trend(days=30):
     """Resúmenes diarios (DailyMetric) de los últimos ``days`` días, del más antiguo al más reciente, con barras relativas."""
     rows = list(DailyMetric.objects.filter(date__gte=timezone.localdate() - datetime.timedelta(days=days)).order_by("date"))
     peak = max((r.dau for r in rows), default=0) or 1
-    return [{"date": r.date, "dau": r.dau, "wau": r.wau, "mau": r.mau, "users": r.users, "clubs": r.clubs,
+    return [{"date": r.date, "dau": r.dau, "wau": r.wau, "mau": r.mau, "users": r.users, "without_club": r.users_without_club, "clubs": r.clubs,
              "errors": r.errors_5xx, "pct": round(100 * r.dau / peak)} for r in rows]
 
 
@@ -450,6 +463,8 @@ def snapshot_daily_metrics(day=None):
     values = {
         "clubs": Club.objects.filter(created_at__date__lte=day).count(),
         "users": User.objects.filter(date_joined__date__lte=day).count(),
+        # Aproximación: las cuentas sin club de hoy entre las que ya existían ese día.
+        "users_without_club": accounts_without_club().filter(date_joined__date__lte=day).count(),
         "dau": active_users(1, day),
         "wau": active_users(7, day),
         "mau": active_users(30, day),
@@ -491,7 +506,14 @@ def funnel(days=90):
             "pct": round(100 * n / total) if total else 0,
         })
         previous = n
-    return {"days": days, "steps": out}
+    # Cuentas nuevas del mismo periodo: cuántas ya están en un club y cuántas esperan invitación.
+    new_accounts = User.objects.filter(date_joined__gte=since, is_staff=False)
+    accounts = {
+        "total": new_accounts.count(),
+        "with_club": new_accounts.filter(memberships__isnull=False).distinct().count(),
+        "waiting": accounts_without_club(new_accounts).count(),
+    }
+    return {"days": days, "steps": out, "accounts": accounts}
 
 
 def error_summary(days=7):

@@ -3,6 +3,7 @@
 {% block page_title %}{% translate "Crear Jugador" %} · {% endblock %}
 
 {% block content %}
+    <script src="{% static 'js/player-picker.js' %}" defer></script>
     <div class="table-container">
         {% if form.errors %}
         <div class="alert-message">
@@ -39,6 +40,12 @@
             <div class="mb-3">
                 <label for="{{ form.skillfull_hand.id_for_label }}" class="form-label">{% translate "Mano hábil:" %}</label>
                 {{ form.skillfull_hand }}  <!-- Se agregó la clase en la vista -->
+            </div>
+
+            <div class="mb-3">
+                <label for="{{ form.joined_season.id_for_label }}" class="form-label">{% translate "Temporada en la que se unió al equipo:" %}</label>
+                {{ form.joined_season }}
+                <small class="form-text">{% translate "Solo cuenta desde esa temporada en las estadísticas de convocatorias." %}</small>
             </div>
 
             <div class="mb-3">

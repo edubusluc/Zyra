@@ -255,7 +255,7 @@ class PairStatisticsTests(TestCase):
         self.assertEqual([g["n_game"] for g in response.context["d"]["games"]], [2])
         self.assertIsNone(self.client.get(reverse("player_statistics"), {"player": self.d.public_id}).context["d"])
 
-        e = Player.objects.create(club=self.club, name="E", last_name="Eson")
+        e = Player.objects.create(club=self.club, name="E", last_name="Eson", joined_season="2020-2021")
         response = self.client.get(reverse("player_statistics"), {"player": e.public_id, "season": "2025-2026"})
         self.assertEqual(response.context["d"]["games"], [])
         self.assertContains(response, "No jugó ningún partido esta temporada.")

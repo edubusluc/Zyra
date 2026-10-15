@@ -13,9 +13,14 @@
         <p class="text-muted">{% blocktranslate trimmed with club=club.name contact=contact_email %}El club {{ club }} está suspendido por incumplir los términos y condiciones de Zyra. Si crees que es un error, escribe a {{ contact }}.{% endblocktranslate %}</p>
         {% endfor %}
         {% else %}
-        <p class="text-muted">{% translate "Todavía no perteneces a ningún club. Pide a un capitán que te añada como miembro, o registra un club nuevo." %}</p>
+        <p class="text-muted">{% translate "Tu cuenta está lista, pero todavía no perteneces a ningún club." %}</p>
+        <ul class="text-start text-muted">
+            <li>{% translate "Pide a un capitán de tu club que te invite: te llegará un email o un enlace." %}</li>
+            <li>{% translate "Abre ese enlace (o el del email) con esta sesión iniciada y te unirás con un clic." %}</li>
+            <li>{% translate "Si eres tú quien lleva el equipo, puedes registrar un club nuevo." %}</li>
+        </ul>
         {% endif %}
-        <a class="btn btn-primary btn-lg" href="{% url 'register_club' %}">{% translate "Registrar un club" %}</a>
+        <a class="btn {% if suspended_clubs %}btn-primary{% else %}btn-outline-primary{% endif %} btn-lg" href="{% url 'register_club' %}">{% translate "Registrar un club" %}</a>
     </div>
 </div>
 {% endblock %}

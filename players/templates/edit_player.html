@@ -3,6 +3,7 @@
 {% block page_title %}{% translate "Editar Jugador" %} · {% endblock %}
 
 {% block content %}
+    <script src="{% static 'js/player-picker.js' %}" defer></script>
     <div class="table-container">
     <h1>{% translate "Editar Jugador" %}</h1>
 
@@ -48,8 +49,9 @@
         </div>
 
         <div>
-            <label for="joined_season">{% translate "Temporada en la que se unió al equipo:" %}</label>
-            <input type="text" id="joined_season" name="joined_season" value="{{ player.joined_season }}" maxlength="9" pattern="\d{4}-\d{4}" placeholder="2024-2025" required>
+            <label for="{{ form.joined_season.id_for_label }}">{% translate "Temporada en la que se unió al equipo:" %}</label>
+            {{ form.joined_season }}
+            <small class="form-text">{% translate "Solo cuenta desde esa temporada en las estadísticas de convocatorias." %}</small>
         </div>
         
         <div>

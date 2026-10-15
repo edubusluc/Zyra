@@ -39,7 +39,7 @@
             <td>{{ b.created_at|date:"j M Y" }}</td>
             <td>{{ b.blocked_by.username|default:"—" }}</td>
             <td class="text-end">
-                <form method="post" action="{% url 'backoffice:blocked_email_delete' b.public_id %}" onsubmit="return confirm('{% translate "¿Desbloquear este email?" %}')">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn btn-outline-light btn-sm">{% translate "Desbloquear" %}</button></form>
+                <form method="post" action="{% url 'backoffice:blocked_email_delete' b.public_id %}" data-confirm="{% translate "¿Desbloquear este email?" %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn btn-outline-light btn-sm">{% translate "Desbloquear" %}</button></form>
             </td>
         </tr>
     {% empty %}

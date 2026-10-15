@@ -72,7 +72,7 @@
             <td class="text-end">
                 {% if job.status == 'draft' %}<a href="{% url 'backoffice:import_preview' job.public_id %}">{% translate "Continuar" %}</a>
                 {% elif job.status == 'done' %}
-                <form method="post" action="{% url 'backoffice:import_undo' job.public_id %}" onsubmit="return confirm('{% translate "Se borrarán los registros creados y se restaurarán los valores anteriores de los actualizados. ¿Deshacer?" as t_confirm %}{{ t_confirm|escapejs }}');">
+                <form method="post" action="{% url 'backoffice:import_undo' job.public_id %}" data-confirm="{% translate "Se borrarán los registros creados y se restaurarán los valores anteriores de los actualizados. ¿Deshacer?" %}">
                     {% csrf_token %}<button type="submit" class="btn btn-sm btn-outline-light"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> {% translate "Deshacer" %}</button>
                 </form>
                 {% endif %}
