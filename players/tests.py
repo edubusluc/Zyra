@@ -766,7 +766,15 @@ class CompleteTeamLimitsTests(TestCase):
     def start_and_cancel(self):
         from .models import SnpTeamImport
         self.client.post(reverse("complete_team_start"))
+        SnpTeamImport.objects.filter(status=SnpTeamImport.READY).update(status=SnpTeamImport.ERROR, message="No terminó.")
+
+    def test_cancelled_searches_do_not_count_for_the_limit(self):
+        from . import snp_import
+        from .models import SnpTeamImport
+        club = self.club("Club A")
+        self.client.post(reverse("complete_team_start"))
         SnpTeamImport.objects.filter(status=SnpTeamImport.READY).update(status=SnpTeamImport.CANCELLED)
+        self.assertIsNone(snp_import.search_limit(club))
 
     def test_repeated_searches_are_limited(self):
         from . import snp_import
