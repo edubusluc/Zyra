@@ -178,11 +178,12 @@ class ClubIsolationTests(TestCase):
         self.assertEqual(Match.objects.filter(club=self.club_a).count(), 2)
 
     def test_call_ignores_foreign_players(self):
+        own = [self.player_a] + [Player.objects.create(club=self.club_a, name=f"P{i}", last_name="X") for i in range(9)]
         self.client.post(reverse("create_call", args=[self.match_a.public_id]), {
-            "players": [self.player_a.id, self.player_b.id],
+            "players": [p.id for p in own] + [self.player_b.id],
         })
         call = Call.objects.get(match=self.match_a)
-        self.assertEqual(list(call.players.all()), [self.player_a])
+        self.assertEqual(set(call.players.all()), set(own))
 
     def test_create_games_uses_own_side(self):
         players = [Player.objects.create(club=self.club_a, name=f"P{i}", last_name="X") for i in range(10)]
@@ -434,7 +435,7 @@ class HomeTests(TestCase):
     def test_empty_home(self):
         response = self.client.get(reverse("home"))
         self.assertIsNone(response.context["next_match"])
-        self.assertContains(response, "No hay partidos programados.")
+        self.assertContains(response, "No hay enfrentamientos programados.")
         self.assertContains(response, "Nadie encadena victorias ahora mismo.")
 
     def test_hot_player_and_pair(self):

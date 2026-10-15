@@ -147,7 +147,7 @@
                 {% for g in last_games %}
                   <tr>
                     <th scope="row">
-                      <a href="{% url 'call_for_match' g.match_public_id %}#partido-{{ g.n_game }}">{{ g.date|date:"d/m/Y" }}</a>
+                      <a href="{% url 'call_for_match' g.match_public_id %}#partido-{{ g.n_game }}">{{ g.date|date:"D j M Y" }}</a>
                     </th>
                     <td>{{ g.rival }} <span class="st-muted">({% if g.local %}{% translate "local" %}{% else %}{% translate "visitante" %}{% endif %})</span></td>
                     <td>{{ g.n_game }}</td>

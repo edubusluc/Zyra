@@ -836,7 +836,7 @@ class PlayerChoicePlaceholderTests(TestCase):
     def test_match_form_team_selects(self):
         response = self.client.get(reverse("create_match"))
         self.assertNotContains(response, "---------")
-        self.assertContains(response, "Elige una opción", count=2)
+        self.assertContains(response, "Elige equipo")
 
 
 class DeletePlayerTests(TestCase):
@@ -950,7 +950,7 @@ class PlayerListSearchTests(TestCase):
         self.assertEqual(len(response.context["players"]), 12)
         self.assertContains(response, "data-selector-search")
         self.assertContains(response, 'data-name="JUGADOR3 ÁLVAREZ"')
-        self.assertContains(response, 'data-page-size="9"')
+        self.assertContains(response, 'data-page-size="30"')
 
 
 GROUP_TABLE_HTML = """

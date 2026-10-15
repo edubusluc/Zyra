@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static i18n %}
+{% load static i18n zyra_format %}
 {% block page_title %}{% translate "Jugadores" %} · {% endblock %}
 
 {% block content %}
@@ -84,7 +84,7 @@
             <p class="z-player-meta">
                 <span><i class="fa-solid fa-location-crosshairs" aria-hidden="true"></i>{{ player.get_position_display }}</span>
                 <span><i class="fa-solid fa-hand" aria-hidden="true"></i>{{ player.get_skillfull_hand_display }}</span>
-                <span><i class="fa-solid fa-trophy" aria-hidden="true"></i>SNP {{ player.snp_score|default:"-" }}</span>
+                <span><i class="fa-solid fa-trophy" aria-hidden="true"></i>SNP {{ player.snp_score|snp_points }}</span>
             </p>
             <div class="z-player-tags">
                 {% if is_club_admin and not player.in_team %}
@@ -130,7 +130,7 @@
                 <td><a href="{% url 'show_player' player.public_id %}" class="text-reset"><strong>{{ player.short_name }}</strong></a></td>
                 <td>{{ player.get_position_display }}</td>
                 <td>{{ player.get_skillfull_hand_display }}</td>
-                <td>{{ player.snp_score|default:"-" }}</td>
+                <td>{{ player.snp_score|snp_points:"–" }}</td>
                 <td>{{ player.joined_season }}</td>
                 {% if is_club_admin %}
                 <td>

@@ -19,6 +19,7 @@ from django.http import Http404
 from django.utils.translation import gettext as _
 from core.decorators import club_required, club_admin_required
 from penalty.models import Penalty
+from core.season_choice import ALL_SEASONS, choose_season
 from players.models import current_season, joined_by
 from . import pairs as pair_stats
 from . import records
@@ -57,7 +58,7 @@ PAGE_PARAM = "page"
 RECENT_SEASONS = 3
 
 
-def season_filter_context(request, seasons, selected_season, all_value=None, anchor=""):
+def season_filter_context(request, seasons, selected_season, all_value=ALL_SEASONS, anchor=""):
     """
     Chips "Todas" y las ``RECENT_SEASONS`` temporadas más recientes (``seasons`` de más nueva a
     más antigua); si la elegida es más antigua, aparece también como chip activo. Con más temporadas
@@ -284,13 +285,13 @@ def team_statistics(request):
     Requiere pertenecer al club y solo GET. Filtra por temporada (``?season=``) y tipo de partido.
     """
     seasons = get_total_season(Match.objects.filter(club=request.club))
-    selected_season = request.GET.get("season")
     team = request.club.own_team
     match_type = selected_match_type(request)
     min_games_pair = pair_stats.min_games_pair(match_type)
 
     seasons = sorted(seasons, key=lambda s: int(s.split('-')[0]), reverse=True)
-    if selected_season not in seasons:
+    selected_season = choose_season(request, seasons)
+    if selected_season == ALL_SEASONS:
         selected_season = None
 
     dicc = column_chart(request.club, selected_season, match_type)
@@ -333,6 +334,7 @@ def team_statistics(request):
         'percentage_visiting_games_won': percentage_visiting_games_won,
         'percentage_visiting_games_lost': percentage_visiting_games_lost,
         'dicc_line_chart': dicc_line_chart,
+        'current_season': current_season(),
         "seasons": seasons,
         "selected_season": selected_season,
         "column_chart_data": column_chart_data,
@@ -746,8 +748,8 @@ def statistics_per_player(request):
     # Sin las temporadas anteriores a su incorporación (salvo que haya jugado en ellas)
     played_seasons = {g['season'] for g in build_game_log(player)}
     all_seasons = [s for s in all_seasons if joined_by(player.joined_season, s) or s in played_seasons]
-    selected_season = request.GET.get('season')
-    if selected_season not in all_seasons:
+    selected_season = choose_season(request, all_seasons)
+    if selected_season == ALL_SEASONS:
         selected_season = None
 
     # Resumen y afinidad siguen la temporada elegida; la evolución por temporadas usa siempre el registro completo.
@@ -834,8 +836,8 @@ def statistics_per_pair(request):
     match_type = selected_match_type(request)
     seasons = sorted(get_total_season(Match.objects.filter(club=request.club)),
                      key=lambda s: int(s.split('-')[0]), reverse=True)
-    selected_season = request.GET.get(SEASON_PARAM)
-    if selected_season not in seasons:
+    selected_season = choose_season(request, seasons)
+    if selected_season == ALL_SEASONS:
         selected_season = None
     min_games_pair = pair_stats.min_games_pair(match_type)
     log = pair_stats.club_game_log(request.club, selected_season, match_type)
@@ -930,7 +932,6 @@ def pair_last_games(club, p1, p2, n=PAIR_LAST_GAMES, match_type=None, season=Non
 # ADVERTENCIAS (solo capitanes)
 # ---------------------------------------------------------------
 
-ALL_SEASONS = "all"
 
 
 @club_admin_required
@@ -949,7 +950,7 @@ def warnings_statistics(request):
 
     seasons = set(penalties.values_list('call__match__season', flat=True)) | {current_season()}
     seasons = sorted((x for x in seasons if x and x != "NONE"), reverse=True)
-    selected_season = request.GET.get('season') or current_season()
+    selected_season = choose_season(request, seasons)
     if selected_season != ALL_SEASONS:
         penalties = penalties.filter(call__match__season=selected_season)
     penalties = list(penalties)

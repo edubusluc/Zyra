@@ -51,7 +51,7 @@
 
     {% if is_future %}
     <div class="alert-message warning" role="note">
-        <p><strong>{% blocktranslate with date=match.start_date|date:"d/m/Y" local=match.local_name visiting=match.visiting_name %}{{ local }} – {{ visiting }} está fechado el {{ date }}, que aún no ha llegado.{% endblocktranslate %}</strong></p>
+        <p><strong>{% blocktranslate with date=match.start_date|date:"D j M Y" local=match.local_name visiting=match.visiting_name %}{{ local }} – {{ visiting }} está fechado el {{ date }}, que aún no ha llegado.{% endblocktranslate %}</strong></p>
         <div class="form-check">
             <input class="form-check-input" type="checkbox" name="confirm_future" id="confirm-future" value="1">
             <label class="form-check-label" for="confirm-future">{% translate "Es el enfrentamiento correcto: quiero poder cerrar su acta." %}</label>

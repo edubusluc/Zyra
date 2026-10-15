@@ -4,6 +4,7 @@ los 5 partidos, resultados, cierre del acta e informe PDF de la convocatoria.
 Todas las vistas trabajan solo con datos del club activo (``request.club``).
 """
 from . import outcomes
+from core.season_choice import ALL_SEASONS, choose_season
 from django.shortcuts import render, redirect, get_object_or_404
 from core.decorators import club_required, club_admin_required
 from django.contrib import messages
@@ -62,7 +63,6 @@ def club_players(request, ids):
 MATCHES_PER_PAGE = 12
 # Jugadores de cada posición que se ven en el detalle del partido antes de pulsar «Ver todos».
 CALL_GROUP_PREVIEW = 8
-ALL_SEASONS = "all"
 
 
 def match_outcome(match):
@@ -183,9 +183,7 @@ def list_match(request):
         rival = ''
 
     # Por defecto, la temporada actual; "all" muestra todas. Al buscar, todas.
-    season = request.GET.get('season') or (ALL_SEASONS if search or rival else current_season())
-    if season != ALL_SEASONS and season not in seasons:
-        season = current_season()
+    season = choose_season(request, seasons, default_all=bool(search or rival))
 
     matches = club_matches.order_by('-start_date', '-id')
     if season != ALL_SEASONS:

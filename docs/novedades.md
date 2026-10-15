@@ -3,6 +3,23 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 15/10/2026 · Mejoras de usabilidad de la auditoría UX
+
+- Vocabulario: «Enfrentamiento» (cruce de dos equipos) y «Partido 1-5» (cada pareja); «Alinear parejas» sustituye a «Crear partidos»
+- Nueva sección **Club** en el menú (Miembros e invitaciones, Mi equipo, Rivales, Cuenta SNP); el menú de cuenta queda con Mi perfil, idioma y Cerrar sesión; la barra móvil sigue el mismo orden con etiquetas
+- Inicio del capitán con bloque «Pendiente» (una fila por enfrentamiento abierto con su siguiente acción) y «Todo al día»; el miembro ve si está convocado y su pareja
+- Página del enfrentamiento con indicador de fases, un botón primario «Siguiente: …», menú «Más» y resumen Victoria/Derrota; al cerrar el acta se queda en el enfrentamiento con «Compartir resultado» y aviso si la fecha es futura
+- «Resultados del enfrentamiento»: los 5 partidos en una pantalla con validación en vivo, «Guardar» y «Guardar y cerrar acta»
+- Crear enfrentamiento: tipo único, rival con casa/fuera, hora y lugar, `novalidate` con errores bajo cada campo
+- Las convocatorias exigen un mínimo de 10 jugadores
+- Selector de convocatoria: SNP, «Jugó N de M», ordenado por SNP, 30 sin paginar
+- Estadísticas del equipo: índice de secciones, sin gráfico circular, barras por temporada con «en curso»
+- Temporada por defecto común (temporada actual, «Todas» a un toque y se recuerda en la sesión)
+- Ficha del jugador con pestañas Resumen / Estadísticas y forma reciente; «Estadísticas › Jugador» busca y abre la ficha
+- «Peores parejas» pasa a «Parejas por mejorar» (mínimo 4 partidos); puntos SNP y fechas con formato común
+- Mi perfil: cambiar el email pide la contraseña; el informe de convocatoria solo lo ve el capitán; botón propio «Subir foto»
+- Eslogan en castellano «Sube el nivel de tu equipo»
+
 ## 15/10/2026 · Estadísticas solo con partidos cerrados
 
 - Ninguna estadística (jugador, pareja, afinidad, convocatorias, informe mensual ni informe PDF) cuenta ya partidos con el acta abierta, aunque alguno de sus partidos individuales estuviera cerrado

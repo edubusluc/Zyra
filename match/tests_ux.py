@@ -268,3 +268,43 @@ class CreateMatchFormTests(UxBase):
         page = self.client.get(reverse("create_match"))
         self.assertContains(page, "Cancelar")
         self.assertContains(page, "Más opciones")
+
+
+class ClubAndSharedPiecesTests(UxBase):
+    """Sección Club, temporada por defecto común, formato SNP y ficha del jugador con pestañas."""
+
+    def test_club_hub_lists_the_four_entries(self):
+        response = self.client.get(reverse("club_home"))
+        self.assertEqual(response.status_code, 200)
+        for name in ("club_members", "list_teams", "snp_account"):
+            self.assertContains(response, f'href="{reverse(name)}"')
+        self.assertEqual(response.context["nav_section"], "club")
+
+    def test_snp_points_filter(self):
+        from core.templatetags.zyra_format import snp_points
+        self.assertEqual("".join(c for c in snp_points(1234.4) if c.isdigit()), "1234")
+        self.assertEqual(len(snp_points(1234.4)), 5)  # con separador de miles
+        self.assertEqual(snp_points(None), "Sin SNP")
+        self.assertEqual(snp_points("", "–"), "–")
+
+    def test_choose_season_remembers_last_choice(self):
+        self.match(datetime.date(2024, 11, 2))
+        url = reverse("team_statistics")
+        self.client.get(url, {"season": "2024-2025"})
+        self.assertEqual(self.client.get(url).context["selected_season"], "2024-2025")
+        self.client.get(url, {"season": "all"})
+        self.assertIsNone(self.client.get(url).context["selected_season"])
+
+    def test_player_card_has_tabs_and_form(self):
+        response = self.client.get(reverse("show_player", args=[self.players[0].public_id]))
+        self.assertContains(response, reverse("player_statistics") + f"?player={self.players[0].public_id}")
+        self.assertContains(response, 'aria-current="page"')
+        self.assertEqual(response.context["form"], [])
+
+    def test_team_statistics_without_pie_has_index(self):
+        match = self.match()
+        self.closed_call(match)
+        self.lineup(match)
+        response = self.client.get(reverse("team_statistics"), {"season": "all"})
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "myPieChart")
