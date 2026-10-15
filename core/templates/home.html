@@ -164,7 +164,7 @@
                 <span>{% blocktranslate trimmed count n=hot_player.streak %}{{ n }} victoria seguida{% plural %}{{ n }} victorias seguidas{% endblocktranslate %}</span>
             </div>
         </div>
-        {% if is_club_admin %}<a class="btn btn-secondary btn-sm" href="{% url 'player_statistics' %}?player={{ p.public_id }}">{% translate "Ver estadísticas" %}</a>{% endif %}
+        <a class="btn btn-secondary btn-sm" href="{% url 'player_statistics' %}?player={{ p.public_id }}">{% translate "Ver estadísticas" %}</a>
     </article>
     {% endwith %}
     {% endif %}

@@ -5,6 +5,7 @@ Todo parte de un único "log" cronológico con los partidos (Game) cerrados del
 club. En cada Game solo figuran los jugadores del propio club, en el lado local
 o en el visitante, así que la pareja es siempre la del lado que tiene jugadores.
 """
+import datetime
 from match import outcomes
 from django.db.models import Q
 
@@ -283,22 +284,28 @@ def pair_summary(log, p1_id, p2_id):
 MIN_HOT_STREAK = 2
 
 
-def _hottest(history):
-    """(clave, n) con la racha de victorias activa más larga; desempata la más reciente."""
-    best, best_rank = None, None
+def _hottest(history, day=None):
+    """
+    (clave, n) con la racha de victorias activa más larga. Si hay empate, rota: cada día
+    (``day``, hoy por defecto) toca una de las empatadas, siempre en el mismo orden.
+    """
+    streaks = {}
     for key, h in history.items():
         kind, n = _current_run(h['results'])
-        if kind != 'V' or n < MIN_HOT_STREAK:
-            continue
-        rank = (n, h['last'])
-        if best_rank is None or rank > best_rank:
-            best, best_rank = (key, n), rank
-    return best
+        if kind == 'V' and n >= MIN_HOT_STREAK:
+            streaks[key] = n
+    if not streaks:
+        return None
+    longest = max(streaks.values())
+    tied = sorted(key for key, n in streaks.items() if n == longest)
+    day = day or datetime.date.today()
+    return tied[day.toordinal() % len(tied)], longest
 
 
-def hot_streaks(log, players):
+def hot_streaks(log, players, day=None):
     """
     Jugador y pareja con la racha de victorias activa más larga entre `players`.
+    Con empate a rachas se muestra uno distinto cada día (``day``, hoy por defecto).
     Devuelve (jugador, pareja): {'player', 'streak'} y {'p1', 'p2', 'label', 'streak'}, o None.
     """
     by_id = {p.id: p for p in players}
@@ -318,10 +325,10 @@ def hot_streaks(log, players):
             add(by_pair, g['pair'], g['won'], i)
 
     player = pair = None
-    hot = _hottest(by_player)
+    hot = _hottest(by_player, day)
     if hot:
         player = {'player': by_id[hot[0]], 'streak': hot[1]}
-    hot = _hottest(by_pair)
+    hot = _hottest(by_pair, day)
     if hot:
         (a, b), n = hot
         p1, p2 = by_id[a], by_id[b]

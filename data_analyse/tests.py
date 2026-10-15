@@ -76,6 +76,17 @@ class PairStatisticsTests(TestCase):
         everyone = list(Player.objects.filter(club=self.club))
         self.assertIsNone(pair_stats.hot_streaks(pair_stats.club_game_log(self.club), everyone)[1])
 
+    def test_hot_streak_tie_rotates_daily(self):
+        """Con empate a racha se muestra uno distinto cada día, siempre en el mismo orden."""
+        import datetime
+        history = {pid: {'results': [True, True, True], 'last': pid} for pid in (3, 1, 2)}
+        days = [datetime.date(2026, 10, 15) + datetime.timedelta(days=i) for i in range(3)]
+        shown = [pair_stats._hottest(history, d)[0] for d in days]
+        self.assertEqual(sorted(shown), [1, 2, 3])
+        self.assertEqual(pair_stats._hottest(history, days[0]), pair_stats._hottest(history, days[0]))
+        history[4] = {'results': [True] * 4, 'last': 0}
+        self.assertEqual(pair_stats._hottest(history, days[1]), (4, 4))
+
     def test_top_tables(self):
         log = pair_stats.club_game_log(self.club)
         squad = list(Player.objects.filter(club=self.club, in_team=True))

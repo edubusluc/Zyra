@@ -19,6 +19,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 - «Peores parejas» pasa a «Parejas por mejorar» (mínimo 4 partidos); puntos SNP y fechas con formato común
 - Mi perfil: cambiar el email pide la contraseña; el informe de convocatoria solo lo ve el capitán; botón propio «Subir foto»
 - Eslogan en castellano «Sube el nivel de tu equipo»
+- Inicio: «Ver estadísticas» del jugador en racha también para los miembros; si varios empatan a racha, se muestra uno distinto cada día
 
 ## 15/10/2026 · Estadísticas solo con partidos cerrados
 
