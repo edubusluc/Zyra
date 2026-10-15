@@ -2784,6 +2784,13 @@ html { scroll-padding-top: 84px; scroll-padding-bottom: calc(var(--z-nav-h) + 24
 /* Objetivos táctiles de al menos 24 × 24 px (WCAG 2.5.8) */
 .z-onboarding-alt { display: inline-flex; align-items: center; min-height: 24px; padding: 4px 0; }
 a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
-.form-check-input { min-width: 1.5rem; min-height: 1.5rem; }
-.form-switch .form-check-input { min-width: 2.75rem; }
+/* Casillas y radios de 24 px con hueco propio: el control flota a la izquierda y el texto no lo pisa */
+.form-check { padding-left: 2.25rem; min-height: 1.5rem; margin-bottom: .5rem; }
+.form-check .form-check-input { float: left; margin-left: -2.25rem; margin-top: 0; min-width: 1.5rem; min-height: 1.5rem; }
+.form-check .form-check-label { display: block; line-height: 1.5rem; }
+.form-check.form-switch { padding-left: 3.75rem; }
+.form-check.form-switch .form-check-input { margin-left: -3.75rem; min-width: 2.75rem; width: 2.75rem; height: 1.5rem; }
+.z-check-grid .form-check, .z-bulk .form-check, .z-team-row-head .form-check, .form-check.m-0 { padding-left: 0; min-height: 0; margin-bottom: 0; }
+.z-check-grid .form-check .form-check-input, .z-bulk .form-check .form-check-input, .z-team-row-head .form-check .form-check-input, .form-check.m-0 .form-check-input { float: none; margin-left: 0; }
+.form-check.m-0 { display: inline-flex; align-items: center; gap: .5rem; }
 .z-home-hero + .z-notice { margin-top: 16px; }

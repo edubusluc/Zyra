@@ -1,6 +1,7 @@
 """Vistas de jugadores: alta, lista, ficha, plantilla, cuenta SNP, «Completar equipo» y perfil propio."""
 from django.shortcuts import render, redirect, get_object_or_404
 from core.decorators import club_required, club_admin_required
+from core.models import Club
 from .forms import NewOwnPlayerForm, OwnPlayerForm, PlayerEditForm, PlayerForm, SnpAccountForm, with_placeholder
 from django.contrib import messages
 from match.models import Game
@@ -234,6 +235,8 @@ def snp_account(request):
             account.team_id = ""
             account.updated_by = request.user
             account.save()
+            # Datos corregidos: el capitán vuelve a poder lanzar «Sincronizar datos» aunque hubiera fallado varias veces.
+            Club.objects.filter(pk=request.club.pk).update(snp_import_failures=0)
             messages.success(request, _("Cuenta SNP guardada. Los puntos se actualizarán cada lunes por la noche."))
             return redirect("snp_account")
     else:
@@ -393,7 +396,7 @@ def complete_team_cancel(request, import_id):
     SnpTeamImport.objects.filter(
         public_id=import_id, club=request.club, source=SnpTeamImport.WEB, status__in=[SnpTeamImport.RUNNING, SnpTeamImport.READY],
     ).update(status=SnpTeamImport.CANCELLED)
-    return redirect("list_players")
+    return redirect("home" if request.POST.get("from") == "home" else "list_players")
 
 
 @club_admin_required

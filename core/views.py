@@ -118,21 +118,13 @@ def home(request):
     hot_player, hot_pair = pair_stats.hot_streaks(pair_stats.club_game_log(club), players)
 
     onboarding = onboarding_for(request.membership)
-    snp_failure = None
-    if request.membership.is_admin and SnpAccount.objects.filter(club=club).exists():
+    snp_sync = None
+    if request.membership.is_admin:
         from players import snp_import
-        failed = snp_import.failed_web_import(club)
-        if failed is not None and not snp_import.active_import(club):
-            snp_failure = {
-                "message": failed.message,
-                "blocked": snp_import.web_blocked(club),
-                "wait": snp_import.search_limit(club),
-                "service_off": not snp_service.is_enabled(),
-            }
-            snp_failure["can_retry"] = not (snp_failure["blocked"] or snp_failure["wait"] or snp_failure["service_off"])
+        snp_sync = snp_import.sync_task(club)
     return render(request, 'home.html', {
         'email_unverified': email_needs_confirmation(request.user),
-        'snp_failure': snp_failure,
+        'snp_sync': snp_sync,
         'own_team': club.own_team,
         'season': current_season(),
         'next_match': next_match,

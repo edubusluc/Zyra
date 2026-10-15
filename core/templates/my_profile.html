@@ -97,7 +97,7 @@
                 <label class="form-check-label" for="scope-{{ value }}">{{ label }}</label>
             </div>
             {% endfor %}
-            <p class="form-text">{% translate "Es la opción que aparece marcada por defecto; en cada partido puedes cambiarla al crearlo." %}</p>
+            <p class="form-text">{% translate "Es la opción que aparece marcada por defecto; en cada enfrentamiento puedes cambiarla al crearlo." %}</p>
         </fieldset>
         {% endif %}
         <input type="hidden" name="monthly_form" value="1">
@@ -108,7 +108,7 @@
                 <label class="form-check-label" for="monthly-report">{% translate "Recibir cada mes un PDF con mis estadísticas" %}</label>
             </div>
             <p class="form-text">{% translate "Solo se envía si tu cuenta está enlazada a un jugador y jugaste algún partido el mes anterior." %}</p>
-            <p class="form-label mt-3 mb-1" id="monthly-scope-label">{% translate "Partidos que cuenta el informe" %}</p>
+            <p class="form-label mt-3 mb-1" id="monthly-scope-label">{% translate "Enfrentamientos que cuenta el informe" %}</p>
             <div role="radiogroup" aria-labelledby="monthly-scope-label">
             {% for value, label in report_scopes %}
             <div class="form-check">

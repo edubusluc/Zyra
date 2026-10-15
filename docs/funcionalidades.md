@@ -54,7 +54,7 @@ jugadores y crear el primer enfrentamiento. Se muestran los primeros en la porta
 «Siguiente paso» y los bloques vacíos ocultos; cada paso se marca solo cuando el club ya lo tiene
 y la lista desaparece al completarla o al cerrarla ([`core.onboarding`](referencia/core/onboarding.md)).
 Los clubes que ya existían no la ven. Si el email no está confirmado, un aviso único ofrece
-«Reenviar» y «Cambiar email»; si «Completar equipo» falló en el alta, otra tarjeta ofrece «Reintentar».
+«Reenviar» y «Cambiar email»; hasta que «Completar equipo» salga bien, otra tarjeta («Sincronizar datos») lo lanza, lo sigue o ofrece «Reintentar».
 
 El registro de un club va **en 3 pasos** (club, cuenta, jugador) con barra de progreso, validación al
 salir de cada campo, resumen «Faltan N campos» y foco en el primer error; categoría y nacionalidad vienen

@@ -587,6 +587,44 @@ class CompleteTeamTests(TestCase):
         self.assertEqual(team_import.status, SnpTeamImport.DONE)
         self.assertNotContains(self.client.get(reverse("home")), "No hemos podido traer tu equipo de SNP")
 
+    def test_home_task_offers_sync_until_it_is_done(self):
+        """«Sincronizar datos» en Inicio: pendiente, en curso, cancelada y de nuevo lanzable hasta que salga bien."""
+        home = self.client.get(reverse("home"))
+        self.assertContains(home, "Sincroniza tu equipo con SNP")
+        self.assertContains(home, 'name="from" value="home"')
+        # En curso (en cola): se puede seguir o cancelar, sin botón de lanzar otra.
+        with override_settings(SNP_IMPORT_INLINE=False):
+            self.client.post(reverse("complete_team_start"), {"from": "home"})
+        team_import = SnpTeamImport.objects.get()
+        home = self.client.get(reverse("home"))
+        self.assertContains(home, "Sincronizando tu equipo con SNP")
+        self.assertContains(home, reverse("complete_team_cancel", args=[team_import.public_id]))
+        # Cancelada desde Inicio: no cuenta para los límites y se puede volver a lanzar en el acto.
+        response = self.client.post(reverse("complete_team_cancel", args=[team_import.public_id]), {"from": "home"})
+        self.assertRedirects(response, reverse("home"), fetch_redirect_response=False)
+        home = self.client.get(reverse("home"))
+        self.assertContains(home, "No hemos podido traer tu equipo de SNP")
+        self.assertContains(home, 'name="from" value="home"')
+        self.assertIsNone(snp_import.search_limit(self.club))
+        response = self.client.post(reverse("complete_team_start"), {"from": "home"})
+        self.assertEqual(SnpTeamImport.objects.count(), 2)
+        # Hecho correctamente: la tarea desaparece.
+        SnpTeamImport.objects.update(status=SnpTeamImport.DONE)
+        self.assertNotContains(self.client.get(reverse("home")), "Sincronizar datos")
+
+    def test_fixing_the_account_lifts_the_wait_and_the_block(self):
+        error = SnpScrapeError("SNP no ha aceptado el usuario o la contraseña.", kind=SnpScrapeError.ACCOUNT)
+        with mock.patch("players.snp_import.scrape_scores", side_effect=error):
+            self.client.post(reverse("complete_team_start"))
+        self.assertIsNotNone(snp_import.search_limit(self.club))
+        self.club.snp_import_failures = snp_import.MAX_FAILED_SEARCHES
+        self.club.save(update_fields=["snp_import_failures"])
+        self.client.post(reverse("snp_account"), {"username": "nuevo", "password": "otra-clave"})
+        self.club.refresh_from_db()
+        self.assertEqual(self.club.snp_import_failures, 0)
+        self.assertIsNone(snp_import.search_limit(self.club))
+        self.assertContains(self.client.get(reverse("home")), 'name="from" value="home"')
+
     def test_failure_card_explains_the_wait_when_retry_is_too_soon(self):
         error = SnpScrapeError("SNP no ha aceptado el usuario o la contraseña.", kind=SnpScrapeError.ACCOUNT)
         with mock.patch("players.snp_import.scrape_scores", side_effect=error):

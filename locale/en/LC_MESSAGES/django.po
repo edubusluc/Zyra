@@ -11346,3 +11346,54 @@ msgstr "Also show those outside my group"
 
 msgid "Añade a tu primer rival desde «Nuevo rival»."
 msgstr "Add your first rival from «New rival»."
+
+msgid "Sincronizar datos"
+msgstr "Sync data"
+
+msgid "Sincronizando tu equipo con SNP"
+msgstr "Syncing your team with SNP"
+
+msgid "Estamos leyendo tus jugadores y sus puntos. Puedes seguir usando Zyra; aquí verás cuando termine."
+msgstr "We are reading your players and their points. You can keep using Zyra; you will see here when it finishes."
+
+msgid "Tu equipo de SNP está listo para confirmar"
+msgstr "Your SNP team is ready to confirm"
+
+msgid "Revisa los jugadores encontrados y confírmalos para añadirlos."
+msgstr "Review the players found and confirm them to add them."
+
+msgid "La búsqueda se ha cancelado o no ha terminado."
+msgstr "The search was cancelled or did not finish."
+
+msgid "Sincroniza tu equipo con SNP"
+msgstr "Sync your team with SNP"
+
+msgid "Trae a tus jugadores y sus puntos de SNP de una vez. Hazlo antes de empezar la temporada."
+msgstr "Bring in your players and their SNP points at once. Do it before the season starts."
+
+msgid "Ver progreso"
+msgstr "View progress"
+
+msgid "Revisar y confirmar"
+msgstr "Review and confirm"
+
+msgid "Seguir en Inicio"
+msgstr "Continue to Home"
+
+msgid "Estamos leyendo tus jugadores y sus puntos SNP. Suele tardar menos de un minuto."
+msgstr "We are reading your players and their SNP points. It usually takes less than a minute."
+
+msgid "Está tardando más de lo normal. No hace falta esperar aquí: seguimos buscando y verás el resultado en Inicio."
+msgstr "It is taking longer than usual. There is no need to wait here: we keep searching and you will see the result on Home."
+
+msgid "Revisa tu cuenta de SNP y vuelve a intentarlo desde Inicio con «Sincronizar datos», o crea tu jugador a mano."
+msgstr "Check your SNP account and try again from Home with “Sync data”, or create your player by hand."
+
+msgid "Es la opción que aparece marcada por defecto; en cada enfrentamiento puedes cambiarla al crearlo."
+msgstr "This is the option selected by default; for each match you can change it when creating it."
+
+msgid "Enfrentamientos que cuenta el informe"
+msgstr "Matches the report counts"
+
+msgid "Solo enfrentamientos competitivos"
+msgstr "Competitive matches only"

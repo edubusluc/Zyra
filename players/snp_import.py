@@ -27,7 +27,7 @@ from django.utils.translation import gettext as _, ngettext
 
 from core.crypto import DecryptionError
 
-from .models import Player, SnpScoreHistory, SnpTeamImport, current_season
+from .models import Player, SnpAccount, SnpScoreHistory, SnpTeamImport, current_season
 from . import snp_service
 from .scraper import SnpScrapeError, scrape_scores
 from core.similarity import is_same_team, same_name
@@ -293,15 +293,21 @@ def is_unlimited(club):
 def search_limit(club, now=None):
     """
     None si el club puede lanzar ahora otra búsqueda desde la web; si no, cuándo podrá
-    (datetime). Cuenta todas las búsquedas web, también las canceladas o fallidas: así
-    pulsar el botón muchas veces no lanza muchas lecturas de SNP.
+    (datetime). Cuenta las búsquedas web hechas o fallidas, no las canceladas ni las rechazadas por la
+    cuenta SNP que el capitán ya ha corregido: así pulsar el botón muchas veces no lanza muchas
+    lecturas de SNP, pero cancelar o arreglar los datos no deja bloqueado al capitán.
     """
     if is_unlimited(club):
         return None
     now = now or timezone.now()
-    recent = list(SnpTeamImport.objects.filter(
+    counted = SnpTeamImport.objects.filter(
         club=club, source=SnpTeamImport.WEB, created_at__gte=now - datetime.timedelta(days=1),
-    ).order_by("-created_at").values_list("created_at", flat=True))
+    ).exclude(status=SnpTeamImport.CANCELLED)
+    # Una cuenta rechazada por SNP no cuenta una vez corregida: el capitán debe poder reintentar ya.
+    account_updated = SnpAccount.objects.filter(club=club).values_list("updated_at", flat=True).first()
+    if account_updated:
+        counted = counted.exclude(status=SnpTeamImport.ERROR, error_kind=SnpScrapeError.ACCOUNT, created_at__lt=account_updated)
+    recent = list(counted.order_by("-created_at").values_list("created_at", flat=True))
     waits = []
     if recent and now - max(recent) < SEARCH_COOLDOWN:
         waits.append(max(recent) + SEARCH_COOLDOWN)
@@ -325,13 +331,40 @@ def web_import_done(club):
 
 def failed_web_import(club):
     """
-    La última búsqueda web de «Completar equipo» del club si terminó con error y nada después la
-    arregló (ni hecha ni en curso), o None. La portada del capitán la usa para ofrecer «Reintentar».
+    La última búsqueda web de «Completar equipo» del club si terminó con error o se canceló y nada
+    después la arregló (ni hecha ni en curso), o None. La portada del capitán la usa para ofrecer «Reintentar».
     """
     latest = SnpTeamImport.objects.filter(club=club, source=SnpTeamImport.WEB).order_by("-created_at").first()
-    if latest and latest.status == SnpTeamImport.ERROR and not web_import_done(club):
+    if latest and latest.status in (SnpTeamImport.ERROR, SnpTeamImport.CANCELLED) and not web_import_done(club):
         return latest
     return None
+
+
+def sync_task(club):
+    """
+    La tarea «Sincronizar datos» de la portada del capitán: hasta que «Completar equipo» haya devuelto
+    un resultado correcto (una búsqueda web ``DONE``) hay que poder lanzarlo, seguirlo o reintentarlo.
+    None si no hace falta (ya hecho o sin cuenta SNP). Si no, un diccionario con ``state``:
+    ``running`` (en cola o buscando), ``ready`` (a la espera de confirmar), ``failed`` (error o cancelada)
+    o ``idle`` (aún no se ha lanzado), más ``message``, ``blocked``, ``wait``, ``service_off`` y ``can_retry``.
+    """
+    if not SnpAccount.objects.filter(club=club).exists():
+        return None
+    if SnpTeamImport.objects.filter(club=club, source=SnpTeamImport.WEB, status=SnpTeamImport.DONE).exists():
+        return None
+    active = active_import(club)
+    failed = None if active else failed_web_import(club)
+    if active:
+        state, message = ("running" if active.status == SnpTeamImport.RUNNING else "ready"), ""
+    elif failed:
+        state, message = "failed", failed.message
+    else:
+        state, message = "idle", ""
+    blocked, wait, service_off = web_blocked(club), search_limit(club), not snp_service.is_enabled()
+    return {
+        "state": state, "message": message, "import": active or failed, "blocked": blocked, "wait": wait,
+        "service_off": service_off, "can_retry": not (blocked or wait or service_off),
+    }
 
 
 def web_blocked(club):

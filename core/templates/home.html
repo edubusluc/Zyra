@@ -29,26 +29,49 @@
 </section>
 {% endif %}
 
-{% if snp_failure %}
-{# «Completar equipo» falló al registrar el club: se puede reintentar desde aquí (si los límites lo permiten). #}
-<section class="z-notice z-notice--warn" role="alert" aria-label="{% translate 'No se pudo traer tu equipo de SNP' %}">
-    <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+{% if snp_sync %}
+{# Tarea «Sincronizar datos»: hasta que «Completar equipo» devuelva un resultado correcto se puede lanzar, seguir o reintentar desde aquí. #}
+<section class="z-notice{% if snp_sync.state == 'failed' %} z-notice--warn{% endif %}" role="{% if snp_sync.state == 'failed' %}alert{% else %}status{% endif %}" aria-label="{% translate 'Sincronizar datos' %}">
+    {% if snp_sync.state == 'running' %}<span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+    {% elif snp_sync.state == 'failed' %}<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+    {% else %}<i class="fa-solid fa-rotate" aria-hidden="true"></i>{% endif %}
     <div class="z-notice-text">
+        {% if snp_sync.state == 'running' %}
+        <strong>{% translate "Sincronizando tu equipo con SNP" %}</strong>
+        <span>{% translate "Estamos leyendo tus jugadores y sus puntos. Puedes seguir usando Zyra; aquí verás cuando termine." %}</span>
+        {% elif snp_sync.state == 'ready' %}
+        <strong>{% translate "Tu equipo de SNP está listo para confirmar" %}</strong>
+        <span>{% translate "Revisa los jugadores encontrados y confírmalos para añadirlos." %}</span>
+        {% elif snp_sync.state == 'failed' %}
         <strong>{% translate "No hemos podido traer tu equipo de SNP" %}</strong>
-        <span>{{ snp_failure.message|default:_("La búsqueda no ha terminado.") }}
-        {% if snp_failure.blocked %}{% translate "Ha fallado varias veces: hemos avisado al administrador de Zyra para que lo revise." %}
-        {% elif snp_failure.service_off %}{% translate "La conexión con SNP no está disponible ahora mismo." %}
-        {% elif snp_failure.wait %}{% blocktranslate with date=snp_failure.wait|date:"d/m/Y H:i" %}Podrás reintentarlo a partir del {{ date }}.{% endblocktranslate %}{% endif %}</span>
+        <span>{{ snp_sync.message|default:_("La búsqueda se ha cancelado o no ha terminado.") }}
+        {% if snp_sync.blocked %}{% translate "Ha fallado varias veces: hemos avisado al administrador de Zyra para que lo revise." %}
+        {% elif snp_sync.service_off %}{% translate "La conexión con SNP no está disponible ahora mismo." %}
+        {% elif snp_sync.wait %}{% blocktranslate with date=snp_sync.wait|date:"d/m/Y H:i" %}Podrás reintentarlo a partir del {{ date }}.{% endblocktranslate %}{% endif %}</span>
+        {% else %}
+        <strong>{% translate "Sincroniza tu equipo con SNP" %}</strong>
+        <span>{% translate "Trae a tus jugadores y sus puntos de SNP de una vez. Hazlo antes de empezar la temporada." %}</span>
+        {% endif %}
     </div>
     <div class="z-notice-actions">
-        {% if snp_failure.can_retry %}
+        {% if snp_sync.state == 'running' %}
+        <a class="btn btn-secondary btn-sm" href="{% url 'complete_team_welcome' snp_sync.import.public_id %}">{% translate "Ver progreso" %}</a>
+        <form method="post" action="{% url 'complete_team_cancel' snp_sync.import.public_id %}">
+            {% csrf_token %}<input type="hidden" name="from" value="home">
+            <button type="submit" class="btn btn-secondary btn-sm">{% translate "Cancelar" %}</button>
+        </form>
+        {% elif snp_sync.state == 'ready' %}
+        <a class="btn btn-primary btn-sm" href="{% url 'list_players' %}">{% translate "Revisar y confirmar" %}</a>
+        {% else %}
+        {% if snp_sync.can_retry %}
         <form method="post" action="{% url 'complete_team_start' %}" onsubmit="this.querySelector('button').disabled = true;">
             {% csrf_token %}
             <input type="hidden" name="from" value="home">
-            <button type="submit" class="btn btn-primary btn-sm">{% translate "Reintentar" %}</button>
+            <button type="submit" class="btn btn-primary btn-sm">{% if snp_sync.state == 'failed' %}{% translate "Reintentar" %}{% else %}{% translate "Sincronizar datos" %}{% endif %}</button>
         </form>
         {% endif %}
         <a class="btn btn-secondary btn-sm" href="{% url 'snp_account' %}?edit=1">{% translate "Revisar cuenta SNP" %}</a>
+        {% endif %}
     </div>
 </section>
 {% endif %}
