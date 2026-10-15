@@ -27,7 +27,7 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
 - [V] Un club tiene un único capitán (restricción `unique_captain_per_club`). Se cede con
   `transfer_captaincy` (vista `transfer_captaincy_view`) solo a un miembro enlazado a un `Player` del club
   (`eligible_successors`); el antiguo pasa a miembro y se borra la `SnpAccount` del club (eran sus credenciales) y se reabre «Primeros pasos»
-  (`onboarding_dismissed_at=None`), que incluye la tarea «Registra tu cuenta de SNP». El capitán no puede quitarse ni abandonar sin ceder antes.
+  (`onboarding_dismissed_at=None`), cuyos 3 pasos son «Conecta SNP o añade a tus jugadores», «Invita a tus jugadores» y «Crea tu primer enfrentamiento» (se muestran primero en la portada y ocultan los bloques vacíos mientras queden pendientes). El capitán no puede quitarse ni abandonar sin ceder antes.
 - [V] Eliminar la cuenta («Mi perfil», `delete_account`): un capitán debe ceder antes la capitanía
   (`account_delete_blocker`); la ficha de jugador se desenlaza (o se borra si se elige). El capitán
   solo puede eliminar el club tras desvincular todas las demás cuentas. Tests: `core/tests_account_lifecycle.py`.
@@ -143,7 +143,7 @@ ni se editan parejas (`edit_game_match`).
   cuenta del capitán). Para ante 429/403/503 o fallos de red seguidos.
 - [V] «Completar equipo» desde la web: solo UNA vez con éxito (en el alta o con la cuenta SNP ya registrada;
   `snp_import.web_import_done`), máx. 3 búsquedas al día con 5 min entre ellas. Cada búsqueda fallida suma a
-  `Club.snp_import_failures` (no cuenta si el servicio SNP está apagado); al llegar a `MAX_FAILED_SEARCHES` (3) la
+  `Club.snp_import_failures` (no cuenta si el servicio SNP está apagado); la portada del capitán muestra una tarjeta «No hemos podido traer tu equipo de SNP» con «Reintentar» (si no hay bloqueo ni espera) y «Revisar cuenta SNP» (`snp_import.failed_web_import`); al llegar a `MAX_FAILED_SEARCHES` (3) la
   opción se oculta (`web_blocked`), se avisa al capitán de que el administrador ha sido notificado y al personal
   por email + auditoría `club.snp_import_blocked`. Después solo el back-office o el proceso automático
   (`players/snp_import.py`); el personal repone el contador desde la ficha del club. Los clubes con `Club.snp_unlimited` (editable en el back-office, ficha del club)

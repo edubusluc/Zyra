@@ -323,6 +323,17 @@ def web_import_done(club):
     return SnpTeamImport.objects.filter(club=club, source=SnpTeamImport.WEB, status=SnpTeamImport.DONE).first()
 
 
+def failed_web_import(club):
+    """
+    La última búsqueda web de «Completar equipo» del club si terminó con error y nada después la
+    arregló (ni hecha ni en curso), o None. La portada del capitán la usa para ofrecer «Reintentar».
+    """
+    latest = SnpTeamImport.objects.filter(club=club, source=SnpTeamImport.WEB).order_by("-created_at").first()
+    if latest and latest.status == SnpTeamImport.ERROR and not web_import_done(club):
+        return latest
+    return None
+
+
 def web_blocked(club):
     """True si la web ya no ofrece «Completar equipo» por fallos repetidos (se avisó al personal)."""
     return not is_unlimited(club) and club.snp_import_failures >= MAX_FAILED_SEARCHES

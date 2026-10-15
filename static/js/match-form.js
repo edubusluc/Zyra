@@ -13,6 +13,12 @@
   const sourceRow = form.querySelector('[data-rival-source-row]');
   const groupRival = form.querySelector('[data-group-rival]');
   const manualRival = form.querySelector('[data-manual-rival]');
+  // Selector único «Tipo de enfrentamiento»: fija el modo (competitivo/amistoso) y el tipo (enfrentamiento,
+  // reto, play off) de los controles originales, que se ocultan.
+  const kindRow = form.querySelector('[data-kind-row]');
+  const kindSelect = form.querySelector('[data-kind-select]');
+  const legacy = form.querySelector('[data-kind-legacy]');
+  const typeSelect = form.querySelector('select[name="match_type"]');
   const radios = form.querySelectorAll('input[name="mode"], input[name="rival_source"], input[name="own_side"], input[name="report_scope"]');
   function checkedValue(name) {
     const checked = form.querySelector(`input[name="${name}"]:checked`);
@@ -36,6 +42,17 @@
       if (input) input.focus();
     }
   }));
+  if (kindRow && kindSelect && legacy && typeSelect) {
+    kindRow.hidden = false;
+    legacy.hidden = true;
+    kindSelect.value = checkedValue('mode') === 'amistoso' ? 'amistoso' : (typeSelect.value || 'enfrentamiento');
+    kindSelect.addEventListener('change', () => {
+      const friendly = kindSelect.value === 'amistoso';
+      const mode = form.querySelector(`input[name="mode"][value="${friendly ? 'amistoso' : 'competitivo'}"]`);
+      if (mode) { mode.checked = true; mode.dispatchEvent(new Event('change', { bubbles: true })); }
+      if (!friendly) typeSelect.value = kindSelect.value;
+    });
+  }
   syncMode();
 
   // Lugar: por defecto el del equipo local (el propio si juega en casa, el rival si juega fuera);

@@ -39,16 +39,19 @@
             {% if email_unverified %}
             <span class="z-account-note">{% translate "Email sin confirmar. Abre el enlace que te enviamos." %}</span>
             {% endif %}
+            <div class="z-account-actions">
+                {% if email_unverified %}
+                <form method="post" action="{% url 'resend_verification' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{% url 'my_profile' %}">
+                    <button type="submit" class="btn btn-outline-secondary btn-sm">{% translate "Reenviar enlace" %}</button>
+                </form>
+                {% endif %}
+                {% if not google_only %}
+                <a href="?edit=email" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-pen me-1" aria-hidden="true"></i>{% translate "Cambiar email" %}</a>
+                {% endif %}
+            </div>
         </div>
-        {% if email_unverified %}
-        <form method="post" action="{% url 'resend_verification' %}">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-outline-secondary btn-sm">{% translate "Reenviar enlace" %}</button>
-        </form>
-        {% endif %}
-        {% if not google_only %}
-        <a href="?edit=email" class="btn btn-outline-secondary btn-sm" aria-label="{% translate 'Cambiar el email' %}"><i class="fa-solid fa-pen" aria-hidden="true"></i><span class="z-account-btn-text"> {% translate "Cambiar" %}</span></a>
-        {% endif %}
     </div>
     <div class="z-account-row">
         <i class="fa-solid fa-user" aria-hidden="true"></i>

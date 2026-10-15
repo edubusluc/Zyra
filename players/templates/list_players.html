@@ -10,23 +10,6 @@
     </div>
     {% if is_club_admin %}
     <div class="z-actions">
-        {% if snp_import_enabled %}
-        {% if snp_import_done %}
-        {# Ya se completó desde la web: a partir de ahora lo hace el proceso automático. #}
-        {% elif snp_import_blocked %}
-        <span class="small text-muted align-self-center">{% translate "Completar equipo no está disponible: hemos avisado al administrador para que revise el proceso." %}</span>
-        {% elif snp_service_off %}
-        <button type="button" class="btn btn-secondary" disabled title="{% translate 'La conexión con SNP no está disponible ahora mismo. Inténtalo más tarde.' %}"><i class="fa-solid fa-users-rays me-1" aria-hidden="true"></i> {% translate "Completar equipo" %}</button>
-        <span class="small text-muted align-self-center">{% translate "Servicio de SNP no disponible por ahora." %}</span>
-        {% elif snp_import_wait %}
-        <button type="button" class="btn btn-secondary" disabled title="{% blocktranslate with date=snp_import_wait|date:'d/m/Y H:i' %}Has buscado tu equipo en SNP varias veces seguidas. Podrás volver a intentarlo a partir del {{ date }}.{% endblocktranslate %}"><i class="fa-solid fa-users-rays me-1" aria-hidden="true"></i> {% translate "Completar equipo" %}</button>
-        {% else %}
-        {# Se desactiva al enviarlo: un doble clic no lanza dos búsquedas en SNP. #}
-        <form method="post" action="{% url 'complete_team_start' %}" class="d-inline" onsubmit="this.querySelector('button').disabled = true;">{% csrf_token %}
-            <button type="submit" class="btn btn-secondary" title="{% translate 'Añade los jugadores de tu equipo de SNP que todavía no están en Zyra y actualiza los puntos de los que ya están' %}"><i class="fa-solid fa-users-rays me-1" aria-hidden="true"></i> {% translate "Completar equipo" %}</button>
-        </form>
-        {% endif %}
-        {% endif %}
         <a href="{% url 'manage_roster' %}" class="btn btn-secondary"><i class="fa-solid fa-user-check me-1" aria-hidden="true"></i> {% translate "Gestionar plantilla" %}</a>
         <a href="{% url 'create_player' %}" class="btn btn-primary"><i class="fa-solid fa-plus me-1" aria-hidden="true"></i> {% translate "Nuevo jugador" %}</a>
     </div>
@@ -96,8 +79,8 @@
     {% empty %}
     <div class="z-empty" style="grid-column: 1 / -1;">
         <i class="fa-solid fa-user-slash" aria-hidden="true"></i>
-        {% translate "Todavía no hay jugadores." %}
-        {% if snp_import_enabled and not snp_import_done and not snp_import_blocked %}<p class="mt-2 mb-0">{% translate "Pulsa «Completar equipo» para traer los jugadores de tu equipo de SNP sin tener que crearlos uno a uno." %}</p>{% endif %}
+        {% translate "Añade a tu primer jugador para empezar a preparar convocatorias." %}
+        {% if is_club_admin %}<div class="mt-3"><a class="btn btn-primary btn-sm" href="{% url 'create_player' %}">{% translate "Nuevo jugador" %}</a></div>{% endif %}
     </div>
     {% endfor %}
     <p class="z-empty" data-selector-empty hidden style="grid-column: 1 / -1;"><i class="fa-solid fa-user-slash" aria-hidden="true"></i> {% translate "Ningún jugador coincide con la búsqueda." %}</p>
@@ -143,7 +126,7 @@
             </tr>
             {% empty %}
             <tr>
-                <td colspan="9" class="text-center py-4 text-muted">{% translate "Todavía no hay jugadores." %}</td>
+                <td colspan="9" class="text-center py-4 text-muted">{% translate "Añade a tu primer jugador para empezar a preparar convocatorias." %}</td>
             </tr>
             {% endfor %}
         </tbody>

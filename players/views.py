@@ -305,23 +305,30 @@ def complete_team_start(request):
     Lanza en segundo plano la búsqueda de «Completar equipo». Solo capitanes y por POST.
     Hace falta cuenta SNP; no se lanza si ya se completó una vez, está bloqueado por fallos, hay otra en curso o se
     han hecho demasiadas búsquedas seguidas (snp_import.search_limit).
-    Redirige a la lista de jugadores, que va preguntando el estado.
+
+    Desde la portada (``from=home``, botón «Reintentar» tras un fallo en el alta del club) se comporta como en
+    el alta: confirma sola lo encontrado y lleva a la espera de «Trayendo tu equipo». Si no, redirige a la
+    lista de jugadores, que va preguntando el estado.
     """
+    from_home = request.POST.get("from") == "home"
+    back = "home" if from_home else "list_players"
     if not SnpAccount.objects.filter(club=request.club).exists():
         messages.error(request, _("Primero registra la cuenta SNP del capitán."))
         return redirect("snp_account")
     if not snp_service.is_enabled():
         messages.error(request, snp_service.UNAVAILABLE_MESSAGE)
-        return redirect("list_players")
+        return redirect(back)
     if _web_import_closed(request) or snp_import.active_import(request.club):
-        return redirect("list_players")
+        return redirect(back)
     wait = snp_import.search_limit(request.club)
     if wait:
         messages.error(request, _("Has buscado tu equipo en SNP varias veces seguidas. Para no saturar SNP, "
                                   "podrás volver a intentarlo a partir del %(date)s.")
                        % {"date": f"{timezone.localtime(wait):%d/%m/%Y %H:%M}"})
-        return redirect("list_players")
-    snp_import.start_search(request.club, request.user)
+        return redirect(back)
+    team_import = snp_import.start_search(request.club, request.user, auto_confirm=from_home)
+    if from_home:
+        return redirect("complete_team_welcome", import_id=team_import.public_id)
     return redirect("list_players")
 
 

@@ -175,7 +175,7 @@
   });
 </script>
 {% else %}
-<div class="z-empty"><i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>{% translate "Todavía no hay convocatoria para este enfrentamiento." %}</div>
+<div class="z-empty"><i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>{% if is_club_admin %}{% translate "Crea la convocatoria para elegir quién juega este enfrentamiento." %}{% else %}{% translate "Tu capitán aún no ha creado la convocatoria de este enfrentamiento." %}{% endif %}</div>
 {% endif %}
 
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-4">

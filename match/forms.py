@@ -109,13 +109,14 @@ class MatchForm(forms.ModelForm):
             self.initial['local'] = self.own_team.pk
         # El tipo solo se elige en un partido competitivo; si no se envía, es un enfrentamiento.
         self.fields['match_type'].required = False
+        self.fields['match_type'].label = _("Tipo de enfrentamiento")
         self.fields['match_type'].choices = Match.COMPETITIVE_TYPES
         if self.instance.pk and self.instance.is_friendly:
             self.initial['mode'] = self.FRIENDLY
             self.initial['match_type'] = Match.ENFRENTAMIENTO
         self.order_fields(['mode'])
         self.fields['rival_name'].required = False
-        self.fields['match_type'].error_messages['invalid_choice'] = _("Tipo de partido no válido.")
+        self.fields['match_type'].error_messages['invalid_choice'] = _("Tipo de enfrentamiento no válido.")
         date_error = _("Fecha no válida. Usa el formato AAAA-MM-DD.")
         self.fields['start_date'].input_formats = ['%Y-%m-%d']
         self.fields['start_date'].error_messages.update(required=date_error, invalid=date_error)

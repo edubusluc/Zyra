@@ -10,7 +10,91 @@
     </div>
 </section>
 
-{% if is_club_admin %}
+{% if email_unverified %}
+{# Aviso único hasta que se confirma el email (U6): reenviar el enlace o corregir el email. #}
+<section class="z-notice" role="status" aria-label="{% translate 'Confirma tu email' %}">
+    <i class="fa-solid fa-envelope-circle-check" aria-hidden="true"></i>
+    <div class="z-notice-text">
+        <strong>{% translate "Confirma tu email" %}</strong>
+        <span>{% blocktranslate with email=user.email %}Te hemos enviado un enlace a {{ email }}.{% endblocktranslate %}</span>
+    </div>
+    <div class="z-notice-actions">
+        <form method="post" action="{% url 'resend_verification' %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{% url 'home' %}">
+            <button type="submit" class="btn btn-secondary btn-sm">{% translate "Reenviar" %}</button>
+        </form>
+        <a class="btn btn-secondary btn-sm" href="{% url 'my_profile' %}?edit=email">{% translate "Cambiar email" %}</a>
+    </div>
+</section>
+{% endif %}
+
+{% if snp_failure %}
+{# «Completar equipo» falló al registrar el club: se puede reintentar desde aquí (si los límites lo permiten). #}
+<section class="z-notice z-notice--warn" role="alert" aria-label="{% translate 'No se pudo traer tu equipo de SNP' %}">
+    <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+    <div class="z-notice-text">
+        <strong>{% translate "No hemos podido traer tu equipo de SNP" %}</strong>
+        <span>{{ snp_failure.message|default:_("La búsqueda no ha terminado.") }}
+        {% if snp_failure.blocked %}{% translate "Ha fallado varias veces: hemos avisado al administrador de Zyra para que lo revise." %}
+        {% elif snp_failure.service_off %}{% translate "La conexión con SNP no está disponible ahora mismo." %}
+        {% elif snp_failure.wait %}{% blocktranslate with date=snp_failure.wait|date:"d/m/Y H:i" %}Podrás reintentarlo a partir del {{ date }}.{% endblocktranslate %}{% endif %}</span>
+    </div>
+    <div class="z-notice-actions">
+        {% if snp_failure.can_retry %}
+        <form method="post" action="{% url 'complete_team_start' %}" onsubmit="this.querySelector('button').disabled = true;">
+            {% csrf_token %}
+            <input type="hidden" name="from" value="home">
+            <button type="submit" class="btn btn-primary btn-sm">{% translate "Reintentar" %}</button>
+        </form>
+        {% endif %}
+        <a class="btn btn-secondary btn-sm" href="{% url 'snp_account' %}?edit=1">{% translate "Revisar cuenta SNP" %}</a>
+    </div>
+</section>
+{% endif %}
+
+{% if onboarding %}
+<section class="z-card z-onboarding" aria-labelledby="onboarding-title">
+    <div class="z-onboarding-head">
+        <div>
+            <span class="z-eyebrow"><i class="fa-solid fa-flag-checkered me-1" aria-hidden="true"></i> {% translate "Primeros pasos" %} · {% blocktranslate with done=onboarding_done total=onboarding|length %}{{ done }} de {{ total }} hechos{% endblocktranslate %}</span>
+            <h2 id="onboarding-title">{% translate "Prepara tu club en Zyra" %}</h2>
+        </div>
+        <form method="post" action="{% url 'dismiss_onboarding' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-close btn-close-white" aria-label="{% translate 'Ocultar primeros pasos' %}" title="{% translate 'Ocultar primeros pasos' %}"></button>
+        </form>
+    </div>
+    <div class="z-onboarding-bar" role="progressbar" aria-valuemin="0" aria-valuemax="{{ onboarding|length }}" aria-valuenow="{{ onboarding_done }}" aria-label="{% translate 'Primeros pasos hechos' %}"><span style="width: {{ onboarding_percent }}%"></span></div>
+    {% with step=onboarding_next %}
+    <div class="z-onboarding-next">
+        <div class="z-onboarding-text">
+            <strong>{{ step.title }}</strong>
+            <span>{{ step.help }}</span>
+        </div>
+        <a class="btn btn-primary" href="{{ step.url }}">{% translate "Siguiente paso" %} <i class="fa-solid fa-arrow-right ms-1" aria-hidden="true"></i></a>
+        {% if step.alt_url %}<a class="z-onboarding-alt" href="{{ step.alt_url }}">{{ step.alt_action }}</a>{% endif %}
+    </div>
+    {% endwith %}
+    <details class="z-more-options">
+        <summary>{% translate "Ver todos los pasos" %}</summary>
+        <ol class="z-onboarding-steps">
+            {% for step in onboarding %}
+            <li class="{% if step.done %}is-done{% endif %}">
+                <i class="z-onboarding-check fa-{% if step.done %}solid fa-circle-check{% else %}regular fa-circle{% endif %}" aria-hidden="true"></i>
+                <div class="z-onboarding-text">
+                    <strong>{{ step.title }}</strong>
+                    <span>{% if step.done %}{% translate "Hecho" %}{% else %}{{ step.help }}{% endif %}</span>
+                </div>
+            </li>
+            {% endfor %}
+        </ol>
+    </details>
+</section>
+{% endif %}
+
+
+{% if is_club_admin and pending or is_club_admin and not onboarding %}
 {# Lo que se ha quedado a medias, con la siguiente acción de cada enfrentamiento (H-02). #}
 <h2 class="z-section-title">{% translate "Pendiente" %}</h2>
 {% if pending %}
@@ -35,7 +119,9 @@
 {% endif %}
 {% endif %}
 
+{% if next_match or not onboarding %}
 <h2 class="z-section-title">{% translate "Próximo enfrentamiento" %}</h2>
+{% endif %}
 {% if next_match %}
 <article class="z-card z-next-match">
     <div class="z-next-match-when">
@@ -81,57 +167,18 @@
         </div>
     </div>
 </article>
-{% else %}
+{% elif not onboarding %}
 <div class="z-empty">
     <i class="fa-regular fa-calendar" aria-hidden="true"></i>
-    {% translate "No hay enfrentamientos programados." %}
-    {% if is_club_admin %}<div class="mt-3"><a class="btn btn-primary btn-sm" href="{% url 'create_match' %}">{% translate "Crear enfrentamiento" %}</a></div>{% endif %}
+    {% if is_club_admin %}
+    {% translate "Programa el próximo enfrentamiento para preparar la convocatoria." %}
+    <div class="mt-3"><a class="btn btn-primary btn-sm" href="{% url 'create_match' %}">{% translate "Crear enfrentamiento" %}</a></div>
+    {% else %}
+    {% translate "Cuando tu capitán programe el próximo enfrentamiento verás aquí si estás convocado, con quién juegas y cómo llegar." %}
+    {% endif %}
 </div>
 {% endif %}
 
-{% if onboarding %}
-<section class="z-card z-onboarding" aria-labelledby="onboarding-title">
-    <div class="z-onboarding-head">
-        <div>
-            <span class="z-eyebrow"><i class="fa-solid fa-flag-checkered me-1" aria-hidden="true"></i> {% translate "Primeros pasos" %} · {% blocktranslate with done=onboarding_done total=onboarding|length %}{{ done }} de {{ total }} hechos{% endblocktranslate %}</span>
-            <h2 id="onboarding-title">{% translate "Prepara tu club en Zyra" %}</h2>
-        </div>
-        <form method="post" action="{% url 'dismiss_onboarding' %}">
-            {% csrf_token %}
-            <button type="submit" class="btn-close btn-close-white" aria-label="{% translate 'Ocultar primeros pasos' %}" title="{% translate 'Ocultar primeros pasos' %}"></button>
-        </form>
-    </div>
-    {% with step=onboarding_next %}
-    <ol class="z-onboarding-steps">
-        <li>
-            <i class="z-onboarding-check fa-regular fa-circle" aria-hidden="true"></i>
-            <div class="z-onboarding-text">
-                <strong>{{ step.title }}</strong>
-                <span>{{ step.help }}</span>
-            </div>
-            <a class="btn btn-primary btn-sm" href="{{ step.url }}">{{ step.action }}</a>
-        </li>
-    </ol>
-    {% endwith %}
-    <details class="z-more-options">
-        <summary>{% translate "Ver todos los pasos" %}</summary>
-        <ol class="z-onboarding-steps">
-            {% for step in onboarding %}
-            <li class="{% if step.done %}is-done{% endif %}">
-                <i class="z-onboarding-check fa-{% if step.done %}solid fa-circle-check{% else %}regular fa-circle{% endif %}" aria-hidden="true"></i>
-                <div class="z-onboarding-text">
-                    <strong>{{ step.title }}</strong>
-                    <span>{% if step.done %}{% translate "Hecho" %}{% else %}{{ step.help }}{% endif %}</span>
-                </div>
-                {% if not step.done %}
-                <a class="btn btn-primary btn-sm" href="{{ step.url }}">{{ step.action }}</a>
-                {% endif %}
-            </li>
-            {% endfor %}
-        </ol>
-    </details>
-</section>
-{% endif %}
 
 {% if snp_missing %}
 <div class="z-card z-card--link z-snp-notice d-flex flex-column align-items-start" style = "margin-top: 2rem;">
@@ -150,7 +197,9 @@
 </div>
 {% endif %}
 
+{% if hot_player or hot_pair or not onboarding %}
 <h2 class="z-section-title">{% translate "En racha" %}</h2>
+{% endif %}
 {% if hot_player or hot_pair %}
 <div class="z-hot-grid">
     {% if hot_player %}
@@ -185,10 +234,10 @@
     </article>
     {% endif %}
 </div>
-{% else %}
+{% elif not onboarding %}
 <div class="z-empty">
     <i class="fa-solid fa-fire" aria-hidden="true"></i>
-    {% translate "Nadie encadena victorias ahora mismo." %}
+    {% translate "Cierra enfrentamientos para ver aquí quién encadena victorias." %}
 </div>
 {% endif %}
 {% endblock %}

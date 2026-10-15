@@ -131,10 +131,12 @@ class ClubIsolationTests(TestCase):
         self.assertNotContains(response, reverse("call_for_match", args=[self.match_b.public_id]))
 
     def test_player_statistics_only_lists_own_players(self):
+        Match.objects.filter(pk=self.match_a.pk).update(draft_mode=False)  # con alguno cerrado hay selector
         response = self.client.get(reverse("player_statistics"))
         self.assertEqual(list(response.context["players"]), [self.player_a])
 
     def test_team_statistics_use_own_team(self):
+        Match.objects.filter(pk=self.match_a.pk).update(draft_mode=False)
         response = self.client.get(reverse("team_statistics"))
         self.assertEqual(response.context["team"], self.club_a.own_team)
         self.assertEqual([c["player"] for c in response.context["column_chart_data"]], ["ANA ALPHA"])
@@ -435,8 +437,12 @@ class HomeTests(TestCase):
     def test_empty_home(self):
         response = self.client.get(reverse("home"))
         self.assertIsNone(response.context["next_match"])
-        self.assertContains(response, "No hay enfrentamientos programados.")
-        self.assertContains(response, "Nadie encadena victorias ahora mismo.")
+        # Mientras queden «Primeros pasos» los bloques vacíos se ocultan; al cerrarlos vuelven con una acción.
+        self.assertNotContains(response, "Programa el próximo enfrentamiento para preparar la convocatoria.")
+        self.client.post(reverse("dismiss_onboarding"))
+        response = self.client.get(reverse("home"))
+        self.assertContains(response, "Programa el próximo enfrentamiento para preparar la convocatoria.")
+        self.assertContains(response, "Cierra enfrentamientos para ver aquí quién encadena victorias.")
 
     def test_hot_player_and_pair(self):
         ana = Player.objects.create(club=self.club, name="Ana", last_name="Alpha")

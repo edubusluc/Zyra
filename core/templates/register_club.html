@@ -10,51 +10,76 @@
         <img src="{% static 'zyra/logo.svg' %}" alt="Zyra" class="z-auth-logo">
         <h1>{% translate "Registrar un club" %}</h1>
         <p class="text-muted text-center">{% translate "Cada club gestiona sus propios jugadores, equipos rivales, partidos y estadísticas. Nadie de fuera del club puede ver sus datos." %}</p>
-        <form method="post" novalidate>
+        <form method="post" novalidate data-wizard>
             {% csrf_token %}
-            <h2 class="z-section-title">{% translate "Club" %}</h2>
-            {{ club_form.as_p }}
+            <nav class="z-wizard-progress" data-wizard-progress aria-label="{% translate 'Progreso del registro' %}" hidden></nav>
+            <div class="z-wizard-summary" data-wizard-summary role="alert" tabindex="-1" hidden></div>
+
+            <section data-wizard-step data-step-title="{% translate 'Tu club' %}">
+                <h2 class="z-section-title">{% translate "Club" %}</h2>
+                {{ club_form.as_p }}
+                <div class="z-wizard-actions">
+                    <button type="button" class="btn btn-primary btn-lg" data-wizard-next hidden>{% translate "Siguiente" %}</button>
+                </div>
+            </section>
+
             {% if user_form %}
-            <h2 class="z-section-title">{% translate "Tu cuenta (capitán)" %}</h2>
-            {{ user_form.as_p }}
+            <section data-wizard-step data-step-title="{% translate 'Tu cuenta' %}">
+                <h2 class="z-section-title">{% translate "Tu cuenta (capitán)" %}</h2>
+                {{ user_form.as_p }}
+                <div class="z-wizard-actions">
+                    <button type="button" class="btn btn-primary btn-lg" data-wizard-next hidden>{% translate "Siguiente" %}</button>
+                    <button type="button" class="btn btn-secondary" data-wizard-back hidden>{% translate "Atrás" %}</button>
+                </div>
+            </section>
             {% endif %}
-            <h2 class="z-section-title">{% translate "Tu jugador" %}</h2>
-            <p class="text-muted small">{% translate "Como capitán también juegas. Puedes conectar tu cuenta de SNP para traer tu equipo con sus puntos y elegir después cuál eres tú, o escribir tu nombre." %}</p>
-            <fieldset class="z-choice" data-captain-mode>
-                <legend class="visually-hidden">{{ snp_form.mode.label }}</legend>
-                {% for radio in snp_form.mode %}
-                <label class="z-choice-option" for="{{ radio.id_for_label }}">
-                    {{ radio.tag }}
-                    <span>{{ radio.choice_label }}</span>
-                    {% if radio.data.value == 'snp' %}<small>{% translate "Recomendado: tu equipo y tus puntos SNP listos en un minuto." %}</small>{% endif %}
-                </label>
-                {% endfor %}
-            </fieldset>
-            <div data-mode-panel="snp">
-                {% if snp_service_off %}<div class="alert alert-warning" role="alert">{% translate "La conexión con SNP no está disponible ahora mismo. Puedes crear el club y traer tu equipo más tarde, desde Jugadores." %}</div>{% endif %}
-                <div class="alert alert-info" role="note">{% translate "Usa el usuario y la contraseña con los que entras en SNP. Traeremos a todos los jugadores de tu equipo con sus puntos; al terminar, eliges cuál de ellos eres tú." %}</div>
-                {% for field in snp_form %}{% if field.name != 'mode' %}
-                <p>
-                    <label for="{{ field.id_for_label }}">{{ field.label }}:</label>
-                    {{ field }}
-                    {% if field.help_text %}<span class="helptext" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</span>{% endif %}
-                    {% for error in field.errors %}<span class="errorlist d-block text-danger small">{{ error }}</span>{% endfor %}
-                </p>
-                {% endif %}{% endfor %}
-            </div>
-            <div data-mode-panel="manual">
-            {% if google_missing_name %}
-            <div class="alert alert-warning" role="alert">{% translate "No ha sido posible obtener tu nombre y apellidos de tu cuenta de Google. Indícalos para crear tu jugador." %}</div>
-            {% endif %}
-            <div class="alert alert-info" role="note"><strong>{% translate "Importante:" %}</strong> {% translate "el nombre y los apellidos deben coincidir exactamente con los que tienes registrados en SNP. Si no coinciden, no se te podrán asignar tus puntos SNP." %}</div>
-            {{ player_form.as_p }}
-            </div>
+
+            <section data-wizard-step data-step-title="{% translate 'Tu jugador' %}">
+                <h2 class="z-section-title">{% translate "Tu jugador" %}</h2>
+                <p class="text-muted small">{% translate "Como capitán también juegas. Puedes conectar tu cuenta de SNP para traer tu equipo con sus puntos y elegir después cuál eres tú, o escribir tu nombre." %}</p>
+                <fieldset class="z-choice" data-captain-mode>
+                    <legend class="visually-hidden">{{ snp_form.mode.label }}</legend>
+                    {% for radio in snp_form.mode %}
+                    <label class="z-choice-option" for="{{ radio.id_for_label }}">
+                        {{ radio.tag }}
+                        <span>{{ radio.choice_label }}</span>
+                        {% if radio.data.value == 'snp' %}<small>{% translate "Recomendado: tu equipo y tus puntos SNP listos en un minuto." %}</small>{% endif %}
+                    </label>
+                    {% endfor %}
+                </fieldset>
+                <div data-mode-panel="snp">
+                    {% if snp_service_off %}<div class="alert alert-warning" role="alert">{% translate "La conexión con SNP no está disponible ahora mismo. Puedes crear el club y traer tu equipo más tarde, desde Jugadores." %}</div>{% endif %}
+                    <div class="alert alert-info" role="note">{% translate "Usa el usuario y la contraseña con los que entras en SNP. Traeremos a todos los jugadores de tu equipo con sus puntos; al terminar, eliges cuál de ellos eres tú." %}</div>
+                    {% for field in snp_form %}{% if field.name != 'mode' %}
+                    <p>
+                        <label for="{{ field.id_for_label }}">{{ field.label }}:</label>
+                        {{ field }}
+                        {% if field.help_text %}<span class="helptext" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</span>{% endif %}
+                        {% for error in field.errors %}<span class="errorlist d-block text-danger small">{{ error }}</span>{% endfor %}
+                    </p>
+                    {% endif %}{% endfor %}
+                </div>
+                <div data-mode-panel="manual">
+                {% if google_missing_name %}
+                <div class="alert alert-warning" role="alert">{% translate "No ha sido posible obtener tu nombre y apellidos de tu cuenta de Google. Indícalos para crear tu jugador." %}</div>
+                {% endif %}
+                {{ player_form.as_p }}
+                <details class="z-more-options z-snp-match-note">
+                    <summary>{% translate "Importante: debe coincidir con SNP" %}</summary>
+                    <p class="small">{% translate "El nombre y los apellidos deben coincidir exactamente con los que tienes registrados en SNP. Si no coinciden, no se te podrán asignar tus puntos SNP." %}</p>
+                </details>
+                </div>
+                <div class="z-wizard-actions">
+                    <button type="submit" class="btn btn-primary btn-lg">{% translate "Crear club" %}</button>
+                    <button type="button" class="btn btn-secondary" data-wizard-back hidden>{% translate "Atrás" %}</button>
+                </div>
+            </section>
             <script>
                 // Muestra solo los campos de la opción elegida (sin JavaScript se ven las dos).
                 (function () {
                     const radios = document.querySelectorAll('[data-captain-mode] input[type=radio]');
                     function sync() {
-                        const mode = (Array.from(radios).find(function (r) { return r.checked; }) || {}).value || 'manual';
+                        const mode = (Array.from(radios).find(function (r) { return r.checked; }) || {}).value || 'snp';
                         document.querySelectorAll('[data-mode-panel]').forEach(function (panel) {
                             panel.hidden = panel.dataset.modePanel !== mode;
                         });
@@ -63,7 +88,6 @@
                     sync();
                 })();
             </script>
-            <button type="submit" class="btn btn-primary btn-lg mt-2">{% translate "Crear club" %}</button>
         </form>
         {% if user_form %}
         {% translate "Crear mi cuenta con Google" as google_label %}
@@ -75,4 +99,5 @@
         {% endif %}
     </div>
 </div>
+<script src="{% static 'js/register-wizard.js' %}"></script>
 {% endblock %}

@@ -43,7 +43,11 @@
     <p class="text-muted small">{% translate "Un club tiene un solo capitán. Para traspasar la capitanía, el miembro tiene que estar enlazado a un jugador del club («Mi perfil»). Para eliminar el club, quita antes a todos los miembros y abandónalo desde el menú." %}</p>
 
     <h2 class="h4 z-heading-plain mt-4" id="invitaciones">{% translate "Invitar jugadores" %}</h2>
-    <p class="text-muted">{% translate "Invita a un jugador por email o genera un enlace para compartirlo tú (por WhatsApp, por ejemplo). Podrá registrarse con usuario, email y contraseña o con Google, o unirse con la cuenta que ya tenga, y entrará como miembro. La invitación por email sirve para una sola persona; el enlace lo pueden usar varias. Ambos caducan a las 24 horas." %}</p>
+    <p class="text-muted mb-2">{% translate "Invita por email o comparte un enlace. Caduca a las 24 horas." %}</p>
+    <details class="z-more-options mb-3">
+        <summary>{% translate "Más información" %}</summary>
+        <p class="text-muted small mt-2">{% translate "Podrá registrarse con usuario, email y contraseña o con Google, o unirse con la cuenta que ya tenga, y entrará como miembro. La invitación por email sirve para una sola persona; el enlace lo pueden usar varias." %}</p>
+    </details>
     <form method="post" action="{% url 'create_invitation' %}" class="mb-3" novalidate>
         {% csrf_token %}
         {{ invite_form.as_p }}

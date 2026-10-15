@@ -258,13 +258,13 @@ class SnpAccountTests(TestCase):
         viewer = User.objects.create_user("viewer", password="pass-12345")
         Membership.objects.create(user=viewer, club=self.club, role=Membership.MEMBER)
         self.client.login(username="admin", password="pass-12345")
-        self.assertContains(self.client.get(reverse("home")), "Registra tu cuenta de SNP")
+        self.assertContains(self.client.get(reverse("home")), "Conecta SNP o añade a tus jugadores")
         self.client.login(username="viewer", password="pass-12345")
-        self.assertNotContains(self.client.get(reverse("home")), "Registra tu cuenta de SNP")
+        self.assertNotContains(self.client.get(reverse("home")), "Conecta SNP o añade a tus jugadores")
         self.make_account()
         self.client.login(username="admin", password="pass-12345")
         # La tarea sigue en «Primeros pasos», pero ya hecha y sin botón.
-        self.assertNotContains(self.client.get(reverse("home")), "Registrar cuenta")
+        self.assertNotContains(self.client.get(reverse("home")), "Conectar SNP")
 
     def test_snp_job_runs_every_night_and_cycle_starts_on_monday(self):
         from backoffice.jobs import get_spec
@@ -491,7 +491,8 @@ class CompleteTeamTests(TestCase):
 
     def test_preview_then_confirm_creates_only_new_players(self):
         from .models import SnpScoreHistory, SnpTeamImport
-        self.assertContains(self.client.get(reverse("list_players")), "Completar equipo")
+        # «Completar equipo» ya no tiene botón en Jugadores: lo lanza el administrador a mano o, tras un fallo, «Reintentar» en la portada.
+        self.assertNotContains(self.client.get(reverse("list_players")), "Completar equipo")
         self.assertRedirects(self.client.post(reverse("complete_team_start")), reverse("list_players"))
         team_import = SnpTeamImport.objects.get()
         self.assertEqual(team_import.status, SnpTeamImport.READY)
@@ -568,6 +569,31 @@ class CompleteTeamTests(TestCase):
         self.assertRedirects(response, reverse("edit_team", args=[self.club.own_team.public_id]))
         self.assertContains(response, "Comprueba que la configuración de tu equipo es correcta")
 
+    def test_failure_card_on_home_and_retry_from_home(self):
+        from .models import SnpTeamImport
+        error = SnpScrapeError("SNP no ha aceptado el usuario o la contraseña.", kind=SnpScrapeError.ACCOUNT)
+        with mock.patch("players.snp_import.scrape_scores", side_effect=error):
+            self.client.post(reverse("complete_team_start"))
+        home = self.client.get(reverse("home"))
+        self.assertContains(home, "No hemos podido traer tu equipo de SNP")
+        self.assertContains(home, 'name="from" value="home"')
+        self.assertContains(home, "Revisar cuenta SNP")
+        # Reintentar desde la portada se comporta como en el alta: confirma solo y va a la espera.
+        SnpTeamImport.objects.update(created_at=timezone.now() - timedelta(hours=25))
+        response = self.client.post(reverse("complete_team_start"), {"from": "home"})
+        team_import = SnpTeamImport.objects.latest("created_at")
+        self.assertRedirects(response, reverse("complete_team_welcome", args=[team_import.public_id]), fetch_redirect_response=False)
+        self.assertEqual(team_import.status, SnpTeamImport.DONE)
+        self.assertNotContains(self.client.get(reverse("home")), "No hemos podido traer tu equipo de SNP")
+
+    def test_failure_card_explains_the_wait_when_retry_is_too_soon(self):
+        error = SnpScrapeError("SNP no ha aceptado el usuario o la contraseña.", kind=SnpScrapeError.ACCOUNT)
+        with mock.patch("players.snp_import.scrape_scores", side_effect=error):
+            self.client.post(reverse("complete_team_start"))
+        home = self.client.get(reverse("home"))
+        self.assertContains(home, "Podrás reintentarlo a partir del")
+        self.assertNotContains(home, 'name="from" value="home"')
+
     def test_repeated_failures_hide_the_option_and_notify_staff(self):
         from django.core import mail
         from backoffice.models import AuditLog
@@ -579,11 +605,14 @@ class CompleteTeamTests(TestCase):
                 self.client.post(reverse("complete_team_start"))
             if attempt < snp_import.MAX_FAILED_SEARCHES - 1:
                 SnpTeamImport.objects.update(created_at=timezone.now() - timedelta(hours=25))
-                self.assertContains(self.client.get(reverse("list_players")), "Añade los jugadores de tu equipo de SNP")
+                # Tras cada fallo la portada ofrece «Reintentar» (mientras no se alcance el máximo).
+                home = self.client.get(reverse("home"))
+                self.assertContains(home, "No hemos podido traer tu equipo de SNP")
+                self.assertContains(home, "Reintentar")
         self.club.refresh_from_db()
         self.assertEqual(self.club.snp_import_failures, snp_import.MAX_FAILED_SEARCHES)
-        page = self.client.get(reverse("list_players"))
-        self.assertNotContains(page, "Añade los jugadores de tu equipo de SNP")
+        page = self.client.get(reverse("home"))
+        self.assertNotContains(page, "Reintentar")
         self.assertContains(page, "hemos avisado al administrador")
         self.assertTrue(AuditLog.objects.filter(action="club.snp_import_blocked").exists())
         self.assertEqual(len(mail.outbox), 1)
@@ -715,7 +744,6 @@ class CompleteTeamLimitsTests(TestCase):
             self.start_and_cancel()
         SnpTeamImport.objects.update(created_at=timezone.now() - timedelta(hours=2))
         self.assertIsNotNone(snp_import.search_limit(club))
-        self.assertContains(self.client.get(reverse("list_players")), "Podrás volver a intentarlo")
         self.client.post(reverse("complete_team_start"))
         self.assertEqual(SnpTeamImport.objects.count(), snp_import.SEARCHES_PER_DAY)
 

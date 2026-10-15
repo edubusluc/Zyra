@@ -10,6 +10,10 @@
         <img src="{% static 'zyra/logo.svg' %}" alt="Zyra" class="z-auth-logo">
         <h1>{% translate "Crear mi cuenta" %}</h1>
         <p class="text-muted text-center">{% translate "Solo quiero unirme a un club por invitación. No necesitas registrar un club: cuando un capitán te invite, entrarás en el suyo." %}</p>
+        <div class="alert alert-warning" role="note">
+            <strong>{% translate "¿Eres capitán?" %}</strong>
+            {% url 'register_club' as club_url %}{% blocktranslate trimmed %}Esta cuenta no crea ningún club y necesitarás que tu capitán te invite (por email o con un enlace). Si el capitán eres tú, <a href="{{ club_url }}">registra tu club</a>.{% endblocktranslate %}
+        </div>
         <form method="post" novalidate>
             {% csrf_token %}
             {{ form.as_p }}

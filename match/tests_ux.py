@@ -288,7 +288,9 @@ class ClubAndSharedPiecesTests(UxBase):
         self.assertEqual(snp_points("", "–"), "–")
 
     def test_choose_season_remembers_last_choice(self):
-        self.match(datetime.date(2024, 11, 2))
+        closed = self.match(datetime.date(2024, 11, 2))
+        # Sin enfrentamientos cerrados las estadísticas son una sola tarjeta (sin filtro de temporada).
+        Match.objects.filter(pk=closed.pk).update(draft_mode=False)
         url = reverse("team_statistics")
         self.client.get(url, {"season": "2024-2025"})
         self.assertEqual(self.client.get(url).context["selected_season"], "2024-2025")

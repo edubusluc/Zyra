@@ -178,6 +178,7 @@ class SwitchClubTests(SecurityBase):
 class StoredXssTests(SecurityBase):
     def test_player_name_cannot_inject_script_in_team_statistics(self):
         Player.objects.filter(pk=self.player.pk).update(name="</script><script>alert(1)</script>")
+        Match.objects.filter(pk=self.match.pk).update(draft_mode=False)  # sin enfrentamientos cerrados no hay gráficos
         self.client.login(username="member", password=PASSWORD)
         response = self.client.get(reverse("team_statistics"))
         self.assertEqual(response.status_code, 200)
