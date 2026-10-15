@@ -79,7 +79,7 @@ def club_game_log(club, season=None, match_type=None):
     """
     games = (
         Game.objects
-        .filter(match__club=club, draft_mode=False, winner__in=outcomes.WINNERS)
+        .filter(match__club=club, match__draft_mode=False, draft_mode=False, winner__in=outcomes.WINNERS)
         .select_related('match')
         .prefetch_related('results')
         .order_by('match__start_date', 'match_id', 'n_game')

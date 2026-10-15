@@ -38,7 +38,7 @@ def list_team(request):
             Q(name__icontains=search) | Q(location__icontains=search)
         )
 
-    paginator = Paginator(teams, 4)  # Número de equipos por página
+    paginator = Paginator(teams, 6)  # Número de equipos por página
     page = request.GET.get('page')
 
     try:

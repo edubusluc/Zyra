@@ -64,7 +64,7 @@
       <section aria-label="{% translate 'Resumen de la pareja' %}">
         <div class="st-kpis">
           <article class="st-kpi st-kpi--ring">
-            <div class="st-ring" style="--pct: {{ pct_w|unlocalize }}" role="img" aria-label="{% blocktranslate with pct=s.pct %}{{ pct }}% de victorias{% endblocktranslate %}">
+            <div class="st-ring{% if s.pct >= 100 %} st-ring--full{% endif %}" style="--pct: {{ pct_w|unlocalize }}" role="img" aria-label="{% blocktranslate with pct=s.pct %}{{ pct }}% de victorias{% endblocktranslate %}">
               <span>{{ s.pct|floatformat:0 }}%</span>
             </div>
             <div>

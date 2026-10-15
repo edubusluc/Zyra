@@ -3,6 +3,13 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 15/10/2026 · Estadísticas solo con partidos cerrados
+
+- Ninguna estadística (jugador, pareja, afinidad, convocatorias, informe mensual ni informe PDF) cuenta ya partidos con el acta abierta, aunque alguno de sus partidos individuales estuviera cerrado
+- El aro de «% de victorias» se lee bien con el 100 %
+- El listado de equipos muestra 6 por página
+- Estadísticas por jugador con una temporada concreta: se ocultan «Partidos jugados» y «Evolución del % de victorias» (solo tienen sentido con todas las temporadas); se mantienen los puntos SNP y el listado de partidos
+
 ## 14/10/2026 · Estadísticas: un toque en el móvil ya no abre un partido
 
 - La fila de las tablas de partidos (jugador y pareja) ya no usa un enlace estirado con `::after`: en algunos Safari el enlace no se quedaba dentro de su fila y cubría toda la página, así que cualquier toque (temporadas, «Todas», selectores) abría un partido. Ahora `a11y.js` abre el enlace de la fila al pulsarla

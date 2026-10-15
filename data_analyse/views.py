@@ -243,7 +243,8 @@ def column_chart(club, season, match_type=None):
         } for name in names.values()
     }
 
-    games = Game.objects.filter(match__club=club, draft_mode=False, winner__in=outcomes.WINNERS, n_game__in=[1, 2, 3, 4, 5])
+    games = Game.objects.filter(match__club=club, match__draft_mode=False, draft_mode=False,
+                                winner__in=outcomes.WINNERS, n_game__in=[1, 2, 3, 4, 5])
     if season:
         games = games.filter(match__season=season)
     games = _by_type(games, match_type, "match__")
@@ -394,6 +395,7 @@ def degree_of_affinity(player, match_type=None, season=None):
         Q(player_1_local=player) | Q(player_2_local=player) |
         Q(player_1_visiting=player) | Q(player_2_visiting=player),
         draft_mode=False,
+        match__draft_mode=False,
         winner__in=outcomes.WINNERS,
     )
     if season:
@@ -458,6 +460,7 @@ def build_game_log(player, match_type=None):
             Q(player_1_local=player) | Q(player_2_local=player) |
             Q(player_1_visiting=player) | Q(player_2_visiting=player),
             draft_mode=False,
+            match__draft_mode=False,
         )
         .select_related('match')
         .prefetch_related('results')
@@ -518,6 +521,7 @@ def season_games(player, season, match_type=None):
             Q(player_1_local=player) | Q(player_2_local=player) |
             Q(player_1_visiting=player) | Q(player_2_visiting=player),
             draft_mode=False,
+            match__draft_mode=False,
             winner__in=outcomes.WINNERS,
             match__club=player.club,
             match__season=season,
@@ -556,7 +560,7 @@ def calls_by_season(player, match_type=None):
     Convocatorias por temporada: ({temporada: a las que se apuntó}, {temporada: total}). Solo cuentan
     las de su temporada de incorporación en adelante (``Player.joined_season``): antes no estaba en el equipo.
     """
-    base = _by_type(Call.objects.filter(match__club=player.club, draft_mode=False), match_type, "match__")
+    base = _by_type(Call.objects.filter(match__club=player.club, match__draft_mode=False, draft_mode=False), match_type, "match__")
     total = dict(base.order_by().values_list('match__season').annotate(n=Count('id', distinct=True)))
     present = dict(
         base.filter(players__id=player.id)
@@ -572,7 +576,8 @@ def aligned_by_season(player, match_type=None):
     partido}. Junto con calls_by_season da el "apuntado y alineado".
     """
     signed = _by_type(
-        Call.objects.filter(match__club=player.club, draft_mode=False, players__id=player.id), match_type, "match__"
+        Call.objects.filter(match__club=player.club, match__draft_mode=False, draft_mode=False,
+                            players__id=player.id), match_type, "match__"
     ).values_list('match_id', 'match__season')
     seasons = dict(signed)
     played = set(
@@ -892,7 +897,7 @@ def pair_last_games(club, p1, p2, n=PAIR_LAST_GAMES, match_type=None, season=Non
     )
     games = (
         Game.objects
-        .filter(together, draft_mode=False, winner__in=outcomes.WINNERS, match__club=club,
+        .filter(together, draft_mode=False, match__draft_mode=False, winner__in=outcomes.WINNERS, match__club=club,
                 **pair_stats.match_type_lookup(match_type, prefix='match__'))
         .select_related('match__local', 'match__visiting')
         .prefetch_related('results')
