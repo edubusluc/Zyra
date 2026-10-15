@@ -17,7 +17,7 @@ Ver el método y lo que quedó fuera en [07-audit-coverage.md](07-audit-coverage
 - **Prioridad orientativa** = Impacto × Frecuencia × Importancia de la tarea × Confianza en la
   evidencia (cada factor de 1 a 5; resultado de 1 a 625). Sirve para comparar, no para medir.
 - **Esfuerzo**: XS (< 2 h) · S (≤ 1 día) · M (2-4 días) · L (1-2 semanas) · XL (> 2 semanas).
-- Capturas en [`capturas/`](capturas/). Las rutas de archivo se refieren a la raíz del repositorio.
+- Capturas en la carpeta `capturas/` de este directorio. Las rutas de archivo se refieren a la raíz del repositorio.
 
 No se ha encontrado ningún problema **crítico**: todas las tareas esenciales se pueden completar.
 Los problemas más graves son de **arquitectura de información y eficiencia** del flujo semanal

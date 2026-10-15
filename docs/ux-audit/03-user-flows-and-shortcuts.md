@@ -248,4 +248,4 @@ El marcador total se recalcula en vivo. Los partidos sin rellenar no bloquean «
 ```
 
 Sin convocatoria: «Aún no hay convocatoria». No convocado: «No estás en la convocatoria de esta
-semana». Con disponibilidad (H-05): «¿Puedes jugar? [Sí] [No] [Duda]».
+semana». Con disponibilidad (H-05): «¿Puedes jugar?» con los botones Sí, No y Duda.
