@@ -5,8 +5,14 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 16/10/2026 · Gráficos sin datos y barras juntas
 
-- Estadísticas de equipo, «Enfrentamientos ganados por año»: en escritorio las barras de ganados, empatados y perdidos de una misma temporada van pegadas, como en el móvil
+- Estadísticas de equipo, «Enfrentamientos ganados por año»: en escritorio las barras de ganados, empatados y perdidos de una misma temporada van pegadas, como en el móvil (se limita el ancho del grupo y no el de cada barra)
 - «Juegos como local», «Juegos como visitante», «Enfrentamientos ganados por año», «Balance de partidos por jugador» y los gráficos por temporada de jugador muestran «No hay datos todavía.» en vez de un gráfico vacío
+
+## 16/10/2026 · Protección contra inundaciones de peticiones
+
+- Freno general por IP (`FloodProtectionMiddleware`): 240 GET y 60 POST por minuto y proceso (`FLOOD_LIMIT_GET_PER_MINUTE`, `FLOOD_LIMIT_POST_PER_MINUTE`), con respuesta 429; `/healthz/` y estáticos exentos
+- Límites por usuario en el PDF de convocatoria, el reenvío del informe y «Completar equipo»
+- Gunicorn con hilos, reciclado de workers y límite de línea de petición; Caddy con tiempos máximos de cabecera/cuerpo y cuerpo de 12 MB; `DATA_UPLOAD_MAX_MEMORY_SIZE` de 2 MB
 
 ## 16/10/2026 · Error de nacionalidad en SNP y gráfico móvil de temporadas
 
