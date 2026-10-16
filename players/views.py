@@ -1,5 +1,6 @@
 """Vistas de jugadores: alta, lista, ficha, plantilla, cuenta SNP, «Completar equipo» y perfil propio."""
 from django.shortcuts import render, redirect, get_object_or_404
+from core import ratelimit
 from core.decorators import club_required, club_admin_required, not_while_syncing
 from core.models import Club
 from .forms import NewOwnPlayerForm, OwnPlayerForm, PlayerEditForm, PlayerForm, SnpAccountForm, with_placeholder
@@ -334,6 +335,8 @@ def complete_team_start(request):
     if not snp_service.is_enabled():
         messages.error(request, snp_service.UNAVAILABLE_MESSAGE)
         return redirect(back)
+    if ratelimit.too_many_user(request, "complete-team", 10, 60 * 60):
+        return render(request, "429.html", status=429)
     if _web_import_closed(request) or snp_import.active_import(request.club):
         return redirect(back)
     if snp_import.account_unchanged_after_failure(request.club):
