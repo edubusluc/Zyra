@@ -24,6 +24,7 @@ import threading
 from django.conf import settings
 from django.db import transaction
 from django.db.models import F
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _, ngettext
 
@@ -398,7 +399,9 @@ def sync_task(club):
         state, message = "idle", ""
     blocked, wait, service_off = web_blocked(club), search_limit(club), not snp_service.is_enabled()
     same_account = account_unchanged_after_failure(club)
-    return {
+    own = club.own_team
+    team_fix_url = reverse("edit_team", args=[own.public_id]) if failed and failed.error_kind == SnpScrapeError.TEAM and own else ""
+    return {"team_fix_url": team_fix_url,
         "state": state, "message": message, "import": active or failed, "blocked": blocked, "wait": wait,
         "service_off": service_off, "same_account": same_account,
         "can_retry": not (blocked or wait or service_off or same_account),

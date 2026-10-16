@@ -14,7 +14,7 @@ from team.models import Team
 
 from . import snp_import
 from .models import Player, SnpAccount, SnpTeamImport, current_season
-from .scraper import SnpScrapeError, parse_score, parse_team_id
+from .scraper import SnpScrapeError, SnpTemporaryError, parse_score, parse_team_id
 from .snp import match_scores, normalize, sync_club
 
 User = get_user_model()
@@ -719,6 +719,22 @@ class CompleteTeamTests(TestCase):
         self.assertEqual(self.club.snp_import_failures, 0)
         self.assertIsNone(snp_import.search_limit(self.club))
         self.assertContains(self.client.get(reverse("home")), 'name="from" value="home"')
+
+    def test_missing_series_menu_points_to_the_team_nationality(self):
+        """Sin el menú «Series Nacionales» el error habla de la nacionalidad y la portada lleva a editar el equipo."""
+        from . import scraper
+        with mock.patch.object(scraper, "_find", side_effect=SnpTemporaryError("No se ha encontrado el menú")), \
+                self.assertRaises(scraper.SnpScrapeError) as raised:
+            scraper._open_country(mock.Mock(), "IT", lambda m: None)
+        self.assertEqual(raised.exception.kind, scraper.SnpScrapeError.TEAM)
+        self.assertIn("nacionalidad", str(raised.exception))
+        self.assertIn("Italia", str(raised.exception))
+        with mock.patch("players.snp_import.scrape_scores", side_effect=raised.exception):
+            self.client.post(reverse("complete_team_start"), {"from": "home"})
+        edit = reverse("edit_team", args=[self.club.own_team.public_id])
+        self.assertContains(self.client.get(reverse("home")), f'href="{edit}"')
+        team_import = SnpTeamImport.objects.get()
+        self.assertContains(self.client.get(reverse("complete_team_welcome", args=[team_import.public_id])), f'href="{edit}"')
 
     def test_failure_card_explains_the_wait_when_retry_is_too_soon(self):
         error = SnpScrapeError("No se encontraron jugadores.", kind=SnpScrapeError.TEAM)

@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 16/10/2026 · Error de nacionalidad en SNP y gráfico móvil de temporadas
+
+- «Sincronizar datos» / «Completar equipo»: si SNP no muestra el menú «Series Nacionales» del país configurado, el mensaje dice que lo más probable es que la nacionalidad del equipo (donde disputa la competición) no sea la correcta, y la pantalla de bienvenida y la tarjeta de Inicio ofrecen «Editar mi equipo» (`SnpScrapeError.TEAM`; `sync_task` devuelve `team_fix_url`). El resto de errores no cambia
+- Estadísticas de equipo, «Enfrentamientos ganados por año»: barras agrupadas por temporada con la etiqueta horizontal debajo (en el móvil «24-25», «en curso» en una segunda línea), número encima de cada barra y leyenda compacta arriba
+
 ## 15/10/2026 · Primer uso sin fricción (informe de usabilidad)
 
 - Registro del club **en 3 pasos** (club → cuenta → jugador) con barra de progreso, borrador entre pasos y vista correcta en el móvil; validación al salir de cada campo, resumen «Faltan N campos» y foco en el primer error (`register-wizard.js`, `form-errors.js`, que además enlaza cada error con su campo con `aria-invalid`/`aria-describedby`)
