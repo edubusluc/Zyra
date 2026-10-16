@@ -1530,7 +1530,7 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 .st-card-head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px 20px; }
 .st-aff-scope { display: flex; flex-wrap: wrap; gap: 8px; }
 .st-aff-empty { margin-top: 16px; }
-.st-chart[hidden], .st-aff-empty[hidden] { display: none; }
+.st-chart[hidden], .st-balance-sort[hidden], .st-tally[hidden], .st-aff-empty[hidden] { display: none; }
 @media (max-width: 760px) {
   .st-aff-scope { gap: 6px; }
   .st-aff-scope .st-chip { padding: 6px 12px; font-size: .8rem; white-space: nowrap; }

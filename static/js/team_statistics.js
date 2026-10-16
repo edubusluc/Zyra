@@ -115,7 +115,7 @@ const seasonChart = new Chart(document.getElementById('myLineChart'), {
     responsive: true,
     maintainAspectRatio: false,
     layout: { padding: { top: 16 } },
-    datasets: { bar: { maxBarThickness: 36 } },
+    datasets: { bar: { maxBarThickness: 36, barPercentage: 1, categoryPercentage: 0.8 } },  // barras de una misma temporada pegadas
     plugins: { legend: { position: 'top', labels: { boxWidth: 8, boxHeight: 8, padding: 12, font: { size: 12 } } } },
     scales: scales({
       x: { ticks: { autoSkip: false, maxRotation: 0, minRotation: 0, font: { size: 12 } } },

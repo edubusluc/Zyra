@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 16/10/2026 · Gráficos sin datos y barras juntas
+
+- Estadísticas de equipo, «Enfrentamientos ganados por año»: en escritorio las barras de ganados, empatados y perdidos de una misma temporada van pegadas, como en el móvil
+- «Juegos como local», «Juegos como visitante», «Enfrentamientos ganados por año», «Balance de partidos por jugador» y los gráficos por temporada de jugador muestran «No hay datos todavía.» en vez de un gráfico vacío
+
 ## 16/10/2026 · Error de nacionalidad en SNP y gráfico móvil de temporadas
 
 - «Sincronizar datos» / «Completar equipo»: si SNP no muestra el menú «Series Nacionales» del país configurado, el mensaje dice que lo más probable es que la nacionalidad del equipo (donde disputa la competición) no sea la correcta, y la pantalla de bienvenida y la tarjeta de Inicio ofrecen «Editar mi equipo» (`SnpScrapeError.TEAM`; `sync_task` devuelve `team_fix_url`). El resto de errores no cambia

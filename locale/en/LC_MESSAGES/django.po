@@ -11439,3 +11439,6 @@ msgstr "Edit my team"
 
 msgid "Tu club ya está creado. Revisa tu cuenta de SNP y vuelve a intentarlo desde Inicio con «Sincronizar datos», o crea tu jugador a mano."
 msgstr "Your club is already created. Check your SNP account and try again from Home with «Sync data», or create your player by hand."
+
+msgid "No hay datos todavía."
+msgstr "No data yet."
