@@ -47,7 +47,11 @@ class OwnPlayerTests(MediaMixin, TestCase):
         invitation = Invitation.objects.create(club=self.club, created_by=self.captain)
         self.client.force_login(newcomer)
         response = self.client.post(reverse("invitation", args=[invitation.token]))
-        self.assertRedirects(response, reverse("my_player"), fetch_redirect_response=False)
+        self.assertRedirects(response, reverse("member_welcome"), fetch_redirect_response=False)
+        # La bienvenida de una pantalla ofrece enlazar su ficha antes de ir al inicio.
+        welcome = self.client.get(reverse("member_welcome"))
+        self.assertContains(welcome, "Tu capitán")
+        self.assertContains(welcome, "Elegir mi jugador")
         page = self.client.get(reverse("my_player"))
         self.assertContains(page, "ANA RUIZ GÓMEZ")
         self.assertContains(page, "Soy yo")

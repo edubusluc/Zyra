@@ -9,11 +9,11 @@
 {% block content %}
 <section class="z-hero">
     <div>
-        <p class="z-hero-tag">{% translate "Improve your level" %}</p>
+        <p class="z-hero-tag">{% translate "Sube el nivel de tu equipo" %}</p>
         <h1 class="z-hero-title">Zyra <span class="z-hero-subtitle">{% translate "Gestión de equipos de pádel" %}</span></h1>
         <p class="z-hero-text">{% translate "La app para capitanes de equipos de pádel que juegan ligas por equipos: convoca a tus jugadores, organiza las parejas, apunta los resultados y descubre qué parejas funcionan mejor." %}</p>
         <div class="z-hero-actions">
-            <a class="btn btn-primary btn-lg" href="{% url 'register_club' %}">{% translate "Registrar mi club gratis" %}</a>
+            <a class="btn btn-primary btn-lg" href="{% url 'register' %}">{% translate "Registrarme gratis" %}</a>
             <a class="btn btn-outline-light btn-lg" href="{% url 'login' %}">{% translate "Ya tengo cuenta" %}</a>
         </div>
     </div>
@@ -65,6 +65,17 @@
         <li class="z-card"><strong>{% translate "Añade a tu equipo" %}</strong> {% translate "Da de alta a los jugadores e invítalos a unirse al club." %}</li>
         <li class="z-card"><strong>{% translate "Juega y mide" %}</strong> {% translate "Convoca, apunta los resultados y deja que las estadísticas te digan qué parejas rinden mejor." %}</li>
     </ol>
+</section>
+
+<section class="z-landing-section" aria-labelledby="guides-title">
+    <h2 id="guides-title" class="z-landing-title">{% translate "Guías para capitanes" %}</h2>
+    <div class="z-features">
+        {% for guide, title in guides %}
+        <a class="z-card z-feature text-decoration-none" href="{% url 'guide_detail' guide.slug %}">
+            <h3>{{ title }}</h3>
+        </a>
+        {% endfor %}
+    </div>
 </section>
 
 <section class="z-landing-section" aria-labelledby="faq-title">

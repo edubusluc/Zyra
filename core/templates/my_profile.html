@@ -34,21 +34,31 @@
     <div class="z-account-row">
         <i class="fa-solid fa-envelope" aria-hidden="true"></i>
         <div class="z-account-body">
-            <span class="z-account-label">{% translate "Email" %}</span>
+            <span class="z-account-label">{% translate "Correo electrónico" %}</span>
             <span class="z-account-value">{{ user.email|default:"—" }}</span>
             {% if email_unverified %}
             <span class="z-account-note">{% translate "Email sin confirmar. Abre el enlace que te enviamos." %}</span>
             {% endif %}
+            <div class="z-account-actions">
+                {% if email_unverified %}
+                <form method="post" action="{% url 'resend_verification' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{% url 'my_profile' %}">
+                    <button type="submit" class="btn btn-outline-secondary btn-sm">{% translate "Reenviar enlace" %}</button>
+                </form>
+                {% endif %}
+                {% if not google_only %}
+                <a href="?edit=email" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-pen me-1" aria-hidden="true"></i>{% translate "Cambiar email" %}</a>
+                {% endif %}
+            </div>
         </div>
-        {% if email_unverified %}
-        <form method="post" action="{% url 'resend_verification' %}">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-outline-secondary btn-sm">{% translate "Reenviar enlace" %}</button>
-        </form>
-        {% endif %}
-        {% if not google_only %}
-        <a href="?edit=email" class="btn btn-outline-secondary btn-sm" aria-label="{% translate 'Cambiar el email' %}"><i class="fa-solid fa-pen" aria-hidden="true"></i><span class="z-account-btn-text"> {% translate "Cambiar" %}</span></a>
-        {% endif %}
+    </div>
+    <div class="z-account-row">
+        <i class="fa-solid fa-user" aria-hidden="true"></i>
+        <div class="z-account-body">
+            <span class="z-account-label">{% translate "Nombre de perfil" %}</span>
+            <span class="z-account-value">{{ user.username }}</span>
+        </div>
     </div>
     {% if google_only %}
     <div class="z-account-row">
@@ -56,8 +66,9 @@
         <div class="z-account-body">
             <span class="z-account-label">{% translate "Acceso" %}</span>
             <span class="z-account-value">{% translate "Entras con Google" %}</span>
-            <span class="z-account-note">{% translate "Tu email y tu contraseña los gestiona Google." %}</span>
+            <span class="z-account-note">{% translate "Aún no tienes contraseña: añádela para entrar también con tu usuario o email." %}</span>
         </div>
+        <a href="{% url 'account_set_password' %}" class="btn btn-outline-secondary btn-sm" aria-label="{% translate 'Añadir una contraseña' %}"><i class="fa-solid fa-plus" aria-hidden="true"></i><span class="z-account-btn-text"> {% translate "Añadir contraseña" %}</span></a>
     </div>
     {% else %}
     <div class="z-account-row">
@@ -77,25 +88,27 @@
     <h2 class="z-section-title mt-0">{% translate "Preferencias" %}</h2>
     <form method="post" action="{% url 'my_profile' %}">
         {% csrf_token %}
+        {% if is_captain %}
         <fieldset class="z-report-scope">
-            <legend class="form-label">{% translate "Datos del informe PDF al crear un partido" %}</legend>
+            <legend class="form-label">{% translate "Datos del informe PDF al crear un enfrentamiento" %}</legend>
             {% for value, label in report_scopes %}
             <div class="form-check">
                 <input class="form-check-input" type="radio" name="report_scope" id="scope-{{ value }}" value="{{ value }}"{% if value == report_scope %} checked{% endif %}>
                 <label class="form-check-label" for="scope-{{ value }}">{{ label }}</label>
             </div>
             {% endfor %}
-            <p class="form-text">{% translate "Es la opción que aparece marcada por defecto; en cada partido puedes cambiarla al crearlo." %}</p>
+            <p class="form-text">{% translate "Es la opción que aparece marcada por defecto; en cada enfrentamiento puedes cambiarla al crearlo." %}</p>
         </fieldset>
+        {% endif %}
         <input type="hidden" name="monthly_form" value="1">
-        <fieldset class="z-report-scope mt-4">
+        <fieldset class="z-report-scope{% if is_captain %} mt-4{% endif %}">
             <legend class="form-label">{% translate "Informe mensual por email" %}</legend>
             <div class="form-check form-switch">
                 <input class="form-check-input" type="checkbox" role="switch" name="monthly_report" id="monthly-report"{% if monthly_report %} checked{% endif %}>
                 <label class="form-check-label" for="monthly-report">{% translate "Recibir cada mes un PDF con mis estadísticas" %}</label>
             </div>
             <p class="form-text">{% translate "Solo se envía si tu cuenta está enlazada a un jugador y jugaste algún partido el mes anterior." %}</p>
-            <p class="form-label mt-3 mb-1" id="monthly-scope-label">{% translate "Partidos que cuenta el informe" %}</p>
+            <p class="form-label mt-3 mb-1" id="monthly-scope-label">{% translate "Enfrentamientos que cuenta el informe" %}</p>
             <div role="radiogroup" aria-labelledby="monthly-scope-label">
             {% for value, label in report_scopes %}
             <div class="form-check">

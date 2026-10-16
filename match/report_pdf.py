@@ -272,6 +272,24 @@ def draw_page_header(canvas, club_name, right_text):
     canvas.line(MARGIN, top - 6 * mm, PAGE_W - MARGIN, top - 6 * mm)
 
 
+def made_with_zyra():
+    """Texto del pie «Hecho con Zyra · dominio» (solo «Hecho con Zyra» si no hay SITE_URL) y su enlace."""
+    site = settings.SITE_URL
+    host = site.split("://", 1)[-1] if site else ""
+    return (f"{_('Hecho con Zyra')} · {host}" if host else _("Hecho con Zyra")), site
+
+
+def draw_made_with(canvas, x, align="center"):
+    """Dibuja en el pie «Hecho con Zyra · dominio» en ``x`` (enlazado a la web si hay SITE_URL)."""
+    text, url = made_with_zyra()
+    canvas.setFont("Archivo", 7)
+    width = canvas.stringWidth(text, "Archivo", 7)
+    left = {"center": x - width / 2, "right": x - width}.get(align, x)
+    canvas.drawString(left, 8 * mm, text)
+    if url:
+        canvas.linkURL(url, (left, 7 * mm, left + width, 11 * mm), relative=0)
+
+
 def _on_page(canvas, doc, report, total):
     """Dibuja el fondo, la cabecera (logo, club y fecha) y el pie («Página n de ``total``»)."""
     canvas.saveState()
@@ -280,6 +298,7 @@ def _on_page(canvas, doc, report, total):
     # Pie
     canvas.setFont("Archivo", 7)
     canvas.drawString(MARGIN, 8 * mm, _("Informe automático de convocatoria · Zyra"))
+    draw_made_with(canvas, PAGE_W / 2)
     canvas.drawRightString(PAGE_W - MARGIN, 8 * mm, _("Página %(page)s de %(total)s") % {"page": doc.page, "total": total})
     canvas.restoreState()
 

@@ -40,10 +40,14 @@ class ClubForm(forms.Form):
     """Datos del club nuevo y de su equipo propio."""
     name = forms.CharField(label=_("Nombre del club"), max_length=100)
     location = forms.CharField(label=_("Localización"), max_length=100)
+    # Categoría y nacionalidad vienen rellenas con lo más habitual (Masculino, España); la división la elige el usuario.
     gender = forms.ChoiceField(label=_("Categoría"), choices=[("", _("Elige una opción"))] + Team.GENDERS,
-                               help_text=_("Los jugadores del club tendrán esta categoría."))
-    country = forms.ChoiceField(label=_("Nacionalidad del equipo"), choices=[("", _("Elige una opción"))] + Team.COUNTRIES)
-    division = forms.ChoiceField(label=_("División"), choices=[("", _("Elige una opción"))] + Team.DIVISIONS)
+                               initial=Team.MALE, help_text=_("Los jugadores del club tendrán esta categoría."))
+    country = forms.ChoiceField(label=_("Nacionalidad del equipo"), choices=[("", _("Elige una opción"))] + Team.COUNTRIES,
+                                initial="ES",
+                                help_text=_("País del circuito en el que juega, por ejemplo España. Decide dónde se buscan tus jugadores en SNP."))
+    division = forms.ChoiceField(label=_("División"), choices=[("", _("Elige una opción"))] + Team.DIVISIONS,
+                                 help_text=_("Nivel del circuito, por ejemplo Future o 500."))
 
     def __init__(self, *args, **kwargs):
         """Los nombres solo admiten texto plano (core.validators)."""
@@ -81,7 +85,7 @@ class CaptainSnpForm(forms.Form):
         (SNP, _("Conectar mi cuenta de SNP y traer mi equipo")),
         (MANUAL, _("Escribir mi nombre y apellidos")),
     ]
-    mode = forms.ChoiceField(label=_("¿Cómo quieres empezar?"), choices=MODES, initial=MANUAL,
+    mode = forms.ChoiceField(label=_("¿Cómo quieres empezar?"), choices=MODES, initial=SNP,
                              required=False, widget=forms.RadioSelect)
     username = forms.CharField(label=_("Usuario de SNP"), max_length=150, required=False)
     password = forms.CharField(

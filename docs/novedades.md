@@ -9,6 +9,136 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 - Límites por usuario en el PDF de convocatoria, el reenvío del informe y «Completar equipo»
 - Gunicorn con hilos, reciclado de workers y límite de línea de petición; Caddy con tiempos máximos de cabecera/cuerpo y cuerpo de 12 MB; `DATA_UPLOAD_MAX_MEMORY_SIZE` de 2 MB
 
+## 16/10/2026 · Error de nacionalidad en SNP y gráfico móvil de temporadas
+
+- «Sincronizar datos» / «Completar equipo»: si SNP no muestra el menú «Series Nacionales» del país configurado, el mensaje dice que lo más probable es que la nacionalidad del equipo (donde disputa la competición) no sea la correcta, y la pantalla de bienvenida y la tarjeta de Inicio ofrecen «Editar mi equipo» (`SnpScrapeError.TEAM`; `sync_task` devuelve `team_fix_url`). El resto de errores no cambia
+- Estadísticas de equipo, «Enfrentamientos ganados por año»: barras agrupadas por temporada con la etiqueta horizontal debajo (en el móvil «24-25», «en curso» en una segunda línea), número encima de cada barra y leyenda compacta arriba
+
+## 15/10/2026 · Primer uso sin fricción (informe de usabilidad)
+
+- Registro del club **en 3 pasos** (club → cuenta → jugador) con barra de progreso, borrador entre pasos y vista correcta en el móvil; validación al salir de cada campo, resumen «Faltan N campos» y foco en el primer error (`register-wizard.js`, `form-errors.js`, que además enlaza cada error con su campo con `aria-invalid`/`aria-describedby`)
+- Categoría y nacionalidad del equipo vienen como Masculino y España; SNP viene preseleccionado y el aviso de coincidencia exacta queda plegado bajo la opción manual; ayudas con ejemplos en categoría, nacionalidad y división
+- Aviso a quien se registra como jugador de que necesita la invitación de su capitán
+- Inicio: «Primeros pasos» (conectar SNP o añadir jugadores → invitar → primer enfrentamiento) va primero, con un solo botón «Siguiente paso» y sin los bloques vacíos mientras queden pasos; aviso único de email por confirmar con «Reenviar» y «Cambiar email»
+- «Completar equipo» ya no tiene botón en Jugadores: en la portada del capitán queda la tarea «Sincronizar datos» hasta que salga bien (pendiente, en curso con «Ver progreso» y «Cancelar», o error con «Reintentar»; explica la espera o el bloqueo). Cancelar o corregir la cuenta SNP ya no bloquea el reintento, y la pantalla de espera avisa si tarda y deja seguir en Inicio. Casillas, radios e interruptores de Preferencias sin solaparse con su texto. Mientras sincroniza, una barra de progreso por pasos (sesión iniciada, equipo abierto, jugadores leídos…) se ve en toda la web sin bloquear la navegación, se impide crear jugadores, equipos y enfrentamientos hasta que termine, y la búsqueda arranca al momento en vez de esperar al minuto. Pausa de 1 minuto tras un error; si SNP rechazó la cuenta no se relanza hasta cambiar usuario o contraseña; la tarea «Conecta SNP o añade a tus jugadores» no se da por hecha si falla; un fallo al avisar al personal ya no tapa el motivo real; las horas se muestran en hora de Madrid
+- Tras aceptar una invitación, bienvenida de una pantalla con el capitán, el equipo y la próxima convocatoria, y paso directo a elegir el jugador
+- Club: accesos rápidos (invitar, crear rival, nuevo jugador, crear enfrentamiento), estado de cada tarjeta con enlace, leyenda club/equipo/grupo y «Zona de peligro» para abandonar el club
+- Crear enfrentamiento: un solo selector «Tipo de enfrentamiento» (incluye Amistoso) y enlace «Crear rival» cuando no hay rivales; la barra inferior se esconde al escribir en un campo
+- Estadísticas sin enfrentamientos cerrados: una tarjeta «Cierra tu primer enfrentamiento y verás esto» con vista previa de ejemplo, sin pestañas ni filtros
+- Estados vacíos con verbo de acción; textos «partido» → «enfrentamiento» donde se refieren al cruce de equipos
+- Email de «Mi perfil» en línea completa con los botones debajo; invitaciones con una línea y «Más información»
+- Objetivos táctiles de al menos 24 px y `scroll-padding` bajo la cabecera fija
+
+## 15/10/2026 · Mejoras de usabilidad de la auditoría UX
+
+- Vocabulario: «Enfrentamiento» (cruce de dos equipos) y «Partido 1-5» (cada pareja); «Alinear parejas» sustituye a «Crear partidos»
+- Nueva sección **Club** en el menú (Miembros e invitaciones, Mi equipo, Rivales, Cuenta SNP); el menú de cuenta queda con Mi perfil, idioma y Cerrar sesión; la barra móvil sigue el mismo orden con etiquetas
+- Inicio del capitán con bloque «Pendiente» (una fila por enfrentamiento abierto con su siguiente acción) y «Todo al día»; el miembro ve si está convocado y su pareja
+- Página del enfrentamiento con indicador de fases, un botón primario «Siguiente: …», menú «Más» y resumen Victoria/Derrota; al cerrar el acta se queda en el enfrentamiento con «Compartir resultado» y aviso si la fecha es futura
+- «Resultados del enfrentamiento»: los 5 partidos en una pantalla con validación en vivo, «Guardar» y «Guardar y cerrar acta»
+- Crear enfrentamiento: tipo único, rival con casa/fuera, hora y lugar, `novalidate` con errores bajo cada campo
+- Las convocatorias exigen un mínimo de 10 jugadores
+- Selector de convocatoria: SNP, «Jugó N de M», ordenado por SNP, 30 sin paginar
+- Estadísticas del equipo: en escritorio, panel lateral «En esta página» que marca la sección visible; en móvil, índice de secciones, sin gráfico circular, barras por temporada con «en curso»
+- Temporada por defecto común (temporada actual, «Todas» a un toque y se recuerda en la sesión)
+- Ficha del jugador con pestañas Resumen / Estadísticas y forma reciente; «Estadísticas › Jugador» busca y abre la ficha
+- «Peores parejas» pasa a «Parejas por mejorar» (mínimo 4 partidos); puntos SNP y fechas con formato común
+- Mi perfil: cambiar el email pide la contraseña; el informe de convocatoria solo lo ve el capitán; botón propio «Subir foto»
+- Eslogan en castellano «Sube el nivel de tu equipo»
+- Inicio: «Ver estadísticas» del jugador en racha también para los miembros; si varios empatan a racha, se muestra uno distinto cada día
+
+## 15/10/2026 · Estadísticas solo con partidos cerrados
+
+- Ninguna estadística (jugador, pareja, afinidad, convocatorias, informe mensual ni informe PDF) cuenta ya partidos con el acta abierta, aunque alguno de sus partidos individuales estuviera cerrado
+- El aro de «% de victorias» se lee bien con el 100 %
+- El listado de equipos muestra 6 por página
+- Estadísticas por jugador con una temporada concreta: se ocultan «Partidos jugados» y «Evolución del % de victorias» (solo tienen sentido con todas las temporadas); se mantienen los puntos SNP y el listado de partidos
+
+## 14/10/2026 · Estadísticas: un toque en el móvil ya no abre un partido
+
+- La fila de las tablas de partidos (jugador y pareja) ya no usa un enlace estirado con `::after`: en algunos Safari el enlace no se quedaba dentro de su fila y cubría toda la página, así que cualquier toque (temporadas, «Todas», selectores) abría un partido. Ahora `a11y.js` abre el enlace de la fila al pulsarla
+
+## 14/10/2026 · Selectores con buscador en el móvil
+
+- Al elegir una opción del buscador (`player-picker.js`) se descartan durante 600 ms los clics siguientes (clic emulado del móvil o doble toque), para que ninguno caiga sobre el enlace de un partido de la tabla
+- Elegir una temporada (o un jugador) en el buscador ya no abre el partido que había debajo: la opción se elige en `click` y no en `mousedown`, así el click emulado del móvil no cae sobre el enlace de debajo (`player-picker.js`, también el autocompletado SQL del back-office)
+
+## 14/10/2026 · Logo de Zyra en los resultados de Google
+
+- `/favicon.ico` responde 200 en la raíz (antes daba 404) y la cabecera enlaza iconos PNG de 48, 96 y 192 px (múltiplos de 48 que pide Google) generados desde `favicon.svg`; el SVG ya no es el primero de la lista
+- Google tarda días o semanas en actualizar el icono: tras desplegar, pedir la reindexación de la portada en Search Console
+
+## 14/10/2026 · Estadísticas de jugador más simples
+
+- Al elegir una temporada, el panel «Temporada» solo conserva el listado de partidos jugados; el resto ya se ve en el resumen superior, que sigue el filtro de temporada
+- Nueva tarjeta «Puntos ganados» junto a «Mejor racha», y «Local y visitante» añade los juegos ganados y perdidos, con leyenda de colores y «No hay resultados para mostrar» cuando no hay partidos
+
+## 14/10/2026 · Temporada de incorporación como selector
+
+- Jugador (crear y editar): «Temporada en la que se unió» pasa de texto libre a un selector con búsqueda que solo admite temporadas de la lista (2015-2016 hasta la actual, sin temporadas futuras, más las pasadas que ya existan en el club); un valor antiguo fuera de la lista se conserva al editar
+- Estadísticas · Jugador: «Apuntado y alineado» y «Se apunta a las convocatorias» (y su desglose por temporada) solo cuentan desde la temporada de incorporación; sin ella se cuenta todo
+- Estadísticas · Jugador: los chips de temporada no ofrecen las anteriores a su incorporación (salvo que haya jugado en ellas)
+- Fuente Syncopate: las tildes y la Ñ de los títulos (p. ej. RODRÍGUEZ) se ven más pequeñas y separadas de la letra
+- Informe mensual del jugador: no lista como «No apuntado» las convocatorias anteriores a su incorporación
+
+## 14/10/2026 · Interruptor de jugadores en el listado
+
+- El listado de jugadores tiene el interruptor «Mostrar solo jugadores de mi equipo» (marcado por defecto, solo capitanes), igual que el de equipos; al desmarcarlo se ven también los que ya no están en el equipo
+
+## 14/10/2026 · Imagen para compartir: el logo
+
+- Al compartir el enlace de Zyra (WhatsApp, Telegram, X…) la tarjeta muestra solo el logo sobre fondo oscuro (`og-image-v2.png`; el nombre nuevo evita la caché de WhatsApp y Facebook)
+
+## 14/10/2026 · SEO: guías, imagen para compartir y «Hecho con Zyra»
+
+- Nueva sección pública `/guia/` con tres guías para capitanes (organizar parejas, puntos SNP y plantilla de convocatoria), en español e inglés, con sitemap, hreflang y datos estructurados; enlazada desde la portada y el pie
+- Plantilla de convocatoria en PDF descargable sin registro (`/guia/plantilla-convocatoria-padel.pdf`)
+- Imagen para compartir de 1200×630 (`og-image.png`) y `twitter:card=summary_large_image`
+- Pie «Hecho con Zyra · dominio» (con enlace) en el informe de convocatoria, el informe mensual y los correos
+- `/BingSiteAuth.xml` en la raíz para verificar el dominio en Bing Webmaster Tools
+
+## 14/10/2026 · Tarjetas de sets legibles
+
+- Estadísticas · Jugador: «Apuntado y alineado» muestra también a cuántas convocatorias cerradas se apunta y a cuántas no, con los mismos filtros (temporada y tipo de partido)
+- Estadísticas · Jugador: «Partidos y sets» en dos filas (Por número de partido y Sets clutch; debajo Apuntado y alineado)
+- Estadísticas · Sets: las tarjetas (Set decisivo, Tie-breaks, Remontadas…) ponen título y porcentaje arriba, barra y descripción a ancho completo debajo (sin caja), sin recortes en móvil; lo mismo en «Local y visitante» (jugador y pareja) y «Apuntado y alineado»
+
+## 14/10/2026 · Fecha editable
+
+- Partidos: la tarjeta del listado muestra «Pdt. cerrar acta» cuando todos los partidos del acta abierta ya tienen resultado (y «Sin resultado» mientras falte alguno)
+- Partidos: se puede cambiar la fecha de un partido creado (lápiz junto a la fecha, solo con el acta abierta); la temporada se recalcula
+
+## 14/10/2026 · Contraseña para cuentas de Google
+
+- Las cuentas creadas con Google ven en «Mi perfil» el botón «Añadir contraseña» (sin pedir la actual, con la lista de requisitos en vivo y el ojo para mostrarla) y así pueden entrar también con usuario o email; el acceso con Google sigue funcionando
+- «Mi perfil» muestra en «Cuenta» el correo electrónico, el nombre de perfil (usuario, solo lectura) y la contraseña
+
+## 14/10/2026 · Traspaso de capitanía y cuenta SNP
+
+- Al traspasar la capitanía se borran las credenciales SNP guardadas y el nuevo capitán ve de nuevo «Primeros pasos» con la tarea «Registra tu cuenta de SNP» (que ahora forma parte de la lista)
+- Las confirmaciones (traspasar capitanía, quitar miembro, borrar cuenta SNP, reabrir acta y las del back-office) salen en un popup de Zyra (`data-confirm` + `confirm-modal.js`) en vez del diálogo del navegador
+
+## 13/10/2026 · Reto y Play Off sin empate
+
+- En partidos de Reto y Play Off no hay empate: si la eliminatoria queda 6-6 al cerrar el acta, gana quien ganó el partido 3; el resto de tipos sigue admitiendo empate
+- Estadísticas de equipo: nueva tarjeta «Eliminatorias 6-6» con el porcentaje (y barra) de las que cayeron a favor y en contra (respeta el filtro de temporada y tipo)
+- En la tarjeta de un Reto o Play Off cerrado 6-6 se indica que la pareja 3 ganó (o perdió) su partido y desempató para entender de un vistazo por qué consta como ganado o perdido
+
+## 13/10/2026 · Cuentas sin club
+
+- El registro empieza con un panel para elegir «Registrarme como jugador» (cuenta sin club) o «Registrarme como capitán» (crear club); la portada y el menú apuntan a él
+- Nueva opción «Solo quiero unirme a un club por invitación» en el registro (también con Google): crea la cuenta sin club y la deja en una página de espera que explica cómo unirse con una invitación o registrar un club
+- Back-office: «Sin club» en el dashboard cuenta las cuentas activas que esperan invitación (con las de más de 7 días y su evolución diaria), el filtro de usuarios las lista de la más antigua a la más reciente y el informe de uso añade las cuentas nuevas con y sin club
+- Migración `backoffice` 0005 (`DailyMetric.users_without_club`)
+
+## 13/10/2026 · «Entrar como» con edición
+
+- Con «Entrar como» el personal ya puede crear y corregir datos como el usuario para resolver incidencias sin pasar por la consola SQL: banner «Editando como…», motivo obligatorio, 30 minutos y cada cambio (POST/PUT/PATCH/DELETE) anotado en la auditoría como `impersonate.write` a nombre del personal real. Siguen bloqueados el perfil/cuenta (email, contraseña), abandonar o borrar el club y ver la clave de SNP
+
+## 13/10/2026 · Back-office: salida a la web siempre visible
+
+- El menú lateral del back-office se desplaza por su cuenta y «Volver a la web» queda fijo al pie, así que ya no se pierde en pantallas bajas; en móvil el pie envuelve en varias líneas
+
 ## 13/10/2026 · Datos de partida en producción
 
 - La imagen incluye `populate_db.py` y `populate/` para cargar los datos de partida en el servidor (PR #137); `populate_db.py` guarda ahora los puntos como `7/5`, verifica el email del capitán en allauth (para «Entrar con Google»), conserva las cuentas que ya existan (solo exige que no haya clubes) y crea el capitán como usuario normal (`--superusuario` para el comportamiento anterior)

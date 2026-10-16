@@ -251,7 +251,16 @@
       const row = document.createElement('div');
       row.className = 'z-crop-field';
       input.parentNode.insertBefore(row, input);
-      row.append(el, input);
+      // Botón propio en vez del selector nativo (sin estilo ni idioma de la página): abre el mismo campo.
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'btn btn-secondary btn-sm';
+      button.innerHTML = '<i class="fa-solid fa-camera me-1" aria-hidden="true"></i>';
+      button.append(gettext('Subir foto'));
+      button.addEventListener('click', () => input.click());
+      input.classList.add('z-file-native');
+      input.tabIndex = -1;
+      row.append(el, button, input);
     }
     if (!('original' in el.dataset)) el.dataset.original = el.hidden ? '' : el.src;
     return el;

@@ -1,8 +1,8 @@
 {% load i18n %}
 {# Filtro por tipo de partido. Recibe match_types y competitive_types de data_analyse.views.match_type_context. #}
-<nav aria-label="{% translate 'Tipo de partido' %}" class="st-type-filter">
+<nav aria-label="{% translate 'Tipo de enfrentamiento' %}" class="st-type-filter">
   <ul class="st-seasons">
-    <li class="st-filter-label">{% translate "Partidos" %}</li>
+    <li class="st-filter-label">{% translate "Enfrentamientos" %}</li>
     {% for option in match_types %}
       <li><a class="st-chip" href="{{ option.url }}" {% if option.active %}aria-current="page"{% endif %}>{{ option.label }}</a></li>
     {% endfor %}
@@ -10,7 +10,7 @@
   {% if competitive_types %}
   <form method="get" class="st-type-select">
     {% for name, value in match_type_keep %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}
-    <label for="competitive-type" class="visually-hidden">{% translate "Tipo de partido competitivo" %}</label>
+    <label for="competitive-type" class="visually-hidden">{% translate "Tipo de enfrentamiento competitivo" %}</label>
     <select id="competitive-type" name="match_type" onchange="this.form.submit()">
       {% for option in competitive_types %}
       <option value="{{ option.value }}" {% if option.active %}selected{% endif %}>{{ option.label }}</option>

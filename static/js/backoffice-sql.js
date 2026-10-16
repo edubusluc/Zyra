@@ -216,8 +216,8 @@
                 }
                 li.addEventListener('mousedown', function (e) {
                     e.preventDefault();  // que el textarea no pierda el foco
-                    choose(i);
                 });
+                li.addEventListener('click', function () { choose(i); });
                 list.appendChild(li);
             });
             if (state.more) {

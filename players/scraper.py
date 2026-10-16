@@ -199,8 +199,15 @@ def _same_team_name(a, b):
 def _open_country(page, country, log):
     """Series Nacionales → el país del equipo. Devuelve el nombre del país; ahí está la tarjeta «Competiciones»."""
     country_name = snp_country_name(country)
-    _find(page, SERIES_MENU, "el menú «Series Nacionales»", log)[1].click()
-    _find(page, COUNTRY_LINK.format(country_name), f"la opción «{country_name}»", log)[1].click()
+    try:
+        _find(page, SERIES_MENU, "el menú «Series Nacionales»", log)[1].click()
+        _find(page, COUNTRY_LINK.format(country_name), f"la opción «{country_name}»", log)[1].click()
+    except SnpTemporaryError as exc:
+        # El menú de SNP depende del país de la cuenta: con otra nacionalidad en el equipo de Zyra no sale.
+        raise SnpTemporaryError(
+            f"No se ha encontrado el menú «Series Nacionales» de SNP para {country_name}. "
+            f"Lo más probable es que la nacionalidad configurada en tu equipo (el país donde "
+            f"disputa la competición) no sea la correcta.", kind=SnpScrapeError.TEAM) from exc
     page.wait_for_load_state("load", timeout=TIMEOUT_MS)
     return country_name
 
@@ -392,7 +399,7 @@ def _skip_heavy_resources(route):
 
 
 def scrape_scores(username, password, team_id=None, headed=False, log=None, browser=None, country=None, team_name=None,
-                  with_group_teams=False, group_only=False):
+                  with_group_teams=False, group_only=False, progress=None):
     """
     Puntos SNP de los jugadores del equipo ``team_id`` (o del único equipo de la cuenta
     si no se indica). Lanza SnpScrapeError si algo falla. ``country`` es la nacionalidad
@@ -409,12 +416,14 @@ def scrape_scores(username, password, team_id=None, headed=False, log=None, brow
     (salvo que SNP nos bloquee) la lista queda vacía: los jugadores se leen igual. Con
     ``group_only`` solo se leen los equipos (no se abre «Mis equipos» ni se leen jugadores), un
     fallo se lanza como error y devuelve ``([], equipos)``.
+
+    ``progress(porcentaje, texto)`` se llama al avanzar cada paso (la barra de «Completar equipo»).
     """
     with_group_teams = with_group_teams or group_only
     if browser is None:
         with SnpBrowser(headed=headed) as own:
-            return own.run(_scrape, username, password, team_id, log, own, country, team_name, with_group_teams, group_only)
-    return browser.run(_scrape, username, password, team_id, log, browser, country, team_name, with_group_teams, group_only)
+            return own.run(_scrape, username, password, team_id, log, own, country, team_name, with_group_teams, group_only, progress)
+    return browser.run(_scrape, username, password, team_id, log, browser, country, team_name, with_group_teams, group_only, progress)
 
 
 def parse_group_teams(cells):
@@ -476,7 +485,7 @@ def _read_all_pages(page, frame, log):
 
 
 def _scrape(username, password, team_id, log, browser, country=None, team_name=None, with_group_teams=False,
-            group_only=False):
+            group_only=False, progress=None):
     """
     Lectura de un club en el hilo del navegador: inicia sesión, abre la página del equipo y
     recorre las páginas de la tabla de jugadores. Si durante la lectura SNP ha respondido que
@@ -484,6 +493,7 @@ def _scrape(username, password, team_id, log, browser, country=None, team_name=N
     a SnpTemporaryError. Devuelve los jugadores sin repetir nombres.
     """
     log = log or (lambda message: None)
+    progress = progress or (lambda percent, text: None)
     players, group_teams = [], []
     blocked = []  # respuestas de SNP que indican que nos está limitando
     context = None
@@ -492,13 +502,16 @@ def _scrape(username, password, team_id, log, browser, country=None, team_name=N
         page = context.new_page()
         page.on("response", lambda r: blocked.append(r.status) if _is_blocked(r) else None)
         log("Iniciando sesión en SNP…")
+        progress(10, "Iniciando sesión en SNP")
         _login(page, username, password)
+        progress(30, "Sesión iniciada en SNP")
         if with_group_teams:
             # La tarjeta «Competiciones/Competencias» está en la página del país, antes de «Mis equipos».
             log(f"Sesión iniciada. Abriendo Series Nacionales → {snp_country_name(country)} → Competiciones…")
             try:
                 _open_country(page, country, log)
                 group_teams = _read_group_teams(page, log)
+                progress(50, "Equipos del grupo leídos")
             except SnpBlockedError:
                 raise
             except (SnpScrapeError, PlaywrightError) as exc:
@@ -508,9 +521,12 @@ def _scrape(username, password, team_id, log, browser, country=None, team_name=N
             if group_only:
                 return [], group_teams
         log(f"Abriendo Series Nacionales → {snp_country_name(country)} → Mis equipos…")
+        progress(60, "Abriendo tu equipo")
         frame = _open_team_page(page, team_id, log, country, team_name)
         log(f"Página del equipo abierta: {frame.url}")
+        progress(75, "Leyendo jugadores y puntos")
         players = _read_all_pages(page, frame, log)
+        progress(90, "Jugadores leídos")
     except (SnpScrapeError, PlaywrightError) as exc:
         if blocked and not isinstance(exc, SnpBlockedError):
             raise SnpBlockedError(f"SNP ha respondido {blocked[-1]} mientras se leía el equipo: "
