@@ -3,6 +3,12 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 16/10/2026 · Protección contra inundaciones de peticiones
+
+- Freno general por IP (`FloodProtectionMiddleware`): 240 GET y 60 POST por minuto y proceso (`FLOOD_LIMIT_GET_PER_MINUTE`, `FLOOD_LIMIT_POST_PER_MINUTE`), con respuesta 429; `/healthz/` y estáticos exentos
+- Límites por usuario en el PDF de convocatoria, el reenvío del informe y «Completar equipo»
+- Gunicorn con hilos, reciclado de workers y límite de línea de petición; Caddy con tiempos máximos de cabecera/cuerpo y cuerpo de 12 MB; `DATA_UPLOAD_MAX_MEMORY_SIZE` de 2 MB
+
 ## 13/10/2026 · Datos de partida en producción
 
 - La imagen incluye `populate_db.py` y `populate/` para cargar los datos de partida en el servidor (PR #137); `populate_db.py` guarda ahora los puntos como `7/5`, verifica el email del capitán en allauth (para «Entrar con Google»), conserva las cuentas que ya existan (solo exige que no haya clubes) y crea el capitán como usuario normal (`--superusuario` para el comportamiento anterior)

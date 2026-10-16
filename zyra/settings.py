@@ -150,6 +150,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     # Un solo dominio: redirige con 301 a SITE_URL (www → sin www, dominio antiguo...).
+    'core.middleware.FloodProtectionMiddleware',
     'core.middleware.CanonicalHostMiddleware',
     # Mide todas las peticiones y la última actividad de cada usuario (back-office).
     'backoffice.middleware.ActivityMiddleware',
@@ -204,17 +205,27 @@ WSGI_APPLICATION = 'zyra.wsgi.application'
 # caché en memoria de cada proceso no valdrían. Se crea una vez con
 #   python manage.py createcachetable
 # En local (DJANGO_DEBUG=True) se usa la caché en memoria.
+CACHES = {
+    'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'},
+    # Contadores del freno general contra inundaciones (core.middleware.FloodProtectionMiddleware):
+    # en memoria de cada proceso, para no escribir en la base de datos en cada petición.
+    'ratelimit': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache', 'LOCATION': 'ratelimit'},
+}
 if not DEBUG:
-    CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
-            'LOCATION': 'django_cache',
-        },
+    CACHES['default'] = {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'django_cache',
     }
 
 # Límites de uso por IP (registro de clubes, altas por invitación, comprobación de contraseña).
 # Se desactivan solos al ejecutar los tests; cada test de límites los activa a propósito.
 TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
+# Freno general por IP y minuto (por proceso de gunicorn). Generoso: un club entero puede compartir wifi.
+FLOOD_LIMIT_GET_PER_MINUTE = config('FLOOD_LIMIT_GET_PER_MINUTE', default=240, cast=int)
+FLOOD_LIMIT_POST_PER_MINUTE = config('FLOOD_LIMIT_POST_PER_MINUTE', default=60, cast=int)
+# Cuerpo máximo de una petición sin fotos (las fotos tienen su propio límite: PHOTO_MAX_UPLOAD_MB).
+DATA_UPLOAD_MAX_MEMORY_SIZE = config('DATA_UPLOAD_MAX_MEMORY_SIZE', default=2 * 1024 * 1024, cast=int)
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 2000
 RATE_LIMITS_ENABLED = config('RATE_LIMITS_ENABLED', default=not TESTING, cast=bool)
 
 

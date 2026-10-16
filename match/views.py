@@ -5,6 +5,7 @@ Todas las vistas trabajan solo con datos del club activo (``request.club``).
 """
 from . import outcomes
 from django.shortcuts import render, redirect, get_object_or_404
+from core import ratelimit
 from core.decorators import club_required, club_admin_required
 from django.contrib import messages
 from .forms import MatchForm
@@ -353,6 +354,8 @@ def _send_report(request, call, done):
 def resend_call_report(request, match_id):
     """Vuelve a enviar el informe de una convocatoria cerrada a los capitanes."""
     call = club_call(request, match__public_id=match_id)
+    if request.method == "POST" and ratelimit.too_many_user(request, "resend-report", 10, 60 * 60):
+        return render(request, "429.html", status=429)
     if request.method == "POST" and not call.draft_mode:
         _send_report(request, call, _("Informe reenviado"))
     return redirect('call_for_match', call.match.public_id)
@@ -361,6 +364,8 @@ def resend_call_report(request, match_id):
 @club_admin_required
 def call_report_pdf(request, match_id):
     """Descarga manual del informe de convocatoria."""
+    if ratelimit.too_many_user(request, "report-pdf", 30, 60):
+        return render(request, "429.html", status=429)
     call = club_call(request, match__public_id=match_id)
     pdf = render_report(build_report(call))
     response = HttpResponse(pdf, content_type="application/pdf")
