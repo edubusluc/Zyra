@@ -11430,3 +11430,12 @@ msgstr "You have not changed any SNP account data."
 msgid "Cambia el usuario o la contraseña de tu cuenta SNP para poder reintentarlo."
 msgstr "Change the username or password of your SNP account to be able to try again."
 
+
+msgid "Tu club ya está creado. Corrige la nacionalidad de tu equipo y vuelve a intentarlo desde Inicio con «Sincronizar datos», o crea tu jugador a mano."
+msgstr "Your club is already created. Fix your team's nationality and try again from Home with «Sync data», or create your player by hand."
+
+msgid "Editar mi equipo"
+msgstr "Edit my team"
+
+msgid "Tu club ya está creado. Revisa tu cuenta de SNP y vuelve a intentarlo desde Inicio con «Sincronizar datos», o crea tu jugador a mano."
+msgstr "Your club is already created. Check your SNP account and try again from Home with «Sync data», or create your player by hand."

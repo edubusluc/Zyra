@@ -444,7 +444,12 @@ def complete_team_welcome(request, import_id):
         if own_player(request):
             return redirect("list_players")
         return redirect(reverse("my_player") + f"?{WELCOME_PARAM}=1")
-    return render(request, "complete_team_welcome.html", {"team_import": team_import})
+    own = request.club.own_team
+    fix_team = team_import.error_kind == SnpScrapeError.TEAM and own
+    return render(request, "complete_team_welcome.html", {
+        "team_import": team_import,
+        "team_fix_url": reverse("edit_team", args=[own.public_id]) if fix_team else "",
+    })
 
 
 # ---------- Perfil del propio jugador ----------

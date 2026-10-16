@@ -73,25 +73,59 @@ const gamesBar = (id, won, lost) => new Chart(document.getElementById(id), {
 gamesBar('myBarChart', teamData.localGamesWon, teamData.localGamesLost);
 gamesBar('myVisitingBarChart', teamData.visitingGamesWon, teamData.visitingGamesLost);
 
-// Partidos ganados, empatados y perdidos por temporada
+// Partidos ganados, empatados y perdidos por temporada. Barras agrupadas por temporada, con la
+// etiqueta horizontal debajo de cada grupo (en pantallas estrechas «24-25», sin rotar ni recortar)
+// y el número encima de cada barra para ver de un vistazo qué color es cada resultado.
 const years = Object.keys(teamData.matchesWonPerYear);
-const seasonLabel = (y) => (y === teamData.currentSeason ? y + ' · ' + gettext('en curso') : y);
-new Chart(document.getElementById('myLineChart'), {
+const lineBox = document.getElementById('myLineChart').parentElement;
+const narrowSeasons = () => lineBox.clientWidth < 520;
+const seasonLabel = (y) => {
+  const text = narrowSeasons() ? y.replace(/^\d{2}(\d{2})-\d{2}(\d{2})$/, '$1-$2') : y;
+  return y === teamData.currentSeason ? [text, gettext('en curso')] : text;
+};
+const barValues = {
+  id: 'barValues',
+  afterDatasetsDraw(chart) {
+    const { ctx } = chart;
+    ctx.save();
+    ctx.font = `600 ${narrowSeasons() ? 11 : 12}px ${Chart.defaults.font.family}`;
+    ctx.fillStyle = '#FFFFFF';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    chart.data.datasets.forEach((ds, i) => {
+      chart.getDatasetMeta(i).data.forEach((bar, j) => {
+        if (ds.data[j] > 0) ctx.fillText(ds.data[j], bar.x, bar.y - 3);
+      });
+    });
+    ctx.restore();
+  },
+};
+const seasonChart = new Chart(document.getElementById('myLineChart'), {
   type: 'bar',
+  plugins: [barValues],
   data: {
     labels: years.map(seasonLabel),
     datasets: [
-      { label: gettext('Ganados'), data: years.map((y) => teamData.matchesWonPerYear[y].won), backgroundColor: Z.lime, borderRadius: 6 },
-      { label: gettext('Empatados'), data: years.map((y) => teamData.matchesWonPerYear[y].drawn || 0), backgroundColor: Z.draw, borderRadius: 6 },
-      { label: gettext('Perdidos'), data: years.map((y) => teamData.matchesWonPerYear[y].lost), backgroundColor: Z.coral, borderRadius: 6 },
-    ],
+      { label: gettext('Ganados'), data: years.map((y) => teamData.matchesWonPerYear[y].won), backgroundColor: Z.lime, borderRadius: 4 },
+      { label: gettext('Empatados'), data: years.map((y) => teamData.matchesWonPerYear[y].drawn || 0), backgroundColor: Z.draw, borderRadius: 4 },
+      { label: gettext('Perdidos'), data: years.map((y) => teamData.matchesWonPerYear[y].lost), backgroundColor: Z.coral, borderRadius: 4 },
+    ].filter((ds) => ds.label !== gettext('Empatados') || ds.data.some((n) => n > 0)),  // sin empates no se reserva hueco ni leyenda
   },
   options: {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: { legend: { position: 'bottom' } },
-    scales: scales({ y: { title: { display: true, text: gettext('Partidos') } } }),
+    layout: { padding: { top: 16 } },
+    datasets: { bar: { maxBarThickness: 36 } },
+    plugins: { legend: { position: 'top', labels: { boxWidth: 8, boxHeight: 8, padding: 12, font: { size: 12 } } } },
+    scales: scales({
+      x: { ticks: { autoSkip: false, maxRotation: 0, minRotation: 0, font: { size: 12 } } },
+      y: { grace: '12%', title: { display: false } },
+    }),
   },
+});
+window.addEventListener('resize', () => {
+  seasonChart.data.labels = years.map(seasonLabel);
+  seasonChart.update('none');
 });
 
 // Balance por jugador: partidos de 2 y 3 puntos, ganados y perdidos.

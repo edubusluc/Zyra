@@ -199,8 +199,15 @@ def _same_team_name(a, b):
 def _open_country(page, country, log):
     """Series Nacionales → el país del equipo. Devuelve el nombre del país; ahí está la tarjeta «Competiciones»."""
     country_name = snp_country_name(country)
-    _find(page, SERIES_MENU, "el menú «Series Nacionales»", log)[1].click()
-    _find(page, COUNTRY_LINK.format(country_name), f"la opción «{country_name}»", log)[1].click()
+    try:
+        _find(page, SERIES_MENU, "el menú «Series Nacionales»", log)[1].click()
+        _find(page, COUNTRY_LINK.format(country_name), f"la opción «{country_name}»", log)[1].click()
+    except SnpTemporaryError as exc:
+        # El menú de SNP depende del país de la cuenta: con otra nacionalidad en el equipo de Zyra no sale.
+        raise SnpTemporaryError(
+            f"No se ha encontrado el menú «Series Nacionales» de SNP para {country_name}. "
+            f"Lo más probable es que la nacionalidad configurada en tu equipo (el país donde "
+            f"disputa la competición) no sea la correcta.", kind=SnpScrapeError.TEAM) from exc
     page.wait_for_load_state("load", timeout=TIMEOUT_MS)
     return country_name
 

@@ -61,6 +61,7 @@
             <button type="submit" class="btn btn-primary btn-sm">{% if snp_sync.state == 'failed' %}{% translate "Reintentar" %}{% else %}{% translate "Sincronizar datos" %}{% endif %}</button>
         </form>
         {% endif %}
+        {% if snp_sync.team_fix_url %}<a class="btn btn-secondary btn-sm" href="{{ snp_sync.team_fix_url }}">{% translate "Editar mi equipo" %}</a>{% endif %}
         <a class="btn btn-secondary btn-sm" href="{% url 'snp_account' %}?edit=1">{% translate "Revisar cuenta SNP" %}</a>
         {% endif %}
     </div>

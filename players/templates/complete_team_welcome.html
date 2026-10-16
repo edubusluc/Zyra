@@ -50,11 +50,19 @@
         {% else %}
         <h1>{% translate "No hemos podido traer tu equipo" %}</h1>
         <p class="text-danger">{{ team_import.message|default:_("La búsqueda se ha cancelado.") }}</p>
+        {% if team_fix_url %}
+        <p class="text-muted">{% translate "Tu club ya está creado. Corrige la nacionalidad de tu equipo y vuelve a intentarlo desde Inicio con «Sincronizar datos», o crea tu jugador a mano." %}</p>
+        <div class="d-flex flex-wrap gap-2 justify-content-center">
+            <a href="{{ team_fix_url }}" class="btn btn-primary">{% translate "Editar mi equipo" %}</a>
+            <a href="{% url 'my_player' %}" class="btn btn-outline-secondary">{% translate "Crear mi jugador" %}</a>
+        </div>
+        {% else %}
         <p class="text-muted">{% translate "Tu club ya está creado. Revisa tu cuenta de SNP y vuelve a intentarlo desde Inicio con «Sincronizar datos», o crea tu jugador a mano." %}</p>
         <div class="d-flex flex-wrap gap-2 justify-content-center">
             <a href="{% url 'snp_account' %}?edit=1" class="btn btn-primary">{% translate "Revisar cuenta SNP" %}</a>
             <a href="{% url 'my_player' %}" class="btn btn-outline-secondary">{% translate "Crear mi jugador" %}</a>
         </div>
+        {% endif %}
         {% endif %}
     </div>
 </div>
