@@ -4494,6 +4494,9 @@ msgid "Repite la contraseña"
 msgstr "Repeat the password"
 
 #: core/forms.py:147
+msgid "Ya existe un usuario con ese nombre. Elige otro."
+msgstr "A user with that name already exists. Choose another."
+
 msgid "Ya hay una cuenta con este email: inicia sesión con ella."
 msgstr "There is already an account with this email: log in with it."
 

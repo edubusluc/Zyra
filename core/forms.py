@@ -124,6 +124,9 @@ class SignUpForm(UserCreationForm):
         label=_("Email"), help_text=_("Te enviaremos la confirmación del registro. También puedes usarlo para iniciar sesión."),
     )
 
+    # Mensaje también para la carrera en la que otro registro crea el usuario entre validar y guardar.
+    USERNAME_TAKEN = _("Ya existe un usuario con ese nombre. Elige otro.")
+
     class Meta(UserCreationForm.Meta):
         model = User
         fields = ("username", "email")

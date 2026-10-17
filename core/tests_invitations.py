@@ -278,6 +278,28 @@ class InvitationTests(TestCase):
         invitation.refresh_from_db()
         self.assertFalse(invitation.is_used)
 
+    def test_signup_with_taken_username_shows_form_error(self):
+        invitation = self.invite()
+        for name in ("capitan", "CAPITAN"):
+            response = self.client.post(self.url(invitation), {**SIGNUP, "username": name})
+            self.assertEqual(response.status_code, 200)
+            self.assertContains(response, "Ya existe un usuario con este nombre")
+        invitation.refresh_from_db()
+        self.assertFalse(invitation.is_used)
+
+    def test_signup_username_race_shows_form_error_not_500(self):
+        """Dos envíos a la vez: el usuario se crea entre validar y guardar (IntegrityError en BD)."""
+        invitation = self.invite()
+        User.objects.create_user("nuevo", password="pass-12345", email="otro@example.com")
+        with mock.patch("core.forms.SignUpForm.clean_username", lambda self: self.cleaned_data["username"]), \
+                mock.patch("core.forms.SignUpForm.validate_unique", lambda self: None):
+            response = self.client.post(self.url(invitation), SIGNUP)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Ya existe un usuario con ese nombre")
+        invitation.refresh_from_db()
+        self.assertFalse(invitation.is_used)
+        self.assertEqual(User.objects.filter(username="nuevo").count(), 1)
+
     def test_logged_in_user_joins_with_one_click(self):
         User.objects.create_user("jugador", password="pass-12345", email="j@example.com")
         invitation = self.invite()
