@@ -5479,13 +5479,9 @@ msgstr "Remove %(username)s from the club?"
 
 #: core/templates/club_members.html:43
 msgid ""
-"Un club tiene un solo capitán. Para traspasar la capitanía, el miembro tiene "
-"que estar enlazado a un jugador del club («Mi perfil»). Para eliminar el "
-"club, quita antes a todos los miembros y abandónalo desde el menú."
+"Un club tiene un solo capitán, que invita a los jugadores, crea los equipos y apunta los resultados. Para pasar la gestión a otra persona, pulsa «Hacer capitán» en su fila: tú pasarás a ser miembro (solo lectura). Para poder hacerlo, el miembro tiene que estar enlazado a un jugador del club («Mi perfil»). Para eliminar el club, quita antes a todos los miembros y abandónalo desde el menú."
 msgstr ""
-"A club has a single captain. To hand over the captaincy, the member must be "
-"linked to a player of the club (“My profile”). To delete the club, first "
-"remove all the members and leave it from the menu."
+"A club has a single captain, who invites the players, creates the teams and records the results. To hand the management over to someone else, press “Make captain” on their row: you will become a member (read-only). To do so, the member must be linked to a player of the club (“My profile”). To delete the club, first remove all the members and leave it from the menu."
 
 #: core/templates/club_members.html:45
 msgid "Invitar jugadores"
@@ -10960,6 +10956,24 @@ msgstr[1] "%(n)s teams updated."
 #~ msgid "Crea un partido"
 #~ msgstr "Create a match"
 
+msgid ""
+"Completar equipo no está disponible: hemos avisado al administrador para que"
+" revise el proceso."
+msgstr ""
+"Complete team is not available: we have notified the administrator to review"
+" the process."
+
+#: backoffice/templates/backoffice/user_detail.html:36
+msgid "Jugador enlazado"
+msgstr "Linked player"
+
+#: backoffice/templates/backoffice/user_detail.html:36
+msgid "fuera del equipo"
+msgstr "out of the team"
+
+#: backoffice/templates/backoffice/user_detail.html:36
+msgid "Sin enlazar"
+msgstr "Not linked"
 #~ msgid "Crear partido"
 #~ msgstr "Create match"
 
@@ -11445,6 +11459,29 @@ msgstr "Your club is already created. Check your SNP account and try again from 
 
 msgid "No hay datos todavía."
 msgstr "No data yet."
+
+msgid "Serás el encargado del club: invitas a los jugadores, creas los equipos y apuntas los resultados. Podrás traspasar la capitanía a otro miembro cuando quieras."
+msgstr "You will run the club: you invite the players, create the teams and record the results. You can hand the captaincy over to another member whenever you want."
+
+msgid "Como capitán serás el encargado del club"
+msgstr "As captain you will run the club"
+
+msgid "Invitas a tus jugadores por email o con un enlace."
+msgstr "You invite your players by email or with a link."
+
+msgid "Creas los equipos, los enfrentamientos y las convocatorias."
+msgstr "You create the teams, the matchups and the call-ups."
+
+msgid "Apuntas los resultados. Los demás miembros solo consultan."
+msgstr "You record the results. The other members can only view."
+
+msgid "Si más adelante quieres pasar la gestión a otra persona, podrás traspasar la capitanía a otro miembro desde Club › Miembros."
+msgstr "If you later want to hand the management over to someone else, you can transfer the captaincy to another member from Club › Members."
+
+msgid ""
+"Eres el capitán: tú invitas a los jugadores, creas los equipos y apuntas los resultados. Si prefieres que lo gestione otra persona, <a href=\"%(members_url)s\">traspasa la capitanía</a>."
+msgstr ""
+"You are the captain: you invite the players, create the teams and record the results. If you would rather have someone else manage it, <a href=\"%(members_url)s\">hand over the captaincy</a>."
 
 msgid "Creando tu usuario…"
 msgstr "Creating your user…"
