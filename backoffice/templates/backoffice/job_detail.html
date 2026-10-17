@@ -10,13 +10,13 @@
     </div>
     <div class="z-actions">
         {% if not job.spec.params and not job.spec.options %}
-        <form method="post" action="{% url 'backoffice:job_run_now' job.name %}">{% csrf_token %}
+        <form method="post" action="{% url 'backoffice:job_run_now' job.name %}" data-loading-text="{% translate 'Lanzando la tarea…' %}">{% csrf_token %}
             <input type="hidden" name="next" value="{{ request.path }}">
             <button type="submit" class="btn btn-sm btn-primary" {% if job.running_since %}disabled{% endif %}><i class="fa-solid fa-play" aria-hidden="true"></i> {% translate "Ejecutar ahora" %}</button>
         </form>
         {% endif %}
         {% if job.spec.schedule %}
-        <form method="post" action="{% url 'backoffice:job_toggle' job.name %}">{% csrf_token %}
+        <form method="post" action="{% url 'backoffice:job_toggle' job.name %}" data-loading-text="{% translate 'Guardando el cambio…' %}">{% csrf_token %}
             <input type="hidden" name="next" value="{{ request.path }}">
             <button type="submit" class="btn btn-sm btn-outline-light">{% if job.enabled %}{% translate "Pausar" %}{% else %}{% translate "Reanudar" %}{% endif %}</button>
         </form>
@@ -29,7 +29,7 @@
 {% if job.spec.params or job.spec.options %}
 <section class="z-panel">
     <h2 class="h5">{% translate "Ejecutar ahora" %}</h2>
-    <form method="post" action="{% url 'backoffice:job_run_now' job.name %}" class="row g-2 align-items-end">{% csrf_token %}
+    <form method="post" action="{% url 'backoffice:job_run_now' job.name %}" class="row g-2 align-items-end" data-loading-text="{% translate 'Lanzando la tarea…' %}">{% csrf_token %}
         {% for param in job.spec.params %}
         <div class="col-sm-6 col-lg-4">
             <label for="param-{{ param.name }}" class="form-label">{{ param.label }}</label>

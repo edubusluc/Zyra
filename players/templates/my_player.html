@@ -25,7 +25,7 @@
         <ul>{% for field in form %}{% for error in field.errors %}<li><strong>{{ field.label }}:</strong> {{ error }}</li>{% endfor %}{% endfor %}</ul>
     </div>
     {% endif %}
-    <form method="post" enctype="multipart/form-data">
+    <form method="post" enctype="multipart/form-data" data-loading-text="{% translate 'Guardando tus datos…' %}">
         {% csrf_token %}
         <div class="row g-3">
             <div class="col-sm-6"><label class="form-label" for="{{ form.position.id_for_label }}">{% translate "Posición:" %}</label>{{ form.position }}</div>

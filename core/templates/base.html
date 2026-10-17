@@ -80,7 +80,7 @@
                     <li><span class="dropdown-header">{% translate "Idioma" %}</span></li>
                     {% for language in language_list %}
                     <li>
-                        <form action="{% url 'set_language' %}" method="post">
+                        <form action="{% url 'set_language' %}" method="post" data-loading-text="{% translate 'Cambiando de idioma…' %}">
                             {% csrf_token %}
                             <input type="hidden" name="next" value="{{ language_next }}">
                             <input type="hidden" name="language" value="{{ language.code }}">
@@ -104,7 +104,7 @@
                     <li><span class="dropdown-header">{% translate "Cambiar de club" %}</span></li>
                     {% for m in user_memberships %}
                     <li>
-                        <form action="{% url 'switch_club' %}" method="post">
+                        <form action="{% url 'switch_club' %}" method="post" data-loading-text="{% translate 'Cambiando de club…' %}">
                             {% csrf_token %}
                             <input type="hidden" name="club_id" value="{{ m.club_id }}">
                             <button type="submit" class="dropdown-item {% if m.club_id == current_club.id %}active{% endif %}">
@@ -124,7 +124,7 @@
                     {% endif %}
                     <li><hr class="dropdown-divider"></li>
                     <li>
-                        <form action="{% url 'logout' %}" method="post">
+                        <form action="{% url 'logout' %}" method="post" data-loading-text="{% translate 'Cerrando sesión…' %}">
                             {% csrf_token %}
                             <button type="submit" class="dropdown-item"><i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i> {% translate "Cerrar sesión" %}</button>
                         </form>
@@ -172,7 +172,7 @@
 {% with deletes_club=leaving_deletes_club %}
 <div class="modal fade" id="leaveClubModal" tabindex="-1" aria-labelledby="leaveClubTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <form class="modal-content" method="post" action="{% url 'leave_club' %}"{% if deletes_club %} data-delete-club{% endif %}>
+        <form class="modal-content" method="post" action="{% url 'leave_club' %}"{% if deletes_club %} data-delete-club{% endif %} data-loading-text="{% translate 'Abandonando el club…' %}">
             {% csrf_token %}
             <div class="modal-header">
                 {% if deletes_club %}

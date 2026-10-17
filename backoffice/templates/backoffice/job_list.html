@@ -48,7 +48,7 @@
                     {% if job.spec.params %}
                     <a href="{% url 'backoffice:job_detail' job.name %}" class="btn btn-sm btn-primary"><i class="fa-solid fa-play" aria-hidden="true"></i> {% translate "Ejecutar…" %}</a>
                     {% else %}
-                    <form method="post" action="{% url 'backoffice:job_run_now' job.name %}">{% csrf_token %}
+                    <form method="post" action="{% url 'backoffice:job_run_now' job.name %}" data-loading-text="{% translate 'Lanzando la tarea…' %}">{% csrf_token %}
                         <button type="submit" class="btn btn-sm btn-primary" {% if job.running_since %}disabled{% endif %}><i class="fa-solid fa-play" aria-hidden="true"></i> {% translate "Ejecutar ahora" %}</button>
                     </form>
                     {% if job.spec.options %}
@@ -56,7 +56,7 @@
                     {% endif %}
                     {% endif %}
                     {% if job.spec.schedule %}
-                    <form method="post" action="{% url 'backoffice:job_toggle' job.name %}">{% csrf_token %}
+                    <form method="post" action="{% url 'backoffice:job_toggle' job.name %}" data-loading-text="{% translate 'Guardando el cambio…' %}">{% csrf_token %}
                         <button type="submit" class="btn btn-sm btn-outline-light">{% if job.enabled %}<i class="fa-solid fa-pause" aria-hidden="true"></i> {% translate "Pausar" %}{% else %}<i class="fa-solid fa-play" aria-hidden="true"></i> {% translate "Reanudar" %}{% endif %}</button>
                     </form>
                     {% endif %}

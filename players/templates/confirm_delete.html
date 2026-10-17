@@ -19,7 +19,7 @@
             <p class="mb-0 small">{% blocktranslate trimmed %}Los enfrentamientos y sus resultados no se borran: en las parejas en las que jugó se seguirá mostrando su nombre.{% endblocktranslate %}</p>
         </div>
         <p class="text-muted small">{% translate "Esta acción no se puede deshacer." %}</p>
-        <form method="POST" class="d-grid gap-2">
+        <form method="POST" class="d-grid gap-2" data-loading-text="{% translate 'Eliminando el jugador…' %}">
             {% csrf_token %}
             <button type="submit" class="btn btn-danger">{% translate "Eliminar" %}</button>
             <a href="{% url 'edit_player' player.public_id %}" class="btn btn-secondary">{% translate "Cancelar" %}</a>

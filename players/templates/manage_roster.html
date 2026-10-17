@@ -12,7 +12,7 @@
 
 <p class="text-muted">{% translate "Activa o desactiva a los jugadores que están en el equipo y guarda todos los cambios de una vez. Los jugadores fuera del equipo no aparecen en convocatorias, sanciones ni en los rankings." %}</p>
 
-<form method="post" data-roster>
+<form method="post" data-roster data-loading-text="{% translate 'Guardando la plantilla…' %}">
     {% csrf_token %}
     <div class="z-selector-tools">
         <div class="z-search">

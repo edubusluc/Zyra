@@ -62,7 +62,7 @@
         {% if phase.action == 'create_call' %}
         <a href="{% url 'create_call' match_id %}" class="btn btn-primary"><i class="fa-solid fa-plus me-1" aria-hidden="true"></i> {% translate "Siguiente: Crear convocatoria" %}</a>
         {% elif phase.action == 'close_call' %}
-        <form action="{% url 'close_call' match.public_id %}" method="post">
+        <form action="{% url 'close_call' match.public_id %}" method="post" data-loading-text="{% translate 'Cerrando la convocatoria…' %}">
             {% csrf_token %}
             <button type="submit" class="btn btn-primary"{% if phase.missing_players %} disabled aria-describedby="next-hint"{% endif %}><i class="fa-solid fa-lock me-1" aria-hidden="true"></i> {% translate "Siguiente: Cerrar convocatoria" %}</button>
         </form>
@@ -73,7 +73,7 @@
         {% elif phase.action == 'close_match' %}
         <form method="POST" action="{% url 'close_match' match.public_id %}"
               data-confirm-title="{% translate 'Cerrar el acta' %}" data-confirm-action="{% translate 'Cerrar acta' %}"
-              data-confirm="{% blocktranslate with local=match.local_name visiting=match.visiting_name date=match.start_date|date:'D j M Y' %}{{ local }} – {{ visiting }}, {{ date }}. Después no se podrán cambiar parejas ni resultados salvo que la reabras.{% endblocktranslate %}{% if is_future %} {% translate "La fecha es futura: comprueba que es el enfrentamiento correcto." %}{% endif %}">
+              data-confirm="{% blocktranslate with local=match.local_name visiting=match.visiting_name date=match.start_date|date:'D j M Y' %}{{ local }} – {{ visiting }}, {{ date }}. Después no se podrán cambiar parejas ni resultados salvo que la reabras.{% endblocktranslate %}{% if is_future %} {% translate "La fecha es futura: comprueba que es el enfrentamiento correcto." %}{% endif %}" data-loading-text="{% translate 'Cerrando el acta…' %}">
             {% csrf_token %}
             {% if is_future %}<input type="hidden" name="confirm_future" value="1">{% endif %}
             <button type="submit" class="btn btn-primary"><i class="fa-solid fa-flag-checkered me-1" aria-hidden="true"></i> {% translate "Siguiente: Cerrar acta" %}</button>
@@ -98,7 +98,7 @@
             {% if call_for_match %}<li><a href="{% url 'view_call_log' call_for_match.public_id %}"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> {% translate "Penalizaciones" %}</a></li>{% endif %}
             {% if call_for_match %}<li><a href="{% url 'call_report' match.public_id %}" target="_blank" rel="noopener"><i class="fa-solid fa-file-pdf" aria-hidden="true"></i> {% translate "Informe PDF" %}</a></li>{% endif %}
             {% if call_for_match and not call_for_match.draft_mode %}
-            <li><form action="{% url 'resend_call_report' match.public_id %}" method="post">{% csrf_token %}<button type="submit"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i> {% translate "Reenviar informe" %}</button></form></li>
+            <li><form action="{% url 'resend_call_report' match.public_id %}" method="post" data-loading-text="{% translate 'Enviando el informe…' %}">{% csrf_token %}<button type="submit"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i> {% translate "Reenviar informe" %}</button></form></li>
             {% endif %}
             {% if match.draft_mode %}<li><a href="{% url 'edit_match_date' match.public_id %}"><i class="fa-regular fa-calendar" aria-hidden="true"></i> {% translate "Cambiar fecha" %}</a></li>{% endif %}
         </ul>
@@ -231,7 +231,7 @@
 </div>
 
 {% if is_club_admin and not match.draft_mode %}
-<form method="POST" action="{% url 'reopen_match' match.public_id %}" class="text-center mt-4" data-confirm="{% translate "¿Reabrir el acta? Mientras esté abierta este enfrentamiento no cuenta en las estadísticas. Tendrás que volver a cerrarla." %}">
+<form method="POST" action="{% url 'reopen_match' match.public_id %}" class="text-center mt-4" data-confirm="{% translate "¿Reabrir el acta? Mientras esté abierta este enfrentamiento no cuenta en las estadísticas. Tendrás que volver a cerrarla." %}" data-loading-text="{% translate 'Reabriendo el acta…' %}">
     {% csrf_token %}
     <button type="submit" class="btn btn-outline-secondary"><i class="fa-solid fa-lock-open me-1" aria-hidden="true"></i> {% translate "Reabrir acta para corregirla" %}</button>
 </form>

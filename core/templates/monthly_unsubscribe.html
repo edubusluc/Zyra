@@ -16,7 +16,7 @@
         {% else %}
         <h1>{% translate "¿Dejar de recibir el informe mensual?" %}</h1>
         <p class="text-muted">{% translate "Dejaremos de enviarte por email el informe mensual con tus estadísticas." %}</p>
-        <form method="post">
+        <form method="post" data-loading-text="{% translate 'Desactivando los correos…' %}">
             {% csrf_token %}
             <button type="submit" class="btn btn-primary btn-lg">{% translate "Desactivar correos" %}</button>
         </form>

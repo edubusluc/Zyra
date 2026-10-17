@@ -7,7 +7,7 @@
             <strong>{% translate "Sincronizando tu equipo con SNP" %}</strong>
             <span class="z-sync-stage" data-sync-stage>{{ sync_running.stage|default:_("En cola") }}</span>
             <span class="z-sync-pct" data-sync-pct>{{ sync_running.progress }}%</span>
-            <form method="post" action="{% url 'complete_team_cancel' sync_running.public_id %}" class="z-sync-cancel">
+            <form method="post" action="{% url 'complete_team_cancel' sync_running.public_id %}" class="z-sync-cancel" data-loading-text="{% translate 'Cancelando la búsqueda…' %}">
                 {% csrf_token %}<input type="hidden" name="from" value="home">
                 <button type="submit" class="btn btn-secondary btn-sm">{% translate "Cancelar" %}</button>
             </form>

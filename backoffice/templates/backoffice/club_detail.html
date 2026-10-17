@@ -10,7 +10,7 @@
     </div>
     <div class="z-actions">
         {% if club.is_suspended %}
-        <form method="post" action="{% url 'backoffice:club_toggle_suspended' club.public_id %}" class="d-inline">
+        <form method="post" action="{% url 'backoffice:club_toggle_suspended' club.public_id %}" class="d-inline" data-loading-text="{% translate 'Guardando el estado del club…' %}">
             {% csrf_token %}
             <input type="hidden" name="action" value="reactivate">
             <button class="btn btn-outline-light btn-sm"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> {% translate "Reactivar club" %}</button>
@@ -35,7 +35,7 @@
 <section class="z-panel" id="snp-unlimited">
     <h2 class="h5">{% translate "Límites de «Completar equipo»" %}</h2>
     <p class="text-muted mb-2">{% translate "Los clubes normales solo pueden completar el equipo desde SNP una vez al mes y con pocas búsquedas al día. Marca este si es un club de pruebas." %}</p>
-    <form method="post" action="{% url 'backoffice:club_toggle_snp_unlimited' club.public_id %}" class="d-flex flex-wrap gap-2 align-items-center">
+    <form method="post" action="{% url 'backoffice:club_toggle_snp_unlimited' club.public_id %}" class="d-flex flex-wrap gap-2 align-items-center" data-loading-text="{% translate 'Guardando el límite SNP…' %}">
         {% csrf_token %}
         {% if club.snp_unlimited %}
         <span class="z-badge z-badge--lime">{% translate "Sin límites" %}</span>
@@ -59,7 +59,7 @@
         {% if snp_account %}<a href="{% url 'backoffice:snp_account_edit' club.public_id %}" class="btn btn-outline-light btn-sm ms-2">{% translate "Editar cuenta SNP" %}</a>{% else %}<a href="{% url 'backoffice:snp_account_edit' club.public_id %}" class="btn btn-outline-light btn-sm ms-2">{% translate "Añadir cuenta SNP" %}</a>{% endif %}
     </p>
     {% if club.snp_import_failures %}
-    <form method="post" action="{% url 'backoffice:snp_import_reset' club.public_id %}" class="mb-3">
+    <form method="post" action="{% url 'backoffice:snp_import_reset' club.public_id %}" class="mb-3" data-loading-text="{% translate 'Reiniciando la importación…' %}">
         {% csrf_token %}
         <button class="btn btn-outline-light btn-sm">{% translate "Reponer la opción en la web" %}</button>
     </form>
@@ -149,7 +149,7 @@
 
 <section class="z-panel" id="crm">
     <h2 class="h5">{% translate "Seguimiento (CRM)" %}</h2>
-    <form method="post" action="{% url 'backoffice:club_crm_update' club.public_id %}" class="row g-2 align-items-end">
+    <form method="post" action="{% url 'backoffice:club_crm_update' club.public_id %}" class="row g-2 align-items-end" data-loading-text="{% translate 'Guardando la ficha…' %}">
         {% csrf_token %}
         <div class="col-12 col-md-3">
             <label class="form-label" for="crm-lifecycle">{% translate "Etapa" %}</label>
@@ -165,7 +165,7 @@
 <div class="bo-grid">
     <section class="z-panel" id="notas">
         <h2 class="h5">{% translate "Notas" %}</h2>
-        <form method="post" action="{% url 'backoffice:club_note_add' club.public_id %}" class="mb-3">
+        <form method="post" action="{% url 'backoffice:club_note_add' club.public_id %}" class="mb-3" data-loading-text="{% translate 'Guardando la nota…' %}">
             {% csrf_token %}
             <label class="visually-hidden" for="note-text">{% translate "Nueva nota" %}</label>
             <textarea class="form-control mb-2" id="note-text" name="text" rows="2" maxlength="2000" required placeholder="{% translate 'Llamada, acuerdo, incidencia…' %}"></textarea>
@@ -176,7 +176,7 @@
             <li>
                 <span>{{ note.text|linebreaksbr }}</span>
                 <small class="text-muted ms-auto text-nowrap">{{ note.author_name|default:"—" }} · {{ note.created_at|date:"j M Y" }}</small>
-                {% if note.author_id == user.pk or user.is_superuser %}<form method="post" action="{% url 'backoffice:club_note_delete' note.pk %}" class="d-inline">{% csrf_token %}<button class="btn btn-link btn-sm text-danger p-0" aria-label="{% translate 'Borrar nota' %}"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></form>{% endif %}
+                {% if note.author_id == user.pk or user.is_superuser %}<form method="post" action="{% url 'backoffice:club_note_delete' note.pk %}" class="d-inline" data-loading-text="{% translate 'Borrando la nota…' %}">{% csrf_token %}<button class="btn btn-link btn-sm text-danger p-0" aria-label="{% translate 'Borrar nota' %}"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></form>{% endif %}
             </li>
             {% empty %}
             <li class="text-muted">{% translate "Sin notas." %}</li>
@@ -185,7 +185,7 @@
     </section>
     <section class="z-panel" id="tareas">
         <h2 class="h5">{% translate "Tareas pendientes" %}</h2>
-        <form method="post" action="{% url 'backoffice:task_add' %}" class="d-flex flex-wrap gap-2 mb-3">
+        <form method="post" action="{% url 'backoffice:task_add' %}" class="d-flex flex-wrap gap-2 mb-3" data-loading-text="{% translate 'Añadiendo la tarea…' %}">
             {% csrf_token %}
             <input type="hidden" name="club" value="{{ club.public_id }}">
             <input type="hidden" name="next" value="{{ request.get_full_path }}">
@@ -196,7 +196,7 @@
         <ul class="bo-list">
             {% for t in tasks %}
             <li><span>{{ t.title }}</span><small class="text-muted ms-auto">{{ t.due_date|date:"j M Y" }}</small>
-                <form method="post" action="{% url 'backoffice:task_toggle' t.pk %}" class="d-inline">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn btn-outline-light btn-sm">{% translate "Hecha" %}</button></form></li>
+                <form method="post" action="{% url 'backoffice:task_toggle' t.pk %}" class="d-inline" data-loading-text="{% translate 'Guardando la tarea…' %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn btn-outline-light btn-sm">{% translate "Hecha" %}</button></form></li>
             {% empty %}
             <li class="text-muted">{% translate "Sin tareas pendientes." %}</li>
             {% endfor %}
@@ -208,7 +208,7 @@
     <h2 class="h5">{% translate "Escribir al capitán" %}</h2>
     <p class="text-muted">{% translate "Sale con el formato de los correos de Zyra a los capitanes del club y al contacto de la ficha, y queda en «Correos enviados», en la auditoría y como nota." %}</p>
     {{ contact_templates|json_script:"contact-templates" }}
-    <form method="post" action="{% url 'backoffice:club_contact' club.public_id %}" id="contact-form">
+    <form method="post" action="{% url 'backoffice:club_contact' club.public_id %}" id="contact-form" data-loading-text="{% translate 'Registrando el contacto…' %}">
         {% csrf_token %}
         <label class="form-label" for="contact-template">{% translate "Plantilla" %}</label>
         <select class="form-select mb-2" id="contact-template">
@@ -245,14 +245,14 @@
 
 <section class="z-panel" id="gestion">
     <h2 class="h5">{% translate "Gestión del club" %}</h2>
-    <form method="post" action="{% url 'backoffice:club_edit' club.public_id %}" class="d-flex flex-wrap gap-2 mb-3">
+    <form method="post" action="{% url 'backoffice:club_edit' club.public_id %}" class="d-flex flex-wrap gap-2 mb-3" data-loading-text="{% translate 'Guardando el club…' %}">
         {% csrf_token %}
         <label class="visually-hidden" for="club-name">{% translate "Nombre del club" %}</label>
         <input class="form-control w-auto flex-grow-1" id="club-name" name="name" required maxlength="100" value="{{ club.name }}">
         <button class="btn btn-outline-light btn-sm">{% translate "Cambiar nombre" %}</button>
     </form>
     {% if successors %}
-    <form method="post" action="{% url 'backoffice:club_transfer_captain' club.public_id %}" class="d-flex flex-wrap gap-2 mb-3" data-confirm="{% translate "¿Traspasar la capitanía?" %}">
+    <form method="post" action="{% url 'backoffice:club_transfer_captain' club.public_id %}" class="d-flex flex-wrap gap-2 mb-3" data-confirm="{% translate "¿Traspasar la capitanía?" %}" data-loading-text="{% translate 'Traspasando la capitanía…' %}">
         {% csrf_token %}
         <label class="visually-hidden" for="club-captain">{% translate "Nuevo capitán" %}</label>
         <select class="form-select w-auto" id="club-captain" name="membership">{% for m in successors %}<option value="{{ m.public_id }}">{{ m.user.username }}</option>{% endfor %}</select>
@@ -264,7 +264,7 @@
     {% if user.is_superuser %}
     <details>
         <summary class="text-danger">{% translate "Eliminar el club" %}</summary>
-        <form method="post" action="{% url 'backoffice:club_delete' club.public_id %}" class="mt-2">
+        <form method="post" action="{% url 'backoffice:club_delete' club.public_id %}" class="mt-2" data-loading-text="{% translate 'Eliminando el club…' %}">
             {% csrf_token %}
             <p class="text-muted">{% translate "Borra el club y todo lo suyo (jugadores, partidos, convocatorias, cuenta SNP…). Las cuentas de usuario se conservan. No se puede deshacer." %}</p>
             <input class="form-control mb-2" name="confirm" required placeholder="{% translate 'Escribe el nombre del club' %}" aria-label="{% translate 'Nombre del club para confirmar' %}">
@@ -278,7 +278,7 @@
 <section class="z-panel" id="suspender">
     <h2 class="h5">{% translate "Suspender club" %}</h2>
     <p class="text-muted">{% translate "Sus miembros no podrán entrar hasta que lo reactives (no se borra nada). Los emails marcados quedan bloqueados: no podrán crear otro club, registrarse ni unirse a ningún club como jugadores." %}</p>
-    <form method="post" action="{% url 'backoffice:club_toggle_suspended' club.public_id %}" data-confirm="{% translate "¿Suspender este club? Sus miembros no podrán entrar hasta que lo reactives." %}">
+    <form method="post" action="{% url 'backoffice:club_toggle_suspended' club.public_id %}" data-confirm="{% translate "¿Suspender este club? Sus miembros no podrán entrar hasta que lo reactives." %}" data-loading-text="{% translate 'Guardando el estado del club…' %}">
         {% csrf_token %}
         <input type="hidden" name="action" value="suspend">
         <input type="text" name="reason" maxlength="500" class="form-control mb-3" placeholder="{% translate 'Motivo (opcional)' %}" aria-label="{% translate 'Motivo' %}">

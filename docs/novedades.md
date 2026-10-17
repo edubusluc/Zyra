@@ -3,6 +3,14 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 17/10/2026 · Sin doble clic en ningún formulario
+
+- Todos los formularios de la web que envían datos (equipos, jugadores, enfrentamientos, convocatorias, invitaciones, cuenta, back-office…) se bloquean al enviarse: el botón pulsado se deshabilita y muestra un indicador con el texto de la acción («Guardando el equipo…», «Enviando la invitación…», «Cerrando el acta…»), y un segundo clic o Intro se descarta
+- Solo se bloquea tras un envío válido: si el navegador o la página detectan un error, el botón sigue activo; al volver con «Atrás» se desbloquea y, si la respuesta no cambia de página (exportar CSV), a los pocos segundos
+- Los lectores de pantalla oyen el mismo texto (`aria-busy` y un aviso `role="status"`)
+- La comprobación de nombres parecidos al crear equipos y jugadores, y el botón de ver la contraseña SNP, también ignoran el doble clic
+- Un formulario nuevo declara su texto con `data-loading-text`; `core.tests_submit_lock` falla si falta o no está traducido
+
 ## 17/10/2026 · El capitán sabe qué le toca
 
 - La tarjeta «Registrarme como capitán», el formulario «Registrar un club» y «Primeros pasos» explican que el capitán invita a los jugadores, crea los equipos y apunta los resultados, y que puede traspasar la capitanía a otro miembro
@@ -12,7 +20,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 - El usuario (que sirve para iniciar sesión junto al email) sigue siendo único sin distinguir mayúsculas; si dos envíos coinciden y la base de datos rechaza el duplicado, el registro (por invitación, de club o de cuenta) muestra «Ya existe un usuario con ese nombre» en el formulario en vez de un error 500
 - El email es único también en la base de datos (índice sobre el email en minúsculas; migración `core/0019`, que se detiene con la lista de emails repetidos si ya los hubiera)
-- Los formularios de registro (invitación, club y cuenta) bloquean el botón al enviar y muestran «Creando tu usuario…» con un indicador, para que un doble clic no envíe dos veces (`static/js/submit-lock.js`, atributo `data-submit-lock`)
+- Los formularios de registro (invitación, club y cuenta) bloquean el botón al enviar y muestran «Creando tu usuario…» con un indicador, para que un doble clic no envíe dos veces (`static/js/submit-lock.js`)
 
 ## 17/10/2026 · Back-office: jugador enlazado en la ficha de usuario
 

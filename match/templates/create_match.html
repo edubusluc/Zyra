@@ -10,7 +10,7 @@
     <div class="alert-message">{{ error }}</div>
     {% endfor %}
 
-    <form method="POST" class="z-match-form" data-match-form novalidate data-own-location="{{ form.own_team.location|default:'' }}">
+    <form method="POST" class="z-match-form" data-match-form novalidate data-loading-text="{% translate 'Creando el enfrentamiento…' %}" data-own-location="{{ form.own_team.location|default:'' }}">
         {% csrf_token %}
 
         {# Un solo selector (U12): static/js/match-form.js lo sincroniza con «Modo» y «Tipo de partido», que sin JavaScript se ven tal cual. #}
