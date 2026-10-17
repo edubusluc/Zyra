@@ -34,12 +34,14 @@ class _Sanitizer(HTMLParser):
     """Reconstruye el HTML solo con lo permitido."""
 
     def __init__(self):
+        """Prepara el analizador y la pila de etiquetas abiertas."""
         super().__init__(convert_charrefs=True)
         self.out = []
         self.stack = []
         self.skip = 0
 
     def handle_starttag(self, tag, attrs):
+        """Abre una etiqueta permitida (sin atributos salvo el ``href`` seguro) y descarta el resto."""
         if tag in _DROP_CONTENT:
             self.skip += 1
             return
@@ -63,6 +65,7 @@ class _Sanitizer(HTMLParser):
             self.out.append("<%s%s>" % (mapped, attr_text))
 
     def handle_endtag(self, tag):
+        """Cierra la etiqueta permitida correspondiente, cerrando antes las que quedaran abiertas dentro."""
         if tag in _DROP_CONTENT:
             self.skip = max(0, self.skip - 1)
             return
@@ -79,10 +82,12 @@ class _Sanitizer(HTMLParser):
                     break
 
     def handle_data(self, data):
+        """Copia el texto escapado, salvo dentro de bloques descartados."""
         if not self.skip:
             self.out.append(escape(data, quote=False))
 
     def close(self):
+        """Termina el análisis y cierra las etiquetas que sigan abiertas."""
         super().close()
         while self.stack:
             top = self.stack.pop()
