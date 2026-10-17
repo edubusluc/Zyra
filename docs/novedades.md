@@ -5,7 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 16/10/2026 · Gráficos sin datos y barras juntas
 
-- Estadísticas de equipo, «Enfrentamientos ganados por año»: en escritorio las barras de ganados, empatados y perdidos de una misma temporada van pegadas, como en el móvil (se limita el ancho del grupo y no el de cada barra)
+- Estadísticas de equipo, «Enfrentamientos ganados por año»: en escritorio las barras de ganados, empatados y perdidos de una misma temporada van pegadas, como en el móvil (se limita el ancho del grupo y no el de cada barra) y cada temporada lleva una banda tenue detrás para ver qué barras son suyas, también en el móvil
 - «Juegos como local», «Juegos como visitante», «Enfrentamientos ganados por año», «Balance de partidos por jugador» y los gráficos por temporada de jugador muestran «No hay datos todavía.» en vez de un gráfico vacío
 
 ## 16/10/2026 · Protección contra inundaciones de peticiones
