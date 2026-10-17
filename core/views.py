@@ -319,10 +319,9 @@ def register_club(request):
                         account.password = snp_form.cleaned_data["password"]
                         account.save()
             except IntegrityError:
-                # Doble envío o dos registros a la vez: otro proceso creó ese usuario entre la validación y el guardado.
-                if not anonymous:
+                # Doble envío o dos registros a la vez: otro proceso creó ese usuario o email entre la validación y el guardado.
+                if not anonymous or not user_form.report_taken():
                     raise
-                user_form.add_error("username", SignUpForm.USERNAME_TAKEN)
                 valid = False
             if valid:
                 if anonymous:
@@ -387,7 +386,8 @@ def register_account(request):
                 with transaction.atomic():
                     user = form.save()
             except IntegrityError:
-                form.add_error("username", SignUpForm.USERNAME_TAKEN)
+                if not form.report_taken():
+                    raise
         if user is not None:
             login(request, user, backend=LOGIN_BACKEND)
             email_verification.start_verification(request, user)
@@ -617,8 +617,9 @@ def invitation(request, token):
                         messages.error(request, str(exc))
                         return redirect("invitation", token=token)
             except IntegrityError:
-                # Doble envío o dos registros a la vez: ese usuario se creó entre la validación y el guardado.
-                form.add_error("username", SignUpForm.USERNAME_TAKEN)
+                # Doble envío o dos registros a la vez: ese usuario o email se creó entre la validación y el guardado.
+                if not form.report_taken():
+                    raise
                 user = None
         if user is not None:
             request.session.pop(PENDING_INVITE_KEY, None)

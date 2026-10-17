@@ -124,8 +124,9 @@ class SignUpForm(UserCreationForm):
         label=_("Email"), help_text=_("Te enviaremos la confirmación del registro. También puedes usarlo para iniciar sesión."),
     )
 
-    # Mensaje también para la carrera en la que otro registro crea el usuario entre validar y guardar.
+    # Mensajes para la carrera en la que otro registro crea el usuario o el email entre validar y guardar.
     USERNAME_TAKEN = _("Ya existe un usuario con ese nombre. Elige otro.")
+    EMAIL_TAKEN = _("Ya hay una cuenta con este email: inicia sesión con ella.")
 
     class Meta(UserCreationForm.Meta):
         model = User
@@ -155,6 +156,27 @@ class SignUpForm(UserCreationForm):
         if is_blocked(email):
             raise forms.ValidationError(gettext("Este email no puede registrarse en Zyra."))
         return email
+
+    def report_taken(self):
+        """Ver ``_report_taken``: se llama tras un ``IntegrityError`` al guardar."""
+        return _report_taken(self)
+
+
+def _report_taken(form):
+    """
+    Añade al formulario el error del campo que chocó con la base de datos al guardar (usuario o email).
+
+    Devuelve False si no se ve qué campo ha sido: entonces el ``IntegrityError`` no es de este caso
+    y quien llama debe volver a lanzarlo.
+    """
+    data = form.cleaned_data
+    if User.objects.filter(username__iexact=data.get("username", "")).exists():
+        form.add_error("username", SignUpForm.USERNAME_TAKEN)
+    elif User.objects.filter(email__iexact=data.get("email", "")).exists():
+        form.add_error("email", SignUpForm.EMAIL_TAKEN)
+    else:
+        return False
+    return True
 
 
 class InviteMemberForm(forms.Form):
