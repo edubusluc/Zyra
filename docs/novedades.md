@@ -9,6 +9,9 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 - El email es único también en la base de datos (índice sobre el email en minúsculas; migración `core/0019`, que se detiene con la lista de emails repetidos si ya los hubiera)
 - Los formularios de registro (invitación, club y cuenta) bloquean el botón al enviar y muestran «Creando tu usuario…» con un indicador, para que un doble clic no envíe dos veces (`static/js/submit-lock.js`, atributo `data-submit-lock`)
 
+## 17/10/2026 · Back-office: jugador enlazado en la ficha de usuario
+
+- La tarjeta «Cuenta» de la ficha de usuario muestra el jugador (y equipo/club) al que está enlazada la cuenta, o «Sin enlazar»
 ## 16/10/2026 · Gráficos sin datos y barras juntas
 
 - Estadísticas de equipo, «Enfrentamientos ganados por año»: en escritorio las barras de ganados, empatados y perdidos de una misma temporada van pegadas, como en el móvil (se limita el ancho del grupo y no el de cada barra) y cada temporada lleva una banda tenue detrás para ver qué barras son suyas, también en el móvil

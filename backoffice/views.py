@@ -294,7 +294,7 @@ def user_list(request):
 def user_detail(request, user_id):
     """
     Ficha de un usuario (solo personal): clubes, formas de entrar, invitaciones, fotos en uso
-    y fotos que se le han eliminado.
+    y fotos que se le han eliminado. Incluye los jugadores a los que está enlazada la cuenta.
     """
     member = get_object_or_404(User, pk=user_id)
     providers = SocialAccount.objects.filter(user=member).values_list("provider", flat=True)
@@ -306,6 +306,7 @@ def user_detail(request, user_id):
         "login_methods": login_methods,
         "invitation_used": Invitation.objects.filter(used_by=member).select_related("club", "created_by").first(),
         "invitations_sent": Invitation.objects.filter(created_by=member).count(),
+        "linked_players": member.players.select_related("team", "team__club").order_by("team__club__name", "name"),
         "photo_checks": [
             c for c in PhotoCheck.objects.for_user(member).select_related("team", "player", "club") if c.in_use
         ],
