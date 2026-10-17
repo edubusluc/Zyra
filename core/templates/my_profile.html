@@ -15,7 +15,7 @@
 <div class="z-panel z-account">
     <h2 class="z-section-title mt-0">{% translate "Cuenta" %}</h2>
     {% if email_form %}
-    <form method="post" action="{% url 'my_profile' %}" class="z-account-form" novalidate>
+    <form method="post" action="{% url 'my_profile' %}" class="z-account-form" novalidate data-loading-text="{% translate 'Guardando los cambios…' %}">
         {% csrf_token %}
         <p class="form-text mt-0">{% blocktranslate with email=user.email|default:"—" %}Email actual: <strong>{{ email }}</strong>{% endblocktranslate %}</p>
         {% for field in email_form %}
@@ -41,7 +41,7 @@
             {% endif %}
             <div class="z-account-actions">
                 {% if email_unverified %}
-                <form method="post" action="{% url 'resend_verification' %}">
+                <form method="post" action="{% url 'resend_verification' %}" data-loading-text="{% translate 'Reenviando el email…' %}">
                     {% csrf_token %}
                     <input type="hidden" name="next" value="{% url 'my_profile' %}">
                     <button type="submit" class="btn btn-outline-secondary btn-sm">{% translate "Reenviar enlace" %}</button>
@@ -86,7 +86,7 @@
 
 <div class="z-panel z-account" id="preferencias">
     <h2 class="z-section-title mt-0">{% translate "Preferencias" %}</h2>
-    <form method="post" action="{% url 'my_profile' %}">
+    <form method="post" action="{% url 'my_profile' %}" data-loading-text="{% translate 'Guardando los cambios…' %}">
         {% csrf_token %}
         {% if is_captain %}
         <fieldset class="z-report-scope">

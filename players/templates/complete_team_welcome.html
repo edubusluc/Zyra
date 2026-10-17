@@ -18,7 +18,7 @@
             <p class="text-muted" id="welcome-slow" hidden>{% translate "Está tardando más de lo normal. No hace falta esperar aquí: seguimos buscando y verás el resultado en Inicio." %}</p>
             <div class="d-flex flex-wrap gap-2 justify-content-center">
                 <a href="{% url 'home' %}" class="btn btn-primary">{% translate "Seguir en Inicio" %}</a>
-                <form method="post" action="{% url 'complete_team_cancel' team_import.public_id %}">
+                <form method="post" action="{% url 'complete_team_cancel' team_import.public_id %}" data-loading-text="{% translate 'Cancelando la búsqueda…' %}">
                     {% csrf_token %}<input type="hidden" name="from" value="home">
                     <button type="submit" class="btn btn-outline-secondary">{% translate "Cancelar" %}</button>
                 </form>

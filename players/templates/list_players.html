@@ -202,11 +202,11 @@
                 {% endif %}
             </div>
             <div class="modal-footer">
-                <form method="post" action="{% url 'complete_team_cancel' snp_import.public_id %}">{% csrf_token %}
+                <form method="post" action="{% url 'complete_team_cancel' snp_import.public_id %}" data-loading-text="{% translate 'Cancelando la búsqueda…' %}">{% csrf_token %}
                     <button type="submit" class="btn btn-outline-secondary">{% if snp_import_changes or snp_import.status == 'running' %}{% translate "Cancelar" %}{% else %}{% translate "Cerrar" %}{% endif %}</button>
                 </form>
                 {% if snp_import.status == 'ready' and snp_import_changes %}
-                <form method="post" action="{% url 'complete_team_confirm' snp_import.public_id %}" onsubmit="this.querySelector('button').disabled = true;">{% csrf_token %}
+                <form method="post" action="{% url 'complete_team_confirm' snp_import.public_id %}" data-loading-text="{% translate 'Añadiendo los jugadores…' %}">{% csrf_token %}
                     <button type="submit" class="btn btn-primary">{% if snp_import.to_add %}{% blocktranslate trimmed count n=snp_import.to_add|length %}Añadir {{ n }} jugador{% plural %}Añadir {{ n }} jugadores{% endblocktranslate %}{% elif snp_import.teams_to_add %}{% translate "Crear equipos del grupo" %}{% else %}{% translate "Actualizar puntos SNP" %}{% endif %}</button>
                 </form>
                 {% endif %}

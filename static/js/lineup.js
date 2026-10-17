@@ -138,8 +138,5 @@
     });
   }
 
-  form.addEventListener('submit', function () {
-    form.querySelector('[data-lineup-save]').disabled = true; // evita el doble envío
-  });
   refresh();
 })();

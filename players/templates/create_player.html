@@ -18,7 +18,7 @@
         {% endif %}
         
         <h1>{% translate "Crear Jugador" %}</h1>
-        <form method="POST" class="mt-4" enctype="multipart/form-data" data-similar-check>
+        <form method="POST" class="mt-4" enctype="multipart/form-data" data-similar-check data-loading-text="{% translate 'Creando el jugador…' %}">
             {% csrf_token %}
             <input type="hidden" name="confirm_similar" value="">
 

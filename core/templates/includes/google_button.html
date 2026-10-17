@@ -1,7 +1,7 @@
 {% load socialaccount i18n %}
 {% if google_login_enabled %}
 <div class="z-or"><span>{% translate "o" %}</span></div>
-<form method="post" action="{% provider_login_url 'google' %}">
+<form method="post" action="{% provider_login_url 'google' %}" data-loading-text="{% translate 'Conectando con Google…' %}">
     {% csrf_token %}
     {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
     <button type="submit" class="btn btn-outline-light btn-lg z-google-btn">

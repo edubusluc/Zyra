@@ -276,3 +276,6 @@ msgstr[1] "Check %s fields"
 
 msgid "Paso %s de %s"
 msgstr "Step %s of %s"
+
+msgid "Procesando…"
+msgstr "Processing…"

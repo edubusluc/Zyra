@@ -10,7 +10,7 @@
         <h1>{% translate "Confirmar email" %}</h1>
         {% if confirmation and can_confirm %}
         <p class="text-muted">{% blocktranslate trimmed with email=confirmation.email_address.email %}Confirma que <strong>{{ email }}</strong> es tu email.{% endblocktranslate %}</p>
-        <form method="post" action="{% url 'account_confirm_email' confirmation.key %}">
+        <form method="post" action="{% url 'account_confirm_email' confirmation.key %}" data-loading-text="{% translate 'Confirmando el email…' %}">
             {% csrf_token %}
             <button type="submit" class="btn btn-primary btn-lg">{% translate "Confirmar" %}</button>
         </form>
