@@ -206,7 +206,7 @@
         {% endif %}
 
         {# ---- Evolución (solo con todas las temporadas; con una temporada concreta no aportan) ---- #}
-        {% if not selected_season %}
+        {% if not selected_season and chart_seasons.labels %}
         <div class="st-row">
           <article class="st-card">
             <h3 class="st-card-title">{% translate "Partidos jugados" %}</h3>

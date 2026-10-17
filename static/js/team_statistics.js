@@ -100,9 +100,29 @@ const barValues = {
     ctx.restore();
   },
 };
+// Barras de una misma temporada pegadas: en vez de maxBarThickness (que encoge cada barra dentro de su
+// hueco y las separa) se limita el ancho del grupo entero a unos 36 px por barra.
+const groupWidth = (bars) => Math.min(0.62, (36 * bars) / Math.max(1, (lineBox.clientWidth - 60) / years.length));
+// Una banda tenue detrás de cada temporada: así se ve qué barras van juntas aunque en el móvil el hueco entre grupos sea pequeño.
+const seasonBands = {
+  id: 'seasonBands',
+  beforeDatasetsDraw(chart) {
+    const { ctx, chartArea, scales: { x } } = chart;
+    const slot = chartArea.width / years.length;
+    ctx.save();
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.045)';
+    years.forEach((_, i) => {
+      const left = x.getPixelForValue(i) - slot / 2 + 3;
+      ctx.beginPath();
+      ctx.roundRect(left, chartArea.top, slot - 6, chartArea.height, 6);
+      ctx.fill();
+    });
+    ctx.restore();
+  },
+};
 const seasonChart = new Chart(document.getElementById('myLineChart'), {
   type: 'bar',
-  plugins: [barValues],
+  plugins: [seasonBands, barValues],
   data: {
     labels: years.map(seasonLabel),
     datasets: [
@@ -115,7 +135,7 @@ const seasonChart = new Chart(document.getElementById('myLineChart'), {
     responsive: true,
     maintainAspectRatio: false,
     layout: { padding: { top: 16 } },
-    datasets: { bar: { maxBarThickness: 36 } },
+    datasets: { bar: { barPercentage: 1, categoryPercentage: groupWidth(2) } },
     plugins: { legend: { position: 'top', labels: { boxWidth: 8, boxHeight: 8, padding: 12, font: { size: 12 } } } },
     scales: scales({
       x: { ticks: { autoSkip: false, maxRotation: 0, minRotation: 0, font: { size: 12 } } },
@@ -123,7 +143,10 @@ const seasonChart = new Chart(document.getElementById('myLineChart'), {
     }),
   },
 });
+seasonChart.options.datasets.bar.categoryPercentage = groupWidth(seasonChart.data.datasets.length);
+seasonChart.update('none');
 window.addEventListener('resize', () => {
+  seasonChart.options.datasets.bar.categoryPercentage = groupWidth(seasonChart.data.datasets.length);
   seasonChart.data.labels = years.map(seasonLabel);
   seasonChart.update('none');
 });

@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 16/10/2026 · Gráficos sin datos y barras juntas
+
+- Estadísticas de equipo, «Enfrentamientos ganados por año»: en escritorio las barras de ganados, empatados y perdidos de una misma temporada van pegadas, como en el móvil (se limita el ancho del grupo y no el de cada barra) y cada temporada lleva una banda tenue detrás para ver qué barras son suyas, también en el móvil
+- «Juegos como local», «Juegos como visitante», «Enfrentamientos ganados por año», «Balance de partidos por jugador» y los gráficos por temporada de jugador muestran «No hay datos todavía.» en vez de un gráfico vacío
+
 ## 16/10/2026 · Protección contra inundaciones de peticiones
 
 - Freno general por IP (`FloodProtectionMiddleware`): 240 GET y 60 POST por minuto y proceso (`FLOOD_LIMIT_GET_PER_MINUTE`, `FLOOD_LIMIT_POST_PER_MINUTE`), con respuesta 429; `/healthz/` y estáticos exentos

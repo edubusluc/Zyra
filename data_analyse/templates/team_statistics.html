@@ -161,10 +161,12 @@
       <div class="st-grid st-grid--2">
         <section class="st-card">
           <h3 class="st-card-title">{% translate "Juegos como local" %}</h3>
-          <div class="st-chart">
+          {% if not local_games_won and not local_games_lost %}<p class="st-muted st-nodata">{% translate "No hay datos todavía." %}</p>
+          {% endif %}
+          <div class="st-chart"{% if not local_games_won and not local_games_lost %} hidden{% endif %}>
             <canvas id="myBarChart" role="img" aria-label="{% translate "Juegos como local" %}"></canvas>
           </div>
-          <div class="st-tally">
+          <div class="st-tally"{% if not local_games_won and not local_games_lost %} hidden{% endif %}>
             <span class="st-tally-item st-tally-item--win"><b>{{ percentage_local_games_won }} %</b> {% translate "ganados" %}</span>
             <span class="st-tally-item st-tally-item--loss"><b>{{ percentage_local_games_lost }} %</b> {% translate "perdidos" %}</span>
           </div>
@@ -172,10 +174,12 @@
 
         <section class="st-card">
           <h3 class="st-card-title">{% translate "Juegos como visitante" %}</h3>
-          <div class="st-chart">
+          {% if not visiting_games_won and not visiting_games_lost %}<p class="st-muted st-nodata">{% translate "No hay datos todavía." %}</p>
+          {% endif %}
+          <div class="st-chart"{% if not visiting_games_won and not visiting_games_lost %} hidden{% endif %}>
             <canvas id="myVisitingBarChart" role="img" aria-label="{% translate "Juegos como visitante" %}"></canvas>
           </div>
-          <div class="st-tally">
+          <div class="st-tally"{% if not visiting_games_won and not visiting_games_lost %} hidden{% endif %}>
             <span class="st-tally-item st-tally-item--win"><b>{{ percentage_visiting_games_won }} %</b> {% translate "ganados" %}</span>
             <span class="st-tally-item st-tally-item--loss"><b>{{ percentage_visiting_games_lost }} %</b> {% translate "perdidos" %}</span>
           </div>
@@ -184,7 +188,9 @@
         <section class="st-card st-card--wide">
           <h3 class="st-card-title">{% translate "Enfrentamientos ganados por año" %}</h3>
           <p class="st-card-note">{% translate "Evolución de victorias, empates y derrotas del equipo en cada temporada." %}</p>
-          <div class="st-chart">
+          {% if not dicc_line_chart %}<p class="st-muted st-nodata">{% translate "No hay datos todavía." %}</p>
+          {% endif %}
+          <div class="st-chart"{% if not dicc_line_chart %} hidden{% endif %}>
             <canvas id="myLineChart" role="img" aria-label="{% translate "Enfrentamientos ganados por año" %}"></canvas>
           </div>
         </section>
@@ -192,13 +198,14 @@
         <section class="st-card st-card--wide">
           <h3 class="st-card-title">{% translate "Balance de partidos por jugador" %}</h3>
           <p class="st-card-note">{% translate "Partidos de 3 y de 2 puntos, ganados y perdidos, de cada jugador actual del equipo." %}</p>
-          <div class="st-balance-sort" role="group" aria-label="{% translate 'Ordenar por' %}">
+          {% if not column_chart_data %}<p class="st-muted st-nodata">{% translate "No hay datos todavía." %}</p>{% endif %}
+          <div class="st-balance-sort"{% if not column_chart_data %} hidden{% endif %} role="group" aria-label="{% translate 'Ordenar por' %}">
             <span class="st-filter-label">{% translate "Ordenar por" %}</span>
             <button type="button" class="st-chip" data-sort="played" aria-pressed="true">{% translate "Partidos jugados" %}</button>
             <button type="button" class="st-chip" data-sort="won" aria-pressed="false">{% translate "Victorias" %}</button>
             <button type="button" class="st-chip" data-sort="name" aria-pressed="false">{% translate "Nombre" %}</button>
           </div>
-          <div class="st-chart" id="balanceChart">
+          <div class="st-chart" id="balanceChart"{% if not column_chart_data %} hidden{% endif %}>
             <canvas id="myColumnChart" role="img" aria-label="{% translate "Balance de partidos por jugador" %}"></canvas>
           </div>
           <nav class="st-pager" id="balancePager" aria-label="{% translate 'Páginas de jugadores' %}" hidden>
