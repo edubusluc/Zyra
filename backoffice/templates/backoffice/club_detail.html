@@ -1,5 +1,5 @@
 {% extends 'backoffice/base.html' %}
-{% load i18n backoffice_tags %}
+{% load i18n static backoffice_tags %}
 {% block title %}{{ club.name }}{% endblock %}
 
 {% block content %}
@@ -219,20 +219,21 @@
         </select>
         <label class="form-label" for="contact-subject">{% translate "Asunto" %}</label>
         <input class="form-control mb-2" id="contact-subject" name="subject" required maxlength="200">
-        <label class="form-label" for="contact-body">{% translate "Mensaje" %}</label>
-        <textarea class="form-control mb-2" id="contact-body" name="body" rows="6" required maxlength="5000"></textarea>
+        <label class="form-label" id="contact-body-label" for="contact-editor">{% translate "Mensaje" %}</label>
+        <div class="btn-group btn-group-sm mb-1" role="toolbar" aria-label="{% translate 'Formato del texto' %}">
+            <button type="button" class="btn btn-outline-light" data-editor-cmd="bold" title="{% translate 'Negrita' %}" aria-label="{% translate 'Negrita' %}"><i class="fa-solid fa-bold" aria-hidden="true"></i></button>
+            <button type="button" class="btn btn-outline-light" data-editor-cmd="italic" title="{% translate 'Cursiva' %}" aria-label="{% translate 'Cursiva' %}"><i class="fa-solid fa-italic" aria-hidden="true"></i></button>
+            <button type="button" class="btn btn-outline-light" data-editor-cmd="h2" title="{% translate 'Título' %}" aria-label="{% translate 'Título' %}"><i class="fa-solid fa-heading" aria-hidden="true"></i></button>
+            <button type="button" class="btn btn-outline-light" data-editor-cmd="p" title="{% translate 'Párrafo normal' %}" aria-label="{% translate 'Párrafo normal' %}"><i class="fa-solid fa-paragraph" aria-hidden="true"></i></button>
+            <button type="button" class="btn btn-outline-light" data-editor-cmd="insertUnorderedList" title="{% translate 'Lista con viñetas' %}" aria-label="{% translate 'Lista con viñetas' %}"><i class="fa-solid fa-list-ul" aria-hidden="true"></i></button>
+            <button type="button" class="btn btn-outline-light" data-editor-cmd="insertOrderedList" title="{% translate 'Lista numerada' %}" aria-label="{% translate 'Lista numerada' %}"><i class="fa-solid fa-list-ol" aria-hidden="true"></i></button>
+            <button type="button" class="btn btn-outline-light" data-editor-cmd="link" data-prompt="{% translate 'Dirección del enlace' %}" title="{% translate 'Enlace' %}" aria-label="{% translate 'Enlace' %}"><i class="fa-solid fa-link" aria-hidden="true"></i></button>
+        </div>
+        <div class="form-control mb-2" id="contact-editor" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="contact-body-label" style="min-height:10rem; height:auto;"></div>
+        <input type="hidden" id="contact-body" name="body">
         <button class="btn btn-primary"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i> {% translate "Enviar" %}</button>
     </form>
-    <script>
-    (function () {
-        var data = JSON.parse(document.getElementById("contact-templates").textContent);
-        document.getElementById("contact-template").addEventListener("change", function () {
-            var t = data[this.value] || {subject: "", body: ""};
-            document.getElementById("contact-subject").value = t.subject;
-            document.getElementById("contact-body").value = t.body;
-        });
-    })();
-    </script>
+    <script src="{% static 'js/backoffice-editor.js' %}"></script>
 </section>
 
 {% if emails %}

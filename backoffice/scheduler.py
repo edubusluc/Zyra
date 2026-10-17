@@ -23,6 +23,8 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
+from django.utils.html import format_html
+
 from core.emails import build_email
 
 from .cron import Cron
@@ -462,7 +464,7 @@ def notify_recovery(run):
         return False
     subject = _("Zyra · El proceso %(job)s vuelve a funcionar") % {"job": run.job.name}
     text = _("El proceso %(job)s ha terminado bien después de varios fallos seguidos.") % {"job": run.job.name}
-    email = build_email(subject, text, f"<p>{text}</p>", to=recipients)
+    email = build_email(subject, text, format_html("<p>{}</p>", text), to=recipients)
     try:
         email.send(fail_silently=False)
     except Exception:
