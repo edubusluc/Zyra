@@ -14,6 +14,7 @@ from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.core.mail.message import SafeMIMEMultipart
 from django.template.loader import render_to_string
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
 from .models import Membership
@@ -53,7 +54,10 @@ class ZyraEmail(EmailMultiAlternatives):
 
 
 def build_email(subject, text, html_content, to, reply_to=None):
-    """Monta un correo de Zyra con el pie corporativo en texto plano y en HTML."""
+    """
+    Monta un correo de Zyra con el pie corporativo en texto plano y en HTML.
+    ``html_content`` es HTML ya escapado/saneado por quien llama: se inserta sin volver a escaparlo.
+    """
     contact = settings.CONTACT_EMAIL
     site = settings.SITE_URL
     footer = "\n\n--\n%s\n%s\n%s" % (
@@ -64,7 +68,7 @@ def build_email(subject, text, html_content, to, reply_to=None):
     body = text.rstrip() + footer
     html = render_to_string("emails/layout.html", {
         "subject": subject,
-        "content": html_content,
+        "content": mark_safe(html_content),  # HTML ya preparado (y escapado) por quien llama
         "contact": contact,
         "site_url": site,
         "logo_cid": LOGO_CID,

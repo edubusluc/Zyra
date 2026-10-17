@@ -5,6 +5,8 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from call.models import ReportDelivery
+from django.utils.html import format_html
+
 from core.emails import build_email
 from core.models import Club
 from django.contrib.auth import get_user_model
@@ -46,6 +48,6 @@ def send_digest(days=7):
         return 0
     lines = build_digest(days)
     text = "\n".join("- " + line for line in lines)
-    html = "<ul>" + "".join(f"<li>{line}</li>" for line in lines) + "</ul>"
+    html = "<ul>" + "".join(format_html("<li>{}</li>", line) for line in lines) + "</ul>"
     build_email(_("Zyra · Resumen de la semana"), text, html, to=recipients).send(fail_silently=False)
     return len(recipients)

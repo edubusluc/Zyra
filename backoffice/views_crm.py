@@ -28,6 +28,7 @@ from team.models import Team
 from . import impersonation
 from .audit import ACTIONS, audit
 from .decorators import staff_required, superuser_required
+from .richtext import html_to_text, sanitize_html
 from .models import AuditLog, ClubCrm, ClubNote, EmailLog, FollowUpTask
 
 User = get_user_model()
@@ -319,18 +320,21 @@ def club_contact(request, club_id):
     """
     club = _club(club_id)
     subject = request.POST.get("subject", "").strip()[:200]
-    body = request.POST.get("body", "").strip()[:5000]
+    body = request.POST.get("body", "").strip()[:20000]
     recipients = [u.email for u in club_admins(club) if u.email]
     crm = getattr(club, "crm", None)
     if crm and crm.contact_email and crm.contact_email not in recipients:
         recipients.append(crm.contact_email)
+    if body and not html_to_text(sanitize_html(body)):
+        body = ""  # solo etiquetas vacías
     if not subject or not body:
         messages.error(request, _("Escribe el asunto y el mensaje."))
     elif not recipients:
         messages.error(request, _("El club no tiene ningún email al que escribir."))
     else:
-        html = "".join(f"<p>{line}</p>" if line else "" for line in _escape(body).split("\n"))
-        email = build_email(subject, body, html, to=recipients, reply_to=[request.user.email] if request.user.email else None)
+        html = sanitize_html(body)  # nunca se confía en el HTML del cliente
+        text = html_to_text(html)
+        email = build_email(subject, text, html, to=recipients, reply_to=[request.user.email] if request.user.email else None)
         email.extra_headers["X-Zyra-Kind"] = "crm"
         try:
             email.send(fail_silently=False)
@@ -342,12 +346,6 @@ def club_contact(request, club_id):
             audit(request, "club.contact", club, subject=subject, to=", ".join(recipients))
             messages.success(request, _("Correo enviado a %(to)s.") % {"to": ", ".join(recipients)})
     return redirect("backoffice:club_detail", club_id=club.public_id)
-
-
-def _escape(text):
-    """Texto seguro para meterlo en HTML."""
-    from django.utils.html import escape
-    return escape(text)
 
 
 # ---------- Acciones sobre clubes y cuentas ----------

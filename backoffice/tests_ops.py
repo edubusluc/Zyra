@@ -418,9 +418,23 @@ class CrmTests(StaffTestCase):
         self.client.post(reverse("backoffice:club_contact", args=[self.club.public_id]), {"subject": "Hola", "body": "Qué tal <b>va</b>"})
         message = mail.outbox[0]
         self.assertEqual(set(message.to), {"capi@example.com", "ana@example.com"})
-        self.assertNotIn("<b>va</b>", message.alternatives[0][0])  # el texto se escapa en el HTML
+        self.assertIn("<strong>va</strong>", message.alternatives[0][0])  # el estilo se renderiza
+        self.assertNotIn("&lt;", message.alternatives[0][0])
+        self.assertIn("Qué tal va", message.body)  # texto plano alternativo sin etiquetas
         self.assertTrue(AuditLog.objects.filter(action="club.contact").exists())
         self.assertIn("Hola", ClubNote.objects.get().text)
+
+    def test_contact_html_is_sanitised_on_the_server(self):
+        self.client.post(reverse("backoffice:club_contact", args=[self.club.public_id]),
+                         {"subject": "Hola", "body": "<h2>Título</h2><p onclick='x()'>Texto</p><script>alert(1)</script>"})
+        html = mail.outbox[0].alternatives[0][0]
+        self.assertIn("Título</h2>", html)
+        self.assertNotIn("<script", html)
+        self.assertNotIn("onclick", html)
+
+    def test_contact_with_only_empty_tags_is_rejected(self):
+        self.client.post(reverse("backoffice:club_contact", args=[self.club.public_id]), {"subject": "Hola", "body": "<p><br></p>"})
+        self.assertEqual(len(mail.outbox), 0)
 
     def test_contact_without_content_or_recipients_fails(self):
         url = reverse("backoffice:club_contact", args=[self.club.public_id])

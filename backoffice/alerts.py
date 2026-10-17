@@ -9,6 +9,8 @@ from django.db.models import Sum
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
+from django.utils.html import format_html
+
 from core.emails import build_email
 
 from .metrics import attention_counts
@@ -51,7 +53,7 @@ def _send(subject, text):
     if not recipients:
         return False
     try:
-        build_email(subject, text, f"<p>{text}</p>", to=recipients).send(fail_silently=False)
+        build_email(subject, text, format_html("<p>{}</p>", text), to=recipients).send(fail_silently=False)
     except Exception:
         return False
     return True

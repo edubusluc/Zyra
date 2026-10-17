@@ -10963,6 +10963,38 @@ msgstr ""
 "Complete team is not available: we have notified the administrator to review"
 " the process."
 
+#: backoffice/templates/backoffice/club_detail.html
+msgid "Formato del texto"
+msgstr "Text formatting"
+
+#: backoffice/templates/backoffice/club_detail.html
+msgid "Negrita"
+msgstr "Bold"
+
+#: backoffice/templates/backoffice/club_detail.html
+msgid "Cursiva"
+msgstr "Italic"
+
+#: backoffice/templates/backoffice/club_detail.html
+msgid "Título"
+msgstr "Heading"
+
+#: backoffice/templates/backoffice/club_detail.html
+msgid "Párrafo normal"
+msgstr "Normal paragraph"
+
+#: backoffice/templates/backoffice/club_detail.html
+msgid "Lista con viñetas"
+msgstr "Bulleted list"
+
+#: backoffice/templates/backoffice/club_detail.html
+msgid "Lista numerada"
+msgstr "Numbered list"
+
+#: backoffice/templates/backoffice/club_detail.html
+msgid "Dirección del enlace"
+msgstr "Link address"
+
 #: backoffice/templates/backoffice/user_detail.html:36
 msgid "Jugador enlazado"
 msgstr "Linked player"
