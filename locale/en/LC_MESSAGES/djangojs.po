@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zyra\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 23:17+0000\n"
+"POT-Creation-Date: 2026-10-15 11:12+0000\n"
 "PO-Revision-Date: 2026-10-01 20:00+0200\n"
 "Last-Translator: Zyra\n"
 "Language-Team: English\n"
@@ -82,39 +82,41 @@ msgstr "Pair not complete"
 msgid "Completa todas las parejas para guardar"
 msgstr "Complete all pairs to save"
 
-#: static/js/lineup.js:95
-msgid ""
-"%(title)s: %(win)s de opciones de ganar. %(explanation)s Puedes cambiar "
-"cualquier pareja antes de guardar."
-msgstr ""
-"%(title)s: %(win)s chance of winning. %(explanation)s You can change any "
-"pair before saving."
+#: static/js/lineup.js:96
+msgid "%(title)s: %(win)s de opciones de ganar. "
+msgstr "%(title)s: %(win)s chance of winning. "
 
-#: static/js/lineup.js:113
+#: static/js/lineup.js:102
+msgid "Ver por qué"
+msgstr "See why"
+
+#: static/js/lineup.js:104
+msgid "%(explanation)s Puedes cambiar cualquier pareja antes de guardar."
+msgstr "%(explanation)s You can change any pair before saving."
+
+#: static/js/lineup.js:123
 msgid "Calculando la mejor alineación…"
 msgstr "Working out the best lineup…"
 
-#: static/js/lineup.js:124
+#: static/js/lineup.js:134
 msgid "No se ha podido calcular la alineación. Inténtalo de nuevo."
 msgstr "The lineup could not be worked out. Please try again."
 
-#: static/js/match-form.js:45
+#: static/js/match-form.js:62
 msgid "Elige equipo"
 msgstr "Choose team"
 
-#: static/js/pair_statistics.js:21 static/js/player_statistics.js:33
-#: static/js/team_statistics.js:68 static/js/team_statistics.js:83
-#: static/js/team_statistics.js:99
+#: static/js/pair_statistics.js:21 static/js/player_statistics.js:34
+#: static/js/team_statistics.js:68 static/js/team_statistics.js:84
 msgid "Ganados"
 msgstr "Won"
 
-#: static/js/pair_statistics.js:22 static/js/player_statistics.js:34
-#: static/js/team_statistics.js:68 static/js/team_statistics.js:83
-#: static/js/team_statistics.js:117
+#: static/js/pair_statistics.js:22 static/js/player_statistics.js:35
+#: static/js/team_statistics.js:68 static/js/team_statistics.js:86
 msgid "Perdidos"
 msgstr "Lost"
 
-#: static/js/pair_statistics.js:40 static/js/player_statistics.js:52
+#: static/js/pair_statistics.js:40 static/js/player_statistics.js:54
 msgid "% victorias"
 msgstr "Win %"
 
@@ -168,19 +170,23 @@ msgstr "Zoom in"
 msgid "Vista previa de la foto"
 msgstr "Photo preview"
 
-#: static/js/player-picker.js:35
+#: static/js/photo-crop.js:259
+msgid "Subir foto"
+msgstr "Upload photo"
+
+#: static/js/player-picker.js:44
 msgid "Buscar..."
 msgstr "Search..."
 
-#: static/js/player-picker.js:61
+#: static/js/player-picker.js:70
 msgid "Ver todos"
 msgstr "Show all"
 
-#: static/js/player-picker.js:87
+#: static/js/player-picker.js:97
 msgid "Sin resultados"
 msgstr "No results"
 
-#: static/js/player-selector.js:47 static/js/team_statistics.js:237
+#: static/js/player-selector.js:47 static/js/team_statistics.js:199
 msgid "%(first)s–%(last)s de %(total)s"
 msgstr "%(first)s–%(last)s of %(total)s"
 
@@ -188,23 +194,23 @@ msgstr "%(first)s–%(last)s of %(total)s"
 msgid "Mínimo %(min)s para cerrar la convocatoria"
 msgstr "At least %(min)s needed to close the call-up"
 
-#: static/js/player_statistics.js:83
+#: static/js/player_statistics.js:85
 msgid "Puntos SNP"
 msgstr "SNP points"
 
-#: static/js/player_statistics.js:97
+#: static/js/player_statistics.js:99
 msgid "%(n)s puntos"
 msgstr "%(n)s points"
 
-#: static/js/player_statistics.js:126
+#: static/js/player_statistics.js:128
 msgid "Afinidad"
 msgstr "Affinity"
 
-#: static/js/player_statistics.js:137
+#: static/js/player_statistics.js:139
 msgid "%(wins)sV - %(losses)sD"
 msgstr "%(wins)sW - %(losses)sL"
 
-#: static/js/player_statistics.js:139
+#: static/js/player_statistics.js:141
 msgid "Ya no está en el equipo"
 msgstr "No longer on the team"
 
@@ -220,27 +226,53 @@ msgstr "Match winner: %(team)s"
 msgid "Media del equipo"
 msgstr "Team average"
 
-#: static/js/team_statistics.js:68 static/js/team_statistics.js:108
+#: static/js/team_statistics.js:78
+msgid "en curso"
+msgstr "in progress"
+
+#: static/js/team_statistics.js:85
 msgid "Empatados"
 msgstr "Drawn"
 
-#: static/js/team_statistics.js:131 static/js/team_statistics.js:197
-#: static/js/team_statistics.js:210
+#: static/js/team_statistics.js:93 static/js/team_statistics.js:159
+#: static/js/team_statistics.js:172
 msgid "Partidos"
 msgstr "Matches"
 
-#: static/js/team_statistics.js:141
+#: static/js/team_statistics.js:103
 msgid "3 puntos ganados"
 msgstr "3 points won"
 
-#: static/js/team_statistics.js:142
+#: static/js/team_statistics.js:104
 msgid "2 puntos ganados"
 msgstr "2 points won"
 
-#: static/js/team_statistics.js:143
+#: static/js/team_statistics.js:105
 msgid "3 puntos perdidos"
 msgstr "3 points lost"
 
-#: static/js/team_statistics.js:144
+#: static/js/team_statistics.js:106
 msgid "2 puntos perdidos"
 msgstr "2 points lost"
+
+msgid "Este campo es obligatorio."
+msgstr "This field is required."
+
+msgid "Escribe un email válido."
+msgstr "Enter a valid email."
+
+msgid "Las contraseñas no coinciden."
+msgstr "The passwords do not match."
+
+msgid "Falta %s campo"
+msgid_plural "Faltan %s campos"
+msgstr[0] "%s field is missing"
+msgstr[1] "%s fields are missing"
+
+msgid "Revisa %s campo"
+msgid_plural "Revisa %s campos"
+msgstr[0] "Check %s field"
+msgstr[1] "Check %s fields"
+
+msgid "Paso %s de %s"
+msgstr "Step %s of %s"

@@ -25,7 +25,8 @@
   };
 
   // Partidos jugados por temporada (ganados + perdidos apilados)
-  new Chart(document.getElementById('chartPlayed'), {
+  const playedCanvas = document.getElementById('chartPlayed');
+  if (playedCanvas) new Chart(playedCanvas, {
     type: 'bar',
     data: {
       labels: seasons.labels,
@@ -44,7 +45,8 @@
   });
 
   // Evolución del % de victorias
-  new Chart(document.getElementById('chartPct'), {
+  const pctCanvas = document.getElementById('chartPct');
+  if (pctCanvas) new Chart(pctCanvas, {
     type: 'line',
     data: {
       labels: seasons.labels,

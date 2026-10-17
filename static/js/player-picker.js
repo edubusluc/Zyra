@@ -15,6 +15,15 @@
 (function () {
   const normalize = (text) => text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 
+  // Tras elegir una opción la página va a recargarse: durante un instante se descartan los clics
+  // (el emulado del móvil o un doble toque) para que no caigan sobre un enlace de debajo, p. ej.
+  // un partido de la tabla de estadísticas.
+  function swallowStrayClicks() {
+    const stop = (e) => { e.preventDefault(); e.stopPropagation(); };
+    document.addEventListener('click', stop, true);
+    setTimeout(() => document.removeEventListener('click', stop, true), 600);
+  }
+
   function enhance(select) {
     if (select.dataset.pickerReady) return;
     select.dataset.pickerReady = '1';
@@ -60,8 +69,9 @@
       toggle.tabIndex = -1;
       toggle.setAttribute('aria-label', gettext('Ver todos'));
       toggle.innerHTML = '<i class="fa-solid fa-chevron-down" aria-hidden="true"></i>';
-      toggle.addEventListener('mousedown', (e) => {
-        e.preventDefault();
+      // mousedown solo evita perder el foco; la acción va en click (ver nota en la opción)
+      toggle.addEventListener('mousedown', (e) => e.preventDefault());
+      toggle.addEventListener('click', () => {
         if (wrap.classList.contains('is-open')) { close(); input.blur(); } else { input.focus(); }
       });
       wrap.classList.add('has-toggle');
@@ -100,7 +110,10 @@
           meta.textContent = o.meta;
           li.appendChild(meta);
         }
-        li.addEventListener('mousedown', (e) => { e.preventDefault(); choose(o); });
+        // Elegir en «click», no en «mousedown»: en el móvil la lista se cierra al soltar el dedo
+        // y el click emulado caía sobre el enlace que quedaba debajo (p. ej. un partido)
+        li.addEventListener('mousedown', (e) => e.preventDefault());
+        li.addEventListener('click', () => choose(o));
         list.appendChild(li);
       });
       setActive(shown.findIndex((o) => o.value === select.value));
@@ -122,7 +135,10 @@
       select.value = o.value;
       close();
       input.blur();
-      if (changed) select.dispatchEvent(new Event('change', { bubbles: true }));
+      if (changed) {
+        swallowStrayClicks();
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+      }
     }
 
     input.addEventListener('focus', () => { input.select(); render(''); open(); });

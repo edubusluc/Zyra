@@ -43,6 +43,10 @@ class Teamform (forms.ModelForm):
         for name in ('gender', 'country', 'division'):
             self.fields[name].required = True
             self.fields[name].choices = [("", _("Elige una opción"))] + list(Team._meta.get_field(name).choices)
+        # Ayuda con valores típicos (los tres se piden sin ejemplo en el alta del club y en el de rivales).
+        self.fields['gender'].help_text = _("Masculino o Femenino, según la competición del equipo.")
+        self.fields['country'].help_text = _("País del circuito en el que juega, por ejemplo España. Decide dónde se buscan sus jugadores en SNP.")
+        self.fields['division'].help_text = _("Nivel del circuito, por ejemplo Future o 500.")
         if self.is_bound and self._copies_from_own_team():
             for name in self.group_fields:
                 self.fields[name].required = False

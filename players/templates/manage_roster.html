@@ -35,7 +35,7 @@
         <label class="z-roster" data-name="{{ p.full_name }}">
             <img src="{% if p.photo %}{{ p.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="" class="z-avatar z-avatar--sm">
             <span class="z-pick-body">
-                <span class="z-pick-name">{{ p.full_name }}</span>
+                <span class="z-pick-name" title="{{ p.full_name }}">{{ p.short_name }}</span>
                 <span class="z-pick-meta" data-roster-state></span>
             </span>
             <span class="form-check form-switch m-0">
@@ -43,7 +43,7 @@
             </span>
         </label>
         {% empty %}
-        <div class="z-empty" style="grid-column: 1 / -1;">{% translate "Todavía no hay jugadores." %}</div>
+        <div class="z-empty" style="grid-column: 1 / -1;">{% translate "Añade jugadores desde «Nuevo jugador» y márcalos aquí como parte del equipo." %}</div>
         {% endfor %}
         <p class="z-empty" data-roster-empty hidden style="grid-column: 1 / -1;">{% translate "Ningún jugador coincide con la búsqueda." %}</p>
     </div>

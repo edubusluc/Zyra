@@ -10,7 +10,7 @@
     </div>
     <div class="z-actions">
         {% if member != user and not member.is_superuser %}
-        <form method="post" action="{% url 'backoffice:user_toggle_active' member.id %}" class="d-inline" {% if member.is_active %}onsubmit="return confirm('{% translate "¿Suspender esta cuenta? No podrá iniciar sesión hasta que la reactives." %}')"{% endif %}>
+        <form method="post" action="{% url 'backoffice:user_toggle_active' member.id %}" class="d-inline" {% if member.is_active %}data-confirm="{% translate "¿Suspender esta cuenta? No podrá iniciar sesión hasta que la reactives." %}"{% endif %}>
             {% csrf_token %}
             <input type="hidden" name="action" value="{% if member.is_active %}suspend{% else %}activate{% endif %}">
             {% if member.is_active %}
@@ -68,9 +68,9 @@
         {% csrf_token %}
         <label class="visually-hidden" for="imp-reason">{% translate "Motivo" %}</label>
         <input class="form-control w-auto flex-grow-1" id="imp-reason" name="reason" required minlength="5" maxlength="300" placeholder="{% translate 'Motivo (queda en la auditoría)' %}">
-        <button class="btn btn-primary btn-sm"><i class="fa-solid fa-eye" aria-hidden="true"></i> {% translate "Entrar como este usuario (solo lectura)" %}</button>
+        <button class="btn btn-primary btn-sm"><i class="fa-solid fa-eye" aria-hidden="true"></i> {% translate "Entrar como este usuario (con edición)" %}</button>
     </form>
-    <p class="text-muted small mt-1 mb-0">{% translate "Ves Zyra como la ve esta persona durante 30 minutos como máximo. No se puede cambiar nada y no cuenta como actividad suya." %}</p>
+    <p class="text-muted small mt-1 mb-0">{% translate "Usas Zyra como esta persona durante 30 minutos como máximo y puedes crear y corregir datos; cada cambio queda anotado a tu nombre. No se puede tocar su cuenta (email, contraseña), abandonar o borrar el club ni ver la clave de SNP." %}</p>
     {% endif %}
 </section>
 
@@ -102,7 +102,7 @@
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
         <h2 class="h5 mb-0">{% translate "Fotos" %}</h2>
         {% if photo_checks %}
-        <form method="post" action="{% url 'backoffice:user_photos_delete' member.id %}" class="d-flex flex-wrap gap-2" onsubmit="return confirm('{% translate "¿Eliminar todas sus fotos y avisarle por email?" %}')">
+        <form method="post" action="{% url 'backoffice:user_photos_delete' member.id %}" class="d-flex flex-wrap gap-2" data-confirm="{% translate "¿Eliminar todas sus fotos y avisarle por email?" %}">
             {% csrf_token %}
             <input type="text" name="reason" maxlength="500" class="form-control form-control-sm" style="max-width:240px" placeholder="{% translate 'Motivo (opcional, va en el email)' %}" aria-label="{% translate 'Motivo' %}">
             <button class="btn btn-outline-danger btn-sm"><i class="fa-solid fa-trash" aria-hidden="true"></i> {% translate "Eliminar todas sus fotos" %}</button>

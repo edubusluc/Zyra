@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static i18n %}
+{% load static i18n zyra_format %}
 {% block page_title %}{{ player.short_name }} · {% endblock %}
 
 {% block content %}
@@ -25,14 +25,19 @@
             </p>
         </div>
         <div class="z-profile-stats">
-            <div class="z-stat"><b>{{ player.snp_score|default:"–" }}</b><span>{% translate "Puntos SNP" %}</span></div>
+            <div class="z-stat"><b>{{ player.snp_score|snp_points }}</b><span>{% translate "Puntos SNP" %}</span></div>
         </div>
     </div>
 
-    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
-        <h2 class="z-section-title mt-0">{% translate "Últimos partidos" %}</h2>
-        <a href="{% url 'player_statistics' %}?player={{ player.public_id }}" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-chart-simple me-1" aria-hidden="true"></i> {% translate "Ver estadísticas" %}</a>
-    </div>
+    {% include 'includes/player_tabs.html' with current='summary' %}
+
+    {% if form %}
+    <p class="z-form-strip" aria-label="{% translate 'Forma reciente' %}">
+        <span class="z-eyebrow">{% translate "Forma reciente" %}</span>
+        {% for r in form %}<span class="st-pip st-pip--{{ r }}">{% if r == "w" %}{% translate "V" context "victoria" %}{% else %}{% translate "D" context "derrota" %}{% endif %}</span>{% endfor %}
+    </p>
+    {% endif %}
+    <h2 class="z-section-title mt-0">{% translate "Últimos partidos" %}</h2>
     <ul class="z-results">
         {% for game in games %}
         {% if game.winner == 'Local' and player == game.player_1_local or game.winner == 'Local' and player == game.player_2_local or game.winner == 'Visitante' and player == game.player_1_visiting or game.winner == 'Visitante' and player == game.player_2_visiting %}
@@ -43,9 +48,9 @@
         <li>
             <div class="min-w-0">
                 <strong>{% blocktranslate with local=game.match.local_name visiting=game.match.visiting_name %}{{ local }} vs {{ visiting }}{% endblocktranslate %}</strong>
-                <div class="z-result-date">{{ game.match.start_date|date:"d/m/Y" }} · {% blocktranslate with n=game.n_game %}Partido {{ n }}{% endblocktranslate %}</div>
+                <div class="z-result-date">{{ game.match.start_date|date:"D j M Y" }} · {% blocktranslate with n=game.n_game %}Partido {{ n }}{% endblocktranslate %}</div>
             </div>
-            <span class="z-wl z-wl--{{ res }}">{% if res == "w" %}{% translate "V" context "victoria" %}{% else %}{% translate "D" context "derrota" %}{% endif %}</span>
+            <span class="st-pip st-pip--{{ res }}">{% if res == "w" %}{% translate "V" context "victoria" %}{% else %}{% translate "D" context "derrota" %}{% endif %}</span>
         </li>
         {% empty %}
         <li class="text-muted">{% translate "Todavía no ha disputado ningún partido." %}</li>

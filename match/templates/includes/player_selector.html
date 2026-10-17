@@ -1,6 +1,6 @@
 {# Selector de jugadores para convocatorias. Recibe: players (con penalty_reasons), selected, submit_label, min_players #}
-{% load static i18n %}
-<div class="z-selector" data-selector data-min="{{ min_players|default:0 }}" data-page-size="20">
+{% load static i18n zyra_format %}
+<div class="z-selector" data-selector data-min="{{ min_players|default:0 }}" data-page-size="30">
     <div class="z-selector-tools">
         <div class="z-search">
             <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
@@ -25,16 +25,16 @@
             <input type="checkbox" name="players" value="{{ player.id }}" {% if player.id in selected %}checked{% endif %}>
             <span class="z-pick-check" aria-hidden="true"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
             <span class="z-pick-body">
-                <span class="z-pick-name">{{ player.full_name }}</span>
+                <span class="z-pick-name" title="{{ player.full_name }}">{{ player.short_name }}</span>
                 <span class="z-pick-meta">
-                    {{ player.get_position_display|default:"—" }}{% if not player.in_team %} · {% translate "fuera del equipo" %}{% endif %}
+                    {{ player.get_position_display|default:"—" }} · SNP {{ player.snp_score|snp_points }}{% if not player.in_team %} · {% translate "fuera del equipo" %}{% endif %}
                 </span>
+                {# Para decidir sin salir de la pantalla: partidos jugados esta temporada y advertencias a la vista #}
+                {% if player.season_total %}<span class="z-pick-meta">{% blocktranslate with n=player.played total=player.season_total %}Jugó {{ n }} de {{ total }}{% endblocktranslate %}</span>{% endif %}
+                {% if player.penalty_reasons %}
+                <span class="z-pick-meta z-pick-warn-text"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> {% blocktranslate count n=player.penalty_reasons|length %}{{ n }} advertencia{% plural %}{{ n }} advertencias{% endblocktranslate %}</span>
+                {% endif %}
             </span>
-            {% if player.penalty_reasons %}
-            <span class="z-pick-warn" title="{% for r in player.penalty_reasons %}{{ r }}{% if not forloop.last %}&#10;{% endif %}{% endfor %}">
-                <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> {{ player.penalty_reasons|length }}
-            </span>
-            {% endif %}
         </label>
         {% empty %}
         <div class="z-empty" style="grid-column: 1 / -1;">{% translate "No hay jugadores en el equipo." %}</div>

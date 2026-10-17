@@ -16,7 +16,7 @@ from data_analyse.pairs import COMPETITIVE, _current_run, match_type_lookup
 from data_analyse.sets import own_sets, set_stats
 from call.models import Call
 from match.models import Game
-from players.models import SnpScoreHistory
+from players.models import SnpScoreHistory, joined_by
 
 CALL_PLAYED, CALL_BENCHED, CALL_ABSENT = "played", "benched", "absent"
 
@@ -59,7 +59,7 @@ def monthly_calls(player, start, end, scope=None):
     ``CALL_BENCHED`` (se apuntó pero no jugó: no convocado) o ``CALL_ABSENT`` (no se apuntó).
     """
     calls = (
-        Call.objects.filter(match__club=player.club, match__start_date__range=(start, end), draft_mode=False)
+        Call.objects.filter(match__club=player.club, match__start_date__range=(start, end), match__draft_mode=False, draft_mode=False)
         .filter(**match_type_lookup(COMPETITIVE if scope == REPORT_SCOPE_COMPETITIVE else None, "match__"))
         .select_related("match__local", "match__visiting")
         .order_by("match__start_date", "match_id")
@@ -73,6 +73,8 @@ def monthly_calls(player, start, end, scope=None):
     )
     rows = []
     for call in calls:
+        if not joined_by(player.joined_season, call.match.season):
+            continue  # convocatoria de una temporada anterior a su incorporación
         if call.pk not in signed:
             status = CALL_ABSENT
         else:
@@ -107,7 +109,7 @@ def build_monthly_report(player, month, scope=None):
         .filter(Q(player_1_local=player) | Q(player_2_local=player)
                 | Q(player_1_visiting=player) | Q(player_2_visiting=player),
                 match__club=player.club, match__start_date__range=(start, end),
-                draft_mode=False, winner__in=outcomes.WINNERS)
+                match__draft_mode=False, draft_mode=False, winner__in=outcomes.WINNERS)
         .filter(**match_type_lookup(COMPETITIVE if scope == REPORT_SCOPE_COMPETITIVE else None, "match__"))
         .select_related("match__local", "match__visiting", "player_1_local", "player_2_local",
                         "player_1_visiting", "player_2_visiting")

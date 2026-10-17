@@ -21,17 +21,21 @@
     <meta property="og:title" content="{% block og_title %}Zyra · {% translate 'Gestión de equipos de pádel' %}{% endblock %}">
     <meta property="og:description" content="{% block og_description %}{% translate 'Gestiona tu equipo de pádel: jugadores, convocatorias, partidos y estadísticas, en privado para cada club.' %}{% endblock %}">
     <meta property="og:url" content="{{ canonical_url }}">
-    <meta property="og:image" content="{{ site_url }}{% static 'zyra/icon-512.png' %}">
-    <meta property="og:image:width" content="512">
-    <meta property="og:image:height" content="512">
+    <meta property="og:image" content="{{ site_url }}{% static 'zyra/og-image-v2.png' %}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
     <meta property="og:image:alt" content="{% translate 'Logotipo de Zyra' %}">
     <meta property="og:locale" content="{% if LANGUAGE_CODE == 'en' %}en_GB{% else %}es_ES{% endif %}">
     <meta property="og:locale:alternate" content="{% if LANGUAGE_CODE == 'en' %}es_ES{% else %}en_GB{% endif %}">
-    <meta name="twitter:card" content="summary">
+    <meta name="twitter:card" content="summary_large_image">
     <meta name="theme-color" content="#0A0B09">
-    <link rel="icon" href="{% static 'zyra/logo.svg' %}" type="image/svg+xml">
+    {# Google pide un icono cuyo lado sea múltiplo de 48 px (48, 96, 192...) y no admite bien el SVG: los PNG van primero. /favicon.ico también responde 200 en la raíz. #}
+    <link rel="icon" href="{% static 'zyra/favicon-48.png' %}" sizes="48x48" type="image/png">
+    <link rel="icon" href="{% static 'zyra/favicon-96.png' %}" sizes="96x96" type="image/png">
+    <link rel="icon" href="{% static 'zyra/favicon-192.png' %}" sizes="192x192" type="image/png">
     <link rel="icon" href="{% static 'zyra/favicon-32.png' %}" sizes="32x32" type="image/png">
-    <link rel="alternate icon" href="{% static 'zyra/favicon.ico' %}" sizes="any">
+    <link rel="icon" href="{% static 'zyra/favicon.svg' %}" sizes="any" type="image/svg+xml">
+    <link rel="shortcut icon" href="/favicon.ico" sizes="48x48">
     <link rel="apple-touch-icon" href="{% static 'zyra/apple-touch-icon.png' %}">
     {# Fuentes servidas desde la propia web (style.css): sin Google Fonts no se envía la IP del visitante a Google #}
     <link rel="preload" href="{% static 'zyra/fonts/Archivo-Regular.ttf' %}" as="font" type="font/ttf" crossorigin>
@@ -54,11 +58,11 @@
         {% if current_club %}
         <nav aria-label="{% translate 'Principal' %}">
             <ul class="z-nav">
-                <li><a href="{% url 'home' %}" class="z-nav-link {% if nav_section == 'home' %}is-active{% endif %}"><i class="fa-solid fa-house" aria-hidden="true"></i> {% translate "Inicio" %}</a></li>
-                <li><a href="{% url 'list_match' %}" class="z-nav-link {% if nav_section == 'matches' %}is-active{% endif %}"><i class="fa-solid fa-table-tennis-paddle-ball" aria-hidden="true"></i> {% translate "Partidos" %}</a></li>
-                <li><a href="{% url 'list_players' %}" class="z-nav-link {% if nav_section == 'players' %}is-active{% endif %}"><i class="fa-solid fa-user" aria-hidden="true"></i> {% translate "Jugadores" %}</a></li>
-                <li><a href="{% url 'list_teams' %}" class="z-nav-link {% if nav_section == 'teams' %}is-active{% endif %}"><i class="fa-solid fa-users" aria-hidden="true"></i> {% translate "Equipos" %}</a></li>
-                <li><a href="{% url 'team_statistics' %}" class="z-nav-link {% if nav_section == 'stats' %}is-active{% endif %}"><i class="fa-solid fa-chart-simple" aria-hidden="true"></i> {% translate "Estadísticas" %}</a></li>
+                <li><a href="{% url 'home' %}" class="z-nav-link {% if nav_section == 'home' %}is-active{% endif %}"{% if nav_section == 'home' %} aria-current="page"{% endif %}><i class="fa-solid fa-house" aria-hidden="true"></i> {% translate "Inicio" %}</a></li>
+                <li><a href="{% url 'list_match' %}" class="z-nav-link {% if nav_section == 'matches' %}is-active{% endif %}"{% if nav_section == 'matches' %} aria-current="page"{% endif %}><i class="fa-solid fa-table-tennis-paddle-ball" aria-hidden="true"></i> {% translate "Enfrentamientos" %}</a></li>
+                <li><a href="{% url 'list_players' %}" class="z-nav-link {% if nav_section == 'players' %}is-active{% endif %}"{% if nav_section == 'players' %} aria-current="page"{% endif %}><i class="fa-solid fa-user" aria-hidden="true"></i> {% translate "Plantilla" context "equipo" %}</a></li>
+                <li><a href="{% url 'team_statistics' %}" class="z-nav-link {% if nav_section == 'stats' %}is-active{% endif %}"{% if nav_section == 'stats' %} aria-current="page"{% endif %}><i class="fa-solid fa-chart-simple" aria-hidden="true"></i> {% translate "Estadísticas" %}</a></li>
+                <li><a href="{% url 'club_home' %}" class="z-nav-link {% if nav_section == 'club' %}is-active{% endif %}"{% if nav_section == 'club' %} aria-current="page"{% endif %}><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> {% translate "Club" %}</a></li>
             </ul>
         </nav>
         {% endif %}
@@ -112,13 +116,6 @@
                     <li><hr class="dropdown-divider"></li>
                     {% endif %}
                     <li><a class="dropdown-item" href="{% url 'my_profile' %}"><i class="fa-solid fa-id-badge" aria-hidden="true"></i> {% translate "Mi perfil" %}</a></li>
-                    {% if is_club_admin %}
-                    <li><a class="dropdown-item" href="{% url 'club_members' %}"><i class="fa-solid fa-user-gear" aria-hidden="true"></i> {% translate "Miembros del club" %}</a></li>
-                    <li><a class="dropdown-item" href="{% url 'snp_account' %}"><i class="fa-solid fa-trophy" aria-hidden="true"></i> {% translate "Cuenta SNP" %}</a></li>
-                    {% endif %}
-                    {% if current_club %}
-                    <li><button type="button" class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#leaveClubModal"><i class="fa-solid fa-door-open" aria-hidden="true"></i> {% translate "Abandonar el club" %}</button></li>
-                    {% endif %}
                     {% if user.is_staff %}
                     <li><a class="dropdown-item" href="{% url 'backoffice:dashboard' %}"><i class="fa-solid fa-gauge-high" aria-hidden="true"></i> Back-office</a></li>
                     {% endif %}
@@ -135,13 +132,14 @@
                 </ul>
             </div>
             {% else %}
-            <a href="{% url 'register_club' %}" class="btn btn-outline-light btn-sm z-desktop-only">{% translate "Registrar club" %}</a>
+            <a href="{% url 'register' %}" class="btn btn-outline-light btn-sm z-desktop-only">{% translate "Registrarme" %}</a>
             <a href="{% url 'login' %}" class="btn btn-primary btn-sm">{% translate "Iniciar sesión" %}</a>
             {% endif %}
         </div>
     </div>
 </header>
 
+{% if sync_running and request.resolver_match.url_name != 'complete_team_welcome' %}{% include 'includes/sync_bar.html' %}{% endif %}
 <main class="main-content" id="contenido" tabindex="-1">
   {% block content %}
   {% endblock %}
@@ -152,6 +150,7 @@
     <a href="{% url 'privacy' %}">{% translate "Privacidad" %}</a>
     <a href="{% url 'terms' %}">{% translate "Términos" %}</a>
     <a href="{% url 'cookies' %}">{% translate "Cookies" %}</a>
+    <a href="{% url 'guide_index' %}">{% translate "Guías" %}</a>
     <a href="mailto:{{ contact_email }}">{% translate "Contacto" %}</a>
   </nav>
   <p>&copy; {% now "Y" %} Zyra{% if current_club %} · {{ current_club.name }}{% endif %}</p>
@@ -160,11 +159,11 @@
 {% if current_club %}
 <nav class="z-bottom-nav" aria-label="{% translate 'Navegación móvil' %}">
     <ul>
-        <li><a href="{% url 'home' %}" class="{% if nav_section == 'home' %}is-active{% endif %}" {% if nav_section == 'home' %}aria-current="page"{% endif %}><i class="fa-solid fa-house" aria-hidden="true"></i><span class="visually-hidden">{% translate "Inicio" %}</span></a></li>
-        <li><a href="{% url 'team_statistics' %}" class="{% if nav_section == 'stats' %}is-active{% endif %}" {% if nav_section == 'stats' %}aria-current="page"{% endif %}><i class="fa-solid fa-chart-simple" aria-hidden="true"></i><span class="visually-hidden">{% translate "Estadísticas" %}</span></a></li>
-        <li><a href="{% url 'list_match' %}" class="{% if nav_section == 'matches' %}is-active{% endif %}" {% if nav_section == 'matches' %}aria-current="page"{% endif %}><i class="fa-solid fa-table-tennis-paddle-ball" aria-hidden="true"></i><span class="visually-hidden">{% translate "Partidos" %}</span></a></li>
-        <li><a href="{% url 'list_teams' %}" class="{% if nav_section == 'teams' %}is-active{% endif %}" {% if nav_section == 'teams' %}aria-current="page"{% endif %}><i class="fa-solid fa-users" aria-hidden="true"></i><span class="visually-hidden">{% translate "Equipos" %}</span></a></li>
-        <li><a href="{% url 'list_players' %}" class="{% if nav_section == 'players' %}is-active{% endif %}" {% if nav_section == 'players' %}aria-current="page"{% endif %}><i class="fa-solid fa-user" aria-hidden="true"></i><span class="visually-hidden">{% translate "Jugadores" %}</span></a></li>
+        <li><a href="{% url 'home' %}" class="{% if nav_section == 'home' %}is-active{% endif %}" {% if nav_section == 'home' %}aria-current="page"{% endif %}><i class="fa-solid fa-house" aria-hidden="true"></i><span class="z-bn-label">{% translate "Inicio" %}</span></a></li>
+        <li><a href="{% url 'list_match' %}" class="{% if nav_section == 'matches' %}is-active{% endif %}" {% if nav_section == 'matches' %}aria-current="page"{% endif %}><i class="fa-solid fa-table-tennis-paddle-ball" aria-hidden="true"></i><span class="z-bn-label">{% translate "Partidos" %}</span></a></li>
+        <li><a href="{% url 'list_players' %}" class="{% if nav_section == 'players' %}is-active{% endif %}" {% if nav_section == 'players' %}aria-current="page"{% endif %}><i class="fa-solid fa-user" aria-hidden="true"></i><span class="z-bn-label">{% translate "Plantilla" context "equipo" %}</span></a></li>
+        <li><a href="{% url 'team_statistics' %}" class="{% if nav_section == 'stats' %}is-active{% endif %}" {% if nav_section == 'stats' %}aria-current="page"{% endif %}><i class="fa-solid fa-chart-simple" aria-hidden="true"></i><span class="z-bn-label">{% translate "Estadísticas" %}</span></a></li>
+        <li><a href="{% url 'club_home' %}" class="{% if nav_section == 'club' %}is-active{% endif %}" {% if nav_section == 'club' %}aria-current="page"{% endif %}><i class="fa-solid fa-shield-halved" aria-hidden="true"></i><span class="z-bn-label">{% translate "Club" %}</span></a></li>
     </ul>
 </nav>
 {% endif %}
@@ -213,7 +212,9 @@
 <script src="{% static 'js/password.js' %}"></script>
 <script src="{% static 'js/nav.js' %}"></script>
 <script src="{% static 'js/a11y.js' %}"></script>
+<script src="{% static 'js/confirm-modal.js' %}"></script>
 <script src="{% static 'js/custom-select.js' %}"></script>
+<script src="{% static 'js/form-errors.js' %}"></script>
 <script src="{% static 'js/page-transitions.js' %}"></script>
 {# Precarga las secciones principales (solo lectura) al ir a pulsarlas: la página siguiente llega antes y el paso es más fluido. Navegadores sin soporte lo ignoran. #}
 <script type="speculationrules">

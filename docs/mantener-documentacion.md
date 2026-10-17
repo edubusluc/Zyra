@@ -47,3 +47,30 @@ Para el contraste y lo que crea el JavaScript, con la web arrancada:
 python scripts/auditoria_accesibilidad.py --usuario capitan --contrasena '...'          # escritorio
 python scripts/auditoria_accesibilidad.py --usuario capitan --contrasena '...' --movil  # móvil
 ```
+
+## Guía de estilo de textos
+
+Una sola página para que todas las pantallas hablen igual.
+
+| Concepto | Se escribe | No se escribe |
+|---|---|---|
+| Cruce entre dos equipos (modelo `Match`) | **Enfrentamiento** | partido, encuentro |
+| Cada una de las 5 parejas de un enfrentamiento (modelo `Game`) | **Partido 1-5** (en cursiva de apoyo: «pareja») | juego, game |
+| Registrar quién juega con quién | **Alinear parejas** | crear partidos |
+| Ver la lista de jugadores citados | **Convocatoria** / **Convocar** | llamada |
+| Terminar un enfrentamiento | **Cerrar acta** | finalizar |
+| Menú de equipo | **Club** (Miembros e invitaciones, Mi equipo, Rivales, Cuenta SNP) | Equipos |
+| Equipos contra los que se juega | **Rivales** | Equipos |
+| Estados del enfrentamiento | Borrador · Convocado · Alineado · Jugado · Acta cerrada | otros sinónimos |
+| Pestañas de la ficha del jugador | Resumen · Estadísticas | Perfil, Jugador |
+
+Formatos comunes:
+
+- **Puntos SNP**: filtro `snp_points` (`{% load zyra_format %}`), entero con separador de miles y «Sin SNP» si no hay dato.
+- **Fechas**: `D j M Y` (p. ej. «mié 15 oct 2026»); `j M` solo en listas muy compactas. Las horas, `H:i`.
+- **Paginación**: siempre `includes/pagination.html`; no se pagina hasta 30 elementos (jugadores, rivales).
+- **Temporada por defecto**: `core/season_choice.choose_season` (temporada actual, «Todas» a un toque y se recuerda la última elección en la sesión).
+- **Botones**: verbo en infinitivo y una sola acción primaria por pantalla («Siguiente: …»).
+- **Mensajes**: éxito como aviso breve («Resultado del partido 2 guardado.»), error como ventana; nunca «Error» a secas, siempre qué falló y cómo arreglarlo.
+- **Tono**: tuteo, frases cortas, sin tecnicismos ni siglas sin explicar.
+- **Traducciones**: el msgid es el texto en español; el inglés va en `locale/en/LC_MESSAGES/*.po`.

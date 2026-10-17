@@ -64,7 +64,7 @@
       <section aria-label="{% translate 'Resumen de la pareja' %}">
         <div class="st-kpis">
           <article class="st-kpi st-kpi--ring">
-            <div class="st-ring" style="--pct: {{ pct_w|unlocalize }}" role="img" aria-label="{% blocktranslate with pct=s.pct %}{{ pct }}% de victorias{% endblocktranslate %}">
+            <div class="st-ring{% if s.pct >= 100 %} st-ring--full{% endif %}" style="--pct: {{ pct_w|unlocalize }}" role="img" aria-label="{% blocktranslate with pct=s.pct %}{{ pct }}% de victorias{% endblocktranslate %}">
               <span>{{ s.pct|floatformat:0 }}%</span>
             </div>
             <div>
@@ -106,12 +106,12 @@
           <article class="st-card">
             <h2 class="st-card-title">{% translate "Local y visitante" %}</h2>
             <p class="st-card-note">{% translate "Victorias de la pareja según dónde juega." %}</p>
-            <div class="st-split">
+            <div class="st-rate">
               <div class="st-split-head"><span>{% translate "Como local" %}</span><b>{% if s.local_played %}{{ s.local_pct|floatformat:0 }}%{% else %}—{% endif %}</b></div>
               <div class="st-meter"><span style="width: {{ local_pct_w|unlocalize }}%"></span></div>
               <p class="st-split-foot">{% if s.local_played %}{% blocktranslate trimmed with wins=s.local_wins losses=s.local_losses count n=s.local_played %}{{ wins }}V – {{ losses }}D en {{ n }} partido{% plural %}{{ wins }}V – {{ losses }}D en {{ n }} partidos{% endblocktranslate %}{% else %}{% translate "Sin partidos todavía" %}{% endif %}</p>
             </div>
-            <div class="st-split">
+            <div class="st-rate">
               <div class="st-split-head"><span>{% translate "Como visitante" %}</span><b>{% if s.visiting_played %}{{ s.visiting_pct|floatformat:0 }}%{% else %}—{% endif %}</b></div>
               <div class="st-meter"><span style="width: {{ visiting_pct_w|unlocalize }}%"></span></div>
               <p class="st-split-foot">{% if s.visiting_played %}{% blocktranslate trimmed with wins=s.visiting_wins losses=s.visiting_losses count n=s.visiting_played %}{{ wins }}V – {{ losses }}D en {{ n }} partido{% plural %}{{ wins }}V – {{ losses }}D en {{ n }} partidos{% endblocktranslate %}{% else %}{% translate "Sin partidos todavía" %}{% endif %}</p>
@@ -147,7 +147,7 @@
                 {% for g in last_games %}
                   <tr>
                     <th scope="row">
-                      <a href="{% url 'call_for_match' g.match_public_id %}#partido-{{ g.n_game }}">{{ g.date|date:"d/m/Y" }}</a>
+                      <a href="{% url 'call_for_match' g.match_public_id %}#partido-{{ g.n_game }}">{{ g.date|date:"D j M Y" }}</a>
                     </th>
                     <td>{{ g.rival }} <span class="st-muted">({% if g.local %}{% translate "local" %}{% else %}{% translate "visitante" %}{% endif %})</span></td>
                     <td>{{ g.n_game }}</td>
@@ -234,8 +234,8 @@
           <div class="st-row">
             {% translate "Mejores parejas" as t_title %}{% translate "Mayor % de victorias juntos." as t_note %}
             {% include 'includes/pair_rank_table.html' with title=t_title rows=best_pairs note=t_note %}
-            {% translate "Peores parejas" as t_title %}{% translate "Menor % de victorias juntos." as t_note %}
-            {% include 'includes/pair_rank_table.html' with title=t_title rows=worst_pairs note=t_note %}
+            {% translate "Parejas por mejorar" as t_title %}{% translate "Menor % de victorias juntos." as t_note %}
+            {% include 'includes/pair_rank_table.html' with title=t_title rows=worst_pairs note=t_note min_games_pair=worst_min_games %}
           </div>
           <p class="st-card-note">{% translate "Para ver cualquier otra pareja, búscala arriba." %}</p>
         {% else %}

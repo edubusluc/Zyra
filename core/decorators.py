@@ -8,6 +8,7 @@ from functools import wraps
 
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
+from django.contrib import messages
 from django.shortcuts import redirect
 from django.utils.translation import gettext as _
 
@@ -35,5 +36,26 @@ def club_admin_required(view_func):
         """Lanza PermissionDenied (403) si el usuario no es capitán del club activo."""
         if not request.membership.is_admin:
             raise PermissionDenied(_("Solo los capitanes del club pueden ver esta página o realizar esta acción."))
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+
+def not_while_syncing(view_func):
+    """
+    Bloquea las altas de jugadores, equipos y enfrentamientos mientras el club está sincronizando su
+    equipo con SNP (``snp_import.active_import`` en marcha): la sincronización crea jugadores y equipos y
+    podría duplicar lo creado a mano. Redirige al inicio con un aviso; se navega con normalidad.
+    Va debajo de ``club_admin_required``.
+    """
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        """Redirige a home con un aviso si hay una sincronización en marcha."""
+        from players import snp_import
+        current = snp_import.active_import(request.club)
+        if current is not None and current.status == current.RUNNING:
+            messages.warning(request, _("Estamos sincronizando tu equipo con SNP (%(progress)s%%). "
+                                        "Podrás crear jugadores, equipos y enfrentamientos cuando termine.")
+                             % {"progress": current.progress})
+            return redirect("home")
         return view_func(request, *args, **kwargs)
     return wrapper

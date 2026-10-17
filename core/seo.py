@@ -148,3 +148,45 @@ def landing_structured_data(request):
     text = json.dumps(data, ensure_ascii=False).translate(JSON_SCRIPT_ESCAPES)
     # El JSON ya va escapado: marcarlo como seguro solo evita que se convierta en &quot;...
     return format_html('<script type="application/ld+json">{}</script>', mark_safe(text))
+
+
+def guide_structured_data(request, guide, language):
+    """
+    JSON-LD de una guía: el artículo (autor y editor Zyra, fechas, idioma) y sus migas de pan
+    (Inicio › Guías › guía). Devuelve la etiqueta ``<script type="application/ld+json">`` completa.
+    """
+    from django.urls import reverse
+
+    base = site_base(request)
+    home = base + "/"
+    index_url = base + reverse("guide_index")
+    url = base + reverse("guide_detail", args=[guide.slug])
+    data = {
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "Article",
+                "@id": url + "#article",
+                "headline": guide.title_for(language),
+                "description": guide.description_for(language),
+                "inLanguage": language,
+                "datePublished": guide.published.isoformat(),
+                "dateModified": guide.updated.isoformat(),
+                "mainEntityOfPage": url,
+                "image": base + static("zyra/og-image-v2.png"),
+                "author": {"@type": "Organization", "name": "Zyra", "url": home},
+                "publisher": {"@type": "Organization", "@id": home + "#organization", "name": "Zyra", "url": home,
+                              "logo": {"@type": "ImageObject", "url": base + static("zyra/icon-512.png")}},
+            },
+            {
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                    {"@type": "ListItem", "position": 1, "name": "Zyra", "item": home},
+                    {"@type": "ListItem", "position": 2, "name": _("Guías"), "item": index_url},
+                    {"@type": "ListItem", "position": 3, "name": guide.title_for(language), "item": url},
+                ],
+            },
+        ],
+    }
+    text = json.dumps(data, ensure_ascii=False).translate(JSON_SCRIPT_ESCAPES)
+    return format_html('<script type="application/ld+json">{}</script>', mark_safe(text))

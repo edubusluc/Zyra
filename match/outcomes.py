@@ -6,6 +6,7 @@ para todo el código (modelos, vistas, estadísticas e informes).
   ``NONE`` mientras el acta sigue abierta.
 - ``Match.result_points``: ``"local/visitante"`` (p. ej. ``"7/5"``) o ``NONE``.
 - ``Game.winner``: ``WINNER_LOCAL`` o ``WINNER_VISITING``.
+  En Reto y Play Off no hay empate: el 6-6 lo decide el ganador del partido 3 (``tiebreak_result``).
 - ``Result.result``: ``LOCAL_WIN`` o ``VISITING_WIN`` (un partido no puede acabar en empate).
 
 Los textos son los que ya había guardados en la base de datos; ``normalize`` convierte cualquier
@@ -46,3 +47,9 @@ def from_points(points_local, points_visiting):
     if points_local < points_visiting:
         return VISITING_WIN
     return DRAW
+
+
+def tiebreak_result(game_winner):
+    """Resultado del enfrentamiento empatado a puntos en Reto o Play Off: gana el lado que ganó
+    el partido de desempate (``Game.winner``, ``WINNER_LOCAL`` o ``WINNER_VISITING``)."""
+    return LOCAL_WIN if game_winner == WINNER_LOCAL else VISITING_WIN

@@ -68,3 +68,14 @@ def too_many(request, scope, limit, window):
     if not settings.RATE_LIMITS_ENABLED:
         return False
     return add_hit(f"rl:{scope}:{client_ip(request)}", window) > limit
+
+
+def too_many_user(request, scope, limit, window):
+    """
+    Como ``too_many`` pero por usuario con sesión (o por IP si no la hay): para los endpoints
+    caros (PDF, reenvío de informes), donde varios usuarios tras la misma IP no deben pisarse.
+    """
+    if not settings.RATE_LIMITS_ENABLED:
+        return False
+    who = request.user.pk if getattr(request, "user", None) and request.user.is_authenticated else client_ip(request)
+    return add_hit(f"rl:{scope}:u:{who}", window) > limit

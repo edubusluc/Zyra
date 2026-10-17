@@ -19,7 +19,7 @@ REPORT_SCOPE_ALL = "todos"
 REPORT_SCOPE_COMPETITIVE = "competitivos"
 REPORT_SCOPES = [
     (REPORT_SCOPE_ALL, _("Todos los datos")),
-    (REPORT_SCOPE_COMPETITIVE, _("Solo partidos competitivos")),
+    (REPORT_SCOPE_COMPETITIVE, _("Solo enfrentamientos competitivos")),
 ]
 
 

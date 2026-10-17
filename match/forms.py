@@ -16,6 +16,7 @@ class TeamSelect(forms.Select):
         team = getattr(value, 'instance', None)
         if team is not None:
             option['attrs']['data-photo'] = team.photo.url if team.photo else ''
+            option['attrs']['data-location'] = team.location or ''
         return option
 
 
@@ -33,7 +34,7 @@ class MatchForm(forms.ModelForm):
     GROUP = "grupo"
     MANUAL = "manual"
     RIVAL_SOURCES = [(GROUP, _("Equipo del grupo")), (MANUAL, _("Escribir nombre"))]
-    SIDES = [("local", _("Local")), ("visiting", _("Visitante"))]
+    SIDES = [("local", _("En casa")), ("visiting", _("Fuera"))]
 
     mode = forms.ChoiceField(label=_("Modo"), choices=MODES, initial=COMPETITIVE, required=False,
                              widget=forms.RadioSelect)
@@ -41,24 +42,30 @@ class MatchForm(forms.ModelForm):
     # (no se crea ningún equipo; el nombre se guarda en el propio partido).
     rival_source = forms.ChoiceField(label=_("Rival"), choices=RIVAL_SOURCES, initial=GROUP, required=False,
                                      widget=forms.RadioSelect)
-    own_side = forms.ChoiceField(label=_("Tu equipo juega como"), choices=SIDES, initial="local", required=False,
+    own_side = forms.ChoiceField(label=_("Tu equipo juega"), choices=SIDES, initial="local", required=False,
                                  widget=forms.RadioSelect)
+    # Rival del equipo propio (un equipo del grupo): con ``own_side`` decide quién es local y quién
+    # visitante. ``local`` y ``visiting`` se siguen aceptando por compatibilidad.
+    rival = forms.ModelChoiceField(label=_("Rival"), queryset=Team.objects.none(), required=False,
+                                   widget=TeamSelect(), empty_label=None)
 
     class Meta:
         model = Match
-        fields = ['match_type', 'local', 'visiting', 'rival_name', 'start_date', 'report_scope']
+        fields = ['match_type', 'local', 'visiting', 'rival_name', 'start_date', 'start_time', 'location', 'report_scope']
         labels = {'local': _('Local'), 'visiting': _('Visitante'), 'rival_name': _('Nombre del rival'),
-                  'start_date': _('Fecha'),
+                  'start_date': _('Fecha'), 'start_time': _('Hora (opcional)'), 'location': _('Lugar'),
                   'report_scope': _('Datos del informe')}
         widgets = {
             'match_type': forms.Select(),
             'report_scope': forms.RadioSelect(),
             'rival_name': forms.TextInput(attrs={'placeholder': _('Ej.: Pádel Norte'), 'autocomplete': 'off'}),
+            'start_time': forms.TimeInput(format='%H:%M', attrs={'type': 'time'}),
+            'location': forms.TextInput(attrs={'autocomplete': 'off', 'maxlength': 100}),
             'local': TeamSelect(),
             'visiting': TeamSelect(),
             'start_date': forms.DateInput(
                 format='%Y-%m-%d',
-                attrs={'type': 'date', 'data-datepicker': '', 'data-placeholder': _('Elige el día del partido')},
+                attrs={'type': 'date', 'data-datepicker': '', 'data-placeholder': _('Elige el día del enfrentamiento')},
             ),
         }
 
@@ -82,6 +89,16 @@ class MatchForm(forms.ModelForm):
         # El equipo propio siempre se puede elegir, aunque no esté marcado "en el grupo".
         teams = Team.objects.filter(club=club).filter(Q(in_group=True) | Q(is_own=True)).order_by('-is_own', 'name')
         missing_team = _("Uno de los equipos no existe.")
+        self.fields['rival'].queryset = teams.filter(is_own=False)
+        self.fields['rival'].empty_label = _("Elige equipo")
+        self.fields['rival'].widget.choices = self.fields['rival'].choices
+        self.fields['start_time'].required = False
+        self.fields['start_time'].input_formats = ['%H:%M']
+        self.fields['start_time'].error_messages.update(invalid=_("Hora no válida. Usa el formato HH:MM."))
+        self.fields['location'].required = False
+        # Lugar prerrellenado con el del equipo propio (juega en casa por defecto).
+        if not self.is_bound and not self.initial.get('location') and self.own_team:
+            self.initial['location'] = self.own_team.location
         for name in ('local', 'visiting'):
             field = self.fields[name]
             field.queryset = teams
@@ -92,13 +109,14 @@ class MatchForm(forms.ModelForm):
             self.initial['local'] = self.own_team.pk
         # El tipo solo se elige en un partido competitivo; si no se envía, es un enfrentamiento.
         self.fields['match_type'].required = False
+        self.fields['match_type'].label = _("Tipo de enfrentamiento")
         self.fields['match_type'].choices = Match.COMPETITIVE_TYPES
         if self.instance.pk and self.instance.is_friendly:
             self.initial['mode'] = self.FRIENDLY
             self.initial['match_type'] = Match.ENFRENTAMIENTO
         self.order_fields(['mode'])
         self.fields['rival_name'].required = False
-        self.fields['match_type'].error_messages['invalid_choice'] = _("Tipo de partido no válido.")
+        self.fields['match_type'].error_messages['invalid_choice'] = _("Tipo de enfrentamiento no válido.")
         date_error = _("Fecha no válida. Usa el formato AAAA-MM-DD.")
         self.fields['start_date'].input_formats = ['%Y-%m-%d']
         self.fields['start_date'].error_messages.update(required=date_error, invalid=date_error)
@@ -109,6 +127,27 @@ class MatchForm(forms.ModelForm):
         if not value:
             return None
         return self.fields[name].queryset.filter(pk=value).first() if str(value).isdigit() else None
+
+    @property
+    def rival_team(self):
+        """Rival elegido ahora (``rival`` o, si vienen ``local``/``visiting``, el que no es el propio)."""
+        team = self._selected_team('rival')
+        if team:
+            return team
+        for name in ('local', 'visiting'):
+            other = self._selected_team(name)
+            if other and not other.is_own:
+                return other
+        return None
+
+    @property
+    def own_side_value(self):
+        """«local» o «visiting»: el lado del equipo propio según lo que se ha enviado (en casa por defecto)."""
+        if self.is_bound and not self.data.get('own_side'):
+            visiting = self._selected_team('visiting')
+            if visiting and visiting.is_own:
+                return "visiting"
+        return self['own_side'].value() or "local"
 
     @property
     def local_team(self):
@@ -155,7 +194,7 @@ class MatchForm(forms.ModelForm):
             self.add_error('rival_name', _("Escribe el nombre del equipo rival."))
             return cleaned
         if self.own_team is None:
-            raise forms.ValidationError(_("Tu club no tiene equipo propio: no se pueden crear partidos."))
+            raise forms.ValidationError(_("Tu club no tiene equipo propio: no se pueden crear enfrentamientos."))
         if same_name(rival_name, self.own_team.name):
             self.add_error('rival_name', _("El rival no puede llamarse igual que tu equipo."))
             return cleaned
@@ -181,16 +220,25 @@ class MatchForm(forms.ModelForm):
                 return self._clean_manual_rival(cleaned)
         # El nombre escrito a mano solo vale para un amistoso contra un rival fuera del grupo.
         cleaned['rival_name'] = ""
+        rival = cleaned.get('rival')
+        if rival and self.own_team is not None and not (cleaned.get('local') and cleaned.get('visiting')):
+            # Rival elegido en una sola card + «en casa / fuera»: de ahí salen local y visitante.
+            self.errors.pop('local', None)
+            self.errors.pop('visiting', None)
+            own_local = cleaned.get('own_side') != "visiting"
+            cleaned['local'], cleaned['visiting'] = (self.own_team, rival) if own_local else (rival, self.own_team)
+        elif not (cleaned.get('local') or cleaned.get('visiting')):
+            self.add_error('rival', _("Elige el equipo rival."))
         local, visiting = cleaned.get('local'), cleaned.get('visiting')
         if local and visiting:
             if local == visiting:
                 raise forms.ValidationError(_("El equipo local y el visitante no pueden ser el mismo."))
             # El equipo del capitán (el equipo propio del club) tiene que jugar el partido.
             if self.own_team is None:
-                raise forms.ValidationError(_("Tu club no tiene equipo propio: no se pueden crear partidos."))
+                raise forms.ValidationError(_("Tu club no tiene equipo propio: no se pueden crear enfrentamientos."))
             if self.own_team not in (local, visiting):
                 raise forms.ValidationError(
-                    _("Tu equipo (%(team)s) tiene que jugar el partido: elígelo como local o visitante.")
+                    _("Tu equipo (%(team)s) tiene que jugar el enfrentamiento: elígelo como local o visitante.")
                     % {"team": self.own_team}
                 )
         return cleaned
@@ -202,6 +250,35 @@ class MatchForm(forms.ModelForm):
         if commit:
             match.save()
         return match
+
+class MatchDateForm(forms.ModelForm):
+    """Cambio de la fecha de un partido ya creado (mismo campo, formato y mensajes que el alta).
+
+    Al cambiar la fecha se recalcula la temporada, que se deriva de ella.
+    """
+
+    class Meta:
+        model = Match
+        fields = ['start_date']
+        labels = {'start_date': _('Fecha')}
+        widgets = {'start_date': MatchForm.Meta.widgets['start_date']}
+
+    def __init__(self, *args, **kwargs):
+        """Fija el formato ISO y el mensaje de fecha no válida, como en ``MatchForm``."""
+        super().__init__(*args, **kwargs)
+        date_error = _("Fecha no válida. Usa el formato AAAA-MM-DD.")
+        self.fields['start_date'].input_formats = ['%Y-%m-%d']
+        self.fields['start_date'].error_messages.update(required=date_error, invalid=date_error)
+
+    def save(self, commit=True):
+        """Guarda la fecha y, si cambió, deja que ``Match.save`` recalcule la temporada."""
+        match = super().save(commit=False)
+        if 'start_date' in self.changed_data:
+            match.season = ""
+        if commit:
+            match.save()
+        return match
+
 
 class GameForm (forms.ModelForm):
     """Formulario de un partido por parejas (número y jugadores)."""

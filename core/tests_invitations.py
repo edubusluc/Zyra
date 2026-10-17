@@ -185,7 +185,7 @@ class InvitationTests(TestCase):
         self.assertContains(self.client.get(self.url(invitation)), "Únete a Club A")
 
         response = self.client.post(self.url(invitation), SIGNUP)
-        self.assertRedirects(response, reverse("my_player"), fetch_redirect_response=False)
+        self.assertRedirects(response, reverse("member_welcome"), fetch_redirect_response=False)
 
         user = User.objects.get(username="nuevo")
         membership = Membership.objects.get(user=user, club=self.club)
@@ -302,7 +302,7 @@ class InvitationTests(TestCase):
         google_user = User.objects.create_user("google", email="g@example.com")
         self.client.force_login(google_user)  # vuelve autenticado por Google
         response = self.client.get(self.url(invitation))
-        self.assertRedirects(response, reverse("my_player"), fetch_redirect_response=False)
+        self.assertRedirects(response, reverse("member_welcome"), fetch_redirect_response=False)
         self.assertTrue(Membership.objects.filter(user=google_user, club=self.club).exists())
 
     # --- Google -------------------------------------------------------------
