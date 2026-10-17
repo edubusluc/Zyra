@@ -25,7 +25,7 @@
         {% if switch.alerted_at %}<li>{% blocktranslate with date=switch.alerted_at|date:"j M Y H:i" %}Último aviso al personal: {{ date }}.{% endblocktranslate %}</li>{% endif %}
         {% if switch.changed_at %}<li>{% blocktranslate with date=switch.changed_at|date:"j M Y H:i" user=switch.changed_by.username|default:"—" %}Último cambio: {{ date }} por {{ user }}.{% endblocktranslate %}{% if switch.reason %} {% translate "Motivo" %}: {{ switch.reason }}{% endif %}</li>{% endif %}
     </ul>
-    <form method="post" action="{% url 'backoffice:service_snp_toggle' %}" class="bo-filters">
+    <form method="post" action="{% url 'backoffice:service_snp_toggle' %}" class="bo-filters" data-loading-text="{% translate 'Guardando el servicio…' %}">
         {% csrf_token %}
         {% if snp_enabled %}
         <input type="hidden" name="action" value="disable">

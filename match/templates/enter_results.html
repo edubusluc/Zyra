@@ -13,7 +13,7 @@
 
 <p class="text-muted small">{% translate "Rellena los partidos que ya se han jugado; los que dejes vacíos no se tocan. Un set se gana 6-0 a 6-4, 7-5 o 7-6. El set 3 solo se juega si cada pareja ha ganado un set; puede ser un set normal o un super tie-break a 10 (10-8, 11-9...)." %}</p>
 
-<form method="POST" novalidate>
+<form method="POST" novalidate data-loading-text="{% translate 'Guardando los resultados…' %}">
     {% csrf_token %}
     <div class="z-results-all">
     {% for row in rows %}

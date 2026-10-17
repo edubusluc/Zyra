@@ -10,7 +10,7 @@
     </div>
     <div class="z-actions">
         {% if member != user and not member.is_superuser %}
-        <form method="post" action="{% url 'backoffice:user_toggle_active' member.id %}" class="d-inline" {% if member.is_active %}data-confirm="{% translate "¿Suspender esta cuenta? No podrá iniciar sesión hasta que la reactives." %}"{% endif %}>
+        <form method="post" action="{% url 'backoffice:user_toggle_active' member.id %}" class="d-inline" {% if member.is_active %}data-confirm="{% translate "¿Suspender esta cuenta? No podrá iniciar sesión hasta que la reactives." %}"{% endif %} data-loading-text="{% translate 'Guardando el estado de la cuenta…' %}">
             {% csrf_token %}
             <input type="hidden" name="action" value="{% if member.is_active %}suspend{% else %}activate{% endif %}">
             {% if member.is_active %}
@@ -56,14 +56,14 @@
     <h2 class="h5">{% translate "Acciones sobre la cuenta" %}</h2>
     <div class="d-flex flex-wrap gap-2 mb-3">
         {% if member.email %}
-        <form method="post" action="{% url 'backoffice:user_password_reset' member.id %}">{% csrf_token %}<button class="btn btn-outline-light btn-sm"><i class="fa-solid fa-key" aria-hidden="true"></i> {% translate "Enviar restablecimiento de contraseña" %}</button></form>
+        <form method="post" action="{% url 'backoffice:user_password_reset' member.id %}" data-loading-text="{% translate 'Enviando el restablecimiento…' %}">{% csrf_token %}<button class="btn btn-outline-light btn-sm"><i class="fa-solid fa-key" aria-hidden="true"></i> {% translate "Enviar restablecimiento de contraseña" %}</button></form>
         {% endif %}
         {% if unverified %}
-        <form method="post" action="{% url 'backoffice:unverified_warn' member.id %}"><input type="hidden" name="next" value="{{ request.get_full_path }}">{% csrf_token %}<button class="btn btn-outline-light btn-sm"><i class="fa-solid fa-envelope" aria-hidden="true"></i> {% translate "Reenviar confirmación del email" %}</button></form>
+        <form method="post" action="{% url 'backoffice:unverified_warn' member.id %}" data-loading-text="{% translate 'Enviando el aviso…' %}"><input type="hidden" name="next" value="{{ request.get_full_path }}">{% csrf_token %}<button class="btn btn-outline-light btn-sm"><i class="fa-solid fa-envelope" aria-hidden="true"></i> {% translate "Reenviar confirmación del email" %}</button></form>
         {% endif %}
     </div>
     {% if can_impersonate %}
-    <form method="post" action="{% url 'backoffice:impersonate_start' member.id %}" class="d-flex flex-wrap gap-2 align-items-center">
+    <form method="post" action="{% url 'backoffice:impersonate_start' member.id %}" class="d-flex flex-wrap gap-2 align-items-center" data-loading-text="{% translate 'Entrando como el usuario…' %}">
         {% csrf_token %}
         <label class="visually-hidden" for="imp-reason">{% translate "Motivo" %}</label>
         <input class="form-control w-auto flex-grow-1" id="imp-reason" name="reason" required minlength="5" maxlength="300" placeholder="{% translate 'Motivo (queda en la auditoría)' %}">
@@ -101,7 +101,7 @@
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
         <h2 class="h5 mb-0">{% translate "Fotos" %}</h2>
         {% if photo_checks %}
-        <form method="post" action="{% url 'backoffice:user_photos_delete' member.id %}" class="d-flex flex-wrap gap-2" data-confirm="{% translate "¿Eliminar todas sus fotos y avisarle por email?" %}">
+        <form method="post" action="{% url 'backoffice:user_photos_delete' member.id %}" class="d-flex flex-wrap gap-2" data-confirm="{% translate "¿Eliminar todas sus fotos y avisarle por email?" %}" data-loading-text="{% translate 'Eliminando las fotos…' %}">
             {% csrf_token %}
             <input type="text" name="reason" maxlength="500" class="form-control form-control-sm" style="max-width:240px" placeholder="{% translate 'Motivo (opcional, va en el email)' %}" aria-label="{% translate 'Motivo' %}">
             <button class="btn btn-outline-danger btn-sm"><i class="fa-solid fa-trash" aria-hidden="true"></i> {% translate "Eliminar todas sus fotos" %}</button>

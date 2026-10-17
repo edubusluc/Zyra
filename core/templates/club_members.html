@@ -25,12 +25,12 @@
                 <td class="text-end">
                     {% if not m.is_admin %}
                     {% if m.pk in successor_ids %}
-                    <form method="post" action="{% url 'transfer_captaincy' m.public_id %}" class="d-inline" data-confirm="{% blocktranslate with username=m.user.username %}¿Traspasar la capitanía a {{ username }}? Tú pasarás a ser miembro.{% endblocktranslate %}">
+                    <form method="post" action="{% url 'transfer_captaincy' m.public_id %}" class="d-inline" data-confirm="{% blocktranslate with username=m.user.username %}¿Traspasar la capitanía a {{ username }}? Tú pasarás a ser miembro.{% endblocktranslate %}" data-loading-text="{% translate 'Traspasando la capitanía…' %}">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-sm btn-outline-primary">{% translate "Hacer capitán" %}</button>
                     </form>
                     {% endif %}
-                    <form method="post" action="{% url 'remove_member' m.public_id %}" data-confirm-danger data-confirm-action="{% translate 'Quitar' %}" data-confirm="{% blocktranslate with username=m.user.username %}¿Quitar a {{ username }} del club?{% endblocktranslate %}">
+                    <form method="post" action="{% url 'remove_member' m.public_id %}" data-confirm-danger data-confirm-action="{% translate 'Quitar' %}" data-confirm="{% blocktranslate with username=m.user.username %}¿Quitar a {{ username }} del club?{% endblocktranslate %}" data-loading-text="{% translate 'Quitando al miembro…' %}">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-sm btn-danger">{% translate "Quitar" %}</button>
                     </form>
@@ -48,12 +48,12 @@
         <summary>{% translate "Más información" %}</summary>
         <p class="text-muted small mt-2">{% translate "Podrá registrarse con usuario, email y contraseña o con Google, o unirse con la cuenta que ya tenga, y entrará como miembro. La invitación por email sirve para una sola persona; el enlace lo pueden usar varias." %}</p>
     </details>
-    <form method="post" action="{% url 'create_invitation' %}" class="mb-3" novalidate>
+    <form method="post" action="{% url 'create_invitation' %}" class="mb-3" novalidate data-loading-text="{% translate 'Enviando la invitación…' %}">
         {% csrf_token %}
         {{ invite_form.as_p }}
         <button type="submit" class="btn btn-primary"><i class="fa-regular fa-envelope" aria-hidden="true"></i> {% translate "Enviar invitación" %}</button>
     </form>
-    <form method="post" action="{% url 'create_invitation_link' %}" class="mb-3">
+    <form method="post" action="{% url 'create_invitation_link' %}" class="mb-3" data-loading-text="{% translate 'Generando el enlace…' %}">
         {% csrf_token %}
         <button type="submit" class="btn btn-outline-primary"><i class="fa-solid fa-link" aria-hidden="true"></i> {% translate "Generar enlace de invitación" %}</button>
     </form>
@@ -87,7 +87,7 @@
                 </td>
                 <td class="text-nowrap">{{ inv.expires_at|timezone:"Europe/Madrid"|date:"d/m H:i" }}</td>
                 <td class="text-end">
-                    <form method="post" action="{% url 'revoke_invitation' inv.public_id %}">
+                    <form method="post" action="{% url 'revoke_invitation' inv.public_id %}" data-loading-text="{% translate 'Revocando la invitación…' %}">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-sm btn-outline-danger">{% translate "Anular" %}</button>
                     </form>

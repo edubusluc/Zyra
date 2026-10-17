@@ -24,7 +24,7 @@
     {% if is_club_admin %}
     <div class="mt-4">
         <h2 class="z-section-title">{% translate "Aplicar sanciones" %}</h2>
-        <form method="POST" action="{% url 'create_penalty' call_id %}">
+        <form method="POST" action="{% url 'create_penalty' call_id %}" data-loading-text="{% translate 'Guardando la penalización…' %}">
             {% csrf_token %}
             <p class="text-muted small">{% translate "Marca a los jugadores que quieres advertir (solo jugadores actuales del equipo)." %}</p>
             {% translate "Aplicar sanciones" as penalty_label %}

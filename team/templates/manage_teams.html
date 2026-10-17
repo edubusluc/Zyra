@@ -13,7 +13,7 @@
 <p class="text-muted">{% translate "Cambia la categoría, la nacionalidad, la división o el grupo de los equipos de tu grupo y guarda todos los cambios de una vez. Marca equipos para aplicarles el mismo valor a todos." %}</p>
 <p class="form-text">{% translate "Tu equipo no aparece aquí: sus datos se cambian desde su ficha y nunca puede darse de baja del grupo. Los equipos dados de baja siguen en la lista (filtro «Fuera de grupo»): activa «En tu grupo» y guarda para darlos de alta otra vez." %}</p>
 
-<form method="post" data-teams>
+<form method="post" data-teams data-loading-text="{% translate 'Guardando los equipos…' %}">
     {% csrf_token %}
     <div class="z-selector-tools">
         <div class="z-search">

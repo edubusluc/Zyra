@@ -1,7 +1,7 @@
 {# Alineación de 5 parejas. Recibe: match, players, slots (lista de {gameId, player1Id, player2Id}) o nada, submit_label #}
 {# A la izquierda se eligen las parejas (buscador al escribir + desplegable); a la derecha se ve el orden por puntos SNP. #}
 {% load static i18n l10n zyra_format %}
-<form method="post" data-lineup class="z-lineup">
+<form method="post" data-lineup class="z-lineup" data-loading-text="{% translate 'Guardando las parejas…' %}">
     {% csrf_token %}
     <div class="z-lineup-main">
         <p class="text-muted small mb-3">{% translate "Escribe para buscar un jugador o abre la lista con la flecha. Solo aparecen los convocados que aún no están en otra pareja." %}</p>

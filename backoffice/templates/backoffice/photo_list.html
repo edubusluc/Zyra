@@ -45,14 +45,14 @@
             {% if status == 'rejected' %}<td class="text-muted">{{ c.reason|default:"—" }}</td>{% endif %}
             <td class="text-end">
                 {% if c.in_use %}
-                <form method="post" action="{% url 'backoffice:photo_delete' c.public_id %}" class="d-flex flex-wrap gap-2 justify-content-end mb-2" data-confirm="{% translate "¿Eliminar esta foto y avisar al usuario por email?" %}">
+                <form method="post" action="{% url 'backoffice:photo_delete' c.public_id %}" class="d-flex flex-wrap gap-2 justify-content-end mb-2" data-confirm="{% translate "¿Eliminar esta foto y avisar al usuario por email?" %}" data-loading-text="{% translate 'Eliminando la foto…' %}">
                     {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
                     <input type="text" name="reason" maxlength="500" class="form-control form-control-sm" style="max-width:220px" placeholder="{% translate 'Motivo (opcional, va en el email)' %}" aria-label="{% translate 'Motivo' %}">
                     <button class="btn btn-outline-danger btn-sm"><i class="fa-solid fa-trash" aria-hidden="true"></i> {% translate "Eliminar y avisar" %}</button>
                 </form>
                 {% endif %}
                 {% if c.status == 'unchecked' %}
-                <form method="post" action="{% url 'backoffice:photo_approve' c.public_id %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn btn-outline-light btn-sm"><i class="fa-solid fa-check" aria-hidden="true"></i> {% if c.in_use %}{% translate "Correcta" %}{% else %}{% translate "Quitar de pendientes" %}{% endif %}</button></form>
+                <form method="post" action="{% url 'backoffice:photo_approve' c.public_id %}" data-loading-text="{% translate 'Validando la foto…' %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn btn-outline-light btn-sm"><i class="fa-solid fa-check" aria-hidden="true"></i> {% if c.in_use %}{% translate "Correcta" %}{% else %}{% translate "Quitar de pendientes" %}{% endif %}</button></form>
                 {% endif %}
             </td>
         </tr>

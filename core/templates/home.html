@@ -19,7 +19,7 @@
         <span>{% blocktranslate with email=user.email %}Te hemos enviado un enlace a {{ email }}.{% endblocktranslate %}</span>
     </div>
     <div class="z-notice-actions">
-        <form method="post" action="{% url 'resend_verification' %}">
+        <form method="post" action="{% url 'resend_verification' %}" data-loading-text="{% translate 'Reenviando el email…' %}">
             {% csrf_token %}
             <input type="hidden" name="next" value="{% url 'home' %}">
             <button type="submit" class="btn btn-secondary btn-sm">{% translate "Reenviar" %}</button>
@@ -55,7 +55,7 @@
         <a class="btn btn-primary btn-sm" href="{% url 'list_players' %}">{% translate "Revisar y confirmar" %}</a>
         {% else %}
         {% if snp_sync.can_retry %}
-        <form method="post" action="{% url 'complete_team_start' %}" onsubmit="this.querySelector('button').disabled = true;">
+        <form method="post" action="{% url 'complete_team_start' %}" data-loading-text="{% translate 'Buscando jugadores en SNP…' %}">
             {% csrf_token %}
             <input type="hidden" name="from" value="home">
             <button type="submit" class="btn btn-primary btn-sm">{% if snp_sync.state == 'failed' %}{% translate "Reintentar" %}{% else %}{% translate "Sincronizar datos" %}{% endif %}</button>
@@ -75,7 +75,7 @@
             <span class="z-eyebrow"><i class="fa-solid fa-flag-checkered me-1" aria-hidden="true"></i> {% translate "Primeros pasos" %} · {% blocktranslate with done=onboarding_done total=onboarding|length %}{{ done }} de {{ total }} hechos{% endblocktranslate %}</span>
             <h2 id="onboarding-title">{% translate "Prepara tu club en Zyra" %}</h2>
         </div>
-        <form method="post" action="{% url 'dismiss_onboarding' %}">
+        <form method="post" action="{% url 'dismiss_onboarding' %}" data-loading-text="{% translate 'Ocultando los primeros pasos…' %}">
             {% csrf_token %}
             <button type="submit" class="btn-close btn-close-white" aria-label="{% translate 'Ocultar primeros pasos' %}" title="{% translate 'Ocultar primeros pasos' %}"></button>
         </form>

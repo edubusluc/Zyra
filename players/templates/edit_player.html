@@ -17,7 +17,7 @@
     </div>
     {% endif %}
     
-    <form method="POST" action="{% url 'edit_player' player.public_id %}" enctype="multipart/form-data">
+    <form method="POST" action="{% url 'edit_player' player.public_id %}" enctype="multipart/form-data" data-loading-text="{% translate 'Guardando el jugador…' %}">
         {% csrf_token %}
         
         <div>
@@ -81,7 +81,7 @@
         <a href="{% url 'delete_player' player.public_id %}" class="btn btn-outline-danger"><i class="fa-solid fa-trash me-1" aria-hidden="true"></i> {% translate "Eliminar jugador" %}</a>
     </form>
     {% if player.user %}
-    <form id="unlink-player" method="post" action="{% url 'unlink_player' player.public_id %}">{% csrf_token %}</form>
+    <form id="unlink-player" method="post" action="{% url 'unlink_player' player.public_id %}" data-loading-text="{% translate 'Desvinculando el jugador…' %}">{% csrf_token %}</form>
     {% endif %}
 </div>
 {% endblock %}

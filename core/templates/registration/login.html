@@ -12,7 +12,7 @@
         {% if form.non_field_errors %}
         <div class="alert">{% for e in form.non_field_errors %}<p>{{ e }}</p>{% endfor %}</div>
         {% endif %}
-        <form method="post" novalidate>
+        <form method="post" novalidate data-loading-text="{% translate 'Entrando…' %}">
             {% csrf_token %}
             <input type="hidden" name="next" value="{{ next }}">
             <p>

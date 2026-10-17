@@ -15,7 +15,7 @@
 <div class="bo-grid">
     <section class="z-panel">
         <h2 class="h5">{% translate "Nueva importación" %}</h2>
-        <form method="post" enctype="multipart/form-data" class="bo-form">
+        <form method="post" enctype="multipart/form-data" class="bo-form" data-loading-text="{% translate 'Subiendo el fichero…' %}">
             {% csrf_token %}
             <label>{% translate "Qué importar" %}
                 <select name="entity" class="form-select" required>
@@ -72,7 +72,7 @@
             <td class="text-end">
                 {% if job.status == 'draft' %}<a href="{% url 'backoffice:import_preview' job.public_id %}">{% translate "Continuar" %}</a>
                 {% elif job.status == 'done' %}
-                <form method="post" action="{% url 'backoffice:import_undo' job.public_id %}" data-confirm="{% translate "Se borrarán los registros creados y se restaurarán los valores anteriores de los actualizados. ¿Deshacer?" %}">
+                <form method="post" action="{% url 'backoffice:import_undo' job.public_id %}" data-confirm="{% translate "Se borrarán los registros creados y se restaurarán los valores anteriores de los actualizados. ¿Deshacer?" %}" data-loading-text="{% translate 'Deshaciendo la importación…' %}">
                     {% csrf_token %}<button type="submit" class="btn btn-sm btn-outline-light"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> {% translate "Deshacer" %}</button>
                 </form>
                 {% endif %}

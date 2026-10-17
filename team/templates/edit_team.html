@@ -6,7 +6,7 @@
     <div class="table-container mt-4">
         <h1>{% translate "Editar Equipo" %}</h1>
         
-        <form method="POST" action="{% url 'edit_team' team.public_id %}" enctype="multipart/form-data">
+        <form method="POST" action="{% url 'edit_team' team.public_id %}" enctype="multipart/form-data" data-loading-text="{% translate 'Guardando el equipo…' %}">
             {% csrf_token %}
             
             <div class="mb-3">

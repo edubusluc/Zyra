@@ -11457,3 +11457,252 @@ msgstr "Creating your account…"
 
 msgid "Creando tu club…"
 msgstr "Creating your club…"
+
+msgid "Abandonando el club…"
+msgstr "Leaving the club…"
+
+msgid "Añadiendo la tarea…"
+msgstr "Adding the task…"
+
+msgid "Añadiendo los jugadores…"
+msgstr "Adding the players…"
+
+msgid "Bloqueando el email…"
+msgstr "Blocking the email…"
+
+msgid "Borrando la consulta…"
+msgstr "Deleting the query…"
+
+msgid "Borrando la cuenta SNP…"
+msgstr "Deleting the SNP account…"
+
+msgid "Borrando la nota…"
+msgstr "Deleting the note…"
+
+msgid "Borrando la tarea…"
+msgstr "Deleting the task…"
+
+msgid "Buscando jugadores en SNP…"
+msgstr "Searching players in SNP…"
+
+msgid "Cambiando de club…"
+msgstr "Switching club…"
+
+msgid "Cambiando de idioma…"
+msgstr "Changing language…"
+
+msgid "Cancelando la búsqueda…"
+msgstr "Cancelling the search…"
+
+msgid "Cerrando el acta…"
+msgstr "Closing the match report…"
+
+msgid "Cerrando la convocatoria…"
+msgstr "Closing the call-up…"
+
+msgid "Cerrando sesión…"
+msgstr "Logging out…"
+
+msgid "Conectando con Google…"
+msgstr "Connecting to Google…"
+
+msgid "Confirmando el email…"
+msgstr "Confirming the email…"
+
+msgid "Creando el enfrentamiento…"
+msgstr "Creating the match…"
+
+msgid "Creando el equipo…"
+msgstr "Creating the team…"
+
+msgid "Creando el jugador…"
+msgstr "Creating the player…"
+
+msgid "Creando la convocatoria…"
+msgstr "Creating the call-up…"
+
+msgid "Creando tu jugador…"
+msgstr "Creating your player…"
+
+msgid "Dando de alta el equipo…"
+msgstr "Reactivating the team…"
+
+msgid "Desactivando los correos…"
+msgstr "Turning off the emails…"
+
+msgid "Desbloqueando el email…"
+msgstr "Unblocking the email…"
+
+msgid "Deshaciendo la importación…"
+msgstr "Undoing the import…"
+
+msgid "Desvinculando el jugador…"
+msgstr "Unlinking the player…"
+
+msgid "Ejecutando la consulta…"
+msgstr "Running the query…"
+
+msgid "Eliminando el club…"
+msgstr "Deleting the club…"
+
+msgid "Eliminando el enfrentamiento…"
+msgstr "Deleting the match…"
+
+msgid "Eliminando el jugador…"
+msgstr "Deleting the player…"
+
+msgid "Eliminando la cuenta…"
+msgstr "Deleting the account…"
+
+msgid "Eliminando la foto…"
+msgstr "Deleting the photo…"
+
+msgid "Eliminando las fotos…"
+msgstr "Deleting the photos…"
+
+msgid "Eliminando tu cuenta…"
+msgstr "Deleting your account…"
+
+msgid "Entrando como el usuario…"
+msgstr "Signing in as the user…"
+
+msgid "Entrando…"
+msgstr "Logging in…"
+
+msgid "Enviando el aviso…"
+msgstr "Sending the warning…"
+
+msgid "Enviando el enlace…"
+msgstr "Sending the link…"
+
+msgid "Enviando el informe…"
+msgstr "Sending the report…"
+
+msgid "Enviando el restablecimiento…"
+msgstr "Sending the reset…"
+
+msgid "Enviando la invitación…"
+msgstr "Sending the invitation…"
+
+msgid "Generando el enlace…"
+msgstr "Generating the link…"
+
+msgid "Guardando el cambio…"
+msgstr "Saving the change…"
+
+msgid "Guardando el club…"
+msgstr "Saving the club…"
+
+msgid "Guardando el equipo…"
+msgstr "Saving the team…"
+
+msgid "Guardando el estado de la cuenta…"
+msgstr "Saving the account status…"
+
+msgid "Guardando el estado del club…"
+msgstr "Saving the club status…"
+
+msgid "Guardando el jugador…"
+msgstr "Saving the player…"
+
+msgid "Guardando el límite SNP…"
+msgstr "Saving the SNP limit…"
+
+msgid "Guardando el resultado…"
+msgstr "Saving the result…"
+
+msgid "Guardando el servicio…"
+msgstr "Saving the service…"
+
+msgid "Guardando la consulta…"
+msgstr "Saving the query…"
+
+msgid "Guardando la contraseña…"
+msgstr "Saving the password…"
+
+msgid "Guardando la convocatoria…"
+msgstr "Saving the call-up…"
+
+msgid "Guardando la cuenta SNP…"
+msgstr "Saving the SNP account…"
+
+msgid "Guardando la fecha…"
+msgstr "Saving the date…"
+
+msgid "Guardando la ficha…"
+msgstr "Saving the record…"
+
+msgid "Guardando la nota…"
+msgstr "Saving the note…"
+
+msgid "Guardando la penalización…"
+msgstr "Saving the penalty…"
+
+msgid "Guardando la plantilla…"
+msgstr "Saving the roster…"
+
+msgid "Guardando la tarea…"
+msgstr "Saving the task…"
+
+msgid "Guardando las parejas…"
+msgstr "Saving the pairs…"
+
+msgid "Guardando los cambios…"
+msgstr "Saving the changes…"
+
+msgid "Guardando los equipos…"
+msgstr "Saving the teams…"
+
+msgid "Guardando los resultados…"
+msgstr "Saving the results…"
+
+msgid "Guardando tus datos…"
+msgstr "Saving your details…"
+
+msgid "Importando los datos…"
+msgstr "Importing the data…"
+
+msgid "Lanzando la tarea…"
+msgstr "Starting the task…"
+
+msgid "Ocultando los primeros pasos…"
+msgstr "Hiding the first steps…"
+
+msgid "Preparando el CSV…"
+msgstr "Preparing the CSV…"
+
+msgid "Quitando al miembro…"
+msgstr "Removing the member…"
+
+msgid "Reabriendo el acta…"
+msgstr "Reopening the match report…"
+
+msgid "Reenviando el email…"
+msgstr "Resending the email…"
+
+msgid "Registrando el contacto…"
+msgstr "Logging the contact…"
+
+msgid "Reiniciando la importación…"
+msgstr "Resetting the import…"
+
+msgid "Revocando la invitación…"
+msgstr "Revoking the invitation…"
+
+msgid "Saliendo del modo «Entrar como»…"
+msgstr "Leaving “Sign in as” mode…"
+
+msgid "Subiendo el fichero…"
+msgstr "Uploading the file…"
+
+msgid "Traspasando la capitanía…"
+msgstr "Transferring the captaincy…"
+
+msgid "Validando el fichero…"
+msgstr "Checking the file…"
+
+msgid "Validando la foto…"
+msgstr "Approving the photo…"
+
+msgid "Vinculando tu jugador…"
+msgstr "Linking your player…"
