@@ -45,6 +45,7 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
 - [V] Frenos en caché compartida (`core/ratelimit.py`, tabla `django_cache`; IP real con `TRUSTED_PROXY_COUNT`): login
   5 fallos → 15 min, registro, invitaciones, comprobación de contraseña y reenvíos (429).
 - [V] Cambiar el email en «Mi perfil» pide la contraseña actual (`EmailChangeForm`). Tests: `core/tests_profile.py`.
+- [V] Usuario único sin distinguir mayúsculas (validación) y email único en la base de datos (índice `LOWER(email)`, migración `core/0019`); si dos registros chocan, el formulario muestra el error en vez de un 500. Tests: `core/tests_invitations.py`.
 
 ### Invitaciones
 

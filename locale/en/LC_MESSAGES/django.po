@@ -4494,6 +4494,9 @@ msgid "Repite la contraseña"
 msgstr "Repeat the password"
 
 #: core/forms.py:147
+msgid "Ya existe un usuario con ese nombre. Elige otro."
+msgstr "A user with that name already exists. Choose another."
+
 msgid "Ya hay una cuenta con este email: inicia sesión con ella."
 msgstr "There is already an account with this email: log in with it."
 
@@ -11457,7 +11460,6 @@ msgstr "Your club is already created. Check your SNP account and try again from 
 msgid "No hay datos todavía."
 msgstr "No data yet."
 
-
 msgid "Serás el encargado del club: invitas a los jugadores, creas los equipos y apuntas los resultados. Podrás traspasar la capitanía a otro miembro cuando quieras."
 msgstr "You will run the club: you invite the players, create the teams and record the results. You can hand the captaincy over to another member whenever you want."
 
@@ -11480,3 +11482,15 @@ msgid ""
 "Eres el capitán: tú invitas a los jugadores, creas los equipos y apuntas los resultados. Si prefieres que lo gestione otra persona, <a href=\"%(members_url)s\">traspasa la capitanía</a>."
 msgstr ""
 "You are the captain: you invite the players, create the teams and record the results. If you would rather have someone else manage it, <a href=\"%(members_url)s\">hand over the captaincy</a>."
+
+msgid "Creando tu usuario…"
+msgstr "Creating your user…"
+
+msgid "Uniéndote al club…"
+msgstr "Joining the club…"
+
+msgid "Creando tu cuenta…"
+msgstr "Creating your account…"
+
+msgid "Creando tu club…"
+msgstr "Creating your club…"

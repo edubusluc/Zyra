@@ -80,13 +80,17 @@ class SocialAccountAdapter(DefaultSocialAccountAdapter):
     def is_open_for_signup(self, request, sociallogin):
         """
         Cualquiera puede crear su cuenta con Google (salvo con un email bloqueado por el
-        personal); para ver datos de un club tiene que unirse con una invitación o
+        personal, o con un email que ya tiene cuenta sin que Google lo haya verificado: el email
+        es único en la base de datos y ese caso no puede entrar en la cuenta existente); para ver datos de un club tiene que unirse con una invitación o
         registrar el suyo.
         """
         from .blocklist import is_blocked
 
         emails = [a.email for a in sociallogin.email_addresses] or [getattr(sociallogin.user, "email", "")]
-        return not any(is_blocked(e) for e in emails)
+        if any(is_blocked(e) for e in emails):
+            return False
+        User = get_user_model()
+        return not any(e and User.objects.filter(email__iexact=e).exists() for e in emails)
 
     def save_user(self, request, sociallogin, form=None):
         """

@@ -14,7 +14,7 @@
             <strong>{% translate "¿Eres capitán?" %}</strong>
             {% url 'register_club' as club_url %}{% blocktranslate trimmed %}Esta cuenta no crea ningún club y necesitarás que tu capitán te invite (por email o con un enlace). Si el capitán eres tú, <a href="{{ club_url }}">registra tu club</a>.{% endblocktranslate %}
         </div>
-        <form method="post" novalidate>
+        <form method="post" novalidate data-submit-lock data-loading-text="{% translate 'Creando tu cuenta…' %}">
             {% csrf_token %}
             {{ form.as_p }}
             <button type="submit" class="btn btn-primary btn-lg mt-2">{% translate "Crear mi cuenta" %}</button>
