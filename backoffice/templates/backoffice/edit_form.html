@@ -12,7 +12,7 @@
 
 <section class="z-panel">
     <p class="text-muted">{% translate "Lo que cambies queda anotado en la auditoría con el valor anterior y el nuevo." %}</p>
-    <form method="post" {% if multipart data-loading-text="{% translate 'Guardando los cambios…' %}" %}enctype="multipart/form-data"{% endif %} autocomplete="off">
+    <form method="post" data-loading-text="{% translate 'Guardando los cambios…' %}" {% if multipart %}enctype="multipart/form-data"{% endif %} autocomplete="off">
         {% csrf_token %}
         {% for error in form.non_field_errors %}<div class="alert alert-danger">{{ error }}</div>{% endfor %}
         {% for field in form %}
