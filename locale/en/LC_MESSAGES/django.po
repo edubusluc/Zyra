@@ -10126,3 +10126,15 @@ msgid ""
 msgstr ""
 "Complete team is not available: we have notified the administrator to review"
 " the process."
+
+#: backoffice/templates/backoffice/user_detail.html:36
+msgid "Jugador enlazado"
+msgstr "Linked player"
+
+#: backoffice/templates/backoffice/user_detail.html:36
+msgid "fuera del equipo"
+msgstr "out of the team"
+
+#: backoffice/templates/backoffice/user_detail.html:36
+msgid "Sin enlazar"
+msgstr "Not linked"
