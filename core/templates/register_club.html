@@ -10,6 +10,15 @@
         <img src="{% static 'zyra/logo.svg' %}" alt="Zyra" class="z-auth-logo">
         <h1>{% translate "Registrar un club" %}</h1>
         <p class="text-muted text-center">{% translate "Cada club gestiona sus propios jugadores, equipos rivales, partidos y estadísticas. Nadie de fuera del club puede ver sus datos." %}</p>
+        <div class="alert alert-info" role="note">
+            <strong>{% translate "Como capitán serás el encargado del club" %}</strong>
+            <ul class="mb-1">
+                <li>{% translate "Invitas a tus jugadores por email o con un enlace." %}</li>
+                <li>{% translate "Creas los equipos, los enfrentamientos y las convocatorias." %}</li>
+                <li>{% translate "Apuntas los resultados. Los demás miembros solo consultan." %}</li>
+            </ul>
+            {% translate "Si más adelante quieres pasar la gestión a otra persona, podrás traspasar la capitanía a otro miembro desde Club › Miembros." %}
+        </div>
         <form method="post" novalidate data-wizard>
             {% csrf_token %}
             <nav class="z-wizard-progress" data-wizard-progress aria-label="{% translate 'Progreso del registro' %}" hidden></nav>

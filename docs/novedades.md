@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 17/10/2026 · El capitán sabe qué le toca
+
+- La tarjeta «Registrarme como capitán», el formulario «Registrar un club» y «Primeros pasos» explican que el capitán invita a los jugadores, crea los equipos y apunta los resultados, y que puede traspasar la capitanía a otro miembro
+- La nota de «Miembros» describe el traspaso paso a paso («Hacer capitán»: el anterior capitán pasa a miembro de solo lectura)
+
 ## 17/10/2026 · Back-office: jugador enlazado en la ficha de usuario
 
 - La tarjeta «Cuenta» de la ficha de usuario muestra el jugador (y equipo/club) al que está enlazada la cuenta, o «Sin enlazar»

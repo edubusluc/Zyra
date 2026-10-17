@@ -19,6 +19,13 @@ class RegisterAccountTests(TestCase):
         self.assertContains(response, f'href="{reverse("register_account")}"')
         self.assertContains(response, f'href="{reverse("register_club")}"')
 
+    def test_captain_responsibilities_and_handover_are_explained(self):
+        """El capitán lee sus tareas y que puede traspasar la capitanía antes de crear el club."""
+        for url_name in ("register", "register_club"):
+            response = self.client.get(reverse(url_name))
+            self.assertContains(response, "apuntas los resultados")
+            self.assertContains(response, "traspasar la capitanía")
+
     def test_chooser_redirects_logged_in_users(self):
         self.client.post(reverse("register_account"), SIGNUP)
         self.assertRedirects(self.client.get(reverse("register")), reverse("home"), fetch_redirect_response=False)

@@ -74,6 +74,7 @@
         <div>
             <span class="z-eyebrow"><i class="fa-solid fa-flag-checkered me-1" aria-hidden="true"></i> {% translate "Primeros pasos" %} · {% blocktranslate with done=onboarding_done total=onboarding|length %}{{ done }} de {{ total }} hechos{% endblocktranslate %}</span>
             <h2 id="onboarding-title">{% translate "Prepara tu club en Zyra" %}</h2>
+            <p class="small mb-0">{% url 'club_members' as members_url %}{% blocktranslate trimmed %}Eres el capitán: tú invitas a los jugadores, creas los equipos y apuntas los resultados. Si prefieres que lo gestione otra persona, <a href="{{ members_url }}">traspasa la capitanía</a>.{% endblocktranslate %}</p>
         </div>
         <form method="post" action="{% url 'dismiss_onboarding' %}">
             {% csrf_token %}
