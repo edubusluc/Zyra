@@ -34,6 +34,7 @@
             <div><dt>{% translate "Email" %}</dt><dd>{{ member.email|default:"—" }}</dd></div>
             <div><dt>{% translate "Último acceso" %}</dt><dd>{% if member.last_login %}{{ member.last_login|date:"j M Y H:i" }} ({{ member.last_login|ago }}){% else %}{% translate "nunca" %}{% endif %}</dd></div>
             <div><dt>{% translate "Acceso" %}</dt><dd>{% if login_methods %}{{ login_methods|join:" · " }}{% else %}{% translate "Sin método de acceso" %}{% endif %}</dd></div>
+            <div><dt>{% translate "Jugador enlazado" %}</dt><dd>{% for player in linked_players %}{{ player.full_name }} <span class="text-muted">({{ player.team.name }}{% if player.team.club %} · {{ player.team.club.name }}{% endif %}){% if not player.in_team %} · {% translate "fuera del equipo" %}{% endif %}</span>{% if not forloop.last %}<br>{% endif %}{% empty %}{% translate "Sin enlazar" %}{% endfor %}</dd></div>
             <div><dt>{% translate "Estado" %}</dt><dd>{% if member.is_active %}{% translate "Activo" %}{% else %}<span class="z-badge z-badge--danger">{% translate "Inactivo" %}</span>{% endif %}{% if member.is_staff %} · <span class="z-badge z-badge--lime">{% translate "Staff" %}</span>{% endif %}{% if member.is_superuser %} · {% translate "Superusuario" %}{% endif %}</dd></div>
         </dl>
     </section>
