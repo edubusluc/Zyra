@@ -23,7 +23,8 @@ class RegisterAccountTests(TestCase):
         """El capitán lee sus tareas y que puede traspasar la capitanía antes de crear el club."""
         for url_name in ("register", "register_club"):
             response = self.client.get(reverse(url_name))
-            self.assertContains(response, "apuntas los resultados")
+            self.assertContains(response, "esultados")
+            self.assertContains(response, "encargado")
             self.assertContains(response, "traspasar la capitanía")
 
     def test_chooser_redirects_logged_in_users(self):
