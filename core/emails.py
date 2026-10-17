@@ -59,15 +59,18 @@ def build_email(subject, text, html_content, to, reply_to=None):
     ``html_content`` es HTML ya escapado/saneado por quien llama: se inserta sin volver a escaparlo.
     """
     contact = settings.CONTACT_EMAIL
-    footer = "\n\n--\n%s\n%s\n" % (
+    site = settings.SITE_URL
+    footer = "\n\n--\n%s\n%s\n%s" % (
         _("Zyra · Gestión de equipos de pádel"),
         _("Contacto: %(contact)s") % {"contact": contact},
+        f"{_('Hecho con Zyra')}: {site}\n" if site else "",
     )
     body = text.rstrip() + footer
     html = render_to_string("emails/layout.html", {
         "subject": subject,
         "content": mark_safe(html_content),  # HTML ya preparado (y escapado) por quien llama
         "contact": contact,
+        "site_url": site,
         "logo_cid": LOGO_CID,
     })
     email = ZyraEmail(subject=subject, body=body, to=to, reply_to=reply_to)

@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+{% block page_title %}{% translate "Club" %} · {% endblock %}
+
+{% block content %}
+<div class="z-page-head">
+    <div>
+        <span class="z-eyebrow">{% translate "Configuración" %}</span>
+        <h1>{{ current_club.name }}</h1>
+    </div>
+</div>
+
+<p class="text-muted z-club-legend">{% translate "Tu club reúne a los miembros que usan Zyra. Tu equipo es el que compite; tu grupo son los equipos rivales de tu liga." %}</p>
+
+{% if is_club_admin %}
+{# Accesos rápidos: cualquier alta de uso frecuente queda a dos toques del inicio. #}
+<ul class="z-quick" aria-label="{% translate 'Accesos rápidos' %}">
+    <li><a class="btn btn-secondary btn-sm" href="{% url 'club_members' %}#invitaciones"><i class="fa-regular fa-envelope me-1" aria-hidden="true"></i> {% translate "Invitar" %}</a></li>
+    <li><a class="btn btn-secondary btn-sm" href="{% url 'create_team' %}"><i class="fa-solid fa-plus me-1" aria-hidden="true"></i> {% translate "Crear rival" %}</a></li>
+    <li><a class="btn btn-secondary btn-sm" href="{% url 'create_player' %}"><i class="fa-solid fa-user-plus me-1" aria-hidden="true"></i> {% translate "Nuevo jugador" %}</a></li>
+    <li><a class="btn btn-secondary btn-sm" href="{% url 'create_match' %}"><i class="fa-solid fa-calendar-plus me-1" aria-hidden="true"></i> {% translate "Crear enfrentamiento" %}</a></li>
+</ul>
+{% endif %}
+
+{# Lo que se configura una vez y no cada semana: miembros, cuenta SNP, equipo propio y rivales. #}
+<ul class="z-hub">
+    {% if is_club_admin %}
+    <li>
+        <a href="{% url 'club_members' %}" class="z-hub-card">
+            <i class="fa-solid fa-user-gear" aria-hidden="true"></i>
+            <span class="z-hub-title">{% translate "Miembros e invitaciones" %}</span>
+            <span class="z-hub-note">{% blocktranslate trimmed count n=members_count %}{{ n }} miembro. Invita a un jugador por email o con un enlace.{% plural %}{{ n }} miembros. Invita a un jugador por email o con un enlace.{% endblocktranslate %}</span>
+            {% if members_count < 2 %}<span class="z-hub-status is-todo">{% translate "Invita a tu primer jugador" %} <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>{% endif %}
+        </a>
+    </li>
+    {% endif %}
+    {% if own_team %}
+    <li>
+        {% if is_club_admin %}<a href="{% url 'edit_team' own_team.public_id %}" class="z-hub-card">{% else %}<div class="z-hub-card">{% endif %}
+            <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+            <span class="z-hub-title">{% translate "Mi equipo" %}</span>
+            <span class="z-hub-note">{{ own_team.name }}{% if own_team.location %} · {{ own_team.location }}{% endif %}</span>
+        {% if is_club_admin %}</a>{% else %}</div>{% endif %}
+    </li>
+    {% endif %}
+    <li>
+        <a href="{% url 'list_teams' %}" class="z-hub-card">
+            <i class="fa-solid fa-users" aria-hidden="true"></i>
+            <span class="z-hub-title">{% translate "Rivales" %}</span>
+            <span class="z-hub-note">{% blocktranslate trimmed count n=rivals_count %}{{ n }} equipo rival en tu grupo.{% plural %}{{ n }} equipos rivales en tu grupo.{% endblocktranslate %}</span>
+            {% if rivals_count == 0 and is_club_admin %}<span class="z-hub-status is-todo">{% translate "Añade tu primer rival" %} <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>{% endif %}
+        </a>
+    </li>
+    {% if is_club_admin %}
+    <li>
+        <a href="{% url 'snp_account' %}" class="z-hub-card">
+            <i class="fa-solid fa-trophy" aria-hidden="true"></i>
+            <span class="z-hub-title">{% translate "Cuenta SNP" %}</span>
+            <span class="z-hub-note">{% if snp_account %}{% translate "Conectada: los puntos se actualizan cada semana." %}{% else %}{% translate "Conéctala para tener los puntos SNP al día." %}{% endif %}</span>
+            {% if snp_account %}<span class="z-hub-status is-ok"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> {% translate "Conectada" %}</span>{% else %}<span class="z-hub-status is-todo">{% translate "Conectar ahora" %} <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>{% endif %}
+        </a>
+    </li>
+    {% endif %}
+</ul>
+
+{# Zona de peligro (U14): lejos de las acciones habituales, con su explicación y confirmación en un cuadro aparte. #}
+<section class="z-danger-zone" aria-labelledby="danger-title">
+    <h2 id="danger-title">{% translate "Zona de peligro" %}</h2>
+    <p class="text-muted">{% translate "Si abandonas el club dejarás de ver sus jugadores, enfrentamientos y estadísticas. Te pediremos confirmarlo." %}</p>
+    <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#leaveClubModal"><i class="fa-solid fa-door-open me-1" aria-hidden="true"></i> {% translate "Abandonar el club" %}</button>
+</section>
+{% endblock %}

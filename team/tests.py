@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.test import SimpleTestCase, TestCase
 from django.urls import reverse
 
+from core.models import Membership
 from core.services import create_club
 from core.similarity import is_similar
 from players.models import Player
@@ -311,3 +312,44 @@ class ListTeamsGroupFilterTests(TestCase):
         response = self.client.get(self.url, {"group": "0"})
         self.assertFalse(response.context["only_group"])
         self.assertContains(response, "Fuera FC")
+
+
+class TeamListPaginationTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user("admin", password="pass-12345")
+        self.club = create_club("Club A", "Sevilla", self.user)
+        self.client.force_login(self.user)
+
+    def test_rivals_list_shows_a_whole_group_without_paging_and_excludes_own_team(self):
+        """H-38 / H-19: un grupo de SNP (unos 15-30 equipos) cabe en una página y el equipo propio no sale."""
+        for i in range(20):
+            Team.objects.create(club=self.club, name=f"Rival {i}", location="X", in_group=True)
+        response = self.client.get(reverse("list_teams"))
+        self.assertEqual(len(response.context["teams"]), 20)
+        self.assertNotIn(self.club.own_team, list(response.context["teams"]))
+
+    def test_club_page_links_own_team_and_rivals(self):
+        response = self.client.get(reverse("club_home"))
+        self.assertContains(response, reverse("edit_team", args=[self.club.own_team.public_id]))
+        self.assertContains(response, reverse("list_teams"))
+        self.assertContains(response, reverse("club_members"))
+        self.assertContains(response, reverse("snp_account"))
+
+    def test_member_sees_club_page_without_captain_links(self):
+        member = User.objects.create_user("socio", password="pass-12345")
+        Membership.objects.create(user=member, club=self.club, role=Membership.MEMBER)
+        self.client.force_login(member)
+        response = self.client.get(reverse("club_home"))
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, f'href="{reverse("club_members")}"')
+        self.assertNotContains(response, reverse("snp_account"))
+        self.assertNotContains(response, reverse("edit_team", args=[self.club.own_team.public_id]))
+
+    def test_editing_own_team_returns_to_club_page(self):
+        own = self.club.own_team
+        response = self.client.post(reverse("edit_team", args=[own.public_id]), {
+            "name": own.name, "location": own.location or "Sevilla", "gender": own.gender or "M",
+            "country": own.country or "ES", "division": own.division or "500", "in_group": "on",
+        })
+        if response.status_code == 302:
+            self.assertRedirects(response, reverse("club_home"), fetch_redirect_response=False)

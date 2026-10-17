@@ -131,10 +131,12 @@ class ClubIsolationTests(TestCase):
         self.assertNotContains(response, reverse("call_for_match", args=[self.match_b.public_id]))
 
     def test_player_statistics_only_lists_own_players(self):
+        Match.objects.filter(pk=self.match_a.pk).update(draft_mode=False)  # con alguno cerrado hay selector
         response = self.client.get(reverse("player_statistics"))
         self.assertEqual(list(response.context["players"]), [self.player_a])
 
     def test_team_statistics_use_own_team(self):
+        Match.objects.filter(pk=self.match_a.pk).update(draft_mode=False)
         response = self.client.get(reverse("team_statistics"))
         self.assertEqual(response.context["team"], self.club_a.own_team)
         self.assertEqual([c["player"] for c in response.context["column_chart_data"]], ["ANA ALPHA"])
@@ -178,11 +180,12 @@ class ClubIsolationTests(TestCase):
         self.assertEqual(Match.objects.filter(club=self.club_a).count(), 2)
 
     def test_call_ignores_foreign_players(self):
+        own = [self.player_a] + [Player.objects.create(club=self.club_a, name=f"P{i}", last_name="X") for i in range(9)]
         self.client.post(reverse("create_call", args=[self.match_a.public_id]), {
-            "players": [self.player_a.id, self.player_b.id],
+            "players": [p.id for p in own] + [self.player_b.id],
         })
         call = Call.objects.get(match=self.match_a)
-        self.assertEqual(list(call.players.all()), [self.player_a])
+        self.assertEqual(set(call.players.all()), set(own))
 
     def test_create_games_uses_own_side(self):
         players = [Player.objects.create(club=self.club_a, name=f"P{i}", last_name="X") for i in range(10)]
@@ -379,14 +382,14 @@ class HomeTests(TestCase):
         self.assertTemplateUsed(self.client.get(reverse("home")), "landing.html")
 
     def test_landing_bottom_cta_back_to_top_only_on_desktop(self):
-        """Al final de la portada no se repite «Registrar mi club»: en ordenador se ofrece volver arriba."""
+        """Al final de la portada no se repite «Registrarme»: en ordenador se ofrece volver arriba."""
         self.client.logout()
         html = self.client.get(reverse("home")).content.decode()
         self.assertIn('class="btn btn-outline-light btn-lg d-none d-lg-inline-flex z-back-to-top" '
                       'href="#contenido" data-scroll-top', html)
         self.assertIn("Volver arriba", html)
         # El botón de registro solo está arriba, en la cabecera de la portada
-        self.assertEqual(html.count("Registrar mi club gratis"), 1)
+        self.assertEqual(html.count("Registrarme gratis"), 1)
         english = self.client.get(reverse("home") + "?lang=en").content.decode()
         self.assertIn("Back to top", english)
 
@@ -434,8 +437,12 @@ class HomeTests(TestCase):
     def test_empty_home(self):
         response = self.client.get(reverse("home"))
         self.assertIsNone(response.context["next_match"])
-        self.assertContains(response, "No hay partidos programados.")
-        self.assertContains(response, "Nadie encadena victorias ahora mismo.")
+        # Mientras queden «Primeros pasos» los bloques vacíos se ocultan; al cerrarlos vuelven con una acción.
+        self.assertNotContains(response, "Programa el próximo enfrentamiento para preparar la convocatoria.")
+        self.client.post(reverse("dismiss_onboarding"))
+        response = self.client.get(reverse("home"))
+        self.assertContains(response, "Programa el próximo enfrentamiento para preparar la convocatoria.")
+        self.assertContains(response, "Cierra enfrentamientos para ver aquí quién encadena victorias.")
 
     def test_hot_player_and_pair(self):
         ana = Player.objects.create(club=self.club, name="Ana", last_name="Alpha")

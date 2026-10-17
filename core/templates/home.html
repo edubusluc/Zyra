@@ -10,34 +10,191 @@
     </div>
 </section>
 
+{% if email_unverified %}
+{# Aviso único hasta que se confirma el email (U6): reenviar el enlace o corregir el email. #}
+<section class="z-notice" role="status" aria-label="{% translate 'Confirma tu email' %}">
+    <i class="fa-solid fa-envelope-circle-check" aria-hidden="true"></i>
+    <div class="z-notice-text">
+        <strong>{% translate "Confirma tu email" %}</strong>
+        <span>{% blocktranslate with email=user.email %}Te hemos enviado un enlace a {{ email }}.{% endblocktranslate %}</span>
+    </div>
+    <div class="z-notice-actions">
+        <form method="post" action="{% url 'resend_verification' %}" data-loading-text="{% translate 'Reenviando el email…' %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{% url 'home' %}">
+            <button type="submit" class="btn btn-secondary btn-sm">{% translate "Reenviar" %}</button>
+        </form>
+        <a class="btn btn-secondary btn-sm" href="{% url 'my_profile' %}?edit=email">{% translate "Cambiar email" %}</a>
+    </div>
+</section>
+{% endif %}
+
+{% if snp_sync and snp_sync.state != 'running' %}
+{# Tarea «Sincronizar datos»: hasta que «Completar equipo» devuelva un resultado correcto se puede lanzar, seguir o reintentar desde aquí. #}
+<section class="z-notice{% if snp_sync.state == 'failed' %} z-notice--warn{% endif %}" role="{% if snp_sync.state == 'failed' %}alert{% else %}status{% endif %}" aria-label="{% translate 'Sincronizar datos' %}">
+    {% if snp_sync.state == 'failed' %}<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+    {% else %}<i class="fa-solid fa-rotate" aria-hidden="true"></i>{% endif %}
+    <div class="z-notice-text">
+        {% if snp_sync.state == 'ready' %}
+        <strong>{% translate "Tu equipo de SNP está listo para confirmar" %}</strong>
+        <span>{% translate "Revisa los jugadores encontrados y confírmalos para añadirlos." %}</span>
+        {% elif snp_sync.state == 'failed' %}
+        <strong>{% translate "No hemos podido traer tu equipo de SNP" %}</strong>
+        <span>{{ snp_sync.message|default:_("La búsqueda se ha cancelado o no ha terminado.") }}
+        {% if snp_sync.same_account %}{% translate "Cambia el usuario o la contraseña de tu cuenta SNP para poder reintentarlo." %}
+        {% elif snp_sync.blocked %}{% translate "Ha fallado varias veces: hemos avisado al administrador de Zyra para que lo revise." %}
+        {% elif snp_sync.service_off %}{% translate "La conexión con SNP no está disponible ahora mismo." %}
+        {% elif snp_sync.wait %}{% blocktranslate with date=snp_sync.wait|date:"d/m/Y H:i" %}Podrás reintentarlo a partir del {{ date }}.{% endblocktranslate %}{% endif %}</span>
+        {% else %}
+        <strong>{% translate "Sincroniza tu equipo con SNP" %}</strong>
+        <span>{% translate "Trae a tus jugadores y sus puntos de SNP de una vez. Hazlo antes de empezar la temporada." %}</span>
+        {% endif %}
+    </div>
+    <div class="z-notice-actions">
+        {% if snp_sync.state == 'ready' %}
+        <a class="btn btn-primary btn-sm" href="{% url 'list_players' %}">{% translate "Revisar y confirmar" %}</a>
+        {% else %}
+        {% if snp_sync.can_retry %}
+        <form method="post" action="{% url 'complete_team_start' %}" data-loading-text="{% translate 'Buscando jugadores en SNP…' %}">
+            {% csrf_token %}
+            <input type="hidden" name="from" value="home">
+            <button type="submit" class="btn btn-primary btn-sm">{% if snp_sync.state == 'failed' %}{% translate "Reintentar" %}{% else %}{% translate "Sincronizar datos" %}{% endif %}</button>
+        </form>
+        {% endif %}
+        {% if snp_sync.team_fix_url %}<a class="btn btn-secondary btn-sm" href="{{ snp_sync.team_fix_url }}">{% translate "Editar mi equipo" %}</a>{% endif %}
+        <a class="btn btn-secondary btn-sm" href="{% url 'snp_account' %}?edit=1">{% translate "Revisar cuenta SNP" %}</a>
+        {% endif %}
+    </div>
+</section>
+{% endif %}
+
 {% if onboarding %}
 <section class="z-card z-onboarding" aria-labelledby="onboarding-title">
     <div class="z-onboarding-head">
         <div>
-            <span class="z-eyebrow"><i class="fa-solid fa-flag-checkered me-1" aria-hidden="true"></i> {% translate "Primeros pasos" %}</span>
+            <span class="z-eyebrow"><i class="fa-solid fa-flag-checkered me-1" aria-hidden="true"></i> {% translate "Primeros pasos" %} · {% blocktranslate with done=onboarding_done total=onboarding|length %}{{ done }} de {{ total }} hechos{% endblocktranslate %}</span>
             <h2 id="onboarding-title">{% translate "Prepara tu club en Zyra" %}</h2>
+            <p class="small mb-0">{% url 'club_members' as members_url %}{% blocktranslate trimmed %}Eres el capitán: tú invitas a los jugadores, creas los equipos y apuntas los resultados. Si prefieres que lo gestione otra persona, <a href="{{ members_url }}">traspasa la capitanía</a>.{% endblocktranslate %}</p>
         </div>
-        <form method="post" action="{% url 'dismiss_onboarding' %}">
+        <form method="post" action="{% url 'dismiss_onboarding' %}" data-loading-text="{% translate 'Ocultando los primeros pasos…' %}">
             {% csrf_token %}
             <button type="submit" class="btn-close btn-close-white" aria-label="{% translate 'Ocultar primeros pasos' %}" title="{% translate 'Ocultar primeros pasos' %}"></button>
         </form>
     </div>
-    <ol class="z-onboarding-steps">
-        {% for step in onboarding %}
-        <li class="{% if step.done %}is-done{% endif %}">
-            <i class="z-onboarding-check fa-{% if step.done %}solid fa-circle-check{% else %}regular fa-circle{% endif %}" aria-hidden="true"></i>
-            <div class="z-onboarding-text">
-                <strong>{{ step.title }}</strong>
-                <span>{% if step.done %}{% translate "Hecho" %}{% else %}{{ step.help }}{% endif %}</span>
-            </div>
-            {% if not step.done %}
-            <a class="btn btn-primary btn-sm" href="{{ step.url }}">{{ step.action }}</a>
-            {% endif %}
-        </li>
-        {% endfor %}
-    </ol>
+    <div class="z-onboarding-bar" role="progressbar" aria-valuemin="0" aria-valuemax="{{ onboarding|length }}" aria-valuenow="{{ onboarding_done }}" aria-label="{% translate 'Primeros pasos hechos' %}"><span style="width: {{ onboarding_percent }}%"></span></div>
+    {% with step=onboarding_next %}
+    <div class="z-onboarding-next">
+        <div class="z-onboarding-text">
+            <strong>{{ step.title }}</strong>
+            <span>{{ step.help }}</span>
+        </div>
+        <a class="btn btn-primary" href="{{ step.url }}">{% translate "Siguiente paso" %} <i class="fa-solid fa-arrow-right ms-1" aria-hidden="true"></i></a>
+        {% if step.alt_url %}<a class="z-onboarding-alt" href="{{ step.alt_url }}">{{ step.alt_action }}</a>{% endif %}
+    </div>
+    {% endwith %}
+    <details class="z-more-options">
+        <summary>{% translate "Ver todos los pasos" %}</summary>
+        <ol class="z-onboarding-steps">
+            {% for step in onboarding %}
+            <li class="{% if step.done %}is-done{% endif %}">
+                <i class="z-onboarding-check fa-{% if step.done %}solid fa-circle-check{% else %}regular fa-circle{% endif %}" aria-hidden="true"></i>
+                <div class="z-onboarding-text">
+                    <strong>{{ step.title }}</strong>
+                    <span>{% if step.done %}{% translate "Hecho" %}{% else %}{{ step.help }}{% endif %}</span>
+                </div>
+            </li>
+            {% endfor %}
+        </ol>
+    </details>
 </section>
 {% endif %}
+
+
+{% if is_club_admin and pending or is_club_admin and not onboarding %}
+{# Lo que se ha quedado a medias, con la siguiente acción de cada enfrentamiento (H-02). #}
+<h2 class="z-section-title">{% translate "Pendiente" %}</h2>
+{% if pending %}
+<ul class="z-pending">
+    {% for row in pending %}
+    <li>
+        <a href="{% url 'call_for_match' row.match.public_id %}" class="z-pending-row{% if row.overdue %} is-overdue{% endif %}">
+            <span class="z-pending-main">
+                <strong>{{ row.match.local_name }} – {{ row.match.visiting_name }}</strong>
+                <small>{{ row.match.start_date|date:"D j M Y" }}{% if row.overdue %} · {% translate "ya jugado o vencido" %}{% endif %}</small>
+            </span>
+            <span class="z-pending-action">{{ row.phase.pending_label }} <i class="fa-solid fa-chevron-right" aria-hidden="true"></i></span>
+        </a>
+    </li>
+    {% endfor %}
+</ul>
+{% if pending_total > pending|length %}
+<p><a href="{% url 'list_match' %}?season=all">{% blocktranslate with n=pending_total %}Ver los {{ n }} pendientes{% endblocktranslate %}</a></p>
+{% endif %}
+{% else %}
+<div class="z-empty"><i class="fa-solid fa-circle-check" aria-hidden="true"></i>{% translate "Todo al día" %}</div>
+{% endif %}
+{% endif %}
+
+{% if next_match or not onboarding %}
+<h2 class="z-section-title">{% translate "Próximo enfrentamiento" %}</h2>
+{% endif %}
+{% if next_match %}
+<article class="z-card z-next-match">
+    <div class="z-next-match-when">
+        <span class="z-badge z-badge--lime">{% if days_left == 0 %}{% translate "Hoy" %}{% elif days_left == 1 %}{% translate "Mañana" %}{% else %}{% blocktranslate trimmed count n=days_left %}En {{ n }} día{% plural %}En {{ n }} días{% endblocktranslate %}{% endif %}</span>
+        <span>{{ next_match.start_date|date:"D j M Y" }}{% if next_match.start_time %} · {{ next_match.start_time|time:"H:i" }}{% endif %}</span>
+    </div>
+    <div class="z-next-match-teams">
+        <div class="z-next-match-team {% if next_match.local.is_own %}is-own{% endif %}">
+            <img src="{% if next_match.local.photo %}{{ next_match.local.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="">
+            <span>{{ next_match.local_name }}</span>
+            <small>{% translate "Local" %}</small>
+        </div>
+        <div class="z-versus-vs">VS</div>
+        <div class="z-next-match-team {% if next_match.visiting.is_own %}is-own{% endif %}">
+            <img src="{% if next_match.visiting.photo %}{{ next_match.visiting.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="">
+            <span>{{ next_match.visiting_name }}</span>
+            <small>{% translate "Visitante" %}</small>
+        </div>
+    </div>
+    {% if my_status %}
+    <p class="z-next-match-me{% if my_status.called %} is-in{% endif %}" role="status">
+        <i class="fa-solid {% if my_status.called %}fa-circle-check{% else %}fa-circle-info{% endif %}" aria-hidden="true"></i>
+        <span>{% if not my_status.has_call %}{% translate "Todavía no hay convocatoria" %}
+        {% elif my_status.called %}<strong>{% translate "Estás convocado" %}</strong>{% if my_status.game %} · {% blocktranslate with n=my_status.game.n_game pts=my_status.game.score %}Partido {{ n }} · {{ pts }} pts{% endblocktranslate %}{% if my_status.partner %} · {% blocktranslate with name=my_status.partner.full_name %}con {{ name }}{% endblocktranslate %}{% endif %}{% elif my_status.closed %} · {% translate "las parejas aún no están decididas" %}{% endif %}
+        {% else %}<strong>{% translate "No estás convocado" %}</strong>{% if not my_status.closed %} · {% translate "la convocatoria sigue abierta" %}{% endif %}{% endif %}</span>
+    </p>
+    {% elif not my_player and not is_club_admin %}
+    <p class="z-next-match-me"><i class="fa-solid fa-link" aria-hidden="true"></i> <a href="{% url 'my_player' %}">{% translate "Enlaza tu cuenta con tu jugador para ver si estás convocado." %}</a></p>
+    {% endif %}
+    <div class="z-next-match-foot">
+        {% if next_match.location %}
+        <a class="z-location" href="{{ next_match.maps_url }}" target="_blank" rel="noopener">
+            <i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>{{ next_match.location }}</span>
+        </a>
+        {% else %}
+        <span class="z-location text-muted"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>{% translate "Sin ubicación" %}</span></span>
+        {% endif %}
+        <div class="d-flex flex-wrap gap-2">
+            {% if next_match.location %}
+            <a class="btn btn-secondary btn-sm" href="{{ next_match.maps_url }}" target="_blank" rel="noopener"><i class="fa-solid fa-map-location-dot me-1" aria-hidden="true"></i> {% translate "Cómo llegar" %}</a>
+            {% endif %}
+            <a class="btn btn-primary btn-sm" href="{% url 'call_for_match' next_match.public_id %}"><i class="fa-solid fa-clipboard-list me-1" aria-hidden="true"></i> {% translate "Ver convocatoria" %}</a>
+        </div>
+    </div>
+</article>
+{% elif not onboarding %}
+<div class="z-empty">
+    <i class="fa-regular fa-calendar" aria-hidden="true"></i>
+    {% if is_club_admin %}
+    {% translate "Programa el próximo enfrentamiento para preparar la convocatoria." %}
+    <div class="mt-3"><a class="btn btn-primary btn-sm" href="{% url 'create_match' %}">{% translate "Crear enfrentamiento" %}</a></div>
+    {% else %}
+    {% translate "Cuando tu capitán programe el próximo enfrentamiento verás aquí si estás convocado, con quién juegas y cómo llegar." %}
+    {% endif %}
+</div>
+{% endif %}
+
 
 {% if snp_missing %}
 <div class="z-card z-card--link z-snp-notice d-flex flex-column align-items-start" style = "margin-top: 2rem;">
@@ -56,51 +213,9 @@
 </div>
 {% endif %}
 
-<h2 class="z-section-title">{% translate "Próximo partido" %}</h2>
-{% if next_match %}
-<article class="z-card z-next-match">
-    <div class="z-next-match-when">
-        <span class="z-badge z-badge--lime">{% if days_left == 0 %}{% translate "Hoy" %}{% elif days_left == 1 %}{% translate "Mañana" %}{% else %}{% blocktranslate trimmed count n=days_left %}En {{ n }} día{% plural %}En {{ n }} días{% endblocktranslate %}{% endif %}</span>
-        <span>{{ next_match.start_date|date:"d/m/Y" }}</span>
-    </div>
-    <div class="z-next-match-teams">
-        <div class="z-next-match-team {% if next_match.local.is_own %}is-own{% endif %}">
-            <img src="{% if next_match.local.photo %}{{ next_match.local.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="">
-            <span>{{ next_match.local_name }}</span>
-            <small>{% translate "Local" %}</small>
-        </div>
-        <div class="z-versus-vs">VS</div>
-        <div class="z-next-match-team {% if next_match.visiting.is_own %}is-own{% endif %}">
-            <img src="{% if next_match.visiting.photo %}{{ next_match.visiting.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="">
-            <span>{{ next_match.visiting_name }}</span>
-            <small>{% translate "Visitante" %}</small>
-        </div>
-    </div>
-    <div class="z-next-match-foot">
-        {% if next_match.location %}
-        <a class="z-location" href="{{ next_match.maps_url }}" target="_blank" rel="noopener">
-            <i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>{{ next_match.location }}</span>
-        </a>
-        {% else %}
-        <span class="z-location text-muted"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>{% translate "Sin ubicación" %}</span></span>
-        {% endif %}
-        <div class="d-flex flex-wrap gap-2">
-            {% if next_match.location %}
-            <a class="btn btn-secondary btn-sm" href="{{ next_match.maps_url }}" target="_blank" rel="noopener"><i class="fa-solid fa-map-location-dot me-1" aria-hidden="true"></i> {% translate "Cómo llegar" %}</a>
-            {% endif %}
-            <a class="btn btn-primary btn-sm" href="{% url 'call_for_match' next_match.public_id %}"><i class="fa-solid fa-clipboard-list me-1" aria-hidden="true"></i> {% translate "Ver convocatoria" %}</a>
-        </div>
-    </div>
-</article>
-{% else %}
-<div class="z-empty">
-    <i class="fa-regular fa-calendar" aria-hidden="true"></i>
-    {% translate "No hay partidos programados." %}
-    {% if is_club_admin %}<div class="mt-3"><a class="btn btn-primary btn-sm" href="{% url 'create_match' %}">{% translate "Crear partido" %}</a></div>{% endif %}
-</div>
-{% endif %}
-
+{% if hot_player or hot_pair or not onboarding %}
 <h2 class="z-section-title">{% translate "En racha" %}</h2>
+{% endif %}
 {% if hot_player or hot_pair %}
 <div class="z-hot-grid">
     {% if hot_player %}
@@ -114,7 +229,7 @@
                 <span>{% blocktranslate trimmed count n=hot_player.streak %}{{ n }} victoria seguida{% plural %}{{ n }} victorias seguidas{% endblocktranslate %}</span>
             </div>
         </div>
-        {% if is_club_admin %}<a class="btn btn-secondary btn-sm" href="{% url 'player_statistics' %}?player={{ p.public_id }}">{% translate "Ver estadísticas" %}</a>{% endif %}
+        <a class="btn btn-secondary btn-sm" href="{% url 'player_statistics' %}?player={{ p.public_id }}">{% translate "Ver estadísticas" %}</a>
     </article>
     {% endwith %}
     {% endif %}
@@ -135,10 +250,10 @@
     </article>
     {% endif %}
 </div>
-{% else %}
+{% elif not onboarding %}
 <div class="z-empty">
     <i class="fa-solid fa-fire" aria-hidden="true"></i>
-    {% translate "Nadie encadena victorias ahora mismo." %}
+    {% translate "Cierra enfrentamientos para ver aquí quién encadena victorias." %}
 </div>
 {% endif %}
 {% endblock %}

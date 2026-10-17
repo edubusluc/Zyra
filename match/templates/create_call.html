@@ -10,7 +10,7 @@
     </div>
 </div>
 
-<form method="POST">
+<form method="POST" data-loading-text="{% translate 'Creando la convocatoria…' %}">
     {% csrf_token %}
     {% include 'includes/player_selector.html' with selected=selected_players submit_label=_("Crear convocatoria") min_players=10 %}
 </form>

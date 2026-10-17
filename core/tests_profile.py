@@ -29,6 +29,8 @@ class MyProfileTests(TestCase):
     def test_unlinked_shows_account_and_offers_link(self):
         page = self.client.get(reverse("my_profile"))
         self.assertContains(page, "ana@example.com")
+        self.assertContains(page, "Nombre de perfil")
+        self.assertContains(page, "ana</span>")
         self.assertContains(page, reverse("account_change_password"))
         self.assertContains(page, "Enlazarme a un jugador")
         self.assertContains(page, reverse("my_player"))
@@ -78,6 +80,7 @@ class MyProfileTests(TestCase):
         self.assertNotContains(page, "Guardar email")
         self.assertNotContains(page, 'href="?edit=email"')
         self.assertNotContains(page, reverse("account_change_password"))
+        self.assertContains(page, reverse("account_set_password"))
         self.client.post(reverse("my_profile"), {"email": "otra@example.com", "current_password": ""})
         self.user.refresh_from_db()
         self.assertEqual(self.user.email, "ana@example.com")
@@ -89,15 +92,50 @@ class MyProfileTests(TestCase):
         self.assertRedirects(response, reverse("my_profile"), fetch_redirect_response=False)
         self.assertContains(self.client.get(reverse("my_profile")), "Contraseña actualizada.")
 
+    def test_google_only_account_can_add_password_without_current_one(self):
+        self.user.set_unusable_password()
+        self.user.save()
+        SocialAccount.objects.create(user=self.user, provider="google", uid="123")
+        self.client.force_login(self.user)  # quitar la contraseña invalida la sesión
+        page = self.client.get(reverse("account_set_password"))
+        self.assertNotContains(page, "Contraseña actual")
+        self.assertContains(page, "data-password-rules")
+        response = self.client.post(reverse("account_set_password"), {
+            "password1": "Nueva-clave-456", "password2": "Nueva-clave-456",
+        })
+        self.assertRedirects(response, reverse("my_profile"), fetch_redirect_response=False)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password("Nueva-clave-456"))
+        self.assertTrue(SocialAccount.objects.filter(user=self.user, provider="google").exists())
+        page = self.client.get(reverse("my_profile"))
+        self.assertContains(page, reverse("account_change_password"))
+        self.assertContains(page, "También puedes entrar con Google.")
+
+    def test_account_with_password_is_sent_to_change_form(self):
+        response = self.client.get(reverse("account_set_password"))
+        self.assertRedirects(response, reverse("account_change_password"), fetch_redirect_response=False)
+
 
 class ReportPreferenceTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user("ana", password="Vieja-clave-123", email="ana@example.com")
+        self.club = create_club("Club A", "Sevilla", self.user, gender="M")
         self.client.force_login(self.user)
+
+    def test_member_does_not_see_or_change_the_call_up_report_scope(self):
+        """El informe de la convocatoria es del capitán (H-24): un miembro no lo ve ni lo cambia."""
+        member = User.objects.create_user("socio", password="Vieja-clave-123", email="socio@example.com")
+        Membership.objects.create(user=member, club=self.club, role=Membership.MEMBER)
+        self.client.force_login(member)
+        page = self.client.get(reverse("my_profile"))
+        self.assertNotContains(page, "Datos del informe PDF al crear un partido")
+        self.assertContains(page, "Informe mensual por email")
+        self.client.post(reverse("my_profile"), {"report_scope": "competitivos", "monthly_form": "1"})
+        self.assertEqual(self.client.get(reverse("my_profile")).context["report_scope"], "todos")
 
     def test_default_is_all_data_and_it_is_saved(self):
         page = self.client.get(reverse("my_profile"))
-        self.assertContains(page, "Solo partidos competitivos")
+        self.assertContains(page, "Solo enfrentamientos competitivos")
         self.assertEqual(page.context["report_scope"], "todos")
         response = self.client.post(reverse("my_profile"), {"report_scope": "competitivos"})
         self.assertRedirects(response, reverse("my_profile"))

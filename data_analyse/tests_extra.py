@@ -78,7 +78,8 @@ class ClubDataMixin:
         self.club = create_club("Club A", "Sevilla", self.user)
         own = self.club.own_team
         self.rival = Team.objects.create(club=self.club, name="Rival", location="X", in_group=True)
-        mk = lambda n, snp: Player.objects.create(club=self.club, name=n, last_name=f"{n}son", snp_score=snp)  # noqa: E731
+        mk = lambda n, snp: Player.objects.create(club=self.club, name=n, last_name=f"{n}son", snp_score=snp,
+                                              joined_season="2020-2021")  # noqa: E731
         self.a, self.b, self.c, self.d = mk("A", 40), mk("B", 30), mk("C", 20), mk("D", None)
         self.e = mk("E", 10)  # se apunta pero no juega
 
@@ -167,6 +168,35 @@ class ClubSetsTests(ClubDataMixin, TestCase):
 
         response = self.client.get(reverse('player_statistics'), {'player': self.e.public_id})
         self.assertEqual(response.context['lineup_rate'], {'signed': 2, 'aligned': 0, 'benched': 2, 'pct': 0})
+        signup = response.context['signup_rate']
+        self.assertEqual((signup['signed'], signup['missed'], signup['total']), (2, signup['total'] - 2, signup['total']))
+
+    def test_calls_before_joining_season_do_not_count(self):
+        """Un jugador solo cuenta convocatorias desde su temporada de incorporación (2025-2026: las dos del dato)."""
+        self.e.joined_season = "2025-2026"
+        self.e.save()
+        later = Match.objects.create(club=self.club, local=self.club.own_team, visiting=self.rival,
+                                     start_date=datetime.date(2024, 10, 1), draft_mode=False)
+        Call.objects.create(match=later, draft_mode=False).players.set([self.a])
+        response = self.client.get(reverse('player_statistics'), {'player': self.e.public_id})
+        signup = response.context['signup_rate']
+        self.assertEqual((signup['signed'], signup['total'], signup['missed']), (2, 2, 0))
+        self.e.joined_season = "2020-2021"
+        self.e.save()
+        response = self.client.get(reverse('player_statistics'), {'player': self.e.public_id})
+        self.assertEqual(response.context['signup_rate']['total'], 3)
+
+    def test_season_chips_skip_seasons_before_joining(self):
+        """Los chips de temporada de la ficha no ofrecen las anteriores a su incorporación (si no jugó en ellas)."""
+        Match.objects.create(club=self.club, local=self.club.own_team, visiting=self.rival,
+                             start_date=datetime.date(2023, 10, 1), draft_mode=False)
+        self.e.joined_season = "2025-2026"
+        self.e.save()
+        seasons = self.client.get(reverse('player_statistics'), {'player': self.e.public_id}).context['seasons']
+        self.assertEqual(seasons, ["2025-2026"])
+        # Pedir a mano una temporada anterior equivale a «Todas»
+        response = self.client.get(reverse('player_statistics'), {'player': self.e.public_id, 'season': '2023-2024'})
+        self.assertIsNone(response.context['selected_season'])
 
     def test_pair_page_sets(self):
         response = self.client.get(reverse('pair_statistics'), {'p1': self.a.public_id, 'p2': self.b.public_id})

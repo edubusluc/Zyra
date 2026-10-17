@@ -12,7 +12,7 @@
                 <p>{{ message }}</p>
                 <ul data-similar-list>
                     {% for item in similar %}<li>{% firstof item.label item %}
-                        {% if item.reactivate_url %}<form method="post" action="{{ item.reactivate_url }}" class="d-inline">{% csrf_token %}<button type="submit" class="btn btn-link btn-sm p-0 align-baseline">{% translate "Dar de alta de nuevo" %}</button></form>{% endif %}</li>{% endfor %}
+                        {% if item.reactivate_url %}<form method="post" action="{{ item.reactivate_url }}" class="d-inline" data-loading-text="{% translate 'Dando de alta el equipo…' %}">{% csrf_token %}<button type="submit" class="btn btn-link btn-sm p-0 align-baseline">{% translate "Dar de alta de nuevo" %}</button></form>{% endif %}</li>{% endfor %}
                 </ul>
                 <p class="mb-0">{% translate "¿Quieres continuar con la creación?" %}</p>
             </div>

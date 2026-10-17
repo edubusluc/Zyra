@@ -38,7 +38,7 @@ from .audit import audit
 from .csvsafe import csv_safe
 from .decorators import staff_required, superuser_required
 from .metrics import (
-    AT_RISK_DAYS, ONLINE_MINUTES, annotate_clubs, attention_counts, attention_items, daily_trend, dashboard_kpis,
+    AT_RISK_DAYS, ONLINE_MINUTES, accounts_without_club, annotate_clubs, attention_counts, attention_items, daily_trend, dashboard_kpis,
     error_summary, funnel, google_user_ids, health_metrics, load_metrics, online_users, usage_metrics,
 )
 from .middleware import SLOW_MS, flush_metrics
@@ -273,7 +273,8 @@ def user_list(request):
     elif kind == "google":
         users = users.filter(pk__in=google_user_ids())
     elif kind == "no_club":
-        users = users.filter(n_clubs=0)
+        # Las cuentas que esperan una invitación (sin club, sin personal ni desactivadas), las más antiguas primero.
+        users = accounts_without_club(users).order_by("date_joined")
     elif kind == "inactive":
         users = users.filter(Q(last_login__lt=month_ago) | Q(last_login__isnull=True))
 
@@ -293,7 +294,7 @@ def user_list(request):
 def user_detail(request, user_id):
     """
     Ficha de un usuario (solo personal): clubes, formas de entrar, invitaciones, fotos en uso
-    y fotos que se le han eliminado.
+    y fotos que se le han eliminado. Incluye los jugadores a los que está enlazada la cuenta.
     """
     member = get_object_or_404(User, pk=user_id)
     providers = SocialAccount.objects.filter(user=member).values_list("provider", flat=True)
@@ -305,6 +306,7 @@ def user_detail(request, user_id):
         "login_methods": login_methods,
         "invitation_used": Invitation.objects.filter(used_by=member).select_related("club", "created_by").first(),
         "invitations_sent": Invitation.objects.filter(created_by=member).count(),
+        "linked_players": member.players.select_related("team", "team__club").order_by("team__club__name", "name"),
         "photo_checks": [
             c for c in PhotoCheck.objects.for_user(member).select_related("team", "player", "club") if c.in_use
         ],

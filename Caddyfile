@@ -1,6 +1,21 @@
+# Tiempos máximos del servidor frente a conexiones lentas.
+{
+	servers {
+		timeouts {
+			read_header 10s
+			read_body 30s
+			idle 2m
+		}
+	}
+}
+
 # Caddy obtiene y renueva el certificado https solo. Cambia el dominio si no es zyrapadel.com.
 zyrapadel.com {
 	encode zstd gzip
+	# Corta peticiones lentas o enormes (slowloris, cuerpos gigantes) antes de que lleguen a gunicorn.
+	request_body {
+		max_size 12MB
+	}
 	handle_path /media/* {
 		root * /srv/media
 		file_server

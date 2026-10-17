@@ -322,6 +322,7 @@ class DailyMetric(models.Model):
     date = models.DateField(unique=True)
     clubs = models.PositiveIntegerField(default=0)
     users = models.PositiveIntegerField(default=0)
+    users_without_club = models.PositiveIntegerField(default=0)
     dau = models.PositiveIntegerField(default=0)
     wau = models.PositiveIntegerField(default=0)
     mau = models.PositiveIntegerField(default=0)

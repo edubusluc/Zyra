@@ -16,7 +16,7 @@
     <div class="alert-message warning">{% for e in errors %}<p>{{ e }}</p>{% endfor %}</div>
     {% endif %}
 
-    <form method="POST" data-result novalidate>
+    <form method="POST" data-result novalidate data-loading-text="{% translate 'Guardando el resultado…' %}">
         {% csrf_token %}
         <div class="z-result-grid" role="group" aria-label="{% translate 'Juegos por set' %}">
             <span></span>

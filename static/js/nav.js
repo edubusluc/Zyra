@@ -36,3 +36,16 @@
     el.addEventListener('focusin', show);
   });
 })();
+
+// Al escribir en un campo (teclado abierto en el móvil), la barra inferior se esconde: no tapa
+// el campo ni el botón de enviar. Vuelve al salir del campo.
+(function () {
+  const FIELD = 'input:not([type=checkbox]):not([type=radio]):not([type=button]):not([type=submit]):not([type=hidden]), textarea, select, .z-select-trigger';
+  const root = document.body;
+  document.addEventListener('focusin', function (event) {
+    if (event.target.matches && event.target.matches(FIELD)) root.classList.add('z-typing');
+  });
+  document.addEventListener('focusout', function (event) {
+    if (event.target.matches && event.target.matches(FIELD)) root.classList.remove('z-typing');
+  });
+})();

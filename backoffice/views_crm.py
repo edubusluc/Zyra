@@ -136,7 +136,7 @@ def _by_public_id(value):
 @require_POST
 def impersonate_start(request, user_id):
     """
-    Empieza «Entrar como» (solo personal, POST): se ve Zyra con la cuenta de otro usuario, solo lectura,
+    Empieza «Entrar como» (solo personal, POST): se usa Zyra con la cuenta de otro usuario, pudiendo editar (cada cambio queda auditado),
     30 minutos como máximo. Hace falta un motivo; no vale para el personal ni para uno mismo.
     """
     target = get_object_or_404(User, pk=user_id)

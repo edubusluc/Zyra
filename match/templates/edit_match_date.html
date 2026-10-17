@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+{% block page_title %}{% translate "Cambiar fecha" %} · {% endblock %}
+
+{% block content %}
+<div class="table-container">
+    <h1>{% translate "Cambiar fecha" %}</h1>
+    <p class="text-muted">{% blocktranslate trimmed with local=match.local_name visiting=match.visiting_name %}Enfrentamiento entre <strong>{{ local }}</strong> y <strong>{{ visiting }}</strong>.{% endblocktranslate %}</p>
+
+    <form method="POST" class="z-match-form" data-loading-text="{% translate 'Guardando la fecha…' %}">
+        {% csrf_token %}
+        <p>{{ form.start_date.label_tag }} {{ form.start_date }}</p>
+        {% for error in form.start_date.errors %}<div class="alert-message">{{ error }}</div>{% endfor %}
+        <p class="form-text">{% translate "La temporada se recalcula con la nueva fecha. Si ya enviaste el informe de la convocatoria, reenvíalo para que lleve la fecha correcta." %}</p>
+        <div class="d-flex flex-wrap gap-2">
+            <button type="submit" class="btn btn-primary">{% translate "Guardar fecha" %}</button>
+            <a href="{% url 'call_for_match' match.public_id %}" class="btn btn-secondary">{% translate "Cancelar" %}</a>
+        </div>
+    </form>
+</div>
+
+<script src="{% static 'js/date-picker.js' %}" defer></script>
+{% endblock %}

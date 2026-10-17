@@ -7,6 +7,7 @@
   <div class="st-page">
     {% include 'includes/stats_tabs.html' %}
 
+    {% if selected_player %}{% include 'includes/player_tabs.html' with current='stats' %}{% endif %}
     <header class="st-head">
       <div>
         <h1 class="st-title">{% if selected_player %}{{ player.full_name }}{% else %}{% translate "Estadísticas de jugadores" %}{% endif %}</h1>
@@ -57,10 +58,10 @@
 
       {# ============ 1. RESUMEN GLOBAL ============ #}
       <section aria-label="{% translate 'Resumen del jugador' %}">
-        <div class="st-kpis">
+        <div class="st-kpis st-kpis--5">
 
           <article class="st-kpi st-kpi--ring">
-            <div class="st-ring" style="--pct: {{ pct_w|unlocalize }}" role="img" aria-label="{% blocktranslate with pct=s.pct %}{{ pct }}% de victorias{% endblocktranslate %}">
+            <div class="st-ring{% if s.pct >= 100 %} st-ring--full{% endif %}" style="--pct: {{ pct_w|unlocalize }}" role="img" aria-label="{% blocktranslate with pct=s.pct %}{{ pct }}% de victorias{% endblocktranslate %}">
               <span>{{ s.pct|floatformat:0 }}%</span>
             </div>
             <div>
@@ -72,7 +73,6 @@
           <article class="st-kpi">
             <h2 class="st-kpi-label">{% translate "Partidos jugados" %}</h2>
             <p class="st-kpi-value">{{ s.played }}</p>
-            <p class="st-kpi-sub">{% blocktranslate with points=s.points %}{{ points }} puntos obtenidos{% endblocktranslate %}</p>
           </article>
 
           <article class="st-kpi">
@@ -85,6 +85,11 @@
             <h2 class="st-kpi-label">{% translate "Mejor racha" %}</h2>
             <p class="st-kpi-value st-up">{% blocktranslate with n=s.best_win_streak %}{{ n }}V{% endblocktranslate %}</p>
             <p class="st-kpi-sub">{% blocktranslate with n=s.worst_loss_streak %}peor racha: {{ n }}D{% endblocktranslate %}</p>
+          </article>
+
+          <article class="st-kpi st-kpi--accent">
+            <h2 class="st-kpi-label">{% translate "Puntos ganados" %}</h2>
+            <p class="st-kpi-value">{{ s.points }}</p>
           </article>
 
         </div>
@@ -102,19 +107,12 @@
 
           <article class="st-card">
             <h2 class="st-card-title">{% translate "Local y visitante" %}</h2>
-            <p class="st-card-note">{% translate "% de victorias según dónde juega." %}</p>
+            <p class="st-card-note">{% translate "% de victorias y juegos ganados según dónde juega." %}</p>
 
-            <div class="st-split">
-              <div class="st-split-head"><span>{% translate "Como local" %}</span><b>{{ s.local_pct|floatformat:0 }}%</b></div>
-              <div class="st-meter"><span style="width: {{ local_pct_w|unlocalize }}%"></span></div>
-              <p class="st-split-foot">{% blocktranslate trimmed with wins=s.local_wins losses=s.local_losses best=s.best_local_streak %}{{ wins }}V – {{ losses }}D · mejor racha {{ best }}V{% endblocktranslate %}</p>
-            </div>
-
-            <div class="st-split">
-              <div class="st-split-head"><span>{% translate "Como visitante" %}</span><b>{{ s.visiting_pct|floatformat:0 }}%</b></div>
-              <div class="st-meter"><span style="width: {{ visiting_pct_w|unlocalize }}%"></span></div>
-              <p class="st-split-foot">{% blocktranslate trimmed with wins=s.visiting_wins losses=s.visiting_losses best=s.best_visiting_streak %}{{ wins }}V – {{ losses }}D · mejor racha {{ best }}V{% endblocktranslate %}</p>
-            </div>
+            {% translate "Como local" as t_label %}{% translate "Juegos como local" as t_games %}
+            {% include 'includes/venue_rate.html' with label=t_label games_label=t_games played=s.local_played pct=s.local_pct wins=s.local_wins losses=s.local_losses best=s.best_local_streak sets_won=s.local_sets_won sets_lost=s.local_sets_lost sets_total=s.local_sets_total %}
+            {% translate "Como visitante" as t_label %}{% translate "Juegos como visitante" as t_games %}
+            {% include 'includes/venue_rate.html' with label=t_label games_label=t_games played=s.visiting_played pct=s.visiting_pct wins=s.visiting_wins losses=s.visiting_losses best=s.best_visiting_streak sets_won=s.visiting_sets_won sets_lost=s.visiting_sets_lost sets_total=s.visiting_sets_total %}
           </article>
         </div>
       </section>
@@ -122,16 +120,29 @@
       {# ============ 1b. PARTIDOS, SETS Y CONVOCATORIAS ============ #}
       <section aria-labelledby="clutch-title" class="st-section">
         <h2 class="st-section-title" id="clutch-title">{% translate "Partidos y sets" %}</h2>
-        <div class="st-row">
+        <div class="st-row st-row--pair">
           {% translate "Por número de partido" as t_title %}{% translate "% de victorias en cada partido del enfrentamiento (el 1 lo juega la pareja con más puntos SNP)." as t_note %}
           {% include 'includes/game_numbers.html' with rows=game_numbers title=t_title note=t_note %}
           {% translate "Sets clutch" as t_title %}{% translate "Cómo responde en los momentos decisivos: tercer set, tie-breaks y remontadas." as t_note %}
           {% include 'includes/set_stats.html' with st=clutch title=t_title note=t_note %}
+        </div>
+        <div class="st-row st-row--pair">
           <article class="st-card">
             <h3 class="st-card-title">{% translate "Apuntado y alineado" %}</h3>
-            <p class="st-card-note">{% translate "De las convocatorias a las que se apunta, en cuántas acaba jugando." %}</p>
+            <p class="st-card-note">{% translate "De las convocatorias cerradas, a cuáles se apunta y, de esas, en cuántas acaba jugando." %}</p>
+            {% if signup_rate.total %}
+              <div class="st-rate">
+                <div class="st-split-head"><span>{% translate "Se apunta a las convocatorias" %}</span><b>{{ signup_rate.pct }}%</b></div>
+                <div class="st-meter"><span style="width: {{ signup_rate.pct|unlocalize }}%"></span></div>
+                <p class="st-split-foot">{% blocktranslate trimmed with signed=signup_rate.signed total=signup_rate.total %}Apuntado en {{ signed }} de {{ total }} convocatorias cerradas{% endblocktranslate %}</p>
+              </div>
+              <div class="st-tally">
+                <span class="st-tally-item st-tally-item--neutral"><b>{{ signup_rate.signed }}</b> {% translate "apuntado" %}</span>
+                <span class="st-tally-item st-tally-item--muted"><b>{{ signup_rate.missed }}</b> {% translate "no apuntado" %}</span>
+              </div>
+            {% endif %}
             {% if lineup_rate.signed %}
-              <div class="st-split">
+              <div class="st-rate">
                 <div class="st-split-head"><span>{% translate "Juega cuando se apunta" %}</span><b>{{ lineup_rate.pct }}%</b></div>
                 <div class="st-meter"><span style="width: {{ lineup_rate.pct|unlocalize }}%"></span></div>
                 <p class="st-split-foot">{% blocktranslate trimmed with aligned=lineup_rate.aligned signed=lineup_rate.signed %}Alineado en {{ aligned }} de {{ signed }} convocatorias{% endblocktranslate %}</p>
@@ -153,79 +164,6 @@
 
         {# ---- Detalle de la temporada elegida ---- #}
         {% if selected_season %}
-          <div class="st-detail">
-            <h3 class="st-detail-title">{% blocktranslate with season=selected_season %}Temporada {{ season }}{% endblocktranslate %}</h3>
-              <div class="st-kpis">
-                <article class="st-kpi st-kpi--accent">
-                  <h4 class="st-kpi-label">{% translate "Puntos obtenidos" %}</h4>
-                  <p class="st-kpi-value">{{ d.points }}</p>
-                </article>
-                <article class="st-kpi">
-                  <h4 class="st-kpi-label">{% translate "Partidos jugados" %}</h4>
-                  <p class="st-kpi-value">{{ d.played }}</p>
-                  <p class="st-kpi-sub">{% blocktranslate with pct=d.pct|floatformat:0 %}{{ pct }}% de victorias{% endblocktranslate %}</p>
-                </article>
-                <article class="st-kpi">
-                  <h4 class="st-kpi-label">{% translate "Convocatorias" %}</h4>
-                  <p class="st-kpi-value">{{ d.calls_present }} <span class="st-kpi-of">{% blocktranslate with total=d.calls_total %}de {{ total }}{% endblocktranslate %}</span></p>
-                </article>
-              </div>
-
-            <div class="st-row">
-              {% if d.played != 0 %}
-                <article class="st-card">
-                  <h4 class="st-card-title">{% translate "Partidos ganados y perdidos" %}</h4>
-                  <div class="st-vs">
-                    <div class="st-vs-head"><span>{% translate "Balance de la temporada" %}</span><span><b class="st-up">{{ d.wins }}</b> – <b class="st-down">{{ d.losses }}</b></span></div>
-                    <div class="st-vs-bar"><span style="width: {% widthratio d.wins d.played 100 %}%"></span></div>
-                  </div>
-                  <div class="st-tally">
-                    <span class="st-tally-item st-tally-item--win"><b>{{ d.wins }}</b> {% translate "ganados" %}</span>
-                    <span class="st-tally-item st-tally-item--loss"><b>{{ d.losses }}</b> {% translate "perdidos" %}</span>
-                  </div>
-                </article>
-              {% endif %}
-
-              <article class="st-card">
-                <h4 class="st-card-title">{% translate "Participación en convocatorias" %}</h4>
-                <div class="st-vs">
-                  <div class="st-vs-head"><span>{% translate "Se apuntó" %}</span><span>{% blocktranslate with present=d.calls_present total=d.calls_total %}<b>{{ present }}</b> de {{ total }}{% endblocktranslate %}</span></div>
-                  <div class="st-vs-bar st-vs-bar--loss"><span style="width: {% widthratio d.calls_present d.calls_total 100 %}%"></span></div>
-                </div>
-                <div class="st-tally">
-                  <span class="st-tally-item st-tally-item--neutral"><b>{{ d.calls_present }}</b> {% translate "se apuntó" %}</span>
-                  <span class="st-tally-item st-tally-item--loss"><b>{{ d.calls_absent }}</b> {% translate "no se apuntó" %}</span>
-                  <span class="st-tally-item st-tally-item--win"><b>{{ d.aligned }}</b> {% translate "jugó" %}</span>
-                </div>
-              </article>
-
-              {% if d.played != 0 %}
-                <article class="st-card">
-                  <h4 class="st-card-title">{% translate "Como local" %}</h4>
-                  <div class="st-vs">
-                    <div class="st-vs-head"><span>{% translate "Partidos" %}</span><span><b class="st-up">{{ d.local_wins }}</b> – <b class="st-down">{{ d.local_losses }}</b></span></div>
-                    <div class="st-vs-bar"><span style="width: {% widthratio d.local_wins d.local_played 100 %}%"></span></div>
-                  </div>
-                  <div class="st-vs">
-                    <div class="st-vs-head"><span>{% translate "Juegos" %}</span><span><b class="st-up">{{ d.local_sets_won }}</b> – <b class="st-down">{{ d.local_sets_lost }}</b></span></div>
-                    <div class="st-vs-bar"><span style="width: {% widthratio d.local_sets_won d.local_sets_total 100 %}%"></span></div>
-                  </div>
-                </article>
-
-                <article class="st-card">
-                  <h4 class="st-card-title">{% translate "Como visitante" %}</h4>
-                  <div class="st-vs">
-                    <div class="st-vs-head"><span>{% translate "Partidos" %}</span><span><b class="st-up">{{ d.visiting_wins }}</b> – <b class="st-down">{{ d.visiting_losses }}</b></span></div>
-                    <div class="st-vs-bar"><span style="width: {% widthratio d.visiting_wins d.visiting_played 100 %}%"></span></div>
-                  </div>
-                  <div class="st-vs">
-                    <div class="st-vs-head"><span>{% translate "Juegos" %}</span><span><b class="st-up">{{ d.visiting_sets_won }}</b> – <b class="st-down">{{ d.visiting_sets_lost }}</b></span></div>
-                    <div class="st-vs-bar"><span style="width: {% widthratio d.visiting_sets_won d.visiting_sets_total 100 %}%"></span></div>
-                  </div>
-                </article>
-              {% endif %}
-            </div>
-
             <article class="st-card">
               <h4 class="st-card-title">{% translate "Partidos jugados" %}</h4>
               {% if d.games %}
@@ -246,7 +184,7 @@
                       {% for g in d.games %}
                         <tr>
                           <th scope="row">
-                            <a href="{% url 'call_for_match' g.match_public_id %}#partido-{{ g.n_game }}">{{ g.date|date:"d/m/Y" }}</a>
+                            <a href="{% url 'call_for_match' g.match_public_id %}#partido-{{ g.n_game }}">{{ g.date|date:"D j M Y" }}</a>
                           </th>
                           <td>{{ g.rival }} <span class="st-muted">({% if g.local %}{% translate "local" %}{% else %}{% translate "visitante" %}{% endif %})</span></td>
                           <td>{{ g.n_game }}</td>
@@ -265,10 +203,10 @@
                 <p class="st-card-note">{% translate "No jugó ningún partido esta temporada." %}</p>
               {% endif %}
             </article>
-          </div>
         {% endif %}
 
-        {# ---- Evolución (todas las temporadas) ---- #}
+        {# ---- Evolución (solo con todas las temporadas; con una temporada concreta no aportan) ---- #}
+        {% if not selected_season and chart_seasons.labels %}
         <div class="st-row">
           <article class="st-card">
             <h3 class="st-card-title">{% translate "Partidos jugados" %}</h3>
@@ -282,6 +220,7 @@
             <div class="st-chart"><canvas id="chartPct" role="img" aria-label="{% translate "Evolución del % de victorias" %}"></canvas></div>
           </article>
         </div>
+        {% endif %}
 
         <article class="st-card">
           <h3 class="st-card-title">{% translate "Evolución de los puntos SNP" %}</h3>

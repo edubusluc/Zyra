@@ -71,7 +71,7 @@
                     <li><span class="dropdown-header">{% translate "Idioma" %}</span></li>
                     {% for language in language_list %}
                     <li>
-                        <form action="{% url 'set_language' %}" method="post">
+                        <form action="{% url 'set_language' %}" method="post" data-loading-text="{% translate 'Cambiando de idioma…' %}">
                             {% csrf_token %}
                             <input type="hidden" name="next" value="{{ language_next }}">
                             <input type="hidden" name="language" value="{{ language.code }}">
@@ -93,7 +93,9 @@
 </div>
 
 <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'js/submit-lock.js' %}"></script>
 <script src="{% static 'js/a11y.js' %}"></script>
+<script src="{% static 'js/confirm-modal.js' %}"></script>
 <script src="{% static 'js/custom-select.js' %}"></script>
 </body>
 </html>

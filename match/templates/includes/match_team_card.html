@@ -5,7 +5,7 @@ toda la card, transparente: al pulsarla se abre el desplegable de equipos y
 js/match-form.js actualiza el nombre y la foto.
 {% endcomment %}
 {% static 'zyra/team.svg' as default_photo %}
-<div class="z-team-card-field">
+<div class="z-team-card-field{% if field.errors %} has-error{% endif %}">
     <label class="z-team-card" for="{{ field.id_for_label }}" data-team-card data-default-photo="{{ default_photo }}">
         <span class="z-team-card-logo">
             <img src="{% if team.photo %}{{ team.photo.url }}{% else %}{{ default_photo }}{% endif %}" alt="" data-team-photo>

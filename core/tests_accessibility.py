@@ -18,6 +18,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from call.models import Call
+from core.guides import GUIDES
 from core.unsubscribe import unsubscribe_path
 from core.services import create_club
 from match.models import Game, Match
@@ -176,8 +177,10 @@ class AccessibilityTests(TestCase):
 
     def test_public_pages(self):
         self._assert_accessible([
-            reverse("home"), reverse("login"), reverse("register_club"), reverse("privacy"),
+            reverse("home"), reverse("login"), reverse("register"), reverse("register_club"), reverse("privacy"),
             reverse("terms"), reverse("cookies"), reverse("account_reset_password"),
+            reverse("guide_index"), *[reverse("guide_detail", args=[g.slug]) for g in GUIDES],
+            *[reverse("guide_detail", args=[g.slug]) + "?lang=en" for g in GUIDES],
             unsubscribe_path(self.user),
         ])
 
@@ -187,6 +190,7 @@ class AccessibilityTests(TestCase):
         titles = self._assert_accessible([
             reverse("home"), reverse("list_match"), reverse("create_match"),
             reverse("call_for_match", args=[self.match.public_id]),
+            reverse("edit_match_date", args=[self.match.public_id]),
             reverse("edit_call", args=[self.call.public_id]),
             reverse("list_players"), reverse("create_player"), reverse("show_player", args=[p]),
             reverse("edit_player", args=[p]), reverse("manage_roster"), reverse("snp_account"),
@@ -196,6 +200,7 @@ class AccessibilityTests(TestCase):
             reverse("player_statistics") + f"?player={p}", reverse("pair_statistics"),
             reverse("pair_statistics") + f"?p1={p}&p2={q}", reverse("warnings_statistics"),
             reverse("my_profile"), reverse("club_members"), reverse("delete_account"),
+            reverse("member_welcome"), reverse("club_home"),
         ])
         # Cada página tiene su propio título (WCAG 2.4.2), salvo la misma vista con otros datos
         repeated = {t: urls for t, urls in titles.items() if len(urls) > 1}

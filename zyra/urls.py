@@ -3,7 +3,7 @@ Mapa de URLs del proyecto.
 
 - ADMIN_URL: Django admin (solo superusuarios).
 - backoffice/: back-office del personal de Zyra (app backoffice).
-- "" (raíz): portada (core.views.home), robots.txt, sitemap.xml, páginas legales
+- "" (raíz): portada (core.views.home), robots.txt, sitemap.xml, guías públicas (guia/, core.guides), páginas legales
   (privacidad/, terminos/, cookies/) y healthz/ (monitor de caídas).
 - players/: jugadores (app players).
 - match/: partidos (app match).
@@ -28,8 +28,9 @@ from core.public_id import PublicIdConverter
 
 from django.contrib.sitemaps.views import sitemap
 
-from core.sitemaps import PublicPagesSitemap
-from core.views import error_403_view, error_404_view, healthz, home, legal_page, robots_txt
+from core.guides import callup_template_pdf, guide_detail, guide_index, TEMPLATE_PDF
+from core.sitemaps import GuidesSitemap, PublicPagesSitemap
+from core.views import error_403_view, error_404_view, healthz, home, bing_site_auth, favicon_ico, legal_page, robots_txt
 
 # <pid:...>: identificador público de un objeto (core/public_id.py). Se registra antes de
 # cargar las URLs de cada aplicación, que lo usan.
@@ -41,10 +42,16 @@ urlpatterns = [
     path("", home, name="home"),
     # Páginas públicas para buscadores y obligaciones legales.
     path("robots.txt", robots_txt, name="robots_txt"),
-    path("sitemap.xml", sitemap, {"sitemaps": {"public": PublicPagesSitemap}}, name="sitemap"),
+    path("favicon.ico", favicon_ico, name="favicon_ico"),
+    path("BingSiteAuth.xml", bing_site_auth, name="bing_site_auth"),
+    path("sitemap.xml", sitemap, {"sitemaps": {"public": PublicPagesSitemap, "guides": GuidesSitemap}}, name="sitemap"),
     path("privacidad/", legal_page, {"template": "legal/privacy.html"}, name="privacy"),
     path("terminos/", legal_page, {"template": "legal/terms.html"}, name="terms"),
     path("cookies/", legal_page, {"template": "legal/cookies.html"}, name="cookies"),
+    # Guías públicas para capitanes (SEO) y la plantilla de convocatoria en PDF.
+    path("guia/", guide_index, name="guide_index"),
+    path(f"guia/{TEMPLATE_PDF}", callup_template_pdf, name="callup_template_pdf"),
+    path("guia/<slug:slug>/", guide_detail, name="guide_detail"),
     # Para el servicio que avisa si la web se cae.
     path("healthz/", healthz, name="healthz"),
     path('players/', include('players.urls')),

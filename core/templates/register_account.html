@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+
+{% block title %}{% translate "Crea tu cuenta de Zyra" %} · Zyra{% endblock %}
+{% block description %}{% translate "Crea tu cuenta de Zyra sin registrar un club y únete cuando un capitán te invite." %}{% endblock %}
+
+{% block content %}
+<div class="z-auth">
+    <div class="z-auth-card">
+        <img src="{% static 'zyra/logo.svg' %}" alt="Zyra" class="z-auth-logo">
+        <h1>{% translate "Crear mi cuenta" %}</h1>
+        <p class="text-muted text-center">{% translate "Solo quiero unirme a un club por invitación. No necesitas registrar un club: cuando un capitán te invite, entrarás en el suyo." %}</p>
+        <div class="alert alert-warning" role="note">
+            <strong>{% translate "¿Eres capitán?" %}</strong>
+            {% url 'register_club' as club_url %}{% blocktranslate trimmed %}Esta cuenta no crea ningún club y necesitarás que tu capitán te invite (por email o con un enlace). Si el capitán eres tú, <a href="{{ club_url }}">registra tu club</a>.{% endblocktranslate %}
+        </div>
+        <form method="post" novalidate data-loading-text="{% translate 'Creando tu cuenta…' %}">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary btn-lg mt-2">{% translate "Crear mi cuenta" %}</button>
+        </form>
+        {% translate "Crear mi cuenta con Google" as google_label %}
+        {% include 'includes/google_button.html' with next=google_next label=google_label %}
+        <p class="z-auth-foot">{% url 'login' as login_url %}{% blocktranslate trimmed %}¿Ya tienes cuenta? <a href="{{ login_url }}">Inicia sesión</a>{% endblocktranslate %}</p>
+        <p class="z-auth-foot"><a href="{% url 'register' %}">{% translate "Volver a elegir cómo registrarme" %}</a></p>
+    </div>
+</div>
+{% endblock %}

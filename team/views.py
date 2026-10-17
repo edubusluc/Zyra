@@ -7,18 +7,21 @@ from django.db import transaction
 from django.utils.translation import gettext as _, ngettext
 from django.urls import reverse
 from django.views.decorators.http import require_GET, require_POST, require_http_methods
-from core.decorators import club_required, club_admin_required
+from core.decorators import club_required, club_admin_required, not_while_syncing
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import Q
 from django.http import JsonResponse
 from core import similarity
 
-# Create your views here.
+# Los grupos de SNP tienen unos 15-30 equipos: se ven de una vez, sin paginar.
+TEAMS_PER_PAGE = 30
+
+
 @club_required
 @require_GET
 def list_team(request):
     """
-    Lista paginada de equipos del club con búsqueda por nombre o localidad. Requiere
+    Lista paginada de los equipos rivales del club (el propio está en Club › Mi equipo) con búsqueda por nombre o localidad. Requiere
     pertenecer al club y solo GET. Por defecto solo se listan los equipos del grupo; los
     capitanes pueden desmarcar «solo mi grupo» (``group=0``) para ver también los de fuera.
     """
@@ -27,7 +30,8 @@ def list_team(request):
     # Los capitanes ven también los equipos fuera de grupo
     # Casilla «solo mi grupo»: marcada por defecto; el formulario envía group=0 al desmarcarla
     only_group = request.GET.get('group', '1') != '0'
-    teams = Team.objects.filter(club=request.club)
+    # El equipo propio se ve y se edita en Club › Mi equipo: aquí solo están los rivales.
+    teams = Team.objects.filter(club=request.club, is_own=False)
     if request.membership.is_admin and not only_group:
         teams = teams.order_by('-in_group', 'name')
     else:
@@ -38,7 +42,7 @@ def list_team(request):
             Q(name__icontains=search) | Q(location__icontains=search)
         )
 
-    paginator = Paginator(teams, 4)  # Número de equipos por página
+    paginator = Paginator(teams, TEAMS_PER_PAGE)
     page = request.GET.get('page')
 
     try:
@@ -52,6 +56,7 @@ def list_team(request):
                   {"teams": teams, "search": search, "only_group": only_group})
 
 @club_admin_required
+@not_while_syncing
 @require_http_methods(["GET", "POST"])
 def create_team(request):
     """
@@ -140,7 +145,7 @@ def edit_team(request, team_id):
         form.uploader = request.user
         if form.is_valid():
             form.save()
-            return redirect('list_teams')
+            return redirect('club_home' if team.is_own else 'list_teams')
         else:
             messages.error(request, _("Error al editar el equipo. Por favor, verifica los datos."))
     else:
