@@ -19,7 +19,7 @@ from django.core.paginator import Paginator
 from django.core.validators import validate_email
 from django.conf import settings
 from django.contrib.staticfiles import finders
-from django.db import DatabaseError, connection, transaction
+from django.db import DatabaseError, IntegrityError, connection, transaction
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
@@ -301,36 +301,43 @@ def register_club(request):
             valid = False
         if valid:
             use_snp = snp_form.uses_snp
-            with transaction.atomic():
-                user = user_form.save() if anonymous else request.user
-                data = club_form.cleaned_data
-                player = {} if use_snp else player_form.cleaned_data
-                club = create_club(data["name"], data["location"], user, gender=data["gender"], country=data["country"],
-                                   division=data["division"], player_name=player.get("name", ""),
-                                   player_last_name=player.get("last_name", ""))
-                # La cuenta se queda con el nombre del jugador si no tenía uno.
-                if player and not (user.first_name or user.last_name):
-                    user.first_name, user.last_name = player["name"], player["last_name"]
-                    user.save(update_fields=["first_name", "last_name"])
+            try:
+                with transaction.atomic():
+                    user = user_form.save() if anonymous else request.user
+                    data = club_form.cleaned_data
+                    player = {} if use_snp else player_form.cleaned_data
+                    club = create_club(data["name"], data["location"], user, gender=data["gender"], country=data["country"],
+                                       division=data["division"], player_name=player.get("name", ""),
+                                       player_last_name=player.get("last_name", ""))
+                    # La cuenta se queda con el nombre del jugador si no tenía uno.
+                    if player and not (user.first_name or user.last_name):
+                        user.first_name, user.last_name = player["name"], player["last_name"]
+                        user.save(update_fields=["first_name", "last_name"])
+                    if use_snp:
+                        account = SnpAccount(club=club, updated_by=user)
+                        account.username = snp_form.cleaned_data["username"].strip()
+                        account.password = snp_form.cleaned_data["password"]
+                        account.save()
+            except IntegrityError:
+                # Doble envío o dos registros a la vez: otro proceso creó ese usuario o email entre la validación y el guardado.
+                if not anonymous or not user_form.report_taken():
+                    raise
+                valid = False
+            if valid:
+                if anonymous:
+                    login(request, user, backend=LOGIN_BACKEND)
+                    email_verification.start_verification(request, user)
+                request.session[SESSION_KEY] = club.id
+                send_welcome_email(user, club, created=True, site_url=_site_url(request))
+                messages.success(request, _("Club %(club)s creado correctamente.") % {"club": club.name})
+                if use_snp and snp_service.is_enabled():
+                    from players import snp_import
+                    team_import = snp_import.start_search(club, user, auto_confirm=True)
+                    return redirect("complete_team_welcome", import_id=team_import.public_id)
                 if use_snp:
-                    account = SnpAccount(club=club, updated_by=user)
-                    account.username = snp_form.cleaned_data["username"].strip()
-                    account.password = snp_form.cleaned_data["password"]
-                    account.save()
-            if anonymous:
-                login(request, user, backend=LOGIN_BACKEND)
-                email_verification.start_verification(request, user)
-            request.session[SESSION_KEY] = club.id
-            send_welcome_email(user, club, created=True, site_url=_site_url(request))
-            messages.success(request, _("Club %(club)s creado correctamente.") % {"club": club.name})
-            if use_snp and snp_service.is_enabled():
-                from players import snp_import
-                team_import = snp_import.start_search(club, user, auto_confirm=True)
-                return redirect("complete_team_welcome", import_id=team_import.public_id)
-            if use_snp:
-                messages.warning(request, snp_service.UNAVAILABLE_MESSAGE)
-                return redirect("my_player")
-            return redirect("home")
+                    messages.warning(request, snp_service.UNAVAILABLE_MESSAGE)
+                    return redirect("my_player")
+                return redirect("home")
     else:
         club_form = ClubForm()
         player_form = CaptainPlayerForm(initial=known, prefix="player")
@@ -373,8 +380,15 @@ def register_account(request):
         if ratelimit.too_many(request, "register-account", REGISTER_LIMIT, REGISTER_WINDOW):
             return render(request, "429.html", status=429)
         form = SignUpForm(request.POST)
+        user = None
         if form.is_valid():
-            user = form.save()
+            try:
+                with transaction.atomic():
+                    user = form.save()
+            except IntegrityError:
+                if not form.report_taken():
+                    raise
+        if user is not None:
             login(request, user, backend=LOGIN_BACKEND)
             email_verification.start_verification(request, user)
             messages.success(request, _("Cuenta creada. Ya puedes unirte a un club cuando te inviten."))
@@ -591,15 +605,23 @@ def invitation(request, token):
         if ratelimit.too_many(request, "invite-signup", INVITE_SIGNUP_LIMIT, INVITE_SIGNUP_WINDOW):
             return render(request, "429.html", status=429)
         form = SignUpForm(request.POST)
+        user = None
         if form.is_valid():
-            with transaction.atomic():
-                user = form.save()
-                try:
-                    accept_invitation(invitation, user)
-                except InvitationError as exc:
-                    transaction.set_rollback(True)
-                    messages.error(request, str(exc))
-                    return redirect("invitation", token=token)
+            try:
+                with transaction.atomic():
+                    user = form.save()
+                    try:
+                        accept_invitation(invitation, user)
+                    except InvitationError as exc:
+                        transaction.set_rollback(True)
+                        messages.error(request, str(exc))
+                        return redirect("invitation", token=token)
+            except IntegrityError:
+                # Doble envío o dos registros a la vez: ese usuario o email se creó entre la validación y el guardado.
+                if not form.report_taken():
+                    raise
+                user = None
+        if user is not None:
             request.session.pop(PENDING_INVITE_KEY, None)
             login(request, user, backend=LOGIN_BACKEND)
             # El enlace llegó a ese email: quien lo abre y se registra con él lo ha demostrado.

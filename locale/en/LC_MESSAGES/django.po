@@ -4494,6 +4494,9 @@ msgid "Repite la contraseña"
 msgstr "Repeat the password"
 
 #: core/forms.py:147
+msgid "Ya existe un usuario con ese nombre. Elige otro."
+msgstr "A user with that name already exists. Choose another."
+
 msgid "Ya hay una cuenta con este email: inicia sesión con ella."
 msgstr "There is already an account with this email: log in with it."
 
@@ -11460,3 +11463,15 @@ msgstr "Your club is already created. Check your SNP account and try again from 
 
 msgid "No hay datos todavía."
 msgstr "No data yet."
+
+msgid "Creando tu usuario…"
+msgstr "Creating your user…"
+
+msgid "Uniéndote al club…"
+msgstr "Joining the club…"
+
+msgid "Creando tu cuenta…"
+msgstr "Creating your account…"
+
+msgid "Creando tu club…"
+msgstr "Creating your club…"

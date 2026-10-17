@@ -3,6 +3,12 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 17/10/2026 · Registro: usuario repetido sin error 500
+
+- El usuario (que sirve para iniciar sesión junto al email) sigue siendo único sin distinguir mayúsculas; si dos envíos coinciden y la base de datos rechaza el duplicado, el registro (por invitación, de club o de cuenta) muestra «Ya existe un usuario con ese nombre» en el formulario en vez de un error 500
+- El email es único también en la base de datos (índice sobre el email en minúsculas; migración `core/0019`, que se detiene con la lista de emails repetidos si ya los hubiera)
+- Los formularios de registro (invitación, club y cuenta) bloquean el botón al enviar y muestran «Creando tu usuario…» con un indicador, para que un doble clic no envíe dos veces (`static/js/submit-lock.js`, atributo `data-submit-lock`)
+
 ## 17/10/2026 · Back-office: jugador enlazado en la ficha de usuario
 
 - La tarjeta «Cuenta» de la ficha de usuario muestra el jugador (y equipo/club) al que está enlazada la cuenta, o «Sin enlazar»
