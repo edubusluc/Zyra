@@ -154,6 +154,7 @@ def club_detail(request, club_id):
         "players_active": players.filter(in_team=True).count(),
         "rivals": club.teams.filter(is_own=False).count(),
         "past_matches": matches.filter(start_date__lte=today).order_by("-start_date")[:10],
+        "closed_matches": matches.filter(draft_mode=False).order_by("-start_date")[:50],
         "upcoming_matches": matches.filter(start_date__gt=today).order_by("start_date")[:5],
         "invitations": club.invitations.select_related("created_by", "used_by")[:10],
         "edit_teams": club.teams.order_by("-is_own", "name"),

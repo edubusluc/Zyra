@@ -22,8 +22,8 @@ User = get_user_model()
 
 
 @override_settings(SITE_URL="http://testserver")
-class MatchResultEmailTests(TestCase):
-    """Aviso por email al cerrar el acta: destinatarios, idempotencia, correcciones, baja y control."""
+class ResultEmailFixture(TestCase):
+    """Club con capitán, un miembro y un enfrentamiento de cinco partidos para probar el aviso del resultado."""
 
     def setUp(self):
         self.captain = User.objects.create_user("capi", password="pass-12345", email="capi@example.com")
@@ -58,17 +58,22 @@ class MatchResultEmailTests(TestCase):
     def _close(self, match):
         return self.client.post(reverse("close_match", args=[match.public_id]))
 
-    def test_closing_sends_result_to_members_but_not_to_the_closer(self):
+
+@override_settings(SITE_URL="http://testserver")
+class MatchResultEmailTests(ResultEmailFixture):
+    """Aviso por email al cerrar el acta: destinatarios, idempotencia, correcciones, baja y control."""
+
+    def test_closing_sends_result_to_members_and_to_the_captain(self):
         match = self._match()
         self._close(match)
-        self.assertEqual([m.to for m in mail.outbox], [["ana@example.com"]])
-        message = mail.outbox[0]
+        self.assertEqual(sorted(m.to[0] for m in mail.outbox), ["ana@example.com", "capi@example.com"])
+        message = next(m for m in mail.outbox if m.to == ["ana@example.com"])
         self.assertEqual(message.subject, "Victoria 8-4 · Club A vs CD Tomares (01/01/2020)"
                          .replace("Club A", match.local_name))
         self.assertIn("Tu partido:", message.alternatives[0][0])        # Ana jugó el partido 1
         self.assertIn("Ganaste tu partido 1", message.body)
         self.assertIn("List-Unsubscribe", message.extra_headers)
-        delivery = MatchResultDelivery.objects.get()
+        delivery = MatchResultDelivery.objects.get(user=self.member)
         self.assertEqual((delivery.status, delivery.attempts, delivery.result_points), ("sent", 1, "8/4"))
 
     def test_defeat_draw_and_friendly_variants(self):
@@ -84,7 +89,8 @@ class MatchResultEmailTests(TestCase):
         self.assertIn("no cuenta en las estadísticas competitivas", mail.outbox[-1].alternatives[0][0])
 
     def test_opt_out_inactive_suspended_and_no_email_skip_sending(self):
-        UserPreference.objects.update_or_create(user=self.member, defaults={"match_result_email": False})
+        for user in (self.member, self.captain):
+            UserPreference.objects.update_or_create(user=user, defaults={"match_result_email": False})
         self._member("sinmail", "")
         off = self._member("baja", "baja@example.com")
         off.is_active = False
@@ -103,16 +109,16 @@ class MatchResultEmailTests(TestCase):
         self._close(match)
         self.client.post(reverse("reopen_match", args=[match.public_id]))
         self._close(match)
-        self.assertEqual(len(mail.outbox), 1)                # mismo marcador: no se repite
+        self.assertEqual(len(mail.outbox), 2)                # mismo marcador: no se repite
         self.client.post(reverse("reopen_match", args=[match.public_id]))
         game = match.games.get(n_game=5)
         Result.objects.filter(game=game).update(set1_local=6, set1_visiting=1, set2_local=6, set2_visiting=1)
         Game.objects.filter(pk=game.pk).update(winner="Local")
         self._close(match)
-        self.assertEqual(len(mail.outbox), 2)
-        self.assertTrue(mail.outbox[1].subject.startswith("Resultado corregido: Victoria 10-2"))
-        self.assertIn("8-4", mail.outbox[1].body)
-        self.assertTrue(MatchResultDelivery.objects.get().correction)
+        self.assertEqual(len(mail.outbox), 4)
+        self.assertTrue(mail.outbox[2].subject.startswith("Resultado corregido: Victoria 10-2"))
+        self.assertIn("8-4", mail.outbox[2].body)
+        self.assertTrue(MatchResultDelivery.objects.get(user=self.member).correction)
 
     def test_failed_send_is_retried_by_the_command_and_never_blocks_closing(self):
         match = self._match()
@@ -120,13 +126,13 @@ class MatchResultEmailTests(TestCase):
             self._close(match)
         match.refresh_from_db()
         self.assertFalse(match.draft_mode)                    # el acta se cerró igualmente
-        delivery = MatchResultDelivery.objects.get()
+        delivery = MatchResultDelivery.objects.get(user=self.member)
         self.assertEqual((delivery.status, delivery.attempts), ("pending", 1))
         self.assertIn("SMTP caído", delivery.last_error)
         MatchResultDelivery.objects.update(next_attempt_at=datetime.datetime(2020, 1, 1, tzinfo=datetime.timezone.utc))
         call_command("send_call_reports", stdout=StringIO())
         delivery.refresh_from_db()
-        self.assertEqual((delivery.status, len(mail.outbox)), ("sent", 1))
+        self.assertEqual((delivery.status, len(mail.outbox)), ("sent", 2))
 
     def test_gives_up_after_max_attempts_and_command_fails(self):
         self._close(self._match())
@@ -135,7 +141,7 @@ class MatchResultEmailTests(TestCase):
         with mock.patch("match.result_email.get_connection", side_effect=OSError("SMTP caído")):
             with self.assertRaises(CommandError):
                 call_command("send_call_reports", stdout=StringIO())
-        self.assertEqual(MatchResultDelivery.objects.get().status, "failed")
+        self.assertEqual(MatchResultDelivery.objects.filter(status="failed").count(), 2)
 
     def test_unsubscribe_link_turns_the_notice_off_and_tokens_are_not_interchangeable(self):
         path = result_unsubscribe_path(self.member)
@@ -160,9 +166,9 @@ class MatchResultEmailTests(TestCase):
             self._close(self._match())
         MatchResultDelivery.objects.filter(status="pending").update(status="failed")
         health = health_metrics()["results"]
-        self.assertEqual((health["sent"], health["failed"], health["ok_pct"]), (1, 1, 50))
-        self.assertEqual(len(health["problems"]), 1)
-        self.assertEqual(attention_counts()["results_failed"], 1)
+        self.assertEqual((health["sent"], health["failed"], health["ok_pct"]), (2, 2, 50))
+        self.assertEqual(len(health["problems"]), 2)
+        self.assertEqual(attention_counts()["results_failed"], 2)
 
     def test_retired_game_shows_played_sets_and_injury_mark(self):
         match = self._match()
@@ -172,3 +178,48 @@ class MatchResultEmailTests(TestCase):
         rows = result_email.game_rows(match)
         self.assertEqual(rows[4]["sets"], "2-6 · Lesión")
         self.assertEqual(rows[0]["sets"], "6-2 6-2")
+
+
+@override_settings(SITE_URL="http://testserver")
+class BackofficeResendResultTests(ResultEmailFixture):
+    """Envío manual del aviso desde la ficha del club en el back-office."""
+
+    def setUp(self):
+        super().setUp()
+        self.staff = User.objects.create_user("staff", password="pass-12345", email="staff@example.com", is_staff=True)
+        self.client.login(username="staff", password="pass-12345")
+
+    def _closed_match(self):
+        """Enfrentamiento cerrado por el capitán (envía el aviso) y vuelta a la sesión del personal."""
+        self.client.login(username="capi", password="pass-12345")
+        match = self._match()
+        self._close(match)
+        self.client.login(username="staff", password="pass-12345")
+        return match
+
+    def _resend(self, match):
+        return self.client.post(reverse("backoffice:club_match_result", args=[self.club.public_id]),
+                                {"match": match.public_id})
+
+    def test_staff_resends_to_every_member_even_if_already_sent(self):
+        match = self._closed_match()
+        self.assertEqual(len(mail.outbox), 2)
+        self._resend(match)
+        self.assertEqual(len(mail.outbox), 4)
+        self.assertEqual(MatchResultDelivery.objects.filter(status="sent").count(), 2)
+
+    def test_draft_match_or_other_club_is_refused(self):
+        match = self._match()                                  # sigue en borrador
+        self._resend(match)
+        self.assertEqual(mail.outbox, [])
+
+    def test_opt_out_is_respected_and_non_staff_cannot_send(self):
+        match = self._closed_match()
+        mail.outbox.clear()
+        UserPreference.objects.update_or_create(user=self.member, defaults={"match_result_email": False})
+        self._resend(match)
+        self.assertEqual([m.to for m in mail.outbox], [["capi@example.com"]])
+        mail.outbox.clear()
+        self.client.login(username="ana", password="pass-12345")
+        self._resend(match)
+        self.assertEqual(mail.outbox, [])

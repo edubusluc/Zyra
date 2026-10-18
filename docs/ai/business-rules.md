@@ -125,7 +125,7 @@ ni se editan parejas (`edit_game_match`).
   ejecute `python manage.py send_monthly_reports`. Tests: `match/tests_monthly.py`.
 
 - [V] Al cerrar el acta (`do_close_match`) se avisa del resultado por email (`match/result_email.py`): un
-  `MatchResultDelivery` por enfrentamiento y miembro activo del club con email (sin quien cierra el acta; club no
+  `MatchResultDelivery` por enfrentamiento y miembro activo del club con email (capitán incluido; club no
   suspendido) y `UserPreference.match_result_email` activo (por defecto sí; interruptor en «Mi perfil» y enlace de baja
   firmado `result_unsubscribe` con su propia sal, además de `List-Unsubscribe`). Es cola e idempotencia a la vez: se envía al
   momento y `send_call_reports` reintenta con `RETRY_DELAYS`; con el mismo marcador no se repite, con otro tras

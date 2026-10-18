@@ -34,21 +34,20 @@ BANDS = {"V": ("#14532D", "#B4F100"), "D": ("#1C1D1A", "#FF8A8F"), "E": ("#2A2C2
          "A": ("#0B0B0B", "#B4F100")}
 
 
-def recipients(match, closer=None):
+def recipients(match):
     """Cuentas que reciben el aviso: miembros activos del club con email y el aviso activado.
 
-    Quien cierra el acta no lo recibe (ya lo sabe) y un club suspendido no envía nada.
+    Incluye al capitán que cierra el acta; un club suspendido no envía nada.
     """
     club = match.club
     if club is None or club.suspended_at is not None:
         return []
     members = (Membership.objects.filter(club=club, user__is_active=True).exclude(user__email="")
                .select_related("user").order_by("user__username"))
-    return [m.user for m in members
-            if (closer is None or m.user_id != closer.pk) and UserPreference.match_result_for(m.user)]
+    return [m.user for m in members if UserPreference.match_result_for(m.user)]
 
 
-def queue_match_result(match, closer=None):
+def queue_match_result(match):
     """
     Deja en la cola un aviso para cada destinatario que aún no lo tenga con este marcador.
 
@@ -57,7 +56,7 @@ def queue_match_result(match, closer=None):
     """
     now = timezone.now()
     queued = []
-    for user in recipients(match, closer):
+    for user in recipients(match):
         delivery, created = MatchResultDelivery.objects.get_or_create(
             match=match, user=user,
             defaults={"email": user.email, "result_points": match.result_points, "next_attempt_at": now})
@@ -220,12 +219,34 @@ def deliver(deliveries, now=None):
     return claimed
 
 
-def notify_match_closed(match, closer=None):
+def notify_match_closed(match):
     """
     Avisa del resultado al cerrarse el acta: encola y envía al momento. Nunca lanza: si algo falla
     (SMTP caído, SITE_URL sin configurar…) el aviso queda pendiente o se registra, y el acta sigue cerrada.
     """
     try:
-        deliver(queue_match_result(match, closer))
+        deliver(queue_match_result(match))
     except Exception:
         logger.exception("No se pudo avisar del resultado del enfrentamiento %s", match.pk)
+
+
+def resend_match_result(match):
+    """
+    Reenvía a mano el aviso del resultado (desde el back-office) a todos los destinatarios del club.
+
+    A diferencia del cierre del acta no respeta la idempotencia: cada fila vuelve a pendiente y se
+    envía de nuevo, con el opt-out de cada cuenta como único filtro. Devuelve los envíos intentados.
+    """
+    now = timezone.now()
+    deliveries = []
+    for user in recipients(match):
+        delivery, _created = MatchResultDelivery.objects.get_or_create(
+            match=match, user=user,
+            defaults={"email": user.email, "result_points": match.result_points, "next_attempt_at": now})
+        delivery.email, delivery.result_points, delivery.correction = user.email, match.result_points, False
+        delivery.status, delivery.attempts = MatchResultDelivery.PENDING, 0
+        delivery.next_attempt_at, delivery.last_error, delivery.sent_at = now, "", None
+        delivery.save()
+        deliveries.append(delivery)
+    deliver(deliveries)
+    return deliveries

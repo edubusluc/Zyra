@@ -22,6 +22,7 @@ ACTIONS = {
     "club.captain_transfer": "Capitanía traspasada",
     "club.crm": "Ficha CRM actualizada",
     "club.contact": "Correo al capitán",
+    "club.match_result": "Aviso de resultado reenviado",
     "user.deactivate": "Cuenta suspendida",
     "user.activate": "Cuenta reactivada",
     "user.reset_link": "Restablecimiento de contraseña enviado",

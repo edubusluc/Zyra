@@ -383,6 +383,30 @@ def club_delete(request, club_id):
 
 @staff_required
 @require_POST
+def club_match_result(request, club_id):
+    """Reenvía el aviso del resultado de un enfrentamiento cerrado a los miembros del club (solo personal, POST)."""
+    from match.models import Match
+    from match.result_email import recipients, resend_match_result
+    club = _club(club_id)
+    match = Match.objects.filter(club=club, draft_mode=False, public_id=request.POST.get("match", "")).first()
+    if match is None:
+        messages.error(request, _("Elige un enfrentamiento cerrado del club."))
+    elif not recipients(match):
+        messages.warning(request, _("Nadie del club puede recibir el aviso: club suspendido, sin email o con el aviso desactivado."))
+    else:
+        deliveries = resend_match_result(match)
+        sent = sum(1 for d in deliveries if d.status == "sent")
+        audit(request, "club.match_result", club, match=match.public_id, recipients=len(deliveries), sent=sent)
+        if sent == len(deliveries):
+            messages.success(request, _("Aviso del resultado enviado a %(n)s personas.") % {"n": sent})
+        else:
+            messages.warning(request, _("Aviso enviado a %(sent)s de %(n)s personas; el resto se reintentará solo.")
+                             % {"sent": sent, "n": len(deliveries)})
+    return redirect("backoffice:club_detail", club_id=club.public_id)
+
+
+@staff_required
+@require_POST
 def club_transfer_captain(request, club_id):
     """Traspasa la capitanía del club a otro miembro enlazado a un jugador (solo personal, POST)."""
     club = _club(club_id)

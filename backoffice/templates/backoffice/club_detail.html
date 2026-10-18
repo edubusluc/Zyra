@@ -204,6 +204,25 @@
     </section>
 </div>
 
+<section class="z-panel" id="aviso-resultado">
+    <h2 class="h5">{% translate "Enviar el resultado de un enfrentamiento" %}</h2>
+    <p class="text-muted">{% translate "Envía otra vez el correo del resultado a los miembros de este club que lo tengan activado, incluido el capitán. Queda en la auditoría y en «Salud de los servicios»." %}</p>
+    {% if closed_matches %}
+    <form method="post" action="{% url 'backoffice:club_match_result' club.public_id %}" class="d-flex flex-wrap gap-2 align-items-end" data-loading-text="{% translate 'Enviando el aviso…' %}">
+        {% csrf_token %}
+        <div class="flex-grow-1">
+            <label class="form-label" for="result-match">{% translate "Enfrentamiento" %}</label>
+            <select class="form-select" id="result-match" name="match" required>
+                {% for m in closed_matches %}<option value="{{ m.public_id }}">{{ m.start_date|date:"d/m/Y" }} · {{ m.local_name }} {{ m.result_points }} {{ m.visiting_name }}</option>{% endfor %}
+            </select>
+        </div>
+        <button class="btn btn-primary" type="submit">{% translate "Enviar resultado" %}</button>
+    </form>
+    {% else %}
+    <p class="mb-0">{% translate "Este club aún no ha cerrado ningún acta." %}</p>
+    {% endif %}
+</section>
+
 <section class="z-panel" id="contactar">
     <h2 class="h5">{% translate "Escribir al capitán" %}</h2>
     <p class="text-muted">{% translate "Sale con el formato de los correos de Zyra a los capitanes del club y al contacto de la ficha, y queda en «Correos enviados», en la auditoría y como nota." %}</p>
