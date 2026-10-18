@@ -45,7 +45,7 @@ from .models import REPORT_SCOPES, Invitation, Membership, UserPreference
 from .onboarding import onboarding_for
 from . import email_verification, ratelimit, seo
 from players import snp_service
-from .unsubscribe import user_from_token
+from .unsubscribe import user_from_result_token, user_from_token
 from .services import (
     CaptaincyError, InvitationError, accept_invitation, account_delete_blocker, club_name_matches, club_of,
     create_club, delete_account, delete_club, eligible_successors, is_last_admin, is_only_member,
@@ -709,12 +709,15 @@ def my_profile(request):
     google_only = not user.has_usable_password()
     email_form = None
     is_captain = bool(request.membership and request.membership.is_admin)
-    if request.method == "POST" and ("report_scope" in request.POST or "monthly_form" in request.POST):
+    if request.method == "POST" and ("report_scope" in request.POST or "monthly_form" in request.POST
+                                  or "results_form" in request.POST):
         defaults = {}
         scope = request.POST.get("report_scope")
         # El informe de la convocatoria es del capitán: un miembro no lo ve ni puede cambiarlo.
         if is_captain and scope in dict(REPORT_SCOPES):
             defaults["report_scope"] = scope
+        if "results_form" in request.POST:
+            defaults["match_result_email"] = request.POST.get("match_result_email") == "on"
         if "monthly_form" in request.POST:
             defaults["monthly_report"] = request.POST.get("monthly_report") == "on"
             if request.POST.get("monthly_scope") in dict(REPORT_SCOPES):
@@ -740,6 +743,7 @@ def my_profile(request):
         "report_scope": UserPreference.report_scope_for(user),
         "monthly_report": UserPreference.monthly_for(user)[0],
         "monthly_scope": UserPreference.monthly_for(user)[1],
+        "match_result_email": UserPreference.match_result_for(user),
         "player": Player.objects.filter(club=request.club, user=user).first() if request.club else None,
         "email_unverified": email_needs_confirmation(user),
     })
@@ -814,6 +818,23 @@ def monthly_unsubscribe(request, token):
         UserPreference.objects.update_or_create(user=user, defaults={"monthly_report": False})
         return render(request, "monthly_unsubscribe.html", {"done": True})
     return render(request, "monthly_unsubscribe.html")
+
+
+@require_http_methods(["GET", "POST"])
+def result_unsubscribe(request, token):
+    """
+    Baja del aviso de resultado de los enfrentamientos desde el enlace del email, sin iniciar sesión.
+
+    Igual que ``monthly_unsubscribe``: el GET solo pide confirmación y el POST, con el token CSRF de
+    esa página, desactiva el aviso de la cuenta que identifica el token firmado de la URL.
+    """
+    user = user_from_result_token(token)
+    if user is None:
+        return render(request, "result_unsubscribe.html", {"invalid": True}, status=404)
+    if request.method == "POST":
+        UserPreference.objects.update_or_create(user=user, defaults={"match_result_email": False})
+        return render(request, "result_unsubscribe.html", {"done": True})
+    return render(request, "result_unsubscribe.html")
 
 
 @club_admin_required

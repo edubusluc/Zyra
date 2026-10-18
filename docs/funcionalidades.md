@@ -83,8 +83,9 @@ La página del enfrentamiento muestra las fases Convocatoria · Parejas · Resul
   pide la contraseña actual; en las cuentas solo de Google el email lo gestiona Google y se puede añadir una contraseña sin pedir la actual, sin perder el acceso con Google) y el jugador
   enlazado, que se pulsa para editarlo, o el botón para enlazarse a uno, y las preferencias de la cuenta
   (datos del informe PDF por defecto) y el informe mensual por email: activarlo o desactivarlo y elegir si cuenta todos
-  los partidos o solo los competitivos; el correo trae además un enlace para darse de baja sin iniciar sesión
-  ([`core.views.my_profile`](referencia/core/views.md)).
+  los partidos o solo los competitivos; el correo trae además un enlace para darse de baja sin iniciar sesión.
+  También el aviso del resultado por email cuando se cierra el acta de un enfrentamiento del club (activado por defecto, con su
+  propio enlace de baja en el correo) ([`core.views.my_profile`](referencia/core/views.md)).
 - **Mi jugador**: cada miembro enlaza su cuenta con su jugador y sube su foto. Al elegir quién es
   ve en lima los jugadores libres y apagados los ya enlazados, el buscador filtra mientras escribe
   y «Soy yo» pide confirmación con su nombre y apellidos. Las fotos se
@@ -204,7 +205,7 @@ Solo para el personal, en `/backoffice/` ([`backoffice`](referencia/backoffice/i
 | `update_snp_scores` | Actualiza los puntos SNP (lo lanza el programador). |
 | `complete_snp_team` | Trae jugadores desde SNP para un club. |
 | `add_group_teams` | Crea los equipos del grupo de un club desde la clasificación de SNP (solo equipos, sin jugadores). |
-| `send_call_reports` | Reintenta los informes de convocatoria pendientes. |
+| `send_call_reports` | Reintenta los informes de convocatoria y los avisos de resultado pendientes. |
 | `send_monthly_reports` | Envía a cada jugador con cuenta su informe PDF del mes anterior (idempotente; programado el día 1; ver `--month`, `--dry-run`, `--limit`; `--user EMAIL` lo envía a mano a una cuenta aunque ya lo tenga). Sin `run_scheduler`, basta un cron mensual en el servidor. |
 | `copy_sqlite_to_db` | Copia una base de datos SQLite a PostgreSQL. |
 | `adopt_repo_migrations` | Adapta bases de datos antiguas a las migraciones del repositorio. |

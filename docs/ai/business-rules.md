@@ -95,7 +95,9 @@ Orden obligatorio del ciclo (`match/views.py`) [V], cubierto por `match/tests_fl
    nadie en dos parejas. Partidos 1–2 valen 3 puntos, 3–5 valen 2.
 5. **Resultado** (`match/scoring.py`): sets válidos 6-0…6-4, 7-5, 7-6; sin tercer set si una pareja
    gana los dos primeros; con 1-1 el tercero es obligatorio (set normal o super tie-break a 10 con
-   2 de diferencia). Al guardar fija `Game.winner`.
+   2 de diferencia). Con `Result.retired` (partido finalizado por lesión) vale un resultado incompleto
+   (`validate_retired_result`, p. ej. 7-5 / 3-0): gana quien va ganando (más sets, luego más juegos).
+   Al guardar fija `Game.winner`.
 6. **Cerrar acta** (`close_match`, POST): acta abierta y 5 partidos con resultado. Suma puntos,
    fija `Match.result` (valores canónicos en `match/outcomes.py`; `EMPATE` posible, p. ej. 6/6, salvo en Reto y Play Off: ahí el 6-6 lo decide el ganador del partido 3, `determine_match_result`) y `result_points`,
    y cierra `Game.draft_mode`. Con fecha futura exige `confirm_future`. Los resultados se pueden
@@ -122,6 +124,15 @@ ni se editan parejas (`edit_game_match`).
   respeta el alcance y suma `MonthlyReportDelivery.manual_sends`/`last_manual_at`. Necesita `SITE_URL`. Programado en `JOBS` (`0 9 1 * *`); sin `run_scheduler`, un cron mensual del host que
   ejecute `python manage.py send_monthly_reports`. Tests: `match/tests_monthly.py`.
 
+- [V] Al cerrar el acta (`do_close_match`) se avisa del resultado por email (`match/result_email.py`): un
+  `MatchResultDelivery` por enfrentamiento y miembro activo del club con email (sin quien cierra el acta; club no
+  suspendido) y `UserPreference.match_result_email` activo (por defecto sí; interruptor en «Mi perfil» y enlace de baja
+  firmado `result_unsubscribe` con su propia sal, además de `List-Unsubscribe`). Es cola e idempotencia a la vez: se envía al
+  momento y `send_call_reports` reintenta con `RETRY_DELAYS`; con el mismo marcador no se repite, con otro tras
+  reabrir el acta se avisa de nuevo como corrección. Cuatro cabeceras (victoria, derrota, empate, amistoso, que avisa de que no
+  cuenta en lo competitivo) con las 5 parejas, sets y puntos y el partido de quien lo recibe resaltado. Un fallo de envío
+  nunca impide cerrar el acta. Back-office: «Salud de los servicios» muestra enviados/fallidos/pendientes, último envío y
+  los avisos con problemas; los fallidos de 7 días suben a la bandeja de atención, a las alertas y al resumen semanal. Tests: `match/tests_result_email.py`.
 - [V] Al cerrar la convocatoria se encola un `ReportDelivery` por capitán con email
   (`match/notifications.py`); se intenta al momento y `send_call_reports` reintenta a los 2, 10,
   30 y 120 min (`RETRY_DELAYS`); tras 5 intentos queda `failed` y se avisa al personal.

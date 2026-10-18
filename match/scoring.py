@@ -93,3 +93,43 @@ def validate_padel_result(set1, set2, set3):
             "points": SUPER_TIEBREAK_POINTS}
     raise ValidationError(_("Set %(n)s: %(score)s no es un resultado válido. %(rule)s")
                           % {"n": 3, "score": f"{a3}-{b3}", "rule": rule})
+
+
+def validate_retired_result(set1, set2, set3):
+    """
+    Valida un resultado de un partido que acabó por lesión (puede estar incompleto).
+
+    Los sets se rellenan en orden y todos menos el último introducido deben ser sets
+    completos; el último puede quedarse a medias (7-5 / 3-0). Gana quien va ganando: más
+    sets (el set a medias cuenta para quien lo domina), después más juegos en total.
+    Devuelve (sets_normalizados, ganador) con los sets no jugados como (None, None);
+    lanza ValidationError si no hay ningún juego, si faltan sets intermedios, si se sigue
+    jugando con el partido decidido o si no se puede saber quién va ganando.
+    """
+    sets = [(None, None) if (a in (None, 0) and b in (None, 0)) else (a, b) for a, b in (set1, set2, set3)]
+    errors = []
+    played = [i for i, (a, b) in enumerate(sets) if a is not None or b is not None]
+    if not played:
+        raise ValidationError(_("Introduce los juegos que se llegaron a jugar."))
+    last = played[-1]
+    for i in range(last + 1):
+        a, b = sets[i]
+        if a is None or b is None:
+            errors.append(_("Set %(n)s: falta el resultado.") % {"n": i + 1})
+        elif i < last and not is_valid_set(a, b):
+            errors.append(_("Set %(n)s: %(score)s no es un resultado válido. %(rule)s")
+                          % {"n": i + 1, "score": f"{a}-{b}", "rule": SET_RULE})
+    if not errors and last == 2 and set_winner(*sets[0]) == set_winner(*sets[1]):
+        errors.append(_("Set 3: no se juega si la misma pareja ha ganado los dos primeros sets. Déjalo vacío."))
+    if errors:
+        raise ValidationError(errors)
+
+    entered = sets[:last + 1]
+    local_sets = sum(a > b for a, b in entered)
+    visiting_sets = sum(b > a for a, b in entered)
+    if local_sets == visiting_sets:
+        local_sets = sum(a for a, _b in entered)
+        visiting_sets = sum(b for _a, b in entered)
+    if local_sets == visiting_sets:
+        raise ValidationError(_("No se puede saber quién iba ganando: el resultado está empatado."))
+    return sets, "local" if local_sets > visiting_sets else "visiting"

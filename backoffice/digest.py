@@ -5,6 +5,7 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from call.models import ReportDelivery
+from match.models import MatchResultDelivery
 from django.utils.html import format_html
 
 from core.emails import build_email
@@ -23,6 +24,7 @@ def build_digest(days=7):
     since = now - datetime.timedelta(days=days)
     kpis = dashboard_kpis()
     reports = ReportDelivery.objects.filter(created_at__gte=since)
+    results = MatchResultDelivery.objects.filter(created_at__gte=since)
     errors = RequestMetric.objects.filter(minute__gte=since).aggregate(n=Sum("errors"))["n"] or 0
     new_clubs = Club.objects.filter(created_at__gte=since).count()
     new_users = get_user_model().objects.filter(date_joined__gte=since).count()
@@ -34,6 +36,9 @@ def build_digest(days=7):
         _("Clubes activos (partido en 30 días): %(n)s") % {"n": kpis["clubs"]["active"]},
         _("Informes enviados: %(sent)s · fallidos: %(failed)s") % {
             "sent": reports.filter(status=ReportDelivery.SENT).count(), "failed": reports.filter(status=ReportDelivery.FAILED).count()},
+        _("Avisos de resultado enviados: %(sent)s · fallidos: %(failed)s") % {
+            "sent": results.filter(status=MatchResultDelivery.SENT).count(),
+            "failed": results.filter(status=MatchResultDelivery.FAILED).count()},
         _("Errores 500: %(n)s") % {"n": errors},
         _("Clubes sin actividad (más de 60 días): %(n)s") % {"n": len(kpis["inactive_clubs"])},
         _("Tareas de seguimiento para hoy o atrasadas: %(n)s") % {"n": tasks},

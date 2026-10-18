@@ -13,6 +13,7 @@ from .forms import MatchForm, MatchDateForm
 from .models import Match, Game, Result
 from . import lineup, outcomes, phase as match_phase
 from .notifications import admin_emails, send_call_report, report_filename
+from .result_email import notify_match_closed
 from call.models import ReportDelivery
 from .report import build_report, suggested_lineups
 from .report_pdf import render_report
@@ -692,8 +693,9 @@ def _save_result(request, game, result, template):
     values = {f: request.POST.get(f, '').strip() for f in SET_FIELDS}
     for field, value in values.items():
         setattr(result, field, value)
+    result.retired = request.POST.get('retired') == 'on'
     try:
-        result.full_clean(exclude=['game', 'result'] + list(SET_FIELDS), validate_unique=False)
+        result.full_clean(exclude=['game', 'result', 'retired'] + list(SET_FIELDS), validate_unique=False)
         result.result = result.determine_winner()
         result.save()
     except ValidationError as e:
@@ -901,6 +903,9 @@ def do_close_match(request, match):
         match.result_points = f"{points_local}/{points_visiting}"
         match.draft_mode = False
         match.save()
+
+    # Aviso del resultado a los miembros del club; si falla, el acta sigue cerrada y el envío se reintenta.
+    notify_match_closed(match, request.user)
 
     own_points, rival_points = club_score(match)
     label = OUTCOME_LABELS.get(match_outcome(match), "")

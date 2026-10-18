@@ -1,0 +1,21 @@
+{% load i18n %}<h1 style="margin:0 0 14px; font-family:Syncopate, Archivo, Arial, Helvetica, sans-serif; font-style:italic; font-weight:bold; text-transform:uppercase; letter-spacing:.02em; font-size:18px; line-height:1.3; color:#0B0B0B;">{% include "emails/_match_result_headline.html" %}</h1>
+<p style="margin:0 0 12px;">{% blocktranslate with name=name %}Hola {{ name }},{% endblocktranslate %}</p>
+<p style="margin:0 0 18px;">{% include "emails/_match_result_intro.html" %}</p>
+{% if mine %}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;">
+  <tr><td style="background-color:{% if mine.won %}#F6FBE3{% else %}#F4F4F1{% endif %}; border-left:4px solid {% if mine.won %}#B4F100{% else %}#A4A79E{% endif %}; padding:12px 16px; border-radius:6px; font-size:14px; color:#1A1A1A;"><strong>{% translate "Tu partido:" %}</strong> {{ mine.pair }}<br><span style="color:#555555;">{% if mine.won %}{% blocktranslate with n=mine.n sets=mine.sets %}Ganaste tu partido {{ n }} · {{ sets }}{% endblocktranslate %}{% else %}{% blocktranslate with n=mine.n sets=mine.sets %}Perdiste tu partido {{ n }} · {{ sets }}{% endblocktranslate %}{% endif %}</span></td></tr>
+</table>
+{% endif %}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #E6E6E1; border-radius:8px; border-collapse:separate; overflow:hidden; margin:0 0 22px;">
+  <tr><td colspan="3" style="background-color:#0B0B0B; color:#B4F100; font-size:11px; letter-spacing:2px; font-weight:bold; padding:9px 12px;">{% translate "PAREJAS Y RESULTADOS · TU EQUIPO" %}</td></tr>
+  {% for r in rows %}
+  <tr>
+    <td style="padding:10px 8px 10px 12px; border-top:1px solid #E6E6E1;{% if r.mine %} background-color:#F6FBE3;{% endif %} font-size:13px; color:#666666; width:34px;">P{{ r.n }}</td>
+    <td style="padding:10px 8px; border-top:1px solid #E6E6E1;{% if r.mine %} background-color:#F6FBE3;{% endif %} font-size:14px; color:#0B0B0B;"><strong>{{ r.pair }}</strong>{% if r.mine %} <span style="font-size:11px; color:#3F6B00; font-weight:bold;">· {% translate "TÚ" %}</span>{% endif %}<br><span style="font-size:12px; color:#666666;">{{ r.sets }}</span></td>
+    <td align="right" style="padding:10px 12px 10px 8px; border-top:1px solid #E6E6E1;{% if r.mine %} background-color:#F6FBE3;{% endif %}"><span style="display:inline-block; background-color:{% if r.won %}#E8F7C2{% else %}#FBE4E5{% endif %}; color:{% if r.won %}#14532D{% else %}#9B1C23{% endif %}; font-weight:bold; font-size:12px; padding:4px 9px; border-radius:999px;">{% if r.won %}+{{ r.points }}{% else %}0{% endif %}</span></td>
+  </tr>
+  {% endfor %}
+</table>
+<p style="margin:0 0 20px;"><a href="{{ match_url }}" style="display:inline-block; background-color:#B4F100; color:#0A0A0A; font-weight:bold; text-decoration:none; padding:12px 22px; border-radius:8px;">{% translate "Ver el acta completa" %}</a></p>
+<p style="margin:0;">{% translate "¡Nos vemos en pista!" %}<br>{% translate "El equipo de Zyra" %}</p>
+<p style="margin:22px 0 0; padding-top:14px; border-top:1px solid #E6E6E1; font-size:12px; line-height:1.5; color:#6B6B6B;">{% blocktranslate with club=club %}Recibes este aviso porque eres miembro de {{ club }} en Zyra.{% endblocktranslate %} <a href="{{ unsubscribe_url }}" style="color:#3F6B00;">{% translate "Dejar de recibir estos avisos" %}</a> · <a href="{{ profile_url }}" style="color:#3F6B00;">{% translate "Mi perfil" %}</a></p>

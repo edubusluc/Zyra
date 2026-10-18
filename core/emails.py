@@ -53,10 +53,12 @@ class ZyraEmail(EmailMultiAlternatives):
         return related
 
 
-def build_email(subject, text, html_content, to, reply_to=None):
+def build_email(subject, text, html_content, to, reply_to=None, header_html=""):
     """
     Monta un correo de Zyra con el pie corporativo en texto plano y en HTML.
     ``html_content`` es HTML ya escapado/saneado por quien llama: se inserta sin volver a escaparlo.
+    ``header_html`` (opcional, también ya escapado) es una celda ``<td>`` que va a todo el ancho,
+    encima del contenido (por ejemplo la cabecera con el marcador).
     """
     contact = settings.CONTACT_EMAIL
     site = settings.SITE_URL
@@ -69,6 +71,7 @@ def build_email(subject, text, html_content, to, reply_to=None):
     html = render_to_string("emails/layout.html", {
         "subject": subject,
         "content": mark_safe(html_content),  # HTML ya preparado (y escapado) por quien llama
+        "header": mark_safe(header_html),
         "contact": contact,
         "site_url": site,
         "logo_cid": LOGO_CID,

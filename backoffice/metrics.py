@@ -14,7 +14,7 @@ from django.utils.translation import gettext as _
 from call.models import Call, ReportDelivery
 from core import email_verification
 from core.models import Club, Invitation, Membership, PhotoCheck
-from match.models import Game, Match, Result
+from match.models import Game, Match, MatchResultDelivery, Result
 from players.models import Player, SnpAccount
 
 from .models import (
@@ -328,6 +328,23 @@ SNP_STALE_DAYS = 8
 HEALTH_DAYS = 30
 
 
+def _delivery_summary(model, since, club_path):
+    """Cifras de una cola de envíos (``status``, ``attempts``) desde ``since``: enviados, fallidos, pendientes,
+    enviados tras reintentar, % de éxito, último envío correcto y los 10 últimos sin enviar (con su club)."""
+    rows = model.objects.filter(created_at__gte=since)
+    by_status = dict(rows.order_by().values_list("status").annotate(n=Count("pk")))
+    sent, failed, pending = (by_status.get(k, 0) for k in (model.SENT, model.FAILED, model.PENDING))
+    finished = sent + failed
+    last = model.objects.filter(status=model.SENT).order_by("-sent_at").values_list("sent_at", flat=True).first()
+    return {
+        "sent": sent, "failed": failed, "pending": pending,
+        "retried": rows.filter(status=model.SENT, attempts__gt=1).count(),
+        "ok_pct": round(100 * sent / finished) if finished else None,
+        "last_sent": last,
+        "problems": model.objects.exclude(status=model.SENT).select_related(club_path).order_by("-created_at")[:10],
+    }
+
+
 def health_metrics():
     """
     Salud de los servicios: envío de informes por email (ReportDelivery), sincronización
@@ -347,6 +364,8 @@ def health_metrics():
         ReportDelivery.objects.exclude(status=ReportDelivery.SENT)
         .select_related("call__match__club").order_by("-created_at")[:10]
     )
+
+    results = _delivery_summary(MatchResultDelivery, since, "match__club")
 
     accounts = SnpAccount.objects.select_related("club")
     stale_before = now - datetime.timedelta(days=SNP_STALE_DAYS)
@@ -383,6 +402,7 @@ def health_metrics():
             "ok_pct": round(100 * sent / finished) if finished else None,
             "problems": problems,
         },
+        "results": results,
         "snp": snp,
         "snp_stale_days": SNP_STALE_DAYS,
         "jobs": jobs,
@@ -398,7 +418,7 @@ def attention_counts():
     """
     Cuántas cosas esperan al personal: fotos sin validar, cuentas sin confirmar con el plazo
     vencido, procesos con error en 24 h, tareas de hoy o atrasadas, clubes con SNP fallando,
-    informes fallidos en 7 días y si el lanzador está parado.
+    informes fallidos y avisos de resultado fallidos en 7 días y si el lanzador está parado.
     """
     now = timezone.now()
     last_notice = AccountNoticeLog.objects.filter(action=AccountNoticeLog.WARNING, user=OuterRef("pk")).order_by("-created_at")
@@ -414,6 +434,8 @@ def attention_counts():
         "snp_failing": SnpAccount.objects.filter(last_sync_ok=False).count(),
         "reports_failed": ReportDelivery.objects.filter(
             status=ReportDelivery.FAILED, created_at__gte=now - datetime.timedelta(days=7)).count(),
+        "results_failed": MatchResultDelivery.objects.filter(
+            status=MatchResultDelivery.FAILED, created_at__gte=now - datetime.timedelta(days=7)).count(),
         "scheduler_late": scheduler_status()["late"],
     }
 
@@ -433,6 +455,8 @@ def attention_items(counts=None):
 
     if c["jobs_failed"]:
         add("danger", _("%(n)s ejecuciones de procesos con error en 24 h.") % {"n": c["jobs_failed"]}, reverse("backoffice:run_list") + "?status=error")
+    if c["results_failed"]:
+        add("danger", _("%(n)s avisos de resultado fallidos en 7 días.") % {"n": c["results_failed"]}, reverse("backoffice:health"))
     if c["reports_failed"]:
         add("danger", _("%(n)s informes de convocatoria fallidos en 7 días.") % {"n": c["reports_failed"]}, reverse("backoffice:health"))
     if c["snp_failing"]:

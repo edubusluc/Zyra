@@ -9438,6 +9438,7 @@ msgstr "Select visible"
 msgid "Quitar todos"
 msgstr "Clear all"
 
+#: backoffice/templates/backoffice/user_detail.html:36
 #: match/templates/includes/player_selector.html:30
 msgid "fuera del equipo"
 msgstr "not in the team"
@@ -10933,6 +10934,211 @@ msgid_plural "%(n)s equipos actualizados."
 msgstr[0] "%(n)s team updated."
 msgstr[1] "%(n)s teams updated."
 
+#: backoffice/alerts.py:33
+#, python-format
+msgid "Hay %(n)s avisos de resultado fallidos en los últimos 7 días."
+msgstr "There are %(n)s failed result notices in the last 7 days."
+
+#: backoffice/digest.py:39
+#, python-format
+msgid "Avisos de resultado enviados: %(sent)s · fallidos: %(failed)s"
+msgstr "Result notices sent: %(sent)s · failed: %(failed)s"
+
+#: backoffice/jobs.py:147
+msgid "Envía los informes de convocatoria y los avisos de resultado pendientes y reintenta los que fallaron (esperas crecientes; tras 5 intentos se dan por fallidos y se avisa al personal)."
+msgstr "Sends the pending call-up reports and result notices and retries the ones that failed (growing waits; after 5 attempts they are marked as failed and staff is notified)."
+
+#: backoffice/metrics.py:459
+#, python-format
+msgid "%(n)s avisos de resultado fallidos en 7 días."
+msgstr "%(n)s failed result notices in 7 days."
+
+#: backoffice/templates/backoffice/health.html:22
+#, python-format
+msgid "Avisos de resultado (%(days)s días)"
+msgstr "Result notices (%(days)s days)"
+
+#: backoffice/templates/backoffice/health.html:49
+msgid "Avisos de resultado por email"
+msgstr "Result notices by email"
+
+#: backoffice/templates/backoffice/health.html:55
+msgid "Último enviado"
+msgstr "Last sent"
+
+#: backoffice/templates/backoffice/health.html:111
+msgid "Avisos de resultado con problemas"
+msgstr "Result notices with problems"
+
+#: backoffice/templates/backoffice/health.html:118
+msgid "Corrección"
+msgstr "Correction"
+
+#: backoffice/templates/backoffice/health.html:125
+msgid "Todos los avisos de resultado se han enviado."
+msgstr "All result notices have been sent."
+
+#: core/templates/my_profile.html:106
+msgid "Aviso del resultado por email"
+msgstr "Result notice by email"
+
+#: core/templates/my_profile.html:109
+msgid "Recibir un correo cuando se cierre el acta de un enfrentamiento de mi club"
+msgstr "Get an email when the record of a match in my club is closed"
+
+#: core/templates/my_profile.html:111
+msgid "Incluye el marcador y el resultado de cada pareja. También llegan los amistosos."
+msgstr "It includes the score and the result of each pair. Friendlies are included too."
+
+#: core/templates/result_unsubscribe.html:4
+msgid "Aviso de resultado"
+msgstr "Result notice"
+
+#: core/templates/result_unsubscribe.html:12
+msgid "Este enlace de baja no es válido. Puedes desactivar el aviso desde «Mi perfil»."
+msgstr "This unsubscribe link is not valid. You can turn the notice off from “My profile”."
+
+#: core/templates/result_unsubscribe.html:14
+msgid "Aviso desactivado"
+msgstr "Notice turned off"
+
+#: core/templates/result_unsubscribe.html:15
+msgid "No te enviaremos más avisos con el resultado de los enfrentamientos. Puedes volver a activarlos cuando quieras desde «Mi perfil»."
+msgstr "We will not send you more match result notices. You can turn them back on whenever you want from “My profile”."
+
+#: core/templates/result_unsubscribe.html:17
+msgid "¿Dejar de recibir el resultado de los enfrentamientos?"
+msgstr "Stop receiving match results?"
+
+#: core/templates/result_unsubscribe.html:18
+msgid "Dejaremos de enviarte un correo cuando se cierre el acta de un enfrentamiento de tu club."
+msgstr "We will stop emailing you when the record of a match in your club is closed."
+
+#: core/templates/result_unsubscribe.html:19
+msgid "Desactivando…"
+msgstr "Turning off…"
+
+#: core/templates/result_unsubscribe.html:21
+msgid "Desactivar aviso"
+msgstr "Turn off notice"
+
+#: match/result_email.py:163
+#, python-format
+msgid "Amistoso: %(label)s %(score)s · %(local)s vs %(visiting)s (%(date)s)"
+msgstr "Friendly: %(label)s %(score)s · %(local)s vs %(visiting)s (%(date)s)"
+
+#: match/result_email.py:166
+#, python-format
+msgid "%(label)s %(score)s · %(local)s vs %(visiting)s (%(date)s)"
+msgstr "%(label)s %(score)s · %(local)s vs %(visiting)s (%(date)s)"
+
+#: match/result_email.py:168
+#, python-format
+msgid "Resultado corregido: %(subject)s"
+msgstr "Result corrected: %(subject)s"
+
+#: match/templates/emails/_match_result_headline.html:1
+#, python-format
+msgid "Resultado corregido ante %(rival)s"
+msgstr "Result corrected against %(rival)s"
+
+#: match/templates/emails/_match_result_headline.html:1
+#, python-format
+msgid "Amistoso: %(label)s ante %(rival)s"
+msgstr "Friendly: %(label)s against %(rival)s"
+
+#: match/templates/emails/_match_result_headline.html:1
+#, python-format
+msgid "¡Victoria de %(club)s!"
+msgstr "Victory for %(club)s!"
+
+#: match/templates/emails/_match_result_headline.html:1
+#, python-format
+msgid "Derrota ante %(rival)s"
+msgstr "Defeat against %(rival)s"
+
+#: match/templates/emails/_match_result_headline.html:1
+#, python-format
+msgid "Empate a puntos con %(rival)s"
+msgstr "Tied on points with %(rival)s"
+
+#: match/templates/emails/_match_result_intro.html:1
+#, python-format
+msgid "Se ha corregido el acta del enfrentamiento: el marcador anterior era <strong>%(previous)s</strong> y el resultado final es <strong>%(score)s</strong>."
+msgstr "The match record has been corrected: the previous score was <strong>%(previous)s</strong> and the final result is <strong>%(score)s</strong>."
+
+#: match/templates/emails/_match_result_intro.html:1
+msgid "Se ha cerrado el acta del amistoso. Es un partido de preparación: <strong>no cuenta en las estadísticas competitivas</strong>."
+msgstr "The friendly record has been closed. It is a practice match: <strong>it does not count in the competitive statistics</strong>."
+
+#: match/templates/emails/_match_result_intro.html:1
+#, python-format
+msgid "Se ha cerrado el acta del enfrentamiento y el equipo gana a <strong>%(rival)s</strong>."
+msgstr "The match record has been closed and the team beats <strong>%(rival)s</strong>."
+
+#: match/templates/emails/_match_result_intro.html:1
+#, python-format
+msgid "Se ha cerrado el acta del enfrentamiento y el equipo pierde ante <strong>%(rival)s</strong>."
+msgstr "The match record has been closed and the team loses to <strong>%(rival)s</strong>."
+
+#: match/templates/emails/_match_result_intro.html:1
+#, python-format
+msgid "Se ha cerrado el acta del enfrentamiento: reparto de puntos con <strong>%(rival)s</strong>."
+msgstr "The match record has been closed: points shared with <strong>%(rival)s</strong>."
+
+#: match/templates/emails/match_result.html:6
+msgid "Tu partido:"
+msgstr "Your game:"
+
+#: match/templates/emails/match_result.html:6
+#: match/templates/emails/match_result.txt:7
+#, python-format
+msgid "Ganaste tu partido %(n)s · %(sets)s"
+msgstr "You won your game %(n)s · %(sets)s"
+
+#: match/templates/emails/match_result.html:6
+#: match/templates/emails/match_result.txt:7
+#, python-format
+msgid "Perdiste tu partido %(n)s · %(sets)s"
+msgstr "You lost your game %(n)s · %(sets)s"
+
+#: match/templates/emails/match_result.html:10
+msgid "PAREJAS Y RESULTADOS · TU EQUIPO"
+msgstr "PAIRS AND RESULTS · YOUR TEAM"
+
+#: match/templates/emails/match_result.html:14
+msgid "TÚ"
+msgstr "YOU"
+
+#: match/templates/emails/match_result.html:19
+#: match/templates/emails/match_result.txt:11
+msgid "Ver el acta completa"
+msgstr "See the full record"
+
+#: match/templates/emails/match_result.html:21
+#, python-format
+msgid "Recibes este aviso porque eres miembro de %(club)s en Zyra."
+msgstr "You are receiving this notice because you are a member of %(club)s on Zyra."
+
+#: match/templates/emails/match_result.html:21
+#: match/templates/emails/match_result.txt:15
+msgid "Dejar de recibir estos avisos"
+msgstr "Stop receiving these notices"
+
+#: match/templates/emails/match_result.txt:3
+#, python-format
+msgid "Se ha corregido el acta del enfrentamiento: el marcador anterior era %(previous)s y el resultado final es %(score)s."
+msgstr "The match record has been corrected: the previous score was %(previous)s and the final result is %(score)s."
+
+#: match/templates/emails/match_result.txt:3
+msgid "Se ha cerrado el acta del amistoso (no cuenta en las estadísticas competitivas)."
+msgstr "The friendly record has been closed (it does not count in the competitive statistics)."
+
+#: match/templates/emails/match_result.txt:3
+#, python-format
+msgid "Se ha cerrado el acta del enfrentamiento contra %(rival)s."
+msgstr "The match record against %(rival)s has been closed."
+
 #~ msgid ""
 #~ "Busca un jugador para abrir su ficha: resumen y estadísticas en un mismo "
 #~ "sitio."
@@ -10942,12 +11148,25 @@ msgstr[1] "%(n)s teams updated."
 #~ msgid "Crea un partido"
 #~ msgstr "Create a match"
 
-msgid ""
-"Completar equipo no está disponible: hemos avisado al administrador para que"
-" revise el proceso."
-msgstr ""
-"Complete team is not available: we have notified the administrator to review"
-" the process."
+#: match/templates/includes/result_form.html
+msgid "Partido finalizado por lesión"
+msgstr "Match ended by injury"
+
+#: match/templates/includes/result_form.html
+msgid "Permite guardar un resultado incompleto (p. ej. 7-5 / 3-0): gana quien iba ganando."
+msgstr "Lets you save an incomplete score (e.g. 7-5 / 3-0): whoever was ahead wins."
+
+#: match/templates/call_for_match.html
+msgid "Lesión"
+msgstr "Injury"
+
+#: match/scoring.py
+msgid "Introduce los juegos que se llegaron a jugar."
+msgstr "Enter the games that were played."
+
+#: match/scoring.py
+msgid "No se puede saber quién iba ganando: el resultado está empatado."
+msgstr "Cannot tell who was ahead: the score is tied."
 
 #: backoffice/templates/backoffice/club_detail.html
 msgid "Formato del texto"
@@ -10984,10 +11203,6 @@ msgstr "Link address"
 #: backoffice/templates/backoffice/user_detail.html:36
 msgid "Jugador enlazado"
 msgstr "Linked player"
-
-#: backoffice/templates/backoffice/user_detail.html:36
-msgid "fuera del equipo"
-msgstr "out of the team"
 
 #: backoffice/templates/backoffice/user_detail.html:36
 msgid "Sin enlazar"

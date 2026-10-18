@@ -144,8 +144,8 @@ JOBS = [
     ),
     JobSpec(
         name="send_call_reports",
-        description=_("Envía los informes de convocatoria pendientes y reintenta los que fallaron "
-                      "(esperas crecientes; tras 5 intentos se dan por fallidos y se avisa al personal)."),
+        description=_("Envía los informes de convocatoria y los avisos de resultado pendientes y reintenta los que "
+                      "fallaron (esperas crecientes; tras 5 intentos se dan por fallidos y se avisa al personal)."),
         command="send_call_reports",
         schedule="*/5 * * * *",
         idle_output=("No hay informes pendientes de enviar.",),

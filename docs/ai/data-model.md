@@ -76,7 +76,7 @@ entero sigue siendo la clave de los FK. Excepciones sin `public_id`: `backoffice
   2 en 3–5, `match.lineup.game_points`), `winner` (`Local`/`Visitante`), `draft_mode`.
   Solo se rellenan los jugadores del lado del equipo propio. `save()` llama a `clean()`.
 - **Result**: uno por `Game` (`unique_result_per_game`; el FK se llama `results` pese a ello),
-  sets `set1..3_local/visiting` (set 3 nullable). `save()` valida con `match/scoring.py` y normaliza el set 3.
+  sets `set1..3_local/visiting` (sets 2 y 3 nullable) y `retired` (finalizado por lesión, admite resultado incompleto). `save()` valida con `match/scoring.py` y normaliza el set 3 no jugado.
 
 ### call, callLog, penalty
 

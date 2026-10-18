@@ -72,14 +72,15 @@ def set_stats(games):
 
     for g in games:
         sets = g.get('sets') or []
-        if len(sets) < 2:
+        if not sets:
             continue
         played += 1
         won = g['won']
         for i, (own, rival) in enumerate(sets):
             set_won = own > rival
-            sets_won += set_won
-            sets_lost += not set_won
+            if own != rival:  # un set a medias (lesión) empatado no cuenta como ganado ni perdido
+                sets_won += set_won
+                sets_lost += not set_won
             if i == 2 and is_super_tiebreak(own, rival):
                 # El super tie-break cuenta como set, pero sus puntos no son juegos
                 stb_n += 1

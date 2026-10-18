@@ -284,11 +284,14 @@ class Result(PublicIdModel):
     result = models.CharField(max_length=100, null = True)
     set1_local = models.IntegerField(validators=[validate_set_value])
     set1_visiting = models.IntegerField(validators=[validate_set_value])
-    set2_local = models.IntegerField(validators=[validate_set_value])
-    set2_visiting = models.IntegerField(validators=[validate_set_value])
+    # set 2 solo puede faltar si el partido acabó por lesión (retired)
+    set2_local = models.IntegerField(validators=[validate_set_value], null=True)
+    set2_visiting = models.IntegerField(validators=[validate_set_value], null=True)
     set3_local = models.IntegerField(validators=[validate_set_value], null=True)
     set3_visiting = models.IntegerField(validators=[validate_set_value], null=True)
     draft_mode = models.BooleanField(default=True)
+    # Partido finalizado por lesión: admite un resultado incompleto; gana quien iba ganando
+    retired = models.BooleanField(default=False)
 
     class Meta:
         constraints = [
@@ -307,7 +310,8 @@ class Result(PublicIdModel):
     def clean(self):
         """Valida el resultado con las reglas del pádel y normaliza el set 3 no jugado."""
         values = [scoring.to_int(v) for pair in self.sets() for v in pair]
-        sets, self._winner = scoring.validate_padel_result(
+        validate = scoring.validate_retired_result if self.retired else scoring.validate_padel_result
+        sets, self._winner = validate(
             (values[0], values[1]), (values[2], values[3]), (values[4], values[5])
         )
         (self.set1_local, self.set1_visiting), (self.set2_local, self.set2_visiting), \
@@ -332,3 +336,37 @@ class Result(PublicIdModel):
 
 
 
+
+
+class MatchResultDelivery(PublicIdModel):
+    """
+    Aviso por email del resultado de un enfrentamiento a un miembro del club (uno por enfrentamiento
+    y cuenta). Hace de cola, como ``ReportDelivery``: al cerrar el acta se intenta enviar al momento
+    y, si falla, ``send_call_reports`` lo reintenta con esperas crecientes. ``result_points`` es el
+    marcador avisado: si se reabre el acta y se cierra con otro marcador, la fila vuelve a pendiente
+    como corrección (``correction``, con el marcador anterior en ``previous_points``).
+    """
+    PUBLIC_ID_PREFIX = "MRD"
+    PENDING, SENT, FAILED = "pending", "sent", "failed"
+    STATUS_CHOICES = [(PENDING, _("Pendiente")), (SENT, _("Enviado")), (FAILED, _("Fallido"))]
+
+    match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name="result_deliveries")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="match_result_deliveries")
+    email = models.EmailField()
+    result_points = models.CharField(max_length=20, blank=True, default="")
+    previous_points = models.CharField(max_length=20, blank=True, default="")
+    correction = models.BooleanField(default=False)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=PENDING)
+    attempts = models.PositiveSmallIntegerField(default=0)
+    next_attempt_at = models.DateTimeField(null=True, blank=True)
+    last_error = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    sent_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["match", "user"], name="unique_match_result_delivery")]
+        indexes = [models.Index(fields=["status", "next_attempt_at"])]
+
+    def __str__(self):
+        """Enfrentamiento, destinatario y estado del envío."""
+        return f"Resultado de {self.match} a {self.email} ({self.get_status_display()})"
