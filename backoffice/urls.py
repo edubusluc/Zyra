@@ -39,6 +39,7 @@ urlpatterns = [
     path("clubs/<pid:club_id>/crm/", views_crm.club_crm_update, name="club_crm_update"),
     path("clubs/<pid:club_id>/notes/add/", views_crm.club_note_add, name="club_note_add"),
     path("clubs/notes/<int:note_id>/delete/", views_crm.club_note_delete, name="club_note_delete"),
+    path("clubs/<pid:club_id>/match-result/", views_crm.club_match_result, name="club_match_result"),
     path("clubs/<pid:club_id>/contact/", views_crm.club_contact, name="club_contact"),
     path("clubs/<pid:club_id>/edit/", views_crm.club_edit, name="club_edit"),
     path("teams/<pid:team_id>/edit/", views_edit.team_edit, name="team_edit"),

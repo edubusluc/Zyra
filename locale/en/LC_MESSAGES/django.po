@@ -11989,3 +11989,32 @@ msgstr ""
 #, python-format
 msgid "%% de victorias en cada partido del enfrentamiento."
 msgstr "%% of wins in each match of the fixture."
+
+msgid "Elige un enfrentamiento cerrado del club."
+msgstr "Choose a closed fixture of the club."
+
+msgid "Nadie del club puede recibir el aviso: club suspendido, sin email o con el aviso desactivado."
+msgstr "Nobody in the club can receive the notice: club suspended, no email or notice turned off."
+
+#, python-format
+msgid "Aviso del resultado enviado a %(n)s personas."
+msgstr "Result notice sent to %(n)s people."
+
+#, python-format
+msgid "Aviso enviado a %(sent)s de %(n)s personas; el resto se reintentará solo."
+msgstr "Notice sent to %(sent)s of %(n)s people; the rest will be retried automatically."
+
+msgid "Enviar el resultado de un enfrentamiento"
+msgstr "Send the result of a fixture"
+
+msgid "Envía otra vez el correo del resultado a los miembros de este club que lo tengan activado, incluido el capitán. Queda en la auditoría y en «Salud de los servicios»."
+msgstr "Sends the result email again to the members of this club who have it turned on, captain included. It is recorded in the audit log and in «Service health»."
+
+msgid "Enviar resultado"
+msgstr "Send result"
+
+msgid "Este club aún no ha cerrado ningún acta."
+msgstr "This club has not closed any match record yet."
+
+msgid "Aviso de resultado reenviado"
+msgstr "Result notice resent"
