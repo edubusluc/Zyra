@@ -7973,8 +7973,8 @@ msgid "%% de victorias jugando en casa."
 msgstr "%% of wins playing at home."
 
 #: data_analyse/templates/team_statistics.html:134
-msgid "Ningún jugador llega al mínimo de partidos como local."
-msgstr "No player has reached the minimum number of home matches."
+msgid "No hay ningún jugador con datos favorables que mostrar como local."
+msgstr "No player has favourable data to show at home."
 
 #: data_analyse/templates/team_statistics.html:136
 msgid "Mejores jugadores como visitante"
@@ -7986,8 +7986,8 @@ msgid "%% de victorias jugando fuera."
 msgstr "%% of wins playing away."
 
 #: data_analyse/templates/team_statistics.html:136
-msgid "Ningún jugador llega al mínimo de partidos como visitante."
-msgstr "No player has reached the minimum number of away matches."
+msgid "No hay ningún jugador con datos favorables que mostrar como visitante."
+msgstr "No player has favourable data to show away."
 
 #: data_analyse/templates/team_statistics.html:138
 msgid "Mejores parejas como local"
@@ -7999,8 +7999,8 @@ msgid "%% de victorias de la pareja en casa."
 msgstr "The pair's win %% at home."
 
 #: data_analyse/templates/team_statistics.html:138
-msgid "Ninguna pareja llega al mínimo de partidos como local."
-msgstr "No pair has reached the minimum number of home matches."
+msgid "No hay ninguna pareja con datos favorables que mostrar como local."
+msgstr "No pair has favourable data to show at home."
 
 #: data_analyse/templates/team_statistics.html:140
 msgid "Mejores parejas como visitante"
@@ -8012,8 +8012,8 @@ msgid "%% de victorias de la pareja fuera."
 msgstr "The pair's win %% away."
 
 #: data_analyse/templates/team_statistics.html:140
-msgid "Ninguna pareja llega al mínimo de partidos como visitante."
-msgstr "No pair has reached the minimum number of away matches."
+msgid "No hay ninguna pareja con datos favorables que mostrar como visitante."
+msgstr "No pair has favourable data to show away."
 
 #: data_analyse/templates/team_statistics.html:150
 msgid "Cómo se ganan y se pierden los partidos, set a set."

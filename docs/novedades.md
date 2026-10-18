@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 18/10/2026 · Top 5 solo con datos favorables
+
+- «Mejores parejas» y «Mejores jugadores» (local y visitante) en estadísticas por equipo ya no muestran a quien tiene 0 % de victorias aunque llegue al mínimo de partidos (antes salía una pareja con 0V-2D); si nadie cumple, el panel dice «No hay ninguna pareja con datos favorables que mostrar»
+- «Parejas destacadas» (mejores) tampoco incluye parejas sin victorias
 ## 18/10/2026 · Estadísticas: «Por número de partido» sin texto explicativo
 
 - El panel «Por número de partido» (estadísticas de equipo y de jugador) ya no lleva la nota «% de victorias en cada partido…»: título, barras y la frase de mejor/peor partido bastan y se gana espacio

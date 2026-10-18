@@ -101,6 +101,17 @@ class PairStatisticsTests(TestCase):
         self.assertEqual([(r['name'], r['played'], r['pct']) for r in pairs_local], [("A ASON / B BSON", 3, 100.0)])
         self.assertEqual(pair_stats.top_pairs(log, squad, local=False), [])  # A+B solo 1 fuera
 
+    def test_top_tables_skip_zero_percent(self):
+        """Una pareja o jugador con el mínimo de partidos pero 0 victorias no entra en el top."""
+        log = pair_stats.club_game_log(self.club)
+        squad = list(Player.objects.filter(club=self.club, in_team=True))
+        c_id, d_id = self.c.id, self.d.id
+        losing = [{'pair': tuple(sorted((c_id, d_id))), 'local': True, 'won': False} for _ in range(2)]
+        everyone = list(Player.objects.filter(club=self.club))
+        self.assertEqual(pair_stats.top_pairs(losing, everyone, local=True), [])
+        self.assertEqual(pair_stats.top_players(losing, everyone, local=True), [])
+        self.assertTrue(pair_stats.top_pairs(log, squad, local=True))
+
     def test_top_tables_respect_season(self):
         log = pair_stats.club_game_log(self.club, "2025-2026")
         squad = list(Player.objects.filter(club=self.club, in_team=True))
@@ -145,6 +156,10 @@ class PairStatisticsTests(TestCase):
         self.assertEqual([r['name'] for r in worst], ['b', 'e', 'd'])  # 'g' no llega al mínimo
 
         # Con pocas parejas se reparten sin repetir: 3 parejas -> 2 mejores y 1 peor
+        # Una pareja sin victorias nunca es de las mejores, aunque sea la única con el mínimo
+        best, worst = pair_stats.best_and_worst_pairs([row('z', 3, 0)])
+        self.assertEqual(best, [])
+
         best, worst = pair_stats.best_and_worst_pairs(pairs[:3])
         self.assertEqual(([r['name'] for r in best], [r['name'] for r in worst]), (['c', 'a'], ['b']))
 
