@@ -35,6 +35,12 @@
             <input type="text" inputmode="numeric" maxlength="2" name="set3_visiting" value="{{ values.set3_visiting }}" aria-label="Set 3, {{ game.match.visiting_name }}" data-set="3" data-side="v">
         </div>
 
+        <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" name="retired" id="id_retired" data-retired{% if result.retired %} checked{% endif %}>
+            <label class="form-check-label" for="id_retired">{% translate "Partido finalizado por lesión" %}</label>
+            <div class="form-text">{% translate "Permite guardar un resultado incompleto (p. ej. 7-5 / 3-0): gana quien iba ganando." %}</div>
+        </div>
+
         <ul class="z-result-checks" aria-live="polite" data-result-checks></ul>
         <p class="text-muted small mb-3">{% translate "Un set se gana 6-0 a 6-4, 7-5 o 7-6. El set 3 solo se juega si cada pareja ha ganado un set; puede ser un set normal o un super tie-break a 10 (10-8, 11-9...)." %}</p>
         <button type="submit" class="btn btn-primary" data-result-save>{{ submit }}</button>

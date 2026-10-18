@@ -274,11 +274,14 @@ class Result(PublicIdModel):
     result = models.CharField(max_length=100, null = True)
     set1_local = models.IntegerField(validators=[validate_set_value])
     set1_visiting = models.IntegerField(validators=[validate_set_value])
-    set2_local = models.IntegerField(validators=[validate_set_value])
-    set2_visiting = models.IntegerField(validators=[validate_set_value])
+    # set 2 solo puede faltar si el partido acabó por lesión (retired)
+    set2_local = models.IntegerField(validators=[validate_set_value], null=True)
+    set2_visiting = models.IntegerField(validators=[validate_set_value], null=True)
     set3_local = models.IntegerField(validators=[validate_set_value], null=True)
     set3_visiting = models.IntegerField(validators=[validate_set_value], null=True)
     draft_mode = models.BooleanField(default=True)
+    # Partido finalizado por lesión: admite un resultado incompleto; gana quien iba ganando
+    retired = models.BooleanField(default=False)
 
     class Meta:
         constraints = [
@@ -297,7 +300,8 @@ class Result(PublicIdModel):
     def clean(self):
         """Valida el resultado con las reglas del pádel y normaliza el set 3 no jugado."""
         values = [scoring.to_int(v) for pair in self.sets() for v in pair]
-        sets, self._winner = scoring.validate_padel_result(
+        validate = scoring.validate_retired_result if self.retired else scoring.validate_padel_result
+        sets, self._winner = validate(
             (values[0], values[1]), (values[2], values[3]), (values[4], values[5])
         )
         (self.set1_local, self.set1_visiting), (self.set2_local, self.set2_visiting), \

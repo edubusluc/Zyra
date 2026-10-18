@@ -90,7 +90,9 @@ Orden obligatorio del ciclo (`match/views.py`) [V], cubierto por `match/tests_fl
    nadie en dos parejas. Partidos 1–2 valen 3 puntos, 3–5 valen 2.
 5. **Resultado** (`match/scoring.py`): sets válidos 6-0…6-4, 7-5, 7-6; sin tercer set si una pareja
    gana los dos primeros; con 1-1 el tercero es obligatorio (set normal o super tie-break a 10 con
-   2 de diferencia). Al guardar fija `Game.winner`.
+   2 de diferencia). Con `Result.retired` (partido finalizado por lesión) vale un resultado incompleto
+   (`validate_retired_result`, p. ej. 7-5 / 3-0): gana quien va ganando (más sets, luego más juegos).
+   Al guardar fija `Game.winner`.
 6. **Cerrar acta** (`close_match`, POST): acta abierta y 5 partidos con resultado. Suma puntos,
    fija `Match.result` (valores canónicos en `match/outcomes.py`; `EMPATE` posible, p. ej. 6/6) y `result_points`,
    y cierra `Game.draft_mode`. Siempre son 5 partidos: no se contempla un acta con menos. Todo en una transacción.
