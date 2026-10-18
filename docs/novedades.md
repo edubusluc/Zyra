@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 18/10/2026 · «Por número de partido» con tarjetas de mejor y peor partido
+
+- Encima de las barras de «Por número de partido» (equipo y jugador) hay dos tarjetas, «Mejor partido» y «Partido más flojo» (con su %), como las tarjetas de arriba de «Sets»: así las filas de ambos paneles quedan alineadas a la misma altura
+- Las barras ya no se colorean de forma especial para mejor y peor partido; lo dicen las tarjetas
+
 ## 18/10/2026 · «Por número de partido» alineado con «Sets»
 
 - Las barras del panel «Por número de partido» (equipo y jugador) arrancan justo bajo la descripción, con la misma altura de fila y espaciado que «Sets», y se reparten la altura del panel sin hueco vacío arriba
