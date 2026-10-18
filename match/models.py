@@ -336,3 +336,37 @@ class Result(PublicIdModel):
 
 
 
+
+
+class MatchResultDelivery(PublicIdModel):
+    """
+    Aviso por email del resultado de un enfrentamiento a un miembro del club (uno por enfrentamiento
+    y cuenta). Hace de cola, como ``ReportDelivery``: al cerrar el acta se intenta enviar al momento
+    y, si falla, ``send_call_reports`` lo reintenta con esperas crecientes. ``result_points`` es el
+    marcador avisado: si se reabre el acta y se cierra con otro marcador, la fila vuelve a pendiente
+    como corrección (``correction``, con el marcador anterior en ``previous_points``).
+    """
+    PUBLIC_ID_PREFIX = "MRD"
+    PENDING, SENT, FAILED = "pending", "sent", "failed"
+    STATUS_CHOICES = [(PENDING, _("Pendiente")), (SENT, _("Enviado")), (FAILED, _("Fallido"))]
+
+    match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name="result_deliveries")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="match_result_deliveries")
+    email = models.EmailField()
+    result_points = models.CharField(max_length=20, blank=True, default="")
+    previous_points = models.CharField(max_length=20, blank=True, default="")
+    correction = models.BooleanField(default=False)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=PENDING)
+    attempts = models.PositiveSmallIntegerField(default=0)
+    next_attempt_at = models.DateTimeField(null=True, blank=True)
+    last_error = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    sent_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["match", "user"], name="unique_match_result_delivery")]
+        indexes = [models.Index(fields=["status", "next_attempt_at"])]
+
+    def __str__(self):
+        """Enfrentamiento, destinatario y estado del envío."""
+        return f"Resultado de {self.match} a {self.email} ({self.get_status_display()})"

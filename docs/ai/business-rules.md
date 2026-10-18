@@ -124,6 +124,15 @@ ni se editan parejas (`edit_game_match`).
   respeta el alcance y suma `MonthlyReportDelivery.manual_sends`/`last_manual_at`. Necesita `SITE_URL`. Programado en `JOBS` (`0 9 1 * *`); sin `run_scheduler`, un cron mensual del host que
   ejecute `python manage.py send_monthly_reports`. Tests: `match/tests_monthly.py`.
 
+- [V] Al cerrar el acta (`do_close_match`) se avisa del resultado por email (`match/result_email.py`): un
+  `MatchResultDelivery` por enfrentamiento y miembro activo del club con email (sin quien cierra el acta; club no
+  suspendido) y `UserPreference.match_result_email` activo (por defecto sí; interruptor en «Mi perfil» y enlace de baja
+  firmado `result_unsubscribe` con su propia sal, además de `List-Unsubscribe`). Es cola e idempotencia a la vez: se envía al
+  momento y `send_call_reports` reintenta con `RETRY_DELAYS`; con el mismo marcador no se repite, con otro tras
+  reabrir el acta se avisa de nuevo como corrección. Cuatro cabeceras (victoria, derrota, empate, amistoso, que avisa de que no
+  cuenta en lo competitivo) con las 5 parejas, sets y puntos y el partido de quien lo recibe resaltado. Un fallo de envío
+  nunca impide cerrar el acta. Back-office: «Salud de los servicios» muestra enviados/fallidos/pendientes, último envío y
+  los avisos con problemas; los fallidos de 7 días suben a la bandeja de atención, a las alertas y al resumen semanal. Tests: `match/tests_result_email.py`.
 - [V] Al cerrar la convocatoria se encola un `ReportDelivery` por capitán con email
   (`match/notifications.py`); se intenta al momento y `send_call_reports` reintenta a los 2, 10,
   30 y 120 min (`RETRY_DELAYS`); tras 5 intentos queda `failed` y se avisa al personal.

@@ -29,6 +29,7 @@ urlpatterns = (
     path('members/invitations/link/', views.create_invitation_link, name='create_invitation_link'),
     path('members/invitations/<pid:invitation_id>/revoke/', views.revoke_invitation, name='revoke_invitation'),
     path('monthly-report/unsubscribe/<str:token>/', views.monthly_unsubscribe, name='monthly_unsubscribe'),
+    path('match-result/unsubscribe/<str:token>/', views.result_unsubscribe, name='result_unsubscribe'),
     path('invite/<str:token>/', views.invitation, name='invitation'),
     path('password-check/', views.password_check, name='password_check'),
 )

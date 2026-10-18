@@ -18,6 +18,11 @@
         <b>{% if health.reports.ok_pct is None %}—{% else %}{{ health.reports.ok_pct }} %{% endif %}</b>
         <small>{% blocktranslate trimmed with sent=health.reports.sent failed=health.reports.failed pending=health.reports.pending %}{{ sent }} enviados · {{ failed }} fallidos · {{ pending }} pendientes{% endblocktranslate %}</small>
     </div>
+    <div class="bo-kpi{% if health.results.failed %} bo-kpi--alert{% endif %}">
+        <span class="bo-kpi-label">{% blocktranslate with days=health.days %}Avisos de resultado ({{ days }} días){% endblocktranslate %}</span>
+        <b>{% if health.results.ok_pct is None %}—{% else %}{{ health.results.ok_pct }} %{% endif %}</b>
+        <small>{% blocktranslate trimmed with sent=health.results.sent failed=health.results.failed pending=health.results.pending %}{{ sent }} enviados · {{ failed }} fallidos · {{ pending }} pendientes{% endblocktranslate %}</small>
+    </div>
     <div class="bo-kpi{% if health.snp.failed %} bo-kpi--alert{% endif %}">
         <span class="bo-kpi-label">{% translate "Sincronización SNP" %}</span>
         <b>{{ health.snp.ok }} / {{ health.snp.total }}</b>
@@ -38,6 +43,16 @@
             <div><dt>{% translate "Enviados tras reintentar" %}</dt><dd>{{ health.reports.retried }}</dd></div>
             <div><dt>{% translate "Pendientes de reintento" %}</dt><dd>{{ health.reports.pending }}</dd></div>
             <div><dt>{% translate "Fallidos (sin más reintentos)" %}</dt><dd>{{ health.reports.failed }}</dd></div>
+        </dl>
+    </section>
+    <section class="z-panel">
+        <h2 class="h5">{% translate "Avisos de resultado por email" %}</h2>
+        <dl class="bo-facts">
+            <div><dt>{% translate "Enviados" %}</dt><dd>{{ health.results.sent }}</dd></div>
+            <div><dt>{% translate "Enviados tras reintentar" %}</dt><dd>{{ health.results.retried }}</dd></div>
+            <div><dt>{% translate "Pendientes de reintento" %}</dt><dd>{{ health.results.pending }}</dd></div>
+            <div><dt>{% translate "Fallidos (sin más reintentos)" %}</dt><dd>{{ health.results.failed }}</dd></div>
+            <div><dt>{% translate "Último enviado" %}</dt><dd>{% if health.results.last_sent %}{{ health.results.last_sent|ago }}{% else %}—{% endif %}</dd></div>
         </dl>
     </section>
     <section class="z-panel">
@@ -87,6 +102,27 @@
             </tr>
         {% empty %}
             <tr><td colspan="6" class="text-muted">{% translate "Todos los informes se han enviado." %}</td></tr>
+        {% endfor %}
+        </tbody>
+    </table></div>
+</section>
+
+<section class="z-panel">
+    <h2 class="h5">{% translate "Avisos de resultado con problemas" %}</h2>
+    <div class="z-table-wrap"><table class="table align-middle">
+        <thead><tr><th>{% translate "Club" %}</th><th>{% translate "Enfrentamiento" %}</th><th>{% translate "Destinatario" %}</th><th>{% translate "Estado" %}</th><th>{% translate "Intentos" %}</th><th>{% translate "Último error" %}</th></tr></thead>
+        <tbody>
+        {% for d in health.results.problems %}
+            <tr>
+                <td>{% if d.match.club %}<a href="{% url 'backoffice:club_detail' d.match.club.public_id %}">{{ d.match.club.name }}</a>{% else %}—{% endif %}</td>
+                <td>{{ d.match }} · {{ d.match.start_date|date:"d/m/Y" }}{% if d.correction %} <span class="z-badge">{% translate "Corrección" %}</span>{% endif %}</td>
+                <td>{{ d.email }}</td>
+                <td>{{ d.get_status_display }}</td>
+                <td>{{ d.attempts }}</td>
+                <td><small class="bo-mono">{{ d.last_error|truncatechars:120|default:"—" }}</small></td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="6" class="text-muted">{% translate "Todos los avisos de resultado se han enviado." %}</td></tr>
         {% endfor %}
         </tbody>
     </table></div>

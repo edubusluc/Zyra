@@ -16,6 +16,17 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 - «Mejores parejas» y «Mejores jugadores» (local y visitante) en estadísticas por equipo ya no muestran a quien tiene 0 % de victorias aunque llegue al mínimo de partidos (antes salía una pareja con 0V-2D); si nadie cumple, el panel dice «No hay ninguna pareja con datos favorables que mostrar»
 - «Parejas destacadas» (mejores) tampoco incluye parejas sin victorias
+
+## 18/10/2026 · Aviso por email del resultado al cerrar el acta
+
+- Al cerrar el acta de un enfrentamiento, cada miembro del club recibe un correo con el marcador, el resultado de las cinco parejas y su propio partido resaltado si jugó; hay diseño de victoria, derrota, empate y amistoso (que avisa de que no cuenta en las estadísticas competitivas)
+- Quien cierra el acta no lo recibe. Si se reabre y se cierra con el mismo marcador no se repite; con otro, llega «Resultado corregido»
+- Se desactiva desde «Mi perfil» (interruptor «Aviso del resultado por email») o con el enlace de baja del propio correo
+- Back-office → «Salud de los servicios»: panel de avisos de resultado (enviados, fallidos, pendientes, último envío y lista de problemas); los fallidos suben a la bandeja de atención, a las alertas por email y al resumen semanal
+- Si el envío falla, el acta queda cerrada y `send_call_reports` lo reintenta (2, 10, 30 y 120 min)
+- Migraciones `core/0020` y `match/0013`
+- Arreglo: el catálogo inglés tenía dos entradas repetidas («fuera del equipo» y un aviso de «Completar equipo») que impedían compilarlo
+
 ## 18/10/2026 · Estadísticas: «Por número de partido» sin texto explicativo
 
 - El panel «Por número de partido» (estadísticas de equipo y de jugador) ya no lleva la nota «% de victorias en cada partido…»: título, barras y la frase de mejor/peor partido bastan y se gana espacio

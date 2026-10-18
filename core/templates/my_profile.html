@@ -100,8 +100,17 @@
             <p class="form-text">{% translate "Es la opción que aparece marcada por defecto; en cada enfrentamiento puedes cambiarla al crearlo." %}</p>
         </fieldset>
         {% endif %}
-        <input type="hidden" name="monthly_form" value="1">
+        <input type="hidden" name="results_form" value="1">
         <fieldset class="z-report-scope{% if is_captain %} mt-4{% endif %}">
+            <legend class="form-label">{% translate "Aviso del resultado por email" %}</legend>
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" name="match_result_email" id="match-result-email"{% if match_result_email %} checked{% endif %}>
+                <label class="form-check-label" for="match-result-email">{% translate "Recibir un correo cuando se cierre el acta de un enfrentamiento de mi club" %}</label>
+            </div>
+            <p class="form-text">{% translate "Incluye el marcador y el resultado de cada pareja. También llegan los amistosos." %}</p>
+        </fieldset>
+        <input type="hidden" name="monthly_form" value="1">
+        <fieldset class="z-report-scope mt-4">
             <legend class="form-label">{% translate "Informe mensual por email" %}</legend>
             <div class="form-check form-switch">
                 <input class="form-check-input" type="checkbox" role="switch" name="monthly_report" id="monthly-report"{% if monthly_report %} checked{% endif %}>
