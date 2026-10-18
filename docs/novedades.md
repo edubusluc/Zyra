@@ -3,6 +3,15 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 18/10/2026 · Resultados: partido finalizado por lesión
+
+- Nuevo check «Partido finalizado por lesión» en el formulario de resultado: permite guardar un resultado incompleto (p. ej. 7-5 / 3-0) como válido; gana quien iba ganando y el partido cuenta como victoria/derrota. Los sets parciales cuentan en las estadísticas tal cual y se muestra una marca «Lesión» (`Result.retired`)
+
+## 18/10/2026 · «Por número de partido» alineado con «Sets»
+
+- Las barras del panel «Por número de partido» (equipo y jugador) arrancan justo bajo la descripción, con la misma altura de fila y espaciado que «Sets», y se reparten la altura del panel sin hueco vacío arriba
+- Se quita la frase bajo el gráfico («Mejor en el partido 2… y peor en el partido 1…»); el mejor y el peor partido siguen marcados con color
+
 ## 18/10/2026 · Top 5 solo con datos favorables
 
 - «Mejores parejas» y «Mejores jugadores» (local y visitante) en estadísticas por equipo ya no muestran a quien tiene 0 % de victorias aunque llegue al mínimo de partidos (antes salía una pareja con 0V-2D); si nadie cumple, el panel dice «No hay ninguna pareja con datos favorables que mostrar»
@@ -15,7 +24,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 - Se desactiva desde «Mi perfil» (interruptor «Aviso del resultado por email») o con el enlace de baja del propio correo
 - Back-office → «Salud de los servicios»: panel de avisos de resultado (enviados, fallidos, pendientes, último envío y lista de problemas); los fallidos suben a la bandeja de atención, a las alertas por email y al resumen semanal
 - Si el envío falla, el acta queda cerrada y `send_call_reports` lo reintenta (2, 10, 30 y 120 min)
-- Migraciones `core/0020` y `match/0012`
+- Migraciones `core/0020` y `match/0013`
 - Arreglo: el catálogo inglés tenía dos entradas repetidas («fuera del equipo» y un aviso de «Completar equipo») que impedían compilarlo
 
 ## 18/10/2026 · Estadísticas: «Por número de partido» sin texto explicativo

@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("match", "0011_alter_match_report_scope"),
+        ("match", "0012_result_retired"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 

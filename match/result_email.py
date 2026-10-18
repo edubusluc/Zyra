@@ -111,11 +111,12 @@ def _sent(delivery, now):
 
 
 def _sets_text(result, own_is_local):
-    """'6-3 6-4' desde el punto de vista del club; el set 3 no jugado (vacío o 0-0) se omite."""
-    pairs = [(result.set1_local, result.set1_visiting), (result.set2_local, result.set2_visiting)]
-    if result.set3_local is not None and (result.set3_local or result.set3_visiting):
-        pairs.append((result.set3_local, result.set3_visiting))
-    return " ".join(f"{a}-{b}" if own_is_local else f"{b}-{a}" for a, b in pairs)
+    """'6-3 6-4' desde el punto de vista del club; un set no jugado (vacío o 0-0) se omite y, si el
+    partido acabó por lesión, se añade «Lesión»."""
+    pairs = [(a, b) for n, (a, b) in enumerate(result.sets(), start=1)
+             if a is not None and b is not None and (n == 1 or a or b)]
+    text = " ".join(f"{a}-{b}" if own_is_local else f"{b}-{a}" for a, b in pairs)
+    return f"{text} · {_('Lesión')}" if result.retired else text
 
 
 def game_rows(match, user=None):

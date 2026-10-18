@@ -255,6 +255,15 @@ msgstr "3 points lost"
 msgid "2 puntos perdidos"
 msgstr "2 points lost"
 
+msgid "Set %(n)s: falta el resultado."
+msgstr "Set %(n)s: result missing."
+
+msgid "Set 3: no se juega si la misma pareja ha ganado los dos primeros sets. Déjalo vacío."
+msgstr "Set 3: it is not played if the same pair won the first two sets. Leave it empty."
+
+msgid "No se puede saber quién iba ganando: el resultado está empatado."
+msgstr "Cannot tell who was ahead: the score is tied."
+
 msgid "Este campo es obligatorio."
 msgstr "This field is required."
 

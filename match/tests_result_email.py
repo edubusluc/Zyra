@@ -163,3 +163,12 @@ class MatchResultEmailTests(TestCase):
         self.assertEqual((health["sent"], health["failed"], health["ok_pct"]), (1, 1, 50))
         self.assertEqual(len(health["problems"]), 1)
         self.assertEqual(attention_counts()["results_failed"], 1)
+
+    def test_retired_game_shows_played_sets_and_injury_mark(self):
+        match = self._match()
+        game = match.games.get(n_game=5)
+        Result.objects.filter(game=game).update(set1_local=2, set1_visiting=6, set2_local=None,
+                                                set2_visiting=None, retired=True)
+        rows = result_email.game_rows(match)
+        self.assertEqual(rows[4]["sets"], "2-6 · Lesión")
+        self.assertEqual(rows[0]["sets"], "6-2 6-2")

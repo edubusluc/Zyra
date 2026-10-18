@@ -693,8 +693,9 @@ def _save_result(request, game, result, template):
     values = {f: request.POST.get(f, '').strip() for f in SET_FIELDS}
     for field, value in values.items():
         setattr(result, field, value)
+    result.retired = request.POST.get('retired') == 'on'
     try:
-        result.full_clean(exclude=['game', 'result'] + list(SET_FIELDS), validate_unique=False)
+        result.full_clean(exclude=['game', 'result', 'retired'] + list(SET_FIELDS), validate_unique=False)
         result.result = result.determine_winner()
         result.save()
     except ValidationError as e:

@@ -6946,15 +6946,6 @@ msgstr "%(wins)sW – %(losses)sL · %(points)s of %(stake)s points"
 msgid "Sin partidos"
 msgstr "No matches"
 
-#: data_analyse/templates/includes/game_numbers.html:19
-#, python-format
-msgid ""
-"Mejor en el partido %(best)s (%(best_pct)s %%) y peor en el partido %(worst)s"
-" (%(worst_pct)s %%)."
-msgstr ""
-"Best in match %(best)s (%(best_pct)s %%) and worst in match %(worst)s "
-"(%(worst_pct)s %%)."
-
 #: data_analyse/templates/includes/match_type_filter.html:3 match/models.py:66
 msgid "Tipo de partido"
 msgstr "Match type"
@@ -11143,6 +11134,26 @@ msgstr "The match record against %(rival)s has been closed."
 
 #~ msgid "Crea un partido"
 #~ msgstr "Create a match"
+
+#: match/templates/includes/result_form.html
+msgid "Partido finalizado por lesión"
+msgstr "Match ended by injury"
+
+#: match/templates/includes/result_form.html
+msgid "Permite guardar un resultado incompleto (p. ej. 7-5 / 3-0): gana quien iba ganando."
+msgstr "Lets you save an incomplete score (e.g. 7-5 / 3-0): whoever was ahead wins."
+
+#: match/templates/call_for_match.html
+msgid "Lesión"
+msgstr "Injury"
+
+#: match/scoring.py
+msgid "Introduce los juegos que se llegaron a jugar."
+msgstr "Enter the games that were played."
+
+#: match/scoring.py
+msgid "No se puede saber quién iba ganando: el resultado está empatado."
+msgstr "Cannot tell who was ahead: the score is tied."
 
 #: backoffice/templates/backoffice/club_detail.html
 msgid "Formato del texto"
