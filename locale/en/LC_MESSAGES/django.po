@@ -6946,15 +6946,6 @@ msgstr "%(wins)sW – %(losses)sL · %(points)s of %(stake)s points"
 msgid "Sin partidos"
 msgstr "No matches"
 
-#: data_analyse/templates/includes/game_numbers.html:19
-#, python-format
-msgid ""
-"Mejor en el partido %(best)s (%(best_pct)s %%) y peor en el partido %(worst)s"
-" (%(worst_pct)s %%)."
-msgstr ""
-"Best in match %(best)s (%(best_pct)s %%) and worst in match %(worst)s "
-"(%(worst_pct)s %%)."
-
 #: data_analyse/templates/includes/match_type_filter.html:3 match/models.py:66
 msgid "Tipo de partido"
 msgstr "Match type"
