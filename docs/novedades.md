@@ -17,6 +17,10 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 - Las barras del panel «Por número de partido» (equipo y jugador) arrancan justo bajo la descripción, con la misma altura de fila y espaciado que «Sets», y se reparten la altura del panel sin hueco vacío arriba
 - Se quita la frase bajo el gráfico («Mejor en el partido 2… y peor en el partido 1…»); el mejor y el peor partido siguen marcados con color
 
+## 18/10/2026 · Correos de Zyra legibles en el modo oscuro del móvil
+
+- Los correos usan el verde lima de la app con texto negro (cabecera del resultado, cabecera de la tabla) y un pie claro con texto y logo negros: el modo oscuro de Gmail invertía solo parte de los colores y el texto lima quedaba casi invisible; con texto negro el contraste se mantiene en modo claro y oscuro
+
 ## 18/10/2026 · El capitán recibe el aviso del resultado y envío manual desde el back-office
 
 - El capitán que cierra el acta ya recibe también el correo del resultado (antes quedaba excluido)
