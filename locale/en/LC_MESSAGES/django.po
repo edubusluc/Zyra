@@ -10936,6 +10936,26 @@ msgstr ""
 "Complete team is not available: we have notified the administrator to review"
 " the process."
 
+#: match/templates/includes/result_form.html
+msgid "Partido finalizado por lesión"
+msgstr "Match ended by injury"
+
+#: match/templates/includes/result_form.html
+msgid "Permite guardar un resultado incompleto (p. ej. 7-5 / 3-0): gana quien iba ganando."
+msgstr "Lets you save an incomplete score (e.g. 7-5 / 3-0): whoever was ahead wins."
+
+#: match/templates/call_for_match.html
+msgid "Lesión"
+msgstr "Injury"
+
+#: match/scoring.py
+msgid "Introduce los juegos que se llegaron a jugar."
+msgstr "Enter the games that were played."
+
+#: match/scoring.py
+msgid "No se puede saber quién iba ganando: el resultado está empatado."
+msgstr "Cannot tell who was ahead: the score is tied."
+
 #: backoffice/templates/backoffice/club_detail.html
 msgid "Formato del texto"
 msgstr "Text formatting"

@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 18/10/2026 · Resultados: partido finalizado por lesión
+
+- Nuevo check «Partido finalizado por lesión» en el formulario de resultado: permite guardar un resultado incompleto (p. ej. 7-5 / 3-0) como válido; gana quien iba ganando y el partido cuenta como victoria/derrota. Los sets parciales cuentan en las estadísticas tal cual y se muestra una marca «Lesión» (`Result.retired`)
+
 ## 18/10/2026 · «Por número de partido» alineado con «Sets»
 
 - Las barras del panel «Por número de partido» (equipo y jugador) arrancan justo bajo la descripción, con la misma altura de fila y espaciado que «Sets», y se reparten la altura del panel sin hueco vacío arriba

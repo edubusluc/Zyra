@@ -23,8 +23,40 @@ document.querySelectorAll('[data-result]').forEach(function (form) {
     checks.appendChild(li);
   }
 
+  const retiredBox = form.querySelector('[data-retired]');
+
+  // Partido finalizado por lesión: mismas reglas que scoring.validate_retired_result
+  function refreshRetired() {
+    const s = [1, 2, 3].map((n) => [val(input(n, 'l')), val(input(n, 'v'))].map((x) => x || null));
+    const played = [0, 1, 2].filter((i) => s[i][0] !== null || s[i][1] !== null);
+    if (!played.length) return;
+    const last = played[played.length - 1];
+    let ok = true;
+    for (let i = 0; i <= last; i++) {
+      const [a, b] = s[i];
+      if (a === null || b === null) { ok = false; line(false, interpolate(gettext('Set %(n)s: falta el resultado.'), { n: i + 1 }, true)); }
+      else if (i < last && !validSet(a, b)) { ok = false; line(false, setInvalid(i + 1, a, b)); }
+    }
+    if (ok && last === 2 && (s[0][0] > s[0][1]) === (s[1][0] > s[1][1])) {
+      ok = false;
+      line(false, gettext('Set 3: no se juega si la misma pareja ha ganado los dos primeros sets. Déjalo vacío.'));
+    }
+    if (!ok) return;
+    const entered = s.slice(0, last + 1);
+    let l = entered.filter((x) => x[0] > x[1]).length;
+    let v = entered.filter((x) => x[1] > x[0]).length;
+    if (l === v) { l = entered.reduce((t, x) => t + x[0], 0); v = entered.reduce((t, x) => t + x[1], 0); }
+    if (l === v) line(false, gettext('No se puede saber quién iba ganando: el resultado está empatado.'));
+    else line(true, interpolate(gettext('Ganador del partido: %(team)s'), { team: names[l > v ? 0 : 1] }, true));
+  }
+
   function refresh() {
     checks.innerHTML = '';
+    if (retiredBox && retiredBox.checked) {
+      input(3, 'l').disabled = input(3, 'v').disabled = false;
+      refreshRetired();
+      return;
+    }
     const s = [1, 2, 3].map((n) => [val(input(n, 'l')), val(input(n, 'v'))]);
     const winners = [];
     let ok = true;
@@ -75,5 +107,6 @@ document.querySelectorAll('[data-result]').forEach(function (form) {
     });
     el.addEventListener('focus', () => el.select());
   });
+  if (retiredBox) retiredBox.addEventListener('change', refresh);
   refresh();
 });

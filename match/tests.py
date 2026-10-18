@@ -275,6 +275,30 @@ class PadelScoringTests(TestCase):
         self.bad((6, 3), (4, 6), (8, 7))
 
 
+class RetiredScoringTests(TestCase):
+    def winner(self, s1, s2=(None, None), s3=(None, None)):
+        return scoring.validate_retired_result(s1, s2, s3)[1]
+
+    def bad(self, s1, s2=(None, None), s3=(None, None)):
+        with self.assertRaises(ValidationError):
+            scoring.validate_retired_result(s1, s2, s3)
+
+    def test_incomplete_result_gives_winner(self):
+        self.assertEqual(self.winner((7, 5), (3, 0)), "local")
+        self.assertEqual(self.winner((7, 5), (2, 3)), "local")          # gana el set completo
+        self.assertEqual(self.winner((3, 1)), "local")                   # lesión en el primer set
+        self.assertEqual(self.winner((6, 3), (3, 6), (1, 2)), "visiting")  # sets 1-1 y gana el tercero a medias
+        sets, _ = scoring.validate_retired_result((7, 5), (3, 0), (0, 0))
+        self.assertEqual(sets, [(7, 5), (3, 0), (None, None)])
+
+    def test_invalid_retired_results(self):
+        self.bad((None, None), (None, None))      # nada jugado
+        self.bad((3, 1), (6, 2))                  # set 1 a medias con otro set después
+        self.bad((None, None), (3, 1))            # falta el set 1
+        self.bad((6, 3), (6, 4), (1, 0))          # set 3 con el partido decidido
+        self.bad((3, 3))                          # empatado, no se sabe quién iba ganando
+
+
 class LineupTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user("admin", password="pass-12345")
@@ -342,6 +366,19 @@ class LineupTests(TestCase):
         self.assertEqual(game.winner, "Visitante")
         self.assertRedirects(self.client.get(url), reverse("edit_result", args=[game.public_id]), fetch_redirect_response=False)
         self.assertEqual(Result.objects.filter(game=game).count(), 1)
+
+
+    def test_retired_flag_saves_incomplete_result(self):
+        self.client.post(reverse("create_game", args=[self.match.public_id]), {"ordered_games": self.lineup()})
+        game = self.match.games.get(n_game=1)
+        url = reverse("create_result", args=[game.public_id])
+        data = {"set1_local": "7", "set1_visiting": "5", "set2_local": "3", "set2_visiting": "0"}
+        self.assertIn("errors", self.client.post(url, data).context)   # sin el check no vale
+        self.client.post(url, {**data, "retired": "on"})
+        game.refresh_from_db()
+        self.assertEqual(game.winner, "Local")
+        self.assertTrue(Result.objects.get(game=game).retired)
+        self.assertContains(self.client.get(reverse("call_for_match", args=[self.match.public_id])), "Lesión")
 
 
 class FixDuplicateGamesCommandTests(TestCase):
