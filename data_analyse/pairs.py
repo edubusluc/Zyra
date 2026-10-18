@@ -119,11 +119,12 @@ def club_game_log(club, season=None, match_type=None):
 def _rank(counts, names, min_games):
     """
     Filas del top 5 a partir de ``counts`` ({clave: (victorias, jugados)}): solo las claves
-    con nombre y al menos ``min_games`` partidos, ordenadas por % de victorias.
+    con nombre, al menos ``min_games`` partidos y algún triunfo (un 0 % no es un «mejor»),
+    ordenadas por % de victorias.
     """
     rows = []
     for key, (wins, played) in counts.items():
-        if played < min_games or key not in names:
+        if played < min_games or not wins or key not in names:
             continue
         rows.append({
             'name': names[key],
@@ -210,9 +211,10 @@ def best_and_worst_pairs(pairs, n=HIGHLIGHT_N, min_games=MIN_GAMES_PAIR, worst_m
     """
     (mejores, por mejorar) de `all_pairs` por % de victorias. Las mejores necesitan al menos
     `min_games` partidos y las de por mejorar `worst_min_games` (más, para no señalar a una pareja
-    por una mala tarde). Ninguna pareja sale en ambas listas.
+    por una mala tarde). Ninguna pareja sale en ambas listas, y una pareja sin victorias nunca
+    es de las mejores.
     """
-    ranked = [r for r in pairs if r['played'] >= min_games]
+    ranked = [r for r in pairs if r['played'] >= min_games and r['wins'] > 0]
     n_best = min(n, (len(ranked) + 1) // 2) if ranked else 0
     best = sorted(ranked, key=lambda r: (-r['pct'], -r['played'], -r['wins']))[:n_best]
     rest = [r for r in pairs if r['played'] >= worst_min_games and r not in best]

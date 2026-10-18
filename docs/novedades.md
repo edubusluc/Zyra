@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 18/10/2026 · Top 5 solo con datos favorables
+
+- «Mejores parejas» y «Mejores jugadores» (local y visitante) en estadísticas por equipo ya no muestran a quien tiene 0 % de victorias aunque llegue al mínimo de partidos (antes salía una pareja con 0V-2D); si nadie cumple, el panel dice «No hay ninguna pareja con datos favorables que mostrar»
+- «Parejas destacadas» (mejores) tampoco incluye parejas sin victorias
+
 ## 18/10/2026 · Aviso por email del resultado al cerrar el acta
 
 - Al cerrar el acta de un enfrentamiento, cada miembro del club recibe un correo con el marcador, el resultado de las cinco parejas y su propio partido resaltado si jugó; hay diseño de victoria, derrota, empate y amistoso (que avisa de que no cuenta en las estadísticas competitivas)
@@ -12,9 +17,15 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 - Si el envío falla, el acta queda cerrada y `send_call_reports` lo reintenta (2, 10, 30 y 120 min)
 - Migraciones `core/0020` y `match/0012`
 - Arreglo: el catálogo inglés tenía dos entradas repetidas («fuera del equipo» y un aviso de «Completar equipo») que impedían compilarlo
+
 ## 18/10/2026 · Estadísticas: «Por número de partido» sin texto explicativo
 
 - El panel «Por número de partido» (estadísticas de equipo y de jugador) ya no lleva la nota «% de victorias en cada partido…»: título, barras y la frase de mejor/peor partido bastan y se gana espacio
+
+## 18/10/2026 · Estadísticas: «Por número de partido» más limpio y centrado
+
+- La nota del panel «Por número de partido» ya no explica quién juega el partido 1 («el partido 1 lo juega la pareja que más suma»); en jugador queda «% de victorias en cada partido del enfrentamiento.»
+- Las barras quedan centradas verticalmente en el panel cuando la tarjeta es más alta que su contenido
 
 ## 17/10/2026 · Sin doble clic en ningún formulario
 
