@@ -1,8 +1,7 @@
 {% load i18n l10n %}
-{# Balance por número de partido (1 a 5). Recibe: rows (data_analyse.sets.by_game_number), title, note, best, worst (opcionales) #}
+{# Balance por número de partido (1 a 5). Recibe: rows (data_analyse.sets.by_game_number), title, best, worst (opcionales) #}
 <article class="st-card">
   <h3 class="st-card-title">{{ title }}</h3>
-  <p class="st-card-note">{{ note }}</p>
   <ol class="st-numbers">
     {% for r in rows %}
       <li class="st-number{% if best and r.n == best.n %} st-number--best{% elif worst and r.n == worst.n %} st-number--worst{% endif %}">
