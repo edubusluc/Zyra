@@ -19,7 +19,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 18/10/2026 · Correos de Zyra legibles en el modo oscuro del móvil
 
-- Los correos pasan a un diseño claro (cabecera del resultado en tonos suaves con texto oscuro, tabla de parejas y pie claros, logo en verde oscuro): el modo oscuro de Gmail invertía solo parte de los colores y el texto lima quedaba casi invisible; ahora se invierte todo de forma coherente y mantiene el contraste
+- Los correos usan el verde lima de la app con texto negro (cabecera del resultado, cabecera de la tabla) y un pie claro con texto y logo negros: el modo oscuro de Gmail invertía solo parte de los colores y el texto lima quedaba casi invisible; con texto negro el contraste se mantiene en modo claro y oscuro
 
 ## 18/10/2026 · El capitán recibe el aviso del resultado y envío manual desde el back-office
 
