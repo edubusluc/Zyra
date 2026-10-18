@@ -11,6 +11,11 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 - El panel «Por número de partido» (estadísticas de equipo y de jugador) ya no lleva la nota «% de victorias en cada partido…»: título, barras y la frase de mejor/peor partido bastan y se gana espacio
 
+## 18/10/2026 · Estadísticas: «Por número de partido» más limpio y centrado
+
+- La nota del panel «Por número de partido» ya no explica quién juega el partido 1 («el partido 1 lo juega la pareja que más suma»); en jugador queda «% de victorias en cada partido del enfrentamiento.»
+- Las barras quedan centradas verticalmente en el panel cuando la tarjeta es más alta que su contenido
+
 ## 17/10/2026 · Sin doble clic en ningún formulario
 
 - Todos los formularios de la web que envían datos (equipos, jugadores, enfrentamientos, convocatorias, invitaciones, cuenta, back-office…) se bloquean al enviarse: el botón pulsado se deshabilita y muestra un indicador con el texto de la acción («Guardando el equipo…», «Enviando la invitación…», «Cerrando el acta…»), y un segundo clic o Intro se descarta

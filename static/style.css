@@ -2423,6 +2423,8 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 
 /* Por número de partido, sets, récords y ranking SNP (estadísticas) */
 .st-numbers { margin: 4px 0 0; padding: 0; list-style: none; }
+.st-card--center { display: flex; flex-direction: column; }
+.st-card--center > .st-numbers { margin-block: auto; width: 100%; }
 .st-number .st-split-head small { font-weight: 500; color: var(--st-muted); }
 .st-number--best .st-split-head b { color: var(--z-lime); }
 .st-number--worst .st-meter span { background: var(--st-loss); }

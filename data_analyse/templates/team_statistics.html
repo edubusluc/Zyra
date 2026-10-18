@@ -144,8 +144,8 @@
       <section id="sec-numbers" aria-labelledby="numbers-title" class="st-section mt-4">
         <h2 class="st-section-title" id="numbers-title">{% translate "Partidos y sets" %}</h2>
         <div class="st-row">
-          {% translate "Por número de partido" as t_title %}
-          {% include 'includes/game_numbers.html' with rows=game_numbers title=t_title best=best_number worst=worst_number %}
+          {% translate "Por número de partido" as t_title %}{% translate "% de victorias en cada partido del enfrentamiento. Las parejas se ordenan por puntos SNP." as t_note %}
+          {% include 'includes/game_numbers.html' with rows=game_numbers title=t_title note=t_note best=best_number worst=worst_number %}
           {% translate "Sets" as t_title %}{% translate "Cómo se ganan y se pierden los partidos, set a set." as t_note %}
           {% include 'includes/set_stats.html' with st=set_stats title=t_title note=t_note %}
         </div>

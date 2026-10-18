@@ -11757,3 +11757,16 @@ msgstr "Approving the photo…"
 
 msgid "Vinculando tu jugador…"
 msgstr "Linking your player…"
+
+#: data_analyse/templates/team_statistics.html:147
+#, python-format
+msgid ""
+"%% de victorias en cada partido del enfrentamiento. Las parejas se ordenan "
+"por puntos SNP."
+msgstr ""
+"%% of wins in each match of the fixture. Pairs are ordered by SNP points."
+
+#: data_analyse/templates/player_statistics.html:124
+#, python-format
+msgid "%% de victorias en cada partido del enfrentamiento."
+msgstr "%% of wins in each match of the fixture."
