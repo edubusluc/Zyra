@@ -30,7 +30,7 @@ from .notifications import LEASE, MAX_ATTEMPTS, RETRY_DELAYS, _close
 logger = logging.getLogger(__name__)
 
 # Fondo y color de acento de la cabecera según el resultado del club (V, D, E) y el amistoso.
-BANDS = {"V": ("#B4F100", "#0B0B0B"), "D": ("#FBE4E5", "#0B0B0B"), "E": ("#FFF1C7", "#0B0B0B"),
+BANDS = {"V": ("#B4F100", "#0B0B0B"), "D": ("#FF5252", "#0B0B0B"), "E": ("#FFF1C7", "#0B0B0B"),
          "A": ("#EDEDE8", "#0B0B0B")}
 
 
