@@ -7713,15 +7713,6 @@ msgstr "Matches and sets"
 msgid "Por número de partido"
 msgstr "By match number"
 
-#: data_analyse/templates/player_statistics.html:124
-#, python-format
-msgid ""
-"%% de victorias en cada partido del enfrentamiento (el 1 lo juega la pareja "
-"con más puntos SNP)."
-msgstr ""
-"%% of wins in each match of the fixture (match 1 is played by the pair with "
-"most SNP points)."
-
 #: data_analyse/templates/player_statistics.html:126 match/monthly_pdf.py:128
 msgid "Sets clutch"
 msgstr "Clutch sets"
@@ -8023,15 +8014,6 @@ msgstr "The pair's win %% away."
 #: data_analyse/templates/team_statistics.html:140
 msgid "Ninguna pareja llega al mínimo de partidos como visitante."
 msgstr "No pair has reached the minimum number of away matches."
-
-#: data_analyse/templates/team_statistics.html:148
-#, python-format
-msgid ""
-"%% de victorias en cada partido del enfrentamiento. Las parejas se ordenan "
-"por puntos SNP: el partido 1 lo juega la pareja que más suma."
-msgstr ""
-"%% of wins in each match of the fixture. Pairs are ordered by SNP points: "
-"match 1 is played by the pair with the highest total."
 
 #: data_analyse/templates/team_statistics.html:150
 msgid "Cómo se ganan y se pierden los partidos, set a set."

@@ -12,6 +12,9 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 - Si el envío falla, el acta queda cerrada y `send_call_reports` lo reintenta (2, 10, 30 y 120 min)
 - Migraciones `core/0020` y `match/0012`
 - Arreglo: el catálogo inglés tenía dos entradas repetidas («fuera del equipo» y un aviso de «Completar equipo») que impedían compilarlo
+## 18/10/2026 · Estadísticas: «Por número de partido» sin texto explicativo
+
+- El panel «Por número de partido» (estadísticas de equipo y de jugador) ya no lleva la nota «% de victorias en cada partido…»: título, barras y la frase de mejor/peor partido bastan y se gana espacio
 
 ## 17/10/2026 · Sin doble clic en ningún formulario
 
