@@ -3,6 +3,16 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 18/10/2026 · Aviso por email del resultado al cerrar el acta
+
+- Al cerrar el acta de un enfrentamiento, cada miembro del club recibe un correo con el marcador, el resultado de las cinco parejas y su propio partido resaltado si jugó; hay diseño de victoria, derrota, empate y amistoso (que avisa de que no cuenta en las estadísticas competitivas)
+- Quien cierra el acta no lo recibe. Si se reabre y se cierra con el mismo marcador no se repite; con otro, llega «Resultado corregido»
+- Se desactiva desde «Mi perfil» (interruptor «Aviso del resultado por email») o con el enlace de baja del propio correo
+- Back-office → «Salud de los servicios»: panel de avisos de resultado (enviados, fallidos, pendientes, último envío y lista de problemas); los fallidos suben a la bandeja de atención, a las alertas por email y al resumen semanal
+- Si el envío falla, el acta queda cerrada y `send_call_reports` lo reintenta (2, 10, 30 y 120 min)
+- Migraciones `core/0020` y `match/0012`
+- Arreglo: el catálogo inglés tenía dos entradas repetidas («fuera del equipo» y un aviso de «Completar equipo») que impedían compilarlo
+
 ## 17/10/2026 · Sin doble clic en ningún formulario
 
 - Todos los formularios de la web que envían datos (equipos, jugadores, enfrentamientos, convocatorias, invitaciones, cuenta, back-office…) se bloquean al enviarse: el botón pulsado se deshabilita y muestra un indicador con el texto de la acción («Guardando el equipo…», «Enviando la invitación…», «Cerrando el acta…»), y un segundo clic o Intro se descarta

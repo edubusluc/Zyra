@@ -1,0 +1,15 @@
+{% load i18n %}{% autoescape off %}{% blocktranslate with name=name %}Hola {{ name }},{% endblocktranslate %}
+
+{% if correction %}{% blocktranslate trimmed with previous=previous score=score %}Se ha corregido el acta del enfrentamiento: el marcador anterior era {{ previous }} y el resultado final es {{ score }}.{% endblocktranslate %}{% elif friendly %}{% blocktranslate trimmed %}Se ha cerrado el acta del amistoso (no cuenta en las estadísticas competitivas).{% endblocktranslate %}{% else %}{% blocktranslate trimmed with rival=rival %}Se ha cerrado el acta del enfrentamiento contra {{ rival }}.{% endblocktranslate %}{% endif %}
+
+{{ label }} {{ score }} · {{ club }} vs {{ rival }} · {{ date }}
+{% if mine %}
+{% if mine.won %}{% blocktranslate with n=mine.n sets=mine.sets %}Ganaste tu partido {{ n }} · {{ sets }}{% endblocktranslate %}{% else %}{% blocktranslate with n=mine.n sets=mine.sets %}Perdiste tu partido {{ n }} · {{ sets }}{% endblocktranslate %}{% endif %}
+{% endif %}
+{% for r in rows %}P{{ r.n }} {{ r.pair }} {{ r.sets }} {% if r.won %}+{{ r.points }}{% else %}0{% endif %}
+{% endfor %}
+{% translate "Ver el acta completa" %}: {{ match_url }}
+
+{% translate "¡Nos vemos en pista!" %}
+
+{% translate "Dejar de recibir estos avisos" %}: {{ unsubscribe_url }}{% endautoescape %}

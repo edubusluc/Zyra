@@ -29,12 +29,21 @@ class UserPreference(models.Model):
     ``report_scope`` es el valor que propone el formulario de crear partido para los datos
     del informe PDF; en cada partido se puede cambiar al crearlo. ``monthly_report`` activa el
     informe mensual por email del jugador (``send_monthly_reports``) y ``monthly_scope`` elige
-    si cuenta todos sus partidos o solo los competitivos.
+    si cuenta todos sus partidos o solo los competitivos. ``match_result_email`` activa el aviso
+    del resultado al cerrarse el acta de un enfrentamiento de su club.
     """
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="preference")
     report_scope = models.CharField(max_length=15, choices=REPORT_SCOPES, default=REPORT_SCOPE_ALL)
     monthly_report = models.BooleanField(default=True)
     monthly_scope = models.CharField(max_length=15, choices=REPORT_SCOPES, default=REPORT_SCOPE_ALL)
+    # Aviso por email con el resultado cuando el capitán cierra el acta de un enfrentamiento.
+    match_result_email = models.BooleanField(default=True)
+
+    @classmethod
+    def match_result_for(cls, user):
+        """True si ``user`` quiere recibir el aviso del resultado de los enfrentamientos (por defecto sí)."""
+        value = cls.objects.filter(user=user).values_list("match_result_email", flat=True).first()
+        return True if value is None else value
 
     @classmethod
     def report_scope_for(cls, user):

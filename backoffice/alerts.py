@@ -29,6 +29,8 @@ def current_problems(now=None):
     problems = {}
     if counts["scheduler_late"]:
         problems["scheduler"] = _("El lanzador de procesos no está en marcha.")
+    if counts["results_failed"]:
+        problems["results"] = _("Hay %(n)s avisos de resultado fallidos en los últimos 7 días.") % {"n": counts["results_failed"]}
     if counts["reports_failed"]:
         problems["reports"] = _("Hay %(n)s informes de convocatoria fallidos en los últimos 7 días.") % {"n": counts["reports_failed"]}
     if counts["snp_failing"] >= SNP_FAILING_CLUBS:
