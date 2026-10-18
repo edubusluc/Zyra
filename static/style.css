@@ -2422,13 +2422,12 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 }
 
 /* Por número de partido, sets, récords y ranking SNP (estadísticas) */
-.st-numbers { margin: 4px 0 0; padding: 0; list-style: none; }
-.st-card--center { display: flex; flex-direction: column; }
-.st-card--center > .st-numbers { margin-block: auto; width: 100%; }
+/* Mismo arranque y ritmo que «Sets» (.st-rate): las filas empiezan bajo la descripción y reparten la altura sobrante */
+.st-numbers { display: flex; flex: 1; flex-direction: column; justify-content: space-between; margin: 0; padding: 0; list-style: none; }
+.st-number { margin-top: 18px; }
 .st-number .st-split-head small { font-weight: 500; color: var(--st-muted); }
 .st-number--best .st-split-head b { color: var(--z-lime); }
 .st-number--worst .st-meter span { background: var(--st-loss); }
-.st-numbers-note { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--st-line); }
 .st-facts--sets { grid-template-columns: repeat(auto-fit, minmax(min(100%, 92px), 1fr)); gap: 10px; margin-top: 16px; }
 .st-facts--sets .st-fact { padding: 12px; }
 .st-facts--sets dt { font-size: .74rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--st-muted); }
