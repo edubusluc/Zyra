@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 18/10/2026 · Estadísticas: «Por número de partido» sin texto explicativo
+
+- El panel «Por número de partido» (estadísticas de equipo y de jugador) ya no lleva la nota «% de victorias en cada partido…»: título, barras y la frase de mejor/peor partido bastan y se gana espacio
+
 ## 17/10/2026 · Sin doble clic en ningún formulario
 
 - Todos los formularios de la web que envían datos (equipos, jugadores, enfrentamientos, convocatorias, invitaciones, cuenta, back-office…) se bloquean al enviarse: el botón pulsado se deshabilita y muestra un indicador con el texto de la acción («Guardando el equipo…», «Enviando la invitación…», «Cerrando el acta…»), y un segundo clic o Intro se descarta
