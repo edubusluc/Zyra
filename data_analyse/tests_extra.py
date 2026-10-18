@@ -153,6 +153,7 @@ class ClubSetsTests(ClubDataMixin, TestCase):
     def test_team_page_shows_new_sections(self):
         response = self.client.get(reverse('team_statistics'))
         self.assertContains(response, "Por número de partido")
+        self.assertNotContains(response, "Mejor en el partido")
         self.assertContains(response, "Set decisivo")
         self.assertContains(response, "Récords del equipo")
         self.assertContains(response, "Ranking SNP del equipo")

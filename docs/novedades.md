@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 18/10/2026 · «Por número de partido» alineado con «Sets»
+
+- Las barras del panel «Por número de partido» (equipo y jugador) arrancan justo bajo la descripción, con la misma altura de fila y espaciado que «Sets», y se reparten la altura del panel sin hueco vacío arriba
+- Se quita la frase bajo el gráfico («Mejor en el partido 2… y peor en el partido 1…»); el mejor y el peor partido siguen marcados con color
+
 ## 18/10/2026 · Top 5 solo con datos favorables
 
 - «Mejores parejas» y «Mejores jugadores» (local y visitante) en estadísticas por equipo ya no muestran a quien tiene 0 % de victorias aunque llegue al mínimo de partidos (antes salía una pareja con 0V-2D); si nadie cumple, el panel dice «No hay ninguna pareja con datos favorables que mostrar»
