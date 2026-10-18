@@ -6942,6 +6942,19 @@ msgstr "Match %(n)s <small>· %(value)s points</small>"
 msgid "%(wins)sV – %(losses)sD · %(points)s de %(stake)s puntos"
 msgstr "%(wins)sW – %(losses)sL · %(points)s of %(stake)s points"
 
+#: data_analyse/templates/includes/game_numbers.html:5
+msgid "Mejor partido"
+msgstr "Best match"
+
+#: data_analyse/templates/includes/game_numbers.html:10
+msgid "Partido más flojo"
+msgstr "Weakest match"
+
+#: data_analyse/templates/includes/game_numbers.html:6
+#, python-format
+msgid "Partido %(n)s · %(pct)s %%"
+msgstr "Match %(n)s · %(pct)s %%"
+
 #: data_analyse/templates/includes/game_numbers.html:14
 msgid "Sin partidos"
 msgstr "No matches"

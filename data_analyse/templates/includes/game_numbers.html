@@ -3,9 +3,19 @@
 <article class="st-card">
   <h3 class="st-card-title">{{ title }}</h3>
   <p class="st-card-note">{{ note }}</p>
+  <dl class="st-facts st-facts--numbers">
+    <div class="st-fact">
+      <dt>{% translate "Mejor partido" %}</dt>
+      <dd>{% if best %}{% blocktranslate with n=best.n pct=best.pct %}Partido {{ n }} · {{ pct }} %{% endblocktranslate %}{% else %}—{% endif %}</dd>
+    </div>
+    <div class="st-fact">
+      <dt>{% translate "Partido más flojo" %}</dt>
+      <dd>{% if worst %}{% blocktranslate with n=worst.n pct=worst.pct %}Partido {{ n }} · {{ pct }} %{% endblocktranslate %}{% else %}—{% endif %}</dd>
+    </div>
+  </dl>
   <ol class="st-numbers">
     {% for r in rows %}
-      <li class="st-number{% if best and r.n == best.n %} st-number--best{% elif worst and r.n == worst.n %} st-number--worst{% endif %}">
+      <li class="st-number">
         <div class="st-split-head">
           <span>{% blocktranslate with n=r.n value=r.value %}Partido {{ n }} <small>· {{ value }} puntos</small>{% endblocktranslate %}</span>
           <b>{% if r.pct is None %}—{% else %}{{ r.pct }}%{% endif %}</b>

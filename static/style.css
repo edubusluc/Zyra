@@ -2426,11 +2426,11 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 .st-numbers { display: flex; flex: 1; flex-direction: column; justify-content: space-between; margin: 0; padding: 0; list-style: none; }
 .st-number { margin-top: 18px; }
 .st-number .st-split-head small { font-weight: 500; color: var(--st-muted); }
-.st-number--best .st-split-head b { color: var(--z-lime); }
-.st-number--worst .st-meter span { background: var(--st-loss); }
 .st-facts--sets { grid-template-columns: repeat(auto-fit, minmax(min(100%, 92px), 1fr)); gap: 10px; margin-top: 16px; }
-.st-facts--sets .st-fact { padding: 12px; }
-.st-facts--sets dt { font-size: .74rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--st-muted); }
+.st-facts--numbers { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 16px; }
+.st-facts--numbers dd { font-size: 1.1rem; }
+.st-facts--sets .st-fact, .st-facts--numbers .st-fact { padding: 12px; }
+.st-facts--sets dt, .st-facts--numbers dt { font-size: .74rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--st-muted); }
 .st-facts--sets dd { margin: 4px 0 0; font-size: 1.35rem; font-weight: 800; color: #FFFFFF; font-variant-numeric: tabular-nums; }
 .st-facts--sets .st-fact-name { font-size: 1rem; overflow-wrap: anywhere; }
 .st-sets-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 0 22px; }

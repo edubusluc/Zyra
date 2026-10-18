@@ -374,7 +374,7 @@ def team_extra_context(club, season, match_type, log):
     partido, sets, récords y ranking SNP de la plantilla (de la temporada elegida o la actual).
     """
     numbers = by_game_number(log)
-    best_number, worst_number = best_and_worst_number(numbers)
+    best_number, worst_number = best_and_worst_number(numbers, min_games=1)
     snp_season = season or current_season()
     snp = records.snp_ranking(club, snp_season)
     return {
@@ -777,6 +777,8 @@ def statistics_per_player(request):
     # Resumen y afinidad siguen la temporada elegida; la evolución por temporadas usa siempre el registro completo.
     season_log = [g for g in log if g['season'] == selected_season] if selected_season else log
     summary = summarize(season_log)
+    player_numbers = by_game_number(season_log)
+    player_best_number, player_worst_number = best_and_worst_number(player_numbers, min_games=1)
     calls_present, calls_total = calls_by_season(player, match_type)
     rows = summarize_by_season(log, calls_present, calls_total)
     aligned = aligned_by_season(player, match_type)
@@ -830,7 +832,9 @@ def statistics_per_player(request):
         'chart_affinity': degree_of_affinity(player, match_type, selected_season),
         'lineup_rate': lineup_rate,
         'signup_rate': signup_rate,
-        'game_numbers': by_game_number(season_log),
+        'game_numbers': player_numbers,
+        'best_number': player_best_number,
+        'worst_number': player_worst_number,
         'clutch': set_stats(season_log),
         'snp_season': snp_season,
         'chart_snp': {
