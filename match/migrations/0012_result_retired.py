@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("match", "0009_season_starts_in_august"),
+        ("match", "0011_alter_match_report_scope"),
     ]
 
     operations = [

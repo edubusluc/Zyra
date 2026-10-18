@@ -10,7 +10,7 @@ from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
-from players.models import Player
+from players.models import Player, SnpAccount
 from team.models import Team
 from .blocklist import is_user_blocked
 from .models import Club, Invitation, Membership
@@ -117,6 +117,12 @@ def transfer_captaincy(club, current, target):
     current.save(update_fields=["role"])
     target.role = Membership.ADMIN
     target.save(update_fields=["role"])
+    # Las credenciales SNP eran del capitán saliente: se borran y el nuevo capitán ve de nuevo
+    # «Primeros pasos» con la tarea de registrar las suyas.
+    SnpAccount.objects.filter(club=club).delete()
+    if club.onboarding_dismissed_at is not None:
+        club.onboarding_dismissed_at = None
+        club.save(update_fields=["onboarding_dismissed_at"])
     return target
 
 

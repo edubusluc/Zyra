@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
 {% load i18n %}
-{% block page_title %}{% translate "Crear partidos" %} · {% endblock %}
+{% block page_title %}{% translate "Alinear parejas" %} · {% endblock %}
 
 {% block content %}
 <div class="z-page-head">
     <div>
         <a href="{% url 'call_for_match' match.public_id %}" class="z-eyebrow"><i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i> {{ match.local_name }} vs {{ match.visiting_name }}</a>
-        <h1>{% translate "Crear partidos" %}</h1>
+        <h1>{% translate "Alinear parejas" %}</h1>
     </div>
 </div>
 
-{% include 'includes/lineup_form.html' with slots="12345"|make_list submit_label=_("Guardar partidos") %}
+{% include 'includes/lineup_form.html' with slots="12345"|make_list submit_label=_("Guardar parejas") %}
 {% endblock %}

@@ -51,7 +51,7 @@ entero sigue siendo la clave de los FK. Excepciones sin `public_id`: `backoffice
 - `club` y `team` (siempre el equipo propio; `save()` lo asigna si falta y copia `gender`).
 - `user` (enlace a la cuenta, `SET_NULL`); única por (`club`, `user`) cuando no es nulo.
 - `in_team` (False = ya no está en la plantilla, se conserva para estadísticas), `snp_score`,
-  `joined_season` (`AAAA-AAAA`), `position`, `skillfull_hand` (sic).
+  `joined_season` (`AAAA-AAAA`, selector con las de `season_choices`; las convocatorias anteriores no cuentan en sus estadísticas, `joined_by`), `position`, `skillfull_hand` (sic).
 - Mostrar siempre `full_name` / `short_name` (mayúsculas); lo guardado no se toca.
 - Temporada: de septiembre a agosto (`SEASON_START_MONTH = 9`, `current_season()`).
 

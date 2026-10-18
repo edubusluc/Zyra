@@ -130,7 +130,7 @@ class BackofficeDataTests(TestCase):
         names = lambda **p: [u.username for u in self.client.get(url, p).context["page"]]
         self.assertEqual(names(q="ana@"), ["ana"])
         self.assertEqual(names(kind="google"), ["bea"])
-        self.assertEqual(names(kind="no_club"), ["staff"])
+        self.assertEqual(names(kind="no_club"), [])
         self.assertEqual(names(kind="staff"), ["staff"])
 
     def test_detail_pages_show_club_data(self):
@@ -142,6 +142,11 @@ class BackofficeDataTests(TestCase):
         response = self.client.get(reverse("backoffice:user_detail", args=[self.admin_b.id]))
         self.assertContains(response, "Club Beta")
         self.assertContains(response, "Google")
+        self.assertContains(response, "Sin enlazar")
+        Player.objects.create(club=self.club_b, name="Bea", last_name="Dos", user=self.admin_b)
+        response = self.client.get(reverse("backoffice:user_detail", args=[self.admin_b.id]))
+        self.assertContains(response, "BEA DOS")
+        self.assertNotContains(response, "Sin enlazar")
         self.assertFalse(Membership.objects.filter(user=self.staff).exists())
 
 

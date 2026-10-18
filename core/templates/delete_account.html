@@ -14,7 +14,7 @@
         <a class="btn btn-outline-secondary btn-lg mt-2" href="{% url 'my_profile' %}">{% translate "Volver a Mi perfil" %}</a>
         {% else %}
         <p class="text-muted">{% translate "Se borrarán tu cuenta, tus preferencias y el acceso a tus clubes. Esta acción no se puede deshacer." %}</p>
-        <form method="post" novalidate>
+        <form method="post" novalidate data-loading-text="{% translate 'Eliminando tu cuenta…' %}">
             {% csrf_token %}
             {% if player %}
             <div class="form-check mb-3">

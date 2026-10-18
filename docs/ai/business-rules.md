@@ -21,9 +21,13 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
 
 - [V] Una cuenta pertenece a un solo club (no suspendido): `core.services.club_of`; lo comprueban
   `register_club` y `accept_invitation`. Tests: `core/tests_onboarding.py`, `core/tests_invitations.py`.
+- [V] Se puede crear una cuenta sin club (`register_account`, o Google desde esa página): queda en `no_club` hasta aceptar una
+  invitación o registrar un club. Back-office: KPI «Sin club» (`accounts_without_club`: activas y no staff), filtro `?kind=no_club`.
+  Tests: `core/tests_account_without_club.py`, `AccountsWithoutClubTests` en `backoffice/tests_ops.py`.
 - [V] Un club tiene un único capitán (restricción `unique_captain_per_club`). Se cede con
   `transfer_captaincy` (vista `transfer_captaincy_view`) solo a un miembro enlazado a un `Player` del club
-  (`eligible_successors`); el antiguo pasa a miembro. El capitán no puede quitarse ni abandonar sin ceder antes.
+  (`eligible_successors`); el antiguo pasa a miembro y se borra la `SnpAccount` del club (eran sus credenciales) y se reabre «Primeros pasos»
+  (`onboarding_dismissed_at=None`), cuyos 3 pasos son «Conecta SNP o añade a tus jugadores», «Invita a tus jugadores» y «Crea tu primer enfrentamiento» (se muestran primero en la portada y ocultan los bloques vacíos mientras queden pendientes). El capitán no puede quitarse ni abandonar sin ceder antes.
 - [V] Eliminar la cuenta («Mi perfil», `delete_account`): un capitán debe ceder antes la capitanía
   (`account_delete_blocker`); la ficha de jugador se desenlaza (o se borra si se elige). El capitán
   solo puede eliminar el club tras desvincular todas las demás cuentas. Tests: `core/tests_account_lifecycle.py`.
@@ -41,6 +45,7 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
 - [V] Frenos en caché compartida (`core/ratelimit.py`, tabla `django_cache`; IP real con `TRUSTED_PROXY_COUNT`): login
   5 fallos → 15 min, registro, invitaciones, comprobación de contraseña y reenvíos (429).
 - [V] Cambiar el email en «Mi perfil» pide la contraseña actual (`EmailChangeForm`). Tests: `core/tests_profile.py`.
+- [V] Usuario único sin distinguir mayúsculas (validación) y email único en la base de datos (índice `LOWER(email)`, migración `core/0019`); si dos registros chocan, el formulario muestra el error en vez de un 500. Tests: `core/tests_invitations.py`.
 
 ### Invitaciones
 
@@ -81,7 +86,7 @@ Orden obligatorio del ciclo (`match/views.py`) [V], cubierto por `match/tests_fl
 1. **Partido** (`MatchForm`): el equipo propio juega como local o visitante; local ≠ visitante.
    Amistoso: `match_type="amistoso"`; puede tener rival escrito a mano (`rival_name`, sin crear
    `Team`, ese lado `NULL`) que no puede llamarse como el equipo propio.
-2. **Convocatoria**: una por partido; si ya existe o el acta está cerrada → `existing_call`.
+2. **Convocatoria** (mínimo 10 jugadores al crearla y al editarla, `MIN_CALL_PLAYERS` en `match/phase.py`): una por partido; si ya existe o el acta está cerrada → `existing_call`.
    Se edita mientras el acta siga abierta (`edit_call` mira `match.draft_mode`); cada cambio se anota en `CallLog`.
 3. **Cerrar convocatoria** (`close_call`, POST): ≥10 jugadores y abierta. Siempre se cierra aunque
    falle el envío del informe.
@@ -94,8 +99,10 @@ Orden obligatorio del ciclo (`match/views.py`) [V], cubierto por `match/tests_fl
    (`validate_retired_result`, p. ej. 7-5 / 3-0): gana quien va ganando (más sets, luego más juegos).
    Al guardar fija `Game.winner`.
 6. **Cerrar acta** (`close_match`, POST): acta abierta y 5 partidos con resultado. Suma puntos,
-   fija `Match.result` (valores canónicos en `match/outcomes.py`; `EMPATE` posible, p. ej. 6/6) y `result_points`,
-   y cierra `Game.draft_mode`. Siempre son 5 partidos: no se contempla un acta con menos. Todo en una transacción.
+   fija `Match.result` (valores canónicos en `match/outcomes.py`; `EMPATE` posible, p. ej. 6/6, salvo en Reto y Play Off: ahí el 6-6 lo decide el ganador del partido 3, `determine_match_result`) y `result_points`,
+   y cierra `Game.draft_mode`. Con fecha futura exige `confirm_future`. Los resultados se pueden
+   meter de una vez en `enter_results` (guardado parcial; «Guardar y cerrar acta»). La fase y la siguiente acción salen siempre de
+   `match/phase.py` (`phase_of`/`phases_for`), que usan el inicio, el listado y la página del enfrentamiento. Siempre son 5 partidos: no se contempla un acta con menos. Todo en una transacción.
 7. **Reabrir acta** (`reopen_match`, POST, capitán): vuelve a borrador, resultado `NONE`, anota `reopened_at/by`.
 
 Con el acta cerrada [V]: no se borra el partido (`delete_match`) ni su convocatoria (`delete_call`),
@@ -137,9 +144,10 @@ ni se editan parejas (`edit_game_match`).
 - [V] `update_snp_scores`: ciclo semanal desde el lunes 23:00 (Madrid); solo clubes pendientes o
   con fallo reintentable. Fallos de usuario/contraseña no se reintentan solos (evita bloquear la
   cuenta del capitán). Para ante 429/403/503 o fallos de red seguidos.
+- [V] Mientras una búsqueda web está en marcha (`SnpTeamImport.RUNNING`) los capitanes ven en toda la web la barra de `core/templates/includes/sync_bar.html` (`progress`/`stage` del import, `sync_status`) y `not_while_syncing` bloquea `create_player`, `create_team` y `create_match`.
 - [V] «Completar equipo» desde la web: solo UNA vez con éxito (en el alta o con la cuenta SNP ya registrada;
-  `snp_import.web_import_done`), máx. 3 búsquedas al día con 5 min entre ellas. Cada búsqueda fallida suma a
-  `Club.snp_import_failures` (no cuenta si el servicio SNP está apagado); al llegar a `MAX_FAILED_SEARCHES` (3) la
+  `snp_import.web_import_done`), máx. 3 búsquedas al día con 1 min entre ellas (no cuentan las canceladas ni las rechazadas por cuenta SNP ya corregida; guardar la cuenta SNP con datos distintos pone `snp_import_failures` a 0). Si SNP rechazó la cuenta y no ha cambiado, no se relanza (`account_unchanged_after_failure`); la tarea «Conecta SNP o añade a tus jugadores» solo se marca con una búsqueda web hecha. Cada búsqueda fallida suma a
+  `Club.snp_import_failures` (no cuenta si el servicio SNP está apagado); la portada del capitán muestra la tarea «Sincronizar datos» (`snp_import.sync_task`) hasta que haya una búsqueda web hecha: «Sincronizar datos»/«Reintentar» (si no hay bloqueo ni espera), «Ver progreso» y «Cancelar» si está en curso, y «Revisar cuenta SNP»; al llegar a `MAX_FAILED_SEARCHES` (3) la
   opción se oculta (`web_blocked`), se avisa al capitán de que el administrador ha sido notificado y al personal
   por email + auditoría `club.snp_import_blocked`. Después solo el back-office o el proceso automático
   (`players/snp_import.py`); el personal repone el contador desde la ficha del club. Los clubes con `Club.snp_unlimited` (editable en el back-office, ficha del club)
@@ -152,7 +160,8 @@ ni se editan parejas (`edit_game_match`).
 
 ## Estadísticas
 
-- [V] Solo cuentan partidos con el acta cerrada (`pairs.club_game_log`, `calculate_match_statistics`).
+- Un jugador solo cuenta convocatorias (apuntado, alineado, no apuntado; informe mensual incluido) desde su `joined_season`: `players.models.joined_by`. Los partidos jugados y las advertencias son hechos y no se filtran.
+- [V] Solo cuentan partidos con el acta cerrada (`pairs.club_game_log`, `calculate_match_statistics`). Las consultas de `Game`/`Call` filtran también `match__draft_mode=False`.
 - [V] Una pareja es la misma con independencia de quién juegue en cada lado (`pairs.pair_key`);
   los rankings exigen un mínimo de partidos (`min_games_pair`).
 - [V] Filtro de tipo: Todos / Competitivos / Amistosos (`?match_type=`); temporada `?season=` (equipo, jugador y parejas; sin ella, todas las temporadas).
@@ -173,4 +182,16 @@ ni se editan parejas (`edit_game_match`).
 
 - [V] Español por defecto; inglés solo si se elige en el selector (cookie) o con `?lang=en` en la URL.
   No se mira el idioma del navegador (`LanguageMiddleware`). Tests: `core/tests_i18n.py`, `core/tests_seo.py`.
+- [V] Guías públicas `/guia/` (`core/guides.py`, `GUIDES`): cada guía existe en es y en en como plantilla
+  `core/templates/guides/<slug>.<idioma>.html` (no pasa por `.po`); título y descripción por idioma en `GUIDES`. Entran en el sitemap
+  (`GuidesSitemap`) con hreflang y llevan JSON-LD `Article` + `BreadcrumbList` (`seo.guide_structured_data`). Una guía nueva: añadirla a `GUIDES`,
+  crear sus dos plantillas y su URL aparece sola en sitemap, portada y tests de accesibilidad. `/guia/plantilla-convocatoria-padel.pdf` es un PDF
+  en blanco público (`build_template_pdf`). La imagen para compartir es `static/zyra/og-image-v2.png` (1200×630, `scripts/make_og_image.py`).
+- [V] Pie «Hecho con Zyra · dominio» en el PDF de convocatoria, el informe mensual y los correos (`match.report_pdf.draw_made_with`,
+  `core/emails.build_email`); sin `SITE_URL` solo el texto, sin enlace. Tests: `core/tests_seo.py`.
 - [V] Cada página nueva debe añadirse a `core/tests_accessibility.py` (ver `docs/mantener-documentacion.md`).
+
+## Temporada por defecto
+
+`core/season_choice.choose_season`: `?season=` válida (o `all`) > última elección de la sesión > temporada actual > «Todas».
+Lo usan el listado de enfrentamientos, las estadísticas (equipo, jugador, pareja) y las advertencias.

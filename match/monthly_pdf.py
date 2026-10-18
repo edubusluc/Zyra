@@ -14,7 +14,7 @@ from reportlab.platypus import BaseDocTemplate, Frame, PageTemplate, KeepTogethe
 
 from .monthly_report import CALL_ABSENT, CALL_BENCHED, CALL_PLAYED, MAX_CALL_ROWS, MAX_GAME_ROWS
 from .report_pdf import (
-    draw_page_header, BOTTOM_MARGIN, CONTENT_W, GUTTER, HEADING_GAP, MARGIN, PAGE_H, PAGE_W,
+    draw_made_with, draw_page_header, BOTTOM_MARGIN, CONTENT_W, GUTTER, HEADING_GAP, MARGIN, PAGE_H, PAGE_W,
     BORDER, LIME, MUTED, SECTION_GAP, TOP_MARGIN, _data_table, _fit, _kpis, _panel, _pips, _record, _register_fonts,
     _streak_label, _styles, esc,
 )
@@ -44,6 +44,7 @@ def _on_page(canvas, doc, report):
     draw_page_header(canvas, report["club"].name, month_label(report["month"]).upper())
     canvas.setFont("Archivo", 7)
     canvas.drawString(MARGIN, 8 * mm, _("Informe mensual automático · Zyra"))
+    draw_made_with(canvas, PAGE_W - MARGIN, align="right")
     canvas.restoreState()
 
 

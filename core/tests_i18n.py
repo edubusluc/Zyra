@@ -19,7 +19,7 @@ class LanguageTests(TestCase):
     def test_spanish_by_default_even_if_browser_prefers_english(self):
         response = self.client.get(reverse("home"), HTTP_ACCEPT_LANGUAGE="en-US,en;q=0.9")
         self.assertContains(response, '<html lang="es"')
-        self.assertContains(response, "Jugadores")
+        self.assertContains(response, "Plantilla")
         self.assertContains(response, "English")
         self.assertEqual(response["Content-Language"], "es")
 
@@ -29,7 +29,7 @@ class LanguageTests(TestCase):
 
         response = self.client.get(reverse("home"))
         self.assertContains(response, '<html lang="en"')
-        self.assertContains(response, "Players")
+        self.assertContains(response, "Squad")
         self.assertContains(response, "Log out")
         self.assertNotContains(response, "Cerrar sesión")
 

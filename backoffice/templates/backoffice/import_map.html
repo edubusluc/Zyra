@@ -15,7 +15,7 @@
 <p>{% blocktranslate trimmed with filename=job.filename entity=entity.label club=job.club.name mode=job.mode_label %}<strong>{{ filename }}</strong> → {{ entity }} de <strong>{{ club }}</strong> · {{ mode }}.{% endblocktranslate %}</p>
 <p class="text-muted">{{ entity.help }} {% translate "Las celdas vacías dejan el valor por defecto en las altas y no cambian nada en las actualizaciones." %}</p>
 
-<form method="post">
+<form method="post" data-loading-text="{% translate 'Validando el fichero…' %}">
     {% csrf_token %}
     <div class="z-table-wrap"><table class="table align-middle">
         <thead><tr><th>{% translate "Campo de Zyra" %}</th><th>{% translate "Columna del fichero" %}</th><th>{% translate "Ejemplo del fichero" %}</th></tr></thead>

@@ -39,6 +39,8 @@
     ['aria-label', 'aria-labelledby', 'aria-describedby'].forEach((name) => {
       if (select.hasAttribute(name)) trigger.setAttribute(name, select.getAttribute(name));
     });
+    // Un campo obligatorio se anuncia como tal (el <select> real queda oculto a los lectores)
+    if (select.required) trigger.setAttribute('aria-required', 'true');
     const text = document.createElement('span');
     text.className = 'z-select-text';
     trigger.appendChild(text);

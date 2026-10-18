@@ -14,7 +14,7 @@
 <div class="alert-message">{% for message in messages %}<p>{{ message }}</p>{% endfor %}</div>
 {% endif %}
 
-<form method="post" action="{% url 'backoffice:task_add' %}" class="bo-filters">
+<form method="post" action="{% url 'backoffice:task_add' %}" class="bo-filters" data-loading-text="{% translate 'Añadiendo la tarea…' %}">
     {% csrf_token %}
     <input type="text" name="title" required maxlength="200" class="form-control" placeholder="{% translate 'Tarea (p. ej. escribir al capitán)' %}" aria-label="{% translate 'Tarea' %}">
     <input type="date" name="due_date" required value="{{ today|date:'Y-m-d' }}" class="form-control" aria-label="{% translate 'Fecha' %}">
@@ -45,8 +45,8 @@
             <td>{% if t.club %}<a href="{% url 'backoffice:club_detail' t.club.public_id %}">{{ t.club.name }}</a>{% else %}—{% endif %}</td>
             <td>{{ t.assigned_to.username|default:"—" }}</td>
             <td class="text-end text-nowrap">
-                <form method="post" action="{% url 'backoffice:task_toggle' t.pk %}" class="d-inline">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn btn-outline-light btn-sm">{% if t.done_at %}{% translate "Reabrir" %}{% else %}{% translate "Hecha" %}{% endif %}</button></form>
-                <form method="post" action="{% url 'backoffice:task_delete' t.pk %}" class="d-inline" onsubmit="return confirm('{% translate "¿Borrar esta tarea?" %}')">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn btn-outline-danger btn-sm" aria-label="{% translate 'Borrar' %}"><i class="fa-solid fa-trash" aria-hidden="true"></i></button></form>
+                <form method="post" action="{% url 'backoffice:task_toggle' t.pk %}" class="d-inline" data-loading-text="{% translate 'Guardando la tarea…' %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn btn-outline-light btn-sm">{% if t.done_at %}{% translate "Reabrir" %}{% else %}{% translate "Hecha" %}{% endif %}</button></form>
+                <form method="post" action="{% url 'backoffice:task_delete' t.pk %}" class="d-inline" data-confirm="{% translate "¿Borrar esta tarea?" %}" data-loading-text="{% translate 'Borrando la tarea…' %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn btn-outline-danger btn-sm" aria-label="{% translate 'Borrar' %}"><i class="fa-solid fa-trash" aria-hidden="true"></i></button></form>
             </td>
         </tr>
     {% empty %}

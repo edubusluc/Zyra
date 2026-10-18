@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% comment %}Índice público de guías para capitanes (core/guides.py).{% endcomment %}
+
+{% block title %}{% translate "Guías para capitanes de equipos de pádel" %} · Zyra{% endblock %}
+{% block description %}{% translate "Guías prácticas para capitanes: cómo organizar las parejas, cómo funcionan los puntos SNP y una plantilla de convocatoria gratis." %}{% endblock %}
+{% block og_title %}{% translate "Guías para capitanes de equipos de pádel" %}{% endblock %}
+{% block og_description %}{% translate "Guías prácticas para capitanes: cómo organizar las parejas, cómo funcionan los puntos SNP y una plantilla de convocatoria gratis." %}{% endblock %}
+
+{% block content %}
+<article class="z-panel z-legal">
+    <h1>{% translate "Guías para capitanes de equipos de pádel" %}</h1>
+    <p class="text-muted">{% translate "Consejos prácticos para organizar un equipo de liga por equipos, escritos desde la experiencia de un capitán." %}</p>
+    <div class="z-faq">
+        {% for guide, title, description in guides %}
+        <div class="z-card p-3">
+            <h2 class="h5 mb-2"><a href="{% url 'guide_detail' guide.slug %}">{{ title }}</a></h2>
+            <p class="text-muted mb-0">{{ description }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</article>
+{% endblock %}

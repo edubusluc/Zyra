@@ -5,6 +5,7 @@ Todo parte de un único "log" cronológico con los partidos (Game) cerrados del
 club. En cada Game solo figuran los jugadores del propio club, en el lado local
 o en el visitante, así que la pareja es siempre la del lado que tiene jugadores.
 """
+import datetime
 from match import outcomes
 from django.db.models import Q
 
@@ -79,7 +80,7 @@ def club_game_log(club, season=None, match_type=None):
     """
     games = (
         Game.objects
-        .filter(match__club=club, draft_mode=False, winner__in=outcomes.WINNERS)
+        .filter(match__club=club, match__draft_mode=False, draft_mode=False, winner__in=outcomes.WINNERS)
         .select_related('match')
         .prefetch_related('results')
         .order_by('match__start_date', 'match_id', 'n_game')
@@ -118,11 +119,12 @@ def club_game_log(club, season=None, match_type=None):
 def _rank(counts, names, min_games):
     """
     Filas del top 5 a partir de ``counts`` ({clave: (victorias, jugados)}): solo las claves
-    con nombre y al menos ``min_games`` partidos, ordenadas por % de victorias.
+    con nombre, al menos ``min_games`` partidos y algún triunfo (un 0 % no es un «mejor»),
+    ordenadas por % de victorias.
     """
     rows = []
     for key, (wins, played) in counts.items():
-        if played < min_games or key not in names:
+        if played < min_games or not wins or key not in names:
             continue
         rows.append({
             'name': names[key],
@@ -201,18 +203,22 @@ def all_pairs(log, players):
 HIGHLIGHT_N = 3
 
 
-def best_and_worst_pairs(pairs, n=HIGHLIGHT_N, min_games=MIN_GAMES_PAIR):
+# «Parejas por mejorar» exige más partidos que las mejores: con pocos, un mal resultado no dice nada.
+IMPROVE_MIN_GAMES_PAIR = 4
+
+
+def best_and_worst_pairs(pairs, n=HIGHLIGHT_N, min_games=MIN_GAMES_PAIR, worst_min_games=IMPROVE_MIN_GAMES_PAIR):
     """
-    (mejores, peores) de `all_pairs` por % de victorias, solo parejas con al menos
-    `min_games` partidos. Si hay menos de 2*n, se reparten entre las dos listas
-    para que ninguna pareja salga en ambas.
+    (mejores, por mejorar) de `all_pairs` por % de victorias. Las mejores necesitan al menos
+    `min_games` partidos y las de por mejorar `worst_min_games` (más, para no señalar a una pareja
+    por una mala tarde). Ninguna pareja sale en ambas listas, y una pareja sin victorias nunca
+    es de las mejores.
     """
-    ranked = [r for r in pairs if r['played'] >= min_games]
-    n_best = min(n, (len(ranked) + 1) // 2)
-    n_worst = min(n, len(ranked) - n_best)
+    ranked = [r for r in pairs if r['played'] >= min_games and r['wins'] > 0]
+    n_best = min(n, (len(ranked) + 1) // 2) if ranked else 0
     best = sorted(ranked, key=lambda r: (-r['pct'], -r['played'], -r['wins']))[:n_best]
-    rest = [r for r in ranked if r not in best]
-    worst = sorted(rest, key=lambda r: (r['pct'], -r['played'], r['wins']))[:n_worst]
+    rest = [r for r in pairs if r['played'] >= worst_min_games and r not in best]
+    worst = sorted(rest, key=lambda r: (r['pct'], -r['played'], r['wins']))[:n]
     return best, worst
 
 
@@ -280,22 +286,28 @@ def pair_summary(log, p1_id, p2_id):
 MIN_HOT_STREAK = 2
 
 
-def _hottest(history):
-    """(clave, n) con la racha de victorias activa más larga; desempata la más reciente."""
-    best, best_rank = None, None
+def _hottest(history, day=None):
+    """
+    (clave, n) con la racha de victorias activa más larga. Si hay empate, rota: cada día
+    (``day``, hoy por defecto) toca una de las empatadas, siempre en el mismo orden.
+    """
+    streaks = {}
     for key, h in history.items():
         kind, n = _current_run(h['results'])
-        if kind != 'V' or n < MIN_HOT_STREAK:
-            continue
-        rank = (n, h['last'])
-        if best_rank is None or rank > best_rank:
-            best, best_rank = (key, n), rank
-    return best
+        if kind == 'V' and n >= MIN_HOT_STREAK:
+            streaks[key] = n
+    if not streaks:
+        return None
+    longest = max(streaks.values())
+    tied = sorted(key for key, n in streaks.items() if n == longest)
+    day = day or datetime.date.today()
+    return tied[day.toordinal() % len(tied)], longest
 
 
-def hot_streaks(log, players):
+def hot_streaks(log, players, day=None):
     """
     Jugador y pareja con la racha de victorias activa más larga entre `players`.
+    Con empate a rachas se muestra uno distinto cada día (``day``, hoy por defecto).
     Devuelve (jugador, pareja): {'player', 'streak'} y {'p1', 'p2', 'label', 'streak'}, o None.
     """
     by_id = {p.id: p for p in players}
@@ -315,10 +327,10 @@ def hot_streaks(log, players):
             add(by_pair, g['pair'], g['won'], i)
 
     player = pair = None
-    hot = _hottest(by_player)
+    hot = _hottest(by_player, day)
     if hot:
         player = {'player': by_id[hot[0]], 'streak': hot[1]}
-    hot = _hottest(by_pair)
+    hot = _hottest(by_pair, day)
     if hot:
         (a, b), n = hot
         p1, p2 = by_id[a], by_id[b]

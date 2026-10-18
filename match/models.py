@@ -56,8 +56,13 @@ class Match(PublicIdModel):
         (PLAYOFF, _("Play Off")),
     ]
     MATCH_TYPES = COMPETITIVE_TYPES + [(AMISTOSO, _("Amistoso"))]
+    # Tipos de eliminatoria sin empate: si queda 6-6, decide el ganador del partido 3.
+    NO_DRAW_TYPES = (RETO, PLAYOFF)
+    TIEBREAK_GAME = 3
 
     start_date = models.DateField()
+    # Hora de inicio (opcional): se muestra junto a la fecha y en el informe.
+    start_time = models.TimeField(_("Hora"), null=True, blank=True)
     match_type = models.CharField(_("Tipo de partido"), max_length=15, choices=MATCH_TYPES, default=ENFRENTAMIENTO)
     result = models.CharField(max_length=20, choices=POSSIBLE_RESULT, blank = True, default=outcomes.NONE)
     result_points = models.CharField(max_length=20, blank = True, default=outcomes.NONE)
@@ -117,6 +122,11 @@ class Match(PublicIdModel):
     def is_friendly(self):
         """True si es un partido amistoso."""
         return self.match_type == self.AMISTOSO
+
+    @property
+    def no_draw(self):
+        """True si el tipo de partido (Reto o Play Off) no admite empate a puntos."""
+        return self.match_type in self.NO_DRAW_TYPES
 
     @property
     def report_competitive_only(self):

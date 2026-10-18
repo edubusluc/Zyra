@@ -1,7 +1,7 @@
 """URLs de jugadores, cuenta SNP, «Completar equipo» y perfil propio."""
 from django.urls import path
 from .views import (create_player, list_players, edit_player, delete_player, show_player, manage_roster, snp_account, snp_account_delete, snp_account_password,
-                    complete_team_start, complete_team_status, complete_team_failed, complete_team_confirm, complete_team_cancel, complete_team_welcome,
+                    complete_team_start, complete_team_status, sync_status, complete_team_failed, complete_team_confirm, complete_team_cancel, complete_team_welcome,
                     my_player, link_player, unlink_player)
 
 urlpatterns = (
@@ -14,6 +14,7 @@ urlpatterns = (
     path("snp/delete/", snp_account_delete, name="snp_account_delete"),
     path("snp/password/", snp_account_password, name="snp_account_password"),
     path("complete_team/", complete_team_start, name="complete_team_start"),
+    path("complete_team/sync_status/", sync_status, name="sync_status"),
     path("complete_team/<pid:import_id>/", complete_team_status, name="complete_team_status"),
     path("complete_team/<pid:import_id>/failed/", complete_team_failed, name="complete_team_failed"),
     path("complete_team/<pid:import_id>/confirm/", complete_team_confirm, name="complete_team_confirm"),

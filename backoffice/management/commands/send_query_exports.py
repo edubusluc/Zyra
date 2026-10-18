@@ -7,6 +7,8 @@ from django.utils import timezone
 from backoffice import sql
 from backoffice.csvsafe import to_csv_text
 from backoffice.models import SavedQuery
+from django.utils.html import format_html
+
 from core.emails import build_email
 
 
@@ -36,7 +38,7 @@ class Command(BaseCommand):
                 result = sql.run(query.sql, limit=sql.EXPORT_LIMIT)
                 recipients = [e.strip() for e in query.export_to.split(",") if e.strip()]
                 text = f"Consulta «{query.name}»: {result.row_count} filas."
-                email = build_email(f"Zyra · {query.name}", text, f"<p>{text}</p>", to=recipients)
+                email = build_email(f"Zyra · {query.name}", text, format_html("<p>{}</p>", text), to=recipients)
                 name = f"zyra-{query.name[:40].replace(' ', '-')}-{today:%Y%m%d}.csv"
                 email.attach(name, to_csv_text(result.columns, result.rows), "text/csv")
                 email.send(fail_silently=False)

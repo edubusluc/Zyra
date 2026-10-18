@@ -39,7 +39,8 @@ class PublicPagesTests(TestCase):
     def test_landing_has_canonical_and_share_preview_and_no_noindex(self):
         response = self.client.get(reverse("home") + "?utm_source=x")
         self.assertContains(response, '<link rel="canonical" href="http://testserver/">')
-        self.assertContains(response, 'property="og:image" content="http://testserver/static/zyra/icon-512.png"')
+        self.assertContains(response, 'property="og:image" content="http://testserver/static/zyra/og-image-v2.png"')
+        self.assertContains(response, 'name="twitter:card" content="summary_large_image"')
         self.assertNotContains(response, "noindex")
         self.assertNotContains(response, "fonts.googleapis.com")
 
@@ -102,6 +103,15 @@ class PublicPagesTests(TestCase):
         self.assertEqual(response.content.decode().count("<h1"), 1)
         self.assertContains(response, "<title>Zyra · App para gestionar equipos de pádel</title>", html=False)
 
+    def test_favicon_ico_answers_200_at_root_and_head_links_48px_multiples(self):
+        """Google exige /favicon.ico sin redirección e iconos de lado múltiplo de 48 px."""
+        response = self.client.get("/favicon.ico")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "image/x-icon")
+        html = self.client.get("/").content.decode()
+        for size in (48, 96, 192):
+            self.assertIn(f'sizes="{size}x{size}"', html)
+
     def test_healthz(self):
         response = self.client.get("/healthz/")
         self.assertEqual(response.status_code, 200)
@@ -126,3 +136,84 @@ class CanonicalHostTests(TestCase):
         response = self.client.get("/core/login/", HTTP_HOST="zyra.es", secure=True)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, '<link rel="canonical" href="https://zyra.es/core/login/">')
+
+
+class GuideTests(TestCase):
+    """Guías públicas (/guia/): contenido en es/en, SEO, sitemap, PDF de la plantilla y enlaces."""
+
+    def test_index_and_every_guide_are_public_and_listed_in_both_languages(self):
+        from core.guides import GUIDES
+
+        self.assertContains(self.client.get(reverse("guide_index")), "Guías para capitanes")
+        self.assertContains(self.client.get(reverse("guide_index") + "?lang=en"), "Guides for padel team captains")
+        for guide in GUIDES:
+            url = reverse("guide_detail", args=[guide.slug])
+            es, en = self.client.get(url + "?lang=es"), self.client.get(url + "?lang=en")
+            self.assertContains(es, guide.title["es"])
+            self.assertContains(en, guide.title["en"])
+            self.assertContains(en, '<html lang="en"')
+            self.assertEqual(es.content.decode().count("<h1"), 1)
+            self.assertContains(en, f'<link rel="canonical" href="http://testserver{url}?lang=en">')
+            self.assertContains(es, f'hreflang="en" href="http://testserver{url}?lang=en"')
+
+    def test_unknown_guide_is_404(self):
+        self.assertEqual(self.client.get("/guia/no-existe/").status_code, 404)
+
+    def test_guide_has_article_and_breadcrumb_json_ld(self):
+        response = self.client.get(reverse("guide_detail", args=["puntos-snp-orden-parejas"]))
+        match = re.search(r'<script type="application/ld\+json">(.*?)</script>', response.content.decode(), re.S)
+        nodes = json.loads(match.group(1))["@graph"]
+        self.assertEqual({n["@type"] for n in nodes}, {"Article", "BreadcrumbList"})
+        article = next(n for n in nodes if n["@type"] == "Article")
+        self.assertEqual(article["inLanguage"], "es")
+        self.assertTrue(article["image"].endswith("/static/zyra/og-image-v2.png"))
+
+    @override_settings(SITE_URL="https://zyra.es", ALLOWED_HOSTS=["zyra.es"])
+    def test_sitemap_lists_guides_with_english_alternates(self):
+        content = self.client.get("/sitemap.xml", HTTP_HOST="zyra.es").content.decode()
+        self.assertIn("<loc>https://zyra.es/guia/</loc>", content)
+        self.assertIn("<loc>https://zyra.es/guia/organizar-parejas-equipo-padel/</loc>", content)
+        self.assertIn('hreflang="en" href="https://zyra.es/guia/plantilla-convocatoria-padel/?lang=en"', content)
+        self.assertIn("<lastmod>2026-10-14</lastmod>", content)
+
+    def test_bing_verification_file_is_served_at_the_root(self):
+        response = self.client.get("/BingSiteAuth.xml")
+        self.assertEqual(response["Content-Type"], "application/xml")
+        self.assertContains(response, "<user>7E63C543395872FD428A5719E2789B54</user>")
+
+    def test_landing_and_footer_link_to_guides(self):
+        landing = self.client.get(reverse("home"))
+        self.assertContains(landing, f'href="{reverse("guide_index")}"')
+        self.assertContains(landing, 'href="/guia/organizar-parejas-equipo-padel/"')
+
+    def test_callup_template_pdf_is_public_and_downloadable(self):
+        response = self.client.get(reverse("callup_template_pdf"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/pdf")
+        self.assertTrue(response.content.startswith(b"%PDF"))
+        self.assertEqual(self.client.post(reverse("callup_template_pdf")).status_code, 405)
+
+
+class MadeWithZyraTests(TestCase):
+    """Pie «Hecho con Zyra · dominio» en los correos y en los PDF."""
+
+    @override_settings(SITE_URL="https://zyra.es")
+    def test_email_footer_links_to_the_site(self):
+        from core.emails import build_email
+
+        email = build_email("Asunto", "Hola", "<p>Hola</p>", to=["a@b.es"])
+        self.assertIn("Hecho con Zyra: https://zyra.es", email.body)
+        self.assertIn('href="https://zyra.es"', email.alternatives[0][0])
+
+    @override_settings(SITE_URL="")
+    def test_email_footer_without_site_url_has_no_link(self):
+        from core.emails import build_email
+
+        email = build_email("Asunto", "Hola", "<p>Hola</p>", to=["a@b.es"])
+        self.assertNotIn("Hecho con Zyra", email.body)
+
+    @override_settings(SITE_URL="https://zyra.es")
+    def test_pdf_footer_text_names_the_domain(self):
+        from match.report_pdf import made_with_zyra
+
+        self.assertEqual(made_with_zyra(), ("Hecho con Zyra · zyra.es", "https://zyra.es"))

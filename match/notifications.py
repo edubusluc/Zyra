@@ -52,7 +52,7 @@ def _bodies(match):
     date = f"{match.start_date:%d/%m/%Y}"
     club = match.club.name
     greeting = _("Hola,")
-    closed = _("Se ha cerrado la convocatoria de %(club)s para el partido contra %(rival)s del %(date)s "
+    closed = _("Se ha cerrado la convocatoria de %(club)s para el enfrentamiento contra %(rival)s del %(date)s "
                "(%(local)s vs %(visiting)s).")
     attached = _("Te adjuntamos el informe en PDF con el estado del equipo, las rachas, los precedentes "
                  "contra este rival y dos alineaciones recomendadas según el formato de la SNP.")

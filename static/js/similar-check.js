@@ -14,7 +14,8 @@
 
   const list = modalEl.querySelector('[data-similar-list]');
   const confirmInput = form.querySelector('input[name="confirm_similar"]');
-  const send = () => HTMLFormElement.prototype.submit.call(form);
+  const lock = (submitter) => { if (window.ZyraSubmitLock) window.ZyraSubmitLock.lock(form, submitter); };
+  const send = () => { lock(); HTMLFormElement.prototype.submit.call(form); };
   const modal = () => bootstrap.Modal.getOrCreateInstance(modalEl);
   let checking = false;
 
@@ -51,6 +52,7 @@
     event.preventDefault();
     if (checking) return;
     checking = true;
+    lock(event.submitter); // la comprobación tarda: se bloquea el botón con el texto de la acción
 
     const data = new FormData(form);
     for (const [key, value] of Array.from(data.entries())) {
@@ -64,7 +66,10 @@
     })
       .then((response) => (response.ok ? response.json() : null))
       .then((result) => {
-        if (result && result.valid && result.similar.length) show(result.similar);
+        if (result && result.valid && result.similar.length) {
+          if (window.ZyraSubmitLock) window.ZyraSubmitLock.unlock(form);
+          show(result.similar);
+        }
         else send(); // sin parecidos (o con errores, que muestra el servidor)
       })
       .catch(send)

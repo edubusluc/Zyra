@@ -2,6 +2,8 @@
 from urllib.parse import urlsplit
 
 from django.conf import settings
+from django.core.cache import caches
+from django.shortcuts import render
 from django.http import HttpResponsePermanentRedirect
 from django.utils import translation
 from django.utils.cache import patch_vary_headers
@@ -124,4 +126,45 @@ class CanonicalHostMiddleware:
         """Redirige (301) si la petición no llega por el dominio de SITE_URL."""
         if self.host and request.get_host() != self.host:
             return HttpResponsePermanentRedirect(self.site_url + request.get_full_path())
+        return self.get_response(request)
+
+
+class FloodProtectionMiddleware:
+    """
+    Freno general contra inundaciones de peticiones (GET/POST flood) desde una misma IP.
+
+    Cuenta las peticiones por IP y minuto en una caché en memoria de cada proceso (``ratelimit``:
+    sin tocar la base de datos, así que rechazar una avalancha es barato). Con N procesos de
+    gunicorn el límite efectivo es hasta N veces mayor. Los POST tienen un límite más bajo que
+    los GET. Responde 429 con la página «Demasiadas solicitudes». Se salta ``/healthz/`` y los
+    estáticos (los sirve WhiteNoise antes de llegar aquí). Si la caché falla deja pasar.
+    """
+
+    EXEMPT_PREFIXES = ("/healthz/", "/static/", "/media/")
+
+    def __init__(self, get_response):
+        """Guarda la siguiente capa de la cadena de middlewares."""
+        self.get_response = get_response
+
+    def __call__(self, request):
+        """Responde 429 si la IP ha superado el límite del minuto; si no, sigue la cadena."""
+        if settings.RATE_LIMITS_ENABLED and not request.path.startswith(self.EXEMPT_PREFIXES):
+            from .ratelimit import client_ip
+            is_write = request.method not in ("GET", "HEAD", "OPTIONS")
+            limit = settings.FLOOD_LIMIT_POST_PER_MINUTE if is_write else settings.FLOOD_LIMIT_GET_PER_MINUTE
+            key = f"flood:{'w' if is_write else 'r'}:{client_ip(request)}"
+            try:
+                cache = caches["ratelimit"]
+                cache.add(key, 0, 60)
+                try:
+                    hits = cache.incr(key)
+                except ValueError:
+                    cache.set(key, 1, 60)
+                    hits = 1
+            except Exception:
+                hits = 0
+            if hits > limit:
+                response = render(request, "429.html", status=429)
+                response["Retry-After"] = "60"
+                return response
         return self.get_response(request)

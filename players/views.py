@@ -1,6 +1,8 @@
 """Vistas de jugadores: alta, lista, ficha, plantilla, cuenta SNP, «Completar equipo» y perfil propio."""
 from django.shortcuts import render, redirect, get_object_or_404
-from core.decorators import club_required, club_admin_required
+from core import ratelimit
+from core.decorators import club_required, club_admin_required, not_while_syncing
+from core.models import Club
 from .forms import NewOwnPlayerForm, OwnPlayerForm, PlayerEditForm, PlayerForm, SnpAccountForm, with_placeholder
 from django.contrib import messages
 from match.models import Game
@@ -22,6 +24,7 @@ from core import similarity
 
 
 @club_admin_required
+@not_while_syncing
 def create_player(request):
     """
     Alta de un jugador en el equipo propio del club. Solo capitanes (``club_admin_required``).
@@ -33,7 +36,7 @@ def create_player(request):
     """
     similar = []
     if request.method == "POST":
-        form = PlayerForm(request.POST, request.FILES)
+        form = PlayerForm(request.POST, request.FILES, club=request.club)
         form.uploader, form.check_only = request.user, similarity.is_check_request(request)
         if form.is_valid():
             # Jugadores con nombre y apellidos iguales o parecidos: se pregunta antes de crearlo.
@@ -51,7 +54,7 @@ def create_player(request):
                 return JsonResponse({"valid": False, "similar": []})
             messages.error(request, _("Error al crear el jugador. Por favor, verifica los datos."))
     else:
-        form = PlayerForm()
+        form = PlayerForm(club=request.club)
 
     # Agregar clases a cada campo
     for field in form:
@@ -72,15 +75,19 @@ def list_players(request):
     """
     Lista de jugadores del club con orden (``order_by``). Se envían todos y la búsqueda en vivo y
     la paginación (9 por página) las hace ``static/js/player-selector.js``, igual que en las
-    convocatorias. Requiere pertenecer al club (``club_required``). Los capitanes ven también a los que
+    convocatorias. Requiere pertenecer al club (``club_required``). Por defecto solo se listan los del equipo; los
+    capitanes pueden desmarcar «solo mi equipo» (``team=0``) para ver también a los que
     ya no están en el equipo (al final) y el estado del botón «Completar equipo».
     """
     order_by = request.GET.get('order_by', 'name')
     if order_by not in ORDER_FIELDS:
         order_by = 'name'
 
+    # Interruptor «solo mi equipo»: marcado por defecto; el formulario envía team=0 al desmarcarlo.
+    # Solo los capitanes pueden verlo desmarcado (el resto nunca ve a los que ya no están).
+    only_team = request.GET.get('team', '1') != '0'
     players = Player.objects.filter(club=request.club)
-    if request.membership.is_admin:
+    if request.membership.is_admin and not only_team:
         players = players.order_by('-in_team', order_by)
     else:
         players = players.filter(in_team=True).order_by(order_by)
@@ -88,6 +95,7 @@ def list_players(request):
     context = {
         'players': players,
         'order_by': order_by,
+        'only_team': only_team,
     }
     if request.membership.is_admin:
         context.update(_complete_team_context(request.club))
@@ -167,7 +175,16 @@ def show_player(request, player_id):
         'match__local', 'match__visiting',
         'player_1_local', 'player_2_local', 'player_1_visiting', 'player_2_visiting',
     ).order_by('-match__start_date')[:5]
-    return render(request, "player_detail.html", {"player": player, "games": games})
+    games = list(games)
+    form = ["w" if player_won(game, player) else "l" for game in games]
+    return render(request, "player_detail.html", {"player": player, "games": games, "form": form})
+
+
+def player_won(game, player):
+    """True si ``player`` ganó el juego ``game`` (jugó en la pareja ganadora)."""
+    if game.winner == 'Local':
+        return player in (game.player_1_local, game.player_2_local)
+    return player in (game.player_1_visiting, game.player_2_visiting)
 
 
 @club_admin_required
@@ -213,13 +230,19 @@ def snp_account(request):
         form = SnpAccountForm(request.POST, has_password=account is not None)
         if form.is_valid():
             account = account or SnpAccount(club=request.club)
+            new_password = form.cleaned_data["password"]
+            if account.pk and not account.team_id and username == form.cleaned_data["username"] and (not new_password or _same_password(account, new_password)):
+                messages.info(request, _("No has cambiado ningún dato de la cuenta SNP."))
+                return redirect("snp_account")
             account.username = form.cleaned_data["username"]
-            if form.cleaned_data["password"]:
-                account.password = form.cleaned_data["password"]
+            if new_password:
+                account.password = new_password
             # El equipo ya no se pide: si la cuenta tiene varios, se elige por el nombre del equipo del club.
             account.team_id = ""
             account.updated_by = request.user
             account.save()
+            # Datos corregidos: el capitán vuelve a poder lanzar «Sincronizar datos» aunque hubiera fallado varias veces.
+            Club.objects.filter(pk=request.club.pk).update(snp_import_failures=0)
             messages.success(request, _("Cuenta SNP guardada. Los puntos se actualizarán cada lunes por la noche."))
             return redirect("snp_account")
     else:
@@ -229,6 +252,14 @@ def snp_account(request):
     return render(request, "snp_account.html", {
         "form": form, "account": account, "username": username, "editing": editing,
     })
+
+
+def _same_password(account, password):
+    """True si ``password`` es la contraseña SNP ya guardada (si no se puede leer, cuenta como distinta)."""
+    try:
+        return account.password == password
+    except DecryptionError:
+        return False
 
 
 @club_admin_required
@@ -291,23 +322,35 @@ def complete_team_start(request):
     Lanza en segundo plano la búsqueda de «Completar equipo». Solo capitanes y por POST.
     Hace falta cuenta SNP; no se lanza si ya se completó una vez, está bloqueado por fallos, hay otra en curso o se
     han hecho demasiadas búsquedas seguidas (snp_import.search_limit).
-    Redirige a la lista de jugadores, que va preguntando el estado.
+
+    Desde la portada (``from=home``, botón «Reintentar» tras un fallo en el alta del club) se comporta como en
+    el alta: confirma sola lo encontrado y lleva a la espera de «Trayendo tu equipo». Si no, redirige a la
+    lista de jugadores, que va preguntando el estado.
     """
+    from_home = request.POST.get("from") == "home"
+    back = "home" if from_home else "list_players"
     if not SnpAccount.objects.filter(club=request.club).exists():
         messages.error(request, _("Primero registra la cuenta SNP del capitán."))
         return redirect("snp_account")
     if not snp_service.is_enabled():
         messages.error(request, snp_service.UNAVAILABLE_MESSAGE)
-        return redirect("list_players")
+        return redirect(back)
+    if ratelimit.too_many_user(request, "complete-team", 10, 60 * 60):
+        return render(request, "429.html", status=429)
     if _web_import_closed(request) or snp_import.active_import(request.club):
-        return redirect("list_players")
+        return redirect(back)
+    if snp_import.account_unchanged_after_failure(request.club):
+        messages.error(request, _("SNP no aceptó el usuario o la contraseña. Cámbialos en la cuenta SNP antes de volver a intentarlo."))
+        return redirect("snp_account")
     wait = snp_import.search_limit(request.club)
     if wait:
         messages.error(request, _("Has buscado tu equipo en SNP varias veces seguidas. Para no saturar SNP, "
                                   "podrás volver a intentarlo a partir del %(date)s.")
                        % {"date": f"{timezone.localtime(wait):%d/%m/%Y %H:%M}"})
-        return redirect("list_players")
-    snp_import.start_search(request.club, request.user)
+        return redirect(back)
+    team_import = snp_import.start_search(request.club, request.user, auto_confirm=from_home)
+    if from_home:
+        return redirect("complete_team_welcome", import_id=team_import.public_id)
     return redirect("list_players")
 
 
@@ -315,10 +358,25 @@ def complete_team_start(request):
 def complete_team_status(request, import_id):
     """Estado en JSON de una búsqueda de «Completar equipo» (lo consulta la lista). Solo capitanes."""
     team_import = get_object_or_404(SnpTeamImport, public_id=import_id, club=request.club)
-    data = {"status": team_import.status, "message": team_import.message, "redirect": ""}
+    data = {"status": team_import.status, "message": team_import.message, "redirect": "",
+            "progress": team_import.progress, "stage": team_import.stage}
     if team_import.status == SnpTeamImport.ERROR and team_import.error_kind in (SnpScrapeError.ACCOUNT, SnpScrapeError.TEAM):
         data["redirect"] = reverse("complete_team_failed", args=[team_import.public_id])
     return JsonResponse(data)
+
+
+@club_admin_required
+@require_GET
+def sync_status(request):
+    """
+    Estado en JSON de la sincronización con SNP en curso del club, para la barra de progreso de toda la
+    web (``static/js/sync-progress.js``). ``active`` es False cuando ya no hay ninguna en marcha: la
+    página se recarga para ver el resultado (hecha, con error o cancelada). Solo capitanes.
+    """
+    current = snp_import.active_import(request.club)
+    if current is None or current.status != SnpTeamImport.RUNNING:
+        return JsonResponse({"active": False})
+    return JsonResponse({"active": True, "progress": current.progress, "stage": current.stage or _("En cola")})
 
 
 @club_admin_required
@@ -372,7 +430,7 @@ def complete_team_cancel(request, import_id):
     SnpTeamImport.objects.filter(
         public_id=import_id, club=request.club, source=SnpTeamImport.WEB, status__in=[SnpTeamImport.RUNNING, SnpTeamImport.READY],
     ).update(status=SnpTeamImport.CANCELLED)
-    return redirect("list_players")
+    return redirect("home" if request.POST.get("from") == "home" else "list_players")
 
 
 @club_admin_required
@@ -389,7 +447,12 @@ def complete_team_welcome(request, import_id):
         if own_player(request):
             return redirect("list_players")
         return redirect(reverse("my_player") + f"?{WELCOME_PARAM}=1")
-    return render(request, "complete_team_welcome.html", {"team_import": team_import})
+    own = request.club.own_team
+    fix_team = team_import.error_kind == SnpScrapeError.TEAM and own
+    return render(request, "complete_team_welcome.html", {
+        "team_import": team_import,
+        "team_fix_url": reverse("edit_team", args=[own.public_id]) if fix_team else "",
+    })
 
 
 # ---------- Perfil del propio jugador ----------

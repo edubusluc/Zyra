@@ -185,7 +185,7 @@ class InvitationTests(TestCase):
         self.assertContains(self.client.get(self.url(invitation)), "Únete a Club A")
 
         response = self.client.post(self.url(invitation), SIGNUP)
-        self.assertRedirects(response, reverse("my_player"), fetch_redirect_response=False)
+        self.assertRedirects(response, reverse("member_welcome"), fetch_redirect_response=False)
 
         user = User.objects.get(username="nuevo")
         membership = Membership.objects.get(user=user, club=self.club)
@@ -278,6 +278,47 @@ class InvitationTests(TestCase):
         invitation.refresh_from_db()
         self.assertFalse(invitation.is_used)
 
+    def test_signup_with_taken_username_shows_form_error(self):
+        invitation = self.invite()
+        for name in ("capitan", "CAPITAN"):
+            response = self.client.post(self.url(invitation), {**SIGNUP, "username": name})
+            self.assertEqual(response.status_code, 200)
+            self.assertContains(response, "Ya existe un usuario con este nombre")
+        invitation.refresh_from_db()
+        self.assertFalse(invitation.is_used)
+
+    def test_signup_username_race_shows_form_error_not_500(self):
+        """Dos envíos a la vez: el usuario se crea entre validar y guardar (IntegrityError en BD)."""
+        invitation = self.invite()
+        User.objects.create_user("nuevo", password="pass-12345", email="otro@example.com")
+        with mock.patch("core.forms.SignUpForm.clean_username", lambda self: self.cleaned_data["username"]), \
+                mock.patch("core.forms.SignUpForm.validate_unique", lambda self: None):
+            response = self.client.post(self.url(invitation), SIGNUP)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Ya existe un usuario con ese nombre")
+        invitation.refresh_from_db()
+        self.assertFalse(invitation.is_used)
+        self.assertEqual(User.objects.filter(username="nuevo").count(), 1)
+
+    def test_signup_email_race_shows_form_error_not_500(self):
+        """El email lo garantiza la base de datos: un duplicado tras validar no da 500."""
+        invitation = self.invite()
+        User.objects.create_user("otro", password="pass-12345", email="nuevo@example.com")
+        with mock.patch("core.forms.SignUpForm.clean_email", lambda self: self.cleaned_data["email"]):
+            response = self.client.post(self.url(invitation), SIGNUP)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Ya hay una cuenta con este email")
+        self.assertFalse(User.objects.filter(username="nuevo").exists())
+
+    def test_database_rejects_duplicate_email_ignoring_case(self):
+        from django.db import IntegrityError, transaction
+        User.objects.create_user("uno", email="Dup@example.com")
+        with self.assertRaises(IntegrityError), transaction.atomic():
+            User.objects.create_user("dos", email="dup@EXAMPLE.com")
+        # Los usuarios sin email no chocan entre sí.
+        User.objects.create_user("sin1")
+        User.objects.create_user("sin2")
+
     def test_logged_in_user_joins_with_one_click(self):
         User.objects.create_user("jugador", password="pass-12345", email="j@example.com")
         invitation = self.invite()
@@ -302,7 +343,7 @@ class InvitationTests(TestCase):
         google_user = User.objects.create_user("google", email="g@example.com")
         self.client.force_login(google_user)  # vuelve autenticado por Google
         response = self.client.get(self.url(invitation))
-        self.assertRedirects(response, reverse("my_player"), fetch_redirect_response=False)
+        self.assertRedirects(response, reverse("member_welcome"), fetch_redirect_response=False)
         self.assertTrue(Membership.objects.filter(user=google_user, club=self.club).exists())
 
     # --- Google -------------------------------------------------------------
@@ -447,6 +488,8 @@ class GoogleSameAccountTests(TestCase):
     def test_unverified_google_email_does_not_take_over_account(self):
         request = self.google_login("capitan@example.com", verified=False, sub="otro")
         self.assertNotEqual(request.user, self.admin)
+        # El email es único en la base de datos: no se crea una segunda cuenta con él.
+        self.assertEqual(User.objects.filter(email__iexact="capitan@example.com").count(), 1)
 
     def test_new_email_creates_new_account_without_club(self):
         request = self.google_login("nuevo@example.com", sub="nuevo")

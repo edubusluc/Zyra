@@ -16,7 +16,7 @@
 
 <p class="text-muted">{% translate "Un email bloqueado no puede registrarse, crear un club, recibir invitaciones ni unirse a un club. Se compara sin mayúsculas, sin «+etiqueta» y, en Gmail, sin puntos. Los de un club suspendido se desbloquean al reactivarlo." %}</p>
 
-<form method="post" action="{% url 'backoffice:blocked_email_add' %}" class="bo-filters">
+<form method="post" action="{% url 'backoffice:blocked_email_add' %}" class="bo-filters" data-loading-text="{% translate 'Bloqueando el email…' %}">
     {% csrf_token %}
     <input type="email" name="email" required class="form-control" placeholder="{% translate 'Email a bloquear' %}" aria-label="{% translate 'Email a bloquear' %}">
     <input type="text" name="reason" maxlength="500" class="form-control" placeholder="{% translate 'Motivo (opcional)' %}" aria-label="{% translate 'Motivo' %}">
@@ -39,7 +39,7 @@
             <td>{{ b.created_at|date:"j M Y" }}</td>
             <td>{{ b.blocked_by.username|default:"—" }}</td>
             <td class="text-end">
-                <form method="post" action="{% url 'backoffice:blocked_email_delete' b.public_id %}" onsubmit="return confirm('{% translate "¿Desbloquear este email?" %}')">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn btn-outline-light btn-sm">{% translate "Desbloquear" %}</button></form>
+                <form method="post" action="{% url 'backoffice:blocked_email_delete' b.public_id %}" data-confirm="{% translate "¿Desbloquear este email?" %}" data-loading-text="{% translate 'Desbloqueando el email…' %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn btn-outline-light btn-sm">{% translate "Desbloquear" %}</button></form>
             </td>
         </tr>
     {% empty %}

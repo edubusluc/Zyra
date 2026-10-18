@@ -1,7 +1,7 @@
-// Validación en directo del resultado (mismas reglas que match/scoring.py).
-(function () {
-  const form = document.querySelector('[data-result]');
-  if (!form) return;
+// Validación en directo del resultado (mismas reglas que match/scoring.py). Hay un elemento
+// [data-result] por partido: el formulario de un resultado, o cada partido en la pantalla
+// «Poner resultados», que los muestra todos juntos.
+document.querySelectorAll('[data-result]').forEach(function (form) {
   const input = (set, side) => form.querySelector(`[data-set="${set}"][data-side="${side}"]`);
   const val = (el) => (el.value.trim() === '' ? null : parseInt(el.value, 10));
   const VALID = ['6-0', '6-1', '6-2', '6-3', '6-4', '7-5', '7-6'];
@@ -109,4 +109,4 @@
   });
   if (retiredBox) retiredBox.addEventListener('change', refresh);
   refresh();
-})();
+});

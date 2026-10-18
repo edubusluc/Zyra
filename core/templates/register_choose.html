@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+
+{% block title %}{% translate "Crea tu cuenta en Zyra" %} · Zyra{% endblock %}
+{% block description %}{% translate "Regístrate en Zyra como jugador para unirte a un club por invitación o como capitán para crear el tuyo gratis." %}{% endblock %}
+
+{% block content %}
+<div class="z-auth">
+    <div class="z-auth-card z-auth-card--wide">
+        <img src="{% static 'zyra/logo.svg' %}" alt="Zyra" class="z-auth-logo">
+        <h1>{% translate "¿Cómo quieres usar Zyra?" %}</h1>
+        <p class="text-muted text-center">{% translate "Elige una opción para empezar. Podrás cambiar más tarde." %}</p>
+        <div class="z-role-grid">
+            <a class="z-role-card" href="{% url 'register_account' %}">
+                <i class="fa-solid fa-user" aria-hidden="true"></i>
+                <h2>{% translate "Registrarme como jugador" %}</h2>
+                <p>{% translate "Crea tu cuenta y únete al club de tu equipo cuando un capitán te invite." %}</p>
+                <p class="z-role-note"><i class="fa-solid fa-circle-info" aria-hidden="true"></i> {% translate "Necesitas la invitación de tu capitán para entrar en su club." %}</p>
+                <span class="z-role-go">{% translate "Crear mi cuenta" %} <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+            </a>
+            <a class="z-role-card" href="{% url 'register_club' %}">
+                <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+                <h2>{% translate "Registrarme como capitán" %}</h2>
+                <p>{% translate "Crea el club de tu equipo, convoca a tus jugadores y apunta los resultados." %}</p>
+                <p class="z-role-note"><i class="fa-solid fa-circle-info" aria-hidden="true"></i> {% translate "Serás el encargado del club: invitas a los jugadores, creas los equipos y apuntas los resultados. Podrás traspasar la capitanía a otro miembro cuando quieras." %}</p>
+                <span class="z-role-go">{% translate "Crear mi club" %} <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+            </a>
+        </div>
+        <p class="z-auth-foot">{% url 'login' as login_url %}{% blocktranslate trimmed %}¿Ya tienes cuenta? <a href="{{ login_url }}">Inicia sesión</a>{% endblocktranslate %}</p>
+    </div>
+</div>
+{% endblock %}

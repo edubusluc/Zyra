@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}{% translate "Acción no permitida" %}{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width: 640px;">
+    <h1 class="h3">{% translate "Acción no permitida" %}</h1>
+    <p>{% translate "Estás dentro de «Entrar como» y esta acción (cuenta, email o contraseña, abandonar el club, claves de SNP) no se puede hacer como otro usuario." %}</p>
+    <form method="post" action="{% url 'backoffice:impersonate_stop' %}" data-loading-text="{% translate 'Saliendo del modo «Entrar como»…' %}">
+        {% csrf_token %}
+        <button class="btn btn-primary" type="submit">{% translate "Salir de «Entrar como»" %}</button>
+    </form>
+</div>
+{% endblock %}

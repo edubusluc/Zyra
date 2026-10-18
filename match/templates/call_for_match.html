@@ -1,58 +1,123 @@
 {% extends 'base.html' %}
 {% load static i18n %}
-{% block page_title %}{% translate "Resumen del partido" %} · {% endblock %}
+{% block page_title %}{{ match.local_name }} – {{ match.visiting_name }} · {% endblock %}
 
 {% block content %}
 <div class="z-page-head">
     <div>
-        <a href="{% url 'list_match' %}" class="z-eyebrow"><i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i> {% translate "Partidos" %}</a>
-        <h1>{% translate "Resumen del partido" %}</h1>
+        <a href="{% url 'list_match' %}" class="z-eyebrow" aria-label="{% translate 'Volver a Enfrentamientos' %}"><i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i> {% translate "Resumen" %}</a>
+        <h1>{{ match.local_name }} – {{ match.visiting_name }}</h1>
     </div>
-    {% if match.draft_mode %}<span class="z-badge">{% translate "Sin validar" %}</span>{% else %}<span class="z-badge z-badge--lime">{% translate "Acta cerrada" %}</span>{% endif %}
+    <span class="z-badge{% if not match.draft_mode %} z-badge--lime{% endif %}">{{ phase.label }}</span>
 </div>
 
 <div class="z-versus">
     <div class="z-versus-team"><small>{% translate "Local" %}</small>{{ match.local_name }}</div>
     <div class="z-versus-mid">
-        <div class="z-versus-vs">{% if not match.draft_mode and match.result_points != "NONE" %}{{ match.result_points }}{% else %}VS{% endif %}</div>
-        <div class="z-versus-date">{{ match.start_date|date:"d/m/Y" }}</div>
+        <div class="z-versus-vs">{% if score_local %}{{ score_local }} – {{ score_visiting }}{% else %}VS{% endif %}</div>
+        {% if outcome %}<span class="z-fixture-state {% if outcome == 'V' %}is-win{% elif outcome == 'D' %}is-loss{% else %}is-draw{% endif %}">{{ outcome_label }}</span>{% endif %}
+        <div class="z-versus-date">{{ match.start_date|date:"D j M Y" }}{% if is_club_admin and match.draft_mode %} <a href="{% url 'edit_match_date' match.public_id %}" class="z-edit-date" title="{% translate 'Cambiar fecha' %}"><i class="fa-solid fa-pen" aria-hidden="true"></i><span class="visually-hidden">{% translate "Cambiar fecha" %}</span></a>{% endif %}</div>
     </div>
     <div class="z-versus-team"><small>{% translate "Visitante" %}</small>{{ match.visiting_name }}</div>
 </div>
 
 {% if match.location %}
-<p class="mb-4"><a class="z-location" href="{{ match.maps_url }}" target="_blank" rel="noopener"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>{{ match.location }}</span></a></p>
+<p class="mb-3"><a class="z-location" href="{{ match.maps_url }}" target="_blank" rel="noopener"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>{{ match.location }}</span></a></p>
 {% endif %}
 
-<div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
-    <h2 class="z-section-title mt-0">{% translate "Convocatoria" %}</h2>
-    {% if is_club_admin %}
-    <div class="d-flex flex-wrap gap-2">
-        {% if match.draft_mode and not call_for_match %}
-        <a href="{% url 'create_call' match_id %}" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus me-1" aria-hidden="true"></i> {% translate "Crear convocatoria" %}</a>
-        {% endif %}
-        {% if call_for_match and match.draft_mode %}
-        <a href="{% url 'edit_call' call_for_match.public_id %}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-pen me-1" aria-hidden="true"></i> {% translate "Editar" %}</a>
-        <a href="{% url 'view_call_log' call_for_match.public_id %}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-triangle-exclamation me-1" aria-hidden="true"></i> {% translate "Penalizaciones" %}</a>
-        {% endif %}
-        {% if call_for_match %}
-        <a href="{% url 'call_report' match.public_id %}" class="btn btn-secondary btn-sm" target="_blank" rel="noopener"><i class="fa-solid fa-file-pdf me-1" aria-hidden="true"></i> {% translate "Informe PDF" %}</a>
-        {% endif %}
-        {% if call_for_match and not call_for_match.draft_mode %}
-        <form action="{% url 'resend_call_report' match.public_id %}" method="post" class="d-inline">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-secondary btn-sm"><i class="fa-solid fa-paper-plane me-1" aria-hidden="true"></i> {% translate "Reenviar informe" %}</button>
-        </form>
-        {% endif %}
-        {% if call_for_match.draft_mode %}
-        <form action="{% url 'close_call' match.public_id %}" method="post" class="d-inline">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-danger btn-sm"><i class="fa-solid fa-lock me-1" aria-hidden="true"></i> {% translate "Cerrar convocatoria" %}</button>
-        </form>
+{# Fases del enfrentamiento: dónde está y qué falta (match/phase.py). #}
+<ol class="z-phases" aria-label="{% translate 'Fases del enfrentamiento' %}">
+    {% for step in steps %}
+    <li class="{% if step.done %}is-done{% elif step.current %}is-current{% endif %}"{% if step.current %} aria-current="step"{% endif %}>
+        <span class="z-step-n" aria-hidden="true">{% if step.done %}<i class="fa-solid fa-check" aria-hidden="true"></i>{% else %}{{ forloop.counter }}{% endif %}</span>
+        <span>{{ step.label }}</span>{% if step.done %}<span class="visually-hidden"> ({% translate "hecho" %})</span>{% endif %}
+    </li>
+    {% endfor %}
+</ol>
+
+{% if my_status %}
+{# El jugador enlazado a esta cuenta ve si juega y con quién (H-06). #}
+<div class="z-mystatus {% if my_status.called %}is-in{% endif %}" role="status">
+    <i class="fa-solid {% if my_status.called %}fa-circle-check{% else %}fa-circle-info{% endif %}" aria-hidden="true"></i>
+    <div>
+        {% if not my_status.has_call %}
+        <strong>{% translate "Todavía no hay convocatoria" %}</strong>
+        {% elif my_status.called %}
+        <strong>{% translate "Estás convocado" %}</strong>
+        {% if not my_status.closed %}<span>{% translate "La convocatoria sigue abierta: puede cambiar." %}</span>{% endif %}
+        {% if my_status.game %}<span>{% blocktranslate with n=my_status.game.n_game pts=my_status.game.score %}Partido {{ n }} · {{ pts }} pts{% endblocktranslate %}{% if my_status.partner %} · {% blocktranslate with name=my_status.partner.full_name %}con {{ name }}{% endblocktranslate %}{% endif %}</span>
+        {% elif my_status.closed %}<span>{% translate "Las parejas aún no están decididas." %}</span>{% endif %}
+        {% else %}
+        <strong>{% translate "No estás convocado" %}</strong>
+        {% if not my_status.closed %}<span>{% translate "La convocatoria sigue abierta: puede cambiar." %}</span>{% endif %}
         {% endif %}
     </div>
-    {% endif %}
 </div>
+{% endif %}
+
+{% if is_club_admin and phase.action != 'nothing' %}
+{# Un único botón principal «Siguiente: …» siempre en el mismo sitio; lo demás, en «Más». #}
+<div class="z-next">
+    <div class="z-next-main">
+        {% if phase.action == 'create_call' %}
+        <a href="{% url 'create_call' match_id %}" class="btn btn-primary"><i class="fa-solid fa-plus me-1" aria-hidden="true"></i> {% translate "Siguiente: Crear convocatoria" %}</a>
+        {% elif phase.action == 'close_call' %}
+        <form action="{% url 'close_call' match.public_id %}" method="post" data-loading-text="{% translate 'Cerrando la convocatoria…' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary"{% if phase.missing_players %} disabled aria-describedby="next-hint"{% endif %}><i class="fa-solid fa-lock me-1" aria-hidden="true"></i> {% translate "Siguiente: Cerrar convocatoria" %}</button>
+        </form>
+        {% elif phase.action == 'create_games' %}
+        <a href="{% url 'create_game' match_id %}" class="btn btn-primary"><i class="fa-solid fa-shuffle me-1" aria-hidden="true"></i> {% translate "Siguiente: Alinear parejas" %}</a>
+        {% elif phase.action == 'enter_results' %}
+        <a href="{% url 'enter_results' match.public_id %}" class="btn btn-primary"><i class="fa-solid fa-pen-to-square me-1" aria-hidden="true"></i> {% blocktranslate with n=phase.results total=games_count %}Siguiente: Poner resultados ({{ n }}/{{ total }}){% endblocktranslate %}</a>
+        {% elif phase.action == 'close_match' %}
+        <form method="POST" action="{% url 'close_match' match.public_id %}"
+              data-confirm-title="{% translate 'Cerrar el acta' %}" data-confirm-action="{% translate 'Cerrar acta' %}"
+              data-confirm="{% blocktranslate with local=match.local_name visiting=match.visiting_name date=match.start_date|date:'D j M Y' %}{{ local }} – {{ visiting }}, {{ date }}. Después no se podrán cambiar parejas ni resultados salvo que la reabras.{% endblocktranslate %}{% if is_future %} {% translate "La fecha es futura: comprueba que es el enfrentamiento correcto." %}{% endif %}" data-loading-text="{% translate 'Cerrando el acta…' %}">
+            {% csrf_token %}
+            {% if is_future %}<input type="hidden" name="confirm_future" value="1">{% endif %}
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-flag-checkered me-1" aria-hidden="true"></i> {% translate "Siguiente: Cerrar acta" %}</button>
+        </form>
+        {% endif %}
+        <p class="z-next-hint" id="next-hint">
+            {% if phase.action == 'create_call' %}{% translate "Primero crea la convocatoria." %}
+            {% elif phase.action == 'close_call' %}
+                {% if phase.missing_players %}{% blocktranslate trimmed count n=phase.missing_players %}Falta {{ n }} convocado para cerrar la convocatoria.{% plural %}Faltan {{ n }} convocados para cerrar la convocatoria.{% endblocktranslate %} <a href="{% url 'edit_call' call_for_match.public_id %}">{% translate "Editar convocatoria" %}</a>
+                {% elif report_emails %}{% blocktranslate with emails=report_emails %}Se enviará el informe PDF a: {{ emails }}{% endblocktranslate %}
+                {% else %}{% translate "Ningún capitán tiene email: no se enviará el informe. Añádelo en «Mi perfil»." %}{% endif %}
+            {% elif phase.action == 'create_games' %}{% translate "Ya puedes alinear las parejas." %}
+            {% elif phase.action == 'enter_results' %}{% translate "Apunta los resultados de los partidos jugados." %}
+            {% elif phase.action == 'close_match' %}{% translate "Están los 5 resultados: cierra el acta." %}{% endif %}
+        </p>
+    </div>
+    <details class="z-more">
+        <summary class="btn btn-secondary">{% translate "Más" %} <i class="fa-solid fa-ellipsis" aria-hidden="true"></i></summary>
+        <ul>
+            {% if call_for_match and match.draft_mode %}<li><a href="{% url 'edit_call' call_for_match.public_id %}"><i class="fa-solid fa-pen" aria-hidden="true"></i> {% translate "Editar convocatoria" %}</a></li>{% endif %}
+            {% if call_for_match and match.draft_mode and game_for_match %}<li><a href="{% url 'edit_games_match' match.public_id %}"><i class="fa-solid fa-shuffle" aria-hidden="true"></i> {% translate "Editar parejas" %}</a></li>{% endif %}
+            {% if call_for_match %}<li><a href="{% url 'view_call_log' call_for_match.public_id %}"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> {% translate "Penalizaciones" %}</a></li>{% endif %}
+            {% if call_for_match %}<li><a href="{% url 'call_report' match.public_id %}" target="_blank" rel="noopener"><i class="fa-solid fa-file-pdf" aria-hidden="true"></i> {% translate "Informe PDF" %}</a></li>{% endif %}
+            {% if call_for_match and not call_for_match.draft_mode %}
+            <li><form action="{% url 'resend_call_report' match.public_id %}" method="post" data-loading-text="{% translate 'Enviando el informe…' %}">{% csrf_token %}<button type="submit"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i> {% translate "Reenviar informe" %}</button></form></li>
+            {% endif %}
+            {% if match.draft_mode %}<li><a href="{% url 'edit_match_date' match.public_id %}"><i class="fa-regular fa-calendar" aria-hidden="true"></i> {% translate "Cambiar fecha" %}</a></li>{% endif %}
+        </ul>
+    </details>
+</div>
+{% endif %}
+
+{% if is_club_admin and not match.draft_mode %}
+{# Acta cerrada: se queda aquí con el marcador y dos acciones (H-40). #}
+<div class="z-closed {% if outcome == 'V' %}is-win{% elif outcome == 'D' %}is-loss{% else %}is-draw{% endif %}">
+    <strong>{% blocktranslate with outcome=outcome_label own=own_points rival=rival_points %}Acta cerrada: {{ outcome }} {{ own }}-{{ rival }}{% endblocktranslate %}</strong>
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-primary btn-sm" href="https://wa.me/?text={{ share_text|urlencode }}" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp me-1" aria-hidden="true"></i> {% translate "Compartir resultado" %}</a>
+        <a class="btn btn-secondary btn-sm" href="{% url 'team_statistics' %}?season={{ match.season|urlencode }}"><i class="fa-solid fa-chart-simple me-1" aria-hidden="true"></i> {% translate "Ver estadísticas" %}</a>
+    </div>
+</div>
+{% endif %}
+
+<h2 class="z-section-title mt-0">{% translate "Convocatoria" %}</h2>
 
 {% if is_club_admin and report_deliveries %}
 <p class="small text-muted mb-2"><i class="fa-solid fa-envelope me-1" aria-hidden="true"></i> {% translate "Informe por email:" %}
@@ -79,7 +144,7 @@
             <div>
                 <ul {% if group.hidden %}class="is-collapsed"{% endif %} id="call-group-{{ forloop.counter }}">
                     {% for p in group.players %}
-                    <li class="z-chip {% if p.is_playing %}is-playing{% endif %}" title="{{ p.full_name }}">
+                    <li class="z-chip {% if p.is_playing %}is-playing{% endif %}{% if p.is_me %} is-me{% endif %}" title="{{ p.full_name }}"{% if p.is_me %} aria-label="{{ p.full_name }} ({% translate 'tú' %})"{% endif %}>
                         <img src="{% if p.photo %}{{ p.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="">
                         <span>{{ p.short_name }}</span>
                         {% if p.is_playing %}<i class="z-dot" title="{% translate 'Juega un partido' %}" aria-hidden="true"></i><span class="visually-hidden">{% translate "Juega un partido" %}</span>{% endif %}
@@ -110,20 +175,13 @@
   });
 </script>
 {% else %}
-<div class="z-empty"><i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>{% translate "Todavía no hay convocatoria para este partido." %}</div>
+<div class="z-empty"><i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>{% if is_club_admin %}{% translate "Crea la convocatoria para elegir quién juega este enfrentamiento." %}{% else %}{% translate "Tu capitán aún no ha creado la convocatoria de este enfrentamiento." %}{% endif %}</div>
 {% endif %}
 
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-4">
     <h2 class="z-section-title my-0">{% translate "Partidos" %}</h2>
-    {% if is_club_admin %}
-    <div class="d-flex flex-wrap gap-2">
-        {% if match.draft_mode and call_for_match and game_for_match %}
-        <a href="{% url 'edit_games_match' match.public_id %}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-shuffle me-1" aria-hidden="true"></i> {% translate "Editar parejas" %}</a>
-        {% endif %}
-        {% if match.draft_mode and call_for_match and not call_for_match.draft_mode and not games_count %}
-        <a href="{% url 'create_game' match_id %}" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus me-1" aria-hidden="true"></i> {% translate "Crear partidos" %}</a>
-        {% endif %}
-    </div>
+    {% if is_club_admin and match.draft_mode and games_count %}
+    <a href="{% url 'enter_results' match.public_id %}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-pen-to-square me-1" aria-hidden="true"></i> {% translate "Poner resultados" %}</a>
     {% endif %}
 </div>
 
@@ -167,19 +225,13 @@
 {% empty %}
     <div class="z-empty">
         <i class="fa-solid fa-table-tennis-paddle-ball" aria-hidden="true"></i>
-        {% translate "Todavía no hay partidos. Primero hay que cerrar la convocatoria." %}
+        {% translate "Todavía no hay partidos. Primero hay que cerrar la convocatoria y alinear las parejas." %}
     </div>
 {% endfor %}
 </div>
 
-{% if is_club_admin and games_count == 5 and match.draft_mode %}
-<form method="POST" action="{% url 'close_match' match.public_id %}" class="text-center mt-4">
-    {% csrf_token %}
-    <button type="submit" class="btn btn-primary btn-lg"><i class="fa-solid fa-flag-checkered me-1" aria-hidden="true"></i> {% translate "Cerrar acta del partido" %}</button>
-</form>
-{% endif %}
 {% if is_club_admin and not match.draft_mode %}
-<form method="POST" action="{% url 'reopen_match' match.public_id %}" class="text-center mt-4" onsubmit="return confirm('{% translate "¿Reabrir el acta? Mientras esté abierta este enfrentamiento no cuenta en las estadísticas. Tendrás que volver a cerrarla." as reopen_msg %}{{ reopen_msg|escapejs }}');">
+<form method="POST" action="{% url 'reopen_match' match.public_id %}" class="text-center mt-4" data-confirm="{% translate "¿Reabrir el acta? Mientras esté abierta este enfrentamiento no cuenta en las estadísticas. Tendrás que volver a cerrarla." %}" data-loading-text="{% translate 'Reabriendo el acta…' %}">
     {% csrf_token %}
     <button type="submit" class="btn btn-outline-secondary"><i class="fa-solid fa-lock-open me-1" aria-hidden="true"></i> {% translate "Reabrir acta para corregirla" %}</button>
 </form>

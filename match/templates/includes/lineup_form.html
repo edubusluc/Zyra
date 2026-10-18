@@ -1,7 +1,7 @@
 {# Alineación de 5 parejas. Recibe: match, players, slots (lista de {gameId, player1Id, player2Id}) o nada, submit_label #}
 {# A la izquierda se eligen las parejas (buscador al escribir + desplegable); a la derecha se ve el orden por puntos SNP. #}
-{% load static i18n l10n %}
-<form method="post" data-lineup class="z-lineup">
+{% load static i18n l10n zyra_format %}
+<form method="post" data-lineup class="z-lineup" data-loading-text="{% translate 'Guardando las parejas…' %}">
     {% csrf_token %}
     <div class="z-lineup-main">
         <p class="text-muted small mb-3">{% translate "Escribe para buscar un jugador o abre la lista con la flecha. Solo aparecen los convocados que aún no están en otra pareja." %}</p>
@@ -29,7 +29,7 @@
                     <select id="slot{{ forloop.parentloop.counter }}-p{{ key }}" data-player data-picker data-picker-toggle data-picker-clearable data-placeholder="{% translate 'Buscar jugador...' %}">
                         <option value="">{% translate "Elegir jugador" %}</option>
                         {% for p in players %}
-                        {% blocktranslate asvar meta with points=p.snp_score|default:0|floatformat:"0" %}{{ points }} pts{% endblocktranslate %}
+                        {% blocktranslate asvar meta with points=p.snp_score|snp_points:"0" %}{{ points }} pts{% endblocktranslate %}
                         <option value="{{ p.id }}" data-points="{{ p.snp_score|default:0|unlocalize }}" data-meta="{{ meta }}" data-short="{{ p.short_name }}"
                             {% if key == "1" and p.id == slot.player1Id or key == "2" and p.id == slot.player2Id %}selected{% endif %}>{{ p.full_name }}</option>
                         {% endfor %}

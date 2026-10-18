@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+{% block page_title %}{% translate "Poner resultados" %} · {% endblock %}
+
+{% block content %}
+{# Los 5 partidos del enfrentamiento en una pantalla: validación en vivo (static/js/result-form.js) y un solo guardado. #}
+<div class="z-page-head">
+    <div>
+        <a href="{% url 'call_for_match' match.public_id %}" class="z-eyebrow"><i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i> {{ match.local_name }} – {{ match.visiting_name }}</a>
+        <h1>{% translate "Resultados del enfrentamiento" %}</h1>
+    </div>
+</div>
+
+<p class="text-muted small">{% translate "Rellena los partidos que ya se han jugado; los que dejes vacíos no se tocan. Un set se gana 6-0 a 6-4, 7-5 o 7-6. El set 3 solo se juega si cada pareja ha ganado un set; puede ser un set normal o un super tie-break a 10 (10-8, 11-9...)." %}</p>
+
+<form method="POST" novalidate data-loading-text="{% translate 'Guardando los resultados…' %}">
+    {% csrf_token %}
+    <div class="z-results-all">
+    {% for row in rows %}
+    {% with game=row.game values=row.values %}
+    <fieldset class="z-card z-result-card" data-result id="partido-{{ game.n_game }}">
+        <legend class="z-result-legend">
+            {% blocktranslate with n=game.n_game %}Partido {{ n }}{% endblocktranslate %}
+            <span class="text-muted fw-semibold">· {% blocktranslate with score=game.score %}{{ score }} pts{% endblocktranslate %}</span>
+            {% if row.has_result %}<span class="z-badge z-badge--lime">{% translate "Guardado" %}</span>{% endif %}
+        </legend>
+        {% if row.errors %}
+        <div class="alert-message warning">{% for e in row.errors %}<p>{{ e }}</p>{% endfor %}</div>
+        {% endif %}
+        <div class="z-result-grid">
+            <span></span>
+            <span class="z-result-head">Set 1</span>
+            <span class="z-result-head">Set 2</span>
+            <span class="z-result-head">Set 3</span>
+
+            <span class="z-result-team">{{ match.local_name }}{% if match.local.is_own %} <i class="fa-solid fa-star text-lime" role="img" aria-label="{% translate 'Tu equipo' %}" title="{% translate 'Tu equipo' %}"></i>{% endif %}{% if game.local_pair_label %}<small>{{ game.local_pair_label }}</small>{% endif %}</span>
+            <input type="text" inputmode="numeric" maxlength="2" name="g{{ game.n_game }}_set1_local" value="{{ values.set1_local }}" aria-label="{% blocktranslate with n=game.n_game team=match.local_name %}Partido {{ n }}, set 1, {{ team }}{% endblocktranslate %}" data-set="1" data-side="l">
+            <input type="text" inputmode="numeric" maxlength="2" name="g{{ game.n_game }}_set2_local" value="{{ values.set2_local }}" aria-label="{% blocktranslate with n=game.n_game team=match.local_name %}Partido {{ n }}, set 2, {{ team }}{% endblocktranslate %}" data-set="2" data-side="l">
+            <input type="text" inputmode="numeric" maxlength="2" name="g{{ game.n_game }}_set3_local" value="{{ values.set3_local }}" aria-label="{% blocktranslate with n=game.n_game team=match.local_name %}Partido {{ n }}, set 3, {{ team }}{% endblocktranslate %}" data-set="3" data-side="l">
+
+            <span class="z-result-team">{{ match.visiting_name }}{% if match.visiting.is_own %} <i class="fa-solid fa-star text-lime" role="img" aria-label="{% translate 'Tu equipo' %}" title="{% translate 'Tu equipo' %}"></i>{% endif %}{% if game.visiting_pair_label %}<small>{{ game.visiting_pair_label }}</small>{% endif %}</span>
+            <input type="text" inputmode="numeric" maxlength="2" name="g{{ game.n_game }}_set1_visiting" value="{{ values.set1_visiting }}" aria-label="{% blocktranslate with n=game.n_game team=match.visiting_name %}Partido {{ n }}, set 1, {{ team }}{% endblocktranslate %}" data-set="1" data-side="v">
+            <input type="text" inputmode="numeric" maxlength="2" name="g{{ game.n_game }}_set2_visiting" value="{{ values.set2_visiting }}" aria-label="{% blocktranslate with n=game.n_game team=match.visiting_name %}Partido {{ n }}, set 2, {{ team }}{% endblocktranslate %}" data-set="2" data-side="v">
+            <input type="text" inputmode="numeric" maxlength="2" name="g{{ game.n_game }}_set3_visiting" value="{{ values.set3_visiting }}" aria-label="{% blocktranslate with n=game.n_game team=match.visiting_name %}Partido {{ n }}, set 3, {{ team }}{% endblocktranslate %}" data-set="3" data-side="v">
+        </div>
+        <ul class="z-result-checks" aria-live="polite" data-result-checks></ul>
+    </fieldset>
+    {% endwith %}
+    {% endfor %}
+    </div>
+
+    {% if is_future %}
+    <div class="alert-message warning" role="note">
+        <p><strong>{% blocktranslate with date=match.start_date|date:"D j M Y" local=match.local_name visiting=match.visiting_name %}{{ local }} – {{ visiting }} está fechado el {{ date }}, que aún no ha llegado.{% endblocktranslate %}</strong></p>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="confirm_future" id="confirm-future" value="1">
+            <label class="form-check-label" for="confirm-future">{% translate "Es el enfrentamiento correcto: quiero poder cerrar su acta." %}</label>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="d-flex flex-wrap gap-2 mt-3">
+        <button type="submit" class="btn btn-primary" name="action" value="save">{% translate "Guardar resultados" %}</button>
+        {% if min_close %}
+        <button type="submit" class="btn btn-secondary" name="action" value="close">{% translate "Guardar y cerrar acta" %}</button>
+        {% endif %}
+        <a href="{% url 'call_for_match' match.public_id %}" class="btn btn-outline-secondary">{% translate "Cancelar" %}</a>
+    </div>
+</form>
+<script src="{% static 'js/result-form.js' %}" defer></script>
+{% endblock %}

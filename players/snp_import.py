@@ -16,18 +16,21 @@ La búsqueda desde la web no se ejecuta en el proceso web: se deja en cola (``st
 recoge el proceso programado ``process_snp_imports`` (``process_queue``), que las atiende de una
 en una. Así nunca hay más de un Chromium abierto por las búsquedas de los capitanes.
 """
+import asyncio
 import datetime
 import logging
+import threading
 
 from django.conf import settings
 from django.db import transaction
 from django.db.models import F
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _, ngettext
 
 from core.crypto import DecryptionError
 
-from .models import Player, SnpScoreHistory, SnpTeamImport, current_season
+from .models import Player, SnpAccount, SnpScoreHistory, SnpTeamImport, current_season
 from . import snp_service
 from .scraper import SnpScrapeError, scrape_scores
 from core.similarity import is_same_team, same_name
@@ -45,7 +48,7 @@ QUEUE_STALE_AFTER = datetime.timedelta(minutes=30)
 # Búsquedas desde la web (canceladas y fallidas incluidas): como mucho SEARCHES_PER_DAY en 24 h
 # y al menos SEARCH_COOLDOWN entre una y la siguiente.
 SEARCHES_PER_DAY = 3
-SEARCH_COOLDOWN = datetime.timedelta(minutes=5)
+SEARCH_COOLDOWN = datetime.timedelta(minutes=1)
 # Tras tantas búsquedas fallidas desde la web se oculta «Completar equipo» y se avisa al personal.
 MAX_FAILED_SEARCHES = 3
 
@@ -167,6 +170,33 @@ def _create_group_teams(club, teams_to_add, teams_existing):
     return created
 
 
+def _save_progress(pk, percent, text):
+    """
+    Guarda el avance de una búsqueda. El navegador corre con un bucle de eventos en su hilo y ahí Django
+    no deja usar la base de datos: en ese caso se escribe desde un hilo aparte. Un fallo al guardar el
+    avance nunca debe romper la búsqueda.
+    """
+    def write():
+        """Escribe el avance y cierra las conexiones del hilo."""
+        try:
+            SnpTeamImport.objects.filter(pk=pk, status=SnpTeamImport.RUNNING).update(progress=percent, stage=text)
+        except Exception:
+            logger.warning("No se ha podido guardar el avance de la búsqueda %s", pk, exc_info=True)
+        finally:
+            if threading.current_thread() is not threading.main_thread():
+                from django.db import connections
+                connections.close_all()
+
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        write()  # sin bucle de eventos: se escribe aquí mismo
+        return
+    worker = threading.Thread(target=write, name="snp-import-progress")
+    worker.start()
+    worker.join()
+
+
 def search(team_import, scraper=None, **scrape_options):
     """Descarga el equipo de SNP y guarda en ``team_import`` qué se añadiría. Nunca lanza."""
     account = getattr(team_import.club, "snp_account", None)
@@ -177,8 +207,13 @@ def search(team_import, scraper=None, **scrape_options):
             raise SnpScrapeError(str(snp_service.UNAVAILABLE_MESSAGE))
         if account is None:
             raise SnpScrapeError(_("El club no tiene cuenta SNP."), kind=SnpScrapeError.ACCOUNT)
+        def progress(percent, text):
+            """Guarda el avance para la barra de progreso (solo mientras sigue en marcha)."""
+            _save_progress(team_import.pk, percent, text)
+        progress(5, _("Conectando con SNP"))
         result = (scraper or scrape_scores)(account.username, account.password, account.team_id or None,
-                                            with_group_teams=True, **team_options(account.club), **scrape_options)
+                                            with_group_teams=True, progress=progress,
+                                            **team_options(account.club), **scrape_options)
         # Un scraper sin equipos del grupo devuelve solo los jugadores.
         scores, group_teams = result if isinstance(result, tuple) else (result, [])
     except (SnpScrapeError, DecryptionError) as exc:
@@ -191,7 +226,8 @@ def search(team_import, scraper=None, **scrape_options):
         to_add, existing = plan_import(team_import.club, scores)
         teams_to_add, teams_existing = plan_group_teams(team_import.club, group_teams)
         changes = {"status": SnpTeamImport.READY, "to_add": to_add, "existing": existing,
-                   "teams_to_add": teams_to_add, "teams_existing": teams_existing}
+                   "teams_to_add": teams_to_add, "teams_existing": teams_existing,
+                   "progress": 95, "stage": _("Creando jugadores y equipos")}
     # Solo si sigue en marcha: el capitán puede haberla cancelado mientras tanto.
     updated = SnpTeamImport.objects.filter(pk=team_import.pk, status=SnpTeamImport.RUNNING).update(**changes)
     team_import.refresh_from_db()
@@ -248,6 +284,7 @@ def confirm(team_import):
     team_import.created_teams = _create_group_teams(club, team_import.teams_to_add, team_import.teams_existing)
     team_import.created_players = created
     team_import.status = SnpTeamImport.DONE
+    team_import.progress, team_import.stage = 100, _("Equipo sincronizado")
     team_import.finished_at = timezone.now()
     team_import.message = ngettext("%(n)s jugador añadido.", "%(n)s jugadores añadidos.", len(created)) % {"n": len(created)}
     if team_import.created_teams:
@@ -293,15 +330,21 @@ def is_unlimited(club):
 def search_limit(club, now=None):
     """
     None si el club puede lanzar ahora otra búsqueda desde la web; si no, cuándo podrá
-    (datetime). Cuenta todas las búsquedas web, también las canceladas o fallidas: así
-    pulsar el botón muchas veces no lanza muchas lecturas de SNP.
+    (datetime). Cuenta las búsquedas web hechas o fallidas, no las canceladas ni las rechazadas por la
+    cuenta SNP que el capitán ya ha corregido: así pulsar el botón muchas veces no lanza muchas
+    lecturas de SNP, pero cancelar o arreglar los datos no deja bloqueado al capitán.
     """
     if is_unlimited(club):
         return None
     now = now or timezone.now()
-    recent = list(SnpTeamImport.objects.filter(
+    counted = SnpTeamImport.objects.filter(
         club=club, source=SnpTeamImport.WEB, created_at__gte=now - datetime.timedelta(days=1),
-    ).order_by("-created_at").values_list("created_at", flat=True))
+    ).exclude(status=SnpTeamImport.CANCELLED)
+    # Una cuenta rechazada por SNP no cuenta una vez corregida: el capitán debe poder reintentar ya.
+    account_updated = SnpAccount.objects.filter(club=club).values_list("updated_at", flat=True).first()
+    if account_updated:
+        counted = counted.exclude(status=SnpTeamImport.ERROR, error_kind=SnpScrapeError.ACCOUNT, created_at__lt=account_updated)
+    recent = list(counted.order_by("-created_at").values_list("created_at", flat=True))
     waits = []
     if recent and now - max(recent) < SEARCH_COOLDOWN:
         waits.append(max(recent) + SEARCH_COOLDOWN)
@@ -323,6 +366,60 @@ def web_import_done(club):
     return SnpTeamImport.objects.filter(club=club, source=SnpTeamImport.WEB, status=SnpTeamImport.DONE).first()
 
 
+def failed_web_import(club):
+    """
+    La última búsqueda web de «Completar equipo» del club si terminó con error o se canceló y nada
+    después la arregló (ni hecha ni en curso), o None. La portada del capitán la usa para ofrecer «Reintentar».
+    """
+    latest = SnpTeamImport.objects.filter(club=club, source=SnpTeamImport.WEB).order_by("-created_at").first()
+    if latest and latest.status in (SnpTeamImport.ERROR, SnpTeamImport.CANCELLED) and not web_import_done(club):
+        return latest
+    return None
+
+
+def sync_task(club):
+    """
+    La tarea «Sincronizar datos» de la portada del capitán: hasta que «Completar equipo» haya devuelto
+    un resultado correcto (una búsqueda web ``DONE``) hay que poder lanzarlo, seguirlo o reintentarlo.
+    None si no hace falta (ya hecho o sin cuenta SNP). Si no, un diccionario con ``state``:
+    ``running`` (en cola o buscando), ``ready`` (a la espera de confirmar), ``failed`` (error o cancelada)
+    o ``idle`` (aún no se ha lanzado), más ``message``, ``blocked``, ``wait``, ``service_off`` y ``can_retry``.
+    """
+    if not SnpAccount.objects.filter(club=club).exists():
+        return None
+    if SnpTeamImport.objects.filter(club=club, source=SnpTeamImport.WEB, status=SnpTeamImport.DONE).exists():
+        return None
+    active = active_import(club)
+    failed = None if active else failed_web_import(club)
+    if active:
+        state, message = ("running" if active.status == SnpTeamImport.RUNNING else "ready"), ""
+    elif failed:
+        state, message = "failed", failed.message
+    else:
+        state, message = "idle", ""
+    blocked, wait, service_off = web_blocked(club), search_limit(club), not snp_service.is_enabled()
+    same_account = account_unchanged_after_failure(club)
+    own = club.own_team
+    team_fix_url = reverse("edit_team", args=[own.public_id]) if failed and failed.error_kind == SnpScrapeError.TEAM and own else ""
+    return {"team_fix_url": team_fix_url,
+        "state": state, "message": message, "import": active or failed, "blocked": blocked, "wait": wait,
+        "service_off": service_off, "same_account": same_account,
+        "can_retry": not (blocked or wait or service_off or same_account),
+    }
+
+
+def account_unchanged_after_failure(club):
+    """
+    True si la última búsqueda web falló porque SNP rechazó el usuario o la contraseña y la cuenta SNP
+    sigue igual desde entonces: repetirla con los mismos datos fallaría igual (y arriesga el bloqueo de la cuenta).
+    """
+    latest = SnpTeamImport.objects.filter(club=club, source=SnpTeamImport.WEB).order_by("-created_at").first()
+    if not (latest and latest.status == SnpTeamImport.ERROR and latest.error_kind == SnpScrapeError.ACCOUNT):
+        return False
+    account_updated = SnpAccount.objects.filter(club=club).values_list("updated_at", flat=True).first()
+    return account_updated is None or account_updated <= latest.created_at
+
+
 def web_blocked(club):
     """True si la web ya no ofrece «Completar equipo» por fallos repetidos (se avisó al personal)."""
     return not is_unlimited(club) and club.snp_import_failures >= MAX_FAILED_SEARCHES
@@ -339,7 +436,10 @@ def _register_failure(team_import, service_off):
     Club.objects.filter(pk=team_import.club_id).update(snp_import_failures=F("snp_import_failures") + 1)
     club = Club.objects.get(pk=team_import.club_id)
     if club.snp_import_failures == MAX_FAILED_SEARCHES:
-        _notify_staff(club, team_import.message)
+        try:
+            _notify_staff(club, team_import.message)
+        except Exception:  # el aviso al personal nunca debe tapar el motivo real del fallo
+            logger.exception("No se ha podido avisar al personal del bloqueo de %s", club)
 
 
 def _notify_staff(club, reason):
@@ -393,7 +493,8 @@ def _run(team_import):
         return _search_and_maybe_confirm(team_import, team_import.auto_confirm)
     except Exception:
         logger.exception("Ha fallado la búsqueda de «Completar equipo» de %s", team_import.club)
-        SnpTeamImport.objects.filter(pk=team_import.pk).update(
+        # Solo si sigue en marcha: si ya quedó con su error real, no se tapa con uno genérico.
+        SnpTeamImport.objects.filter(pk=team_import.pk, status=SnpTeamImport.RUNNING).update(
             status=SnpTeamImport.ERROR, message=_("Error inesperado al leer SNP."), finished_at=timezone.now(),
         )
         team_import.refresh_from_db()
@@ -413,7 +514,35 @@ def start_search(club, user, auto_confirm=False):
         team_import.started_at = timezone.now()
         team_import.save(update_fields=["started_at"])
         return _run(team_import)
+    _wake_queue()
     return team_import
+
+
+def _wake_queue():
+    """
+    Hace que la búsqueda recién puesta en cola empiece cuanto antes en vez de esperar a la pasada
+    del minuto. Con el lanzador en marcha pide una ejecución de ``process_snp_imports`` (la recoge
+    en su próxima pasada, como mucho en segundos); sin lanzador (desarrollo) la atiende en un hilo.
+    """
+    from backoffice.models import ScheduledJob
+    from backoffice.scheduler import scheduler_is_alive
+    if getattr(settings, "TESTING", False):
+        return
+    if scheduler_is_alive():
+        ScheduledJob.objects.filter(
+            name="process_snp_imports", running_since__isnull=True, run_requested_at__isnull=True,
+        ).update(run_requested_at=timezone.now())
+        return
+
+    def target():
+        """Cuerpo del hilo: atiende la cola y cierra sus conexiones a la base de datos."""
+        from django.db import connections
+        try:
+            process_queue(max_items=1)
+        finally:
+            connections.close_all()
+
+    threading.Thread(target=target, name="snp-import-queue", daemon=True).start()
 
 
 def claim_next():

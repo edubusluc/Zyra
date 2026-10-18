@@ -1,18 +1,27 @@
 {% extends 'base.html' %}
 {% load static i18n %}
-{% block page_title %}{% translate "Crear Partido" %} · {% endblock %}
+{% block page_title %}{% translate "Crear enfrentamiento" %} · {% endblock %}
 
 {% block content %}
 <div class="table-container">
-    <h1>{% translate "Crear Partido" %}</h1>
+    <h1>{% translate "Crear enfrentamiento" %}</h1>
 
     {% for error in form.non_field_errors %}
     <div class="alert-message">{{ error }}</div>
     {% endfor %}
 
-    <form method="POST" class="z-match-form" data-match-form>
+    <form method="POST" class="z-match-form" data-match-form novalidate data-loading-text="{% translate 'Creando el enfrentamiento…' %}" data-own-location="{{ form.own_team.location|default:'' }}">
         {% csrf_token %}
 
+        {# Un solo selector (U12): static/js/match-form.js lo sincroniza con «Modo» y «Tipo de partido», que sin JavaScript se ven tal cual. #}
+        <p data-kind-row hidden>
+            <label for="id_kind">{% translate "Tipo de enfrentamiento" %}:</label>
+            <select id="id_kind" class="form-select" data-kind-select>
+                {% for value, label in form.match_type.field.choices %}<option value="{{ value }}">{{ label }}</option>{% endfor %}
+                <option value="amistoso">{% translate "Amistoso" %}</option>
+            </select>
+        </p>
+        <div data-kind-legacy>
         <fieldset class="z-mode">
             <legend class="form-label">{{ form.mode.label }}</legend>
             <div class="z-segmented z-mode-options">
@@ -26,6 +35,7 @@
             {{ form.match_type.label_tag }} {{ form.match_type }}
         </p>
         {% for error in form.match_type.errors %}<div class="alert-message">{{ error }}</div>{% endfor %}
+        </div>
 
         <fieldset class="z-mode" data-rival-source-row{% if form.mode.value != "amistoso" %} hidden{% endif %}>
             <legend class="form-label">{{ form.rival_source.label }}</legend>
@@ -37,43 +47,63 @@
         </fieldset>
 
         <div class="z-team-cards" data-group-rival{% if form.manual_rival %} hidden{% endif %}>
-            {% include "includes/match_team_card.html" with field=form.local team=form.local_team %}
-            {% include "includes/match_team_card.html" with field=form.visiting team=form.visiting_team %}
+            {% include "includes/match_team_card.html" with field=form.rival team=form.rival_team %}
+            {% if is_club_admin and not form.rival.field.queryset.exists %}
+            <p class="z-rival-empty">{% translate "Todavía no tienes rivales en tu grupo." %} <a href="{% url 'create_team' %}">{% translate "Crear rival" %}</a></p>
+            {% endif %}
+            {% for error in form.local.errors %}<div class="alert-message">{{ error }}</div>{% endfor %}
         </div>
 
         <div class="z-manual-rival" data-manual-rival{% if not form.manual_rival %} hidden{% endif %}>
-            <fieldset class="z-mode">
-                <legend class="form-label">{{ form.own_side.label }}</legend>
-                <div class="z-segmented z-mode-options">
-                    {% for radio in form.own_side %}
-                    <label class="z-mode-option">{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>
-                    {% endfor %}
-                </div>
-            </fieldset>
             <p>
                 {{ form.rival_name.label_tag }} {{ form.rival_name }}
-                <small class="text-muted d-block mt-1">{% translate "No se añade a tu grupo de equipos: solo se guarda el nombre en este partido." %}</small>
+                <small class="text-muted d-block mt-1">{% translate "No se añade a tu grupo de equipos: solo se guarda el nombre en este enfrentamiento." %}</small>
             </p>
             {% for error in form.rival_name.errors %}<div class="alert-message">{{ error }}</div>{% endfor %}
         </div>
+
+        <fieldset class="z-mode">
+            <legend class="form-label">{{ form.own_side.label }}</legend>
+            <div class="z-segmented z-mode-options">
+                {% for radio in form.own_side %}
+                <label class="z-mode-option">{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>
+                {% endfor %}
+            </div>
+        </fieldset>
 
         <p>
             {{ form.start_date.label_tag }} {{ form.start_date }}
         </p>
         {% for error in form.start_date.errors %}<div class="alert-message">{{ error }}</div>{% endfor %}
 
-        <fieldset class="z-mode z-report-scope">
-            <legend class="form-label">{% translate "Datos del informe PDF" %}</legend>
-            <div class="z-segmented z-mode-options">
-                {% for radio in form.report_scope %}
-                <label class="z-mode-option">{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>
-                {% endfor %}
-            </div>
-            <p class="form-text mb-0"><a href="{% url 'my_profile' %}">{% translate "Edita tus preferencias" %}</a> {% translate "para guardar esta opción por defecto." %}</p>
-            {% for error in form.report_scope.errors %}<div class="alert-message">{{ error }}</div>{% endfor %}
-        </fieldset>
+        <p>
+            {{ form.start_time.label_tag }} {{ form.start_time }}
+        </p>
+        {% for error in form.start_time.errors %}<div class="alert-message">{{ error }}</div>{% endfor %}
 
-        <button type="submit" class="btn btn-primary">{% translate "Crear Partido" %}</button>
+        <p>
+            {{ form.location.label_tag }} {{ form.location }}
+            <small class="text-muted d-block mt-1">{% translate "Por defecto, la sede del equipo local. Cámbiala si se juega en otro sitio." %}</small>
+        </p>
+
+        <details class="z-more-options">
+            <summary>{% translate "Más opciones" %}</summary>
+            <fieldset class="z-mode z-report-scope">
+                <legend class="form-label">{% translate "Datos del informe PDF" %}</legend>
+                <div class="z-segmented z-mode-options">
+                    {% for radio in form.report_scope %}
+                    <label class="z-mode-option">{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>
+                    {% endfor %}
+                </div>
+                <p class="form-text mb-0"><a href="{% url 'my_profile' %}">{% translate "Edita tus preferencias" %}</a> {% translate "para guardar esta opción por defecto." %}</p>
+                {% for error in form.report_scope.errors %}<div class="alert-message">{{ error }}</div>{% endfor %}
+            </fieldset>
+        </details>
+
+        <div class="d-flex flex-wrap gap-2 mt-3">
+            <button type="submit" class="btn btn-primary">{% translate "Crear enfrentamiento" %}</button>
+            <a href="{% url 'list_match' %}" class="btn btn-outline-secondary">{% translate "Cancelar" %}</a>
+        </div>
     </form>
 </div>
 

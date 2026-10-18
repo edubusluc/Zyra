@@ -76,6 +76,17 @@ class PairStatisticsTests(TestCase):
         everyone = list(Player.objects.filter(club=self.club))
         self.assertIsNone(pair_stats.hot_streaks(pair_stats.club_game_log(self.club), everyone)[1])
 
+    def test_hot_streak_tie_rotates_daily(self):
+        """Con empate a racha se muestra uno distinto cada día, siempre en el mismo orden."""
+        import datetime
+        history = {pid: {'results': [True, True, True], 'last': pid} for pid in (3, 1, 2)}
+        days = [datetime.date(2026, 10, 15) + datetime.timedelta(days=i) for i in range(3)]
+        shown = [pair_stats._hottest(history, d)[0] for d in days]
+        self.assertEqual(sorted(shown), [1, 2, 3])
+        self.assertEqual(pair_stats._hottest(history, days[0]), pair_stats._hottest(history, days[0]))
+        history[4] = {'results': [True] * 4, 'last': 0}
+        self.assertEqual(pair_stats._hottest(history, days[1]), (4, 4))
+
     def test_top_tables(self):
         log = pair_stats.club_game_log(self.club)
         squad = list(Player.objects.filter(club=self.club, in_team=True))
@@ -89,6 +100,17 @@ class PairStatisticsTests(TestCase):
         pairs_local = pair_stats.top_pairs(log, squad, local=True)
         self.assertEqual([(r['name'], r['played'], r['pct']) for r in pairs_local], [("A ASON / B BSON", 3, 100.0)])
         self.assertEqual(pair_stats.top_pairs(log, squad, local=False), [])  # A+B solo 1 fuera
+
+    def test_top_tables_skip_zero_percent(self):
+        """Una pareja o jugador con el mínimo de partidos pero 0 victorias no entra en el top."""
+        log = pair_stats.club_game_log(self.club)
+        squad = list(Player.objects.filter(club=self.club, in_team=True))
+        c_id, d_id = self.c.id, self.d.id
+        losing = [{'pair': tuple(sorted((c_id, d_id))), 'local': True, 'won': False} for _ in range(2)]
+        everyone = list(Player.objects.filter(club=self.club))
+        self.assertEqual(pair_stats.top_pairs(losing, everyone, local=True), [])
+        self.assertEqual(pair_stats.top_players(losing, everyone, local=True), [])
+        self.assertTrue(pair_stats.top_pairs(log, squad, local=True))
 
     def test_top_tables_respect_season(self):
         log = pair_stats.club_game_log(self.club, "2025-2026")
@@ -109,11 +131,11 @@ class PairStatisticsTests(TestCase):
         self.assertIn("error", same.context)
 
     def test_best_and_worst_pairs(self):
-        # A+B 3/4 y C+D 1/2; A+C solo 1 partido, no llega al mínimo
+        # A+B 3/4 y C+D 1/2; A+C solo 1 partido; «por mejorar» exige 4 partidos juntos
         response = self.client.get(reverse("pair_statistics"))
         key = lambda rows: [(r["p1"].name, r["p2"].name, r["played"], r["pct"]) for r in rows]
         self.assertEqual(key(response.context["best_pairs"]), [("A", "B", 4, 75.0)])
-        self.assertEqual(key(response.context["worst_pairs"]), [("C", "D", 2, 50.0)])
+        self.assertEqual(key(response.context["worst_pairs"]), [])
 
     def test_ranking_links_open_the_pair(self):
         """Los enlaces de mejores/peores parejas llevan identificadores públicos (antes daban 404)."""
@@ -134,6 +156,10 @@ class PairStatisticsTests(TestCase):
         self.assertEqual([r['name'] for r in worst], ['b', 'e', 'd'])  # 'g' no llega al mínimo
 
         # Con pocas parejas se reparten sin repetir: 3 parejas -> 2 mejores y 1 peor
+        # Una pareja sin victorias nunca es de las mejores, aunque sea la única con el mínimo
+        best, worst = pair_stats.best_and_worst_pairs([row('z', 3, 0)])
+        self.assertEqual(best, [])
+
         best, worst = pair_stats.best_and_worst_pairs(pairs[:3])
         self.assertEqual(([r['name'] for r in best], [r['name'] for r in worst]), (['c', 'a'], ['b']))
 
@@ -175,11 +201,10 @@ class PairStatisticsTests(TestCase):
         self.assertContains(response, '<input type="hidden" name="season" value="2024-2025">')
         links = {o["label"]: o["url"] for o in response.context["match_types"]}
         self.assertIn("season=2024-2025", links["Amistosos"])
-        # Sin temporada o con una desconocida: todas
-        for params in ({}, {"season": "1999-2000"}):
-            response = self.client.get(url, {"p1": self.a.public_id, "p2": self.b.public_id, **params})
-            self.assertIsNone(response.context["selected_season"])
-            self.assertEqual(response.context["s"]["played"], 4)
+        # «Todas» explícito: sin filtro de temporada
+        response = self.client.get(url, {"p1": self.a.public_id, "p2": self.b.public_id, "season": "all"})
+        self.assertIsNone(response.context["selected_season"])
+        self.assertEqual(response.context["s"]["played"], 4)
 
     def test_pair_rankings_page_accepts_season(self):
         response = self.client.get(reverse("pair_statistics"), {"season": "2025-2026"})
@@ -253,9 +278,9 @@ class PairStatisticsTests(TestCase):
     def test_player_season_games_empty_and_only_selected_season(self):
         response = self.client.get(reverse("player_statistics"), {"player": self.d.public_id, "season": "2025-2026"})
         self.assertEqual([g["n_game"] for g in response.context["d"]["games"]], [2])
-        self.assertIsNone(self.client.get(reverse("player_statistics"), {"player": self.d.public_id}).context["d"])
+        self.assertIsNone(self.client.get(reverse("player_statistics"), {"player": self.d.public_id, "season": "all"}).context["d"])
 
-        e = Player.objects.create(club=self.club, name="E", last_name="Eson")
+        e = Player.objects.create(club=self.club, name="E", last_name="Eson", joined_season="2020-2021")
         response = self.client.get(reverse("player_statistics"), {"player": e.public_id, "season": "2025-2026"})
         self.assertEqual(response.context["d"]["games"], [])
         self.assertContains(response, "No jugó ningún partido esta temporada.")
@@ -356,7 +381,7 @@ class MatchTypeFilterTests(TestCase):
         self.assertEqual(response.context["total_matches"], 4)
         self.assertEqual([o["label"] for o in response.context["match_types"] if o["active"]], ["Competitivos"])
         self.assertEqual([o["label"] for o in response.context["competitive_types"]],
-                         ["Todos los partidos", "Enfrentamientos", "Retos", "Play offs"])
+                         ["Todos los enfrentamientos", "Enfrentamientos", "Retos", "Play offs"])
         self.assertContains(response, 'id="competitive-type"')
 
         # Un tipo concreto sigue dentro de Competitivos, con el selector en ese tipo
@@ -416,7 +441,7 @@ class SeasonFilterTests(TestCase):
         response = self.client.get(url, {"player": self.a.public_id, "season": "2021-2022", "match_type": Match.AMISTOSO})
         self.assertEqual(response.context["s"]["played"], 1)
         self.assertEqual(response.context["season_all"]["url"],
-                         f"{url}?player={self.a.public_id}&match_type=amistoso")
+                         f"{url}?player={self.a.public_id}&season=all&match_type=amistoso")
         self.assertIn("match_type=amistoso", response.context["season_chips"][0]["url"])
         self.assertEqual(response.context["season_keep"],
                          [("player", self.a.public_id), ("match_type", Match.AMISTOSO)])
@@ -433,7 +458,7 @@ class SeasonFilterTests(TestCase):
         self.assertEqual(response.context["selected_season"], "2025-2026")
         # La evolución por temporadas sigue mostrando todas
         self.assertEqual(len(response.context["seasons_asc"]), 4)
-        self.assertEqual(response.context["season_all"]["url"], f"{url}?player={self.a.public_id}&match_type={pair_stats.COMPETITIVE}")
+        self.assertEqual(response.context["season_all"]["url"], f"{url}?player={self.a.public_id}&season=all&match_type={pair_stats.COMPETITIVE}")
 
     def test_degree_of_affinity_by_season(self):
         from data_analyse.views import degree_of_affinity
@@ -509,3 +534,38 @@ class DrawStatisticsTests(TestCase):
         self.assertEqual(response.context["percentage_drawn"], 33.33)
         self.assertEqual(response.context["dicc_line_chart"], {"2025-2026": {"won": 1, "drawn": 1, "lost": 1}})
         self.assertContains(response, "Empates")
+
+
+class OnlyClosedMatchesTests(TestCase):
+    """Un partido con el acta abierta (draft_mode) no cuenta en ninguna estadística."""
+
+    def setUp(self):
+        self.user = User.objects.create_user("admin", password="pass-12345")
+        self.club = create_club("Club A", "Sevilla", self.user)
+        rival = Team.objects.create(club=self.club, name="Rival", location="X", in_group=True)
+        self.a = Player.objects.create(club=self.club, name="A", last_name="Ason")
+        self.b = Player.objects.create(club=self.club, name="B", last_name="Bson")
+        for year, closed in ((2024, True), (2025, False)):
+            m = Match.objects.create(club=self.club, local=self.club.own_team, visiting=rival,
+                                     start_date=datetime.date(year, 10, 1), draft_mode=not closed,
+                                     result="Victoria Local" if closed else "")
+            # El partido individual está cerrado aunque el acta del partido siga abierta
+            Game.objects.create(match=m, n_game=1, score=3, winner='Local', draft_mode=False,
+                                player_1_local=self.a, player_2_local=self.b)
+        self.client.force_login(self.user)
+
+    def test_player_pair_and_affinity_ignore_open_match(self):
+        from data_analyse.views import degree_of_affinity
+        response = self.client.get(reverse("player_statistics"), {"player": self.a.public_id})
+        self.assertEqual(response.context["s"]["played"], 1)
+        self.assertEqual([r["games"] for r in degree_of_affinity(self.a)], [1])
+        self.assertEqual(len(pair_stats.club_game_log(self.club)), 1)
+
+    def test_player_charts_hidden_with_a_season(self):
+        url = reverse("player_statistics")
+        all_page = self.client.get(url, {"player": self.a.public_id})
+        self.assertContains(all_page, 'id="chartPlayed"')
+        self.assertContains(all_page, 'id="chartPct"')
+        season_page = self.client.get(url, {"player": self.a.public_id, "season": "2024-2025"})
+        self.assertNotContains(season_page, 'id="chartPlayed"')
+        self.assertNotContains(season_page, 'id="chartPct"')
