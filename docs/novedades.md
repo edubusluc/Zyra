@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 18/10/2026 · Top 5 solo con datos favorables
+
+- «Mejores parejas» y «Mejores jugadores» (local y visitante) en estadísticas por equipo ya no muestran a quien tiene 0 % de victorias aunque llegue al mínimo de partidos (antes salía una pareja con 0V-2D); si nadie cumple, el panel dice «No hay ninguna pareja con datos favorables que mostrar»
+- «Parejas destacadas» (mejores) tampoco incluye parejas sin victorias
+
 ## 17/10/2026 · Sin doble clic en ningún formulario
 
 - Todos los formularios de la web que envían datos (equipos, jugadores, enfrentamientos, convocatorias, invitaciones, cuenta, back-office…) se bloquean al enviarse: el botón pulsado se deshabilita y muestra un indicador con el texto de la acción («Guardando el equipo…», «Enviando la invitación…», «Cerrando el acta…»), y un segundo clic o Intro se descarta
