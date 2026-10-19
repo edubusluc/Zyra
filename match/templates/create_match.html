@@ -13,6 +13,11 @@
     <form method="POST" class="z-match-form" data-match-form novalidate data-loading-text="{% translate 'Creando el enfrentamiento…' %}" data-own-location="{{ form.own_team.location|default:'' }}">
         {% csrf_token %}
 
+        <p>
+            <label for="{{ form.competition.id_for_label }}">{{ form.competition.label }}:</label>
+            {{ form.competition }}
+        </p>
+
         {# Un solo selector (U12): static/js/match-form.js lo sincroniza con «Modo» y «Tipo de partido», que sin JavaScript se ven tal cual. #}
         <p data-kind-row hidden>
             <label for="id_kind">{% translate "Tipo de enfrentamiento" %}:</label>

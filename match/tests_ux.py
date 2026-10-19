@@ -264,6 +264,19 @@ class CreateMatchFormTests(UxBase):
         self.assertContains(response, "novalidate")
         self.assertFalse(Match.objects.exists())
 
+    def test_competition_selector_is_locked_on_snp(self):
+        page = self.client.get(reverse("create_match"))
+        self.assertContains(page, 'name="competition"')
+        self.assertContains(page, "disabled")
+        self.assertContains(page, '<option value="snp" selected>SNP</option>', html=True)
+        form = page.context["form"]
+        self.assertTrue(form.fields["competition"].disabled)
+
+    def test_competition_cannot_be_tampered_with(self):
+        self.client.post(reverse("create_match"), {
+            "mode": "competitivo", "competition": "otra", "rival": self.rival.id, "start_date": "2026-11-15"})
+        self.assertEqual(Match.objects.count(), 1)
+
     def test_form_has_cancel_and_report_options_folded(self):
         page = self.client.get(reverse("create_match"))
         self.assertContains(page, "Cancelar")

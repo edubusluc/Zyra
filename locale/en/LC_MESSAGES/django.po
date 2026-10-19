@@ -12018,3 +12018,6 @@ msgstr "This club has not closed any match record yet."
 
 msgid "Aviso de resultado reenviado"
 msgstr "Result notice resent"
+
+msgid "Competición"
+msgstr "Competition"

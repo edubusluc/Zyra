@@ -36,6 +36,13 @@ class MatchForm(forms.ModelForm):
     RIVAL_SOURCES = [(GROUP, _("Equipo del grupo")), (MANUAL, _("Escribir nombre"))]
     SIDES = [("local", _("En casa")), ("visiting", _("Fuera"))]
 
+    # Competición del enfrentamiento. Hoy solo existe SNP, por eso el selector va bloqueado; al
+    # añadir otra competición basta con incluirla en COMPETITIONS y quitar ``disabled``.
+    SNP = "snp"
+    COMPETITIONS = [(SNP, _("SNP"))]
+
+    competition = forms.ChoiceField(label=_("Competición"), choices=COMPETITIONS, initial=SNP, disabled=True,
+                                    required=False)
     mode = forms.ChoiceField(label=_("Modo"), choices=MODES, initial=COMPETITIVE, required=False,
                              widget=forms.RadioSelect)
     # Solo en amistosos: el rival puede ser un equipo del grupo o un nombre escrito a mano
