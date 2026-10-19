@@ -427,7 +427,7 @@ main:focus { outline: none; }
 }
 .z-footer p { margin: 0; }
 .z-footer-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 18px; margin-bottom: 8px; }
-.z-footer-links a { color: var(--z-muted); padding: 4px 0; }
+.z-footer-links a { color: var(--z-muted); padding: 10px 2px; min-height: 44px; display: inline-flex; align-items: center; }
 .z-footer-links a:hover { color: var(--z-lime); }
 
 /* Páginas legales: texto largo, ancho de lectura cómodo */
@@ -1010,6 +1010,10 @@ a.z-card:hover, .z-card--link:hover {
 .z-features { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; width: 100%; max-width: 1000px; margin: 40px auto 0; text-align: left; }
 .z-feature { padding: 22px; transition: border-color .25s var(--z-ease); }
 .z-feature:hover { border-color: rgba(var(--z-lime-rgb), .45); }
+@media (prefers-reduced-motion: no-preference) {
+    .z-feature { transition: border-color .25s var(--z-ease), transform .25s var(--z-ease); }
+    .z-feature:hover { transform: translateY(-2px); }
+}
 .z-feature i {
     display: grid;
     place-items: center;
@@ -1056,8 +1060,13 @@ a.z-card:hover, .z-card--link:hover {
 .z-steps strong { display: block; margin-bottom: 4px; color: var(--z-text); }
 .z-faq { display: grid; gap: 10px; }
 .z-faq details { padding: 16px 20px; }
-.z-faq summary { cursor: pointer; }
-.z-faq summary h3 { display: inline; margin: 0; font-size: 1rem; font-weight: 700; }
+.z-faq summary { cursor: pointer; min-height: 28px; display: flex; align-items: center; gap: 10px; list-style: none; }
+.z-faq summary::-webkit-details-marker { display: none; }
+.z-faq summary::before { content: '+'; flex: none; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; line-height: 1; color: var(--z-lime); background: rgba(var(--z-lime-rgb), .12); }
+.z-faq details[open] summary::before { content: '\2212'; }
+.z-faq details:hover { border-color: var(--z-border-strong); }
+.z-faq details[open] { border-color: rgba(var(--z-lime-rgb), .35); }
+.z-faq summary h3 { display: block; margin: 0; font-size: 1rem; font-weight: 700; }
 .z-faq details p { margin: 10px 0 0; color: var(--z-muted); }
 .z-landing-cta { margin-top: 28px; }
 .z-back-to-top { align-items: center; gap: 8px; }
