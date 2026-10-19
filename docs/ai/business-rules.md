@@ -83,7 +83,7 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
 
 Orden obligatorio del ciclo (`match/views.py`) [V], cubierto por `match/tests_flow.py`:
 
-1. **Partido** (`MatchForm`): el equipo propio juega como local o visitante; local ≠ visitante.
+1. **Partido** (`MatchForm`): el equipo propio juega como local o visitante; local ≠ visitante. Selector «Competición» bloqueado en SNP (`MatchForm.COMPETITIONS`, no persistido aún).
    Amistoso: `match_type="amistoso"`; puede tener rival escrito a mano (`rival_name`, sin crear
    `Team`, ese lado `NULL`) que no puede llamarse como el equipo propio.
 2. **Convocatoria** (mínimo 10 jugadores al crearla y al editarla, `MIN_CALL_PLAYERS` en `match/phase.py`): una por partido; si ya existe o el acta está cerrada → `existing_call`.

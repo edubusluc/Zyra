@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 19/10/2026 · Selector «Competición» al crear un enfrentamiento
+
+- El formulario de nuevo enfrentamiento muestra «Competición» con SNP como única opción, bloqueada. Prepara la llegada de otras competiciones (`MatchForm.COMPETITIONS`); de momento no se guarda en el modelo, así que no hay migración
+
 ## 18/10/2026 · «Por número de partido» con tarjetas de mejor y peor partido
 
 - Encima de las barras de «Por número de partido» (equipo y jugador) hay dos tarjetas, «Mejor partido» y «Partido más flojo» (con su %), como las tarjetas de arriba de «Sets»: así las filas de ambos paneles quedan alineadas a la misma altura
