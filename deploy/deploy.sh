@@ -17,6 +17,9 @@ for _ in $(seq 1 30); do
   if [ "$(docker inspect -f '{{.State.Health.Status}}' zyra-web-1)" = healthy ]; then
     [ -f .current ] && cp .current .previous
     echo "$TAG" > .current
+    # Cada despliegue deja una imagen nueva (~800 MB): se borran las que ya no usa ningún contenedor.
+    # Volver atrás sigue funcionando porque deploy.sh vuelve a descargar la versión anterior.
+    docker image prune -af > /dev/null || echo "Aviso: no se pudieron borrar las imágenes antiguas" >&2
     echo "OK: $TAG"
     exit 0
   fi
