@@ -4,3 +4,5 @@
 # cualquier "python manage.py ..." del build fallaba; en el build basta el modo desarrollo.
 [build.environment]
   DJANGO_DEBUG = "True"
+  # Pillow 13 exige Python 3.11 o superior (como el Dockerfile y el CI).
+  PYTHON_VERSION = "3.11"
