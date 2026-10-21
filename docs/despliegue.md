@@ -32,6 +32,7 @@ repositorio `DEPLOY_ENABLED` vale `true`.
 
 - El CI construye una imagen por commit (`ghcr.io/edubusluc/zyra:sha-<commit>`) y la sube a GHCR.
 - `deploy.sh` descarga la imagen, hace copia de seguridad, comprueba la configuración, aplica las migraciones y reinicia web y lanzador.
+- Cuando la web queda sana, `deploy.sh` borra las imágenes que ya no usa ningún contenedor (`docker image prune -af`); sin esto el disco se llena (cada imagen pesa ~800 MB). Para volver atrás, el script vuelve a descargar la versión anterior de GHCR.
 - Las migraciones no se ejecutan al arrancar el contenedor, solo en `deploy.sh`, para que web y lanzador no choquen.
 - Si la web no queda sana, el script lo dice y da el comando para volver a la versión anterior (`./deploy.sh <sha anterior>`).
   Las migraciones destructivas no se deshacen solas: para eso están las copias de `backups/`.

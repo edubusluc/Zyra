@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 21/10/2026 · El despliegue limpia las imágenes antiguas
+
+- `deploy/deploy.sh` ejecuta `docker image prune -af` cuando la web queda sana: el disco del servidor se llenó (44 imágenes acumuladas, 31 GB) y el despliegue falló con «no space left on device»
+
 ## 21/10/2026 · Puntos SNP los lunes y miércoles a las 05:00
 
 - El «Cambio» del ranking SNP y «Quien más sube» comparan con la actualización anterior, no con la primera de la temporada (un jugador que baja y vuelve a su valor ahora marca ▲). El gráfico de puntos del jugador muestra el cambio respecto al anterior en cada punto
