@@ -321,9 +321,9 @@ registrarla. Solo el staff puede lanzarlo a mano, desde el back-office
 
 Cómo se reparte el trabajo y cómo se evita que SNP nos bloquee:
 
-- **Ciclo semanal.** El ciclo empieza los lunes a las 23:00 y el proceso se lanza cada
-  día a esa hora, pero solo hace los clubes pendientes del ciclo: los que aún no se han
-  intentado y los que fallaron por algo pasajero (red, SNP lento o limitándonos). Los
+- **Ciclo.** Hay dos ciclos por semana, lunes y miércoles a las 05:00 (hora de Madrid; los
+  partidos del fin de semana tardan en verificarse en SNP). Cada ejecución hace los clubes
+  pendientes del ciclo, que al empezar son todos: los que aún no se han intentado y los que fallaron por algo pasajero (red, SNP lento o limitándonos). Los
   fallos de usuario o contraseña no se reintentan solos: repetir un inicio de sesión
   rechazado puede bloquear la cuenta del capitán. `--all` repite todos. Desde el
   back-office, *Con opciones…* permite lanzarlo con «Repetir todos los equipos»

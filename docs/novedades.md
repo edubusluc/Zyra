@@ -3,6 +3,13 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 21/10/2026 · Puntos SNP los lunes y miércoles a las 05:00
+
+- El «Cambio» del ranking SNP y «Quien más sube» comparan con la actualización anterior, no con la primera de la temporada (un jugador que baja y vuelve a su valor ahora marca ▲). El gráfico de puntos del jugador muestra el cambio respecto al anterior en cada punto
+
+- `update_snp_scores` pasa de «cada noche a las 23:00 (ciclo semanal del lunes)» a lunes y miércoles a las 05:00 (hora de Madrid), porque los partidos del fin de semana tardan en verificarse en SNP. Cada ejecución es un ciclo completo (`SNP_SYNC_CYCLE`)
+- Back-office → salud: una cuenta SNP cuenta como «sin sincronizar» a los 6 días (antes 8), acorde al hueco máximo de 5 días entre miércoles y lunes
+
 ## 19/10/2026 · Selector «Competición» al crear un enfrentamiento
 
 - El formulario de nuevo enfrentamiento muestra «Competición» con SNP como única opción, bloqueada. Prepara la llegada de otras competiciones (`MatchForm.COMPETITIONS`); de momento no se guarda en el modelo, así que no hay migración

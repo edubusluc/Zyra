@@ -323,8 +323,9 @@ def usage_metrics(weeks=USAGE_WEEKS):
 
 # ---------- Salud de los servicios ----------
 
-# Una cuenta SNP sin sincronizar en estos días está "atrasada" (el ciclo es semanal).
-SNP_STALE_DAYS = 8
+# Una cuenta SNP sin sincronizar en estos días está "atrasada" (hay dos ciclos por semana; el hueco
+# más largo, de miércoles a lunes, es de 5 días, más un día de margen).
+SNP_STALE_DAYS = 6
 HEALTH_DAYS = 30
 
 

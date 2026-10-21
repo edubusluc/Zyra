@@ -251,7 +251,7 @@ class SnpAccountTests(TestCase):
         SnpScoreHistory.objects.create(player=self.player, date=datetime.date(2020, 1, 1), score=1.0, season="2019-2020")
         self.client.login(username="admin", password="pass-12345")
         response = self.client.get(reverse("player_statistics"), {"player": self.player.public_id})
-        self.assertEqual(response.context["chart_snp"], {"labels": ["28/09", "05/10"], "scores": [100.0, 120.5]})
+        self.assertEqual(response.context["chart_snp"], {"labels": ["28/09", "05/10"], "scores": [100.0, 120.5], "changes": [None, 20.5]})
         self.assertContains(response, 'id="chartSnp"')
 
     def test_home_shows_snp_notice_to_admin_until_account_exists(self):
@@ -266,11 +266,11 @@ class SnpAccountTests(TestCase):
         # La tarea sigue en «Primeros pasos», pero ya hecha y sin botón.
         self.assertNotContains(self.client.get(reverse("home")), "Conectar SNP")
 
-    def test_snp_job_runs_every_night_and_cycle_starts_on_monday(self):
+    def test_snp_job_runs_monday_and_wednesday_at_5(self):
         from backoffice.jobs import get_spec
         from players.management.commands.update_snp_scores import SNP_SYNC_CYCLE
-        self.assertEqual(get_spec("update_snp_scores").schedule, "0 23 * * *")
-        self.assertEqual(SNP_SYNC_CYCLE, "0 23 * * 1")
+        self.assertEqual(get_spec("update_snp_scores").schedule, "0 5 * * 1,3")
+        self.assertEqual(SNP_SYNC_CYCLE, "0 5 * * 1,3")
 
 
 def madrid(*args):
@@ -383,7 +383,7 @@ class SnpBatchTests(TestCase):
         from players.management.commands.update_snp_scores import pending_accounts
         self.run_command()
         self.assertEqual(pending_accounts().count(), 0)
-        SnpAccount.objects.update(last_sync_at=madrid(2026, 9, 28, 22, 0))  # antes del lunes 28 a las 23:00
+        SnpAccount.objects.update(last_sync_at=madrid(2026, 9, 30, 4, 0))  # antes del miércoles 30 a las 05:00
         self.assertEqual(pending_accounts(madrid(2026, 9, 30, 12, 0)).count(), 4)
 
     def test_browser_work_runs_outside_the_database_thread(self):
@@ -448,11 +448,12 @@ class SnpBatchTests(TestCase):
         self.assertRedirects(response, reverse("backoffice:job_detail", args=["update_snp_scores"]))
         self.assertEqual(JobRun.objects.count(), 2)
 
-    def test_cycle_start_is_the_last_monday_at_23(self):
+    def test_cycle_start_is_the_last_monday_or_wednesday_at_5(self):
         from players.management.commands.update_snp_scores import cycle_start
-        self.assertEqual(cycle_start(madrid(2026, 9, 30, 12, 0)), madrid(2026, 9, 28, 23, 0))
-        self.assertEqual(cycle_start(madrid(2026, 9, 28, 23, 0)), madrid(2026, 9, 28, 23, 0))
-        self.assertEqual(cycle_start(madrid(2026, 9, 28, 22, 59)), madrid(2026, 9, 21, 23, 0))
+        self.assertEqual(cycle_start(madrid(2026, 9, 30, 12, 0)), madrid(2026, 9, 30, 5, 0))
+        self.assertEqual(cycle_start(madrid(2026, 9, 30, 5, 0)), madrid(2026, 9, 30, 5, 0))
+        self.assertEqual(cycle_start(madrid(2026, 9, 30, 4, 59)), madrid(2026, 9, 28, 5, 0))
+        self.assertEqual(cycle_start(madrid(2026, 9, 28, 4, 59)), madrid(2026, 9, 23, 5, 0))
 
 
 SNP_TEAM = [

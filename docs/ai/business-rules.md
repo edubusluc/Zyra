@@ -150,7 +150,7 @@ ni se editan parejas (`edit_game_match`).
 - [V] Credenciales SNP cifradas con `FIELD_ENCRYPTION_KEY`; cambiar la clave invalida las guardadas.
 - [V] Cruce de nombres SNP ↔ jugador sin mayúsculas, tildes, categoría final ni segundo apellido
   ausente (`players/snp.py`, `match_scores`); ambiguos y sin pareja no se actualizan.
-- [V] `update_snp_scores`: ciclo semanal desde el lunes 23:00 (Madrid); solo clubes pendientes o
+- [V] `update_snp_scores`: un ciclo por ejecución, lunes y miércoles 05:00 (Madrid); solo clubes pendientes o
   con fallo reintentable. Fallos de usuario/contraseña no se reintentan solos (evita bloquear la
   cuenta del capitán). Para ante 429/403/503 o fallos de red seguidos.
 - [V] Mientras una búsqueda web está en marcha (`SnpTeamImport.RUNNING`) los capitanes ven en toda la web la barra de `core/templates/includes/sync_bar.html` (`progress`/`stage` del import, `sync_status`) y `not_while_syncing` bloquea `create_player`, `create_team` y `create_match`.

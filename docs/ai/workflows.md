@@ -82,7 +82,7 @@ lanzador si está vivo y, si no, lo ejecuta en un hilo. Las ejecuciones sin nada
 | `purge_request_metrics` | `purge_request_metrics` | 03:00 diario |
 | `purge_job_runs` | `purge_job_runs` | 03:10 diario |
 | `clear_sessions` | `clearsessions` (Django) | 03:30 diario |
-| `update_snp_scores` | `update_snp_scores [--club X] [--all] [--batch-size N] [--headed]` | 23:00 diario |
+| `update_snp_scores` | `update_snp_scores [--club X] [--all] [--batch-size N] [--headed]` | lunes y miércoles 05:00 |
 | `send_call_reports` | `send_call_reports` | cada 5 min (informes de convocatoria y avisos de resultado) |
 | `send_monthly_reports` | `send_monthly_reports [--month AAAA-MM] [--dry-run] [--limit N]` | día 1 a las 09:00 |
 | `purge_backoffice_data` | `purge_backoffice_data` (consultas, auditoría 2 años, correos 6 meses, errores, actividad) | 03:20 diario |

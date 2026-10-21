@@ -149,16 +149,18 @@ def snp_ranking(club, season):
     Ranking de puntos SNP de la plantilla actual y media del equipo en la temporada ``season``.
 
     Devuelve {'rows', 'chart', 'average', 'riser'}: cada fila es {'pos', 'player', 'score',
-    'first', 'delta'} (``delta``: variación desde la primera actualización de la temporada,
-    None con menos de dos); ``chart`` es la media del equipo en cada actualización
+    'first', 'delta'} (``delta``: variación respecto a la actualización anterior, no a la
+    primera de la temporada; None con menos de dos actualizaciones); ``chart`` es la media del equipo en cada actualización
     ({'labels', 'average'}); ``riser``, la fila que más ha subido (o None).
     """
     squad = list(Player.objects.filter(club=club, in_team=True))
     history = (SnpScoreHistory.objects.filter(player__in=squad, season=season)
                .order_by('date').values_list('player_id', 'date', 'score'))
-    first, last, by_date = {}, {}, {}
+    first, last, prev, by_date = {}, {}, {}, {}
     for pid, date, score in history:
         first.setdefault(pid, score)
+        if pid in last:
+            prev[pid] = last[pid]
         last[pid] = score
         by_date.setdefault(date, []).append(score)
 
@@ -167,7 +169,7 @@ def snp_ranking(club, season):
         score = p.snp_score if p.snp_score is not None else last.get(p.id)
         if score is None:
             continue
-        delta = round(last[p.id] - first[p.id], 1) if p.id in first and last[p.id] != first[p.id] else (0 if p.id in first else None)
+        delta = round(last[p.id] - prev[p.id], 1) if p.id in prev and last[p.id] != prev[p.id] else (0 if p.id in prev else None)
         rows.append({'player': p, 'score': round(score, 1), 'first': first.get(p.id), 'delta': delta})
     rows.sort(key=lambda r: (-r['score'], r['player'].name, r['player'].last_name))
     for i, r in enumerate(rows, start=1):
