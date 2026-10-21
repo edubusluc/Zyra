@@ -145,7 +145,11 @@ class ClubSetsTests(ClubDataMixin, TestCase):
         snp = records.snp_ranking(self.club, season)
         self.assertEqual([r['player'] for r in snp['rows']], [self.a, self.b, self.c, self.e])  # D sin puntos
         self.assertEqual(snp['rows'][0]['delta'], 5)
-        self.assertEqual(snp['rows'][1]['delta'], 0)
+        # El cambio es respecto a la actualización anterior, no a la primera.
+        for day, score in ((15, 30), (22, 40)):
+            SnpScoreHistory.objects.create(player=self.a, season=season, date=datetime.date(2025, 10, day), score=score)
+        self.assertEqual(records.snp_ranking(self.club, season)['rows'][0]['delta'], 10)
+        self.assertIsNone(snp['rows'][1]['delta'])  # B: una sola actualización
         self.assertIsNone(snp['rows'][2]['delta'])
         self.assertEqual(snp['riser']['player'], self.a)
         self.assertEqual(snp['chart'], {'labels': ['01/10', '08/10'], 'average': [32.5, 40.0]})

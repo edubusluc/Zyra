@@ -119,12 +119,12 @@ JOBS = [
     JobSpec(
         name="update_snp_scores",
         description=_("Descarga de SNP los puntos de los jugadores de los clubes con cuenta SNP, por lotes de 50 y con "
-                      "pausas. El ciclo empieza los lunes a las 23:00; el resto de días solo hace lo que quedó pendiente "
-                      "(clubes sin procesar o con un fallo pasajero)."),
+                      "pausas. Se ejecuta los lunes y miércoles a las 05:00 (los partidos del fin de semana tardan en "
+                      "verificarse en SNP) y cada ejecución actualiza a todos los clubes."),
         command="update_snp_scores",
-        # Cada día a las 23:00: el lunes empieza el ciclo semanal y los demás días se
-        # completa lo que haya quedado pendiente (si no queda nada, termina al momento).
-        schedule="0 23 * * *",
+        # Lunes y miércoles a las 05:00 (hora de Madrid): cada ejecución es un ciclo
+        # (SNP_SYNC_CYCLE en el comando) que procesa a todos los clubes.
+        schedule="0 5 * * 1,3",
         options=(
             JobOption("all", _("Repetir todos los equipos"), "--all",
                       _("Aunque ya se hayan actualizado en este ciclo o su último error no se reintente solo.")),

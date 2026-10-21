@@ -96,7 +96,14 @@
       options: {
         ...base,
         plugins: { ...base.plugins, legend: { display: false },
-          tooltip: { callbacks: { label: (c) => ' ' + interpolate(gettext('%(n)s puntos'), { n: c.parsed.y.toLocaleString(lang) }, true) } } },
+          tooltip: { callbacks: {
+          label: (c) => ' ' + interpolate(gettext('%(n)s puntos'), { n: c.parsed.y.toLocaleString(lang) }, true),
+          afterLabel: (c) => {
+            const d = snp.changes[c.dataIndex];
+            if (d === null || d === undefined) return '';
+            return ' ' + (d > 0 ? '▲ +' : d < 0 ? '▼ ' : '= ') + d.toLocaleString(lang);
+          },
+        } } },
         scales: {
           x: { grid: { display: false } },
           y: { ticks: { callback: (v) => v.toLocaleString(lang) }, grid: { color: C.line } },

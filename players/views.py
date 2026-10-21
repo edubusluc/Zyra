@@ -243,7 +243,7 @@ def snp_account(request):
             account.save()
             # Datos corregidos: el capitán vuelve a poder lanzar «Sincronizar datos» aunque hubiera fallado varias veces.
             Club.objects.filter(pk=request.club.pk).update(snp_import_failures=0)
-            messages.success(request, _("Cuenta SNP guardada. Los puntos se actualizarán cada lunes por la noche."))
+            messages.success(request, _("Cuenta SNP guardada. Los puntos se actualizarán los lunes y miércoles por la mañana."))
             return redirect("snp_account")
     else:
         initial = {"username": username} if account else {}

@@ -59,8 +59,8 @@ Cuidado con imports circulares: `match.models` importa `players.models`; `player
    `match/report.py` + `match/report_pdf.py`, cola `ReportDelivery`) → `create_game_for_match`
    (`match/lineup.py`; sugerencias con `match/advisor.py`) → `create_result` / `edit_result`
    (`match/scoring.py`) → `close_match` (calcula puntos y `Match.result`).
-4. **Puntos SNP** [V]: `run_scheduler` lanza `update_snp_scores` (diario 23:00 hora de Madrid,
-   ciclo semanal) → `players.snp.sync_club` → `players.scraper.scrape_scores` (Playwright) →
+4. **Puntos SNP** [V]: `run_scheduler` lanza `update_snp_scores` (lunes y miércoles 05:00 hora de Madrid,
+   un ciclo por ejecución) → `players.snp.sync_club` → `players.scraper.scrape_scores` (Playwright) →
    `Player.snp_score` + `SnpScoreHistory`.
 5. **Completar equipo** [V]: sin botón en Jugadores; lo lanza el alta del club con SNP, la tarea «Sincronizar datos» de la portada hasta que haya una búsqueda `done` (`snp_import.sync_task`: idle/running/ready/failed; «Reintentar» tras fallo o cancelación) (`start_search` despierta la cola al momento con `_wake_queue`; `complete_team_start` con `from=home`: confirma solo y lleva a `complete_team_welcome`) o el administrador desde el back-office. `complete_team_start` → `players.snp_import.start_search` (hilo en
    segundo plano; con el ajuste `SNP_IMPORT_INLINE` corre en línea, lo usan los tests) → `scrape_scores(with_group_teams=True)` (jugadores + equipos de la Clasificación) → la página consulta `complete_team_status` →

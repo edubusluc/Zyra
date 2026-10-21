@@ -439,14 +439,13 @@ msgstr "Deletes expired user sessions from the database."
 #: backoffice/jobs.py:121
 msgid ""
 "Descarga de SNP los puntos de los jugadores de los clubes con cuenta SNP, por"
-" lotes de 50 y con pausas. El ciclo empieza los lunes a las 23:00; el resto "
-"de días solo hace lo que quedó pendiente (clubes sin procesar o con un fallo "
-"pasajero)."
+" lotes de 50 y con pausas. Se ejecuta los lunes y miércoles a las 05:00 (los "
+"partidos del fin de semana tardan en verificarse en SNP) y cada ejecución "
+"actualiza a todos los clubes."
 msgstr ""
 "Downloads SNP points for the players of clubs with an SNP account, in batches"
-" of 50 with pauses. The cycle starts on Mondays at 23:00; on other days it "
-"only does what was left pending (clubs not yet processed or with a temporary "
-"failure)."
+" of 50 with pauses. It runs on Mondays and Wednesdays at 05:00 (weekend "
+"matches take a while to be verified on SNP) and each run updates every club."
 
 #: backoffice/jobs.py:129
 msgid "Repetir todos los equipos"
@@ -7094,11 +7093,11 @@ msgstr "Team SNP ranking"
 #: data_analyse/templates/includes/snp_ranking.html:5
 #, python-format
 msgid ""
-"Puntos SNP actuales de la plantilla y cuánto han cambiado en la temporada "
-"%(season)s."
+"Puntos SNP actuales de la plantilla y cuánto han cambiado desde la "
+"actualización anterior (temporada %(season)s)."
 msgstr ""
-"The squad's current SNP points and how much they have changed in season "
-"%(season)s."
+"The squad's current SNP points and how much they have changed since the "
+"previous update (season %(season)s)."
 
 #: data_analyse/templates/includes/snp_ranking.html:9
 msgid "Media del equipo"
@@ -10528,8 +10527,9 @@ msgstr ""
 
 #: players/views.py:237
 msgid ""
-"Cuenta SNP guardada. Los puntos se actualizarán cada lunes por la noche."
-msgstr "SNP account saved. Points will be updated every Monday night."
+"Cuenta SNP guardada. Los puntos se actualizarán los lunes y miércoles por la "
+"mañana."
+msgstr "SNP account saved. Points will be updated on Monday and Wednesday mornings."
 
 #: players/views.py:259
 msgid "No se ha podido leer la contraseña guardada."

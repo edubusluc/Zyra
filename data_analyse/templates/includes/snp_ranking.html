@@ -2,7 +2,7 @@
 {# Ranking SNP de la plantilla. Recibe: snp (data_analyse.records.snp_ranking), snp_season #}
 <article class="st-card st-card--wide">
   <h3 class="st-card-title">{% translate "Ranking SNP del equipo" %}</h3>
-  <p class="st-card-note">{% blocktranslate with season=snp_season %}Puntos SNP actuales de la plantilla y cuánto han cambiado en la temporada {{ season }}.{% endblocktranslate %}</p>
+  <p class="st-card-note">{% blocktranslate with season=snp_season %}Puntos SNP actuales de la plantilla y cuánto han cambiado desde la actualización anterior (temporada {{ season }}).{% endblocktranslate %}</p>
   {% if snp.rows %}
     <dl class="st-facts st-facts--sets">
       <div class="st-fact st-fact--gold">

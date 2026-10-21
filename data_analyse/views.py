@@ -840,6 +840,8 @@ def statistics_per_player(request):
         'chart_snp': {
             'labels': [h.date.strftime('%d/%m') for h in snp_history],
             'scores': [h.score for h in snp_history],
+            # variación de cada punto respecto al anterior (None en el primero)
+            'changes': [None] + [round(b.score - a.score, 1) for a, b in zip(snp_history, snp_history[1:])],
         },
     }
     return render(request, 'player_statistics.html', context)
