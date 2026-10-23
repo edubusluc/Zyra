@@ -12021,3 +12021,18 @@ msgstr "Result notice resent"
 
 msgid "Competición"
 msgstr "Competition"
+
+msgid "Asistencia a las convocatorias"
+msgstr "Call-up attendance"
+
+msgid "% de la plantilla que se apuntó a cada convocatoria de la temporada."
+msgstr "% of the squad that signed up for each call-up this season."
+
+msgid "Media por temporada del % de la plantilla que se apunta a cada convocatoria."
+msgstr "Season average of the % of the squad that signs up for each call-up."
+
+msgid "de media en la temporada"
+msgstr "on average this season"
+
+msgid "de media en total"
+msgstr "on average overall"

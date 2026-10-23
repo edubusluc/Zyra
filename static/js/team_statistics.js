@@ -151,6 +151,41 @@ window.addEventListener('resize', () => {
   seasonChart.update('none');
 });
 
+// Asistencia a las convocatorias: % de la plantilla que se apunta. Con «Todas» es la media por temporada;
+// con una temporada, una barra por convocatoria (la etiqueta lleva fecha y rival).
+(function () {
+  const canvas = document.getElementById('attendanceChart');
+  if (!canvas) return;
+  const att = JSON.parse(document.getElementById('attendance-data').textContent);
+  const rows = att.rows;
+  new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: rows.map((r) => r.label),
+      datasets: [{ data: rows.map((r) => r.pct), backgroundColor: Z.lime, borderRadius: 6, maxBarThickness: 48 }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (c) => `${rows[c.dataIndex].pct} % · ${rows[c.dataIndex].signed}/${rows[c.dataIndex].eligible}`,
+            afterLabel: (c) => (rows[c.dataIndex].calls
+              ? interpolate(ngettext('%s convocatoria', '%s convocatorias', rows[c.dataIndex].calls), [rows[c.dataIndex].calls])
+              : ''),
+          },
+        },
+      },
+      scales: scales({
+        x: { ticks: { autoSkip: false, maxRotation: 45, font: { size: 11 } } },
+        y: { max: 100, ticks: { stepSize: 25, callback: (v) => `${v} %` } },
+      }),
+    },
+  });
+})();
+
 // Balance por jugador: partidos de 2 y 3 puntos, ganados y perdidos.
 // Barras horizontales de tamaño fijo: se ven PAGE_SIZE jugadores y el resto se
 // recorre con el paginador, así el gráfico mide lo mismo con 8 jugadores que con 60.

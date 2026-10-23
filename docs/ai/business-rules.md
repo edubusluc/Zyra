@@ -174,6 +174,7 @@ ni se editan parejas (`edit_game_match`).
 - [V] Una pareja es la misma con independencia de quién juegue en cada lado (`pairs.pair_key`);
   los rankings exigen un mínimo de partidos (`min_games_pair`).
 - [V] Filtro de tipo: Todos / Competitivos / Amistosos (`?match_type=`); temporada `?season=` (equipo, jugador y parejas; sin ella, todas las temporadas).
+- [V] Asistencia a convocatorias (`attendance.signup_attendance`): apuntados / (plantilla actual con `joined_by` + los apuntados que ya no están); «Todas» promedia por temporada. Sin historial de plantilla, las bajas que no se apuntaron no cuentan.
 - [I] Las métricas se calculan en Python sobre el log de partidos; con muchos partidos por club
   conviene vigilar el rendimiento.
 
