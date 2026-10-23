@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 23/10/2026 · Gráfico «Asistencia a las convocatorias» en estadísticas del equipo
+
+- Nueva tarjeta en «Gráficos»: % de la plantilla que se apunta a las convocatorias cerradas. Con «Todas» muestra la media de cada temporada; con una temporada, una barra por convocatoria (fecha y rival). Respeta el filtro de tipo de enfrentamiento
+- Cálculo en `data_analyse/attendance.py`: apuntados / (plantilla actual que ya estaba esa temporada + quien se apuntó aunque ya no esté). No se guarda la plantilla de cada fecha, así que las bajas que no se apuntaron no cuentan
+
 ## 21/10/2026 · El despliegue limpia las imágenes antiguas
 
 - `deploy/deploy.sh` ejecuta `docker image prune -af` cuando la web queda sana: el disco del servidor se llenó (44 imágenes acumuladas, 31 GB) y el despliegue falló con «no space left on device»

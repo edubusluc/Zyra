@@ -23,6 +23,7 @@ from core.season_choice import ALL_SEASONS, choose_season
 from players.models import current_season, joined_by
 from . import pairs as pair_stats
 from . import records
+from .attendance import signup_attendance
 from .sets import best_and_worst_number, by_game_number, own_sets, set_stats
 
 def _zero_state(request, title):
@@ -364,6 +365,7 @@ def team_statistics(request):
         "min_games_pair": min_games_pair,
     }
     context.update(team_extra_context(request.club, selected_season, match_type, log))
+    context['attendance'] = signup_attendance(request.club, selected_season, match_type)
 
     return render(request, 'team_statistics.html', context)
 

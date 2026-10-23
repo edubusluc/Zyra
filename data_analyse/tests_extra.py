@@ -9,6 +9,7 @@ from call.models import Call
 from core.services import create_club
 from data_analyse import pairs as pair_stats
 from data_analyse import records
+from data_analyse.attendance import signup_attendance
 from data_analyse.sets import best_and_worst_number, by_game_number, own_sets, set_stats
 from match.models import Game, Match, Result
 from players.models import Player, SnpScoreHistory
@@ -175,6 +176,23 @@ class ClubSetsTests(ClubDataMixin, TestCase):
         self.assertEqual(response.context['lineup_rate'], {'signed': 2, 'aligned': 0, 'benched': 2, 'pct': 0})
         signup = response.context['signup_rate']
         self.assertEqual((signup['signed'], signup['missed'], signup['total']), (2, signup['total'] - 2, signup['total']))
+
+    def test_attendance_by_season_and_by_call(self):
+        """Todas: una fila por temporada con la media; temporada: una fila por convocatoria."""
+        att = signup_attendance(self.club)
+        self.assertEqual((att['mode'], att['average']), ('seasons', 100))
+        self.assertEqual([(r['label'], r['calls'], r['pct']) for r in att['rows']], [('2025-2026', 2, 100)])
+        # Una baja que no se apuntó no cuenta; un jugador nuevo sin apuntarse baja el %
+        Call.objects.get(match=self.m2).players.set([self.a, self.b, self.c])
+        Player.objects.create(club=self.club, name="F", last_name="Fson", joined_season="2020-2021")
+        att = signup_attendance(self.club, "2025-2026")
+        self.assertEqual(att['mode'], 'calls')
+        self.assertEqual([(r['signed'], r['eligible'], r['pct']) for r in att['rows']], [(5, 6, 83), (3, 6, 50)])
+        self.assertEqual(att['average'], 67)
+        self.assertEqual(signup_attendance(self.club, "2019-2020")['average'], None)
+        response = self.client.get(reverse('team_statistics'))
+        self.assertContains(response, "Asistencia a las convocatorias")
+        self.assertEqual(response.context['attendance']['rows'][0]['pct'], 67)
 
     def test_calls_before_joining_season_do_not_count(self):
         """Un jugador solo cuenta convocatorias desde su temporada de incorporación (2025-2026: las dos del dato)."""
