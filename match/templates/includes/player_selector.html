@@ -32,7 +32,7 @@
                 {# Para decidir sin salir de la pantalla: partidos jugados esta temporada y advertencias a la vista #}
                 {% if player.season_total %}<span class="z-pick-meta">{% blocktranslate with n=player.played total=player.season_total %}Jugó {{ n }} de {{ total }}{% endblocktranslate %}</span>{% endif %}
                 {% if player.penalty_reasons %}
-                <span class="z-pick-meta z-pick-warn-text"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> {% blocktranslate count n=player.penalty_reasons|length %}{{ n }} advertencia{% plural %}{{ n }} advertencias{% endblocktranslate %}</span>
+                <span class="z-pick-meta z-pick-warn-text" title="{{ player.penalty_reasons|join:'; ' }}"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> {% blocktranslate count n=player.penalty_reasons|length %}{{ n }} advertencia{% plural %}{{ n }} advertencias{% endblocktranslate %}</span>
                 {% endif %}
             </span>
         </label>

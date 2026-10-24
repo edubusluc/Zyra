@@ -444,7 +444,7 @@ def _story(report, layout):
     note = _("Jug./Conv.: partidos jugados / convocatorias en las que se apuntó esta temporada, sin contar "
              "esta convocatoria ni este partido. Último: fecha del último partido disputado.")
     if report["competitive_only"]:
-        note += " " + _("Estadísticas calculadas solo con partidos competitivos.")
+        note += " " + _("Estadísticas calculadas solo con enfrentamientos competitivos.")
     if len(players) > len(shown):
         note += " " + _("%(n)s convocados más no caben en la tabla.") % {"n": len(players) - len(shown)}
     story.append(Spacer(1, layout.note_gap))

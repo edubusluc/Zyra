@@ -66,6 +66,7 @@
                 <tr>
                   <th scope="col">{% translate "Fecha" %}</th>
                   <th scope="col">{% translate "Jugador" %}</th>
+                  <th scope="col">{% translate "Motivo" %}</th>
                   <th scope="col">{% translate "Enfrentamiento" %}</th>
                 </tr>
               </thead>
@@ -74,6 +75,7 @@
                   <tr>
                     <td>{{ p.call.match.start_date|date:"D j M Y" }}</td>
                     <td>{{ p.player.full_name }}</td>
+                    <td>{{ p.display_reason }}</td>
                     <td><a href="{% url 'call_for_match' p.call.match.public_id %}">{{ p.call.match.local_name }} vs {{ p.call.match.visiting_name }}</a></td>
                   </tr>
                 {% endfor %}

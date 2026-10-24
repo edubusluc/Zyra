@@ -186,12 +186,12 @@
                 {% if deletes_club %}
                 <div class="alert alert-danger" role="alert">
                     <p class="mb-2"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> <strong>{% translate "Eres el único miembro del club. Si lo abandonas, el club se eliminará." %}</strong></p>
-                    <p class="mb-0">{% translate "Se borrarán para siempre tu equipo, los equipos rivales, los jugadores y sus fotos, los partidos, las convocatorias, las sanciones, las estadísticas y la cuenta SNP. Esto no se puede deshacer." %}</p>
+                    <p class="mb-0">{% translate "Se borrarán para siempre tu equipo, los equipos rivales, los jugadores y sus fotos, los enfrentamientos, las convocatorias, las sanciones, las estadísticas y la cuenta SNP. Esto no se puede deshacer." %}</p>
                 </div>
                 <label for="leaveClubConfirm" class="form-label">{% blocktranslate with club=current_club.name %}Escribe <strong>{{ club }}</strong> para confirmar:{% endblocktranslate %}</label>
                 <input type="text" class="form-control" id="leaveClubConfirm" name="confirm_name" autocomplete="off" required data-club-name="{{ current_club.name }}">
                 {% else %}
-                <p class="mb-0">{% translate "Dejarás de ver los partidos, jugadores y estadísticas del club, y tu cuenta se desenlazará de tu jugador. Para volver necesitarás una nueva invitación." %}</p>
+                <p class="mb-0">{% translate "Dejarás de ver los enfrentamientos, jugadores y estadísticas del club, y tu cuenta se desenlazará de tu jugador. Para volver necesitarás una nueva invitación." %}</p>
                 {% endif %}
             </div>
             <div class="modal-footer">

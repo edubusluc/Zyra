@@ -143,7 +143,7 @@ El ciclo de un enfrentamiento ([`match.views`](referencia/match/views.md)):
    queda empatada a puntos (6-6), el partido queda como **empate**; en **Reto y Play Off** no hay empate y gana quien ganó el partido 3. Un partido cerrado ya no se
    puede cambiar ni borrar.
 
-- **Sanciones**: advertencias a jugadores desde la convocatoria ([`penalty`](referencia/penalty/index.md)).
+- **Sanciones**: advertencias a jugadores desde el registro de la convocatoria, con un motivo (no se presentó, llegó tarde, baja de última hora, comportamiento u otro con detalle). Al aplicarlas, el aviso ofrece «Deshacer» y el capitán puede «Quitar» cualquiera después; el motivo se ve en el selector de convocatoria y en el historial de advertencias ([`penalty`](referencia/penalty/index.md)).
 - Lista de partidos compacta (una fila por partido, marcador en verde si se ganó, en rojo si se
   perdió y en gris si fue empate) con resumen de ganados, empatados, perdidos y pendientes.
   Selector de temporada: la actual por defecto, «Todas», las tres más recientes y un buscador para

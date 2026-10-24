@@ -17,7 +17,7 @@ def delete_call(request, match_id):
     call = get_object_or_404(Call, match__public_id=match_id, match__club=request.club)
     # Un partido con el acta cerrada no se toca: borrar su convocatoria rompería sus estadísticas.
     if not call.match.draft_mode:
-        messages.error(request, _("No se puede borrar la convocatoria de un partido ya confirmado."))
+        messages.error(request, _("No se puede borrar la convocatoria de un enfrentamiento ya confirmado."))
     else:
         call.delete()
     return redirect('call_for_match', match_id)
