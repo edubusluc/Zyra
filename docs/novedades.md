@@ -3,6 +3,13 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 24/10/2026 · Advertencias con motivo y «Deshacer», accesibilidad WCAG 2.2 y textos
+
+- Las advertencias llevan un **motivo** (No se presentó, Llegó tarde, Baja de última hora, Comportamiento u Otro con detalle) en lugar del texto automático «Advertencia en el partido…», que además no se traducía. El motivo se ve en el historial de advertencias y como ayuda en el selector de convocatoria. Migración `penalty/0003`: las anteriores quedan como «Otro» con su texto escrito a mano (el automático se vacía)
+- Al aplicar una advertencia, el aviso trae un botón **«Deshacer»** (15 s) y el registro de la convocatoria lista las advertencias con **«Quitar»** (`penalty.views.delete_penalty`, solo capitán)
+- Accesibilidad: el lápiz «Cambiar fecha» y «Ver enfrentamiento» llegan a 24 px (WCAG 2.2 · 2.5.8); `scripts/auditoria_accesibilidad.py` mide ahora también WCAG 2.2 AA (32 páginas, escritorio y móvil, sin fallos). La página del registro de la convocatoria entra en `core.tests_accessibility`
+- Textos: «enfrentamiento» donde se hablaba de la eliminatoria entera (informe PDF, aviso de amistoso, avisos de borrado y de abandono del club, registro) y «partido» solo para cada uno de los 5 partidos
+
 ## 24/10/2026 · Scripts de shell siempre con LF
 
 - `.gitattributes` fuerza `eol=lf` en `*.sh`: la copia de `/opt/zyra/deploy.sh` guardada con CRLF desde Windows rompió el despliegue (`env: 'bash\r': No such file or directory`, código 127)

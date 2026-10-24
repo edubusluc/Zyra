@@ -32,7 +32,7 @@ AXE_CDN = "https://cdnjs.cloudflare.com/ajax/libs/axe-core/4.10.2/axe.min.js"
 # Nombres fijos (no se aceptan rutas por línea de órdenes): siempre en la carpeta actual
 LOCAL_AXE = "axe.min.js"
 JSON_OUTPUT = "auditoria-accesibilidad.json"
-WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "best-practice"]
+WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"]
 SOLID_BACKGROUND = "body{background:#252821 !important} *:not(body){background-image:none !important}"
 
 PUBLIC_PAGES = ["/", "/core/login/", "/core/register_club/", "/privacidad/", "/terminos/", "/cookies/",

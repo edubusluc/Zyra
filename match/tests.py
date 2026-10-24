@@ -212,7 +212,7 @@ class MatchesAndCallsTests(TestCase):
         self.assertEqual([p.name for p in response.context["players"]], ["Ana", "Zoe"])
 
         # Zoe no está convocada pero sí en el equipo: se la puede sancionar; Bea ya no está.
-        self.client.post(reverse("create_penalty", args=[call.public_id]), {"players": [self.zoe.id, self.gone.id]})
+        self.client.post(reverse("create_penalty", args=[call.public_id]), {"players": [self.zoe.id, self.gone.id], "kind": "late"})
         self.assertEqual(list(self.Penalty.objects.values_list("player__name", flat=True)), ["Zoe"])
 
     def test_warnings_view_is_admin_only(self):
