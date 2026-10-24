@@ -53,7 +53,7 @@
             <li>
                 <span><strong>{{ pen.player.short_name }}</strong> · {{ pen.display_reason }}</span>
                 <form method="post" action="{% url 'delete_penalty' %}?ids={{ pen.public_id }}" data-confirm="{% blocktranslate with name=pen.player.short_name %}Se retirará la advertencia a {{ name }}.{% endblocktranslate %}" data-confirm-title="{% translate 'Quitar advertencia' %}" data-confirm-action="{% translate 'Quitar' %}" data-confirm-danger data-loading-text="{% translate 'Quitando…' %}">
-                    {% csrf_token %}<button type="submit" class="btn btn-sm btn-outline-light z-penalty-remove">{% translate "Quitar" %}</button>
+                    {% csrf_token %}<button type="submit" class="btn btn-sm btn-outline-danger z-penalty-remove">{% translate "Quitar" %}</button>
                 </form>
             </li>
             {% endfor %}
