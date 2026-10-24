@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 24/10/2026 · Scripts de shell siempre con LF
+
+- `.gitattributes` fuerza `eol=lf` en `*.sh`: la copia de `/opt/zyra/deploy.sh` guardada con CRLF desde Windows rompió el despliegue (`env: 'bash\r': No such file or directory`, código 127)
+
 ## 23/10/2026 · Gráfico «Asistencia a las convocatorias» en estadísticas del equipo
 
 - Nueva tarjeta en «Gráficos»: % de la plantilla que se apunta a las convocatorias cerradas. Con «Todas» muestra la media de cada temporada; con una temporada, una barra por convocatoria (fecha y rival). Respeta el filtro de tipo de enfrentamiento
