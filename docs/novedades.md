@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 25/10/2026 · Invitaciones por correo sin enlace ni WhatsApp
+
+- En «Invitaciones pendientes» las enviadas a un correo ya no muestran el enlace copiable ni el botón de WhatsApp (se gestionan por correo; solo correo, caducidad y «Anular»). El enlace compartido sin correo mantiene copiar y WhatsApp
+
 ## 25/10/2026 · Reabrir el acta ya no reenvía el correo del resultado
 
 - Si un acta se reabre y se vuelve a cerrar no se envía otro correo por defecto: la confirmación del recierre trae una casilla, desmarcada, «Volver a enviar el correo con los resultados» para que el capitán decida (`resend_email`; como «Resultado corregido» si el marcador cambió)

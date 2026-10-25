@@ -5546,6 +5546,10 @@ msgstr[1] "%(n)s people have joined"
 msgid "Enlace de invitación"
 msgstr "Invitation link"
 
+#: core/templates/club_members.html:79
+msgid "Se gestiona por correo"
+msgstr "Managed by email"
+
 #: core/templates/club_members.html:80
 msgid "Copiar"
 msgstr "Copy"

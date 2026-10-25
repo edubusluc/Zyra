@@ -60,7 +60,10 @@ class InvitationTests(TestCase):
 
         page = self.client.get(reverse("club_members"))
         self.assertContains(page, "jugador@example.com")
-        self.assertContains(page, f"/core/invite/{invitation.token}/")
+        # Las invitaciones por correo se gestionan por correo: sin enlace ni WhatsApp en la tabla.
+        self.assertNotContains(page, f"/core/invite/{invitation.token}/")
+        self.assertNotContains(page, "wa.me")
+        self.assertContains(page, "Se gestiona por correo")
 
     def test_captain_generates_shareable_link(self):
         self.client.login(username="capitan", password="pass-12345")
@@ -74,6 +77,7 @@ class InvitationTests(TestCase):
         page = self.client.get(reverse("club_members"))
         self.assertContains(page, f"/core/invite/{invitation.token}/")
         self.assertContains(page, "Enlace compartido")
+        self.assertContains(page, "wa.me")
 
     def test_members_cannot_generate_links(self):
         self.client.login(username="viewer", password="pass-12345")
