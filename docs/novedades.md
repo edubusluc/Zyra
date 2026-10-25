@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 25/10/2026 · Calendario de enfrentamientos
+
+- Nueva vista **Calendario** en Enfrentamientos (pestañas Lista | Calendario): cuadrícula del mes con todos los enfrentamientos del club (próximos, jugados con marcador, con el acta abierta y amistosos), con navegación por meses y enlace a cada uno. En móvil se muestra como agenda por días. La ven todos los miembros y no envía ningún correo
+- «Compartir resultado» genera un texto más claro para WhatsApp: cabecera en negrita con desenlace, marcador y rival, una línea por partido con su pareja y sets, y «Hecho con Zyra»
+
 ## 25/10/2026 · Probar Zyra desde el móvil en local
 
 - `scripts/movil.ps1` (PowerShell) arranca el servidor en `0.0.0.0` y muestra la URL con la IP de tu WiFi para abrirla desde el móvil. Con `DJANGO_DEBUG=True` Django admite además las IPs privadas del ordenador en `ALLOWED_HOSTS`; con DEBUG apagado (producción) no cambia nada. Si no carga, hay que permitir Python en el firewall de Windows (red privada)

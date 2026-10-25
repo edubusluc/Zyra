@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block page_title %}{% translate "Calendario" %} · {% endblock %}
+
+{% block content %}
+<div class="z-page-head">
+    <div>
+        <span class="z-eyebrow">{{ current_club.name }}</span>
+        <h1>{% translate "Enfrentamientos" %}</h1>
+    </div>
+    <div class="z-actions">
+        {% if is_club_admin %}
+        <a href="{% url 'create_match' %}" class="btn btn-primary text-nowrap"><i class="fa-solid fa-plus me-1" aria-hidden="true"></i> {% translate "Nuevo enfrentamiento" %}</a>
+        {% endif %}
+    </div>
+</div>
+
+{% include 'includes/match_view_tabs.html' with current='calendar' %}
+
+<div class="z-cal-nav">
+    <a class="btn btn-secondary btn-sm" href="?month={{ month_prev }}" aria-label="{% translate 'Mes anterior' %}"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></a>
+    <h2 class="z-cal-title" aria-live="polite">{{ month_first|date:"F Y" }}</h2>
+    <a class="btn btn-secondary btn-sm" href="?month={{ month_next }}" aria-label="{% translate 'Mes siguiente' %}"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></a>
+    {% if not is_current_month %}<a class="btn btn-outline-secondary btn-sm" href="{% url 'calendar_match' %}">{% translate "Hoy" %}</a>{% endif %}
+</div>
+
+{# Pantallas anchas: cuadrícula del mes. #}
+<table class="z-cal z-cal-grid">
+    <caption class="visually-hidden">{% blocktranslate with month=month_first|date:"F Y" %}Enfrentamientos de {{ month }}{% endblocktranslate %}</caption>
+    <thead><tr>{% for d in weekdays %}<th scope="col">{{ d|date:"D" }}</th>{% endfor %}</tr></thead>
+    <tbody>
+    {% for week in grid %}
+        <tr>
+        {% for day in week %}
+            <td class="{% if not day.in_month %}is-out{% endif %}{% if day.today %} is-today{% endif %}">
+                <span class="z-cal-day">{{ day.date.day }}</span>
+                {% for m in day.matches %}{% include 'includes/calendar_event.html' %}{% endfor %}
+            </td>
+        {% endfor %}
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{# Pantallas estrechas: agenda por días (una cuadrícula de siete columnas no se lee). #}
+<div class="z-cal-agenda">
+    {% for day in agenda %}
+    <section class="z-cal-agenda-day{% if day.today %} is-today{% endif %}">
+        <h3><time datetime="{{ day.date|date:'Y-m-d' }}">{{ day.date|date:"l j" }}</time></h3>
+        {% for m in day.matches %}{% include 'includes/calendar_event.html' %}{% endfor %}
+    </section>
+    {% endfor %}
+</div>
+
+{% if not agenda %}
+<p class="z-cal-empty">{% translate "No hay enfrentamientos este mes." %}</p>
+{% endif %}
+
+<ul class="z-cal-legend" aria-label="{% translate 'Leyenda' %}">
+    <li><span class="z-cal-event is-upcoming">{% translate "Próximo" %}</span></li>
+    <li><span class="z-cal-event is-played">{% translate "Jugado, con marcador" %}</span></li>
+    <li><span class="z-cal-event is-open">{% translate "Acta abierta" %}</span></li>
+    <li><span class="z-cal-event is-friendly">{% translate "Amistoso" %}</span></li>
+</ul>
+{% endblock %}
