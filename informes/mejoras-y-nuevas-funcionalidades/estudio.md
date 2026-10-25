@@ -6,6 +6,31 @@ Para no repetir, se han cruzado `ZYRA_CONTEXT.md`, `docs/funcionalidades.md`, `d
 
 Esfuerzo: S = un PR pequeño · M = un PR mediano · L = varios PR o decisión externa. Impacto sobre el uso real del capitán y la retención.
 
+## Estado a 25/10/2026
+
+Tras la fusión de #183 (M1) y de #184/#185 (dos ajustes sueltos de correos e invitaciones que no estaban en este informe), **quedan por hacer 16 de las 18 propuestas**. Orden recomendado sin cambios: N1 (+N6), N2a y P1.
+
+| ID | Propuesta | Estado |
+|---|---|---|
+| M1 | Cerrar pendientes de UX | **Hecho** (#183). Selector único: ya lo era (`match-form.js`). «Repetir la última convocatoria»: descartada. Advertencias con motivo, «Deshacer» y «Quitar»: hechas. WCAG 2.2: hecho (axe sin fallos). Textos «enfrentamiento/partido»: hechos |
+| N1 | Cara a cara por rival y «Previa» | Pendiente |
+| N2 | Recordatorios y calendario (.ics) | Pendiente |
+| N3 | Tarjeta de resultado en imagen y enlace público | Pendiente |
+| N4 | Disponibilidad de jugadores | Pendiente (validar antes con capitanes) |
+| N5 | Rol de delegado | Pendiente |
+| N6 | Notas privadas del capitán | Pendiente (mejor junto con N1) |
+| N7 | Crónica automática | Pendiente |
+| N8 | Resumen de temporada | Pendiente |
+| N9 | Rendimiento frente a su SNP y comparador | Pendiente (baja prioridad) |
+| M2 | SNP sin guardar la contraseña | Pendiente (necesita tu decisión de riesgo) |
+| M3 | Registro de convocatoria estructurado | Pendiente |
+| M4 | Cierre y preparación de temporada | Pendiente |
+| M5 | Más razones para entrar al jugador | Pendiente |
+| M6 | Revisión en tablet | Pendiente |
+| P1 | Copias programadas y alerta de disco | Pendiente |
+| P2 | Donación y patrocinador local | Pendiente |
+| P3 | Exportar a CSV/Excel | Pendiente |
+
 ## Recomendación: qué hacer primero
 
 1. **N1 Cara a cara por rival + previa del partido** (E1 + C4 del informe de estadísticas, nunca implementado). Los datos ya existen, no hay migración y responde a «¿contra quién jugamos y cómo nos fue?» justo cuando se convoca. S–M.
