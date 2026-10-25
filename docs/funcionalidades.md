@@ -77,10 +77,6 @@ La página del enfrentamiento muestra las fases Convocatoria · Parejas · Resul
 
 En Enfrentamientos hay dos vistas: **Lista** y **Calendario**. El calendario (`match/month_view.py`, vista `calendar_match`) enseña un mes (`?month=AAAA-MM`, por defecto el actual) con todos los enfrentamientos del club: próximos, jugados con su marcador, con el acta abierta y amistosos. Es de solo lectura para todos los miembros, no envía correos ni crea avisos, y en móvil se pinta como agenda por días. «Compartir resultado» genera un texto pensado para WhatsApp (negrita, emojis y una línea por partido).
 
-## Imagen del resultado
-
-Con el acta cerrada, el capitán ve junto a «Compartir resultado» el botón **«Imagen del resultado»** (vista `result_card`, dibujo en `match/result_card.py` con Pillow). Genera un PNG de 1080×1350 con desenlace, marcador, fecha, tipo de enfrentamiento, los cinco partidos con sus sets desde el punto de vista del club y el pie «Hecho con Zyra · zyrapadel.com». Por defecto las parejas salen como «Pareja 1…5»; la casilla «Con nombres de los jugadores» (`?names=1`) las muestra. No existe si el acta sigue abierta.
-
 ## Jugadores
 
 - Alta, edición (foto incluida) y baja. Al borrar un jugador sus partidos se conservan con su nombre

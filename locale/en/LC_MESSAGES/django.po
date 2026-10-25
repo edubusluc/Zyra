@@ -12234,12 +12234,3 @@ msgstr "Matches view"
 
 msgid "contra"
 msgstr "against"
-
-msgid "Imagen del resultado"
-msgstr "Result image"
-
-msgid "Con nombres de los jugadores"
-msgstr "With player names"
-
-msgid "Hecho con"
-msgstr "Made with"

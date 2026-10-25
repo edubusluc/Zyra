@@ -17,8 +17,7 @@ from .result_email import notify_match_closed
 from call.models import ReportDelivery
 from .report import build_report, suggested_lineups
 from .report_pdf import render_report
-from .result_card import own_sets, render_card
-from django.http import Http404, HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_POST
 from django.utils.translation import gettext as _, gettext_lazy
@@ -130,52 +129,17 @@ def share_text(match, games):
     date = match.start_date.strftime("%d/%m/%Y")
     lines = [head, f"{match.local_name} – {match.visiting_name} · {date}" + (f" · {_('Amistoso')}" if match.is_friendly else ""), ""]
     for g in games:
-        sets = own_sets(match, g.result)
+        result = g.result
+        sets = ""
+        if result:
+            pairs = [(result.set1_local, result.set1_visiting), (result.set2_local, result.set2_visiting)]
+            if result.set3_local is not None:
+                pairs.append((result.set3_local, result.set3_visiting))
+            sets = " ".join(f"{a}-{b}" if match.own_is_local else f"{b}-{a}" for a, b in pairs)
         own_won = g.winner == (outcomes.WINNER_LOCAL if match.own_is_local else outcomes.WINNER_VISITING)
         lines.append(f"{'✅' if own_won else '❌'} *{_('Partido')} {g.n_game}* · {g.pair_label}" + (f" · {sets}" if sets else ""))
     lines += ["", _("Hecho con Zyra")]
     return "\n".join(lines)
-
-
-def result_card_data(match, games):
-    """Datos que dibuja ``result_card.render_card``: desenlace, marcador, fecha y una fila por partido."""
-    own_won_side = outcomes.WINNER_LOCAL if match.own_is_local else outcomes.WINNER_VISITING
-    score_local, score_visiting = split_points(match.result_points)
-    return {
-        "outcome": match_outcome(match),
-        "local_name": match.local_name,
-        "visiting_name": match.visiting_name,
-        "score_local": score_local,
-        "score_visiting": score_visiting,
-        "date": match.start_date.strftime("%d/%m/%Y"),
-        "kind": match.get_match_type_display(),
-        "rows": [{"n": g.n_game, "pair": g.pair_label, "sets": own_sets(match, g.result), "won": g.winner == own_won_side}
-                 for g in games],
-    }
-
-
-@club_admin_required
-@require_GET
-def result_card(request, match_id):
-    """
-    PNG con el resultado de un enfrentamiento cerrado, para compartirlo. Solo el capitán; 404 si el
-    acta sigue abierta o no hay marcador. Los nombres de los jugadores salen solo con ``?names=1``.
-    """
-    match = club_match(request, match_id)
-    if match.draft_mode or split_points(match.result_points)[0] is None:
-        raise Http404
-    games = list(
-        Game.objects.filter(match=match).order_by("n_game")
-        .select_related("player_1_local", "player_2_local", "player_1_visiting", "player_2_visiting")
-        .prefetch_related("results")
-    )
-    for g in games:
-        g.result = next(iter(g.results.all()), None)
-    png = render_card(result_card_data(match, games), show_names=request.GET.get("names") == "1")
-    response = HttpResponse(png, content_type="image/png")
-    response["Content-Disposition"] = 'inline; filename="zyra-resultado.png"'
-    response["Cache-Control"] = "private, no-store"
-    return response
 
 
 def rival_names(club_matches):

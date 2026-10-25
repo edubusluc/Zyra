@@ -115,10 +115,6 @@
     <strong>{% blocktranslate with outcome=outcome_label own=own_points rival=rival_points %}Acta cerrada: {{ outcome }} {{ own }}-{{ rival }}{% endblocktranslate %}</strong>
     <div class="d-flex flex-wrap gap-2">
         <a class="btn btn-primary btn-sm" href="https://wa.me/?text={{ share_text|urlencode }}" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp me-1" aria-hidden="true"></i> {% translate "Compartir resultado" %}</a>
-        <form class="d-flex flex-wrap align-items-center gap-2" method="get" action="{% url 'result_card' match.public_id %}" target="_blank">
-            <button class="btn btn-primary btn-sm" type="submit"><i class="fa-regular fa-image me-1" aria-hidden="true"></i> {% translate "Imagen del resultado" %}</button>
-            <label class="form-check-label small"><input class="form-check-input me-1" type="checkbox" name="names" value="1" id="card-names"> {% translate "Con nombres de los jugadores" %}</label>
-        </form>
         <a class="btn btn-secondary btn-sm" href="{% url 'team_statistics' %}?season={{ match.season|urlencode }}"><i class="fa-solid fa-chart-simple me-1" aria-hidden="true"></i> {% translate "Ver estadísticas" %}</a>
     </div>
 </div>

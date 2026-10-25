@@ -109,7 +109,6 @@ Con el acta cerrada [V]: no se borra el partido (`delete_match`) ni su convocato
 ni se editan parejas (`edit_game_match`).
 
 - [V] Advertencias (`create_penalty`): solo a jugadores del club con `in_team=True`. El motivo (`kind`) es obligatorio y «Otro» exige detalle. Solo el capitán las aplica y las retira (`delete_penalty`: «Quitar» en el registro de la convocatoria y «Deshacer» en el aviso, que lleva la URL en `extra_tags="undo=…"`); las de otros clubes se ignoran.
-- [V] Imagen del resultado (`result_card`, `match/result_card.py`): solo el capitán y solo con el acta cerrada y marcador legible (si no, 404). Sin nombres de jugadores salvo `?names=1`. Sin estado: se dibuja al vuelo con Pillow y no se guarda.
 - [V] Alineación sugerida (`suggested_lineup`, `match/advisor.py`): solo propone, no guarda.
 
 ## Informe PDF y correos

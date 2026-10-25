@@ -3,10 +3,6 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
-## 25/10/2026 · Imagen del resultado
-
-- En un enfrentamiento con el acta cerrada, el capitán puede descargar **«Imagen del resultado»**: un PNG vertical (1080×1350) con el desenlace, el marcador, la fecha, los cinco partidos con sus sets y el pie «Hecho con Zyra». Por defecto no lleva los nombres de los jugadores (salen como «Pareja 1…5»); una casilla permite incluirlos.
-
 ## 25/10/2026 · Calendario de enfrentamientos
 
 - Nueva vista **Calendario** en Enfrentamientos (pestañas Lista | Calendario): cuadrícula del mes con todos los enfrentamientos del club (próximos, jugados con marcador, con el acta abierta y amistosos), con navegación por meses y enlace a cada uno. En móvil se muestra como agenda por días. La ven todos los miembros y no envía ningún correo
