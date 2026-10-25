@@ -79,7 +79,7 @@ if DEBUG:
         found = set()
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as probe:
-                probe.connect(('10.255.255.255', 1))  # UDP: no envía nada, solo elige interfaz
+                probe.connect(('10.255.255.255', 1))  # NOSONAR: UDP, no envía nada; solo elige la interfaz de salida
                 found.add(probe.getsockname()[0])
             found.update(info[4][0] for info in socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET))
         except OSError:
