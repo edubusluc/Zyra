@@ -16,12 +16,15 @@ from django.db.models import Q, Count
 from django.views.decorators.http import require_GET
 from django.shortcuts import get_object_or_404
 from django.http import Http404
+from django.core.paginator import Paginator
+from urllib.parse import urlencode
 from django.utils.translation import gettext as _
 from core.decorators import club_required, club_admin_required
 from penalty.models import Penalty
 from core.season_choice import ALL_SEASONS, choose_season
 from players.models import current_season, joined_by
 from . import pairs as pair_stats
+from . import rivals as rival_stats
 from . import records
 from .attendance import signup_attendance
 from .sets import best_and_worst_number, by_game_number, own_sets, set_stats
@@ -1006,4 +1009,105 @@ def warnings_statistics(request):
         'total': len(penalties),
         'players_warned': len(by_player),
         'matches_warned': len({p.call.match_id for p in penalties}),
+    })
+
+
+# ---------------------------------------------------------------
+# RIVALES: cara a cara por rival
+# ---------------------------------------------------------------
+RIVALS_PER_PAGE = 15
+HISTORY_PER_PAGE = 10
+
+
+def _rival_query(row):
+    """Parte de la URL (``team=…`` o ``name=…``) que identifica a un rival en su ficha."""
+    team = row["team"]
+    return urlencode({"team": team.public_id}) if team else urlencode({"name": row["label"]})
+
+
+def _season_and_type(request, with_type):
+    """
+    (temporadas, temporada elegida o None para «Todas», filtro de tipo de partido) de la URL. En Rivales
+    se muestran por defecto todas las temporadas; ``with_type`` False ignora el filtro de tipo.
+    """
+    seasons = sorted(get_total_season(Match.objects.filter(club=request.club)),
+                     key=lambda s: int(s.split('-')[0]), reverse=True)
+    selected = choose_season(request, seasons, default_all=True)
+    return seasons, (None if selected == ALL_SEASONS else selected), (selected_match_type(request) if with_type else None)
+
+
+@club_required
+@require_GET
+def rival_statistics(request):
+    """
+    Balance contra cada rival (enfrentamientos jugados, ganados, empatados y perdidos, puntos y último
+    resultado) de todas las temporadas por defecto. Se ordena con ``?sort=`` (rival, balance o último), se
+    busca por nombre con ``?q=`` y se pagina de 15 en 15. Admite el filtro de temporada, no el de tipo de
+    partido. Requiere pertenecer al club y solo GET.
+    """
+    zero = _zero_state(request, _("Estadísticas por rival"))
+    if zero:
+        return zero
+    seasons, selected_season, match_type = _season_and_type(request, with_type=False)
+    sort = request.GET.get("sort")
+    sort = sort if sort in rival_stats.SORTS else rival_stats.SORT_RIVAL
+    search = (request.GET.get("q") or "").strip()
+    rows = rival_stats.rival_summary(request.club, selected_season, match_type, sort)
+    if search:
+        rows = [r for r in rows if search.casefold() in r["label"].casefold()]
+    for row in rows:
+        row["query"] = _rival_query(row)
+        row["balance"] = row["won"] - row["lost"]
+    page = Paginator(rows, RIVALS_PER_PAGE).get_page(request.GET.get(PAGE_PARAM))
+    keep = request.GET.copy()
+    keep.pop(PAGE_PARAM, None)
+    sort_links = []
+    for value, label in ((rival_stats.SORT_RIVAL, _("Rival")), (rival_stats.SORT_BALANCE, _("Balance")),
+                         (rival_stats.SORT_LAST, _("Último enfrentamiento"))):
+        params = keep.copy()
+        params["sort"] = value
+        sort_links.append({"label": label, "url": f"{request.path}?{params.urlencode()}", "active": value == sort})
+    return render(request, "rival_statistics.html", {
+        **season_filter_context(request, seasons, selected_season),
+        "selected_season": selected_season,
+        "rivals": page,
+        "sort_links": sort_links,
+        "page_extra": ("&" + keep.urlencode()) if keep else "",
+        "total_rivals": len(rows),
+        "search": search,
+        "season_keep_fields": [(k, v) for k, v in keep.items() if k in ("season", "sort")],
+    })
+
+
+@club_required
+@require_GET
+def rival_detail(request):
+    """
+    Ficha de un rival: balance, historial de enfrentamientos (con enlace a cada acta) y mejores parejas
+    contra él. El rival es un equipo (``?team=<id público>``) o, en un amistoso con rival escrito a
+    mano, su nombre (``?name=``). Un equipo de otro club da 404. Por defecto todas las temporadas; filtra por
+    temporada y por tipo de partido y pagina el historial de 10 en 10.
+    """
+    team = None
+    name = (request.GET.get("name") or "").strip()
+    if request.GET.get("team"):
+        team = get_object_or_404(Team, public_id=request.GET["team"], club=request.club)
+    elif not name:
+        raise Http404("Rival no indicado")
+    seasons, selected_season, match_type = _season_and_type(request, with_type=True)
+    players = list(Player.objects.filter(club=request.club))
+    detail = rival_stats.rival_detail(request.club, players, team, name, selected_season, match_type)
+    keep = request.GET.copy()
+    keep.pop(PAGE_PARAM, None)
+    history = Paginator(detail["history"], HISTORY_PER_PAGE).get_page(request.GET.get(PAGE_PARAM)) if detail else None
+    return render(request, "rival_detail.html", {
+        **match_type_context(request, match_type),
+        **season_filter_context(request, seasons, selected_season),
+        "selected_season": selected_season,
+        "detail": detail,
+        "history": history,
+        "page_extra": ("&" + keep.urlencode()) if keep else "",
+        "rival_label": detail["label"] if detail else (team.name if team else name),
+        "team": team,
+        "min_games_pair": pair_stats.MIN_GAMES_PAIR,
     })

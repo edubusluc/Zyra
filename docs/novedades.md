@@ -3,6 +3,17 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 25/10/2026 · Cara a cara por rival y «Previa»
+
+- Nueva pestaña **Rivales** en Estadísticas: balance contra cada equipo (jugados, ganados-empatados-perdidos, puntos y último resultado) de todas las temporadas por defecto, ordenable por rival, balance o último enfrentamiento, con buscador por nombre, paginación y filtro de temporada; sin filtro de tipo de enfrentamiento para no recargar la pantalla
+- Ficha de cada rival (todas las temporadas por defecto, con filtro de tipo de enfrentamiento) con su historial paginado, el tipo de cada enfrentamiento y las mejores parejas contra él; las tablas se ajustan al ancho sin scroll lateral
+- Bloque **Previa** en el enfrentamiento y al convocar: balance contra ese rival, último resultado y mejor pareja contra él (no aparece si nunca os habéis enfrentado)
+- En móvil las cinco pestañas de Estadísticas caben completas (antes «Advertencias» se cortaba)
+
+## 25/10/2026 · Cabecera en tablet horizontal
+
+- Entre 992 y 1199 px de ancho (tablet en horizontal) la cabecera de escritorio se salía de la pantalla y la página hacía scroll lateral; ahora se compacta (menos relleno y nombre del club recortado) y cabe entera
+
 ## 25/10/2026 · Invitaciones por correo sin enlace ni WhatsApp
 
 - En «Invitaciones pendientes» las enviadas a un correo ya no muestran el enlace copiable ni el botón de WhatsApp (se gestionan por correo; solo correo, caducidad y «Anular»). El enlace compartido sin correo mantiene copiar y WhatsApp

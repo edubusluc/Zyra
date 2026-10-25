@@ -1697,6 +1697,15 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
     .z-club-name { max-width: 120px; }
 }
 
+/* Tablet horizontal (992-1199 px): la cabecera de escritorio no cabe, se compacta */
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    .z-header-inner { gap: 12px; padding: 0 16px; }
+    .z-nav { gap: 2px; }
+    .z-nav-link { padding: 9px 10px; gap: 6px; font-size: .76rem; letter-spacing: .04em; }
+    .z-header-actions { gap: 6px; min-width: 0; }
+    .z-club-name { max-width: 110px; }
+}
+
 /* Resultado: equipos + 3 sets siempre en una fila */
 .set-row { display: grid; grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr)); gap: 10px; max-width: 620px; }
 .set { padding: 12px 8px; }
@@ -2166,10 +2175,10 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
     .z-page-head .z-actions > form { flex: 1 1 150px; }
     .z-page-head .z-actions .btn { width: 100%; white-space: nowrap; }
 
-    .st-tabs.z-segmented { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); border-radius: 20px; }
+    .st-tabs.z-segmented { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(min-content, 1fr); border-radius: 20px; }
     .st-tabs.z-segmented .btn {
         display: flex; flex-direction: column; align-items: center; gap: 4px;
-        padding: .5rem .15rem; font-size: .6rem; letter-spacing: 0; border-radius: 16px !important;
+        padding: .5rem .1rem; font-size: .56rem; letter-spacing: -.01em; border-radius: 16px !important;
     }
     .st-tabs.z-segmented .btn i { margin: 0 !important; font-size: .95rem; }
 
@@ -2821,3 +2830,30 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .z-sync-track { height: 8px; background: var(--z-border); border-radius: 999px; }
 .z-sync-track .progress-bar { background: var(--z-lime); border-radius: 999px; transition: width .6s ease; }
 .z-sync-note { margin: 0; font-size: .8rem; color: var(--z-muted); }
+
+/* «Previa» de un enfrentamiento (balance contra ese rival) */
+.z-preview {
+    margin: 0 0 16px; padding: 12px 16px; font-size: .92rem;
+    border: 1px dashed rgba(var(--z-lime-rgb), .6); border-radius: var(--z-radius-sm);
+    background: rgba(var(--z-lime-rgb), .06);
+}
+.z-preview-title { margin: 0 0 4px; font-size: .74rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--z-lime); }
+.st-sort { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0 0; }
+
+/* Tablas de Rivales: caben en pantalla sin scroll lateral (el texto se ajusta y en móvil se compactan) */
+.st-table-fit { margin-top: 12px; }
+.st-table--fit { table-layout: auto; }
+.st-table--fit th, .st-table--fit td { padding: 10px 8px; white-space: normal; text-align: left; }
+.st-table--fit th:not(:first-child), .st-table--fit td:not(:first-child) { text-align: right; }
+.st-table--fit td.st-last, .st-table--fit th:last-child, .st-table--fit td:last-child { text-align: right; }
+.st-table--fit .st-score { white-space: nowrap; }
+.st-search { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0 0; }
+.st-search .st-input { flex: 1 1 220px; min-width: 0; }
+@media (max-width: 575.98px) {
+    .st-table--fit th, .st-table--fit td { padding: 8px 4px; font-size: .82rem; }
+    .st-table--fit thead th { font-size: .66rem; letter-spacing: .03em; }
+    .st-table--fit .z-fixture-state { padding-inline: 7px; }
+}
+.st-input { padding: 9px 16px; font: inherit; color: #FFFFFF; background: var(--z-surface-2); border: 1px solid var(--st-line); border-radius: 999px; }
+.st-input:focus-visible { outline: 2px solid var(--z-lime); outline-offset: 2px; }
+.st-table--fit .st-nw { white-space: nowrap; }

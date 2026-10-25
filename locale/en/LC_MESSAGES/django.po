@@ -12106,3 +12106,97 @@ msgstr "Send the results email again"
 
 msgid "El acta ya se cerró antes y el correo ya se envió. Si no lo marcas, no se enviará otro."
 msgstr "The record was already closed before and the email was already sent. If you leave this unticked, no other email will be sent."
+
+msgid "Cómo te va contra cada equipo. Solo cuentan los enfrentamientos con el acta cerrada."
+msgstr "How you do against each team. Only matches with a closed record count."
+
+msgid "Todavía no hay rivales"
+msgstr "No opponents yet"
+
+msgid "Aparecerán cuando cierres un enfrentamiento en esta selección."
+msgstr "They will appear once you close a match in this selection."
+
+msgid "Balance contra cada rival"
+msgstr "Record against each opponent"
+
+msgid "J"
+msgstr "P"
+
+msgid "G-E-P"
+msgstr "W-D-L"
+
+msgid "Ordenar rivales"
+msgstr "Sort opponents"
+
+msgid "Ganados – empatados – perdidos"
+msgstr "Won – drawn – lost"
+
+msgid "Puntos a favor – en contra"
+msgstr "Points for – against"
+
+msgid "Sin enfrentamientos"
+msgstr "No matches"
+
+msgid "No hay enfrentamientos cerrados contra este rival en esta selección."
+msgstr "There are no closed matches against this opponent in this selection."
+
+msgid "puntos"
+msgstr "points"
+
+msgid "Mejores parejas contra ellos"
+msgstr "Best pairs against them"
+
+msgid "Todavía no hay parejas con suficientes partidos contra este rival."
+msgstr "There are no pairs with enough games against this opponent yet."
+
+msgid "Enfrentamientos contra este rival"
+msgstr "Matches against this opponent"
+
+msgid "Previa"
+msgstr "Preview"
+
+msgid "último"
+msgstr "last"
+
+msgid "ganado"
+msgstr "won"
+
+msgid "perdido"
+msgstr "lost"
+
+msgid "empatado"
+msgstr "drawn"
+
+msgid "Mejor pareja contra ellos"
+msgstr "Best pair against them"
+
+msgid "Previa del enfrentamiento"
+msgstr "Match preview"
+
+msgid "Estadísticas por rival"
+msgstr "Opponent statistics"
+
+msgid "Último enfrentamiento"
+msgstr "Last match"
+
+#, python-format
+msgid "%(w)s de %(n)s"
+msgstr "%(w)s of %(n)s"
+
+msgid "Buscar rival por nombre"
+msgstr "Search opponent by name"
+
+msgid "Buscar rival por nombre…"
+msgstr "Search opponent by name…"
+
+msgid "Quitar búsqueda"
+msgstr "Clear search"
+
+msgid "Ningún rival coincide con la búsqueda"
+msgstr "No opponent matches your search"
+
+msgid "Prueba con otro nombre o quita la búsqueda."
+msgstr "Try another name or clear the search."
+
+msgid "Pts"
+msgstr "Pts"

@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n rivals %}
 {% block page_title %}{% translate "Crear convocatoria" %} · {% endblock %}
 
 {% block content %}
@@ -9,6 +9,9 @@
         <h1>{% translate "Crear convocatoria" %}</h1>
     </div>
 </div>
+
+{% rival_preview match as preview %}
+{% include 'includes/rival_preview.html' %}
 
 <form method="POST" data-loading-text="{% translate 'Creando la convocatoria…' %}">
     {% csrf_token %}
