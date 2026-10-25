@@ -85,7 +85,7 @@ entero sigue siendo la clave de los FK. Excepciones sin `public_id`: `backoffice
 - **ReportDelivery**: cola de envío del PDF, única por (`call`, `email`); `status`
   pending/sent/failed, `attempts`, `next_attempt_at`.
 - **CallLog** (`callLog/models.py`): `text` con líneas separadas por `;`.
-- **Penalty** (`penalty/models.py`): advertencia; `player`, `call`, `reason` (texto libre).
+- **Penalty** (`penalty/models.py`): advertencia; `player`, `call`, `kind` (código del motivo: `no_show`, `late`, `late_drop`, `conduct`, `other`; se traduce al pintarlo con `display_reason`) y `reason` (detalle libre, obligatorio solo en `other`). Las anteriores al motivo quedaron como `other`; su texto automático «Advertencia en el partido…» se vació en la migración 0003.
 
 ### backoffice (`backoffice/models.py`)
 

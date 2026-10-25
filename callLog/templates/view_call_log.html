@@ -26,10 +26,41 @@
         <h2 class="z-section-title">{% translate "Aplicar sanciones" %}</h2>
         <form method="POST" action="{% url 'create_penalty' call_id %}" data-loading-text="{% translate 'Guardando la penalización…' %}">
             {% csrf_token %}
-            <p class="text-muted small">{% translate "Marca a los jugadores que quieres advertir (solo jugadores actuales del equipo)." %}</p>
+            <p class="text-muted small">{% translate "Marca a los jugadores que quieres advertir (solo jugadores actuales del equipo) y elige el motivo." %}</p>
+            <div class="z-penalty-fields">
+                <div>
+                    <label for="penalty-kind" class="form-label">{% translate "Motivo" %}</label>
+                    <select name="kind" id="penalty-kind" class="form-select" required>
+                        <option value="">{% translate "Elige el motivo" %}</option>
+                        {% for value, label in penalty_kinds %}<option value="{{ value }}">{{ label }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="penalty-reason" class="form-label">{% translate "Detalle" %} <small class="text-muted">({% translate "obligatorio si eliges «Otro»" %})</small></label>
+                    <input type="text" name="reason" id="penalty-reason" class="form-control" maxlength="100" autocomplete="off">
+                </div>
+            </div>
             {% translate "Aplicar sanciones" as penalty_label %}
             {% include 'includes/player_selector.html' with selected=None submit_label=penalty_label %}
         </form>
+    </div>
+
+    <div class="mt-4">
+        <h2 class="z-section-title">{% translate "Advertencias de esta convocatoria" %}</h2>
+        {% if penalties %}
+        <ul class="z-penalty-list">
+            {% for pen in penalties %}
+            <li>
+                <span><strong>{{ pen.player.short_name }}</strong> · {{ pen.display_reason }}</span>
+                <form method="post" action="{% url 'delete_penalty' %}?ids={{ pen.public_id }}" data-confirm="{% blocktranslate with name=pen.player.short_name %}Se retirará la advertencia a {{ name }}.{% endblocktranslate %}" data-confirm-title="{% translate 'Quitar advertencia' %}" data-confirm-action="{% translate 'Quitar' %}" data-confirm-danger data-loading-text="{% translate 'Quitando…' %}">
+                    {% csrf_token %}<button type="submit" class="btn btn-sm btn-outline-danger z-penalty-remove">{% translate "Quitar" %}</button>
+                </form>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted small">{% translate "Todavía no hay advertencias en esta convocatoria." %}</p>
+        {% endif %}
     </div>
     {% endif %}
 </div>

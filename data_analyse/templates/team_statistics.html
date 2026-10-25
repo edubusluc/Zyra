@@ -12,6 +12,7 @@
   {% endcomment %}
   {{ dicc_line_chart|json_script:"matches-won-per-year" }}
   {{ column_chart_data|json_script:"column-chart-data" }}
+  {{ attendance|json_script:"attendance-data" }}
   <script>
     const teamData = {
       wonMatches: {{ won_matches|default:0|unlocalize }},
@@ -193,6 +194,18 @@
           <div class="st-chart"{% if not dicc_line_chart %} hidden{% endif %}>
             <canvas id="myLineChart" role="img" aria-label="{% translate "Enfrentamientos ganados por año" %}"></canvas>
           </div>
+        </section>
+
+        <section class="st-card st-card--wide">
+          <h3 class="st-card-title">{% translate "Asistencia a las convocatorias" %}{% if selected_season %} · {{ selected_season }}{% endif %}</h3>
+          <p class="st-card-note">{% if attendance.mode == 'calls' %}{% translate "% de la plantilla que se apuntó a cada convocatoria de la temporada." %}{% else %}{% translate "Media por temporada del % de la plantilla que se apunta a cada convocatoria." %}{% endif %}</p>
+          {% if attendance.average is None %}<p class="st-muted st-nodata">{% translate "No hay datos todavía." %}</p>
+          {% else %}
+          <div class="st-tally">
+            <span class="st-tally-item st-tally-item--win"><b>{{ attendance.average }} %</b> {% if attendance.mode == 'calls' %}{% translate "de media en la temporada" %}{% else %}{% translate "de media en total" %}{% endif %}</span>
+          </div>
+          <div class="st-chart"><canvas id="attendanceChart" role="img" aria-label="{% translate "Asistencia a las convocatorias" %}"></canvas></div>
+          {% endif %}
         </section>
 
         <section class="st-card st-card--wide">

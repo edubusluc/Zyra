@@ -7,10 +7,16 @@ información), en una notificación arriba que se cierra sola. Las páginas no l
 {% if messages %}
 <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3 z-toasts" aria-live="polite" aria-atomic="true">
     {% for message in messages %}{% if message.level < DEFAULT_MESSAGE_LEVELS.WARNING %}
-    <div class="toast z-toast {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}is-success{% endif %}" role="status" data-bs-delay="7000" data-z-message>
+    <div class="toast z-toast {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}is-success{% endif %}" role="status" data-bs-delay="{% if message.extra_tags|slice:":5" == "undo=" %}15000{% else %}7000{% endif %}" data-z-message>
         <div class="d-flex align-items-start gap-2">
             <i class="fa-solid {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}fa-circle-check{% else %}fa-circle-info{% endif %} z-toast-icon" aria-hidden="true"></i>
-            <div class="toast-body p-0">{{ message }}</div>
+            <div class="toast-body p-0">{{ message }}
+                {% if message.extra_tags|slice:":5" == "undo=" %}
+                <form method="post" action="{{ message.extra_tags|slice:'5:' }}" class="d-inline ms-2" data-loading-text="{% translate 'Deshaciendo…' %}">
+                    {% csrf_token %}<button type="submit" class="z-toast-undo">{% translate "Deshacer" %}</button>
+                </form>
+                {% endif %}
+            </div>
             <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="toast" aria-label="{% translate 'Cerrar' %}"></button>
         </div>
     </div>

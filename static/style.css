@@ -2754,6 +2754,21 @@ a.z-hub-card:hover, a.z-hub-card:focus-visible { border-color: var(--z-lime); co
 /* El contenido enfocado o al que se salta no queda bajo la cabecera fija ni bajo la barra inferior (WCAG 2.4.11) */
 html { scroll-padding-top: 84px; scroll-padding-bottom: calc(var(--z-nav-h) + 24px); }
 
+/* Objetivos táctiles de al menos 24 × 24 px (WCAG 2.2 · 2.5.8): el lápiz de la fecha y el enlace de cada tarjeta */
+.z-edit-date { display: inline-flex; align-items: center; justify-content: center; min-width: 24px; min-height: 24px; vertical-align: middle; }
+.z-fixture-open { min-height: 24px; }
+
+/* Advertencias: motivo y detalle del formulario, lista de las ya aplicadas y botón «Deshacer» del aviso */
+.z-penalty-fields { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 12px 16px; margin-bottom: 16px; }
+@media (max-width: 575.98px) { .z-penalty-fields { grid-template-columns: 1fr; } }
+.z-penalty-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.z-penalty-list li { display: flex; flex-wrap: nowrap; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; background: var(--z-surface-2); border: 1px solid var(--z-border); border-radius: 12px; }
+.z-penalty-list li > span { min-width: 0; flex: 1 1 auto; overflow-wrap: anywhere; }
+.z-penalty-list li > form { margin: 0; flex: 0 0 auto; }
+.z-penalty-remove { min-height: 32px; white-space: nowrap; }
+.z-toast-undo { background: none; border: 0; padding: 2px 4px; min-height: 24px; font-weight: 800; color: var(--z-lime); text-decoration: underline; cursor: pointer; }
+.z-toast-undo:focus-visible { outline: 2px solid var(--z-lime); outline-offset: 2px; }
+
 /* ---- Estadísticas sin enfrentamientos cerrados (stats_empty.html) ---- */
 .st-zero { display: grid; gap: 14px; max-width: 640px; margin: 24px auto; }
 .st-zero h1 { margin: 0; font-size: 1.5rem; }

@@ -55,7 +55,7 @@ class CaptainOnlyUrlsTests(SecurityBase):
             reverse("existing_call", args=[m]), reverse("create_game", args=[m]),
             reverse("create_result", args=[g]), reverse("edit_result", args=[g]),
             reverse("close_match", args=[m]), reverse("edit_games_match", args=[m]),
-            reverse("delete_call", args=[m]), reverse("create_penalty", args=[c]),
+            reverse("delete_call", args=[m]), reverse("create_penalty", args=[c]), reverse("delete_penalty"),
             reverse("create_player"), reverse("edit_player", args=[self.player.public_id]),
             reverse("delete_player", args=[self.player.public_id]), reverse("manage_roster"),
             reverse("unlink_player", args=[self.player.public_id]),

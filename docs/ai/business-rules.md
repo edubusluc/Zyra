@@ -108,7 +108,7 @@ Orden obligatorio del ciclo (`match/views.py`) [V], cubierto por `match/tests_fl
 Con el acta cerrada [V]: no se borra el partido (`delete_match`) ni su convocatoria (`delete_call`),
 ni se editan parejas (`edit_game_match`).
 
-- [V] Advertencias (`create_penalty`): solo a jugadores del club con `in_team=True`.
+- [V] Advertencias (`create_penalty`): solo a jugadores del club con `in_team=True`. El motivo (`kind`) es obligatorio y «Otro» exige detalle. Solo el capitán las aplica y las retira (`delete_penalty`: «Quitar» en el registro de la convocatoria y «Deshacer» en el aviso, que lleva la URL en `extra_tags="undo=…"`); las de otros clubes se ignoran.
 - [V] Alineación sugerida (`suggested_lineup`, `match/advisor.py`): solo propone, no guarda.
 
 ## Informe PDF y correos
@@ -174,6 +174,7 @@ ni se editan parejas (`edit_game_match`).
 - [V] Una pareja es la misma con independencia de quién juegue en cada lado (`pairs.pair_key`);
   los rankings exigen un mínimo de partidos (`min_games_pair`).
 - [V] Filtro de tipo: Todos / Competitivos / Amistosos (`?match_type=`); temporada `?season=` (equipo, jugador y parejas; sin ella, todas las temporadas).
+- [V] Asistencia a convocatorias (`attendance.signup_attendance`): apuntados / (plantilla actual con `joined_by` + los apuntados que ya no están); «Todas» promedia por temporada. Sin historial de plantilla, las bajas que no se apuntaron no cuentan.
 - [I] Las métricas se calculan en Python sobre el log de partidos; con muchos partidos por club
   conviene vigilar el rendimiento.
 

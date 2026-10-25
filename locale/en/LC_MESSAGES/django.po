@@ -4336,8 +4336,8 @@ msgid "Ver convocatoria"
 msgstr "View call-up"
 
 #: call/views.py:20
-msgid "No se puede borrar la convocatoria de un partido ya confirmado."
-msgstr "The call-up of a confirmed match cannot be deleted."
+msgid "No se puede borrar la convocatoria de un enfrentamiento ya confirmado."
+msgstr "The call-up of a confirmed fixture cannot be deleted."
 
 #: callLog/templates/view_call_log.html:3
 #: callLog/templates/view_call_log.html:7
@@ -4354,10 +4354,8 @@ msgid "Aplicar sanciones"
 msgstr "Apply penalties"
 
 #: callLog/templates/view_call_log.html:29
-msgid ""
-"Marca a los jugadores que quieres advertir (solo jugadores actuales del "
-"equipo)."
-msgstr "Select the players you want to warn (current squad players only)."
+msgid "Marca a los jugadores que quieres advertir (solo jugadores actuales del equipo) y elige el motivo."
+msgstr "Select the players you want to warn (current squad players only) and choose the reason."
 
 #: callLog/views.py:24
 msgid "No se encontró el registro de llamada con el ID especificado."
@@ -5374,14 +5372,8 @@ msgstr ""
 "deleted."
 
 #: core/templates/base.html:188
-msgid ""
-"Se borrarán para siempre tu equipo, los equipos rivales, los jugadores y sus "
-"fotos, los partidos, las convocatorias, las sanciones, las estadísticas y la "
-"cuenta SNP. Esto no se puede deshacer."
-msgstr ""
-"Your team, rival teams, players and their photos, matches, call-ups, "
-"penalties, statistics and SNP account will be permanently deleted. This "
-"cannot be undone."
+msgid "Se borrarán para siempre tu equipo, los equipos rivales, los jugadores y sus fotos, los enfrentamientos, las convocatorias, las sanciones, las estadísticas y la cuenta SNP. Esto no se puede deshacer."
+msgstr "Your team, rival teams, players and their photos, fixtures, call-ups, penalties, statistics and SNP account will be permanently deleted. This cannot be undone."
 
 #: core/templates/base.html:190
 #, python-format
@@ -5389,13 +5381,8 @@ msgid "Escribe <strong>%(club)s</strong> para confirmar:"
 msgstr "Type <strong>%(club)s</strong> to confirm:"
 
 #: core/templates/base.html:193
-msgid ""
-"Dejarás de ver los partidos, jugadores y estadísticas del club, y tu cuenta "
-"se desenlazará de tu jugador. Para volver necesitarás una nueva invitación."
-msgstr ""
-"You will no longer see the club's matches, players and statistics, and your "
-"account will be unlinked from your player. To come back you will need a new "
-"invitation."
+msgid "Dejarás de ver los enfrentamientos, jugadores y estadísticas del club, y tu cuenta se desenlazará de tu jugador. Para volver necesitarás una nueva invitación."
+msgstr "You will no longer see the club's fixtures, players and statistics, and your account will be unlinked from your player. To come back you will need a new invitation."
 
 #: core/templates/base.html:201 core/templates/club.html:52
 msgid "Abandonar el club"
@@ -6663,12 +6650,8 @@ msgstr ""
 "ups, matches and statistics from your phone."
 
 #: core/templates/register_club.html:12
-msgid ""
-"Cada club gestiona sus propios jugadores, equipos rivales, partidos y "
-"estadísticas. Nadie de fuera del club puede ver sus datos."
-msgstr ""
-"Each club manages its own players, rival teams, matches and statistics. "
-"Nobody outside the club can see its data."
+msgid "Cada club gestiona sus propios jugadores, equipos rivales, enfrentamientos y estadísticas. Nadie de fuera del club puede ver sus datos."
+msgstr "Each club manages its own players, rival teams, fixtures and statistics. Nobody outside the club can see its data."
 
 #: core/templates/register_club.html:18
 msgid "Tu cuenta (capitán)"
@@ -8798,8 +8781,8 @@ msgstr ""
 "this call-up or this match. Last: date of the last match played."
 
 #: match/report_pdf.py:447
-msgid "Estadísticas calculadas solo con partidos competitivos."
-msgstr "Statistics calculated from competitive matches only."
+msgid "Estadísticas calculadas solo con enfrentamientos competitivos."
+msgstr "Statistics calculated from competitive fixtures only."
 
 #: match/report_pdf.py:449
 #, python-format
@@ -9731,8 +9714,8 @@ msgid "Acta reabierta. Corrige lo que haga falta y vuelve a cerrarla."
 msgstr "Match report reopened. Fix whatever is needed and close it again."
 
 #: match/views.py:953
-msgid "No se pueden editar los partidos que se encuentran ya confirmados"
-msgstr "Confirmed matches cannot be edited"
+msgid "No se pueden editar los partidos de un enfrentamiento ya confirmado"
+msgstr "The matches of a confirmed fixture cannot be edited"
 
 #: match/views.py:967
 msgid "Parejas actualizadas."
@@ -11068,8 +11051,8 @@ msgid "Se ha corregido el acta del enfrentamiento: el marcador anterior era <str
 msgstr "The match record has been corrected: the previous score was <strong>%(previous)s</strong> and the final result is <strong>%(score)s</strong>."
 
 #: match/templates/emails/_match_result_intro.html:1
-msgid "Se ha cerrado el acta del amistoso. Es un partido de preparación: <strong>no cuenta en las estadísticas competitivas</strong>."
-msgstr "The friendly record has been closed. It is a practice match: <strong>it does not count in the competitive statistics</strong>."
+msgid "Se ha cerrado el acta del amistoso. Es un enfrentamiento de preparación: <strong>no cuenta en las estadísticas competitivas</strong>."
+msgstr "The friendly record has been closed. It is a practice fixture: <strong>it does not count in the competitive statistics</strong>."
 
 #: match/templates/emails/_match_result_intro.html:1
 #, python-format
@@ -12021,6 +12004,98 @@ msgstr "Result notice resent"
 
 msgid "Competición"
 msgstr "Competition"
+
+msgid "Asistencia a las convocatorias"
+msgstr "Call-up attendance"
+
+msgid "% de la plantilla que se apuntó a cada convocatoria de la temporada."
+msgstr "% of the squad that signed up for each call-up this season."
+
+msgid "Media por temporada del % de la plantilla que se apunta a cada convocatoria."
+msgstr "Season average of the % of the squad that signs up for each call-up."
+
+msgid "de media en la temporada"
+msgstr "on average this season"
+
+msgid "de media en total"
+msgstr "on average overall"
+
+#: penalty/models.py
+msgid "No se presentó"
+msgstr "Did not show up"
+
+#: penalty/models.py
+msgid "Llegó tarde"
+msgstr "Arrived late"
+
+#: penalty/models.py
+msgid "Baja de última hora"
+msgstr "Late withdrawal"
+
+#: penalty/models.py
+msgid "Comportamiento"
+msgstr "Conduct"
+
+#: penalty/models.py
+msgid "Otro"
+msgstr "Other"
+
+#: penalty/views.py
+msgid "Elige el motivo de la advertencia."
+msgstr "Choose the reason for the warning."
+
+#: penalty/views.py
+msgid "Escribe el detalle de la advertencia cuando el motivo es «Otro»."
+msgstr "Write the details of the warning when the reason is “Other”."
+
+#: penalty/views.py
+msgid "Marca al menos un jugador del equipo para advertirle."
+msgstr "Select at least one team player to warn."
+
+#: penalty/views.py
+msgid "No hay advertencias que retirar."
+msgstr "There are no warnings to remove."
+
+#: penalty/views.py
+msgid "Advertencia retirada."
+msgstr "Warning removed."
+
+#: penalty/views.py
+msgid "Advertencias retiradas."
+msgstr "Warnings removed."
+
+#: core/templates/includes/messages_popup.html
+msgid "Deshaciendo…"
+msgstr "Undoing…"
+
+#: callLog/templates/view_call_log.html
+msgid "Elige el motivo"
+msgstr "Choose the reason"
+
+#: callLog/templates/view_call_log.html
+msgid "obligatorio si eliges «Otro»"
+msgstr "required if you choose “Other”"
+
+#: callLog/templates/view_call_log.html
+msgid "Advertencias de esta convocatoria"
+msgstr "Warnings in this call-up"
+
+#: callLog/templates/view_call_log.html
+#, python-format
+msgid "Se retirará la advertencia a %(name)s."
+msgstr "The warning for %(name)s will be removed."
+
+#: callLog/templates/view_call_log.html
+msgid "Quitar advertencia"
+msgstr "Remove warning"
+
+#: callLog/templates/view_call_log.html
+msgid "Quitando…"
+msgstr "Removing…"
+
+#: callLog/templates/view_call_log.html
+msgid "Todavía no hay advertencias en esta convocatoria."
+msgstr "There are no warnings in this call-up yet."
 
 msgid "Como el acta ya se cerró antes, no se volverá a enviar el correo con los resultados."
 msgstr "Since the record was already closed before, the results email will not be sent again."

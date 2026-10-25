@@ -192,6 +192,7 @@ class AccessibilityTests(TestCase):
             reverse("call_for_match", args=[self.match.public_id]),
             reverse("edit_match_date", args=[self.match.public_id]),
             reverse("edit_call", args=[self.call.public_id]),
+            reverse("view_call_log", args=[self.call.public_id]),
             reverse("list_players"), reverse("create_player"), reverse("show_player", args=[p]),
             reverse("edit_player", args=[p]), reverse("manage_roster"), reverse("snp_account"),
             reverse("list_teams"), reverse("create_team"), reverse("edit_team", args=[self.rival.public_id]),

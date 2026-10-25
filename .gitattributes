@@ -1,0 +1,2 @@
+# Los scripts de shell deben quedar con LF: con CRLF el shebang falla (env: bash\r) al desplegar.
+*.sh text eol=lf

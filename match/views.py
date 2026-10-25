@@ -329,8 +329,8 @@ def selectable_players(club, include_ids=()):
         .order_by(F('snp_score').desc(nulls_last=True), 'name', 'last_name')
     )
     reasons = {}
-    for pid, reason in Penalty.objects.filter(player__in=players).values_list('player_id', 'reason'):
-        reasons.setdefault(pid, []).append(reason)
+    for pen in Penalty.objects.filter(player__in=players):
+        reasons.setdefault(pen.player_id, []).append(pen.display_reason)
     closed = list(Match.objects.filter(club=club, season=current_season(), draft_mode=False).values_list('id', flat=True))
     played = {}
     for match_id, *slots in Game.objects.filter(match_id__in=closed).values_list(
@@ -961,7 +961,7 @@ def edit_game_match(request, match_id):
     match = club_match(request, match_id)
 
     if not match.draft_mode:
-        messages.error(request, _("No se pueden editar los partidos que se encuentran ya confirmados"))
+        messages.error(request, _("No se pueden editar los partidos de un enfrentamiento ya confirmado"))
         return redirect('call_for_match', match_id=match_id)
 
     games = list(Game.objects.filter(match=match).order_by('n_game'))

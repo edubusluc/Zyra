@@ -288,3 +288,9 @@ msgstr "Step %s of %s"
 
 msgid "Procesando…"
 msgstr "Processing…"
+
+#: static/js/team_statistics.js
+msgid "%s convocatoria"
+msgid_plural "%s convocatorias"
+msgstr[0] "%s call-up"
+msgstr[1] "%s call-ups"
