@@ -128,8 +128,8 @@ ni se editan parejas (`edit_game_match`).
   `MatchResultDelivery` por enfrentamiento y miembro activo del club con email (capitán incluido; club no
   suspendido) y `UserPreference.match_result_email` activo (por defecto sí; interruptor en «Mi perfil» y enlace de baja
   firmado `result_unsubscribe` con su propia sal, además de `List-Unsubscribe`). Es cola e idempotencia a la vez: se envía al
-  momento y `send_call_reports` reintenta con `RETRY_DELAYS`; con el mismo marcador no se repite, con otro tras
-  reabrir el acta se avisa de nuevo como corrección. Cuatro cabeceras (victoria, derrota, empate, amistoso, que avisa de que no
+  momento y `send_call_reports` reintenta con `RETRY_DELAYS`; solo se avisa en el primer cierre: si el acta se
+  reabre y se vuelve a cerrar (`Match.reopened_at`) no se envía nada más, y la confirmación del cierre lo indica. Cuatro cabeceras (victoria, derrota, empate, amistoso, que avisa de que no
   cuenta en lo competitivo) con las 5 parejas, sets y puntos y el partido de quien lo recibe resaltado. Un fallo de envío
   nunca impide cerrar el acta. Back-office: «Salud de los servicios» muestra enviados/fallidos/pendientes, último envío y
   los avisos con problemas; los fallidos de 7 días suben a la bandeja de atención, a las alertas y al resumen semanal. Tests: `match/tests_result_email.py`.

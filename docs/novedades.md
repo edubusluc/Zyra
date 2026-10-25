@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 25/10/2026 · Reabrir el acta ya no reenvía el correo del resultado
+
+- Si un acta se reabre y se vuelve a cerrar no se envía otro correo (ni como «Resultado corregido»); la confirmación del segundo cierre lo avisa
+- En móvil el menú «Más» de la ficha del enfrentamiento ya no se sale por el borde izquierdo de la pantalla
+
 ## 21/10/2026 · El despliegue limpia las imágenes antiguas
 
 - `deploy/deploy.sh` ejecuta `docker image prune -af` cuando la web queda sana: el disco del servidor se llenó (44 imágenes acumuladas, 31 GB) y el despliegue falló con «no space left on device»

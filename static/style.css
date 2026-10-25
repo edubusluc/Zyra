@@ -2631,7 +2631,7 @@ a.z-hub-card:hover, a.z-hub-card:focus-visible { border-color: var(--z-lime); co
 @media (max-width: 991.98px) {
     .z-next { position: sticky; bottom: calc(var(--z-nav-h) + 8px); z-index: 25; transition: bottom .25s ease; background: var(--z-surface-3); }
     .z-nav-hidden .z-next { bottom: 16px; }
-    .z-more ul { bottom: calc(100% + 6px); margin: 0; }
+    .z-more ul { bottom: calc(100% + 6px); left: 0; right: auto; max-width: calc(100vw - 2 * var(--z-gutter, 16px)); margin: 0; }
 }
 
 /* Crear enfrentamiento: error en la card del rival y opciones plegadas */

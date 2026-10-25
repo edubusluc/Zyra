@@ -12021,3 +12021,6 @@ msgstr "Result notice resent"
 
 msgid "Competición"
 msgstr "Competition"
+
+msgid "Como el acta ya se cerró antes, no se volverá a enviar el correo con los resultados."
+msgstr "Since the record was already closed before, the results email will not be sent again."

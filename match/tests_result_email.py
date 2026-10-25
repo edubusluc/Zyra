@@ -104,7 +104,7 @@ class MatchResultEmailTests(ResultEmailFixture):
         self._close(self._match())
         self.assertEqual(mail.outbox, [])
 
-    def test_reclosing_with_same_score_does_not_repeat_but_changed_score_is_a_correction(self):
+    def test_reclosing_after_reopening_never_sends_another_email(self):
         match = self._match()
         self._close(match)
         self.client.post(reverse("reopen_match", args=[match.public_id]))
@@ -115,10 +115,17 @@ class MatchResultEmailTests(ResultEmailFixture):
         Result.objects.filter(game=game).update(set1_local=6, set1_visiting=1, set2_local=6, set2_visiting=1)
         Game.objects.filter(pk=game.pk).update(winner="Local")
         self._close(match)
-        self.assertEqual(len(mail.outbox), 4)
-        self.assertTrue(mail.outbox[2].subject.startswith("Resultado corregido: Victoria 10-2"))
-        self.assertIn("8-4", mail.outbox[2].body)
-        self.assertTrue(MatchResultDelivery.objects.get(user=self.member).correction)
+        self.assertEqual(len(mail.outbox), 2)                # marcador distinto: tampoco hay corrección
+        self.assertFalse(MatchResultDelivery.objects.get(user=self.member).correction)
+
+    def test_confirmation_warns_only_after_reopening(self):
+        match = self._match()
+        url = reverse("call_for_match", args=[match.public_id])
+        warning = "no se volverá a enviar el correo con los resultados"
+        self.assertNotContains(self.client.get(url), warning)
+        self._close(match)
+        self.client.post(reverse("reopen_match", args=[match.public_id]))
+        self.assertContains(self.client.get(url), warning)
 
     def test_failed_send_is_retried_by_the_command_and_never_blocks_closing(self):
         match = self._match()

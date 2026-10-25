@@ -4,8 +4,8 @@ recibe el marcador y el resultado de cada pareja.
 
 Cada envío es una fila de ``MatchResultDelivery`` (una por enfrentamiento y cuenta), que hace de
 cola y de idempotencia: se intenta enviar al momento y, si falla, ``send_call_reports`` lo
-reintenta con las mismas esperas que el informe de convocatoria. Si se reabre el acta y se cierra
-con otro marcador se avisa de nuevo como corrección; con el mismo marcador no se repite el correo.
+reintenta con las mismas esperas que el informe de convocatoria. Si el acta se reabre
+y se vuelve a cerrar no se envía ningún correo más (el usuario lo sabe al confirmar el cierre).
 Un fallo aquí nunca impide cerrar el acta.
 """
 import datetime
@@ -221,9 +221,11 @@ def deliver(deliveries, now=None):
 
 def notify_match_closed(match):
     """
-    Avisa del resultado al cerrarse el acta: encola y envía al momento. Nunca lanza: si algo falla
+    Avisa del resultado al cerrarse el acta por primera vez: encola y envía al momento. Nunca lanza: si algo falla
     (SMTP caído, SITE_URL sin configurar…) el aviso queda pendiente o se registra, y el acta sigue cerrada.
     """
+    if match.reopened_at is not None:
+        return  # segundo cierre tras reabrir: el resultado ya se avisó, no se repite
     try:
         deliver(queue_match_result(match))
     except Exception:
