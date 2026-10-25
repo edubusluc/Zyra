@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 import datetime
+import ipaddress
+import socket
 import sys
 from pathlib import Path
 import os
@@ -68,6 +70,23 @@ elif not DEBUG:
 ALLOWED_HOSTS = config('DJANGO_ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv())
 # Orígenes HTTPS de confianza para los formularios: "https://zyra.es,https://www.zyra.es".
 CSRF_TRUSTED_ORIGINS = config('DJANGO_CSRF_TRUSTED_ORIGINS', default='', cast=Csv())
+
+if DEBUG:
+    # Solo en local: admite la IP de la red WiFi del ordenador para probar desde el móvil
+    # (scripts/movil.ps1). Nunca se ejecuta con DEBUG desactivado.
+    def _local_ips():
+        """IPs privadas de este ordenador (la de la WiFi y otras), sin tocar la red."""
+        found = set()
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as probe:
+                probe.connect(('10.255.255.255', 1))  # NOSONAR: UDP, no envía nada; solo elige la interfaz de salida
+                found.add(probe.getsockname()[0])
+            found.update(info[4][0] for info in socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET))
+        except OSError:
+            pass
+        return sorted(ip for ip in found if ipaddress.ip_address(ip).is_private)
+
+    ALLOWED_HOSTS = list(ALLOWED_HOSTS) + [ip for ip in _local_ips() if ip not in ALLOWED_HOSTS]
 
 # URL pública y única de la web, sin barra final: "https://zyra.es". Se usa en las URLs
 # canónicas, la vista previa al compartir (Open Graph) y el sitemap. Si está definida, las
