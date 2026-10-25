@@ -167,8 +167,8 @@ Todas con filtro Todos / Competitivos / Amistosos y selector de temporada
   alineado** (en cuántas convocatorias a las que se apunta acaba jugando).
 - **Parejas**: mejores y peores parejas y detalle de una pareja (rachas, temporadas, sets, últimos
   partidos).
-- **Rivales**: balance contra cada rival (jugados, ganados, empatados, perdidos, puntos y último resultado; ordenable y
-  paginado) y ficha de cada uno con su historial y sus mejores parejas contra él
+- **Rivales**: balance contra cada rival (jugados, ganados, empatados, perdidos, puntos y último resultado; todas las
+  temporadas por defecto, ordenable, con buscador por nombre y paginado de 15 en 15, sin filtro de tipo) y ficha de cada uno con su historial paginado (con el tipo de enfrentamiento), filtro de tipo y sus mejores parejas contra él
   ([`data_analyse.rivals`](referencia/data_analyse/rivals.md)). El bloque **Previa** (balance, último resultado y mejor
   pareja contra ese rival) aparece en el enfrentamiento y al crear o editar la convocatoria, solo si hay historial.
 

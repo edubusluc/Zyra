@@ -1,3 +1,6 @@
 {% load i18n %}
-{# Resultado de un enfrentamiento contra un rival. Recibe e (data_analyse.rivals): outcome, own, other. #}
-<span class="z-fixture-state {% if e.outcome == 'V' %}is-win{% elif e.outcome == 'D' %}is-loss{% else %}is-draw{% endif %}">{% if e.outcome == 'V' %}{% translate "Victoria" %}{% elif e.outcome == 'D' %}{% translate "Derrota" %}{% else %}{% translate "Empate" %}{% endif %}</span>{% if e.own is not None %} {{ e.own }}-{{ e.other }}{% endif %}
+{# Resultado de un enfrentamiento contra un rival. Recibe e (data_analyse.rivals): outcome, own, other. En pantallas estrechas solo la inicial (V, E, D). #}
+<span class="z-fixture-state {% if e.outcome == 'V' %}is-win{% elif e.outcome == 'D' %}is-loss{% else %}is-draw{% endif %}">
+  <span class="d-none d-sm-inline">{% if e.outcome == 'V' %}{% translate "Victoria" %}{% elif e.outcome == 'D' %}{% translate "Derrota" %}{% else %}{% translate "Empate" %}{% endif %}</span>
+  <span class="d-sm-none" title="{% if e.outcome == 'V' %}{% translate 'Victoria' %}{% elif e.outcome == 'D' %}{% translate 'Derrota' %}{% else %}{% translate 'Empate' %}{% endif %}" aria-label="{% if e.outcome == 'V' %}{% translate 'Victoria' %}{% elif e.outcome == 'D' %}{% translate 'Derrota' %}{% else %}{% translate 'Empate' %}{% endif %}">{{ e.outcome }}</span>
+</span>{% if e.own is not None %} <span class="st-score">{{ e.own }}-{{ e.other }}</span>{% endif %}

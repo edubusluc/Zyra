@@ -135,6 +135,47 @@ class RivalViewsTests(RivalsBase):
         self.assertEqual(self.client.get(reverse("rival_statistics"), {"sort": "balance"}).status_code, 200)
         self.assertEqual(self.client.get(reverse("rival_statistics"), {"sort": "x"}).status_code, 200)
 
+    def test_list_defaults_to_all_seasons_without_type_filter(self):
+        self.seed()  # cierres de 2025-2026 y anteriores a la temporada actual
+        response = self.client.get(reverse("rival_statistics"))
+        self.assertContains(response, "Norte")
+        self.assertContains(response, "Sur")
+        self.assertNotContains(response, 'aria-label="Tipo de enfrentamiento"')
+        # El tipo de partido de la URL se ignora en la lista
+        self.assertContains(self.client.get(reverse("rival_statistics"), {"match_type": "amistoso"}), "Norte")
+
+    def test_list_search_by_name(self):
+        self.seed()
+        response = self.client.get(reverse("rival_statistics"), {"q": "nor"})
+        self.assertContains(response, "Norte")
+        self.assertNotContains(response, "Amigos de Pedro")
+        self.assertContains(self.client.get(reverse("rival_statistics"), {"q": "zzz"}), "Ningún rival coincide")
+
+    def test_list_is_paginated(self):
+        for i in range(17):
+            rival = Team.objects.create(club=self.club, name=f"Equipo {i:02d}", location="X", in_group=True)
+            self.match(rival, datetime.date(2025, 10, 1) + datetime.timedelta(days=i), 8, 4)
+        first = self.client.get(reverse("rival_statistics"))
+        self.assertContains(first, "Equipo 00")
+        self.assertNotContains(first, "Equipo 16")
+        self.assertContains(self.client.get(reverse("rival_statistics"), {"page": 2}), "Equipo 16")
+
+    def test_detail_defaults_to_all_seasons_with_type_filter_and_type_column(self):
+        self.seed()
+        response = self.client.get(reverse("rival_detail"), {"team": self.norte.public_id})
+        self.assertContains(response, 'aria-label="Tipo de enfrentamiento"')
+        self.assertContains(response, "2025-2026")
+        self.assertContains(response, "Enfrentamiento")
+        named = self.client.get(reverse("rival_detail"), {"name": "Amigos de Pedro"})
+        self.assertContains(named, "Amistoso")
+
+    def test_detail_history_is_paginated(self):
+        for i in range(12):
+            self.match(self.sur, datetime.date(2025, 10, 1) + datetime.timedelta(days=i), 8, 4)
+        url = reverse("rival_detail")
+        self.assertEqual(len(self.client.get(url, {"team": self.sur.public_id}).context["history"]), 10)
+        self.assertEqual(len(self.client.get(url, {"team": self.sur.public_id, "page": 2}).context["history"]), 2)
+
     def test_zero_state(self):
         self.assertContains(self.client.get(reverse("rival_statistics")), "Cierra tu primer enfrentamiento")
 

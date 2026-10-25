@@ -51,14 +51,15 @@
 
       <article class="st-card">
         <h3 class="st-card-title">{% translate "Historial" %}</h3>
-        <div class="st-table-wrap">
-          <table class="st-table">
+        <div class="st-table-fit">
+          <table class="st-table st-table--fit">
             <caption class="visually-hidden">{% translate "Enfrentamientos contra este rival" %}</caption>
-            <thead><tr><th scope="col">{% translate "Fecha" %}</th><th scope="col">{% translate "Sede" %}</th><th scope="col">{% translate "Resultado" %}</th></tr></thead>
+            <thead><tr><th scope="col">{% translate "Fecha" %}</th><th scope="col">{% translate "Tipo" %}</th><th scope="col">{% translate "Sede" %}</th><th scope="col">{% translate "Resultado" %}</th></tr></thead>
             <tbody>
-              {% for e in detail.history %}
+              {% for e in history %}
               <tr>
-                <th scope="row"><a href="{% url 'call_for_match' e.match.public_id %}">{{ e.date|date:"d/m/Y" }}</a>{% if e.friendly %} <span class="z-badge ms-1">{% translate "Amistoso" %}</span>{% endif %}</th>
+                <th scope="row"><a href="{% url 'call_for_match' e.match.public_id %}">{{ e.date|date:"d/m/Y" }}</a><small class="st-muted d-block">{{ e.season }}</small></th>
+                <td>{% if e.friendly %}<span class="z-badge">{{ e.type_label }}</span>{% else %}{{ e.type_label }}{% endif %}</td>
                 <td>{% if e.local %}{% translate "Local" %}{% else %}{% translate "Visitante" %}{% endif %}</td>
                 <td>{% include 'includes/rival_outcome.html' with e=e %}</td>
               </tr>
@@ -66,6 +67,7 @@
             </tbody>
           </table>
         </div>
+        {% include 'includes/pagination.html' with page=history extra=page_extra %}
       </article>
     {% endif %}
   </div>

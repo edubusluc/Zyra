@@ -62,6 +62,7 @@ def _entry(match):
         "other": other,
         "local": match.own_is_local,
         "friendly": match.is_friendly,
+        "type_label": match.get_match_type_display(),
     }
 
 

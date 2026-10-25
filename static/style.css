@@ -2839,3 +2839,21 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 }
 .z-preview-title { margin: 0 0 4px; font-size: .74rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--z-lime); }
 .st-sort { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0 0; }
+
+/* Tablas de Rivales: caben en pantalla sin scroll lateral (el texto se ajusta y en móvil se compactan) */
+.st-table-fit { margin-top: 12px; }
+.st-table--fit { table-layout: auto; }
+.st-table--fit th, .st-table--fit td { padding: 10px 8px; white-space: normal; text-align: left; }
+.st-table--fit th:not(:first-child), .st-table--fit td:not(:first-child) { text-align: right; }
+.st-table--fit td.st-last, .st-table--fit th:last-child, .st-table--fit td:last-child { text-align: right; }
+.st-table--fit .st-score { white-space: nowrap; }
+.st-search { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0 0; }
+.st-search .st-input { flex: 1 1 220px; min-width: 0; }
+@media (max-width: 575.98px) {
+    .st-table--fit th, .st-table--fit td { padding: 8px 4px; font-size: .82rem; }
+    .st-table--fit thead th { font-size: .66rem; letter-spacing: .03em; }
+    .st-table--fit .z-fixture-state { padding-inline: 7px; }
+}
+.st-input { padding: 9px 16px; font: inherit; color: #FFFFFF; background: var(--z-surface-2); border: 1px solid var(--st-line); border-radius: 999px; }
+.st-input:focus-visible { outline: 2px solid var(--z-lime); outline-offset: 2px; }
+.st-table--fit .st-nw { white-space: nowrap; }

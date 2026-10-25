@@ -5,8 +5,8 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 25/10/2026 · Cara a cara por rival y «Previa»
 
-- Nueva pestaña **Rivales** en Estadísticas: balance contra cada equipo (jugados, ganados-empatados-perdidos, puntos y último resultado), ordenable por rival, balance o último enfrentamiento, con los filtros de temporada y tipo
-- Ficha de cada rival con su historial (con enlace a cada acta) y las mejores parejas contra él
+- Nueva pestaña **Rivales** en Estadísticas: balance contra cada equipo (jugados, ganados-empatados-perdidos, puntos y último resultado) de todas las temporadas por defecto, ordenable por rival, balance o último enfrentamiento, con buscador por nombre, paginación y filtro de temporada; sin filtro de tipo de enfrentamiento para no recargar la pantalla
+- Ficha de cada rival (todas las temporadas por defecto, con filtro de tipo de enfrentamiento) con su historial paginado, el tipo de cada enfrentamiento y las mejores parejas contra él; las tablas se ajustan al ancho sin scroll lateral
 - Bloque **Previa** en el enfrentamiento y al convocar: balance contra ese rival, último resultado y mejor pareja contra él (no aparece si nunca os habéis enfrentado)
 - En móvil las cinco pestañas de Estadísticas caben completas (antes «Advertencias» se cortaba)
 

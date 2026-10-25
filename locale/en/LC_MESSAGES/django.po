@@ -12182,3 +12182,21 @@ msgstr "Last match"
 #, python-format
 msgid "%(w)s de %(n)s"
 msgstr "%(w)s of %(n)s"
+
+msgid "Buscar rival por nombre"
+msgstr "Search opponent by name"
+
+msgid "Buscar rival por nombre…"
+msgstr "Search opponent by name…"
+
+msgid "Quitar búsqueda"
+msgstr "Clear search"
+
+msgid "Ningún rival coincide con la búsqueda"
+msgstr "No opponent matches your search"
+
+msgid "Prueba con otro nombre o quita la búsqueda."
+msgstr "Try another name or clear the search."
+
+msgid "Pts"
+msgstr "Pts"
