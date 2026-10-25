@@ -2857,3 +2857,39 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .st-input { padding: 9px 16px; font: inherit; color: #FFFFFF; background: var(--z-surface-2); border: 1px solid var(--st-line); border-radius: 999px; }
 .st-input:focus-visible { outline: 2px solid var(--z-lime); outline-offset: 2px; }
 .st-table--fit .st-nw { white-space: nowrap; }
+
+/* Calendario de Enfrentamientos: cuadrícula en pantallas anchas y agenda por días en las estrechas */
+.z-view-tabs { margin-bottom: 16px; width: fit-content; }
+.z-cal-nav { display: flex; align-items: center; gap: 10px; margin: 8px 0 14px; }
+.z-cal-title { margin: 0; flex: 1; text-align: center; font-size: 1rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.z-cal-grid { width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 4px; }
+.z-cal-grid th { padding: 4px; text-align: center; font-size: .72rem; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; color: var(--z-muted); }
+.z-cal-grid td { height: 96px; padding: 6px; vertical-align: top; background: var(--z-surface); border: 1px solid var(--z-border); border-radius: var(--z-radius-sm); overflow: hidden; }
+.z-cal-grid td.is-out { opacity: .4; }
+.z-cal-grid td.is-today { border-color: var(--z-lime); }
+.z-cal-day { display: block; margin-bottom: 4px; font-size: .78rem; color: var(--z-muted); }
+.is-today > .z-cal-day { color: var(--z-lime); font-weight: 800; }
+.z-cal-event { display: flex; align-items: baseline; gap: 5px; margin-top: 3px; padding: 3px 7px; font-size: .74rem; line-height: 1.25; font-weight: 700; color: var(--z-text); background: var(--z-surface-3); border: 1px solid var(--z-border-strong); border-radius: 7px; text-decoration: none; min-width: 0; }
+.z-cal-event:hover { color: var(--z-text); border-color: var(--z-lime); }
+.z-cal-event .z-cal-event-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 1; }
+.z-cal-event time { color: inherit; opacity: .85; }
+.z-cal-event.is-upcoming { color: var(--z-ink); background: var(--z-lime); border-color: var(--z-lime); }
+.z-cal-event.is-upcoming:hover { color: var(--z-ink); background: var(--z-lime-hover); }
+.z-cal-event.is-open { color: var(--z-warning); background: transparent; border-color: var(--z-warning); }
+.z-cal-event.is-friendly { border-style: dashed; }
+.z-cal-agenda { display: none; }
+.z-cal-empty { margin: 16px 0; color: var(--z-muted); }
+.z-cal-legend { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 0; padding: 0; list-style: none; }
+.z-cal-legend .z-cal-event { margin: 0; }
+@media (max-width: 767.98px) {
+    .z-cal-grid { display: none; }
+    .z-cal-agenda { display: grid; gap: 10px; }
+    .z-cal-agenda-day { padding: 10px 12px; background: var(--z-surface); border: 1px solid var(--z-border); border-radius: var(--z-radius-sm); }
+    .z-cal-agenda-day.is-today { border-color: var(--z-lime); }
+    .z-cal-agenda-day h3 { margin: 0 0 6px; font-size: .8rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--z-muted); }
+    .z-cal-agenda-day .z-cal-event { font-size: .9rem; padding: 8px 10px; min-height: 44px; align-items: center; }
+}
+.z-cal-grid .z-cal-event { align-items: flex-start; }
+.z-cal-grid .z-cal-event-name { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; white-space: normal; overflow: hidden; word-break: break-word; }
+.z-cal-grid .z-cal-event { flex-direction: column; align-items: stretch; gap: 1px; }
+.z-cal-grid .z-cal-event-name { word-break: normal; overflow-wrap: anywhere; flex: none; }

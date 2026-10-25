@@ -16,6 +16,7 @@
 </div>
 
 <script src="{% static 'js/player-picker.js' %}" defer></script>
+{% include 'includes/match_view_tabs.html' with current='list' %}
 {% include 'includes/season_filter.html' %}
 {# Tipo de partido: mismos chips que las estadísticas; se combinan con temporada, rival y buscador. #}
 {% include 'includes/match_type_filter.html' %}

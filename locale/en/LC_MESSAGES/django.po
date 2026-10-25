@@ -12200,3 +12200,37 @@ msgstr "Try another name or clear the search."
 
 msgid "Pts"
 msgstr "Pts"
+
+msgid "Calendario"
+msgstr "Calendar"
+
+msgid "No hay enfrentamientos este mes."
+msgstr "There are no matches this month."
+
+msgid "Jugado, con marcador"
+msgstr "Played, with score"
+
+msgid "Acta abierta"
+msgstr "Open record"
+
+msgid "Mes anterior"
+msgstr "Previous month"
+
+msgid "Mes siguiente"
+msgstr "Next month"
+
+msgid "Leyenda"
+msgstr "Legend"
+
+#, python-format
+msgid "Enfrentamientos de %(month)s"
+msgstr "Matches in %(month)s"
+
+msgid "Lista"
+msgstr "List"
+
+msgid "Vista de enfrentamientos"
+msgstr "Matches view"
+
+msgid "contra"
+msgstr "against"

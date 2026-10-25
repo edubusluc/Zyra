@@ -11,7 +11,7 @@ from core.decorators import club_required, club_admin_required, not_while_syncin
 from django.contrib import messages
 from .forms import MatchForm, MatchDateForm
 from .models import Match, Game, Result
-from . import lineup, outcomes, phase as match_phase
+from . import lineup, month_view, outcomes, phase as match_phase
 from .notifications import admin_emails, send_call_report, report_filename
 from .result_email import notify_match_closed
 from call.models import ReportDelivery
@@ -108,16 +108,26 @@ def phase_steps(phase):
     ]
 
 
+OUTCOME_EMOJI = {"V": "✅", "D": "❌", "E": "🤝"}
+
+
 def share_text(match, games):
     """
-    Resultado listo para pegar en WhatsApp: marcador, fecha y, por partido, la pareja propia con
-    el resultado de sus sets desde el punto de vista del club.
+    Resultado listo para pegar en WhatsApp u otro chat: una cabecera en negrita con el desenlace, el
+    marcador y el rival, el enfrentamiento con la fecha (y «Amistoso» si lo es) y una línea por partido
+    con su pareja, el resultado de sus sets desde el punto de vista del club y los puntos que valía. Usa
+    solo negrita (*texto*) y emojis, que se ven igual en WhatsApp y Telegram, y acaba con «Hecho con Zyra».
     """
     own_points, rival_points = club_score(match)
-    lines = [f"{match.local_name} – {match.visiting_name}"]
+    outcome = match_outcome(match)
+    label = _(OUTCOME_LABELS.get(outcome, ""))
     if own_points is not None:
-        lines.append(f"{_(OUTCOME_LABELS.get(match_outcome(match), ''))} {own_points}-{rival_points}".strip())
-    lines.append(match.start_date.strftime("%d/%m/%Y"))
+        head = f"{OUTCOME_EMOJI.get(outcome, '')} *{label} {own_points}-{rival_points}*".strip()
+        head += f" {_('contra')} {match.rival_label}" if match.rival_label else ""
+    else:
+        head = f"*{match.local_name} – {match.visiting_name}*"
+    date = match.start_date.strftime("%d/%m/%Y")
+    lines = [head, f"{match.local_name} – {match.visiting_name} · {date}" + (f" · {_('Amistoso')}" if match.is_friendly else ""), ""]
     for g in games:
         result = g.result
         sets = ""
@@ -127,7 +137,8 @@ def share_text(match, games):
                 pairs.append((result.set3_local, result.set3_visiting))
             sets = " ".join(f"{a}-{b}" if match.own_is_local else f"{b}-{a}" for a, b in pairs)
         own_won = g.winner == (outcomes.WINNER_LOCAL if match.own_is_local else outcomes.WINNER_VISITING)
-        lines.append(f"{_('Partido')} {g.n_game}: {g.pair_label} {'✔' if own_won else '✘'} {sets}".strip())
+        lines.append(f"{'✅' if own_won else '❌'} *{_('Partido')} {g.n_game}* · {g.pair_label}" + (f" · {sets}" if sets else ""))
+    lines += ["", _("Hecho con Zyra")]
     return "\n".join(lines)
 
 
@@ -254,6 +265,40 @@ def list_match(request):
         'page_extra': '&' + urlencode({k: v for k, v in keep.items() if v}),
         **season_filter_context(request, seasons, season, all_value=ALL_SEASONS),
     })
+
+@club_required
+@require_GET
+def calendar_match(request):
+    """
+    Calendario mensual de los enfrentamientos del club (solo lectura, para todos los miembros). ``?month=AAAA-MM``
+    elige el mes (por defecto el actual). Cada enfrentamiento enlaza a su página y se ve su hora, rival,
+    estado (próximo, jugado con marcador, o amistoso) sin enviar nada. En pantallas estrechas se pinta como
+    agenda por días.
+    """
+    today = timezone.localdate()
+    first = month_view.parse_month(request.GET.get(month_view.MONTH_PARAM), today)
+    weeks = month_view.month_weeks(first)
+    by_day = month_view.month_events(request.club, weeks)
+    for matches in by_day.values():
+        for m in matches:
+            m.outcome = match_outcome(m)
+            m.own_points, m.rival_points = club_score(m) if m.outcome else (None, None)
+            m.upcoming = m.outcome is None and m.start_date >= today
+    grid = [[{"date": d, "in_month": d.month == first.month, "today": d == today, "matches": by_day.get(d, [])}
+             for d in week] for week in weeks]
+    agenda = [{"date": d, "today": d == today, "matches": ms}
+              for d, ms in sorted(by_day.items()) if d.month == first.month]
+    return render(request, "calendar_match.html", {
+        "month_first": first,
+        "month_prev": month_view.month_key(month_view.shift_month(first, -1)),
+        "month_next": month_view.month_key(month_view.shift_month(first, 1)),
+        "is_current_month": first == today.replace(day=1),
+        "weekdays": weeks[0],
+        "grid": grid,
+        "agenda": agenda,
+        "view_tab": "calendar",
+    })
+
 
 @club_admin_required
 @not_while_syncing

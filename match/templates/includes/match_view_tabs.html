@@ -1,0 +1,6 @@
+{% load i18n %}
+{# Lista | Calendario de Enfrentamientos. Recibe current: "list" o "calendar". #}
+<nav class="z-segmented z-view-tabs" aria-label="{% translate 'Vista de enfrentamientos' %}">
+  <a class="btn btn-sm{% if current == 'list' %} active{% endif %}" href="{% url 'list_match' %}"{% if current == 'list' %} aria-current="page"{% endif %}><i class="fa-solid fa-list me-1" aria-hidden="true"></i> {% translate "Lista" %}</a>
+  <a class="btn btn-sm{% if current == 'calendar' %} active{% endif %}" href="{% url 'calendar_match' %}"{% if current == 'calendar' %} aria-current="page"{% endif %}><i class="fa-regular fa-calendar me-1" aria-hidden="true"></i> {% translate "Calendario" %}</a>
+</nav>
