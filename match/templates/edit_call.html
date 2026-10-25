@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n rivals %}
 {% block page_title %}{% translate "Editar convocatoria" %} · {% endblock %}
 
 {% block content %}
@@ -9,6 +9,9 @@
         <h1>{% translate "Editar convocatoria" %}</h1>
     </div>
 </div>
+
+{% rival_preview call.match as preview %}
+{% include 'includes/rival_preview.html' %}
 
 {% if not call.draft_mode %}
 <p class="warning">{% translate "La convocatoria está cerrada: cualquier cambio quedará registrado." %}</p>

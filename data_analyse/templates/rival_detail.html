@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block page_title %}{{ rival_label }} · {% endblock %}
+
+{% block content %}
+  <div class="st-page">
+    {% include 'includes/stats_tabs.html' %}
+
+    <header class="st-head">
+      <div>
+        <a class="z-eyebrow" href="{% url 'rival_statistics' %}"><i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i> {% translate "Rivales" %}</a>
+        <h1 class="st-title">{{ rival_label }}</h1>
+        {% if team and team.division %}<p class="st-subtitle">{{ team.get_division_display }}</p>{% endif %}
+      </div>
+    </header>
+
+    {% include 'includes/season_filter.html' %}
+    {% include 'includes/match_type_filter.html' %}
+
+    {% if not detail %}
+      <div class="st-empty">
+        <strong>{% translate "Sin enfrentamientos" %}</strong>
+        {% translate "No hay enfrentamientos cerrados contra este rival en esta selección." %}
+      </div>
+    {% else %}
+      <div class="st-kpis">
+        <article class="st-kpi st-kpi--accent">
+          <h2 class="st-kpi-label">{% translate "Balance" %}</h2>
+          <p class="st-kpi-value">{{ detail.won }}-{{ detail.drawn }}-{{ detail.lost }}</p>
+          <p class="st-kpi-note">{% blocktranslate trimmed count n=detail.played %}{{ n }} enfrentamiento{% plural %}{{ n }} enfrentamientos{% endblocktranslate %} · {% translate "puntos" %} {{ detail.points_for }}-{{ detail.points_against }}</p>
+        </article>
+      </div>
+
+      <article class="st-card">
+        <h3 class="st-card-title">{% translate "Mejores parejas contra ellos" %}</h3>
+        <p class="st-card-note">{% blocktranslate trimmed count n=min_games_pair %}Mínimo {{ n }} partido.{% plural %}Mínimo {{ n }} partidos.{% endblocktranslate %}</p>
+        {% if detail.best_pairs %}
+          <ol class="st-top">
+            {% for r in detail.best_pairs %}
+            <li class="st-top-row">
+              <span class="st-top-pos">{{ forloop.counter }}</span>
+              <span class="st-top-name"><a href="{% url 'pair_statistics' %}?p1={{ r.p1.public_id }}&amp;p2={{ r.p2.public_id }}">{{ r.p1.short_name }} / {{ r.p2.short_name }}</a></span>
+              <b class="st-top-pct">{% blocktranslate with w=r.wins n=r.played %}{{ w }} de {{ n }}{% endblocktranslate %}</b>
+            </li>
+            {% endfor %}
+          </ol>
+        {% else %}
+          <p class="st-muted mt-3 mb-0">{% translate "Todavía no hay parejas con suficientes partidos contra este rival." %}</p>
+        {% endif %}
+      </article>
+
+      <article class="st-card">
+        <h3 class="st-card-title">{% translate "Historial" %}</h3>
+        <div class="st-table-wrap">
+          <table class="st-table">
+            <caption class="visually-hidden">{% translate "Enfrentamientos contra este rival" %}</caption>
+            <thead><tr><th scope="col">{% translate "Fecha" %}</th><th scope="col">{% translate "Sede" %}</th><th scope="col">{% translate "Resultado" %}</th></tr></thead>
+            <tbody>
+              {% for e in detail.history %}
+              <tr>
+                <th scope="row"><a href="{% url 'call_for_match' e.match.public_id %}">{{ e.date|date:"d/m/Y" }}</a>{% if e.friendly %} <span class="z-badge ms-1">{% translate "Amistoso" %}</span>{% endif %}</th>
+                <td>{% if e.local %}{% translate "Local" %}{% else %}{% translate "Visitante" %}{% endif %}</td>
+                <td>{% include 'includes/rival_outcome.html' with e=e %}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </article>
+    {% endif %}
+  </div>
+{% endblock %}

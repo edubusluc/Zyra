@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static i18n %}
+{% load static i18n rivals %}
 {% block page_title %}{{ match.local_name }} – {{ match.visiting_name }} · {% endblock %}
 
 {% block content %}
@@ -20,6 +20,9 @@
     </div>
     <div class="z-versus-team"><small>{% translate "Visitante" %}</small>{{ match.visiting_name }}</div>
 </div>
+
+{% rival_preview match as preview %}
+{% include 'includes/rival_preview.html' %}
 
 {% if match.location %}
 <p class="mb-3"><a class="z-location" href="{{ match.maps_url }}" target="_blank" rel="noopener"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>{{ match.location }}</span></a></p>

@@ -3,6 +3,13 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 25/10/2026 · Cara a cara por rival y «Previa»
+
+- Nueva pestaña **Rivales** en Estadísticas: balance contra cada equipo (jugados, ganados-empatados-perdidos, puntos y último resultado), ordenable por rival, balance o último enfrentamiento, con los filtros de temporada y tipo
+- Ficha de cada rival con su historial (con enlace a cada acta) y las mejores parejas contra él
+- Bloque **Previa** en el enfrentamiento y al convocar: balance contra ese rival, último resultado y mejor pareja contra él (no aparece si nunca os habéis enfrentado)
+- En móvil las cinco pestañas de Estadísticas caben completas (antes «Advertencias» se cortaba)
+
 ## 25/10/2026 · Cabecera en tablet horizontal
 
 - Entre 992 y 1199 px de ancho (tablet en horizontal) la cabecera de escritorio se salía de la pantalla y la página hacía scroll lateral; ahora se compacta (menos relleno y nombre del club recortado) y cabe entera

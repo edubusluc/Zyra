@@ -173,6 +173,7 @@ ni se editan parejas (`edit_game_match`).
 - [V] Solo cuentan partidos con el acta cerrada (`pairs.club_game_log`, `calculate_match_statistics`). Las consultas de `Game`/`Call` filtran también `match__draft_mode=False`.
 - [V] Una pareja es la misma con independencia de quién juegue en cada lado (`pairs.pair_key`);
   los rankings exigen un mínimo de partidos (`min_games_pair`).
+- [V] Rivales (`data_analyse/rivals.py`): se agrupan por equipo (`Team.pk`, no por nombre: mismo nombre en dos divisiones = dos rivales) o, en amistosos con rival escrito a mano, por el nombre sin distinguir mayúsculas; solo enfrentamientos con el acta cerrada. La «Previa» (enfrentamiento y convocatoria) cuenta los cerrados anteriores contra el mismo rival, de cualquier tipo, y no se pinta sin historial; «mejor pareja» exige `MIN_GAMES_PAIR` partidos y alguna victoria.
 - [V] Filtro de tipo: Todos / Competitivos / Amistosos (`?match_type=`); temporada `?season=` (equipo, jugador y parejas; sin ella, todas las temporadas).
 - [V] Asistencia a convocatorias (`attendance.signup_attendance`): apuntados / (plantilla actual con `joined_by` + los apuntados que ya no están); «Todas» promedia por temporada. Sin historial de plantilla, las bajas que no se apuntaron no cuentan.
 - [I] Las métricas se calculan en Python sobre el log de partidos; con muchos partidos por club

@@ -1,0 +1,13 @@
+{% load i18n %}
+{# «Previa»: balance contra este rival. Recibe preview (data_analyse.rivals.rival_preview); no pinta nada si es None. #}
+{% if preview %}
+<aside class="z-preview" aria-label="{% translate 'Previa del enfrentamiento' %}">
+  <h2 class="z-preview-title">{% translate "Previa" %}</h2>
+  <p class="mb-0">
+    {% translate "Balance" %} <strong>{{ preview.won }}-{{ preview.drawn }}-{{ preview.lost }}</strong>
+    · {% translate "último" %}: <strong class="{% if preview.last.outcome == 'V' %}text-lime{% endif %}">{% if preview.last.outcome == 'V' %}{% translate "ganado" %}{% elif preview.last.outcome == 'D' %}{% translate "perdido" %}{% else %}{% translate "empatado" %}{% endif %}{% if preview.last.own is not None %} {{ preview.last.own }}-{{ preview.last.other }}{% endif %}</strong> ({{ preview.last.date|date:"d/m" }})
+    {% if preview.best_pair %}<br>{% translate "Mejor pareja contra ellos" %}: <strong>{{ preview.best_pair.p1.short_name }} + {{ preview.best_pair.p2.short_name }}</strong> ({% blocktranslate with w=preview.best_pair.wins n=preview.best_pair.played %}{{ w }} de {{ n }}{% endblocktranslate %})
+    {% endif %}
+  </p>
+</aside>
+{% endif %}

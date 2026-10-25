@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block page_title %}{% translate "Rivales" %} · {% endblock %}
+
+{% block content %}
+  <div class="st-page">
+    {% include 'includes/stats_tabs.html' %}
+
+    <header class="st-head">
+      <div>
+        <h1 class="st-title">{% translate "Rivales" %}</h1>
+        <p class="st-subtitle">{% translate "Cómo te va contra cada equipo. Solo cuentan los enfrentamientos con el acta cerrada." %}</p>
+      </div>
+    </header>
+
+    {% include 'includes/season_filter.html' %}
+    {% include 'includes/match_type_filter.html' %}
+
+    {% if not total_rivals %}
+      <div class="st-empty">
+        <strong>{% translate "Todavía no hay rivales" %}</strong>
+        {% translate "Aparecerán cuando cierres un enfrentamiento en esta selección." %}
+      </div>
+    {% else %}
+      <nav class="st-sort" aria-label="{% translate 'Ordenar rivales' %}">
+        <span class="st-filter-label">{% translate "Ordenar por" %}</span>
+        {% for link in sort_links %}<a class="st-chip" href="{{ link.url }}"{% if link.active %} aria-current="page"{% endif %}>{{ link.label }}</a>{% endfor %}
+      </nav>
+      <div class="st-table-wrap">
+        <table class="st-table">
+          <caption class="visually-hidden">{% translate "Balance contra cada rival" %}</caption>
+          <thead>
+            <tr>
+              <th scope="col">{% translate "Rival" %}</th>
+              <th scope="col" title="{% translate 'Enfrentamientos jugados' %}">{% translate "J" %}</th>
+              <th scope="col" title="{% translate 'Ganados – empatados – perdidos' %}">{% translate "G-E-P" %}</th>
+              <th scope="col" title="{% translate 'Puntos a favor – en contra' %}">{% translate "Puntos" %}</th>
+              <th scope="col">{% translate "Último" %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in rivals %}
+            <tr>
+              <th scope="row">
+                <a href="{% url 'rival_detail' %}?{{ r.query }}{% if selected_season %}&amp;season={{ selected_season|urlencode:'' }}{% endif %}{% if selected_match_type %}&amp;match_type={{ selected_match_type }}{% endif %}">{{ r.label }}</a>
+                {% if r.friendly_only %}<span class="z-badge ms-1">{% translate "Amistoso" %}</span>{% endif %}
+                {% if r.team and r.team.division %}<small class="st-muted d-block">{{ r.team.get_division_display }}</small>{% endif %}
+              </th>
+              <td>{{ r.played }}</td>
+              <td>{{ r.won }}-{{ r.drawn }}-{{ r.lost }}</td>
+              <td>{{ r.points_for }}-{{ r.points_against }}</td>
+              <td>{% include 'includes/rival_outcome.html' with e=r.last %} <small class="st-muted">{{ r.last.date|date:"d/m/Y" }}</small></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% include 'includes/pagination.html' with page=rivals extra=page_extra %}
+    {% endif %}
+  </div>
+{% endblock %}

@@ -1,0 +1,3 @@
+{% load i18n %}
+{# Resultado de un enfrentamiento contra un rival. Recibe e (data_analyse.rivals): outcome, own, other. #}
+<span class="z-fixture-state {% if e.outcome == 'V' %}is-win{% elif e.outcome == 'D' %}is-loss{% else %}is-draw{% endif %}">{% if e.outcome == 'V' %}{% translate "Victoria" %}{% elif e.outcome == 'D' %}{% translate "Derrota" %}{% else %}{% translate "Empate" %}{% endif %}</span>{% if e.own is not None %} {{ e.own }}-{{ e.other }}{% endif %}
