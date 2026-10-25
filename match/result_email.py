@@ -4,8 +4,9 @@ recibe el marcador y el resultado de cada pareja.
 
 Cada envío es una fila de ``MatchResultDelivery`` (una por enfrentamiento y cuenta), que hace de
 cola y de idempotencia: se intenta enviar al momento y, si falla, ``send_call_reports`` lo
-reintenta con las mismas esperas que el informe de convocatoria. Si se reabre el acta y se cierra
-con otro marcador se avisa de nuevo como corrección; con el mismo marcador no se repite el correo.
+reintenta con las mismas esperas que el informe de convocatoria. Si el acta se reabre
+y se vuelve a cerrar no se envía nada más salvo que el capitán marque «reenviar el correo» al confirmar
+el cierre (por defecto desmarcado): entonces vuelve a pendiente, como corrección si el marcador cambió.
 Un fallo aquí nunca impide cerrar el acta.
 """
 import datetime
@@ -47,12 +48,12 @@ def recipients(match):
     return [m.user for m in members if UserPreference.match_result_for(m.user)]
 
 
-def queue_match_result(match):
+def queue_match_result(match, force=False):
     """
     Deja en la cola un aviso para cada destinatario que aún no lo tenga con este marcador.
 
-    Si ya se avisó del mismo marcador no se repite; si el acta se reabrió y se cerró con otro, la
-    fila vuelve a pendiente como corrección. Devuelve los envíos pendientes.
+    Si ya se avisó del mismo marcador no se repite (salvo ``force``); si el acta se reabrió y se cerró
+    con otro, la fila vuelve a pendiente como corrección. Devuelve los envíos pendientes.
     """
     now = timezone.now()
     queued = []
@@ -62,9 +63,10 @@ def queue_match_result(match):
             defaults={"email": user.email, "result_points": match.result_points, "next_attempt_at": now})
         if created:
             queued.append(delivery)
-        elif delivery.result_points != match.result_points:
+        elif force or delivery.result_points != match.result_points:
+            changed = delivery.result_points != match.result_points
             delivery.previous_points, delivery.result_points = delivery.result_points, match.result_points
-            delivery.email, delivery.correction = user.email, True
+            delivery.email, delivery.correction = user.email, changed
             delivery.status, delivery.attempts = MatchResultDelivery.PENDING, 0
             delivery.next_attempt_at, delivery.last_error, delivery.sent_at = now, "", None
             delivery.save()
@@ -219,13 +221,16 @@ def deliver(deliveries, now=None):
     return claimed
 
 
-def notify_match_closed(match):
+def notify_match_closed(match, resend=False):
     """
-    Avisa del resultado al cerrarse el acta: encola y envía al momento. Nunca lanza: si algo falla
+    Avisa del resultado al cerrarse el acta: encola y envía al momento. Si el acta ya se cerró antes
+    (``reopened_at``) solo lo hace con ``resend``. Nunca lanza: si algo falla
     (SMTP caído, SITE_URL sin configurar…) el aviso queda pendiente o se registra, y el acta sigue cerrada.
     """
+    if match.reopened_at is not None and not resend:
+        return  # recierre tras reabrir: el resultado ya se avisó, solo se repite si el capitán lo pide
     try:
-        deliver(queue_match_result(match))
+        deliver(queue_match_result(match, force=resend))
     except Exception:
         logger.exception("No se pudo avisar del resultado del enfrentamiento %s", match.pk)
 

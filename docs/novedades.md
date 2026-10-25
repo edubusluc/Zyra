@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 25/10/2026 · Reabrir el acta ya no reenvía el correo del resultado
+
+- Si un acta se reabre y se vuelve a cerrar no se envía otro correo por defecto: la confirmación del recierre trae una casilla, desmarcada, «Volver a enviar el correo con los resultados» para que el capitán decida (`resend_email`; como «Resultado corregido» si el marcador cambió)
+- En móvil el menú «Más» de la ficha del enfrentamiento ya no se sale por el borde izquierdo de la pantalla
+
 ## 24/10/2026 · Advertencias con motivo y «Deshacer», accesibilidad WCAG 2.2 y textos
 
 - Las advertencias llevan un **motivo** (No se presentó, Llegó tarde, Baja de última hora, Comportamiento u Otro con detalle) en lugar del texto automático «Advertencia en el partido…», que además no se traducía. El motivo se ve en el historial de advertencias y como ayuda en el selector de convocatoria. Migración `penalty/0003`: las anteriores quedan como «Otro» con su texto escrito a mano (el automático se vacía)
