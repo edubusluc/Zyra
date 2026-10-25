@@ -1697,6 +1697,15 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
     .z-club-name { max-width: 120px; }
 }
 
+/* Tablet horizontal (992-1199 px): la cabecera de escritorio no cabe, se compacta */
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    .z-header-inner { gap: 12px; padding: 0 16px; }
+    .z-nav { gap: 2px; }
+    .z-nav-link { padding: 9px 10px; gap: 6px; font-size: .76rem; letter-spacing: .04em; }
+    .z-header-actions { gap: 6px; min-width: 0; }
+    .z-club-name { max-width: 110px; }
+}
+
 /* Resultado: equipos + 3 sets siempre en una fila */
 .set-row { display: grid; grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr)); gap: 10px; max-width: 620px; }
 .set { padding: 12px 8px; }

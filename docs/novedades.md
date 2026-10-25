@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 25/10/2026 · Cabecera en tablet horizontal
+
+- Entre 992 y 1199 px de ancho (tablet en horizontal) la cabecera de escritorio se salía de la pantalla y la página hacía scroll lateral; ahora se compacta (menos relleno y nombre del club recortado) y cabe entera
+
 ## 25/10/2026 · Invitaciones por correo sin enlace ni WhatsApp
 
 - En «Invitaciones pendientes» las enviadas a un correo ya no muestran el enlace copiable ni el botón de WhatsApp (se gestionan por correo; solo correo, caducidad y «Anular»). El enlace compartido sin correo mantiene copiar y WhatsApp
