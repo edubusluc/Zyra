@@ -5,7 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 25/10/2026 · Reabrir el acta ya no reenvía el correo del resultado
 
-- Si un acta se reabre y se vuelve a cerrar no se envía otro correo (ni como «Resultado corregido»); la confirmación del segundo cierre lo avisa
+- Si un acta se reabre y se vuelve a cerrar no se envía otro correo por defecto: la confirmación del recierre trae una casilla, desmarcada, «Volver a enviar el correo con los resultados» para que el capitán decida (`resend_email`; como «Resultado corregido» si el marcador cambió)
 - En móvil el menú «Más» de la ficha del enfrentamiento ya no se sale por el borde izquierdo de la pantalla
 
 ## 24/10/2026 · Advertencias con motivo y «Deshacer», accesibilidad WCAG 2.2 y textos

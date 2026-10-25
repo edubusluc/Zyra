@@ -12097,5 +12097,8 @@ msgstr "Removing…"
 msgid "Todavía no hay advertencias en esta convocatoria."
 msgstr "There are no warnings in this call-up yet."
 
-msgid "Como el acta ya se cerró antes, no se volverá a enviar el correo con los resultados."
-msgstr "Since the record was already closed before, the results email will not be sent again."
+msgid "Volver a enviar el correo con los resultados"
+msgstr "Send the results email again"
+
+msgid "El acta ya se cerró antes y el correo ya se envió. Si no lo marcas, no se enviará otro."
+msgstr "The record was already closed before and the email was already sent. If you leave this unticked, no other email will be sent."

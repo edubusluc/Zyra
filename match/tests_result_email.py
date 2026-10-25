@@ -104,28 +104,35 @@ class MatchResultEmailTests(ResultEmailFixture):
         self._close(self._match())
         self.assertEqual(mail.outbox, [])
 
-    def test_reclosing_after_reopening_never_sends_another_email(self):
+    def test_reclosing_after_reopening_sends_nothing_unless_the_captain_ticks_resend(self):
         match = self._match()
         self._close(match)
         self.client.post(reverse("reopen_match", args=[match.public_id]))
         self._close(match)
-        self.assertEqual(len(mail.outbox), 2)                # mismo marcador: no se repite
+        self.assertEqual(len(mail.outbox), 2)                # por defecto no se reenvía
         self.client.post(reverse("reopen_match", args=[match.public_id]))
         game = match.games.get(n_game=5)
         Result.objects.filter(game=game).update(set1_local=6, set1_visiting=1, set2_local=6, set2_visiting=1)
         Game.objects.filter(pk=game.pk).update(winner="Local")
         self._close(match)
         self.assertEqual(len(mail.outbox), 2)                # marcador distinto: tampoco hay corrección
-        self.assertFalse(MatchResultDelivery.objects.get(user=self.member).correction)
+        self.client.post(reverse("reopen_match", args=[match.public_id]))
+        self.client.post(reverse("close_match", args=[match.public_id]), {"resend_email": "1"})
+        self.assertEqual(len(mail.outbox), 4)                # casilla marcada: se reenvía
+        self.assertTrue(MatchResultDelivery.objects.get(user=self.member).correction)
 
-    def test_confirmation_warns_only_after_reopening(self):
+    def test_first_close_ignores_the_resend_flag_and_sends_once(self):
+        match = self._match()
+        self.client.post(reverse("close_match", args=[match.public_id]), {"resend_email": "1"})
+        self.assertEqual(len(mail.outbox), 2)
+
+    def test_confirmation_offers_the_resend_checkbox_only_after_reopening(self):
         match = self._match()
         url = reverse("call_for_match", args=[match.public_id])
-        warning = "no se volverá a enviar el correo con los resultados"
-        self.assertNotContains(self.client.get(url), warning)
+        self.assertNotContains(self.client.get(url), "data-confirm-check")
         self._close(match)
         self.client.post(reverse("reopen_match", args=[match.public_id]))
-        self.assertContains(self.client.get(url), warning)
+        self.assertContains(self.client.get(url), 'data-confirm-check-name="resend_email"')
 
     def test_failed_send_is_retried_by_the_command_and_never_blocks_closing(self):
         match = self._match()

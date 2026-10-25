@@ -905,7 +905,7 @@ def do_close_match(request, match):
         match.save()
 
     # Aviso del resultado a los miembros del club; si falla, el acta sigue cerrada y el envío se reintenta.
-    notify_match_closed(match)
+    notify_match_closed(match, resend=bool(request.POST.get("resend_email")))
 
     own_points, rival_points = club_score(match)
     label = OUTCOME_LABELS.get(match_outcome(match), "")
