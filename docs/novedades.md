@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 25/10/2026 · Probar Zyra desde el móvil en local
+
+- `scripts/movil.ps1` (PowerShell) arranca el servidor en `0.0.0.0` y muestra la URL con la IP de tu WiFi para abrirla desde el móvil. Con `DJANGO_DEBUG=True` Django admite además las IPs privadas del ordenador en `ALLOWED_HOSTS`; con DEBUG apagado (producción) no cambia nada. Si no carga, hay que permitir Python en el firewall de Windows (red privada)
+
 ## 25/10/2026 · Cara a cara por rival y «Previa»
 
 - Nueva pestaña **Rivales** en Estadísticas: balance contra cada equipo (jugados, ganados-empatados-perdidos, puntos y último resultado) de todas las temporadas por defecto, ordenable por rival, balance o último enfrentamiento, con buscador por nombre, paginación y filtro de temporada; sin filtro de tipo de enfrentamiento para no recargar la pantalla
