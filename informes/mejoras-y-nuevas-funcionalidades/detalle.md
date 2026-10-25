@@ -2,31 +2,6 @@
 
 Complemento de [`estudio.md`](estudio.md). Cada propuesta lleva: **problema**, **qué verá la persona**, **diseño técnico** (archivos y modelos reales del repo), **reglas y casos límite**, **pruebas**, **riesgos** y **cómo medir si funciona**. Solo propuesta: no hay código. Las rutas marcadas **[I]** son inferidas y hay que confirmarlas al empezar. Alcance: sin nuevas ligas.
 
-## Estado a 25/10/2026 (resumen)
-
-Tras la fusión de #183 (M1) y de #184/#185 (dos ajustes sueltos de correos e invitaciones que no estaban en este informe), **quedan por hacer 16 de las 18 propuestas**. Orden recomendado sin cambios: N1 (+N6), N2a y P1.
-
-| ID | Propuesta | Estado |
-|---|---|---|
-| M1 | Cerrar pendientes de UX | **Hecho** (#183). Selector único: ya lo era (`match-form.js`). «Repetir la última convocatoria»: descartada. Advertencias con motivo, «Deshacer» y «Quitar»: hechas. WCAG 2.2: hecho (axe sin fallos). Textos «enfrentamiento/partido»: hechos |
-| N1 | Cara a cara por rival y «Previa» | Pendiente |
-| N2 | Recordatorios y calendario (.ics) | Pendiente |
-| N3 | Tarjeta de resultado en imagen y enlace público | Pendiente |
-| N4 | Disponibilidad de jugadores | Pendiente (validar antes con capitanes) |
-| N5 | Rol de delegado | Pendiente |
-| N6 | Notas privadas del capitán | Pendiente (mejor junto con N1) |
-| N7 | Crónica automática | Pendiente |
-| N8 | Resumen de temporada | Pendiente |
-| N9 | Rendimiento frente a su SNP y comparador | Pendiente (baja prioridad) |
-| M2 | SNP sin guardar la contraseña | Pendiente (necesita tu decisión de riesgo) |
-| M3 | Registro de convocatoria estructurado | Pendiente |
-| M4 | Cierre y preparación de temporada | Pendiente |
-| M5 | Más razones para entrar al jugador | Pendiente |
-| M6 | Revisión en tablet | Pendiente |
-| P1 | Copias programadas y alerta de disco | Pendiente |
-| P2 | Donación y patrocinador local | Pendiente |
-| P3 | Exportar a CSV/Excel | Pendiente |
-
 ## Cómo leer las fichas
 
 - **Tamaño**: S ≈ medio día · M ≈ 1–2 días · L ≈ varios PR. Son estimaciones de trabajo con las pruebas y la documentación incluidas.
@@ -259,8 +234,6 @@ Tras la fusión de #183 (M1) y de #184/#185 (dos ajustes sueltos de correos e in
 # B. Mejoras sobre lo existente
 
 ## M1 · Cerrar los pendientes de UX (informe `08`)
-
-**Estado: hecho en #183 (24/10/2026).** Notas de lo hecho: el selector fundido ya existía (`match-form.js`); «Repetir la última convocatoria» se descartó a propósito; advertencias con motivo, «Deshacer» y «Quitar» hechas (más botón rojo a la derecha); `scroll-padding` ya existía y se corrigieron los objetivos de menos de 24 px; 7 textos sueltos corregidos.
 
 Cinco tareas pequeñas que conviene agrupar en un PR («Pulido»):
 
