@@ -24,7 +24,6 @@ cp .env.example .env
 ```
 
 - **En tu ordenador** basta con `DJANGO_DEBUG=True`.
-  Para probar desde el móvil (misma WiFi), en PowerShell: `.\scripts\movil.ps1`; muestra la URL con tu IP y, si no carga, permite Python en el firewall de Windows (red privada). Con DEBUG apagado no abre ningún host extra.
 - **En producción** (`DJANGO_DEBUG` sin definir o `False`) la aplicación **no arranca** si
   falta `DJANGO_SECRET_KEY` (mínimo 50 caracteres) o `FIELD_ENCRYPTION_KEY` (clave Fernet
   que cifra las cuentas SNP). Define también `DJANGO_ALLOWED_HOSTS`,

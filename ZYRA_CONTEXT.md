@@ -32,7 +32,7 @@ estadísticas y back-office del dueño de la plataforma. Español con traducció
 
 ## Arquitectura en una línea por pieza
 
-- Configuración: `zyra/settings.py` (todo por entorno), URLs `zyra/urls.py`. Probar desde el móvil en local: `scripts/movil.ps1` (solo con `DJANGO_DEBUG=True`, añade las IPs privadas a `ALLOWED_HOSTS`).
+- Configuración: `zyra/settings.py` (todo por entorno), URLs `zyra/urls.py`.
 - Cada petición: `core/middleware.py` (`CurrentClubMiddleware`) pone `request.club` / `request.membership`;
   las vistas usan `core/decorators.py` (`club_required`, `club_admin_required` = capitán).
 - `core/context_processors.py` da a todas las plantillas `club`, `navigation`, `google_login`, `site`.
