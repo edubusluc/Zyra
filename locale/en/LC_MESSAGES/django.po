@@ -5464,10 +5464,8 @@ msgid "¿Quitar a %(username)s del club?"
 msgstr "Remove %(username)s from the club?"
 
 #: core/templates/club_members.html:43
-msgid ""
-"Un club tiene un solo capitán, que invita a los jugadores, crea los equipos y apunta los resultados. Para pasar la gestión a otra persona, pulsa «Hacer capitán» en su fila: tú pasarás a ser miembro (solo lectura). Para poder hacerlo, el miembro tiene que estar enlazado a un jugador del club («Mi perfil»). Para eliminar el club, quita antes a todos los miembros y abandónalo desde el menú."
-msgstr ""
-"A club has a single captain, who invites the players, creates the teams and records the results. To hand the management over to someone else, press “Make captain” on their row: you will become a member (read-only). To do so, the member must be linked to a player of the club (“My profile”). To delete the club, first remove all the members and leave it from the menu."
+msgid "Un club tiene un solo capitán, que invita a los jugadores y gestiona el club, y hasta dos gestores, que le ayudan con los enfrentamientos, los resultados, los jugadores y los equipos. Para pasar la gestión a otra persona, pulsa «Hacer capitán» en su fila: tú pasarás a ser miembro (solo lectura). Para poder hacerlo, el miembro tiene que estar enlazado a un jugador del club («Mi perfil»). Para eliminar el club, quita antes a todos los miembros y abandónalo desde el menú."
+msgstr "A club has a single captain, who invites the players and manages the club, and up to two managers, who help with the matches, the results, the players and the teams. To hand the management to someone else, press «Make captain» on their row: you will become a member (read-only). To do so, the member has to be linked to a player of the club («My profile»). To delete the club, first remove all the members and leave from the menu."
 
 #: core/templates/club_members.html:45
 msgid "Invitar jugadores"
@@ -12234,3 +12232,40 @@ msgstr "Matches view"
 
 msgid "contra"
 msgstr "against"
+
+msgid "Gestor"
+msgstr "Manager"
+
+msgid "Solo el capitán o los gestores del club pueden ver esta página o realizar esta acción."
+msgstr "Only the club captain or managers can see this page or perform this action."
+
+msgid "Solo el capitán del club puede nombrar gestores."
+msgstr "Only the club captain can appoint managers."
+
+#, python-format
+msgid "Un club puede tener como máximo %(n)s gestores."
+msgstr "A club can have at most %(n)s managers."
+
+#, python-format
+msgid "%(username)s es ahora gestor del club."
+msgstr "%(username)s is now a manager of the club."
+
+#, python-format
+msgid "%(username)s vuelve a ser miembro."
+msgstr "%(username)s is a member again."
+
+msgid "Guardando el rol…"
+msgstr "Saving the role…"
+
+msgid "Quitar gestor"
+msgstr "Remove manager"
+
+msgid "Hacer gestor"
+msgstr "Make manager"
+
+msgid "Un club puede tener como máximo dos gestores."
+msgstr "A club can have at most two managers."
+
+#, python-format
+msgid "¿Hacer gestor a %(username)s? Podrá crear enfrentamientos, convocatorias, alineaciones y resultados, cerrar actas, poner advertencias y gestionar jugadores y equipos. No podrá gestionar miembros, la cuenta SNP, reabrir actas ni eliminar el club."
+msgstr "Make %(username)s a manager? They will be able to create matches, call-ups, line-ups and results, close match reports, give warnings and manage players and teams. They will not be able to manage members, the SNP account, reopen match reports or delete the club."

@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.shortcuts import redirect, get_object_or_404
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
-from core.decorators import club_admin_required
+from core.decorators import club_admin_required, club_manager_required
 from .models import Call
 
 

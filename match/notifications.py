@@ -38,9 +38,10 @@ def report_filename(match):
 
 
 def admin_emails(club):
-    """Emails (sin repetir y ordenados) de los capitanes activos del club."""
+    """Emails (sin repetir y ordenados) de los capitanes y gestores activos del club."""
     return sorted({
-        m.user.email for m in Membership.objects.filter(club=club, role=Membership.ADMIN).select_related("user")
+        m.user.email for m in Membership.objects.filter(club=club, role__in=[Membership.ADMIN, Membership.MANAGER])
+        .select_related("user")
         if m.user.email and m.user.is_active
     })
 

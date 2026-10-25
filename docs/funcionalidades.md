@@ -7,6 +7,7 @@ Qué puede hacer cada persona en Zyra. Los enlaces a la derecha llevan al códig
 | Rol | Quién es | Qué puede hacer |
 |---|---|---|
 | **Capitán** | Quien crea el club o a quien otro capitán da ese rol. | Todo lo de su club: jugadores, equipos, partidos, convocatorias, miembros, cuenta SNP. |
+| **Gestor** | Miembro al que el capitán da ese rol (hasta dos por club). | Lo deportivo: crear enfrentamientos, convocatorias, alineaciones y resultados, cerrar actas, advertencias, jugadores (también eliminarlos) y equipos. Recibe los informes por correo. No gestiona miembros ni invitaciones, la cuenta SNP, ni reabre o elimina enfrentamientos, ni elimina el club. |
 | **Miembro** | Jugador invitado al club. | Ver partidos, convocatorias, jugadores y estadísticas; enlazar su cuenta con su jugador y subir su foto. |
 | **Personal** (staff) | Equipo de Zyra. | Back-office: métricas, clubes, usuarios, procesos, revisión de fotos. |
 | **Superusuario** | Dueño de la plataforma. | Además, consola SQL, importación de datos y el admin de Django. |
@@ -29,7 +30,7 @@ el club activo: lo de otro club da 404. Sin permiso, la página «Sin permiso» 
 - **Entrar con Google**: si el email ya existe, entra en esa cuenta y no crea otra
   ([`core.adapters`](referencia/core/adapters.md)).
 - **Inicio de sesión con freno**: demasiados intentos fallidos devuelven 429.
-- **Miembros**: lista, cambio de rol, quitar del club (nunca el último capitán; su cuenta se
+- **Miembros**: lista, cambio de rol (hacer o quitar gestor; traspasar la capitanía a un gestor lo hace capitán y los demás gestores se mantienen), quitar del club (nunca el último capitán; su cuenta se
   desenlaza de su jugador), invitaciones por email (un solo uso) o por enlace compartido (lo
   pueden usar varias personas, con contador de cuántas se han unido; al generar uno nuevo el
   anterior deja de funcionar y solo se ve el último), ambas válidas 24 h;

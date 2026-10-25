@@ -8,7 +8,7 @@
         <a href="{% url 'club_home' %}" class="z-eyebrow"><i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i> {% translate "Club" %}</a>
         <h1>{% translate "Rivales" %}</h1>
     </div>
-    {% if is_club_admin %}
+    {% if can_manage %}
     <div class="z-actions">
         <a href="{% url 'manage_teams' %}" class="btn btn-secondary"><i class="fa-solid fa-pen-to-square me-1" aria-hidden="true"></i> {% translate "Gestionar equipos" %}</a>
         <a href="{% url 'create_team' %}" class="btn btn-primary"><i class="fa-solid fa-plus me-1" aria-hidden="true"></i> {% translate "Nuevo rival" %}</a>
@@ -22,7 +22,7 @@
             <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
             <input type="search" name="search" id="team-search" placeholder="{% translate 'Buscar por nombre o ubicación...' %}" value="{{ search }}" aria-label="{% translate 'Buscar equipo' %}">
         </form>
-        {% if is_club_admin %}
+        {% if can_manage %}
         {# Interruptor propio (.z-toggle); sus campos se envían con el formulario de búsqueda (atributo form). #}
         <input type="hidden" name="group" value="0" form="search-form">
         <label class="z-toggle" for="team-only-group">
@@ -46,7 +46,7 @@
 <div class="z-grid" id="cards-view">
     {% for team in teams %}
     <div class="z-card z-team position-relative">
-        {% if is_club_admin %}
+        {% if can_manage %}
         <a href="{% url 'edit_team' team.public_id %}" class="z-edit" aria-label="{% blocktranslate with name=team.name %}Editar {{ name }}{% endblocktranslate %}"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
         {% endif %}
         <img src="{% if team.photo %}{{ team.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="">
@@ -58,7 +58,7 @@
                 {% if team.gender %}<span class="z-badge z-badge--outline">{{ team.get_gender_display }}</span>{% endif %}
                 {% if team.country %}<span class="z-badge z-badge--outline">{{ team.get_country_display }}</span>{% endif %}
                 {% if team.division %}<span class="z-badge z-badge--outline">{{ team.get_division_display }}</span>{% endif %}
-                {% if is_club_admin %}
+                {% if can_manage %}
                 {% if team.in_group %}<span class="z-badge z-badge--outline">{% translate "En tu grupo" %}</span>{% else %}<span class="z-badge">{% translate "Fuera de grupo" %}</span>{% endif %}
                 {% endif %}
             </div>
@@ -68,7 +68,7 @@
     <div class="z-empty" style="grid-column: 1 / -1;">
         <i class="fa-solid fa-users-slash" aria-hidden="true"></i>
         {% if search %}{% blocktranslate %}No hay equipos que coincidan con "{{ search }}".{% endblocktranslate %}{% else %}{% translate "Añade a tu primer rival para crear enfrentamientos contra él." %}{% endif %}
-        {% if is_club_admin and not search %}
+        {% if can_manage and not search %}
         <div class="mt-3 d-flex flex-wrap gap-2 justify-content-center">
             <a class="btn btn-primary btn-sm" href="{% url 'create_team' %}">{% translate "Crear rival" %}</a>
             {% if only_group %}<a class="btn btn-secondary btn-sm" href="?group=0">{% translate "Ver también los de fuera de mi grupo" %}</a>{% endif %}
@@ -86,7 +86,7 @@
                 <th><span class="visually-hidden">{% translate "Escudo" %}</span></th>
                 <th>{% translate "Nombre" %}</th>
                 <th>{% translate "Ubicación" %}</th>
-                {% if is_club_admin %}<th>{% translate "Grupo" %}</th><th><span class="visually-hidden">{% translate "Acciones" %}</span></th>{% endif %}
+                {% if can_manage %}<th>{% translate "Grupo" %}</th><th><span class="visually-hidden">{% translate "Acciones" %}</span></th>{% endif %}
             </tr>
         </thead>
         <tbody>
@@ -95,7 +95,7 @@
                 <td><img src="{% if team.photo %}{{ team.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="" class="table-logo"></td>
                 <td><strong>{{ team.name }}</strong> {% if team.is_own %}<span class="z-badge z-badge--lime ms-1">{% translate "Tu equipo" %}</span>{% endif %}</td>
                 <td>{{ team.location }}{% if team.gender or team.country %}<br><small class="text-muted">{{ team.get_gender_display }}{% if team.gender and team.country %} · {% endif %}{{ team.get_country_display }}{% if team.division %} · {{ team.get_division_display }}{% endif %}</small>{% endif %}</td>
-                {% if is_club_admin %}
+                {% if can_manage %}
                 <td>{% if team.in_group %}<span class="z-badge z-badge--outline">{% translate "En tu grupo" %}</span>{% else %}<span class="z-badge">{% translate "Fuera" context "fuera de grupo" %}</span>{% endif %}</td>
                 <td><a href="{% url 'edit_team' team.public_id %}" class="z-edit position-static" aria-label="{% translate 'Editar' %}"><i class="fa-solid fa-pen" aria-hidden="true"></i></a></td>
                 {% endif %}
@@ -108,7 +108,7 @@
 </div>
 
 {% with extra='&search='|add:search %}
-{% if is_club_admin and not only_group %}{% with extra=extra|add:'&group=0' %}
+{% if can_manage and not only_group %}{% with extra=extra|add:'&group=0' %}
 {% include 'includes/pagination.html' with page=teams extra=extra %}
 {% endwith %}{% else %}
 {% include 'includes/pagination.html' with page=teams extra=extra %}

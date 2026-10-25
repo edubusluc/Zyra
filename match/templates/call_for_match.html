@@ -16,7 +16,7 @@
     <div class="z-versus-mid">
         <div class="z-versus-vs">{% if score_local %}{{ score_local }} – {{ score_visiting }}{% else %}VS{% endif %}</div>
         {% if outcome %}<span class="z-fixture-state {% if outcome == 'V' %}is-win{% elif outcome == 'D' %}is-loss{% else %}is-draw{% endif %}">{{ outcome_label }}</span>{% endif %}
-        <div class="z-versus-date">{{ match.start_date|date:"D j M Y" }}{% if is_club_admin and match.draft_mode %} <a href="{% url 'edit_match_date' match.public_id %}" class="z-edit-date" title="{% translate 'Cambiar fecha' %}"><i class="fa-solid fa-pen" aria-hidden="true"></i><span class="visually-hidden">{% translate "Cambiar fecha" %}</span></a>{% endif %}</div>
+        <div class="z-versus-date">{{ match.start_date|date:"D j M Y" }}{% if can_manage and match.draft_mode %} <a href="{% url 'edit_match_date' match.public_id %}" class="z-edit-date" title="{% translate 'Cambiar fecha' %}"><i class="fa-solid fa-pen" aria-hidden="true"></i><span class="visually-hidden">{% translate "Cambiar fecha" %}</span></a>{% endif %}</div>
     </div>
     <div class="z-versus-team"><small>{% translate "Visitante" %}</small>{{ match.visiting_name }}</div>
 </div>
@@ -58,7 +58,7 @@
 </div>
 {% endif %}
 
-{% if is_club_admin and phase.action != 'nothing' %}
+{% if can_manage and phase.action != 'nothing' %}
 {# Un único botón principal «Siguiente: …» siempre en el mismo sitio; lo demás, en «Más». #}
 <div class="z-next">
     <div class="z-next-main">
@@ -109,7 +109,7 @@
 </div>
 {% endif %}
 
-{% if is_club_admin and not match.draft_mode %}
+{% if can_manage and not match.draft_mode %}
 {# Acta cerrada: se queda aquí con el marcador y dos acciones (H-40). #}
 <div class="z-closed {% if outcome == 'V' %}is-win{% elif outcome == 'D' %}is-loss{% else %}is-draw{% endif %}">
     <strong>{% blocktranslate with outcome=outcome_label own=own_points rival=rival_points %}Acta cerrada: {{ outcome }} {{ own }}-{{ rival }}{% endblocktranslate %}</strong>
@@ -122,7 +122,7 @@
 
 <h2 class="z-section-title mt-0">{% translate "Convocatoria" %}</h2>
 
-{% if is_club_admin and report_deliveries %}
+{% if can_manage and report_deliveries %}
 <p class="small text-muted mb-2"><i class="fa-solid fa-envelope me-1" aria-hidden="true"></i> {% translate "Informe por email:" %}
     {% for d in report_deliveries %}{{ d.email }}
     {% if d.status == "sent" %}<span class="z-badge z-badge--lime">{% blocktranslate with when=d.sent_at|date:"d/m H:i" %}enviado {{ when }}{% endblocktranslate %}</span>
@@ -178,12 +178,12 @@
   });
 </script>
 {% else %}
-<div class="z-empty"><i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>{% if is_club_admin %}{% translate "Crea la convocatoria para elegir quién juega este enfrentamiento." %}{% else %}{% translate "Tu capitán aún no ha creado la convocatoria de este enfrentamiento." %}{% endif %}</div>
+<div class="z-empty"><i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>{% if can_manage %}{% translate "Crea la convocatoria para elegir quién juega este enfrentamiento." %}{% else %}{% translate "Tu capitán aún no ha creado la convocatoria de este enfrentamiento." %}{% endif %}</div>
 {% endif %}
 
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-4">
     <h2 class="z-section-title my-0">{% translate "Partidos" %}</h2>
-    {% if is_club_admin and match.draft_mode and games_count %}
+    {% if can_manage and match.draft_mode and games_count %}
     <a href="{% url 'enter_results' match.public_id %}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-pen-to-square me-1" aria-hidden="true"></i> {% translate "Poner resultados" %}</a>
     {% endif %}
 </div>
@@ -196,7 +196,7 @@
             <h3>{% blocktranslate with n=g.n_game %}Partido {{ n }}{% endblocktranslate %} <span class="text-muted fw-semibold">· {% blocktranslate with score=g.score %}{{ score }} pts{% endblocktranslate %}</span>{% if r.retired %} <span class="z-badge z-badge--outline" title="{% translate 'Partido finalizado por lesión' %}"><i class="fa-solid fa-bandage me-1" aria-hidden="true"></i>{% translate "Lesión" %}</span>{% endif %}</h3>
             <div class="d-flex align-items-center gap-3">
                 <div class="z-game-sets-head" aria-hidden="true"><span>S1</span><span>S2</span><span>S3</span></div>
-                {% if is_club_admin %}
+                {% if can_manage %}
                 {% if r and match.draft_mode %}
                 <a href="{% url 'edit_result' g.public_id %}" class="z-edit position-static" aria-label="{% translate 'Editar resultado' %}"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
                 {% elif not r %}

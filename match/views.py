@@ -7,7 +7,7 @@ from . import outcomes
 from core.season_choice import ALL_SEASONS, choose_season
 from django.shortcuts import render, redirect, get_object_or_404
 from core import ratelimit
-from core.decorators import club_required, club_admin_required, not_while_syncing
+from core.decorators import club_required, club_admin_required, not_while_syncing, club_manager_required
 from django.contrib import messages
 from .forms import MatchForm, MatchDateForm
 from .models import Match, Game, Result
@@ -300,7 +300,7 @@ def calendar_match(request):
     })
 
 
-@club_admin_required
+@club_manager_required
 @not_while_syncing
 def create_match(request):
     """Alta de un enfrentamiento.
@@ -316,7 +316,7 @@ def create_match(request):
         return redirect("call_for_match", match.public_id)
     return render(request, CREATE_MATCH_HTML, {"form": form})
 
-@club_admin_required
+@club_manager_required
 def edit_match_date(request, match_id):
     """Cambia la fecha de un partido que aún no está cerrado.
 
@@ -392,7 +392,7 @@ def selectable_players(club, include_ids=()):
 MIN_CALL_ERROR = gettext_lazy("La convocatoria necesita al menos %(n)s jugadores.")
 
 
-@club_admin_required
+@club_manager_required
 def create_call(request, match_id):
     """Crea la convocatoria de un enfrentamiento.
 
@@ -433,7 +433,7 @@ def validate_call(call):
     
     return True, None
 
-@club_admin_required
+@club_manager_required
 def close_call(request, match_id):
     """Cierra la convocatoria de un enfrentamiento y envía el informe a los capitanes.
 
@@ -486,7 +486,7 @@ def _send_report(request, call, done):
         messages.warning(request, text % {"done": done, "emails": ", ".join(pending)})
 
 
-@club_admin_required
+@club_manager_required
 def resend_call_report(request, match_id):
     """Vuelve a enviar el informe de una convocatoria cerrada a los capitanes."""
     call = club_call(request, match__public_id=match_id)
@@ -497,7 +497,7 @@ def resend_call_report(request, match_id):
     return redirect('call_for_match', call.match.public_id)
 
 
-@club_admin_required
+@club_manager_required
 def call_report_pdf(request, match_id):
     """Descarga manual del informe de convocatoria."""
     if ratelimit.too_many_user(request, "report-pdf", 30, 60):
@@ -508,7 +508,7 @@ def call_report_pdf(request, match_id):
     response["Content-Disposition"] = f'inline; filename="{report_filename(call.match)}"'
     return response
 
-@club_admin_required
+@club_manager_required
 def edit_call(request, call_id):
     """Edición de los jugadores de una convocatoria.
 
@@ -574,14 +574,14 @@ def edit_call(request, call_id):
     }
     return render(request, 'edit_call.html', context)
 
-@club_admin_required
+@club_manager_required
 def closed_call(request, call_id):
     """Aviso al intentar modificar una convocatoria ya cerrada (solo administradores del club)."""
     call = club_call(request, public_id=call_id)
     return render(request, 'closed_call.html', {'match': call})
 
 
-@club_admin_required
+@club_manager_required
 def existing_call_view(request, match_id):
     """Aviso al intentar crear una convocatoria que ya existe (solo administradores del club)."""
     match = club_match(request, match_id)
@@ -672,7 +672,7 @@ def validate_game_for_match(call):
     
     return True, None
 
-@club_admin_required
+@club_manager_required
 def create_game_for_match(request, match_id):
     """Crea los 5 partidos (parejas y orden) de un enfrentamiento.
 
@@ -709,7 +709,7 @@ def create_game_for_match(request, match_id):
     })
 
 
-@club_admin_required
+@club_manager_required
 @require_GET
 def suggested_lineup(request, match_id):
     """
@@ -752,7 +752,7 @@ def _save_result(request, game, result, template):
     return redirect(reverse('call_for_match', args=[game.match.public_id]) + f"#partido-{game.n_game}")
 
 
-@club_admin_required
+@club_manager_required
 def create_result(request, game_id):
     """Añade el resultado de un partido.
 
@@ -772,7 +772,7 @@ def create_result(request, game_id):
     return render(request, "create_result.html", {"game": game, "values": {}})
 
 
-@club_admin_required
+@club_manager_required
 def edit_result(request, game_id):
     """Edita el resultado de un partido.
 
@@ -817,7 +817,7 @@ def _parse_game_results(request, game):
     return values, result, []
 
 
-@club_admin_required
+@club_manager_required
 def enter_results(request, match_id):
     """
     «Poner resultados»: los 5 partidos del enfrentamiento en una sola pantalla (H-04).
@@ -959,7 +959,7 @@ def do_close_match(request, match):
     return True
 
 
-@club_admin_required
+@club_manager_required
 @require_POST
 def close_match(request, match_id):
     """Cierra el acta de un enfrentamiento (solo POST, administradores del club).
@@ -995,7 +995,7 @@ def reopen_match(request, match_id):
     return redirect('call_for_match', match_id=match.public_id)
 
 
-@club_admin_required
+@club_manager_required
 def edit_game_match(request, match_id):
     """Cambia las parejas y el orden de los partidos ya creados.
 

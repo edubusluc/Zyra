@@ -7,7 +7,7 @@ from django.urls import reverse
 from .models import Penalty, KIND_LABELS, OTHER, REASON_MAX_LENGTH
 from players.models import Player
 from call.models import Call
-from core.decorators import club_admin_required
+from core.decorators import club_manager_required
 
 # Prefijo de ``extra_tags`` con el que un aviso lleva un botón «Deshacer» (la URL va detrás);
 # lo pinta ``core/templates/includes/messages_popup.html``.
@@ -20,7 +20,7 @@ def _ids_from(request):
     return [part.strip() for chunk in raw for part in chunk.split(",") if part.strip()]
 
 
-@club_admin_required
+@club_manager_required
 def create_penalty(request, call_id):
     """
     Crea una advertencia con el mismo motivo para cada jugador marcado en el POST (solo jugadores
@@ -59,7 +59,7 @@ def create_penalty(request, call_id):
     return redirect("call_for_match", match.public_id)
 
 
-@club_admin_required
+@club_manager_required
 @require_POST
 def delete_penalty(request):
     """
