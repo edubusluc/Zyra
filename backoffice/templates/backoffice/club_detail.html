@@ -34,7 +34,7 @@
 
 <section class="z-panel" id="snp-unlimited">
     <h2 class="h5">{% translate "Límites de «Completar equipo»" %}</h2>
-    <p class="text-muted mb-2">{% translate "Los clubes normales solo pueden completar el equipo desde SNP una vez al mes y con pocas búsquedas al día. Marca este si es un club de pruebas." %}</p>
+    <p class="text-muted mb-2">{% translate "Los clubes normales solo pueden completar el equipo desde SNP una vez por temporada y con pocas búsquedas al día. Marca este si es un club de pruebas." %}</p>
     <form method="post" action="{% url 'backoffice:club_toggle_snp_unlimited' club.public_id %}" class="d-flex flex-wrap gap-2 align-items-center" data-loading-text="{% translate 'Guardando el límite SNP…' %}">
         {% csrf_token %}
         {% if club.snp_unlimited %}

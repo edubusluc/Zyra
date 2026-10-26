@@ -3,6 +3,12 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 26/10/2026 · Prepara la temporada
+
+- Del 1 de julio al 31 de octubre, el Inicio del capitán y de los gestores muestra **«Prepara la temporada»**: revisar la plantilla, actualizar desde SNP y revisar rivales y divisiones. El gestor puede hacer los pasos de plantilla y rivales; SNP, «Omitir este paso» y «Ahora no» son del capitán.
+- «Completar equipo» desde la web pasa de una vez por club a **una vez por temporada** (cuenta desde el 1 de julio).
+- Se corrigen los textos que aún decían «una vez al mes».
+
 ## 26/10/2026 · Rol de gestor
 
 - Nuevo rol **Gestor**: el capitán puede nombrar hasta dos desde «Miembros» («Hacer gestor» / «Quitar gestor»). El gestor ayuda con lo deportivo: crea enfrentamientos, convocatorias, alineaciones y resultados, cierra actas, pone advertencias y gestiona jugadores y equipos. Solo el capitán sigue gestionando miembros e invitaciones, la cuenta SNP, reabrir o eliminar enfrentamientos y eliminar el club.

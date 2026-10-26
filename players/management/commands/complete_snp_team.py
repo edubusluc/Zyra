@@ -10,7 +10,7 @@ class Command(SnpImportCommand):
     """Completa el equipo propio de un club con los jugadores de SNP que todavía no están en Zyra."""
     help = ("«Completar equipo»: da de alta en Zyra los jugadores del equipo de SNP del club que todavía "
             "no existen. Nunca modifica los jugadores que ya están. Desde aquí no se aplica el límite "
-            "de una vez al mes de la web.")
+            "de una vez por temporada de la web.")
     intro = "Equipo que se completa"
     dry_run_help = "Solo muestra qué jugadores se añadirían, sin crearlos."
     dry_run_message = "Simulación (--dry-run): no se ha creado ningún jugador."

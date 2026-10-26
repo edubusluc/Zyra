@@ -36,9 +36,9 @@ from players.models import Player, SnpAccount, current_season
 
 from .adapters import GOOGLE_NEW_ACCOUNT_KEY
 from .blocklist import is_user_blocked
-from .decorators import club_admin_required, club_required
+from .decorators import club_admin_required, club_manager_required, club_required
 from .emails import send_invitation_email, send_welcome_email
-from . import guides
+from . import guides, season_prep
 from .forms import CaptainPlayerForm, CaptainSnpForm, ClubForm, EmailChangeForm, InviteMemberForm, SignUpForm
 from .middleware import SESSION_KEY
 from .models import REPORT_SCOPES, Invitation, Membership, UserPreference
@@ -118,8 +118,10 @@ def home(request):
     hot_player, hot_pair = pair_stats.hot_streaks(pair_stats.club_game_log(club), players)
 
     onboarding = onboarding_for(request.membership)
+    # «Prepara la temporada» (julio-octubre) lleva dentro el paso de SNP: no se repite la tarea suelta.
+    prep = season_prep.season_prep_for(request.membership)
     snp_sync = None
-    if request.membership.is_admin:
+    if request.membership.is_admin and prep is None:
         from players import snp_import
         snp_sync = snp_import.sync_task(club)
     return render(request, 'home.html', {
@@ -137,7 +139,8 @@ def home(request):
         'hot_pair': hot_pair,
         # Aviso al capitán mientras no haya registrado la cuenta SNP del club (si se muestran los
         # primeros pasos, la tarea de SNP ya va dentro de la lista).
-        'snp_missing': (request.membership.is_admin and onboarding is None
+        'season_prep': prep,
+        'snp_missing': (request.membership.is_admin and onboarding is None and prep is None
                         and not SnpAccount.objects.filter(club=club).exists()),
         # Primeros pasos del capitán (core.onboarding): solo se ve el siguiente; el resto, plegado.
         'onboarding': onboarding,
@@ -652,6 +655,31 @@ def update_member(request, membership_id):
     """
     get_object_or_404(Membership, public_id=membership_id, club=request.club)
     return redirect(f"{reverse('my_profile')}?edit=email")
+
+
+@club_manager_required
+@require_POST
+def season_prep_step(request, key):
+    """
+    Marca un paso de «Prepara la temporada» como hecho (solo POST): la plantilla y los rivales los marca
+    el capitán o un gestor; omitir el paso de SNP (``snp_skipped``), solo el capitán.
+    """
+    if key not in (*season_prep.MANUAL_STEPS, season_prep.SNP_SKIPPED):
+        raise Http404
+    if key == season_prep.SNP_SKIPPED and not request.membership.is_admin:
+        raise PermissionDenied(_("Solo el capitán del club puede omitir el paso de SNP."))
+    if season_prep.mark_step(request.club, key):
+        messages.success(request, _("Temporada %(label)s lista. ¡A competir!")
+                         % {"label": season_prep.season_label(season_prep.prep_year())})
+    return redirect("home")
+
+
+@club_admin_required
+@require_POST
+def season_prep_dismiss(request):
+    """El capitán oculta «Prepara la temporada» hasta la próxima temporada (solo POST)."""
+    season_prep.close(request.club)
+    return redirect("home")
 
 
 @club_admin_required

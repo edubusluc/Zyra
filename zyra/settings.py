@@ -424,7 +424,7 @@ SNP_PAUSE_MAX_SECONDS = config('SNP_PAUSE_MAX_SECONDS', default=15, cast=float)
 SNP_BATCH_PAUSE_SECONDS = config('SNP_BATCH_PAUSE_SECONDS', default=60, cast=float)
 SNP_MAX_CONSECUTIVE_FAILURES = config('SNP_MAX_CONSECUTIVE_FAILURES', default=5, cast=int)
 
-# «Completar equipo» desde la web: una vez al mes y pocas búsquedas al día (players/snp_import.py).
+# «Completar equipo» desde la web: una vez por temporada y pocas búsquedas al día (players/snp_import.py).
 # Los clubes sin esos límites (el equipo de pruebas) los marca el personal en el back-office.
 
 

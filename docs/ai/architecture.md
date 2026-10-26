@@ -35,7 +35,7 @@ de `core/context_processors.py` (`club`, `navigation`, `google_login`, `site`) l
 No hay capas estrictas entre apps: los imports son cruzados.
 
 - `core` es la base (Club, Membership, public_id, imágenes, emails), pero `core/views.py`,
-  `core/onboarding.py` y `core/admin.py` importan `match`, `players`, `team` y `data_analyse`.
+  `core/onboarding.py`, `core/season_prep.py` y `core/admin.py` importan `match`, `players`, `team` y `data_analyse`.
 - `players` → `core`, `team`; su comando `update_snp_scores` importa `backoffice.cron` y `backoffice.jobs`.
 - `match` → `core`, `team`, `players`, `call`, `callLog`, `penalty`, `data_analyse`.
 - `data_analyse` → solo lee modelos de otras apps; no tiene modelos propios.

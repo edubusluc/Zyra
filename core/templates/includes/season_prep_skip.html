@@ -1,0 +1,6 @@
+{% load i18n %}
+{# Omitir el paso de SNP de «Prepara la temporada»: cuenta como resuelto y no bloquea terminar. #}
+<form method="post" action="{% url 'season_prep_step' 'snp_skipped' %}" data-loading-text="{% translate 'Guardando…' %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-secondary btn-sm">{% translate "Omitir este paso" %}</button>
+</form>

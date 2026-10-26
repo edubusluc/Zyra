@@ -1,0 +1,78 @@
+{% load i18n %}
+{# «Prepara la temporada» (core.season_prep): tres pasos en el Inicio del capitán y los gestores, de julio a octubre. #}
+<section class="z-card z-onboarding" aria-labelledby="season-prep-title">
+    <div class="z-onboarding-head">
+        <div>
+            <span class="z-eyebrow"><i class="fa-solid fa-flag-checkered me-1" aria-hidden="true"></i> {% blocktranslate with done=season_prep.done total=season_prep.total %}{{ done }} de {{ total }} hechos{% endblocktranslate %}</span>
+            <h2 id="season-prep-title">{% blocktranslate with label=season_prep.label %}Prepara la temporada {{ label }}{% endblocktranslate %}</h2>
+            <p class="small mb-0">{% translate "La temporada empieza el 1 de agosto. Tres pasos para dejar el club listo." %}</p>
+        </div>
+        {% if season_prep.is_captain %}
+        <form method="post" action="{% url 'season_prep_dismiss' %}" data-loading-text="{% translate 'Ocultando la preparación…' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-close btn-close-white" aria-label="{% translate 'Ahora no' %}" title="{% translate 'Ahora no' %}"></button>
+        </form>
+        {% endif %}
+    </div>
+    <div class="z-onboarding-bar" role="progressbar" aria-valuemin="0" aria-valuemax="{{ season_prep.total }}" aria-valuenow="{{ season_prep.done }}" aria-label="{% translate 'Pasos de la temporada hechos' %}"><span style="width: {{ season_prep.percent }}%"></span></div>
+    <ol class="z-onboarding-steps">
+        {% for step in season_prep.steps %}
+        <li class="{% if step.done %}is-done{% endif %}">
+            <i class="z-onboarding-check fa-{% if step.done %}solid fa-circle-check{% else %}regular fa-circle{% endif %}" aria-hidden="true"></i>
+            <div class="z-onboarding-text">
+                <strong>{{ forloop.counter }} · {{ step.title }}</strong>
+                {% if step.done %}
+                <span>{% if step.skipped %}{% translate "Omitido" %}{% else %}{% translate "Hecho" %}{% endif %}</span>
+                {% elif step.key == 'snp' %}
+                {% if not season_prep.is_captain %}
+                <span>{% translate "Lo hace el capitán: es quien tiene la cuenta SNP." %}</span>
+                {% elif not step.has_account %}
+                <span>{% translate "Aún no has conectado tu cuenta SNP. Conéctala para traer jugadores y puntos, o sáltate este paso." %}</span>
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                    <a class="btn btn-primary btn-sm" href="{% url 'snp_account' %}">{% translate "Conectar SNP" %}</a>
+                    {% include 'includes/season_prep_skip.html' %}
+                </div>
+                {% else %}
+                {% with sync=step.sync %}
+                {% if sync.state == 'running' %}
+                <span>{% translate "Buscando en SNP… puedes seguir usando Zyra." %}</span>
+                {% elif sync.state == 'ready' %}
+                <span>{% translate "Tu equipo de SNP está listo: revisa los jugadores encontrados y confírmalos." %}</span>
+                <div class="d-flex flex-wrap gap-2 mt-2"><a class="btn btn-primary btn-sm" href="{% url 'list_players' %}">{% translate "Revisar y confirmar" %}</a></div>
+                {% else %}
+                <span>{% if sync.state == 'failed' %}{{ sync.message|default:_("La búsqueda se ha cancelado o no ha terminado.") }}
+                {% if sync.same_account %}{% translate "Cambia el usuario o la contraseña de tu cuenta SNP para poder reintentarlo." %}
+                {% elif sync.blocked %}{% translate "Ha fallado varias veces: hemos avisado al administrador de Zyra para que lo revise." %}
+                {% elif sync.service_off %}{% translate "La conexión con SNP no está disponible ahora mismo." %}
+                {% elif sync.wait %}{% blocktranslate with date=sync.wait|date:"d/m/Y H:i" %}Podrás reintentarlo a partir del {{ date }}.{% endblocktranslate %}{% endif %}
+                {% else %}{{ step.help }}{% endif %}</span>
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                    {% if sync.can_retry %}
+                    <form method="post" action="{% url 'complete_team_start' %}" data-loading-text="{% translate 'Buscando jugadores en SNP…' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="from" value="home">
+                        <button type="submit" class="btn btn-primary btn-sm">{% if sync.state == 'failed' %}{% translate "Reintentar" %}{% else %}{% translate "Actualizar desde SNP" %}{% endif %}</button>
+                    </form>
+                    {% endif %}
+                    {% if sync.team_fix_url %}<a class="btn btn-secondary btn-sm" href="{{ sync.team_fix_url }}">{% translate "Editar mi equipo" %}</a>{% endif %}
+                    {% if sync.state == 'failed' %}<a class="btn btn-secondary btn-sm" href="{% url 'snp_account' %}?edit=1">{% translate "Revisar cuenta SNP" %}</a>{% endif %}
+                    {% include 'includes/season_prep_skip.html' %}
+                </div>
+                {% endif %}
+                {% endwith %}
+                {% endif %}
+                {% else %}
+                <span>{{ step.help }}</span>
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                    <a class="btn btn-primary btn-sm" href="{{ step.url }}">{{ step.action }}</a>
+                    <form method="post" action="{% url 'season_prep_step' step.key %}" data-loading-text="{% translate 'Guardando…' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-secondary btn-sm">{% if step.key == 'roster' %}{% translate "Ya la he revisado" %}{% else %}{% translate "Ya los he revisado" %}{% endif %}</button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </li>
+        {% endfor %}
+    </ol>
+</section>

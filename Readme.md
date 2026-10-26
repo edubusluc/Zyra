@@ -341,7 +341,7 @@ Cómo se reparte el trabajo y cómo se evita que SNP nos bloquee:
 A ese ritmo cada club tarda de media unos 30–40 s. 1.000 clubes son unas 10 horas y
 10.000, unos 4 o 5 días, dentro de la semana del ciclo.
 
-«Completar equipo» desde la web (Jugadores) se puede usar una sola vez (y se oculta tras 3 fallos) y, para no saturar
+«Completar equipo» desde la web (Jugadores) se puede usar una vez por temporada, contada desde el 1 de julio (y se oculta tras 3 fallos) y, para no saturar
 SNP, como mucho tres búsquedas al día con cinco minutos entre una y otra. Los clubes marcados
 como «sin límites» en el back-office (ficha del club) no tienen esos límites. La búsqueda se encola y
 la procesa el trabajo `process_snp_imports` (lo lanza `run_scheduler`). En *Servicios* del back-office
