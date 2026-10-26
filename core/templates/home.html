@@ -45,7 +45,7 @@
             <p class="small mb-3">{% translate "Los miembros, las invitaciones y la cuenta SNP los sigue gestionando el capitán." %}</p>
             <a class="btn btn-primary btn-sm" href="{% url 'create_match' %}">{% translate "Crear un enfrentamiento" %}</a>
         </div>
-        <form method="post" action="{% url 'dismiss_manager_welcome' %}">
+        <form method="post" action="{% url 'dismiss_manager_welcome' %}" data-loading-text="{% translate 'Cerrando el aviso…' %}">
             {% csrf_token %}
             <button type="submit" class="btn-close btn-close-white" aria-label="{% translate 'Cerrar aviso' %}" title="{% translate 'Cerrar aviso' %}"></button>
         </form>
@@ -63,7 +63,7 @@
     </div>
     <div class="z-notice-actions">
         <a class="btn btn-primary btn-sm" href="{% url 'club_members' %}">{% translate "Gestionar miembros" %}</a>
-        <form method="post" action="{% url 'dismiss_manager_tip' %}">
+        <form method="post" action="{% url 'dismiss_manager_tip' %}" data-loading-text="{% translate 'Cerrando el aviso…' %}">
             {% csrf_token %}
             <button type="submit" class="btn-close btn-close-white" aria-label="{% translate 'Cerrar aviso' %}" title="{% translate 'Cerrar aviso' %}"></button>
         </form>

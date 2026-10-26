@@ -12420,3 +12420,7 @@ msgstr "Members, invitations and the SNP account are still managed by the captai
 
 msgid "Crear un enfrentamiento"
 msgstr "Create a fixture"
+
+
+msgid "Cerrando el aviso…"
+msgstr "Closing the notice…"
