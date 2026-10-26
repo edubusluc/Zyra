@@ -307,7 +307,7 @@ def _web_import_closed(request):
     una vez o porque ha fallado varias veces y se avisó al personal.
     """
     if snp_import.web_import_done(request.club):
-        messages.error(request, _("El equipo ya se completó desde SNP. A partir de ahora se actualiza solo."))
+        messages.error(request, _("Esta temporada ya has completado el equipo desde SNP. Los puntos se siguen actualizando solos cada semana."))
         return True
     if snp_import.web_blocked(request.club):
         messages.error(request, BLOCKED_NOTICE)

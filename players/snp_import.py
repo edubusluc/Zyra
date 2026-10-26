@@ -4,8 +4,8 @@ todavía no existen. De los que ya están (aunque se escriban algo distinto, con
 criterio que la actualización de puntos) solo se actualizan los puntos SNP: su nombre,
 posición y demás datos no se tocan.
 
-Desde la web del club se hace en dos pasos (buscar y confirmar), solo una vez: en el alta o
-tras registrar la cuenta SNP (``web_import_done``). Si falla ``MAX_FAILED_SEARCHES`` veces se
+Desde la web del club se hace en dos pasos (buscar y confirmar), solo una vez por temporada: en el alta,
+tras registrar la cuenta SNP o al preparar la temporada (``web_import_done``). Si falla ``MAX_FAILED_SEARCHES`` veces se
 oculta la opción y se avisa al personal (``web_blocked``); además hay un máximo de búsquedas
 seguidas para no saturar SNP (``search_limit``). Después solo lo lanza el personal o el proceso
 automático. Desde el back-office
@@ -355,15 +355,33 @@ def search_limit(club, now=None):
     return max(waits) if waits else None
 
 
+def season_window_start(today=None):
+    """
+    Inicio (datetime con zona horaria) de la ventana de la temporada para «Completar equipo»: el último
+    1 de julio, que es cuando el club prepara la temporada que empieza en agosto. Una búsqueda web
+    correcta hecha desde entonces cuenta como la de esta temporada.
+    """
+    today = today or timezone.localdate()
+    year = today.year if today.month >= 7 else today.year - 1
+    return timezone.make_aware(datetime.datetime(year, 7, 1))
+
+
+def imported_this_season(club, today=None):
+    """La búsqueda web de «Completar equipo» correcta de esta temporada (desde el último 1 de julio), o None."""
+    return SnpTeamImport.objects.filter(
+        club=club, source=SnpTeamImport.WEB, status=SnpTeamImport.DONE, created_at__gte=season_window_start(today),
+    ).first()
+
+
 def web_import_done(club):
     """
-    El «Completar equipo» hecho desde la web (en el alta o desde Jugadores), o None si todavía no
-    se ha hecho. Solo se puede hacer una vez: después el proceso lo lanza el personal o el
-    automático. Siempre None para los clubes sin límites.
+    El «Completar equipo» hecho desde la web esta temporada (en el alta, desde Jugadores o preparando la
+    temporada), o None si todavía no se ha hecho. Solo se puede hacer una vez por temporada: después el
+    proceso lo lanza el personal o el automático. Siempre None para los clubes sin límites.
     """
     if is_unlimited(club):
         return None
-    return SnpTeamImport.objects.filter(club=club, source=SnpTeamImport.WEB, status=SnpTeamImport.DONE).first()
+    return imported_this_season(club)
 
 
 def failed_web_import(club):
@@ -377,17 +395,21 @@ def failed_web_import(club):
     return None
 
 
-def sync_task(club):
+def sync_task(club, this_season=False):
     """
     La tarea «Sincronizar datos» de la portada del capitán: hasta que «Completar equipo» haya devuelto
     un resultado correcto (una búsqueda web ``DONE``) hay que poder lanzarlo, seguirlo o reintentarlo.
-    None si no hace falta (ya hecho o sin cuenta SNP). Si no, un diccionario con ``state``:
+    Con ``this_season`` solo cuenta una búsqueda correcta de esta temporada (la tarjeta «Prepara la
+    temporada»). None si no hace falta (ya hecho o sin cuenta SNP). Si no, un diccionario con ``state``:
     ``running`` (en cola o buscando), ``ready`` (a la espera de confirmar), ``failed`` (error o cancelada)
     o ``idle`` (aún no se ha lanzado), más ``message``, ``blocked``, ``wait``, ``service_off`` y ``can_retry``.
     """
     if not SnpAccount.objects.filter(club=club).exists():
         return None
-    if SnpTeamImport.objects.filter(club=club, source=SnpTeamImport.WEB, status=SnpTeamImport.DONE).exists():
+    if this_season:
+        if imported_this_season(club):
+            return None
+    elif SnpTeamImport.objects.filter(club=club, source=SnpTeamImport.WEB, status=SnpTeamImport.DONE).exists():
         return None
     active = active_import(club)
     failed = None if active else failed_web_import(club)
