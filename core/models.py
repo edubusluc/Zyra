@@ -30,7 +30,8 @@ class UserPreference(models.Model):
     del informe PDF; en cada partido se puede cambiar al crearlo. ``monthly_report`` activa el
     informe mensual por email del jugador (``send_monthly_reports``) y ``monthly_scope`` elige
     si cuenta todos sus partidos o solo los competitivos. ``match_result_email`` activa el aviso
-    del resultado al cerrarse el acta de un enfrentamiento de su club.
+    del resultado al cerrarse el acta de un enfrentamiento de su club. ``manager_tip_dismissed_at``
+    marca que el capitán cerró el aviso «Añade un gestor» de la portada.
     """
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="preference")
     report_scope = models.CharField(max_length=15, choices=REPORT_SCOPES, default=REPORT_SCOPE_ALL)
@@ -38,6 +39,13 @@ class UserPreference(models.Model):
     monthly_scope = models.CharField(max_length=15, choices=REPORT_SCOPES, default=REPORT_SCOPE_ALL)
     # Aviso por email con el resultado cuando el capitán cierra el acta de un enfrentamiento.
     match_result_email = models.BooleanField(default=True)
+    # El capitán cerró el aviso «Añade un gestor» de la portada; no vuelve a aparecer.
+    manager_tip_dismissed_at = models.DateTimeField(null=True, blank=True)
+
+    @classmethod
+    def manager_tip_pending(cls, user):
+        """True si ``user`` aún no ha cerrado el aviso «Añade un gestor» de la portada."""
+        return not cls.objects.filter(user=user, manager_tip_dismissed_at__isnull=False).exists()
 
     @classmethod
     def match_result_for(cls, user):
@@ -158,6 +166,9 @@ class Membership(PublicIdModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="memberships")
     club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name="memberships")
     role = models.CharField(max_length=10, choices=ROLES, default=MEMBER)
+    # Recién nombrado gestor: la portada le enseña una vez qué puede hacer ahora (set_manager lo activa;
+    # lo apaga al cerrar el aviso o al dejar de ser gestor).
+    manager_welcome_pending = models.BooleanField(default=False)
 
     class Meta:
         constraints = [

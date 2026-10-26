@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 26/10/2026 · Aviso «Añade un gestor»
+
+- La portada muestra al capitán un aviso para que conozca el rol de gestor, con enlace a «Miembros». Se queda hasta que lo cierra con la ✕; después no vuelve a aparecer (se guarda en su cuenta, `UserPreference.manager_tip_dismissed_at`). Gestores y miembros no lo ven.
+- Cuando el capitán nombra a un gestor, la primera vez que este entra en la portada ve una tarjeta «Ahora eres gestor del club» con lo que puede hacer; se queda hasta que la cierra (`Membership.manager_welcome_pending`).
+
 ## 26/10/2026 · Rol de gestor
 
 - Nuevo rol **Gestor**: el capitán puede nombrar hasta dos desde «Miembros» («Hacer gestor» / «Quitar gestor»). El gestor ayuda con lo deportivo: crea enfrentamientos, convocatorias, alineaciones y resultados, cierra actas, pone advertencias y gestiona jugadores y equipos. Solo el capitán sigue gestionando miembros e invitaciones, la cuenta SNP, reabrir o eliminar enfrentamientos y eliminar el club.

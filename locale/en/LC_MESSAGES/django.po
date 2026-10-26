@@ -12382,3 +12382,41 @@ msgstr "Users without a club"
 
 msgid "Hola {nombre},\n\nTus estadísticas te esperan en Zyra, pero todavía no estás en ningún club. Crea un nuevo club o solicita a tu capitán que te invite.\n\nSi necesitas ayuda, respóndeme a este correo.\n\nUn saludo."
 msgstr "Hi {nombre},\n\nYour stats are waiting for you in Zyra, but you are not in any club yet. Create a new club or ask your captain to invite you.\n\nIf you need help, just reply to this email.\n\nBest regards."
+
+
+msgid "Añade un gestor"
+msgstr "Add a manager"
+
+msgid "Un gestor te ayuda con los enfrentamientos, las convocatorias, los resultados y los jugadores. Puedes nombrar hasta 2 entre los miembros de tu club."
+msgstr "A manager helps you with fixtures, call-ups, results and players. You can appoint up to 2 from your club members."
+
+msgid "Gestionar miembros"
+msgstr "Manage members"
+
+msgid "Cerrar aviso"
+msgstr "Close notice"
+
+
+msgid "Nuevo rol"
+msgstr "New role"
+
+msgid "Ahora eres gestor del club"
+msgstr "You are now a club manager"
+
+msgid "El capitán te ha dado acceso a la parte deportiva. Desde ahora puedes:"
+msgstr "The captain has given you access to the sports side. From now on you can:"
+
+msgid "Crear enfrentamientos y preparar convocatorias y alineaciones."
+msgstr "Create fixtures and prepare call-ups and lineups."
+
+msgid "Apuntar resultados, cerrar actas y poner advertencias."
+msgstr "Record results, close match reports and add warnings."
+
+msgid "Gestionar jugadores y equipos, y recibir el informe PDF de la convocatoria."
+msgstr "Manage players and teams, and receive the call-up PDF report."
+
+msgid "Los miembros, las invitaciones y la cuenta SNP los sigue gestionando el capitán."
+msgstr "Members, invitations and the SNP account are still managed by the captain."
+
+msgid "Crear un enfrentamiento"
+msgstr "Create a fixture"

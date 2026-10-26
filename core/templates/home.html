@@ -29,6 +29,48 @@
 </section>
 {% endif %}
 
+{% if manager_welcome %}
+{# Bienvenida al gestor recién nombrado; se queda hasta que la cierra (Membership.manager_welcome_pending). #}
+<section class="z-card" role="status" aria-labelledby="manager-welcome-title">
+    <div class="d-flex justify-content-between align-items-start gap-3">
+        <div>
+            <span class="z-eyebrow"><i class="fa-solid fa-user-gear me-1" aria-hidden="true"></i> {% translate "Nuevo rol" %}</span>
+            <h2 id="manager-welcome-title">{% translate "Ahora eres gestor del club" %}</h2>
+            <p class="small">{% translate "El capitán te ha dado acceso a la parte deportiva. Desde ahora puedes:" %}</p>
+            <ul class="small mb-2">
+                <li>{% translate "Crear enfrentamientos y preparar convocatorias y alineaciones." %}</li>
+                <li>{% translate "Apuntar resultados, cerrar actas y poner advertencias." %}</li>
+                <li>{% translate "Gestionar jugadores y equipos, y recibir el informe PDF de la convocatoria." %}</li>
+            </ul>
+            <p class="small mb-3">{% translate "Los miembros, las invitaciones y la cuenta SNP los sigue gestionando el capitán." %}</p>
+            <a class="btn btn-primary btn-sm" href="{% url 'create_match' %}">{% translate "Crear un enfrentamiento" %}</a>
+        </div>
+        <form method="post" action="{% url 'dismiss_manager_welcome' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-close btn-close-white" aria-label="{% translate 'Cerrar aviso' %}" title="{% translate 'Cerrar aviso' %}"></button>
+        </form>
+    </div>
+</section>
+{% endif %}
+
+{% if manager_tip %}
+{# Aviso al capitán sobre el rol de gestor; se queda hasta que lo cierra (UserPreference.manager_tip_dismissed_at). #}
+<section class="z-notice" role="status" aria-label="{% translate 'Añade un gestor' %}">
+    <i class="fa-solid fa-user-gear" aria-hidden="true"></i>
+    <div class="z-notice-text">
+        <strong>{% translate "Añade un gestor" %}</strong>
+        <span>{% translate "Un gestor te ayuda con los enfrentamientos, las convocatorias, los resultados y los jugadores. Puedes nombrar hasta 2 entre los miembros de tu club." %}</span>
+    </div>
+    <div class="z-notice-actions">
+        <a class="btn btn-primary btn-sm" href="{% url 'club_members' %}">{% translate "Gestionar miembros" %}</a>
+        <form method="post" action="{% url 'dismiss_manager_tip' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-close btn-close-white" aria-label="{% translate 'Cerrar aviso' %}" title="{% translate 'Cerrar aviso' %}"></button>
+        </form>
+    </div>
+</section>
+{% endif %}
+
 {% if snp_sync and snp_sync.state != 'running' %}
 {# Tarea «Sincronizar datos»: hasta que «Completar equipo» devuelva un resultado correcto se puede lanzar, seguir o reintentar desde aquí. #}
 <section class="z-notice{% if snp_sync.state == 'failed' %} z-notice--warn{% endif %}" role="{% if snp_sync.state == 'failed' %}alert{% else %}status{% endif %}" aria-label="{% translate 'Sincronizar datos' %}">
