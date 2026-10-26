@@ -73,7 +73,8 @@
     <script src="{% static 'js/backoffice-editor.js' %}"></script>
     <script>
         // Mensaje ya saneado por el servidor (backoffice/richtext.py) que se vuelve a mostrar tras la vista previa.
-        document.getElementById("contact-editor").innerHTML = JSON.parse(document.getElementById("initial-body").textContent);
+        var saved = new DOMParser().parseFromString(JSON.parse(document.getElementById("initial-body").textContent), "text/html");
+        document.getElementById("contact-editor").replaceChildren(...saved.body.childNodes);
         document.getElementById("audience").addEventListener("change", function () {
             document.getElementById("custom-box").hidden = this.value !== "custom";
         });
