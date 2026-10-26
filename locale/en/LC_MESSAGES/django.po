@@ -12233,6 +12233,98 @@ msgstr "Matches view"
 msgid "contra"
 msgstr "against"
 
+msgid "Aviso de mantenimiento"
+msgstr "Maintenance notice"
+
+msgid "Aviso: mantenimiento de Zyra"
+msgstr "Notice: Zyra maintenance"
+
+msgid "Capitanes de clubes activos"
+msgstr "Captains of active clubs"
+
+msgid "Capitanes de clubes sin actividad en %(days)s días"
+msgstr "Captains of clubs with no activity in %(days)s days"
+
+msgid "Comunicación"
+msgstr "Communication"
+
+msgid "Correo a varios usuarios"
+msgstr "Email to several users"
+
+msgid "Destinatarios"
+msgstr "Recipients"
+
+msgid "Emails (separados por comas, espacios o líneas)"
+msgstr "Emails (separated by commas, spaces or new lines)"
+
+msgid "Emails no válidos:"
+msgstr "Invalid emails:"
+
+msgid "Enviados %(sent)s correos."
+msgstr "Sent %(sent)s emails."
+
+msgid "Enviados %(sent)s correos; %(failed)s han fallado (mira «Correos enviados»)."
+msgstr "Sent %(sent)s emails; %(failed)s failed (see “Sent emails”)."
+
+msgid "Enviando…"
+msgstr "Sending…"
+
+msgid "Enviar correo"
+msgstr "Send email"
+
+msgid "Enviar correo a usuarios"
+msgstr "Send email to users"
+
+msgid "Enviarme una prueba"
+msgstr "Send me a test"
+
+msgid "Ese segmento no tiene ningún email al que escribir."
+msgstr "That segment has no email to write to."
+
+msgid "Hay %(n)s destinatarios y el máximo por envío es %(max)s. Acota el segmento."
+msgstr "There are %(n)s recipients and the maximum per send is %(max)s. Narrow the segment."
+
+msgid "Lista de emails escrita a mano"
+msgstr "Hand-written list of emails"
+
+msgid "Marca la casilla para confirmar el envío."
+msgstr "Tick the box to confirm the send."
+
+msgid "No se ha podido enviar la prueba."
+msgstr "The test could not be sent."
+
+msgid "Novedades"
+msgstr "News"
+
+msgid "Novedades en Zyra"
+msgstr "News in Zyra"
+
+msgid "Prueba enviada a tu email."
+msgstr "Test sent to your email."
+
+msgid "Se muestran los 50 primeros."
+msgstr "The first 50 are shown."
+
+msgid "Tu cuenta no tiene email para recibir la prueba."
+msgstr "Your account has no email to receive the test."
+
+msgid "Ver destinatarios"
+msgstr "View recipients"
+
+msgid "Vista previa"
+msgstr "Preview"
+
+msgid "Vista previa (primer destinatario)"
+msgstr "Preview (first recipient)"
+
+msgid "Vista previa del correo"
+msgstr "Email preview"
+
+msgid "equipo"
+msgstr "team"
+
+msgid "tu club"
+msgstr "your club"
 msgid "Gestor"
 msgstr "Manager"
 
@@ -12269,3 +12361,24 @@ msgstr "A club can have at most two managers."
 #, python-format
 msgid "¿Hacer gestor a %(username)s? Podrá crear enfrentamientos, convocatorias, alineaciones y resultados, cerrar actas, poner advertencias y gestionar jugadores y equipos. No podrá gestionar miembros, la cuenta SNP, reabrir actas ni eliminar el club."
 msgstr "Make %(username)s a manager? They will be able to create matches, call-ups, line-ups and results, close match reports, give warnings and manage players and teams. They will not be able to manage members, the SNP account, reopen match reports or delete the club."
+
+msgid "Usuarios sin club (esperan una invitación)"
+msgstr "Users without a club (waiting for an invitation)"
+
+msgid "Te falta un paso para empezar con Zyra"
+msgstr "One step left to get started with Zyra"
+
+msgid "Hola {nombre},\n\nVimos que te registraste en Zyra pero todavía no formas parte de ningún club. Puedes crear el tuyo desde tu cuenta o pedirle a tu capitán que te envíe el enlace de invitación. Si necesitas ayuda, respóndeme a este correo.\n\nUn saludo."
+msgstr "Hi {nombre},\n\nWe saw you signed up for Zyra but you are not part of any club yet. You can create yours from your account or ask your captain to send you the invitation link. If you need help, just reply to this email.\n\nBest regards."
+
+msgid "Así lo vería el primer destinatario; no se ha enviado nada."
+msgstr "This is how the first recipient would see it; nothing has been sent."
+
+msgid "Tus estadísticas te esperan"
+msgstr "Your stats are waiting for you"
+
+msgid "Usuarios sin club"
+msgstr "Users without a club"
+
+msgid "Hola {nombre},\n\nTus estadísticas te esperan en Zyra, pero todavía no estás en ningún club. Crea un nuevo club o solicita a tu capitán que te invite.\n\nSi necesitas ayuda, respóndeme a este correo.\n\nUn saludo."
+msgstr "Hi {nombre},\n\nYour stats are waiting for you in Zyra, but you are not in any club yet. Create a new club or ask your captain to invite you.\n\nIf you need help, just reply to this email.\n\nBest regards."

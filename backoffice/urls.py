@@ -29,6 +29,7 @@ urlpatterns = [
     path("search/", views_crm.search, name="search"),
     path("audit/", views_crm.audit_list, name="audit_list"),
     path("emails/", views_crm.email_log, name="email_log"),
+    path("emails/new/", views_crm.email_compose, name="email_compose"),
     path("tasks/", views_crm.task_list, name="task_list"),
     path("tasks/add/", views_crm.task_add, name="task_add"),
     path("tasks/<int:task_id>/toggle/", views_crm.task_toggle, name="task_toggle"),
