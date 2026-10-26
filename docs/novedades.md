@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 26/10/2026 · Rol de gestor
+
+- Nuevo rol **Gestor**: el capitán puede nombrar hasta dos desde «Miembros» («Hacer gestor» / «Quitar gestor»). El gestor ayuda con lo deportivo: crea enfrentamientos, convocatorias, alineaciones y resultados, cierra actas, pone advertencias y gestiona jugadores y equipos. Solo el capitán sigue gestionando miembros e invitaciones, la cuenta SNP, reabrir o eliminar enfrentamientos y eliminar el club.
+- Los gestores reciben también el informe PDF de la convocatoria por correo.
+
 ## 25/10/2026 · Calendario de enfrentamientos
 
 - Nueva vista **Calendario** en Enfrentamientos (pestañas Lista | Calendario): cuadrícula del mes con todos los enfrentamientos del club (próximos, jugados con marcador, con el acta abierta y amistosos), con navegación por meses y enlace a cada uno. En móvil se muestra como agenda por días. La ven todos los miembros y no envía ningún correo

@@ -8,7 +8,7 @@
         <span class="z-eyebrow">{{ current_club.name }}</span>
         <h1>{% translate "Jugadores" %}</h1>
     </div>
-    {% if is_club_admin %}
+    {% if can_manage %}
     <div class="z-actions">
         <a href="{% url 'manage_roster' %}" class="btn btn-secondary"><i class="fa-solid fa-user-check me-1" aria-hidden="true"></i> {% translate "Gestionar plantilla" %}</a>
         <a href="{% url 'create_player' %}" class="btn btn-primary"><i class="fa-solid fa-plus me-1" aria-hidden="true"></i> {% translate "Nuevo jugador" %}</a>
@@ -24,7 +24,7 @@
             <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
             <input type="search" placeholder="{% translate 'Buscar jugador...' %}" data-selector-search aria-label="{% translate 'Buscar jugador' %}">
         </div>
-        {% if is_club_admin %}
+        {% if can_manage %}
         {# Interruptor propio (.z-toggle); al cambiarlo se recarga conservando el orden. #}
         <form method="get" id="team-filter-form">
             <input type="hidden" name="order_by" value="{{ order_by }}">
@@ -40,8 +40,8 @@
 
     <div class="z-toolbar-group">
         <div class="z-segmented" role="group" aria-label="{% translate 'Ordenar por' %}">
-            <a href="?order_by=name{% if is_club_admin and not only_team %}&amp;team=0{% endif %}" class="btn btn-sm {% if order_by == 'name' %}active{% endif %}">{% translate "Nombre" %}</a>
-            <a href="?order_by=-snp_score{% if is_club_admin and not only_team %}&amp;team=0{% endif %}" class="btn btn-sm {% if order_by == '-snp_score' %}active{% endif %}">SNP</a>
+            <a href="?order_by=name{% if can_manage and not only_team %}&amp;team=0{% endif %}" class="btn btn-sm {% if order_by == 'name' %}active{% endif %}">{% translate "Nombre" %}</a>
+            <a href="?order_by=-snp_score{% if can_manage and not only_team %}&amp;team=0{% endif %}" class="btn btn-sm {% if order_by == '-snp_score' %}active{% endif %}">SNP</a>
         </div>
         <div class="z-segmented" role="group" aria-label="{% translate 'Cambiar vista' %}">
             <button type="button" class="btn btn-sm active" id="btn-view-cards" aria-label="{% translate 'Vista de tarjetas' %}"><i class="fa-solid fa-grip" aria-hidden="true"></i></button>
@@ -54,7 +54,7 @@
 <div class="z-grid" id="cards-view">
     {% for player in players %}
     <div class="z-card z-card--link z-player" data-selector-item data-key="{{ player.public_id }}" data-name="{{ player.full_name }}">
-        {% if is_club_admin %}
+        {% if can_manage %}
         <a href="{% url 'edit_player' player.public_id %}" class="z-edit" aria-label="{% blocktranslate with name=player.name|upper %}Editar a {{ name }}{% endblocktranslate %}"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
         {% endif %}
         {% if player.photo %}
@@ -70,7 +70,7 @@
                 <span><i class="fa-solid fa-trophy" aria-hidden="true"></i>SNP {{ player.snp_score|snp_points }}</span>
             </p>
             <div class="z-player-tags">
-                {% if is_club_admin and not player.in_team %}
+                {% if can_manage and not player.in_team %}
                 <span class="z-badge z-badge--danger">{% translate "Fuera del equipo" %}</span>
                 {% endif %}
             </div>
@@ -80,7 +80,7 @@
     <div class="z-empty" style="grid-column: 1 / -1;">
         <i class="fa-solid fa-user-slash" aria-hidden="true"></i>
         {% translate "Añade a tu primer jugador para empezar a preparar convocatorias." %}
-        {% if is_club_admin %}<div class="mt-3"><a class="btn btn-primary btn-sm" href="{% url 'create_player' %}">{% translate "Nuevo jugador" %}</a></div>{% endif %}
+        {% if can_manage %}<div class="mt-3"><a class="btn btn-primary btn-sm" href="{% url 'create_player' %}">{% translate "Nuevo jugador" %}</a></div>{% endif %}
     </div>
     {% endfor %}
     <p class="z-empty" data-selector-empty hidden style="grid-column: 1 / -1;"><i class="fa-solid fa-user-slash" aria-hidden="true"></i> {% translate "Ningún jugador coincide con la búsqueda." %}</p>
@@ -97,7 +97,7 @@
                 <th>{% translate "Mano" %}</th>
                 <th>SNP</th>
                 <th>{% translate "Temporada" %}</th>
-                {% if is_club_admin %}<th>{% translate "Equipo" %}</th><th><span class="visually-hidden">{% translate "Acciones" %}</span></th>{% endif %}
+                {% if can_manage %}<th>{% translate "Equipo" %}</th><th><span class="visually-hidden">{% translate "Acciones" %}</span></th>{% endif %}
             </tr>
         </thead>
         <tbody>
@@ -115,7 +115,7 @@
                 <td>{{ player.get_skillfull_hand_display }}</td>
                 <td>{{ player.snp_score|snp_points:"–" }}</td>
                 <td>{{ player.joined_season }}</td>
-                {% if is_club_admin %}
+                {% if can_manage %}
                 <td>
                     {% if player.in_team %}<span class="z-badge z-badge--lime">{% translate "En el equipo" %}</span>{% else %}<span class="z-badge z-badge--danger">{% translate "Fuera" %}</span>{% endif %}
                 </td>

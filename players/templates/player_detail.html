@@ -5,7 +5,7 @@
 {% block content %}
 <div class="z-page-head">
     <a href="{% url 'list_players' %}" class="z-eyebrow"><i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i> {% translate "Jugadores" %}</a>
-    {% if is_club_admin %}
+    {% if can_manage %}
     <a href="{% url 'edit_player' player.public_id %}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-pen me-1" aria-hidden="true"></i> {% translate "Editar" %}</a>
     {% elif player.user_id == user.id %}
     <a href="{% url 'my_player' %}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-pen me-1" aria-hidden="true"></i> {% translate "Editar mi jugador" %}</a>

@@ -1,7 +1,7 @@
 """Vistas de jugadores: alta, lista, ficha, plantilla, cuenta SNP, «Completar equipo» y perfil propio."""
 from django.shortcuts import render, redirect, get_object_or_404
 from core import ratelimit
-from core.decorators import club_required, club_admin_required, not_while_syncing
+from core.decorators import club_required, club_admin_required, not_while_syncing, club_manager_required
 from core.models import Club
 from .forms import NewOwnPlayerForm, OwnPlayerForm, PlayerEditForm, PlayerForm, SnpAccountForm, with_placeholder
 from django.contrib import messages
@@ -23,7 +23,7 @@ from core import similarity
 # Create your views here.
 
 
-@club_admin_required
+@club_manager_required
 @not_while_syncing
 def create_player(request):
     """
@@ -87,7 +87,7 @@ def list_players(request):
     # Solo los capitanes pueden verlo desmarcado (el resto nunca ve a los que ya no están).
     only_team = request.GET.get('team', '1') != '0'
     players = Player.objects.filter(club=request.club)
-    if request.membership.is_admin and not only_team:
+    if request.membership.can_manage and not only_team:
         players = players.order_by('-in_team', order_by)
     else:
         players = players.filter(in_team=True).order_by(order_by)
@@ -118,7 +118,7 @@ def _complete_team_context(club):
         'snp_service_off': not snp_service.is_enabled(),
     }
 
-@club_admin_required
+@club_manager_required
 def edit_player(request, player_id):
     """
     Edición de un jugador del club, foto incluida. Solo capitanes. GET muestra el
@@ -141,7 +141,7 @@ def edit_player(request, player_id):
     return render(request, 'edit_player.html', context)
 
 
-@club_admin_required
+@club_manager_required
 def delete_player(request, player_id):
     """Elimina un jugador tras avisar de que se borran sus estadísticas. Los partidos se conservan."""
     player = get_object_or_404(Player, public_id=player_id, club=request.club)
@@ -187,7 +187,7 @@ def player_won(game, player):
     return player in (game.player_1_visiting, game.player_2_visiting)
 
 
-@club_admin_required
+@club_manager_required
 def manage_roster(request):
     """Marca de una vez qué jugadores están en el equipo."""
     players = Player.objects.filter(club=request.club).order_by('name', 'last_name')

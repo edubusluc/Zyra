@@ -8,7 +8,7 @@
   <section class="z-card st-zero" aria-labelledby="zero-title">
     <span class="z-eyebrow"><i class="fa-solid fa-chart-line me-1" aria-hidden="true"></i> {% translate "Estadísticas" %}</span>
     <h1 id="zero-title">{% translate "Cierra tu primer enfrentamiento y verás esto" %}</h1>
-    <p class="text-muted">{% if is_club_admin %}{% translate "Cuando cierres el primero, Zyra calcula solo el balance del equipo, las rachas, las mejores parejas y la evolución de cada jugador." %}{% else %}{% translate "Cuando tu capitán cierre el primer enfrentamiento, aquí verás el balance del equipo, las rachas, las mejores parejas y tu evolución." %}{% endif %}</p>
+    <p class="text-muted">{% if can_manage %}{% translate "Cuando cierres el primero, Zyra calcula solo el balance del equipo, las rachas, las mejores parejas y la evolución de cada jugador." %}{% else %}{% translate "Cuando tu capitán cierre el primer enfrentamiento, aquí verás el balance del equipo, las rachas, las mejores parejas y tu evolución." %}{% endif %}</p>
 
     {# Vista previa con datos de ejemplo: no son del club #}
     <div class="st-zero-preview" aria-hidden="true">
@@ -21,7 +21,7 @@
       </ul>
     </div>
 
-    {% if is_club_admin %}
+    {% if can_manage %}
     <a class="btn btn-primary" href="{% if has_open_matches %}{% url 'list_match' %}{% else %}{% url 'create_match' %}{% endif %}">{% if has_open_matches %}{% translate "Ver mis enfrentamientos" %}{% else %}{% translate "Crear enfrentamiento" %}{% endif %}</a>
     {% endif %}
   </section>

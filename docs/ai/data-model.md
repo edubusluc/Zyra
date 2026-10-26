@@ -29,8 +29,8 @@ entero sigue siendo la clave de los FK. Excepciones sin `public_id`: `backoffice
   back-office, no borra nada), `onboarding_dismissed_at`. `club.own_team` → `Team(is_own=True)`.
 - **UserPreference** (`core/models.py`): `user` 1:1, `report_scope` por defecto del selector «Datos del informe» al crear partido (se edita en «Mi perfil»); `monthly_report` (bool, por defecto sí) y `monthly_scope` (`todos`/`competitivos`) para el informe mensual.
 - **MonthlyReportDelivery** (`core/models.py`): una fila por cuenta y mes (`month` = día 1) reservada antes de enviar el informe mensual; su restricción única hace idempotente `send_monthly_reports`; `manual_sends`/`last_manual_at` anotan los reenvíos a mano (`--user`).
-- **Membership**: `user`, `club`, `role` ∈ {`admin` (etiqueta «Capitán»), `member`}. Única por
-  (`user`, `club`). El valor guardado sigue siendo `admin` aunque la interfaz diga «Capitán».
+- **Membership**: `user`, `club`, `role` ∈ {`admin` (etiqueta «Capitán»), `manager` («Gestor», como mucho `MAX_MANAGERS`=2 por club), `member`}.
+  Única por (`user`, `club`). `can_manage` = capitán o gestor. El valor guardado sigue siendo `admin` aunque la interfaz diga «Capitán».
 - **Invitation**: `token` único, `email` (vacío = enlace), `reusable` (enlace compartido, varios
   usos), `use_count`, `expires_at` (24 h, `INVITATION_TTL`). `Invitation.objects.pending()`.
 - **AccountNoticeLog** (`backoffice/models.py`): registro de avisos de «email sin confirmar» y de cuentas eliminadas por ese motivo; guarda copia de usuario y email, `deadline_at`, `email_sent` y quién lo hizo (`performed_by`, `SET_NULL`).

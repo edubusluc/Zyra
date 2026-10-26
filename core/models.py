@@ -139,16 +139,21 @@ class Club(PublicIdModel):
 
 class Membership(PublicIdModel):
     """
-    Pertenencia de un usuario a un club con su rol: capitán (puede gestionar el club; uno solo
-    por club) o miembro (solo lectura). Un usuario solo puede tener una membresía por club.
+    Pertenencia de un usuario a un club con su rol: capitán (gestiona el club; uno solo por club),
+    gestor (ayuda al capitán con lo deportivo: enfrentamientos, convocatorias, resultados, jugadores y
+    equipos; hasta ``MAX_MANAGERS`` por club) o miembro (solo lectura). Un usuario solo puede tener una membresía por club.
     """
     PUBLIC_ID_PREFIX = "MBR"
     ADMIN = "admin"
+    MANAGER = "manager"
     MEMBER = "member"
     ROLES = [
         (ADMIN, _("Capitán")),
+        (MANAGER, _("Gestor")),
         (MEMBER, _("Miembro (solo lectura)")),
     ]
+    # Gestores como máximo por club.
+    MAX_MANAGERS = 2
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="memberships")
     club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name="memberships")
@@ -165,6 +170,16 @@ class Membership(PublicIdModel):
     def is_admin(self):
         """True si el miembro es capitán del club."""
         return self.role == self.ADMIN
+
+    @property
+    def is_manager(self):
+        """True si el miembro es gestor del club (el capitán no cuenta: ver ``can_manage``)."""
+        return self.role == self.MANAGER
+
+    @property
+    def can_manage(self):
+        """True si puede gestionar lo deportivo del club: capitán o gestor."""
+        return self.role in (self.ADMIN, self.MANAGER)
 
     def __str__(self):
         """Usuario, club y rol."""

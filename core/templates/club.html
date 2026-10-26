@@ -12,10 +12,10 @@
 
 <p class="text-muted z-club-legend">{% translate "Tu club reúne a los miembros que usan Zyra. Tu equipo es el que compite; tu grupo son los equipos rivales de tu liga." %}</p>
 
-{% if is_club_admin %}
+{% if can_manage %}
 {# Accesos rápidos: cualquier alta de uso frecuente queda a dos toques del inicio. #}
 <ul class="z-quick" aria-label="{% translate 'Accesos rápidos' %}">
-    <li><a class="btn btn-secondary btn-sm" href="{% url 'club_members' %}#invitaciones"><i class="fa-regular fa-envelope me-1" aria-hidden="true"></i> {% translate "Invitar" %}</a></li>
+    {% if is_club_admin %}<li><a class="btn btn-secondary btn-sm" href="{% url 'club_members' %}#invitaciones"><i class="fa-regular fa-envelope me-1" aria-hidden="true"></i> {% translate "Invitar" %}</a></li>{% endif %}
     <li><a class="btn btn-secondary btn-sm" href="{% url 'create_team' %}"><i class="fa-solid fa-plus me-1" aria-hidden="true"></i> {% translate "Crear rival" %}</a></li>
     <li><a class="btn btn-secondary btn-sm" href="{% url 'create_player' %}"><i class="fa-solid fa-user-plus me-1" aria-hidden="true"></i> {% translate "Nuevo jugador" %}</a></li>
     <li><a class="btn btn-secondary btn-sm" href="{% url 'create_match' %}"><i class="fa-solid fa-calendar-plus me-1" aria-hidden="true"></i> {% translate "Crear enfrentamiento" %}</a></li>
@@ -36,11 +36,11 @@
     {% endif %}
     {% if own_team %}
     <li>
-        {% if is_club_admin %}<a href="{% url 'edit_team' own_team.public_id %}" class="z-hub-card">{% else %}<div class="z-hub-card">{% endif %}
+        {% if can_manage %}<a href="{% url 'edit_team' own_team.public_id %}" class="z-hub-card">{% else %}<div class="z-hub-card">{% endif %}
             <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
             <span class="z-hub-title">{% translate "Mi equipo" %}</span>
             <span class="z-hub-note">{{ own_team.name }}{% if own_team.location %} · {{ own_team.location }}{% endif %}</span>
-        {% if is_club_admin %}</a>{% else %}</div>{% endif %}
+        {% if can_manage %}</a>{% else %}</div>{% endif %}
     </li>
     {% endif %}
     <li>
@@ -48,7 +48,7 @@
             <i class="fa-solid fa-users" aria-hidden="true"></i>
             <span class="z-hub-title">{% translate "Rivales" %}</span>
             <span class="z-hub-note">{% blocktranslate trimmed count n=rivals_count %}{{ n }} equipo rival en tu grupo.{% plural %}{{ n }} equipos rivales en tu grupo.{% endblocktranslate %}</span>
-            {% if rivals_count == 0 and is_club_admin %}<span class="z-hub-status is-todo">{% translate "Añade tu primer rival" %} <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>{% endif %}
+            {% if rivals_count == 0 and can_manage %}<span class="z-hub-status is-todo">{% translate "Añade tu primer rival" %} <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>{% endif %}
         </a>
     </li>
     {% if is_club_admin %}

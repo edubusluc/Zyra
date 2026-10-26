@@ -49,7 +49,7 @@ from .unsubscribe import user_from_result_token, user_from_token
 from .services import (
     CaptaincyError, InvitationError, accept_invitation, account_delete_blocker, club_name_matches, club_of,
     create_club, delete_account, delete_club, eligible_successors, is_last_admin, is_only_member,
-    remove_membership, transfer_captaincy,
+    ManagerError, remove_membership, set_manager, transfer_captaincy,
 )
 
 INVITATIONS_PER_PAGE = 10
@@ -105,7 +105,7 @@ def home(request):
     phases = phases_for(open_matches)
     next_match = next((m for m in open_matches if m.start_date >= today), None)
     pending = []
-    if request.membership.is_admin:
+    if request.membership.can_manage:
         pending = [{"match": m, "phase": phases[m.id], "overdue": m.start_date < today} for m in open_matches]
     my_status = None
     my_player = Player.objects.filter(club=club, user=request.user).first()
@@ -475,6 +475,7 @@ def club_members(request, invite_form=None):
     return render(request, "club_members.html", {
         "invite_form": invite_form, "memberships": memberships, "invitations": invitations,
         "successor_ids": set(eligible_successors(club).values_list("pk", flat=True)),
+        "managers_full": club.memberships.filter(role=Membership.MANAGER).count() >= Membership.MAX_MANAGERS,
         "invitations_page": page, "has_invitations": has_invitations, "search": search, "extra": extra,
     })
 
@@ -651,6 +652,25 @@ def update_member(request, membership_id):
     """
     get_object_or_404(Membership, public_id=membership_id, club=request.club)
     return redirect(f"{reverse('my_profile')}?edit=email")
+
+
+@club_admin_required
+@require_POST
+def set_manager_view(request, membership_id):
+    """
+    Hace gestor a un miembro (``enable=1``) o lo devuelve a miembro (``enable=0``). Solo el capitán,
+    solo POST. Un club tiene como mucho dos gestores.
+    """
+    target = get_object_or_404(Membership.objects.select_related("user"), public_id=membership_id, club=request.club)
+    enable = request.POST.get("enable") == "1"
+    try:
+        set_manager(request.club, request.membership, target, enable)
+    except ManagerError as exc:
+        messages.error(request, str(exc))
+    else:
+        messages.success(request, (_("%(username)s es ahora gestor del club.") if enable
+                                   else _("%(username)s vuelve a ser miembro.")) % {"username": target.user.username})
+    return redirect("club_members")
 
 
 @club_admin_required
