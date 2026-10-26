@@ -12,7 +12,7 @@ class Command(SnpImportCommand):
     """Añade al grupo del club los equipos de su clasificación en SNP que todavía no están en Zyra."""
     help = ("Crea en Zyra los equipos del grupo del club (tabla «Clasificación» de SNP) que todavía no "
             "existen y da de alta en el grupo los que ya estaban fuera. No toca los jugadores ni aplica "
-            "el límite de una vez al mes de la web.")
+            "el límite de una vez por temporada de la web.")
     intro = "Equipo propio"
     group_only = True
     dry_run_help = "Solo muestra qué equipos se crearían, sin crearlos."

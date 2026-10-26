@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("core", "0021_membership_manager_role"),
+        ("core", "0022_club_season_prep"),
     ]
 
     operations = [

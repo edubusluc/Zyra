@@ -12,6 +12,7 @@ from django.utils.translation import gettext as _
 from django.utils.html import format_html
 
 from core.emails import build_email
+from players import snp_requests
 
 from .metrics import attention_counts
 from .models import AlertState, RequestMetric, ScheduledJob
@@ -33,6 +34,8 @@ def current_problems(now=None):
         problems["results"] = _("Hay %(n)s avisos de resultado fallidos en los últimos 7 días.") % {"n": counts["results_failed"]}
     if counts["reports_failed"]:
         problems["reports"] = _("Hay %(n)s informes de convocatoria fallidos en los últimos 7 días.") % {"n": counts["reports_failed"]}
+    if counts["snp_requests"] > snp_requests.ALERT_OPEN_REQUESTS:
+        problems["snp_requests"] = _("Hay %(n)s peticiones de actualización desde SNP esperando.") % {"n": counts["snp_requests"]}
     if counts["snp_failing"] >= SNP_FAILING_CLUBS:
         problems["snp"] = _("%(n)s clubes tienen la sincronización de SNP fallando.") % {"n": counts["snp_failing"]}
     errors = RequestMetric.objects.filter(minute__gte=now - datetime.timedelta(hours=1)).aggregate(n=Sum("errors"))["n"] or 0

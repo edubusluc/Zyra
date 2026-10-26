@@ -1,0 +1,55 @@
+{% extends 'backoffice/base.html' %}
+{% load i18n %}
+{% block title %}{% translate "Peticiones de SNP" %}{% endblock %}
+
+{% block content %}
+<div class="z-page-head">
+    <div>
+        <span class="z-eyebrow">{% translate "Clientes" %}</span>
+        <h1>{% translate "Peticiones de SNP" %}</h1>
+        <p class="small mb-0">{% blocktranslate %}Capitanes que piden que Zyra actualice su equipo desde SNP. Con más de {{ alert_threshold }} abiertas se avisa por correo al personal.{% endblocktranslate %}</p>
+    </div>
+</div>
+
+{% if messages %}
+<div class="alert-message">{% for message in messages %}<p>{{ message }}</p>{% endfor %}</div>
+{% endif %}
+
+<h2 class="h5">{% translate "Abiertas" %} ({{ open_requests|length }})</h2>
+<div class="z-table-wrap"><table class="table align-middle">
+    <thead><tr><th>{% translate "Fecha" %}</th><th>{% translate "Club" %}</th><th>{% translate "Pedida por" %}</th><th>{% translate "Nota" %}</th><th><span class="visually-hidden">{% translate "Acciones" %}</span></th></tr></thead>
+    <tbody>
+    {% for r in open_requests %}
+        <tr>
+            <td class="text-nowrap">{{ r.created_at|date:"j M Y H:i" }}</td>
+            <td><a href="{% url 'backoffice:club_detail' r.club.public_id %}">{{ r.club.name }}</a></td>
+            <td>{{ r.requested_by.username|default:"—" }}</td>
+            <td>{{ r.note|default:"—" }}</td>
+            <td class="text-end text-nowrap">
+                <form method="post" action="{% url 'backoffice:snp_request_run' r.public_id %}" class="d-inline" data-loading-text="{% translate 'Pidiendo el proceso…' %}">{% csrf_token %}<button class="btn btn-primary btn-sm">{% translate "Completar equipo" %}</button></form>
+                <form method="post" action="{% url 'backoffice:snp_request_done' r.public_id %}" class="d-inline" data-loading-text="{% translate 'Guardando…' %}">{% csrf_token %}<button class="btn btn-outline-light btn-sm">{% translate "Marcar hecha" %}</button></form>
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="5" class="text-muted">{% translate "No hay peticiones abiertas." %}</td></tr>
+    {% endfor %}
+    </tbody>
+</table></div>
+
+<h2 class="h5 mt-4">{% translate "Últimas atendidas" %}</h2>
+<div class="z-table-wrap"><table class="table align-middle">
+    <thead><tr><th>{% translate "Atendida" %}</th><th>{% translate "Club" %}</th><th>{% translate "Por" %}</th><th>{% translate "Nota" %}</th></tr></thead>
+    <tbody>
+    {% for r in done_requests %}
+        <tr>
+            <td class="text-nowrap">{{ r.done_at|date:"j M Y H:i" }}</td>
+            <td><a href="{% url 'backoffice:club_detail' r.club.public_id %}">{{ r.club.name }}</a></td>
+            <td>{{ r.done_by.username|default:"—" }}</td>
+            <td>{{ r.note|default:"—" }}</td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="4" class="text-muted">{% translate "Todavía no se ha atendido ninguna." %}</td></tr>
+    {% endfor %}
+    </tbody>
+</table></div>
+{% endblock %}

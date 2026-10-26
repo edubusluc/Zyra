@@ -15,7 +15,7 @@ from call.models import Call, ReportDelivery
 from core import email_verification
 from core.models import Club, Invitation, Membership, PhotoCheck
 from match.models import Game, Match, MatchResultDelivery, Result
-from players.models import Player, SnpAccount
+from players.models import Player, SnpAccount, SnpUpdateRequest
 
 from .models import (
     AccountNoticeLog, DailyActivity, DailyMetric, ErrorEvent, FollowUpTask, JobRun, RequestMetric, ScheduledJob,
@@ -433,6 +433,7 @@ def attention_counts():
         "jobs_failed": JobRun.objects.filter(status=JobRun.ERROR, started_at__gte=now - datetime.timedelta(hours=24)).count(),
         "tasks_due": FollowUpTask.objects.filter(done_at__isnull=True, due_date__lte=timezone.localdate()).count(),
         "snp_failing": SnpAccount.objects.filter(last_sync_ok=False).count(),
+        "snp_requests": SnpUpdateRequest.objects.filter(status=SnpUpdateRequest.OPEN).count(),
         "reports_failed": ReportDelivery.objects.filter(
             status=ReportDelivery.FAILED, created_at__gte=now - datetime.timedelta(days=7)).count(),
         "results_failed": MatchResultDelivery.objects.filter(
@@ -462,6 +463,8 @@ def attention_items(counts=None):
         add("danger", _("%(n)s informes de convocatoria fallidos en 7 días.") % {"n": c["reports_failed"]}, reverse("backoffice:health"))
     if c["snp_failing"]:
         add("warning", _("%(n)s clubes con la sincronización de SNP fallando.") % {"n": c["snp_failing"]}, reverse("backoffice:health"))
+    if c["snp_requests"]:
+        add("warning", _("%(n)s peticiones de actualización desde SNP.") % {"n": c["snp_requests"]}, reverse("backoffice:snp_request_list"))
     if c["photos"]:
         add("warning", _("%(n)s fotos por validar.") % {"n": c["photos"]}, reverse("backoffice:photo_list"))
     if c["unverified_overdue"]:

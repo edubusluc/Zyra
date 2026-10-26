@@ -1401,10 +1401,10 @@ msgstr "“Complete team” limits"
 
 #: backoffice/templates/backoffice/club_detail.html:37
 msgid ""
-"Los clubes normales solo pueden completar el equipo desde SNP una vez al mes "
+"Los clubes normales solo pueden completar el equipo desde SNP una vez por temporada "
 "y con pocas búsquedas al día. Marca este si es un club de pruebas."
 msgstr ""
-"Regular clubs can only complete the team from SNP once a month and with few "
+"Regular clubs can only complete the team from SNP once per season and with few "
 "searches per day. Tick this for a test club."
 
 #: backoffice/templates/backoffice/club_detail.html:41
@@ -10298,10 +10298,10 @@ msgstr[1] "<strong>%(n)s</strong> group teams will be created:"
 #: players/templates/list_players.html:218
 msgid ""
 "De los jugadores que ya existen solo cambian los puntos SNP. Solo se puede "
-"completar el equipo una vez al mes."
+"completar el equipo una vez por temporada."
 msgstr ""
 "For existing players only the SNP points change. The team can only be "
-"completed once a month."
+"completed once per season."
 
 #: players/templates/list_players.html:227
 #, python-format
@@ -10546,9 +10546,9 @@ msgstr ""
 
 #: players/views.py:293
 msgid ""
-"El equipo ya se completó desde SNP. A partir de ahora se actualiza solo."
+"Esta temporada ya has completado el equipo desde SNP. Los puntos se siguen actualizando solos cada semana."
 msgstr ""
-"The team was already completed from SNP. From now on it updates itself."
+"You already completed the team from SNP this season. The points keep updating by themselves every week."
 
 #: players/views.py:311
 msgid "Primero registra la cuenta SNP del capitán."
@@ -12362,6 +12362,80 @@ msgstr "A club can have at most two managers."
 msgid "¿Hacer gestor a %(username)s? Podrá crear enfrentamientos, convocatorias, alineaciones y resultados, cerrar actas, poner advertencias y gestionar jugadores y equipos. No podrá gestionar miembros, la cuenta SNP, reabrir actas ni eliminar el club."
 msgstr "Make %(username)s a manager? They will be able to create matches, call-ups, line-ups and results, close match reports, give warnings and manage players and teams. They will not be able to manage members, the SNP account, reopen match reports or delete the club."
 
+msgid "Revisa tu plantilla"
+msgstr "Review your roster"
+
+msgid "Marca quién sigue en el equipo y da de baja a quien se va."
+msgstr "Mark who stays in the team and remove whoever leaves."
+
+msgid "Revisar plantilla"
+msgstr "Review roster"
+
+msgid "Actualiza desde SNP"
+msgstr "Update from SNP"
+
+msgid "Trae los jugadores nuevos y los puntos de la nueva temporada. Se puede hacer una vez por temporada."
+msgstr "Bring in the new players and the points for the new season. It can be done once per season."
+
+msgid "Revisa rivales y divisiones"
+msgstr "Review rivals and divisions"
+
+msgid "Cambia la división de tu grupo y añade los equipos nuevos."
+msgstr "Change your group's division and add the new teams."
+
+msgid "Revisar rivales"
+msgstr "Review rivals"
+
+msgid "Solo el capitán del club puede omitir el paso de SNP."
+msgstr "Only the club captain can skip the SNP step."
+
+#, python-format
+msgid "Temporada %(label)s lista. ¡A competir!"
+msgstr "Season %(label)s is ready. Let's compete!"
+
+#, python-format
+msgid "Prepara la temporada %(label)s"
+msgstr "Prepare season %(label)s"
+
+msgid "La temporada empieza el 1 de agosto. Tres pasos para dejar el club listo."
+msgstr "The season starts on 1 August. Three steps to get the club ready."
+
+msgid "Ocultando la preparación…"
+msgstr "Hiding the preparation…"
+
+msgid "Pasos de la temporada hechos"
+msgstr "Season steps done"
+
+msgid "Omitido"
+msgstr "Skipped"
+
+msgid "Lo hace el capitán: es quien tiene la cuenta SNP."
+msgstr "The captain does this one: they hold the SNP account."
+
+msgid "Aún no has conectado tu cuenta SNP. Conéctala para traer jugadores y puntos, o sáltate este paso."
+msgstr "You have not connected your SNP account yet. Connect it to bring in players and points, or skip this step."
+
+msgid "Buscando en SNP… puedes seguir usando Zyra."
+msgstr "Searching SNP… you can keep using Zyra."
+
+msgid "Tu equipo de SNP está listo: revisa los jugadores encontrados y confírmalos."
+msgstr "Your SNP team is ready: review the players found and confirm them."
+
+msgid "Actualizar desde SNP"
+msgstr "Update from SNP"
+
+msgid "Guardando…"
+msgstr "Saving…"
+
+msgid "Ya la he revisado"
+msgstr "I have reviewed it"
+
+msgid "Ya los he revisado"
+msgstr "I have reviewed them"
+
+msgid "Omitir este paso"
+msgstr "Skip this step"
+
 msgid "Usuarios sin club (esperan una invitación)"
 msgstr "Users without a club (waiting for an invitation)"
 
@@ -12424,3 +12498,80 @@ msgstr "Create a fixture"
 
 msgid "Cerrando el aviso…"
 msgstr "Closing the notice…"
+msgid "Hay %(n)s peticiones de actualización desde SNP esperando."
+msgstr "There are %(n)s SNP update requests waiting."
+
+msgid "%(n)s peticiones de actualización desde SNP."
+msgstr "%(n)s SNP update requests."
+
+msgid "Peticiones de SNP"
+msgstr "SNP requests"
+
+msgid "El club necesita un equipo propio y una cuenta SNP para completar el equipo."
+msgstr "The club needs its own team and an SNP account to complete the team."
+
+msgid "Petición de %(club)s marcada como hecha."
+msgstr "Request from %(club)s marked as done."
+
+msgid "nota"
+msgstr "note"
+
+msgid "petición de actualización de SNP"
+msgstr "SNP update request"
+
+msgid "peticiones de actualización de SNP"
+msgstr "SNP update requests"
+
+msgid "¿Han llegado jugadores nuevos? Pide a Zyra que actualice tu equipo desde SNP."
+msgstr "Have new players joined? Ask Zyra to update your team from SNP."
+
+msgid "Petición enviada. Zyra actualizará tu equipo desde SNP en cuanto pueda."
+msgstr "Request sent. Zyra will update your team from SNP as soon as possible."
+
+msgid "Ya tienes una petición abierta: Zyra la está revisando."
+msgstr "You already have an open request: Zyra is reviewing it."
+
+msgid "Petición enviada el %(date)s: Zyra la está revisando."
+msgstr "Request sent on %(date)s: Zyra is reviewing it."
+
+msgid "Enviando la petición…"
+msgstr "Sending the request…"
+
+msgid "Nota (opcional): jugadores nuevos…"
+msgstr "Note (optional): new players…"
+
+msgid "Nota para Zyra"
+msgstr "Note for Zyra"
+
+msgid "Pedir actualización a Zyra"
+msgstr "Ask Zyra to update"
+
+msgid "Abiertas"
+msgstr "Open"
+
+msgid "Pedida por"
+msgstr "Requested by"
+
+msgid "Nota"
+msgstr "Note"
+
+msgid "Pidiendo el proceso…"
+msgstr "Requesting the process…"
+
+msgid "Marcar hecha"
+msgstr "Mark as done"
+
+msgid "No hay peticiones abiertas."
+msgstr "There are no open requests."
+
+msgid "Últimas atendidas"
+msgstr "Latest handled"
+
+msgid "Atendida"
+msgstr "Handled"
+
+msgid "Todavía no se ha atendido ninguna."
+msgstr "None has been handled yet."
+
+msgid "Capitanes que piden que Zyra actualice su equipo desde SNP. Con más de %(alert_threshold)s abiertas se avisa por correo al personal."
+msgstr "Captains asking Zyra to update their team from SNP. With more than %(alert_threshold)s open, staff are notified by email."

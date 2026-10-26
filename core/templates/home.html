@@ -70,6 +70,7 @@
     </div>
 </section>
 {% endif %}
+{% if season_prep %}{% include 'includes/season_prep.html' %}{% endif %}
 
 {% if snp_sync and snp_sync.state != 'running' %}
 {# Tarea «Sincronizar datos»: hasta que «Completar equipo» devuelva un resultado correcto se puede lanzar, seguir o reintentar desde aquí. #}

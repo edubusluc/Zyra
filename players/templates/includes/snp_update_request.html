@@ -1,0 +1,12 @@
+{% load i18n %}
+{# «Pedir actualización a Zyra»: botón con nota opcional, o el estado de la petición abierta. Variables: request_open, from (home o vacío). #}
+{% if request_open %}
+<p class="small mb-0"><i class="fa-solid fa-hourglass-half me-1" aria-hidden="true"></i> {% blocktranslate with date=request_open.created_at|date:"d/m/Y" %}Petición enviada el {{ date }}: Zyra la está revisando.{% endblocktranslate %}</p>
+{% else %}
+<form method="post" action="{% url 'snp_update_request' %}" class="d-flex flex-wrap gap-2 align-items-center" data-loading-text="{% translate 'Enviando la petición…' %}">
+    {% csrf_token %}
+    <input type="hidden" name="from" value="{{ from }}">
+    <input type="text" name="note" maxlength="200" class="form-control form-control-sm w-auto flex-grow-1" placeholder="{% translate 'Nota (opcional): jugadores nuevos…' %}" aria-label="{% translate 'Nota para Zyra' %}">
+    <button type="submit" class="btn btn-secondary btn-sm">{% translate "Pedir actualización a Zyra" %}</button>
+</form>
+{% endif %}

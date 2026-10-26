@@ -74,6 +74,12 @@ Sección **Club** del menú principal: Miembros e invitaciones, Mi equipo, Rival
 
 La página del enfrentamiento muestra las fases Convocatoria · Parejas · Resultados · Acta, un único botón «Siguiente: …» y un menú «Más». El inicio del capitán lista lo **Pendiente** (una fila por enfrentamiento abierto) y el del jugador indica si está convocado y con quién juega. La lógica está en `match/phase.py`. Los resultados de los 5 partidos se rellenan de una vez en «Resultados del enfrentamiento».
 
+## Prepara la temporada
+
+Del 1 de julio al 31 de octubre, el Inicio del capitán y de los gestores (en los clubes que ya existían el 1 de julio) enseña la tarjeta **«Prepara la temporada»** ([`core.season_prep`](referencia/core/season_prep.md)) con tres pasos: revisar la plantilla, actualizar desde SNP y revisar rivales y divisiones. La plantilla y los rivales los marca a mano quien los revisa («Ya la he revisado»); el paso de SNP se marca solo cuando «Completar equipo» sale bien esa temporada (o el capitán lo omite) y es solo del capitán. Se oculta sola al completar los tres, o con «Ahora no» (capitán). **«Completar equipo» desde la web se puede usar una vez por temporada** (desde el 1 de julio), no una vez por club.
+
+**Pedir actualización a Zyra**: si han llegado jugadores nuevos, o la búsqueda propia falla o ya se hizo esta temporada, el capitán puede pedir (con una nota opcional) que el personal de Zyra complete el equipo desde SNP, desde el paso de SNP de la tarjeta o desde Jugadores. Solo hay una petición abierta por club; mientras tanto se ve «Zyra la está revisando». El personal las atiende en el back-office («Peticiones de SNP»): al marcarla hecha, el paso de SNP de la temporada queda cumplido. Con más de cinco peticiones abiertas se avisa por correo al personal.
+
 ## Calendario de enfrentamientos
 
 En Enfrentamientos hay dos vistas: **Lista** y **Calendario**. El calendario (`match/month_view.py`, vista `calendar_match`) enseña un mes (`?month=AAAA-MM`, por defecto el actual) con todos los enfrentamientos del club: próximos, jugados con su marcador, con el acta abierta y amistosos. Es de solo lectura para todos los miembros, no envía correos ni crea avisos, y en móvil se pinta como agenda por días. «Compartir resultado» genera un texto pensado para WhatsApp (negrita, emojis y una línea por partido).

@@ -119,6 +119,9 @@ class Club(PublicIdModel):
     # Búsquedas fallidas de «Completar equipo» desde la web (no cuentan las caídas de SNP). Al llegar
     # a ``snp_import.MAX_FAILED_SEARCHES`` la opción se oculta y se avisa al personal; lo repone el back-office.
     snp_import_failures = models.PositiveSmallIntegerField(default=0)
+    # Progreso de «Prepara la temporada» (core.season_prep): ``{"year": 2026, "done": ["roster", ...], "closed": false}``.
+    # Solo vale para el año que indica; al empezar otra temporada se ignora y se parte de cero.
+    season_prep = models.JSONField(default=dict, blank=True)
 
     @property
     def is_suspended(self):
