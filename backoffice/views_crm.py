@@ -25,7 +25,7 @@ from core.models import Club, Membership
 from players.models import Player
 from team.models import Team
 
-from . import impersonation
+from . import impersonation, mass_email
 from .audit import ACTIONS, audit
 from .decorators import staff_required, superuser_required
 from .richtext import html_to_text, sanitize_html
@@ -346,6 +346,75 @@ def club_contact(request, club_id):
             audit(request, "club.contact", club, subject=subject, to=", ".join(recipients))
             messages.success(request, _("Correo enviado a %(to)s.") % {"to": ", ".join(recipients)})
     return redirect("backoffice:club_detail", club_id=club.public_id)
+
+
+# ---------- Correo a varios usuarios ----------
+
+@staff_required
+def email_compose(request):
+    """
+    Redacta y envía un correo a un segmento de usuarios (solo personal). Un único formulario con tres
+    botones: ``preview`` (muestra cómo queda y a cuántas personas llegaría), ``test`` (lo manda solo a quien
+    escribe) y ``send`` (lo manda de verdad, tras marcar la confirmación). Cada persona recibe su propio
+    correo con {nombre} y {club} sustituidos; queda en «Correos enviados» y en la auditoría.
+    """
+    audience = request.POST.get("audience", "captains")
+    if audience not in mass_email.AUDIENCES:
+        audience = "captains"
+    custom = request.POST.get("custom", "")[:20000]
+    subject = request.POST.get("subject", "").strip()[:200]
+    body = sanitize_html(request.POST.get("body", "").strip()[:20000])
+    ctx = {"section": "compose", "audience": audience, "custom": custom, "subject": subject, "body": body}
+    if request.method == "POST":
+        action = request.POST.get("action", "preview")
+        recipients, blocked, invalid = mass_email.recipients_for(audience, custom)
+        ctx.update(recipients=recipients[:50], total=len(recipients), blocked=blocked, invalid=invalid)
+        reply_to = [request.user.email] if request.user.email else None
+        if not subject or not html_to_text(body):
+            messages.error(request, _("Escribe el asunto y el mensaje."))
+        elif not recipients:
+            messages.error(request, _("Ese segmento no tiene ningún email al que escribir."))
+        elif action == "test":
+            if not request.user.email:
+                messages.error(request, _("Tu cuenta no tiene email para recibir la prueba."))
+            else:
+                sample = recipients[0] | {"email": request.user.email}
+                _send_batch([mass_email.build_message(subject, body, sample, reply_to)], request, test=True)
+        elif action == "send":
+            if len(recipients) > mass_email.MAX_RECIPIENTS:
+                messages.error(request, _("Hay %(n)s destinatarios y el máximo por envío es %(max)s. Acota el segmento.")
+                               % {"n": len(recipients), "max": mass_email.MAX_RECIPIENTS})
+            elif not request.POST.get("confirm"):
+                messages.error(request, _("Marca la casilla para confirmar el envío."))
+            else:
+                sent, failed = _send_batch([mass_email.build_message(subject, body, r, reply_to) for r in recipients], request)
+                audit(request, "email.mass", None, subject=subject, audience=audience, sent=sent, failed=failed)
+                return redirect("backoffice:email_log")
+        if recipients and subject and html_to_text(body):
+            ctx["preview_html"] = mass_email.build_message(subject, body, recipients[0], reply_to).alternatives[0][0]
+    ctx.update(audiences=mass_email.audience_labels(), templates=mass_email.message_templates(), max_recipients=mass_email.MAX_RECIPIENTS)
+    return render(request, "backoffice/email_compose.html", ctx)
+
+
+def _send_batch(emails, request, test=False):
+    """Envía cada correo por separado, avisa del resultado y devuelve ``(enviados, fallidos)``."""
+    sent = failed = 0
+    for email in emails:
+        try:
+            email.send(fail_silently=False)
+            sent += 1
+        except Exception:
+            failed += 1
+    if test:
+        if sent:
+            messages.success(request, _("Prueba enviada a tu email."))
+        else:
+            messages.error(request, _("No se ha podido enviar la prueba."))
+    elif failed:
+        messages.warning(request, _("Enviados %(sent)s correos; %(failed)s han fallado (mira «Correos enviados»).") % {"sent": sent, "failed": failed})
+    else:
+        messages.success(request, _("Enviados %(sent)s correos.") % {"sent": sent})
+    return sent, failed
 
 
 # ---------- Acciones sobre clubes y cuentas ----------

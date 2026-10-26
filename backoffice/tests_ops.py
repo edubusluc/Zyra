@@ -654,3 +654,74 @@ class AccountsWithoutClubTests(StaffTestCase):
         self.assertEqual(accounts["waiting"], 2)
         self.assertEqual(accounts["with_club"], 1)
         self.assertContains(self.client.get(reverse("backoffice:usage")), "esperan una invitación")
+
+
+class MassEmailTests(StaffTestCase):
+    """Envío de correos a varios usuarios desde «Enviar correo»."""
+
+    def setUp(self):
+        super().setUp()
+        self.other = User.objects.create_user("otro", password=PASSWORD, email="otro@example.com", first_name="Luis")
+        create_club("Club B", "Cádiz", self.other, player_name="Luis", player_last_name="Gil")
+        self.url = reverse("backoffice:email_compose")
+
+    def post(self, **extra):
+        data = {"audience": "captains", "subject": "Hola {nombre}", "body": "Eres capitán de {club}", "action": "send", "confirm": "1"}
+        data.update(extra)
+        return self.client.post(self.url, data)
+
+    def test_page_is_for_staff_only(self):
+        self.client.logout()
+        self.client.login(username="capi", password=PASSWORD)
+        self.assertEqual(self.client.get(self.url).status_code, 404)
+
+    def test_send_personalises_each_email_and_leaves_a_trace(self):
+        self.assertEqual(self.post().status_code, 302)
+        by_to = {m.to[0]: m for m in mail.outbox}
+        self.assertEqual(set(by_to), {"capi@example.com", "otro@example.com"})
+        self.assertEqual(len(by_to["otro@example.com"].to), 1)  # nadie ve a los demás
+        self.assertEqual(by_to["otro@example.com"].subject, "Hola Luis")
+        self.assertIn("Eres capitán de Club B", by_to["otro@example.com"].body)
+        self.assertEqual(by_to["capi@example.com"].reply_to, ["staff@example.com"])
+        log = AuditLog.objects.get(action="email.mass")
+        self.assertEqual(log.detail["sent"], 2)
+
+    def test_needs_confirmation_and_content(self):
+        self.post(confirm="")
+        self.post(body="<p><br></p>")
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_preview_and_test_do_not_reach_the_audience(self):
+        page = self.post(action="preview")
+        self.assertContains(page, "Llegaría a 2 personas")
+        self.assertEqual(len(mail.outbox), 0)
+        self.post(action="test")
+        self.assertEqual([m.to for m in mail.outbox], [["staff@example.com"]])
+
+    def test_blocked_and_suspended_are_skipped(self):
+        from core import blocklist
+        blocklist.block("otro@example.com")
+        page = self.post(action="preview")
+        self.assertContains(page, "Llegaría a 1 persona")
+        self.assertContains(page, "1 omitidos")
+
+    def test_custom_list_dedupes_and_reports_invalid(self):
+        page = self.post(audience="custom", custom="a@x.com, A@x.com\nmal", action="preview")
+        self.assertContains(page, "Llegaría a 1 persona")
+        self.assertContains(page, "mal")
+        self.post(audience="custom", custom="a@x.com")
+        self.assertEqual(mail.outbox[0].to, ["a@x.com"])
+
+    def test_html_is_sanitised_and_values_escaped(self):
+        self.other.first_name = "<b>X</b>"
+        self.other.save()
+        self.post(body="<p onclick='x()'>Hola {nombre}</p><script>1</script>")
+        html = next(m for m in mail.outbox if m.to == ["otro@example.com"]).alternatives[0][0]
+        self.assertNotIn("<script", html)
+        self.assertNotIn("onclick", html)
+        self.assertIn("&lt;b&gt;X&lt;/b&gt;", html)
+
+    def test_limit_blocks_big_sends(self):
+        with mock.patch("backoffice.mass_email.MAX_RECIPIENTS", 1):
+            self.post()
+        self.assertEqual(len(mail.outbox), 0)
