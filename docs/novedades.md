@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 26/10/2026 · Pedir actualización a Zyra
+
+- El capitán puede **pedir a Zyra que actualice su equipo desde SNP** (con una nota opcional) desde «Prepara la temporada» y desde Jugadores. El personal las gestiona en el back-office, en **Peticiones de SNP**, y al marcarlas hechas el paso de SNP de la temporada queda cumplido. Con más de cinco peticiones abiertas se avisa por correo al personal.
+
 ## 26/10/2026 · Prepara la temporada
 
 - Del 1 de julio al 31 de octubre, el Inicio del capitán y de los gestores muestra **«Prepara la temporada»**: revisar la plantilla, actualizar desde SNP y revisar rivales y divisiones. El gestor puede hacer los pasos de plantilla y rivales; SNP, «Omitir este paso» y «Ahora no» son del capitán.

@@ -12,7 +12,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from players import snp_import
+from players import snp_import, snp_requests
 from players.models import SnpAccount
 
 # Meses (julio a octubre) en los que se ofrece la tarjeta.
@@ -51,7 +51,7 @@ def _save(club, progress):
 def _steps(club, progress, is_captain):
     """Los tres pasos con su estado. ``sync`` solo se calcula para el capitán (la cuenta SNP es suya)."""
     done = progress["done"]
-    snp_done = snp_import.imported_this_season(club) is not None
+    snp_done = snp_import.imported_this_season(club) is not None or snp_requests.fulfilled_this_season(club) is not None
     snp_skipped = SNP_SKIPPED in done
     return [
         {"key": ROSTER, "title": _("Revisa tu plantilla"), "manual": True, "done": ROSTER in done,
@@ -61,7 +61,7 @@ def _steps(club, progress, is_captain):
          "skipped": snp_skipped and not snp_done, "captain_only": True,
          "help": _("Trae los jugadores nuevos y los puntos de la nueva temporada. Se puede hacer una vez por temporada."),
          "sync": snp_import.sync_task(club, this_season=True) if is_captain and not (snp_done or snp_skipped) else None,
-         "has_account": SnpAccount.objects.filter(club=club).exists()},
+         "has_account": SnpAccount.objects.filter(club=club).exists(), "request": snp_requests.open_request(club)},
         {"key": RIVALS, "title": _("Revisa rivales y divisiones"), "manual": True, "done": RIVALS in done,
          "help": _("Cambia la división de tu grupo y añade los equipos nuevos."),
          "url": reverse("manage_teams"), "action": _("Revisar rivales")},

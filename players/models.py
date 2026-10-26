@@ -264,3 +264,35 @@ class SnpTeamImport(PublicIdModel):
 
 # Al cambiar o borrar la foto se borra el fichero antiguo (core/images.py).
 connect_photo_cleanup(Player)
+
+
+class SnpUpdateRequest(PublicIdModel):
+    """
+    Petición del capitán al personal de Zyra para que actualice el equipo desde SNP («Completar equipo» a mano,
+    sin el límite de una vez por temporada de la web): por ejemplo cuando han llegado jugadores nuevos. Solo
+    puede haber una abierta por club; el personal la marca como hecha desde el back-office.
+    """
+    PUBLIC_ID_PREFIX = "SUR"
+    OPEN = "open"
+    DONE = "done"
+    STATUSES = [(OPEN, _("Abierta")), (DONE, _("Hecha"))]
+
+    club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name="snp_update_requests")
+    requested_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+    note = models.CharField(_("nota"), max_length=200, blank=True, default="")
+    status = models.CharField(max_length=4, choices=STATUSES, default=OPEN, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    done_at = models.DateTimeField(null=True, blank=True)
+    done_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+
+    class Meta:
+        ordering = ["created_at"]
+        constraints = [
+            models.UniqueConstraint(fields=["club"], condition=models.Q(status="open"), name="one_open_snp_update_request_per_club"),
+        ]
+        verbose_name = _("petición de actualización de SNP")
+        verbose_name_plural = _("peticiones de actualización de SNP")
+
+    def __str__(self):
+        """Club y estado."""
+        return f"{self.club} · {self.get_status_display()}"

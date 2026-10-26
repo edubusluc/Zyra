@@ -30,8 +30,8 @@ from core.emails import send_photo_removed_email, send_unverified_account_email
 from core.models import BlockedEmail, Club, Invitation, Membership, PhotoCheck, PhotoRemoval, ServiceSwitch
 from match.models import Match
 from core.services import CaptaincyError, delete_account, eligible_successors
-from players import snp_import, snp_service
-from players.models import Player, SnpAccount, SnpTeamImport
+from players import snp_import, snp_requests, snp_service
+from players.models import Player, SnpAccount, SnpTeamImport, SnpUpdateRequest
 
 from . import importer, sql, views_crm
 from .audit import audit
@@ -173,6 +173,53 @@ def club_detail(request, club_id):
             Q(to__in=[m.user.email for m in club.memberships.select_related("user") if m.user.email])
         )[:10],
     })
+
+
+@staff_required
+def snp_request_list(request):
+    """Peticiones de actualización desde SNP de los capitanes (solo personal): abiertas arriba y las últimas atendidas."""
+    open_requests = SnpUpdateRequest.objects.filter(status=SnpUpdateRequest.OPEN).select_related("club", "requested_by")
+    done_requests = SnpUpdateRequest.objects.filter(status=SnpUpdateRequest.DONE).select_related("club", "done_by").order_by("-done_at")[:20]
+    return render(request, "backoffice/snp_request_list.html", {
+        "section": "snp_requests", "open_requests": open_requests, "done_requests": done_requests,
+        "alert_threshold": snp_requests.ALERT_OPEN_REQUESTS,
+    })
+
+
+@staff_required
+@require_POST
+def snp_request_run(request, request_id):
+    """
+    «Completar equipo» para el club de una petición (solo personal, POST): lanza el proceso
+    ``complete_snp_team`` con el equipo propio del club y lleva a su ejecución. La petición sigue abierta
+    hasta que el personal la marca como hecha.
+    """
+    update = get_object_or_404(SnpUpdateRequest, public_id=request_id)
+    job = get_object_or_404(ScheduledJob, name="complete_snp_team")
+    own = update.club.own_team
+    if own is None or not SnpAccount.objects.filter(club=update.club).exists():
+        messages.error(request, _("El club necesita un equipo propio y una cuenta SNP para completar el equipo."))
+        return redirect("backoffice:snp_request_list")
+    run, state = request_manual_run(job, request.user, [own.public_id])
+    if state == "busy":
+        messages.error(request, _("%(job)s ya se está ejecutando o ya está pedido.") % {"job": job.name})
+        return redirect("backoffice:snp_request_list")
+    audit(request, "snp_request.run", obj=update.club, label=job.name, queued=state == "queued")
+    if state == "queued":
+        messages.success(request, _("%(job)s pedido: el lanzador lo recogerá en menos de un minuto.") % {"job": job.name})
+        return redirect("backoffice:job_detail", name=job.name)
+    return redirect("backoffice:run_detail", run_id=run.public_id)
+
+
+@staff_required
+@require_POST
+def snp_request_done(request, request_id):
+    """Marca como hecha la petición de actualización (solo personal, POST): el paso de SNP del club queda cumplido."""
+    update = get_object_or_404(SnpUpdateRequest, public_id=request_id)
+    if snp_requests.finish(update, request.user):
+        audit(request, "snp_request.done", obj=update.club)
+        messages.success(request, _("Petición de %(club)s marcada como hecha.") % {"club": update.club.name})
+    return redirect("backoffice:snp_request_list")
 
 
 @staff_required
