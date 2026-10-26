@@ -693,7 +693,9 @@ class MassEmailTests(StaffTestCase):
 
     def test_preview_and_test_do_not_reach_the_audience(self):
         page = self.post(action="preview")
+        self.assertTemplateUsed(page, "backoffice/email_preview.html")  # página aparte, pensada para otra pestaña
         self.assertContains(page, "Llegaría a 2 personas")
+        self.assertContains(page, "Hola capi")
         self.assertEqual(len(mail.outbox), 0)
         self.post(action="test")
         self.assertEqual([m.to for m in mail.outbox], [["staff@example.com"]])
@@ -704,6 +706,13 @@ class MassEmailTests(StaffTestCase):
         page = self.post(action="preview")
         self.assertContains(page, "Llegaría a 1 persona")
         self.assertContains(page, "1 omitidos")
+
+    def test_no_club_audience_only_reaches_accounts_without_club(self):
+        User.objects.create_user("suelto", password=PASSWORD, email="suelto@example.com")
+        User.objects.create_user("baja", password=PASSWORD, email="baja@example.com", is_active=False)
+        self.post(audience="no_club")
+        self.assertEqual([m.to for m in mail.outbox], [["suelto@example.com"]])
+        self.assertEqual(mail.outbox[0].subject, "Hola suelto")
 
     def test_custom_list_dedupes_and_reports_invalid(self):
         page = self.post(audience="custom", custom="a@x.com, A@x.com\nmal", action="preview")

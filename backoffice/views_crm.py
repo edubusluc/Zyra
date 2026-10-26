@@ -355,7 +355,7 @@ def club_contact(request, club_id):
 def email_compose(request):
     """
     Redacta y envía un correo a un segmento de usuarios (solo personal). Un único formulario con tres
-    botones: ``preview`` (muestra cómo queda y a cuántas personas llegaría), ``test`` (lo manda solo a quien
+    botones: ``preview`` (se abre en otra pestaña: cómo queda y a cuántas personas llegaría), ``test`` (lo manda solo a quien
     escribe) y ``send`` (lo manda de verdad, tras marcar la confirmación). Cada persona recibe su propio
     correo con {nombre} y {club} sustituidos; queda en «Correos enviados» y en la auditoría.
     """
@@ -378,6 +378,12 @@ def email_compose(request):
             messages.error(request, _("Escribe el asunto y el mensaje."))
         elif not recipients:
             messages.error(request, _("Ese segmento no tiene ningún email al que escribir."))
+        elif action == "preview":
+            html = mass_email.build_message(subject, body, recipients[0], reply_to).alternatives[0][0]
+            return render(request, "backoffice/email_preview.html", {
+                "preview_html": html, "subject": mass_email.personalise(subject, recipients[0], html=False),
+                "total": len(recipients), "blocked": blocked, "invalid": invalid,
+            })
         elif action == "test":
             if not request.user.email:
                 messages.error(request, _("Tu cuenta no tiene email para recibir la prueba."))
@@ -394,8 +400,6 @@ def email_compose(request):
                 sent, failed = _send_batch([mass_email.build_message(subject, body, r, reply_to) for r in recipients], request)
                 audit(request, "email.mass", None, subject=subject, audience=audience, sent=sent, failed=failed)
                 return redirect("backoffice:email_log")
-        if recipients and subject and html_to_text(body):
-            ctx["preview_html"] = mass_email.build_message(subject, body, recipients[0], reply_to).alternatives[0][0]
     ctx.update(audiences=mass_email.audience_labels(), templates=mass_email.message_templates(), max_recipients=mass_email.MAX_RECIPIENTS)
     return render(request, "backoffice/email_compose.html", ctx)
 

@@ -65,22 +65,41 @@
             <input class="form-check-input" type="checkbox" id="confirm" name="confirm" value="1">
             <label class="form-check-label" for="confirm">{% blocktranslate %}Confirmo que quiero enviarlo a todos los destinatarios (máximo {{ max_recipients }} por envío){% endblocktranslate %}</label>
         </div>
-        <button class="btn btn-outline-light" name="action" value="preview"><i class="fa-solid fa-eye" aria-hidden="true"></i> {% translate "Vista previa" %}</button>
+        <button type="button" class="btn btn-outline-light" id="preview-btn"><i class="fa-solid fa-eye" aria-hidden="true"></i> {% translate "Vista previa" %}</button>
         <button class="btn btn-outline-light" name="action" value="test"><i class="fa-solid fa-flask" aria-hidden="true"></i> {% translate "Enviarme una prueba" %}</button>
         <button class="btn btn-primary" name="action" value="send"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i> {% translate "Enviar" %}</button>
     </form>
     <script src="{% static 'js/backoffice-editor.js' %}"></script>
     <script>
+        // La vista previa se abre en una pestaña nueva: se envía el formulario a otra ventana con action=preview
+        // (form.submit() no dispara el bloqueo de doble envío, así que este formulario sigue disponible).
+        document.getElementById("preview-btn").addEventListener("click", function () {
+            var form = document.getElementById("contact-form");
+            document.getElementById("contact-body").value = document.getElementById("contact-editor").innerHTML;
+            var tmp = document.createElement("form");
+            tmp.method = "post";
+            tmp.target = "_blank";
+            tmp.hidden = true;
+            ["csrfmiddlewaretoken", "audience", "custom", "subject", "body"].forEach(function (name) {
+                var field = document.createElement("input");
+                field.type = "hidden";
+                field.name = name;
+                field.value = form.elements[name] ? form.elements[name].value : "";
+                tmp.appendChild(field);
+            });
+            var action = document.createElement("input");
+            action.type = "hidden";
+            action.name = "action";
+            action.value = "preview";
+            tmp.appendChild(action);
+            document.body.appendChild(tmp);
+            tmp.submit();
+            tmp.remove();
+        });
         document.getElementById("audience").addEventListener("change", function () {
             document.getElementById("custom-box").hidden = this.value !== "custom";
         });
     </script>
 </section>
 
-{% if preview_html %}
-<section class="z-panel">
-    <h2 class="h5">{% translate "Vista previa (primer destinatario)" %}</h2>
-    <iframe title="{% translate 'Vista previa del correo' %}" sandbox srcdoc="{{ preview_html }}" style="width:100%; height:32rem; border:0; background:#fff;"></iframe>
-</section>
-{% endif %}
 {% endblock %}

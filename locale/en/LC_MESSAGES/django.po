@@ -12361,3 +12361,15 @@ msgstr "A club can have at most two managers."
 #, python-format
 msgid "¿Hacer gestor a %(username)s? Podrá crear enfrentamientos, convocatorias, alineaciones y resultados, cerrar actas, poner advertencias y gestionar jugadores y equipos. No podrá gestionar miembros, la cuenta SNP, reabrir actas ni eliminar el club."
 msgstr "Make %(username)s a manager? They will be able to create matches, call-ups, line-ups and results, close match reports, give warnings and manage players and teams. They will not be able to manage members, the SNP account, reopen match reports or delete the club."
+
+msgid "Usuarios sin club (esperan una invitación)"
+msgstr "Users without a club (waiting for an invitation)"
+
+msgid "Te falta un paso para empezar con Zyra"
+msgstr "One step left to get started with Zyra"
+
+msgid "Hola {nombre},\n\nVimos que te registraste en Zyra pero todavía no formas parte de ningún club. Puedes crear el tuyo desde tu cuenta o pedirle a tu capitán que te envíe el enlace de invitación. Si necesitas ayuda, respóndeme a este correo.\n\nUn saludo."
+msgstr "Hi {nombre},\n\nWe saw you signed up for Zyra but you are not part of any club yet. You can create yours from your account or ask your captain to send you the invitation link. If you need help, just reply to this email.\n\nBest regards."
+
+msgid "Así lo vería el primer destinatario; no se ha enviado nada."
+msgstr "This is how the first recipient would see it; nothing has been sent."

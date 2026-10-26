@@ -10,8 +10,8 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 26/10/2026 · Enviar correo a usuarios desde el back-office
 
-- Nueva sección **Enviar correo** (`/backoffice/emails/new/`): se elige el segmento (capitanes de clubes activos, capitanes de clubes sin actividad en 30 días, todos los usuarios activos o una lista de emails), una plantilla (novedades, club sin actividad, pedir opinión, mantenimiento o en blanco) y se redacta con formato. Se pueden usar `{nombre}` y `{club}`; cada persona recibe su propio correo, sin ver a las demás
-- Vista previa con el primer destinatario, «Enviarme una prueba» y envío real con casilla de confirmación (máximo 300 por envío; se omiten emails bloqueados). Queda en «Correos enviados» y en la auditoría («Correo a varios usuarios»)
+- Nueva sección **Enviar correo** (`/backoffice/emails/new/`): se elige el segmento (capitanes de clubes activos, capitanes de clubes sin actividad en 30 días, usuarios sin club, todos los usuarios activos o una lista de emails), una plantilla (novedades, club sin actividad, usuarios sin club, pedir opinión, mantenimiento o en blanco) y se redacta con formato. Se pueden usar `{nombre}` y `{club}`; cada persona recibe su propio correo, sin ver a las demás
+- Vista previa con el primer destinatario en una pestaña nueva, «Enviarme una prueba» y envío real con casilla de confirmación (máximo 300 por envío; se omiten emails bloqueados). Queda en «Correos enviados» y en la auditoría («Correo a varios usuarios»)
 
 ## 25/10/2026 · Calendario de enfrentamientos
 

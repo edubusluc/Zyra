@@ -16,6 +16,7 @@ from core import blocklist
 from core.emails import build_email
 from core.models import Membership
 
+from .metrics import accounts_without_club
 from .models import UserActivity
 from .richtext import html_to_text, sanitize_html
 
@@ -24,7 +25,7 @@ User = get_user_model()
 # Tope de destinatarios por envío: el envío es síncrono y un exceso bloquearía la petición.
 MAX_RECIPIENTS = 300
 INACTIVE_DAYS = 30
-AUDIENCES = ("captains", "inactive", "all", "custom")
+AUDIENCES = ("captains", "inactive", "no_club", "all", "custom")
 
 
 def audience_labels():
@@ -32,6 +33,7 @@ def audience_labels():
     return {
         "captains": _("Capitanes de clubes activos"),
         "inactive": _("Capitanes de clubes sin actividad en %(days)s días") % {"days": INACTIVE_DAYS},
+        "no_club": _("Usuarios sin club (esperan una invitación)"),
         "all": _("Todos los usuarios activos"),
         "custom": _("Lista de emails escrita a mano"),
     }
@@ -55,6 +57,12 @@ def message_templates():
             "subject": _("¿Qué tal va Zyra?"),
             "body": _("Hola {nombre},\n\nQuería saber qué tal os va con Zyra en {club} y qué mejoraríais. "
                       "Cualquier comentario me sirve.\n\nUn saludo."),
+        },
+        "no_club": {
+            "subject": _("Te falta un paso para empezar con Zyra"),
+            "body": _("Hola {nombre},\n\nVimos que te registraste en Zyra pero todavía no formas parte de ningún club. "
+                      "Puedes crear el tuyo desde tu cuenta o pedirle a tu capitán que te envíe el enlace de invitación. "
+                      "Si necesitas ayuda, respóndeme a este correo.\n\nUn saludo."),
         },
         "maintenance": {
             "subject": _("Aviso: mantenimiento de Zyra"),
@@ -112,6 +120,8 @@ def recipients_for(audience, custom_raw=""):
         ]
     else:
         base = User.objects.filter(is_active=True, is_staff=False).exclude(email="")
+        if audience == "no_club":
+            base = accounts_without_club(base)
         if audience in ("captains", "inactive"):
             memberships = Membership.objects.filter(role=Membership.ADMIN, club__suspended_at__isnull=True)
             if audience == "inactive":
