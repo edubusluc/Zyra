@@ -9,7 +9,7 @@
         <h1>{% translate "Enfrentamientos" %}</h1>
     </div>
     <div class="z-actions">
-        {% if is_club_admin %}
+        {% if can_manage %}
         <a href="{% url 'create_match' %}" class="btn btn-primary text-nowrap"><i class="fa-solid fa-plus me-1" aria-hidden="true"></i> {% translate "Nuevo enfrentamiento" %}</a>
         {% endif %}
     </div>
@@ -97,8 +97,8 @@ tarjeta es pulsable).{% endcomment %}
 {% else %}
 <div class="z-empty">
     <i class="fa-solid fa-table-tennis-paddle-ball" aria-hidden="true"></i>
-    {% if filtering %}{% translate "Ningún enfrentamiento coincide con la búsqueda." %}{% elif selected_season != all_seasons %}{% blocktranslate with season=selected_season %}No hay enfrentamientos en la temporada {{ season }}.{% endblocktranslate %}{% elif is_club_admin %}{% translate "Crea tu primer enfrentamiento para preparar la convocatoria." %}{% else %}{% translate "Cuando tu capitán cree el primer enfrentamiento lo verás aquí." %}{% endif %}
-    {% if is_club_admin %}<div class="mt-3"><a class="btn btn-primary btn-sm" href="{% url 'create_match' %}">{% translate "Crear enfrentamiento" %}</a></div>{% endif %}
+    {% if filtering %}{% translate "Ningún enfrentamiento coincide con la búsqueda." %}{% elif selected_season != all_seasons %}{% blocktranslate with season=selected_season %}No hay enfrentamientos en la temporada {{ season }}.{% endblocktranslate %}{% elif can_manage %}{% translate "Crea tu primer enfrentamiento para preparar la convocatoria." %}{% else %}{% translate "Cuando tu capitán cree el primer enfrentamiento lo verás aquí." %}{% endif %}
+    {% if can_manage %}<div class="mt-3"><a class="btn btn-primary btn-sm" href="{% url 'create_match' %}">{% translate "Crear enfrentamiento" %}</a></div>{% endif %}
 </div>
 {% endif %}
 

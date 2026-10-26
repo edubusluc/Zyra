@@ -21,7 +21,7 @@
         <p class = "alert-log">{% translate "No hay cambios registrados en la convocatoria." %}</p>
     {% endif %}
 
-    {% if is_club_admin %}
+    {% if can_manage %}
     <div class="mt-4">
         <h2 class="z-section-title">{% translate "Aplicar sanciones" %}</h2>
         <form method="POST" action="{% url 'create_penalty' call_id %}" data-loading-text="{% translate 'Guardando la penalización…' %}">

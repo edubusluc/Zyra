@@ -53,7 +53,7 @@
 
         <div class="z-team-cards" data-group-rival{% if form.manual_rival %} hidden{% endif %}>
             {% include "includes/match_team_card.html" with field=form.rival team=form.rival_team %}
-            {% if is_club_admin and not form.rival.field.queryset.exists %}
+            {% if can_manage and not form.rival.field.queryset.exists %}
             <p class="z-rival-empty">{% translate "Todavía no tienes rivales en tu grupo." %} <a href="{% url 'create_team' %}">{% translate "Crear rival" %}</a></p>
             {% endif %}
             {% for error in form.local.errors %}<div class="alert-message">{{ error }}</div>{% endfor %}

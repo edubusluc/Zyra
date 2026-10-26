@@ -19,7 +19,7 @@ from django.http import Http404
 from django.core.paginator import Paginator
 from urllib.parse import urlencode
 from django.utils.translation import gettext as _
-from core.decorators import club_required, club_admin_required
+from core.decorators import club_required, club_manager_required
 from penalty.models import Penalty
 from core.season_choice import ALL_SEASONS, choose_season
 from players.models import current_season, joined_by
@@ -971,7 +971,7 @@ def pair_last_games(club, p1, p2, n=PAIR_LAST_GAMES, match_type=None, season=Non
 
 
 
-@club_admin_required
+@club_manager_required
 @require_GET
 def warnings_statistics(request):
     """

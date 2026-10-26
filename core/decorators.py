@@ -40,12 +40,28 @@ def club_admin_required(view_func):
     return wrapper
 
 
+def club_manager_required(view_func):
+    """
+    Como club_required, pero además el usuario debe ser capitán o gestor del club activo (lo deportivo:
+    enfrentamientos, convocatorias, resultados, jugadores y equipos). Un miembro ve «Sin permiso» (403).
+    Lo que solo hace el capitán (miembros, SNP, reabrir actas, eliminar) usa ``club_admin_required``.
+    """
+    @club_required
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        """Lanza PermissionDenied (403) si el usuario no es capitán ni gestor del club activo."""
+        if not request.membership.can_manage:
+            raise PermissionDenied(_("Solo el capitán o los gestores del club pueden ver esta página o realizar esta acción."))
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+
 def not_while_syncing(view_func):
     """
     Bloquea las altas de jugadores, equipos y enfrentamientos mientras el club está sincronizando su
     equipo con SNP (``snp_import.active_import`` en marcha): la sincronización crea jugadores y equipos y
     podría duplicar lo creado a mano. Redirige al inicio con un aviso; se navega con normalidad.
-    Va debajo de ``club_admin_required``.
+    Va debajo de ``club_admin_required`` o ``club_manager_required``.
     """
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):

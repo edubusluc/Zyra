@@ -126,6 +126,33 @@ def transfer_captaincy(club, current, target):
     return target
 
 
+class ManagerError(Exception):
+    """El rol de gestor no se puede cambiar; el mensaje explica el motivo al usuario."""
+    pass
+
+
+@transaction.atomic
+def set_manager(club, current, target, enable):
+    """
+    Hace gestor a ``target`` (``enable=True``) o lo devuelve a miembro (``enable=False``). Solo lo hace
+    el capitán ``current`` y solo sobre miembros del mismo club que no sean el capitán; un club tiene
+    como mucho ``Membership.MAX_MANAGERS`` gestores.
+    """
+    current = Membership.objects.select_for_update().get(pk=current.pk)
+    if current.club_id != club.pk or not current.is_admin:
+        raise ManagerError(_("Solo el capitán del club puede nombrar gestores."))
+    if target.club_id != club.pk or target.is_admin:
+        raise ManagerError(_("Elige a otro miembro del club."))
+    if enable and not target.is_manager:
+        if club.memberships.filter(role=Membership.MANAGER).count() >= Membership.MAX_MANAGERS:
+            raise ManagerError(_("Un club puede tener como máximo %(n)s gestores.") % {"n": Membership.MAX_MANAGERS})
+        target.role = Membership.MANAGER
+    elif not enable and target.is_manager:
+        target.role = Membership.MEMBER
+    target.save(update_fields=["role"])
+    return target
+
+
 def account_delete_blocker(user):
     """
     Motivo (texto para el usuario) por el que ``user`` aún no puede eliminar su cuenta, o None si

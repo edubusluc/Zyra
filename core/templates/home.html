@@ -110,7 +110,7 @@
 {% endif %}
 
 
-{% if is_club_admin and pending or is_club_admin and not onboarding %}
+{% if can_manage and pending or can_manage and not onboarding %}
 {# Lo que se ha quedado a medias, con la siguiente acción de cada enfrentamiento (H-02). #}
 <h2 class="z-section-title">{% translate "Pendiente" %}</h2>
 {% if pending %}
@@ -164,7 +164,7 @@
         {% elif my_status.called %}<strong>{% translate "Estás convocado" %}</strong>{% if my_status.game %} · {% blocktranslate with n=my_status.game.n_game pts=my_status.game.score %}Partido {{ n }} · {{ pts }} pts{% endblocktranslate %}{% if my_status.partner %} · {% blocktranslate with name=my_status.partner.full_name %}con {{ name }}{% endblocktranslate %}{% endif %}{% elif my_status.closed %} · {% translate "las parejas aún no están decididas" %}{% endif %}
         {% else %}<strong>{% translate "No estás convocado" %}</strong>{% if not my_status.closed %} · {% translate "la convocatoria sigue abierta" %}{% endif %}{% endif %}</span>
     </p>
-    {% elif not my_player and not is_club_admin %}
+    {% elif not my_player and not can_manage %}
     <p class="z-next-match-me"><i class="fa-solid fa-link" aria-hidden="true"></i> <a href="{% url 'my_player' %}">{% translate "Enlaza tu cuenta con tu jugador para ver si estás convocado." %}</a></p>
     {% endif %}
     <div class="z-next-match-foot">
@@ -186,7 +186,7 @@
 {% elif not onboarding %}
 <div class="z-empty">
     <i class="fa-regular fa-calendar" aria-hidden="true"></i>
-    {% if is_club_admin %}
+    {% if can_manage %}
     {% translate "Programa el próximo enfrentamiento para preparar la convocatoria." %}
     <div class="mt-3"><a class="btn btn-primary btn-sm" href="{% url 'create_match' %}">{% translate "Crear enfrentamiento" %}</a></div>
     {% else %}
