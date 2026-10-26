@@ -696,6 +696,8 @@ class MassEmailTests(StaffTestCase):
         self.assertTemplateUsed(page, "backoffice/email_preview.html")  # página aparte, pensada para otra pestaña
         self.assertContains(page, "Llegaría a 2 personas")
         self.assertContains(page, "Hola capi")
+        self.assertNotContains(page, 'srcdoc="<!DOCTYPE')  # el HTML del correo va escapado dentro del atributo
+        self.assertNotContains(page, "cid:")
         self.assertEqual(len(mail.outbox), 0)
         self.post(action="test")
         self.assertEqual([m.to for m in mail.outbox], [["staff@example.com"]])

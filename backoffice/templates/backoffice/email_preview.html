@@ -19,6 +19,6 @@
         <div><strong>{% translate "Asunto" %}:</strong> {{ subject }}</div>
         <div>{% blocktranslate count n=total %}Llegaría a {{ n }} persona{% plural %}Llegaría a {{ n }} personas{% endblocktranslate %}{% if blocked %} · {% blocktranslate %}{{ blocked }} omitidos por estar bloqueados{% endblocktranslate %}{% endif %}{% if invalid %} · {% translate "Emails no válidos:" %} {{ invalid|join:", " }}{% endif %}. {% translate "Así lo vería el primer destinatario; no se ha enviado nada." %}</div>
     </header>
-    <iframe title="{% translate 'Vista previa del correo' %}" sandbox srcdoc="{{ preview_html }}"></iframe>
+    <iframe title="{% translate 'Vista previa del correo' %}" sandbox srcdoc="{{ preview_html|force_escape }}"></iframe>
 </body>
 </html>

@@ -12373,3 +12373,12 @@ msgstr "Hi {nombre},\n\nWe saw you signed up for Zyra but you are not part of an
 
 msgid "Así lo vería el primer destinatario; no se ha enviado nada."
 msgstr "This is how the first recipient would see it; nothing has been sent."
+
+msgid "Tus estadísticas te esperan"
+msgstr "Your stats are waiting for you"
+
+msgid "Usuarios sin club"
+msgstr "Users without a club"
+
+msgid "Hola {nombre},\n\nTus estadísticas te esperan en Zyra, pero todavía no estás en ningún club. Crea un nuevo club o solicita a tu capitán que te invite.\n\nSi necesitas ayuda, respóndeme a este correo.\n\nUn saludo."
+msgstr "Hi {nombre},\n\nYour stats are waiting for you in Zyra, but you are not in any club yet. Create a new club or ask your captain to invite you.\n\nIf you need help, just reply to this email.\n\nBest regards."

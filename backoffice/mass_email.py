@@ -59,10 +59,9 @@ def message_templates():
                       "Cualquier comentario me sirve.\n\nUn saludo."),
         },
         "no_club": {
-            "subject": _("Te falta un paso para empezar con Zyra"),
-            "body": _("Hola {nombre},\n\nVimos que te registraste en Zyra pero todavía no formas parte de ningún club. "
-                      "Puedes crear el tuyo desde tu cuenta o pedirle a tu capitán que te envíe el enlace de invitación. "
-                      "Si necesitas ayuda, respóndeme a este correo.\n\nUn saludo."),
+            "subject": _("Tus estadísticas te esperan"),
+            "body": _("Hola {nombre},\n\nTus estadísticas te esperan en Zyra, pero todavía no estás en ningún club. "
+                      "Crea un nuevo club o solicita a tu capitán que te invite.\n\nSi necesitas ayuda, respóndeme a este correo.\n\nUn saludo."),
         },
         "maintenance": {
             "subject": _("Aviso: mantenimiento de Zyra"),

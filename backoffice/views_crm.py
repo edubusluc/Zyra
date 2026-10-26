@@ -14,6 +14,7 @@ from django.core.paginator import Paginator
 from django.core.validators import validate_email
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
+from django.templatetags.static import static
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.utils import timezone
@@ -21,7 +22,7 @@ from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 
 from core import services
-from core.emails import build_email, club_admins
+from core.emails import LOGO_CID, build_email, club_admins
 from core.models import Club, Membership
 from players.models import Player
 from team.models import Team
@@ -380,6 +381,7 @@ def email_compose(request):
             messages.error(request, _("Ese segmento no tiene ningún email al que escribir."))
         elif action == "preview":
             html = mass_email.build_message(subject, body, recipients[0], reply_to).alternatives[0][0]
+            html = html.replace(f"cid:{LOGO_CID}", static("zyra/email-logo.png"))  # el logo del correo va adjunto: aquí, por URL
             return render(request, "backoffice/email_preview.html", {
                 "preview_html": html, "subject": mass_email.personalise(subject, recipients[0], html=False),
                 "total": len(recipients), "blocked": blocked, "invalid": invalid,
