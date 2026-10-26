@@ -12456,3 +12456,81 @@ msgstr "Users without a club"
 
 msgid "Hola {nombre},\n\nTus estadísticas te esperan en Zyra, pero todavía no estás en ningún club. Crea un nuevo club o solicita a tu capitán que te invite.\n\nSi necesitas ayuda, respóndeme a este correo.\n\nUn saludo."
 msgstr "Hi {nombre},\n\nYour stats are waiting for you in Zyra, but you are not in any club yet. Create a new club or ask your captain to invite you.\n\nIf you need help, just reply to this email.\n\nBest regards."
+
+msgid "Hay %(n)s peticiones de actualización desde SNP esperando."
+msgstr "There are %(n)s SNP update requests waiting."
+
+msgid "%(n)s peticiones de actualización desde SNP."
+msgstr "%(n)s SNP update requests."
+
+msgid "Peticiones de SNP"
+msgstr "SNP requests"
+
+msgid "El club necesita un equipo propio y una cuenta SNP para completar el equipo."
+msgstr "The club needs its own team and an SNP account to complete the team."
+
+msgid "Petición de %(club)s marcada como hecha."
+msgstr "Request from %(club)s marked as done."
+
+msgid "nota"
+msgstr "note"
+
+msgid "petición de actualización de SNP"
+msgstr "SNP update request"
+
+msgid "peticiones de actualización de SNP"
+msgstr "SNP update requests"
+
+msgid "¿Han llegado jugadores nuevos? Pide a Zyra que actualice tu equipo desde SNP."
+msgstr "Have new players joined? Ask Zyra to update your team from SNP."
+
+msgid "Petición enviada. Zyra actualizará tu equipo desde SNP en cuanto pueda."
+msgstr "Request sent. Zyra will update your team from SNP as soon as possible."
+
+msgid "Ya tienes una petición abierta: Zyra la está revisando."
+msgstr "You already have an open request: Zyra is reviewing it."
+
+msgid "Petición enviada el %(date)s: Zyra la está revisando."
+msgstr "Request sent on %(date)s: Zyra is reviewing it."
+
+msgid "Enviando la petición…"
+msgstr "Sending the request…"
+
+msgid "Nota (opcional): jugadores nuevos…"
+msgstr "Note (optional): new players…"
+
+msgid "Nota para Zyra"
+msgstr "Note for Zyra"
+
+msgid "Pedir actualización a Zyra"
+msgstr "Ask Zyra to update"
+
+msgid "Abiertas"
+msgstr "Open"
+
+msgid "Pedida por"
+msgstr "Requested by"
+
+msgid "Nota"
+msgstr "Note"
+
+msgid "Pidiendo el proceso…"
+msgstr "Requesting the process…"
+
+msgid "Marcar hecha"
+msgstr "Mark as done"
+
+msgid "No hay peticiones abiertas."
+msgstr "There are no open requests."
+
+msgid "Últimas atendidas"
+msgstr "Latest handled"
+
+msgid "Atendida"
+msgstr "Handled"
+
+msgid "Todavía no se ha atendido ninguna."
+msgstr "None has been handled yet."
+
+msgid "Capitanes que piden que Zyra actualice su equipo desde SNP. Con más de %(alert_threshold)s abiertas se avisa por correo al personal."
+msgstr "Captains asking Zyra to update their team from SNP. With more than %(alert_threshold)s open, staff are notified by email."

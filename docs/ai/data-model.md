@@ -63,6 +63,8 @@ entero sigue siendo la clave de los FK. Excepciones sin `public_id`: `backoffice
 - **SnpTeamImport**: búsqueda de «Completar equipo»; `status` ∈ running/ready/error/done/cancelled,
   `source` web/backoffice, listas JSON `to_add`, `existing`, `created_players` y, de los equipos del grupo, `teams_to_add`, `teams_existing`, `created_teams`.
 
+- **SnpUpdateRequest**: «Pedir actualización a Zyra» (`club`, `requested_by`, `note` ≤200, `status` open/done, `created_at`, `done_at`, `done_by`). Restricción: solo una `open` por club.
+
 ### match (`match/models.py`)
 
 - **Match**: `club`, `local`, `visiting` (FK a `Team`, nullable), `start_date`, `match_type`

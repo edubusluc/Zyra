@@ -15,7 +15,7 @@ from django.db import transaction
 from django.db.models import BooleanField, ExpressionWrapper, Q
 from django.utils import timezone
 from django.utils.translation import gettext as _, gettext_lazy, ngettext
-from . import snp_import, snp_service
+from . import snp_import, snp_requests, snp_service
 from .scraper import SnpScrapeError
 from core import similarity
 
@@ -116,6 +116,7 @@ def _complete_team_context(club):
         'snp_import_blocked': snp_import.web_blocked(club) and not active,
         'snp_import_wait': snp_import.search_limit(club),
         'snp_service_off': not snp_service.is_enabled(),
+        'snp_update_request': snp_requests.open_request(club),
     }
 
 @club_manager_required
@@ -352,6 +353,23 @@ def complete_team_start(request):
     if from_home:
         return redirect("complete_team_welcome", import_id=team_import.public_id)
     return redirect("list_players")
+
+
+@club_admin_required
+@require_POST
+def snp_update_request(request):
+    """
+    «Pedir actualización a Zyra»: el capitán pide al personal que complete el equipo desde SNP. Solo
+    capitanes y por POST, con una nota opcional (``note``). Si ya hay una petición abierta no crea otra.
+    Vuelve a la portada (``from=home``) o a la lista de jugadores.
+    """
+    back = "home" if request.POST.get("from") == "home" else "list_players"
+    _req, created = snp_requests.create_request(request.club, request.user, request.POST.get("note", ""))
+    if created:
+        messages.success(request, _("Petición enviada. Zyra actualizará tu equipo desde SNP en cuanto pueda."))
+    else:
+        messages.info(request, _("Ya tienes una petición abierta: Zyra la está revisando."))
+    return redirect(back)
 
 
 @club_admin_required

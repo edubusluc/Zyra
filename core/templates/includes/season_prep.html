@@ -58,6 +58,7 @@
                     {% if sync.state == 'failed' %}<a class="btn btn-secondary btn-sm" href="{% url 'snp_account' %}?edit=1">{% translate "Revisar cuenta SNP" %}</a>{% endif %}
                     {% include 'includes/season_prep_skip.html' %}
                 </div>
+                <div class="mt-2">{% include 'includes/snp_update_request.html' with request_open=step.request from='home' %}</div>
                 {% endif %}
                 {% endwith %}
                 {% endif %}
