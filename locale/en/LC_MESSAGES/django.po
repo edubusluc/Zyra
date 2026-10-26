@@ -12234,3 +12234,96 @@ msgstr "Matches view"
 
 msgid "contra"
 msgstr "against"
+
+msgid "Aviso de mantenimiento"
+msgstr "Maintenance notice"
+
+msgid "Aviso: mantenimiento de Zyra"
+msgstr "Notice: Zyra maintenance"
+
+msgid "Capitanes de clubes activos"
+msgstr "Captains of active clubs"
+
+msgid "Capitanes de clubes sin actividad en %(days)s días"
+msgstr "Captains of clubs with no activity in %(days)s days"
+
+msgid "Comunicación"
+msgstr "Communication"
+
+msgid "Correo a varios usuarios"
+msgstr "Email to several users"
+
+msgid "Destinatarios"
+msgstr "Recipients"
+
+msgid "Emails (separados por comas, espacios o líneas)"
+msgstr "Emails (separated by commas, spaces or new lines)"
+
+msgid "Emails no válidos:"
+msgstr "Invalid emails:"
+
+msgid "Enviados %(sent)s correos."
+msgstr "Sent %(sent)s emails."
+
+msgid "Enviados %(sent)s correos; %(failed)s han fallado (mira «Correos enviados»)."
+msgstr "Sent %(sent)s emails; %(failed)s failed (see “Sent emails”)."
+
+msgid "Enviando…"
+msgstr "Sending…"
+
+msgid "Enviar correo"
+msgstr "Send email"
+
+msgid "Enviar correo a usuarios"
+msgstr "Send email to users"
+
+msgid "Enviarme una prueba"
+msgstr "Send me a test"
+
+msgid "Ese segmento no tiene ningún email al que escribir."
+msgstr "That segment has no email to write to."
+
+msgid "Hay %(n)s destinatarios y el máximo por envío es %(max)s. Acota el segmento."
+msgstr "There are %(n)s recipients and the maximum per send is %(max)s. Narrow the segment."
+
+msgid "Lista de emails escrita a mano"
+msgstr "Hand-written list of emails"
+
+msgid "Marca la casilla para confirmar el envío."
+msgstr "Tick the box to confirm the send."
+
+msgid "No se ha podido enviar la prueba."
+msgstr "The test could not be sent."
+
+msgid "Novedades"
+msgstr "News"
+
+msgid "Novedades en Zyra"
+msgstr "News in Zyra"
+
+msgid "Prueba enviada a tu email."
+msgstr "Test sent to your email."
+
+msgid "Se muestran los 50 primeros."
+msgstr "The first 50 are shown."
+
+msgid "Tu cuenta no tiene email para recibir la prueba."
+msgstr "Your account has no email to receive the test."
+
+msgid "Ver destinatarios"
+msgstr "View recipients"
+
+msgid "Vista previa"
+msgstr "Preview"
+
+msgid "Vista previa (primer destinatario)"
+msgstr "Preview (first recipient)"
+
+msgid "Vista previa del correo"
+msgstr "Email preview"
+
+msgid "equipo"
+msgstr "team"
+
+msgid "tu club"
+msgstr "your club"
