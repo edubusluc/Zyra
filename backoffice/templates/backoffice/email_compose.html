@@ -49,8 +49,7 @@
             <button type="button" class="btn btn-outline-light" data-editor-cmd="insertOrderedList" title="{% translate 'Lista numerada' %}" aria-label="{% translate 'Lista numerada' %}"><i class="fa-solid fa-list-ol" aria-hidden="true"></i></button>
             <button type="button" class="btn btn-outline-light" data-editor-cmd="link" data-prompt="{% translate 'Dirección del enlace' %}" title="{% translate 'Enlace' %}" aria-label="{% translate 'Enlace' %}"><i class="fa-solid fa-link" aria-hidden="true"></i></button>
         </div>
-        <div class="form-control mb-2" id="contact-editor" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="contact-body-label" style="min-height:10rem; height:auto;"></div>
-        {{ body|json_script:"initial-body" }}
+        <div class="form-control mb-2" id="contact-editor" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="contact-body-label" style="min-height:10rem; height:auto;">{{ editor_html }}</div>
         <input type="hidden" id="contact-body" name="body">
 
         {% if total is not None %}
@@ -72,9 +71,6 @@
     </form>
     <script src="{% static 'js/backoffice-editor.js' %}"></script>
     <script>
-        // Mensaje ya saneado por el servidor (backoffice/richtext.py) que se vuelve a mostrar tras la vista previa.
-        var saved = new DOMParser().parseFromString(JSON.parse(document.getElementById("initial-body").textContent), "text/html");
-        document.getElementById("contact-editor").replaceChildren(...saved.body.childNodes);
         document.getElementById("audience").addEventListener("change", function () {
             document.getElementById("custom-box").hidden = this.value !== "custom";
         });

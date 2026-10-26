@@ -15,6 +15,7 @@ from django.core.validators import validate_email
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils.safestring import mark_safe
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
@@ -364,7 +365,10 @@ def email_compose(request):
     custom = request.POST.get("custom", "")[:20000]
     subject = request.POST.get("subject", "").strip()[:200]
     body = sanitize_html(request.POST.get("body", "").strip()[:20000])
-    ctx = {"section": "compose", "audience": audience, "custom": custom, "subject": subject, "body": body}
+    ctx = {
+        "section": "compose", "audience": audience, "custom": custom, "subject": subject, "body": body,
+        "editor_html": mark_safe(body),  # HTML ya saneado por ``sanitize_html`` (lista blanca de etiquetas)
+    }
     if request.method == "POST":
         action = request.POST.get("action", "preview")
         recipients, blocked, invalid = mass_email.recipients_for(audience, custom)
