@@ -411,7 +411,7 @@ borrado automático. Los avisos y eliminaciones quedan registrados con fecha y a
 
 Además de eso, el back-office incluye: buscador global (nombre, email o id público), **registro de
 auditoría** (cada acción del personal, dos años), **registro de correos** (seis meses), seguimiento
-comercial de clubes (etapa, contacto, notas, tareas y correo al capitán con plantillas), avisos por
+comercial de clubes (etapa, contacto, notas, tareas y correo al capitán con plantillas), **envío de correos a varios usuarios** (*Back-office → Enviar correo*: segmento, plantilla, variables `{nombre}`/`{club}`, vista previa, prueba y confirmación), avisos por
 correo al personal cuando algo falla y resumen semanal, embudo de clubes, errores 500 y peticiones
 lentas, y **«Entrar como»** un usuario: usas Zyra como él y puedes crear y corregir datos (30 minutos, con motivo
 obligatorio, cada cambio anotado en la auditoría a nombre del personal y sin contar como actividad suya; cuenta, email/contraseña, abandonar o borrar el club y la clave de SNP siguen bloqueados; no vale para cuentas de personal).

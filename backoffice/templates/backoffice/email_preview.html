@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+{% load i18n %}
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>{% translate "Vista previa del correo" %} · Zyra</title>
+    <style>
+        html, body { margin: 0; height: 100%; font-family: system-ui, sans-serif; background: #0B0B0B; color: #f2f2f2; }
+        body { display: flex; flex-direction: column; }
+        header { padding: .75rem 1rem; font-size: .95rem; border-bottom: 1px solid #333; }
+        header strong { color: #B4F100; }
+        iframe { flex: 1; width: 100%; border: 0; background: #fff; }
+    </style>
+</head>
+<body>
+    <header>
+        <div><strong>{% translate "Asunto" %}:</strong> {{ subject }}</div>
+        <div>{% blocktranslate count n=total %}Llegaría a {{ n }} persona{% plural %}Llegaría a {{ n }} personas{% endblocktranslate %}{% if blocked %} · {% blocktranslate %}{{ blocked }} omitidos por estar bloqueados{% endblocktranslate %}{% endif %}{% if invalid %} · {% translate "Emails no válidos:" %} {{ invalid|join:", " }}{% endif %}. {% translate "Así lo vería el primer destinatario; no se ha enviado nada." %}</div>
+    </header>
+    <iframe title="{% translate 'Vista previa del correo' %}" sandbox srcdoc="{{ preview_html|force_escape }}"></iframe>
+</body>
+</html>
