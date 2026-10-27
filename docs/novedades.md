@@ -7,6 +7,10 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 - La portada muestra al capitán un aviso para que conozca el rol de gestor, con enlace a «Miembros». Se queda hasta que lo cierra con la ✕; después no vuelve a aparecer (se guarda en su cuenta, `UserPreference.manager_tip_dismissed_at`). Gestores y miembros no lo ven.
 - Cuando el capitán nombra a un gestor, la primera vez que este entra en la portada ve una tarjeta «Ahora eres gestor del club» con lo que puede hacer; se queda hasta que la cierra (`Membership.manager_welcome_pending`).
+## 27/10/2026 · Mi forma (gráfica SNP)
+
+- «Mi forma» reparte la tarjeta a todo el ancho: los puntos SNP tienen ahora una gráfica grande de los últimos 30 días, con fechas de inicio y hoy, máximo y mínimo y la diferencia, y el botón de la tarjeta lleva a «Mis estadísticas» en lugar de a la ficha.
+
 ## 27/10/2026 · Mi forma
 
 - Nueva tarjeta **«Mi forma»** en el Inicio de quien tiene su cuenta enlazada a un jugador: últimos 5 partidos, racha, balance de la temporada (anillo de victorias y derrotas), de las convocatorias en las que te apuntaste a cuántas has ido, y puntos SNP. Solo cuentan los partidos competitivos. Se puede ocultar y volver a mostrar (botón «Mostrar mi forma»).

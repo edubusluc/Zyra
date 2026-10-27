@@ -15,29 +15,43 @@ from . import pairs
 
 LAST_GAMES = 5
 SNP_WINDOW_DAYS = 30
-SNP_POINTS = 10
+CHART_WIDTH = 300
+CHART_HEIGHT = 80
+CHART_PAD = 8
 # Perímetro del anillo del balance (SVG, radio 26).
 RING_LENGTH = 163.4
 
 
 def _snp(player, today):
-    """Puntos SNP actuales, diferencia en los últimos 30 días y puntos de la mini gráfica (o None sin puntos)."""
+    """
+    Puntos SNP actuales y su gráfica de los últimos 30 días (o None sin puntos). La gráfica coloca cada
+    actualización del histórico según su fecha: ``line`` y ``area`` (puntos SVG de un lienzo de
+    ``CHART_WIDTH`` x ``CHART_HEIGHT``), ``dot`` (posición en % del último punto), ``high`` y ``low``,
+    ``start`` y ``end`` (fechas del periodo) y ``delta`` (cambio entre la primera y la última); vacía si
+    hay menos de dos actualizaciones.
+    """
     if player.snp_score is None:
         return None
-    history = list(player.snp_history.filter(date__gte=today - datetime.timedelta(days=SNP_WINDOW_DAYS)).order_by("date"))
-    scores = [h.score for h in history][-SNP_POINTS:]
-    delta = player.snp_score - scores[0] if len(scores) >= 2 else None
-    return {"score": player.snp_score, "delta": delta, "line": _line(scores)}
-
-
-def _line(scores, width=120, height=28):
-    """Puntos (``"x,y x,y …"``) de la mini gráfica SVG de ``scores``; vacío si hay menos de dos."""
-    if len(scores) < 2:
-        return ""
+    start = today - datetime.timedelta(days=SNP_WINDOW_DAYS)
+    history = list(player.snp_history.filter(date__gte=start, date__lte=today).order_by("date"))
+    data = {"score": player.snp_score, "delta": None, "chart": None}
+    if len(history) < 2:
+        return data
+    scores = [h.score for h in history]
     low, high = min(scores), max(scores)
     span = (high - low) or 1
-    step = width / (len(scores) - 1)
-    return " ".join(f"{i * step:.1f},{height - 2 - (score - low) / span * (height - 4):.1f}" for i, score in enumerate(scores))
+    xs = [(h.date - start).days / SNP_WINDOW_DAYS * CHART_WIDTH for h in history]
+    ys = [CHART_PAD + (high - score) / span * (CHART_HEIGHT - 2 * CHART_PAD) if high != low else CHART_HEIGHT / 2
+          for score in scores]
+    line = " ".join(f"{x:.1f},{y:.1f}" for x, y in zip(xs, ys))
+    data["delta"] = scores[-1] - scores[0]
+    data["chart"] = {
+        "line": line,
+        "area": f"{line} {xs[-1]:.1f},{CHART_HEIGHT} {xs[0]:.1f},{CHART_HEIGHT}",
+        "dot": {"x": round(xs[-1] / CHART_WIDTH * 100, 1), "y": round(ys[-1] / CHART_HEIGHT * 100, 1)},
+        "high": high, "low": low, "start": start, "end": today,
+    }
+    return data
 
 
 def my_form(club, player, today=None):
