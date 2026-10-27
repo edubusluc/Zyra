@@ -1,9 +1,8 @@
 """
 «Mi forma»: resumen personal de un jugador para la tarjeta del Inicio.
 
-Solo cuenta partidos competitivos (los amistosos no entran en nada). Los últimos partidos y la racha miran
-todas las temporadas, porque la forma no se reinicia en agosto; el balance y las convocatorias son de la
-temporada actual. Los puntos SNP salen del histórico que ya se guarda en ``SnpScoreHistory``.
+Solo cuenta partidos competitivos (los amistosos no entran en nada). Todo es de la temporada actual: los
+últimos partidos, la racha, el balance y las convocatorias. Los puntos SNP salen del histórico que ya se guarda en ``SnpScoreHistory``.
 """
 import datetime
 
@@ -27,7 +26,8 @@ def _snp(player, today):
     Puntos SNP actuales y su gráfica de los últimos 30 días (o None sin puntos). La gráfica coloca cada
     actualización del histórico según su fecha: ``line`` y ``area`` (puntos SVG de un lienzo de
     ``CHART_WIDTH`` x ``CHART_HEIGHT``), ``dot`` (posición en % del último punto), ``high`` y ``low``,
-    ``start`` y ``end`` (fechas del periodo) y ``delta`` (cambio entre la primera y la última); vacía si
+    ``start`` y ``end`` (fechas del periodo), ``points`` (cada actualización con su posición en %, puntos y
+    fecha, para el indicador al pasar el ratón) y ``delta`` (cambio entre la primera y la última); vacía si
     hay menos de dos actualizaciones.
     """
     if player.snp_score is None:
@@ -50,6 +50,8 @@ def _snp(player, today):
         "area": f"{line} {xs[-1]:.1f},{CHART_HEIGHT} {xs[0]:.1f},{CHART_HEIGHT}",
         "dot": {"x": round(xs[-1] / CHART_WIDTH * 100, 1), "y": round(ys[-1] / CHART_HEIGHT * 100, 1)},
         "high": high, "low": low, "start": start, "end": today,
+        "points": [{"x": round(x / CHART_WIDTH * 100, 1), "y": round(y / CHART_HEIGHT * 100, 1),
+                    "score": h.score, "date": h.date} for x, y, h in zip(xs, ys, history)],
     }
     return data
 
@@ -64,8 +66,8 @@ def my_form(club, player, today=None):
     today = today or datetime.date.today()
     season = current_season()
     log = [g for g in pairs.club_game_log(club, match_type=pairs.COMPETITIVE) if player.id in g["pair"]]
-    results = [g["won"] for g in log]
     season_log = [g for g in log if g["season"] == season]
+    results = [g["won"] for g in season_log]
     wins = sum(g["won"] for g in season_log)
     called = set(Call.objects.filter(
         match__club=club, match__season=season, match__draft_mode=False, players=player,

@@ -9,6 +9,9 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 - Cuando el capitán nombra a un gestor, la primera vez que este entra en la portada ve una tarjeta «Ahora eres gestor del club» con lo que puede hacer; se queda hasta que la cierra (`Membership.manager_welcome_pending`).
 ## 27/10/2026 · Mi forma (gráfica SNP)
 
+- «Mi forma» y la ficha del jugador muestran solo los partidos de la temporada actual (antes mezclaban todas) y los ordenan del más antiguo (izquierda) al más reciente (derecha), como ya hacían las estadísticas.
+- Al pasar el ratón (o tocar) la gráfica de puntos SNP aparece un indicador sobre el punto más cercano con sus puntos y su fecha (`static/js/my-form-chart.js`).
+
 - «Mi forma» reparte la tarjeta a todo el ancho: los puntos SNP tienen ahora una gráfica grande de los últimos 30 días, con fechas de inicio y hoy, máximo y mínimo y la diferencia, y el botón de la tarjeta lleva a «Mis estadísticas» en lugar de a la ficha.
 
 ## 27/10/2026 · Mi forma
