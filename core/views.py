@@ -28,7 +28,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_http_methods, require_POST, require_safe
 
-from data_analyse import pairs as pair_stats
+from data_analyse import my_form as my_form_stats, pairs as pair_stats
 from call.models import Call
 from match.models import Match
 from match.phase import phases_for, player_status
@@ -117,6 +117,9 @@ def home(request):
     players = Player.objects.filter(club=club, in_team=True)
     hot_player, hot_pair = pair_stats.hot_streaks(pair_stats.club_game_log(club), players)
 
+    my_form_hidden = bool(my_player) and UserPreference.my_form_is_hidden(request.user)
+    my_form_data = my_form_stats.my_form(club, my_player) if my_player and not my_form_hidden else None
+
     onboarding = onboarding_for(request.membership)
     # «Prepara la temporada» (julio-octubre) lleva dentro el paso de SNP: no se repite la tarea suelta.
     prep = season_prep.season_prep_for(request.membership)
@@ -133,6 +136,8 @@ def home(request):
         'pending': pending[:HOME_PENDING_ROWS],
         'pending_total': len(pending),
         'my_player': my_player,
+        'my_form': my_form_data,
+        'my_form_hidden': my_form_hidden,
         'my_status': my_status,
         'days_left': (next_match.start_date - today).days if next_match else None,
         'hot_player': hot_player,
@@ -185,6 +190,15 @@ def dismiss_onboarding(request):
     """El capitán cierra la lista de primeros pasos de la portada (solo POST)."""
     request.club.onboarding_dismissed_at = timezone.now()
     request.club.save(update_fields=["onboarding_dismissed_at"])
+    return redirect("home")
+
+
+@club_required
+@require_POST
+def toggle_my_form(request):
+    """Oculta o vuelve a mostrar la tarjeta «Mi forma» del Inicio a quien la pulsa (POST, ``hide`` = 1 o 0)."""
+    UserPreference.objects.update_or_create(
+        user=request.user, defaults={"my_form_hidden": request.POST.get("hide") == "1"})
     return redirect("home")
 
 

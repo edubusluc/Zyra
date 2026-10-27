@@ -12575,3 +12575,36 @@ msgstr "None has been handled yet."
 
 msgid "Capitanes que piden que Zyra actualice su equipo desde SNP. Con más de %(alert_threshold)s abiertas se avisa por correo al personal."
 msgstr "Captains asking Zyra to update their team from SNP. With more than %(alert_threshold)s open, staff are notified by email."
+
+msgid "Mi forma"
+msgstr "My form"
+
+msgid "Ver mi ficha"
+msgstr "View my profile"
+
+msgid "Ocultando la tarjeta…"
+msgstr "Hiding the card…"
+
+msgid "Ocultar"
+msgstr "Hide"
+
+msgid "Todavía no has jugado ningún partido competitivo. Cuando juegues, aquí verás tu racha, tus últimos resultados y tus puntos SNP."
+msgstr "You haven't played any competitive match yet. Once you do, you'll see your streak, your latest results and your SNP points here."
+
+msgid "Racha de derrotas"
+msgstr "Losing streak"
+
+msgid "Convocatorias en las que has jugado"
+msgstr "Call-ups you played in"
+
+msgid "en los últimos 30 días"
+msgstr "in the last 30 days"
+
+msgid "Solo cuentan los partidos competitivos. Los puntos SNP cambian los últimos 30 días."
+msgstr "Only competitive matches count. SNP points show the change over the last 30 days."
+
+msgid "Mostrando la tarjeta…"
+msgstr "Showing the card…"
+
+msgid "Mostrar mi forma"
+msgstr "Show my form"
