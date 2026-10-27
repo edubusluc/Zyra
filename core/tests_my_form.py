@@ -103,10 +103,16 @@ class CalculationTests(MyFormBase):
             SnpScoreHistory.objects.create(player=self.me, date=self.day - datetime.timedelta(days=days), score=score)
         snp = my_form.my_form(self.club, self.me)["snp"]
         self.assertEqual(snp["delta"], 24)
-        self.assertEqual(len(snp["line"].split()), 3)
+        chart = snp["chart"]
+        self.assertEqual(len(chart["line"].split()), 3)
+        self.assertEqual((chart["high"], chart["low"]), (436, 412))
+        self.assertEqual((chart["start"], chart["end"]), (self.day - datetime.timedelta(days=30), self.day))
+        self.assertGreater(chart["dot"]["x"], 90)
 
     def test_snp_without_history_has_no_delta_and_without_score_is_none(self):
-        self.assertIsNone(my_form.my_form(self.club, self.me)["snp"]["delta"])
+        snp = my_form.my_form(self.club, self.me)["snp"]
+        self.assertIsNone(snp["delta"])
+        self.assertIsNone(snp["chart"])
         Player.objects.filter(pk=self.me.pk).update(snp_score=None)
         self.me.refresh_from_db()
         self.assertIsNone(my_form.my_form(self.club, self.me)["snp"])
@@ -119,6 +125,8 @@ class HomeTests(MyFormBase):
         page = self.client.get(reverse("home"))
         self.assertContains(page, "Mi forma")
         self.assertContains(page, "Ocultar")
+        self.assertContains(page, reverse("player_statistics") + "?player=" + self.me.public_id)
+        self.assertNotContains(page, "Ver mi ficha")
 
     def test_empty_state_message(self):
         self.client.login(username="jugador", password=PASSWORD)
@@ -146,6 +154,18 @@ class HomeTests(MyFormBase):
         self.client.login(username="jugador", password=PASSWORD)
         self.client.post(reverse("toggle_my_form"), {"hide": "1"})
         self.assertFalse(UserPreference.my_form_is_hidden(self.captain))
+
+    def test_css_numbers_use_a_dot_even_in_spanish(self):
+        """El anillo y la gráfica pintan números en CSS/SVG: con coma decimal no valdrían."""
+        self.play(True, days_ago=2)
+        self.play(True, days_ago=3)
+        self.play(False)
+        for days, score in ((20, 412), (1, 436)):
+            SnpScoreHistory.objects.create(player=self.me, date=self.day - datetime.timedelta(days=days), score=score)
+        self.client.login(username="jugador", password=PASSWORD)
+        page = self.client.get(reverse("home"), headers={"accept-language": "es"}).content.decode()
+        self.assertIn('stroke-dasharray="108.9 163.4"', page)
+        self.assertRegex(page, r'left: \d+\.\d%')
 
     def test_toggle_needs_post_and_login(self):
         self.client.login(username="jugador", password=PASSWORD)

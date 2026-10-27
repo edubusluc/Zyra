@@ -2906,7 +2906,19 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .z-myform-up { color: var(--z-lime); }
 .z-myform-down { color: #FF5C63; }
 .z-myform-hidden { margin-top: 1.5rem; }
-.z-myform-spark { display: block; width: 100%; max-width: 120px; height: 28px; margin-top: 4px; color: var(--z-lime); }
+.z-myform-snp { display: grid; gap: 6px; padding-top: 12px; border-top: 1px solid var(--z-border); }
+.z-myform-snp-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.z-myform-snp-title { font-size: .8rem; font-weight: 600; color: var(--z-muted, inherit); }
+.z-myform-snp-period { font-weight: 400; }
+.z-myform-chart { position: relative; height: 96px; }
+.z-myform-chart svg { display: block; width: 100%; height: 100%; }
+.z-myform-area { fill: rgba(180, 241, 0, .12); }
+.z-myform-line { fill: none; stroke: var(--z-lime); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.z-myform-end { position: absolute; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: var(--z-lime); box-shadow: 0 0 0 3px rgba(180, 241, 0, .25); }
+.z-myform-ymax, .z-myform-ymin { position: absolute; left: 0; font-size: .7rem; color: var(--z-muted, inherit); font-variant-numeric: tabular-nums; }
+.z-myform-ymax { top: -2px; }
+.z-myform-ymin { bottom: -2px; }
+.z-myform-xaxis { display: flex; justify-content: space-between; font-size: .75rem; color: var(--z-muted, inherit); }
 .z-myform-kpis .z-myform-seg-wrap, .z-myform-kpis .z-myform-ring-wrap { display: grid; gap: 6px; font-size: .85rem; font-weight: 400; }
 .z-myform-kpis .z-myform-ring-wrap { grid-auto-flow: column; grid-template-columns: auto 1fr; align-items: center; gap: 12px; }
 .z-myform-ring { width: 64px; height: 64px; flex: none; }

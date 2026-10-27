@@ -12635,3 +12635,18 @@ msgstr "You played in %(played)s of the %(total)s call-ups you signed up for"
 
 msgid "%(w)s victorias y %(l)s derrotas"
 msgstr "%(w)s wins and %(l)s losses"
+
+msgid "últimos 30 días"
+msgstr "last 30 days"
+
+msgid "Evolución de tus puntos SNP en los últimos 30 días, entre %(low)s y %(high)s"
+msgstr "Your SNP points over the last 30 days, between %(low)s and %(high)s"
+
+msgid "Aún no hay suficientes actualizaciones para dibujar la evolución. Los puntos se actualizan solos cada semana."
+msgstr "Not enough updates yet to draw the trend. Points update automatically every week."
+
+msgid "Solo cuentan los partidos competitivos."
+msgstr "Only competitive matches count."
+
+msgid "Mis estadísticas"
+msgstr "My statistics"
