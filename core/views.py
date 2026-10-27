@@ -144,6 +144,9 @@ def home(request):
                         and not SnpAccount.objects.filter(club=club).exists()),
         # Primeros pasos del capitán (core.onboarding): solo se ve el siguiente; el resto, plegado.
         'onboarding': onboarding,
+        'manager_welcome': request.membership.is_manager and request.membership.manager_welcome_pending,
+        # Aviso al capitán sobre el rol de gestor, hasta que lo cierre.
+        'manager_tip': request.membership.is_admin and UserPreference.manager_tip_pending(request.user),
         'onboarding_done': sum(step["done"] for step in onboarding) if onboarding else 0,
         'onboarding_percent': round(100 * sum(step["done"] for step in onboarding) / len(onboarding)) if onboarding else 0,
         'onboarding_next': next((step for step in onboarding if not step["done"]), None) if onboarding else None,
@@ -182,6 +185,22 @@ def dismiss_onboarding(request):
     """El capitán cierra la lista de primeros pasos de la portada (solo POST)."""
     request.club.onboarding_dismissed_at = timezone.now()
     request.club.save(update_fields=["onboarding_dismissed_at"])
+    return redirect("home")
+
+
+@club_admin_required
+@require_POST
+def dismiss_manager_tip(request):
+    """El capitán cierra el aviso «Añade un gestor» de la portada para siempre (solo POST)."""
+    UserPreference.objects.update_or_create(user=request.user, defaults={"manager_tip_dismissed_at": timezone.now()})
+    return redirect("home")
+
+
+@club_manager_required
+@require_POST
+def dismiss_manager_welcome(request):
+    """El gestor cierra la bienvenida a sus nuevas funciones de la portada (solo POST)."""
+    Membership.objects.filter(pk=request.membership.pk).update(manager_welcome_pending=False)
     return redirect("home")
 
 

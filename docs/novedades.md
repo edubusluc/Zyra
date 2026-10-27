@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 26/10/2026 · Aviso «Añade un gestor»
+
+- La portada muestra al capitán un aviso para que conozca el rol de gestor, con enlace a «Miembros». Se queda hasta que lo cierra con la ✕; después no vuelve a aparecer (se guarda en su cuenta, `UserPreference.manager_tip_dismissed_at`). Gestores y miembros no lo ven.
+- Cuando el capitán nombra a un gestor, la primera vez que este entra en la portada ve una tarjeta «Ahora eres gestor del club» con lo que puede hacer; se queda hasta que la cierra (`Membership.manager_welcome_pending`).
 ## 26/10/2026 · Pedir actualización a Zyra
 
 - El capitán puede **pedir a Zyra que actualice su equipo desde SNP** (con una nota opcional) desde «Prepara la temporada» y desde Jugadores. El personal las gestiona en el back-office, en **Peticiones de SNP**, y al marcarlas hechas el paso de SNP de la temporada queda cumplido. Con más de cinco peticiones abiertas se avisa por correo al personal.

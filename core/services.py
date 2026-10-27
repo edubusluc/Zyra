@@ -147,9 +147,11 @@ def set_manager(club, current, target, enable):
         if club.memberships.filter(role=Membership.MANAGER).count() >= Membership.MAX_MANAGERS:
             raise ManagerError(_("Un club puede tener como máximo %(n)s gestores.") % {"n": Membership.MAX_MANAGERS})
         target.role = Membership.MANAGER
+        target.manager_welcome_pending = True
     elif not enable and target.is_manager:
         target.role = Membership.MEMBER
-    target.save(update_fields=["role"])
+        target.manager_welcome_pending = False
+    target.save(update_fields=["role", "manager_welcome_pending"])
     return target
 
 

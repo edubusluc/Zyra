@@ -6,7 +6,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from core.models import Club, Invitation, Membership
+from core.models import Club, Invitation, Membership, UserPreference
 from core.services import create_club
 from match.models import Match
 from players.models import Player, SnpAccount
@@ -285,3 +285,55 @@ class NoNativeDialogsTests(TestCase):
         found = [str(p.relative_to(root)) for p in list(root.glob("**/templates/**/*.html")) + list(root.glob("static/js/*.js"))
                  if pattern.search(p.read_text(encoding="utf-8"))]
         self.assertEqual(found, [])
+
+
+class ManagerTipTests(TestCase):
+    """Aviso «Añade un gestor» de la portada: solo el capitán, hasta que lo cierra."""
+
+    def setUp(self):
+        self.captain = User.objects.create_user("capitan", password="pass-12345", email="capitan@example.com")
+        self.club = create_club("Club A", "Sevilla", self.captain)
+        self.client.force_login(self.captain)
+
+    def test_captain_sees_it_until_dismissed(self):
+        self.assertContains(self.client.get(reverse("home")), "Añade un gestor")
+        self.client.post(reverse("dismiss_manager_tip"))
+        self.assertNotContains(self.client.get(reverse("home")), "Añade un gestor")
+
+    def test_dismissal_is_stored_per_user(self):
+        self.client.post(reverse("dismiss_manager_tip"))
+        self.assertIsNotNone(UserPreference.objects.get(user=self.captain).manager_tip_dismissed_at)
+
+    def test_others_do_not_see_it(self):
+        for role in (Membership.MANAGER, Membership.MEMBER):
+            user = User.objects.create_user(role, password="pass-12345")
+            Membership.objects.create(user=user, club=self.club, role=role)
+            self.client.force_login(user)
+            self.assertNotContains(self.client.get(reverse("home")), "Añade un gestor")
+            self.assertEqual(self.client.post(reverse("dismiss_manager_tip")).status_code, 403)
+
+
+class ManagerWelcomeTests(TestCase):
+    """Bienvenida al gestor recién nombrado: se ve hasta que la cierra."""
+
+    def setUp(self):
+        self.captain = User.objects.create_user("capitan", password="pass-12345", email="capitan@example.com")
+        self.club = create_club("Club A", "Sevilla", self.captain)
+        self.user = User.objects.create_user("socio", password="pass-12345")
+        self.membership = Membership.objects.create(user=self.user, club=self.club, role=Membership.MEMBER)
+
+    def test_flow(self):
+        from core.services import set_manager
+        self.client.force_login(self.user)
+        self.assertNotContains(self.client.get(reverse("home")), "Ahora eres gestor")
+        set_manager(self.club, Membership.objects.get(user=self.captain), self.membership, True)
+        self.assertContains(self.client.get(reverse("home")), "Ahora eres gestor")
+        self.assertContains(self.client.get(reverse("home")), "Ahora eres gestor")
+        self.client.post(reverse("dismiss_manager_welcome"))
+        self.assertNotContains(self.client.get(reverse("home")), "Ahora eres gestor")
+
+    def test_captain_and_members_do_not_see_it(self):
+        Membership.objects.filter(pk=self.membership.pk).update(manager_welcome_pending=True)
+        self.client.force_login(self.user)
+        self.assertNotContains(self.client.get(reverse("home")), "Ahora eres gestor")
+        self.assertEqual(self.client.post(reverse("dismiss_manager_welcome")).status_code, 403)
