@@ -2907,3 +2907,8 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .z-myform-down { color: #FF5C63; }
 .z-myform-hidden { margin-top: 1.5rem; }
 .z-myform-spark { display: block; width: 100%; max-width: 120px; height: 28px; margin-top: 4px; color: var(--z-lime); }
+.z-myform-kpis .z-myform-seg-wrap { display: grid; gap: 6px; font-size: .85rem; font-weight: 400; }
+.z-myform-seg { display: block; height: 10px; border-radius: 99px; background: rgba(255, 92, 99, .55); overflow: hidden; }
+.z-myform-seg-w { display: block; height: 100%; background: var(--z-lime); }
+.z-myform-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; color: var(--z-muted, inherit); }
+.z-myform-legend strong { color: inherit; font-weight: 700; }

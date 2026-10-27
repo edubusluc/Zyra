@@ -42,7 +42,8 @@ def my_form(club, player, today=None):
     """
     Datos de «Mi forma» de ``player``: ``last`` (últimos 5 partidos, True = victoria, del más antiguo al
     más reciente), ``run`` (``('V' | 'D', n)``, o ``(None, 0)``), ``season`` (ganados, perdidos, %), ``called``
-    y ``played`` (convocatorias cerradas de la temporada y en cuántas jugó), ``snp`` y ``empty``.
+    y ``played`` (a cuántos enfrentamientos cerrados de la temporada se apuntó y en cuántos de ellos jugó),
+    ``matches`` (enfrentamientos competitivos cerrados de la temporada), ``snp`` y ``empty``.
     """
     today = today or datetime.date.today()
     season = current_season()
@@ -50,6 +51,9 @@ def my_form(club, player, today=None):
     results = [g["won"] for g in log]
     season_log = [g for g in log if g["season"] == season]
     wins = sum(g["won"] for g in season_log)
+    matches = Match.objects.filter(
+        club=club, season=season, draft_mode=False,
+        match_type__in=[value for value, _label in Match.COMPETITIVE_TYPES]).count()
     called = set(Call.objects.filter(
         match__club=club, match__season=season, match__draft_mode=False, players=player,
         match__match_type__in=[value for value, _label in Match.COMPETITIVE_TYPES],
@@ -63,6 +67,7 @@ def my_form(club, player, today=None):
         "win_pct": round(wins / len(season_log) * 100) if season_log else 0,
         "called": len(called),
         "played": len(played),
+        "matches": matches,
         "snp": _snp(player, today),
         "empty": not results,
     }

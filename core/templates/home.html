@@ -266,9 +266,16 @@
         {% if my_form.run.1 > 1 %}
         <div><dt>{% if my_form.run.0 == 'V' %}{% translate "Racha de victorias" %}{% else %}{% translate "Racha de derrotas" %}{% endif %}</dt><dd>{{ my_form.run.1 }}</dd></div>
         {% endif %}
-        <div><dt>{% translate "Balance de la temporada" %}</dt><dd>{{ my_form.wins }}–{{ my_form.losses }} <small>{{ my_form.win_pct }} %</small></dd></div>
-        {% if my_form.called %}
-        <div><dt>{% translate "Convocatorias en las que has jugado" %}</dt><dd>{{ my_form.played }}/{{ my_form.called }}</dd></div>
+        <div class="z-myform-balance">
+            <dt>{% translate "Balance de la temporada" %}</dt>
+            <dd class="z-myform-seg-wrap">
+                <span class="z-myform-seg" role="img" aria-label="{% blocktranslate with w=my_form.wins l=my_form.losses pct=my_form.win_pct %}{{ w }} victorias y {{ l }} derrotas ({{ pct }} % de victorias){% endblocktranslate %}"><i class="z-myform-seg-w" style="width: {{ my_form.win_pct }}%"></i></span>
+                <span class="z-myform-legend"><span><strong>{{ my_form.wins }}</strong> {% translate "victorias" %}</span><span><strong>{{ my_form.losses }}</strong> {% translate "derrotas" %}</span></span>
+            </dd>
+        </div>
+        {% if my_form.matches %}
+        <div><dt>{% translate "Apuntado a convocatorias" %}</dt><dd>{{ my_form.called }} <small>{% blocktranslate with total=my_form.matches %}de {{ total }}{% endblocktranslate %}</small></dd></div>
+        <div><dt>{% translate "Has jugado, de los apuntados" %}</dt><dd>{{ my_form.played }} <small>{% blocktranslate with total=my_form.called %}de {{ total }}{% endblocktranslate %}</small></dd></div>
         {% endif %}
         {% if my_form.snp %}
         <div><dt>{% translate "Puntos SNP" %}</dt><dd>{{ my_form.snp.score|snp_points }}{% if my_form.snp.delta %} <small class="{% if my_form.snp.delta > 0 %}z-myform-up{% else %}z-myform-down{% endif %}">{% if my_form.snp.delta > 0 %}+{% endif %}{{ my_form.snp.delta|floatformat:"-1" }} <span class="visually-hidden">{% translate "en los últimos 30 días" %}</span></small>{% endif %}

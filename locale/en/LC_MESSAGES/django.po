@@ -12608,3 +12608,18 @@ msgstr "Showing the card…"
 
 msgid "Mostrar mi forma"
 msgstr "Show my form"
+
+msgid "Apuntado a convocatorias"
+msgstr "Signed up for call-ups"
+
+msgid "Has jugado, de los apuntados"
+msgstr "You played, of those signed up"
+
+msgid "victorias"
+msgstr "wins"
+
+msgid "derrotas"
+msgstr "losses"
+
+msgid "%(w)s victorias y %(l)s derrotas (%(pct)s %% de victorias)"
+msgstr "%(w)s wins and %(l)s losses (%(pct)s %% wins)"

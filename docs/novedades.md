@@ -9,7 +9,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 - Cuando el capitán nombra a un gestor, la primera vez que este entra en la portada ve una tarjeta «Ahora eres gestor del club» con lo que puede hacer; se queda hasta que la cierra (`Membership.manager_welcome_pending`).
 ## 27/10/2026 · Mi forma
 
-- Nueva tarjeta **«Mi forma»** en el Inicio de quien tiene su cuenta enlazada a un jugador: últimos 5 partidos, racha, balance de la temporada, convocatorias jugadas y puntos SNP. Solo cuentan los partidos competitivos. Se puede ocultar y volver a mostrar (botón «Mostrar mi forma»).
+- Nueva tarjeta **«Mi forma»** en el Inicio de quien tiene su cuenta enlazada a un jugador: últimos 5 partidos, racha, balance de la temporada (barra de victorias y derrotas), convocatorias a las que te has apuntado y en cuántas jugaste, y puntos SNP. Solo cuentan los partidos competitivos. Se puede ocultar y volver a mostrar (botón «Mostrar mi forma»).
 
 ## 26/10/2026 · Pedir actualización a Zyra
 
