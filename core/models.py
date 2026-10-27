@@ -31,7 +31,8 @@ class UserPreference(models.Model):
     informe mensual por email del jugador (``send_monthly_reports``) y ``monthly_scope`` elige
     si cuenta todos sus partidos o solo los competitivos. ``match_result_email`` activa el aviso
     del resultado al cerrarse el acta de un enfrentamiento de su club. ``manager_tip_dismissed_at``
-    marca que el capitán cerró el aviso «Añade un gestor» de la portada.
+    marca que el capitán cerró el aviso «Añade un gestor» de la portada; ``my_form_hidden``, que el jugador
+    ocultó la tarjeta «Mi forma».
     """
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="preference")
     report_scope = models.CharField(max_length=15, choices=REPORT_SCOPES, default=REPORT_SCOPE_ALL)
@@ -41,6 +42,13 @@ class UserPreference(models.Model):
     match_result_email = models.BooleanField(default=True)
     # El capitán cerró el aviso «Añade un gestor» de la portada; no vuelve a aparecer.
     manager_tip_dismissed_at = models.DateTimeField(null=True, blank=True)
+    # El jugador ocultó la tarjeta «Mi forma» del Inicio; la puede volver a mostrar.
+    my_form_hidden = models.BooleanField(default=False)
+
+    @classmethod
+    def my_form_is_hidden(cls, user):
+        """True si ``user`` ocultó la tarjeta «Mi forma» del Inicio."""
+        return cls.objects.filter(user=user, my_form_hidden=True).exists()
 
     @classmethod
     def manager_tip_pending(cls, user):

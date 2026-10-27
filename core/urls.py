@@ -18,6 +18,7 @@ urlpatterns = (
     path('season-prep/<str:key>/', views.season_prep_step, name='season_prep_step'),
     path('onboarding/dismiss/', views.dismiss_onboarding, name='dismiss_onboarding'),
     path('manager-welcome/dismiss/', views.dismiss_manager_welcome, name='dismiss_manager_welcome'),
+    path('my-form/toggle/', views.toggle_my_form, name='toggle_my_form'),
     path('manager-tip/dismiss/', views.dismiss_manager_tip, name='dismiss_manager_tip'),
     path('welcome/', views.member_welcome, name='member_welcome'),
     path('profile/', views.my_profile, name='my_profile'),

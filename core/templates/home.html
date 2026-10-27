@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static i18n %}
+{% load static i18n zyra_format %}
 
 {% block content %}
 <section class="z-home-hero">
@@ -238,6 +238,68 @@
 </div>
 {% endif %}
 
+
+{% if my_form %}
+{# «Mi forma» (data_analyse.my_form): solo para quien tiene su cuenta enlazada a un jugador; se puede ocultar y volver a mostrar. #}
+<section class="z-card z-myform" aria-labelledby="my-form-title">
+    <div class="z-myform-head">
+        <div>
+            <span class="z-eyebrow">{% blocktranslate with season=season %}Temporada {{ season }}{% endblocktranslate %}</span>
+            <h2 id="my-form-title" class="z-section-title">{% translate "Mi forma" %}</h2>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-secondary btn-sm" href="{% url 'show_player' my_player.public_id %}">{% translate "Ver mi ficha" %}</a>
+            <form method="post" action="{% url 'toggle_my_form' %}" data-loading-text="{% translate 'Ocultando la tarjeta…' %}">
+                {% csrf_token %}<input type="hidden" name="hide" value="1">
+                <button type="submit" class="btn btn-secondary btn-sm">{% translate "Ocultar" %}</button>
+            </form>
+        </div>
+    </div>
+    {% if my_form.empty %}
+    <p class="mb-0">{% translate "Todavía no has jugado ningún partido competitivo. Cuando juegues, aquí verás tu racha, tus últimos resultados y tus puntos SNP." %}</p>
+    {% else %}
+    <p class="z-form-strip" aria-label="{% translate 'Últimos partidos' %}">
+        <span class="z-eyebrow">{% translate "Últimos partidos" %}</span>
+        {% for won in my_form.last %}<span class="st-pip st-pip--{% if won %}w{% else %}l{% endif %}">{% if won %}{% translate "V" context "victoria" %}{% else %}{% translate "D" context "derrota" %}{% endif %}</span>{% endfor %}
+    </p>
+    <dl class="z-myform-kpis">
+        {% if my_form.run.1 > 1 %}
+        <div><dt>{% if my_form.run.0 == 'V' %}{% translate "Racha de victorias" %}{% else %}{% translate "Racha de derrotas" %}{% endif %}</dt><dd>{{ my_form.run.1 }}</dd></div>
+        {% endif %}
+        <div class="z-myform-balance">
+            <dt>{% translate "Balance de la temporada" %}</dt>
+            <dd class="z-myform-ring-wrap">
+                <svg class="z-myform-ring" viewBox="0 0 64 64" role="img" aria-label="{% blocktranslate with w=my_form.wins l=my_form.losses %}{{ w }} victorias y {{ l }} derrotas{% endblocktranslate %}">
+                    <circle cx="32" cy="32" r="26" fill="none" class="z-myform-ring-l" stroke-width="8"/>
+                    {% if my_form.wins %}<circle cx="32" cy="32" r="26" fill="none" class="z-myform-ring-w" stroke-width="8" stroke-dasharray="{{ my_form.win_arc }} 163.4" transform="rotate(-90 32 32)"/>{% endif %}
+                    <text x="32" y="37" text-anchor="middle" class="z-myform-ring-t">{{ my_form.wins }}-{{ my_form.losses }}</text>
+                </svg>
+                <span class="z-myform-legend z-myform-legend--col"><span><i class="z-myform-dot z-myform-dot--w"></i><strong>{{ my_form.wins }}</strong> {% translate "victorias" %}</span><span><i class="z-myform-dot z-myform-dot--l"></i><strong>{{ my_form.losses }}</strong> {% translate "derrotas" %}</span></span>
+            </dd>
+        </div>
+        {% if my_form.called %}
+        <div>
+            <dt>{% translate "Convocatorias en las que te has apuntado" %}</dt>
+            <dd class="z-myform-seg-wrap">
+                <span class="z-myform-big">{{ my_form.played }} <small>{% blocktranslate with total=my_form.called %}jugadas de {{ total }}{% endblocktranslate %}</small></span>
+                <span class="z-myform-seg" role="img" aria-label="{% blocktranslate with played=my_form.played total=my_form.called %}Has jugado en {{ played }} de las {{ total }} convocatorias en las que te apuntaste{% endblocktranslate %}"><i class="z-myform-seg-w" style="width: {{ my_form.played_pct }}%"></i></span>
+            </dd>
+        </div>
+        {% endif %}
+        {% if my_form.snp %}
+        <div><dt>{% translate "Puntos SNP" %}</dt><dd>{{ my_form.snp.score|snp_points }}{% if my_form.snp.delta %} <small class="{% if my_form.snp.delta > 0 %}z-myform-up{% else %}z-myform-down{% endif %}">{% if my_form.snp.delta > 0 %}+{% endif %}{{ my_form.snp.delta|floatformat:"-1" }} <span class="visually-hidden">{% translate "en los últimos 30 días" %}</span></small>{% endif %}
+            {% if my_form.snp.line %}<svg class="z-myform-spark" viewBox="0 0 120 28" aria-hidden="true" focusable="false"><polyline points="{{ my_form.snp.line }}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>{% endif %}</dd></div>
+        {% endif %}
+    </dl>
+    <p class="small text-muted mb-0">{% translate "Solo cuentan los partidos competitivos. Los puntos SNP cambian los últimos 30 días." %}</p>
+    {% endif %}
+</section>
+{% elif my_form_hidden %}
+<form method="post" action="{% url 'toggle_my_form' %}" class="z-myform-hidden" data-loading-text="{% translate 'Mostrando la tarjeta…' %}">
+    {% csrf_token %}<input type="hidden" name="hide" value="0">
+    <button type="submit" class="btn btn-secondary btn-sm"><i class="fa-solid fa-chart-line me-1" aria-hidden="true"></i> {% translate "Mostrar mi forma" %}</button>
+</form>
+{% endif %}
 
 {% if snp_missing %}
 <div class="z-card z-card--link z-snp-notice d-flex flex-column align-items-start" style = "margin-top: 2rem;">

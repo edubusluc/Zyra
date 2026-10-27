@@ -7,6 +7,10 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 - La portada muestra al capitán un aviso para que conozca el rol de gestor, con enlace a «Miembros». Se queda hasta que lo cierra con la ✕; después no vuelve a aparecer (se guarda en su cuenta, `UserPreference.manager_tip_dismissed_at`). Gestores y miembros no lo ven.
 - Cuando el capitán nombra a un gestor, la primera vez que este entra en la portada ve una tarjeta «Ahora eres gestor del club» con lo que puede hacer; se queda hasta que la cierra (`Membership.manager_welcome_pending`).
+## 27/10/2026 · Mi forma
+
+- Nueva tarjeta **«Mi forma»** en el Inicio de quien tiene su cuenta enlazada a un jugador: últimos 5 partidos, racha, balance de la temporada (anillo de victorias y derrotas), de las convocatorias en las que te apuntaste a cuántas has ido, y puntos SNP. Solo cuentan los partidos competitivos. Se puede ocultar y volver a mostrar (botón «Mostrar mi forma»).
+
 ## 26/10/2026 · Pedir actualización a Zyra
 
 - El capitán puede **pedir a Zyra que actualice su equipo desde SNP** (con una nota opcional) desde «Prepara la temporada» y desde Jugadores. El personal las gestiona en el back-office, en **Peticiones de SNP**, y al marcarlas hechas el paso de SNP de la temporada queda cumplido. Con más de cinco peticiones abiertas se avisa por correo al personal.

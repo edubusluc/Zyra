@@ -2893,3 +2893,33 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .z-cal-grid .z-cal-event-name { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; white-space: normal; overflow: hidden; word-break: break-word; }
 .z-cal-grid .z-cal-event { flex-direction: column; align-items: stretch; gap: 1px; }
 .z-cal-grid .z-cal-event-name { word-break: normal; overflow-wrap: anywhere; flex: none; }
+
+/* «Mi forma» del Inicio (data_analyse.my_form). */
+.z-myform { margin-top: 2rem; display: grid; gap: 12px; }
+.z-myform-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.z-myform-head .z-section-title { margin: 0; }
+.z-myform .z-form-strip { margin: 0; }
+.z-myform-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 0; }
+.z-myform-kpis dt { font-size: .8rem; font-weight: 600; color: var(--z-muted, inherit); }
+.z-myform-kpis dd { margin: 0; font-size: 1.4rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.z-myform-kpis dd small { font-size: .8rem; font-weight: 600; }
+.z-myform-up { color: var(--z-lime); }
+.z-myform-down { color: #FF5C63; }
+.z-myform-hidden { margin-top: 1.5rem; }
+.z-myform-spark { display: block; width: 100%; max-width: 120px; height: 28px; margin-top: 4px; color: var(--z-lime); }
+.z-myform-kpis .z-myform-seg-wrap, .z-myform-kpis .z-myform-ring-wrap { display: grid; gap: 6px; font-size: .85rem; font-weight: 400; }
+.z-myform-kpis .z-myform-ring-wrap { grid-auto-flow: column; grid-template-columns: auto 1fr; align-items: center; gap: 12px; }
+.z-myform-ring { width: 64px; height: 64px; flex: none; }
+.z-myform-ring-l { stroke: rgba(255, 92, 99, .6); }
+.z-myform-ring-w { stroke: var(--z-lime); }
+.z-myform-ring-t { font-size: 15px; font-weight: 700; fill: currentColor; font-variant-numeric: tabular-nums; }
+.z-myform-seg { display: block; height: 10px; border-radius: 99px; background: var(--z-border-strong, rgba(255, 255, 255, .15)); overflow: hidden; }
+.z-myform-seg-w { display: block; height: 100%; background: var(--z-lime); }
+.z-myform-big { font-size: 1.4rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.z-myform-big small { font-size: .8rem; font-weight: 600; }
+.z-myform-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; color: var(--z-muted, inherit); }
+.z-myform-legend--col { flex-direction: column; gap: 2px; }
+.z-myform-legend strong { color: inherit; font-weight: 700; }
+.z-myform-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+.z-myform-dot--w { background: var(--z-lime); }
+.z-myform-dot--l { background: #FF5C63; }

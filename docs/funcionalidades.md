@@ -74,6 +74,8 @@ Sección **Club** del menú principal: Miembros e invitaciones, Mi equipo, Rival
 
 La página del enfrentamiento muestra las fases Convocatoria · Parejas · Resultados · Acta, un único botón «Siguiente: …» y un menú «Más». El inicio del capitán lista lo **Pendiente** (una fila por enfrentamiento abierto) y el del jugador indica si está convocado y con quién juega. La lógica está en `match/phase.py`. Los resultados de los 5 partidos se rellenan de una vez en «Resultados del enfrentamiento».
 
+**Mi forma**: quien tiene su cuenta enlazada a un jugador ve en el Inicio la tarjeta «Mi forma»: sus últimos 5 partidos (V/D), la racha, el balance de la temporada (anillo de victorias y derrotas), de las convocatorias en las que se ha apuntado a cuántas ha ido (una sola barra) y sus puntos SNP con la diferencia de los últimos 30 días y una mini gráfica. Solo cuentan los partidos competitivos. Se puede **ocultar** y **volver a mostrar** (botón «Mostrar mi forma») sin afectar a nadie más; con «Ver mi ficha» se abre la ficha completa.
+
 ## Prepara la temporada
 
 Del 1 de julio al 31 de octubre, el Inicio del capitán y de los gestores (en los clubes que ya existían el 1 de julio) enseña la tarjeta **«Prepara la temporada»** ([`core.season_prep`](referencia/core/season_prep.md)) con tres pasos: revisar la plantilla, actualizar desde SNP y revisar rivales y divisiones. La plantilla y los rivales los marca a mano quien los revisa («Ya la he revisado»); el paso de SNP se marca solo cuando «Completar equipo» sale bien esa temporada (o el capitán lo omite) y es solo del capitán. Se oculta sola al completar los tres, o con «Ahora no» (capitán). **«Completar equipo» desde la web se puede usar una vez por temporada** (desde el 1 de julio), no una vez por club.
