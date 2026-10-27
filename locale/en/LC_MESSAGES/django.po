@@ -12623,3 +12623,15 @@ msgstr "losses"
 
 msgid "%(w)s victorias y %(l)s derrotas (%(pct)s %% de victorias)"
 msgstr "%(w)s wins and %(l)s losses (%(pct)s %% wins)"
+
+msgid "Convocatorias en las que te has apuntado"
+msgstr "Call-ups you signed up for"
+
+msgid "jugadas de %(total)s"
+msgstr "played out of %(total)s"
+
+msgid "Has jugado en %(played)s de las %(total)s convocatorias en las que te apuntaste"
+msgstr "You played in %(played)s of the %(total)s call-ups you signed up for"
+
+msgid "%(w)s victorias y %(l)s derrotas"
+msgstr "%(w)s wins and %(l)s losses"

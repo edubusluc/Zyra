@@ -268,14 +268,23 @@
         {% endif %}
         <div class="z-myform-balance">
             <dt>{% translate "Balance de la temporada" %}</dt>
-            <dd class="z-myform-seg-wrap">
-                <span class="z-myform-seg" role="img" aria-label="{% blocktranslate with w=my_form.wins l=my_form.losses pct=my_form.win_pct %}{{ w }} victorias y {{ l }} derrotas ({{ pct }} % de victorias){% endblocktranslate %}"><i class="z-myform-seg-w" style="width: {{ my_form.win_pct }}%"></i></span>
-                <span class="z-myform-legend"><span><strong>{{ my_form.wins }}</strong> {% translate "victorias" %}</span><span><strong>{{ my_form.losses }}</strong> {% translate "derrotas" %}</span></span>
+            <dd class="z-myform-ring-wrap">
+                <svg class="z-myform-ring" viewBox="0 0 64 64" role="img" aria-label="{% blocktranslate with w=my_form.wins l=my_form.losses %}{{ w }} victorias y {{ l }} derrotas{% endblocktranslate %}">
+                    <circle cx="32" cy="32" r="26" fill="none" class="z-myform-ring-l" stroke-width="8"/>
+                    {% if my_form.wins %}<circle cx="32" cy="32" r="26" fill="none" class="z-myform-ring-w" stroke-width="8" stroke-dasharray="{{ my_form.win_arc }} 163.4" transform="rotate(-90 32 32)"/>{% endif %}
+                    <text x="32" y="37" text-anchor="middle" class="z-myform-ring-t">{{ my_form.wins }}-{{ my_form.losses }}</text>
+                </svg>
+                <span class="z-myform-legend z-myform-legend--col"><span><i class="z-myform-dot z-myform-dot--w"></i><strong>{{ my_form.wins }}</strong> {% translate "victorias" %}</span><span><i class="z-myform-dot z-myform-dot--l"></i><strong>{{ my_form.losses }}</strong> {% translate "derrotas" %}</span></span>
             </dd>
         </div>
-        {% if my_form.matches %}
-        <div><dt>{% translate "Apuntado a convocatorias" %}</dt><dd>{{ my_form.called }} <small>{% blocktranslate with total=my_form.matches %}de {{ total }}{% endblocktranslate %}</small></dd></div>
-        <div><dt>{% translate "Has jugado, de los apuntados" %}</dt><dd>{{ my_form.played }} <small>{% blocktranslate with total=my_form.called %}de {{ total }}{% endblocktranslate %}</small></dd></div>
+        {% if my_form.called %}
+        <div>
+            <dt>{% translate "Convocatorias en las que te has apuntado" %}</dt>
+            <dd class="z-myform-seg-wrap">
+                <span class="z-myform-big">{{ my_form.played }} <small>{% blocktranslate with total=my_form.called %}jugadas de {{ total }}{% endblocktranslate %}</small></span>
+                <span class="z-myform-seg" role="img" aria-label="{% blocktranslate with played=my_form.played total=my_form.called %}Has jugado en {{ played }} de las {{ total }} convocatorias en las que te apuntaste{% endblocktranslate %}"><i class="z-myform-seg-w" style="width: {{ my_form.played_pct }}%"></i></span>
+            </dd>
+        </div>
         {% endif %}
         {% if my_form.snp %}
         <div><dt>{% translate "Puntos SNP" %}</dt><dd>{{ my_form.snp.score|snp_points }}{% if my_form.snp.delta %} <small class="{% if my_form.snp.delta > 0 %}z-myform-up{% else %}z-myform-down{% endif %}">{% if my_form.snp.delta > 0 %}+{% endif %}{{ my_form.snp.delta|floatformat:"-1" }} <span class="visually-hidden">{% translate "en los últimos 30 días" %}</span></small>{% endif %}

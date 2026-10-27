@@ -57,7 +57,7 @@ class CalculationTests(MyFormBase):
         self.assertEqual(len(data["last"]), 5)
         self.assertEqual(data["run"], ("V", 5))
         self.assertEqual((data["wins"], data["losses"], data["win_pct"]), (6, 1, 86))
-        self.assertEqual((data["called"], data["played"], data["matches"]), (7, 7, 7))
+        self.assertEqual((data["called"], data["played"]), (7, 7))
 
     def test_losing_run(self):
         self.play(True, days_ago=3)
@@ -76,13 +76,20 @@ class CalculationTests(MyFormBase):
         Game.objects.filter(match=match).update(player_1_local=self.mate, player_2_local=None, player_1_visiting=None)
         self.play(True, days_ago=2)
         data = my_form.my_form(self.club, self.me)
-        self.assertEqual((data["called"], data["played"], data["matches"]), (2, 1, 2))
+        self.assertEqual((data["called"], data["played"]), (2, 1))
 
-    def test_not_signed_up_counts_in_the_total_only(self):
+    def test_not_signed_up_does_not_count(self):
         self.play(True, called=False)
         self.play(True, days_ago=2)
         data = my_form.my_form(self.club, self.me)
-        self.assertEqual((data["called"], data["played"], data["matches"]), (1, 1, 2))
+        self.assertEqual((data["called"], data["played"], data["played_pct"]), (1, 1, 100))
+
+    def test_ring_arc_and_played_percentage(self):
+        self.play(True, days_ago=2)
+        self.play(False)
+        data = my_form.my_form(self.club, self.me)
+        self.assertEqual(data["win_arc"], round(my_form.RING_LENGTH / 2, 1))
+        self.assertEqual(data["played_pct"], 100)
 
     def test_balance_is_this_season_but_last_games_span_seasons(self):
         self.play(True, days_ago=400, season="2020-2021")

@@ -16,6 +16,8 @@ from . import pairs
 LAST_GAMES = 5
 SNP_WINDOW_DAYS = 30
 SNP_POINTS = 10
+# Perímetro del anillo del balance (SVG, radio 26).
+RING_LENGTH = 163.4
 
 
 def _snp(player, today):
@@ -43,7 +45,7 @@ def my_form(club, player, today=None):
     Datos de «Mi forma» de ``player``: ``last`` (últimos 5 partidos, True = victoria, del más antiguo al
     más reciente), ``run`` (``('V' | 'D', n)``, o ``(None, 0)``), ``season`` (ganados, perdidos, %), ``called``
     y ``played`` (a cuántos enfrentamientos cerrados de la temporada se apuntó y en cuántos de ellos jugó),
-    ``matches`` (enfrentamientos competitivos cerrados de la temporada), ``snp`` y ``empty``.
+    ``win_arc`` (largo del arco de victorias del anillo del balance), ``played_pct``, ``snp`` y ``empty``.
     """
     today = today or datetime.date.today()
     season = current_season()
@@ -51,9 +53,6 @@ def my_form(club, player, today=None):
     results = [g["won"] for g in log]
     season_log = [g for g in log if g["season"] == season]
     wins = sum(g["won"] for g in season_log)
-    matches = Match.objects.filter(
-        club=club, season=season, draft_mode=False,
-        match_type__in=[value for value, _label in Match.COMPETITIVE_TYPES]).count()
     called = set(Call.objects.filter(
         match__club=club, match__season=season, match__draft_mode=False, players=player,
         match__match_type__in=[value for value, _label in Match.COMPETITIVE_TYPES],
@@ -67,7 +66,8 @@ def my_form(club, player, today=None):
         "win_pct": round(wins / len(season_log) * 100) if season_log else 0,
         "called": len(called),
         "played": len(played),
-        "matches": matches,
+        "win_arc": round(RING_LENGTH * wins / len(season_log), 1) if season_log else 0,
+        "played_pct": round(len(played) / len(called) * 100) if called else 0,
         "snp": _snp(player, today),
         "empty": not results,
     }
