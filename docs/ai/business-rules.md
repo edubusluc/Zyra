@@ -82,6 +82,8 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
 
 ## Partidos, convocatorias y actas
 
+- [V] Los números del ciclo salen de la ficha de la competición (`core/competitions.py`, `competition_for`): partidos por enfrentamiento y sus puntos, convocados mínimos y partido de desempate. Por ahora solo existe la SNP (5 partidos 3-3-2-2-2, 10 convocados, desempate en el 3) y todos los clubes la juegan; la rama `feature/espacios-competiciones` añade otras (espacios). El recomendador `match/advisor.py` es solo de la SNP. Tests: `core/tests_competitions.py`.
+
 Orden obligatorio del ciclo (`match/views.py`) [V], cubierto por `match/tests_flow.py`:
 
 1. **Partido** (`MatchForm`): el equipo propio juega como local o visitante; local ≠ visitante. Selector «Competición» bloqueado en SNP (`MatchForm.COMPETITIONS`, no persistido aún).

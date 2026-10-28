@@ -94,6 +94,12 @@ cambios: `docs/novedades.md`. Índice general: `ZYRA_CONTEXT.md`. Verificado el 
 - **Motivo**: cambio de nombre en la interfaz; el valor guardado se mantuvo. Por qué no se migró: no documentado.
 - **Consecuencias**: en código se sigue usando `is_admin` / `club_admin_required`.
 
+## D14. Reglas de competición en una ficha
+
+- **Decisión**: las reglas que cambian entre competiciones (partidos, puntos por partido, convocados mínimos, desempate) viven en `core/competitions.py` y el código las pide con `competition_for(club o enfrentamiento)`.
+- **Motivo**: preparar otras competiciones además de la SNP (LAPI, más adelante Federados), cada una como un espacio (club) con su competición. Estudio del 28/10/2026.
+- **Consecuencias**: no escribir «5», «10» ni «3-3-2-2-2» en lógica, plantillas ni textos; usar la ficha. Mientras `Club` no guarde su competición, `competition_for` devuelve siempre la SNP sin consultar la base de datos.
+
 ## Documentación del repositorio desfasada respecto al código
 
 Comprobado el 09/10/2026; manda el código:

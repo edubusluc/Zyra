@@ -9007,8 +9007,8 @@ msgid "Apunta los resultados de los partidos jugados."
 msgstr "Record the results of the matches already played."
 
 #: match/templates/call_for_match.html:90
-msgid "Están los 5 resultados: cierra el acta."
-msgstr "All 5 results are in: close the match sheet."
+msgid "Están los %(n)s resultados: cierra el acta."
+msgstr "All %(n)s results are in: close the match sheet."
 
 #: match/templates/call_for_match.html:94
 msgid "Más"
@@ -9330,11 +9330,15 @@ msgid "Hacen falta al menos 10 convocados para sugerir una alineación."
 msgstr "At least 10 called-up players are needed to suggest a lineup."
 
 #: match/templates/includes/lineup_form.html:17
+msgid "Hacen falta al menos %(n)s convocados para sugerir una alineación."
+msgstr "At least %(n)s called-up players are needed to suggest a lineup."
+
+#: match/templates/includes/lineup_form.html:17
 msgid ""
-"Completa las 5 parejas con la alineación que más opciones tiene de ganar "
+"Completa las %(n)s parejas con la alineación que más opciones tiene de ganar "
 "según el historial del club. Después puedes cambiar cualquier pareja."
 msgstr ""
-"Fills the 5 pairs with the lineup most likely to win based on the club's "
+"Fills the %(n)s pairs with the lineup most likely to win based on the club's "
 "history. You can then change any pair."
 
 #: match/templates/includes/lineup_form.html:22
@@ -9581,8 +9585,8 @@ msgid "Convocatoria creada con %(n)s jugadores."
 msgstr "Call-up created with %(n)s players."
 
 #: match/views.py:382
-msgid "Para cerrar una convocatoria al menos debes contar con 10 jugadores"
-msgstr "You need at least 10 players to close a call-up"
+msgid "Para cerrar una convocatoria al menos debes contar con %(n)s jugadores"
+msgstr "You need at least %(n)s players to close a call-up"
 
 #: match/views.py:384
 msgid "Esta convocatoria ha sido cerrada"
@@ -9646,8 +9650,8 @@ msgid "No se pueden alinear parejas, no existe ninguna convocatoria."
 msgstr "Pairs cannot be set: there is no call-up."
 
 #: match/views.py:616
-msgid "Para alinear las parejas debes contar al menos con 10 jugadores"
-msgstr "To set the pairs you need at least 10 players"
+msgid "Para alinear las parejas debes contar al menos con %(n)s jugadores"
+msgstr "To set the pairs you need at least %(n)s players"
 
 #: match/views.py:618
 msgid "Para alinear las parejas debes cerrar la convocatoria"
@@ -9691,8 +9695,8 @@ msgid "No se pueden cerrar actas, el enfrentamiento ya ha sido cerrado"
 msgstr "The match sheet cannot be closed: the fixture is already closed"
 
 #: match/views.py:853
-msgid "No se pueden cerrar actas, se requieren al menos 5 partidos."
-msgstr "The scoresheet cannot be closed: at least 5 matches are required."
+msgid "No se pueden cerrar actas, se requieren al menos %(n)s partidos."
+msgstr "The scoresheet cannot be closed: at least %(n)s matches are required."
 
 #: match/views.py:857
 msgid "No se pueden cerrar actas, algunos partidos no tienen resultado."

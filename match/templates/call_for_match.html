@@ -90,7 +90,7 @@
                 {% else %}{% translate "Ningún capitán tiene email: no se enviará el informe. Añádelo en «Mi perfil»." %}{% endif %}
             {% elif phase.action == 'create_games' %}{% translate "Ya puedes alinear las parejas." %}
             {% elif phase.action == 'enter_results' %}{% translate "Apunta los resultados de los partidos jugados." %}
-            {% elif phase.action == 'close_match' %}{% translate "Están los 5 resultados: cierra el acta." %}{% endif %}
+            {% elif phase.action == 'close_match' %}{% blocktranslate with n=phase.total_games %}Están los {{ n }} resultados: cierra el acta.{% endblocktranslate %}{% endif %}
         </p>
     </div>
     <details class="z-more">

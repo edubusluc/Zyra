@@ -11,11 +11,8 @@ from django.db.models import Count
 from django.utils.translation import gettext_lazy as _
 
 from call.models import Call
-from .lineup import GAMES_PER_MATCH
+from core.competitions import competition_for
 from .models import Game, Result
-
-# Convocados mínimos para cerrar la convocatoria y alinear parejas.
-MIN_CALL_PLAYERS = 10
 
 DRAFT, CALLED, LINED_UP, PLAYED, CLOSED = "draft", "called", "lined_up", "played", "closed"
 STATE_LABELS = {
@@ -36,7 +33,10 @@ STEPS = (_("Convocatoria"), _("Parejas"), _("Resultados"), _("Acta"))
 
 @dataclass(frozen=True)
 class MatchPhase:
-    """Fase de un enfrentamiento: estado, paso actual (0-3; 4 = todo hecho) y siguiente acción."""
+    """Fase de un enfrentamiento: estado, paso actual (0-3; 4 = todo hecho) y siguiente acción.
+
+    ``min_call`` y ``total_games`` vienen de la ficha de la competición del enfrentamiento.
+    """
     state: str
     step: int
     action: str
@@ -44,6 +44,8 @@ class MatchPhase:
     called: int
     games: int
     results: int
+    min_call: int
+    total_games: int
 
     @property
     def label(self):
@@ -53,7 +55,7 @@ class MatchPhase:
     @property
     def missing_players(self):
         """Convocados que faltan para poder cerrar la convocatoria (0 si ya hay suficientes)."""
-        return max(MIN_CALL_PLAYERS - self.called, 0)
+        return max(self.min_call - self.called, 0)
 
     @property
     def pending_label(self):
@@ -61,11 +63,11 @@ class MatchPhase:
         if self.action == CREATE_CALL:
             return _("Convocar")
         if self.action == CLOSE_CALL:
-            return _("Cerrar convocatoria (%(n)s/%(total)s)") % {"n": self.called, "total": MIN_CALL_PLAYERS}
+            return _("Cerrar convocatoria (%(n)s/%(total)s)") % {"n": self.called, "total": self.min_call}
         if self.action == CREATE_GAMES:
             return _("Alinear parejas")
         if self.action == ENTER_RESULTS:
-            return _("Poner resultados (%(n)s/%(total)s)") % {"n": self.results, "total": GAMES_PER_MATCH}
+            return _("Poner resultados (%(n)s/%(total)s)") % {"n": self.results, "total": self.total_games}
         if self.action == CLOSE_MATCH:
             return _("Cerrar acta")
         return ""
@@ -73,17 +75,19 @@ class MatchPhase:
 
 def phase_of(match, *, has_call, call_closed, called, games, results):
     """Fase de ``match`` a partir de los recuentos de su convocatoria, partidos y resultados."""
+    competition = competition_for(match)
+    counts = (has_call, called, games, results, competition.min_call_players, competition.games)
     if not match.draft_mode:
-        return MatchPhase(CLOSED, 4, NOTHING, has_call, called, games, results)
-    if games >= GAMES_PER_MATCH and results >= GAMES_PER_MATCH:
-        return MatchPhase(PLAYED, 3, CLOSE_MATCH, has_call, called, games, results)
+        return MatchPhase(CLOSED, 4, NOTHING, *counts)
+    if games >= competition.games and results >= competition.games:
+        return MatchPhase(PLAYED, 3, CLOSE_MATCH, *counts)
     if games:
-        return MatchPhase(LINED_UP, 2, ENTER_RESULTS, has_call, called, games, results)
+        return MatchPhase(LINED_UP, 2, ENTER_RESULTS, *counts)
     if has_call and call_closed:
-        return MatchPhase(CALLED, 1, CREATE_GAMES, has_call, called, games, results)
+        return MatchPhase(CALLED, 1, CREATE_GAMES, *counts)
     if has_call:
-        return MatchPhase(DRAFT, 0, CLOSE_CALL, has_call, called, games, results)
-    return MatchPhase(DRAFT, 0, CREATE_CALL, has_call, called, games, results)
+        return MatchPhase(DRAFT, 0, CLOSE_CALL, *counts)
+    return MatchPhase(DRAFT, 0, CREATE_CALL, *counts)
 
 
 def phases_for(matches):

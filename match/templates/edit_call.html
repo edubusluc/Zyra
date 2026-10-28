@@ -20,6 +20,6 @@
 <form method="POST" data-loading-text="{% translate 'Guardando la convocatoria…' %}">
     {% csrf_token %}
     <input type="hidden" name="update_call" value="1">
-    {% include 'includes/player_selector.html' with players=all_players selected=selected_players submit_label=_("Guardar convocatoria") min_players=10 %}
+    {% include 'includes/player_selector.html' with players=all_players selected=selected_players submit_label=_("Guardar convocatoria") min_players=min_call_players %}
 </form>
 {% endblock %}

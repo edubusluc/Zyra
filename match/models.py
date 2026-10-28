@@ -56,9 +56,9 @@ class Match(PublicIdModel):
         (PLAYOFF, _("Play Off")),
     ]
     MATCH_TYPES = COMPETITIVE_TYPES + [(AMISTOSO, _("Amistoso"))]
-    # Tipos de eliminatoria sin empate: si queda 6-6, decide el ganador del partido 3.
+    # Tipos de eliminatoria sin empate: si quedan empatados a puntos, decide el partido de
+    # desempate de la competición (``core.competitions``; el 3 en la SNP).
     NO_DRAW_TYPES = (RETO, PLAYOFF)
-    TIEBREAK_GAME = 3
 
     start_date = models.DateField()
     # Hora de inicio (opcional): se muestra junto a la fecha y en el informe.
