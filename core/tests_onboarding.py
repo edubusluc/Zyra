@@ -103,7 +103,7 @@ class SingleClubTests(TestCase):
         self.client.force_login(self.captain)
         response = self.client.post(reverse("register_club"), {**CLUB, "competition": "snp"})
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Ya tienes un espacio en esa competición")
+        self.assertContains(response, "Ya tienes equipo en esa competición")
         self.assertFalse(Club.objects.filter(name="Club Nuevo").exists())
         # Sin competición se entiende la SNP, que ya tiene.
         self.client.post(reverse("register_club"), CLUB)
@@ -118,7 +118,7 @@ class SingleClubTests(TestCase):
 
     def test_menu_offers_another_space_while_a_competition_is_free(self):
         self.client.force_login(self.captain)
-        self.assertContains(self.client.get(reverse("home")), "Crear otro espacio")
+        self.assertContains(self.client.get(reverse("home")), "Añadir equipo de otra competición")
 
     def test_user_without_club_can_register(self):
         user = User.objects.create_user("libre", password="pass-12345", email="libre@example.com")
@@ -137,7 +137,7 @@ class SingleClubTests(TestCase):
         invitation = Invitation.objects.create(club=self.club, created_by=self.captain, reusable=True)
         self.client.force_login(self.other_captain)
         response = self.client.get(reverse("invitation", args=[invitation.token]))
-        self.assertContains(response, "solo se puede tener un espacio por competición")
+        self.assertContains(response, "solo se puede tener un equipo por competición")
         self.assertNotContains(response, "Unirme como")
         self.client.post(reverse("invitation", args=[invitation.token]))
         self.assertFalse(Membership.objects.filter(user=self.other_captain, club=self.club).exists())

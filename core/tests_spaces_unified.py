@@ -68,7 +68,8 @@ class UnifiedSpacesTests(TestCase):
         page = self.client.get(reverse("call_for_match", args=[self.lapi_match.public_id]), follow=True)
         self.assertEqual(page.status_code, 200)
         self.assertEqual(self.client.session[SESSION_KEY], self.lapi.id)
-        self.assertContains(page, "Ahora estás en el espacio LAPI de Gladiadores LAPI.")
+        # Sin aviso: la página ya dice de qué competición es.
+        self.assertNotContains(page, "Ahora estás en el espacio")
         # En LAPI es jugador: no puede gestionar aunque sea capitán en SNP.
         self.assertEqual(self.client.get(reverse("create_call", args=[self.lapi_match.public_id])).status_code, 403)
 
@@ -118,11 +119,23 @@ class UnifiedSpacesTests(TestCase):
         page = self.client.get(reverse("list_players") + "?en=lapi")
         self.assertEqual(page.context["current_club"], self.lapi)
 
-    def test_player_in_both_has_space_switcher(self):
+    def test_player_in_both_does_not_choose(self):
         Membership.objects.filter(user=self.user, club=self.snp).update(role=Membership.MEMBER)
         page = self.client.get(reverse("club_home"))
-        self.assertContains(page, "z-space-switcher")
+        self.assertNotContains(page, "z-space-switcher")
         self.assertNotContains(page, "Nuevo enfrentamiento")
+
+    def test_captain_in_both_has_switcher_in_rivals(self):
+        Membership.objects.filter(user=self.user, club=self.lapi).update(role=Membership.MANAGER)
+        self.assertContains(self.client.get(reverse("list_teams")), "z-space-switcher")
+
+    def test_menu_shows_user_name_and_roles(self):
+        self.user.first_name = "Edu"
+        self.user.save()
+        page = self.client.get(reverse("home"))
+        self.assertContains(page, '<span class="z-club-name">Edu</span>', html=False)
+        self.assertContains(page, "Capitán")
+        self.assertContains(page, "<small class=\"text-muted\">Jugador</small>", html=False)
 
     def _close(self, match, won=True):
         match.draft_mode = False
@@ -141,6 +154,25 @@ class UnifiedSpacesTests(TestCase):
         from players.models import Player
         Player.objects.create(club=self.lapi, user=self.user, name="Edu", last_name="B")
         self.assertContains(self.client.get(reverse("team_statistics") + "?espacio=todas&season=all"), "Tus partidos")
+
+    def test_statistics_all_charts_keep_competitions_apart(self):
+        self._close(self.snp_match)
+        self._close(self.lapi_match)
+        page = self.client.get(reverse("team_statistics") + "?espacio=todas&season=all")
+        chart = page.context["spaces_chart"]
+        self.assertEqual([c["code"] for c in chart["comps"]], ["snp", "lapi"])
+        # Ganados por temporada: una serie por competición (se apilan en el gráfico), nunca sumadas aquí.
+        season = self.snp_match.season
+        self.assertEqual(chart["years"]["labels"], [season])
+        self.assertEqual(chart["years"]["won"], [[1], [1]])
+        self.assertEqual(len(chart["local"]), 2)
+        self.assertEqual(len(chart["attendance"]["series"]), 2)
+        self.assertEqual([c["code"] for c in page.context["set_rows"][0]["comps"]], ["snp", "lapi"])
+        self.assertContains(page, "spacesYearsChart")
+        self.assertContains(page, "js/stats_spaces.js")
+        # Con una temporada elegida no hay gráfico por años.
+        self.assertNotContains(self.client.get(reverse("team_statistics") + f"?espacio=todas&season={season}"),
+                               "spacesYearsChart")
 
     def test_statistics_of_one_competition_switches_space(self):
         self._close(self.lapi_match)

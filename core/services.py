@@ -37,7 +37,7 @@ def free_competitions(user):
 
 def one_space_message(club):
     """Aviso de que ya tiene el espacio ``club`` en su competición y no puede tener otro."""
-    return _("Ya tienes el espacio %(club)s en %(competition)s y solo se puede tener un espacio por "
+    return _("Ya tienes el equipo %(club)s en %(competition)s y solo se puede tener un equipo por "
              "competición. Abandónalo antes de unirte o crear otro de %(competition)s.") % {
         "club": club.name, "competition": club.rules.name}
 

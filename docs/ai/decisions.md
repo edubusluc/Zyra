@@ -102,7 +102,7 @@ cambios: `docs/novedades.md`. Índice general: `ZYRA_CONTEXT.md`. Verificado el 
 
 ## D15. Un espacio = un club con su competición
 
-- **Decisión**: cada club tiene una competición fija (`Club.competition`: `snp` o `lapi`) y una cuenta tiene como mucho un espacio por competición (`club_of(user, competition)`, `free_competitions`). El selector de club de la cabecera pasa a «Cambiar de espacio» y el menú ofrece «Crear otro espacio» (`register_club`, con los datos del equipo propuestos).
+- **Decisión**: cada club tiene una competición fija (`Club.competition`: `snp` o `lapi`) y una cuenta tiene como mucho un espacio por competición (`club_of(user, competition)`, `free_competitions`). El selector de club de la cabecera pasa a «Cambiar de espacio» y el menú ofrece «Crear otro espacio» (`register_club`, con los datos del equipo propuestos). Revisado el 28/10/2026: la interfaz no habla de espacios; el menú solo informa («Tus equipos») y ofrece «Añadir equipo de otra competición», y el espacio activo cambia solo según la página (`core/spaces.py`).
 - **Motivo**: estudio de competiciones del 28/10/2026 (opción B): el aislamiento por club, los roles y la cabecera ya funcionan por club, así que capitanes distintos por competición salen gratis.
 - **Consecuencias**: lo propio de la SNP (cuenta, sincronización, «Completar equipo») solo se ofrece si `club.rules.has_snp`; las divisiones de los equipos salen de la ficha (`divisions_for`). Los clubes que ya existían quedan como SNP.
 

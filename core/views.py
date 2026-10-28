@@ -300,7 +300,7 @@ def register_club(request):
     """
     Alta de un club nuevo: el espacio de una competición (SNP o LAPI). Si el visitante no tiene
     cuenta, se le crea una. Quien ya tiene sesión solo puede crear espacios de las competiciones
-    en las que aún no está («Crear otro espacio»; ``?competicion=lapi`` la deja elegida) y el
+    en las que aún no está («Añadir equipo de otra competición»; ``?competicion=lapi`` la deja elegida) y el
     formulario viene relleno con los datos de su equipo.
 
     El jugador del capitán se crea con su nombre y apellidos o, en la SNP, si elige conectar su
@@ -320,7 +320,7 @@ def register_club(request):
     # Un espacio por competición y cuenta: solo se ofrecen las competiciones que le faltan.
     free = free_competitions(request.user)
     if not free:
-        messages.error(request, _("Ya tienes un espacio en cada competición. Para crear otro, abandona antes "
+        messages.error(request, _("Ya tienes equipo en cada competición. Para crear otro, abandona antes "
                                   "el de esa competición."))
         return redirect("home")
     current = None if anonymous else club_of(request.user)
@@ -412,6 +412,8 @@ def register_club(request):
         "club_form": club_form, "user_form": user_form, "player_form": player_form, "snp_form": snp_form,
         "google_missing_name": google_missing_name, "snp_service_off": not snp_service.is_enabled(),
         "new_space": current is not None, "linked_player": linked_player,
+        # Competiciones en las que ya tiene equipo: se ven desactivadas («Ya tienes X en LAPI»).
+        "taken_teams": [] if anonymous else spaces.user_clubs(request),
         # Para register-wizard: divisiones de cada competición y si tiene SNP.
         "competition_rules": {c.code: {"divisions": list(c.divisions), "snp": c.has_snp} for c in free},
         "google_next": f"{reverse('register_club')}?{FROM_GOOGLE_PARAM}=1",

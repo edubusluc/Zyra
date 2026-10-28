@@ -27,11 +27,16 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
 - [V] Vistas unidas (`core/spaces.py`): con más de un espacio, Enfrentamientos, Calendario, Inicio (Pendiente y próximo
   enfrentamiento) y Estadísticas › Equipo juntan los espacios con el filtro «Todas · SNP · LAPI» (`?espacio=`, se recuerda en
   sesión, por defecto «Todas»). Cada tarjeta lleva la etiqueta de su competición y sus acciones según el rol en ese espacio.
-  En «Todas», Estadísticas solo suma hechos (`spaces_overview`); el detalle y los puntos, al elegir competición.
-  Abrir un enfrentamiento de otro espacio (`call_for_match`, `space_match`) cambia el espacio activo con aviso; las vistas de
-  gestión nunca cambian de espacio salvo con `?en=` (`follow_space`), que va antes de comprobar el rol.
-  Plantilla, Club y Rivales (`management_view`): si gestiona unos espacios y en otros solo juega, solo ve los que gestiona
-  (sin selector); si gestiona todos o ninguno, selector de espacio. El informe puede incluir los partidos de la temporada
+  En «Todas», Estadísticas (`spaces_overview`, `spaces_charts`, `static/js/stats_spaces.js`) pone cada competición al lado
+  de la otra con su color (sets, partidos como local/visitante, ganados por temporada apilados con total, asistencia con
+  una línea por competición) y nunca suma puntos; Top 5, récords, número de partido y puntos SNP, al elegir competición.
+  En la interfaz no se dice «espacio» sino equipo/competición. El menú de usuario solo informa («Tus equipos»: equipo,
+  competición y papel; `Membership.team_role_label`) y no cambia de espacio; con varios equipos la cabecera muestra el
+  nombre del usuario. El espacio activo cambia sin aviso (`switch_to`): al abrir un enfrentamiento de otro espacio
+  (`call_for_match`, `space_match`), con `?en=` (`follow_space`, antes de comprobar el rol) y al elegir competición en
+  Estadísticas. Plantilla, Club y Rivales (`management_view`): si gestiona unos espacios y en otros solo juega, solo ve
+  los que gestiona; el selector SNP | LAPI solo sale si gestiona todos. El registro muestra desactivadas las
+  competiciones en las que ya tiene equipo. El informe puede incluir los partidos de la temporada
   en otras competiciones de los convocados con cuenta enlazada (`Match.report_other_competitions`). Tests:
   `core/tests_spaces_unified.py`.
 - [V] Se puede crear una cuenta sin club (`register_account`, o Google desde esa página): queda en `no_club` hasta aceptar una

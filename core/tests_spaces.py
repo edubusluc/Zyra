@@ -95,9 +95,11 @@ class OneSpacePerCompetitionTests(TestCase):
 
     def test_create_lapi_space_from_the_menu(self):
         home = self.client.get(reverse("home"))
-        self.assertContains(home, "Crear otro espacio")
+        self.assertContains(home, "Añadir equipo de otra competición")
         page = self.client.get(reverse("register_club") + "?competicion=lapi")
-        self.assertContains(page, "Crear otro espacio")
+        self.assertContains(page, "Añadir equipo de otra competición")
+        # La SNP, que ya tiene, sale desactivada y dice con qué equipo.
+        self.assertContains(page, "Ya tienes Gladiadores en SNP.")
         self.assertContains(page, 'value="Gladiadores"')
         self.assertNotContains(page, 'value="snp" name="competition"')
 
@@ -113,8 +115,10 @@ class OneSpacePerCompetitionTests(TestCase):
         self.assertEqual(club_of(self.captain, "lapi"), space)
         self.assertEqual(free_competitions(self.captain), [])
 
-        # Con un espacio en cada competición ya no se ofrece crear otro.
-        self.assertNotContains(self.client.get(reverse("home")), "Crear otro espacio")
+        # Con un equipo en cada competición ya no se ofrece crear otro: el menú dice que ya los tiene.
+        home = self.client.get(reverse("home"))
+        self.assertNotContains(home, "Añadir equipo de otra competición")
+        self.assertContains(home, "Ya tienes equipo en SNP y LAPI")
         self.assertRedirects(self.client.get(reverse("register_club")), reverse("home"), fetch_redirect_response=False)
 
     def test_division_must_belong_to_the_competition(self):
@@ -122,11 +126,16 @@ class OneSpacePerCompetitionTests(TestCase):
         self.assertContains(response, "Elige una división de LAPI")
         self.assertFalse(Club.objects.filter(name="Gladiadores LAPI").exists())
 
-    def test_switch_between_spaces(self):
+    def test_menu_lists_teams_without_switching(self):
         space = create_club("Gladiadores LAPI", "Sevilla", self.captain, competition="lapi")
         home = self.client.get(reverse("home"))
-        self.assertContains(home, "Cambiar de espacio")
+        # «Tus equipos» solo informa: cada equipo con su competición y su papel, sin formularios para cambiar.
+        self.assertContains(home, "Tus equipos")
+        self.assertContains(home, "dropdown-item-text z-team-item", count=2)
         self.assertContains(home, "z-comp-badge--lapi")
+        self.assertNotContains(home, "Cambiar de espacio")
+        self.assertNotContains(home, reverse("switch_club"))
+        # La URL de cambio sigue funcionando (la usa el back-office).
         self.client.post(reverse("switch_club"), {"club_id": space.id})
         self.assertEqual(self.client.get(reverse("home")).context["current_club"], space)
 
@@ -136,7 +145,7 @@ class OneSpacePerCompetitionTests(TestCase):
         invitation = Invitation.objects.create(club=lapi, created_by=other, reusable=True)
         page = self.client.get(reverse("invitation", args=[invitation.token]))
         self.assertContains(page, "Unirme como")
-        self.assertContains(page, "Espacio LAPI")
+        self.assertContains(page, "z-comp-badge--lapi")
         self.client.post(reverse("invitation", args=[invitation.token]))
         self.assertTrue(Membership.objects.filter(user=self.captain, club=lapi).exists())
 
@@ -145,7 +154,7 @@ class OneSpacePerCompetitionTests(TestCase):
         snp = create_club("Otro SNP", "Huelva", other)
         invitation = Invitation.objects.create(club=snp, created_by=other, reusable=True)
         page = self.client.get(reverse("invitation", args=[invitation.token]))
-        self.assertContains(page, "solo se puede tener un espacio por competición")
+        self.assertContains(page, "solo se puede tener un equipo por competición")
         self.client.post(reverse("invitation", args=[invitation.token]))
         self.assertFalse(Membership.objects.filter(user=self.captain, club=snp).exists())
 

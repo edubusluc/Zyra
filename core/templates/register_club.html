@@ -9,8 +9,8 @@
     <div class="z-auth-card z-auth-card--wide">
         <img src="{% static 'zyra/logo.svg' %}" alt="Zyra" class="z-auth-logo">
         {% if new_space %}
-        <h1>{% translate "Crear otro espacio" %}</h1>
-        <p class="text-muted text-center">{% translate "Un espacio es tu equipo en otra competición, con su plantilla, sus rivales y sus enfrentamientos. Cambias de uno a otro desde el menú de arriba." %}</p>
+        <h1>{% translate "Añadir equipo de otra competición" %}</h1>
+        <p class="text-muted text-center">{% translate "Tu equipo en otra competición tiene su propia plantilla, sus rivales y sus enfrentamientos. Enfrentamientos, Calendario y Estadísticas te enseñan los de todas tus competiciones juntos." %}</p>
         {% else %}
         <h1>{% translate "Registrar un club" %}</h1>
         <p class="text-muted text-center">{% translate "Cada club gestiona sus propios jugadores, equipos rivales, enfrentamientos y estadísticas. Nadie de fuera del club puede ver sus datos." %}</p>
@@ -39,6 +39,14 @@
                         <span>{{ radio.choice_label }}</span>
                         {% if radio.data.value == 'snp' %}<small>{% translate "5 partidos (3-3-2-2-2 puntos), 10 convocados y puntos SNP de cada jugador." %}</small>
                         {% elif radio.data.value == 'lapi' %}<small>{% translate "Liga Andaluza: 3 partidos de 1 punto y 6 convocados." %}</small>{% endif %}
+                    </label>
+                    {% endfor %}
+                    {% for club in taken_teams %}
+                    {# Ya tiene equipo en esta competición: se ve, pero no se puede elegir. #}
+                    <label class="z-choice-option z-choice-option--taken" aria-disabled="true">
+                        <input type="radio" disabled aria-label="{{ club.rules.name }}">
+                        <span>{{ club.rules.name }}</span>
+                        <small>{% blocktranslate with club=club.name competition=club.rules.name %}Ya tienes {{ club }} en {{ competition }}.{% endblocktranslate %}</small>
                     </label>
                     {% endfor %}
                 </fieldset>
@@ -84,6 +92,14 @@
                         {% if radio.data.value == 'snp' %}<small>{% translate "Recomendado: tu equipo y tus puntos SNP listos en un minuto." %}</small>{% endif %}
                     </label>
                     {% endfor %}
+                    {% for club in taken_teams %}
+                    {# Ya tiene equipo en esta competición: se ve, pero no se puede elegir. #}
+                    <label class="z-choice-option z-choice-option--taken" aria-disabled="true">
+                        <input type="radio" disabled aria-label="{{ club.rules.name }}">
+                        <span>{{ club.rules.name }}</span>
+                        <small>{% blocktranslate with club=club.name competition=club.rules.name %}Ya tienes {{ club }} en {{ competition }}.{% endblocktranslate %}</small>
+                    </label>
+                    {% endfor %}
                 </fieldset>
                 <div data-mode-panel="snp">
                     {% if snp_service_off %}<div class="alert alert-warning" role="alert">{% translate "La conexión con SNP no está disponible ahora mismo. Puedes crear el club y traer tu equipo más tarde, desde Jugadores." %}</div>{% endif %}
@@ -102,7 +118,7 @@
                 <div class="alert alert-warning" role="alert">{% translate "No ha sido posible obtener tu nombre y apellidos de tu cuenta de Google. Indícalos para crear tu jugador." %}</div>
                 {% endif %}
                 {% if linked_player %}
-                <div class="alert alert-info" role="note">{% blocktranslate with player=linked_player.full_name space=linked_player.club.name %}Tu cuenta ya tiene el jugador <strong>{{ player }}</strong> en {{ space }}. Crearemos tu jugador en este espacio con el mismo nombre.{% endblocktranslate %}</div>
+                <div class="alert alert-info" role="note">{% blocktranslate with player=linked_player.full_name space=linked_player.club.name %}Tu cuenta ya tiene el jugador <strong>{{ player }}</strong> en {{ space }}. Crearemos tu jugador en este equipo con el mismo nombre.{% endblocktranslate %}</div>
                 {% else %}
                 {{ player_form.as_p }}
                 {% endif %}
@@ -112,7 +128,7 @@
                 </details>
                 </div>
                 <div class="z-wizard-actions">
-                    <button type="submit" class="btn btn-primary btn-lg">{% if new_space %}{% translate "Crear espacio" %}{% else %}{% translate "Crear club" %}{% endif %}</button>
+                    <button type="submit" class="btn btn-primary btn-lg">{% if new_space %}{% translate "Añadir equipo" %}{% else %}{% translate "Crear club" %}{% endif %}</button>
                     <button type="button" class="btn btn-secondary" data-wizard-back hidden>{% translate "Atrás" %}</button>
                 </div>
             </section>

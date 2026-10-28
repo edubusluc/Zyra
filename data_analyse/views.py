@@ -18,7 +18,7 @@ from django.shortcuts import get_object_or_404
 from django.http import Http404
 from django.core.paginator import Paginator
 from urllib.parse import urlencode
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext as _, gettext_lazy
 from core.decorators import club_required, club_manager_required
 from core import spaces
 from penalty.models import Penalty
@@ -420,11 +420,79 @@ def spaces_overview(request, clubs):
         **match_type_context(request, match_type),
         **season_filter_context(request, seasons, selected_season),
         **spaces.space_filter_context(request, spaces.ALL_SPACES),
+        **spaces_charts(rows, selected_season, match_type),
         'selected_season': selected_season,
         'rows': rows,
         'me': me,
         'me_rows': me_rows,
     })
+
+
+# Situaciones de la tarjeta «Sets» que se comparan entre competiciones: (clave de set_stats, título, explicación).
+SET_SITUATIONS = (
+    ('third', gettext_lazy("Set decisivo"), gettext_lazy("Tercer set, a set normal o a super tie-break.")),
+    ('tiebreak', gettext_lazy("Tie-breaks"), gettext_lazy("Sets que llegan a 6-6 y acaban 7-6.")),
+    ('comeback', gettext_lazy("Remontadas"), gettext_lazy("Partidos ganados tras perder el primer set.")),
+    ('first_set', gettext_lazy("Cerrar el partido"), gettext_lazy("Partidos ganados tras ganar el primer set.")),
+    ('close', gettext_lazy("Sets ajustados"), gettext_lazy("Sets que acaban 7-5 o 7-6.")),
+)
+
+
+def spaces_charts(rows, season, match_type):
+    """
+    Gráficos de «Todas» con cada competición al lado de la otra, nunca sumadas en una cifra (los
+    puntos de un partido no valen lo mismo en SNP que en LAPI). ``rows``: filas de spaces_overview.
+
+    Devuelve ``set_rows`` (cada situación de sets con el % de cada competición) y ``spaces_chart``
+    para stats_spaces.js: competiciones, partidos ganados y perdidos como local y como visitante,
+    enfrentamientos ganados por temporada (sin temporada elegida) y asistencia a las convocatorias
+    (por temporada o, con temporada, por convocatoria).
+    """
+    comps, sets_by_comp, local, visiting, years, attendance = [], [], [], [], {}, []
+    for row in rows:
+        club, team = row["club"], row["team"]
+        comps.append({"code": club.competition, "name": str(club.rules.name), "club": club.name})
+        log = pair_stats.club_game_log(club, season, match_type) if team else []
+        sets_by_comp.append(set_stats(log))
+        local.append({"won": sum(g["won"] for g in log if g["local"]),
+                      "lost": sum(not g["won"] for g in log if g["local"])})
+        visiting.append({"won": sum(g["won"] for g in log if not g["local"]),
+                         "lost": sum(not g["won"] for g in log if not g["local"])})
+        years[club.competition] = calculate_matches_won_per_year(team, match_type) if team and not season else {}
+        attendance.append(signup_attendance(club, season, match_type))
+
+    set_rows = [{
+        "label": label, "hint": hint,
+        "comps": [{"code": c["code"], "name": c["name"], "r": st[key]} for c, st in zip(comps, sets_by_comp)],
+    } for key, label, hint in SET_SITUATIONS]
+
+    labels = sorted({y for per in years.values() for y in per}, key=lambda s: int(s.split('-')[0]))
+    if season:
+        # Por convocatoria: eje común con los días de todas las competiciones; cada línea, sus días.
+        days = sorted({r["day"] for a in attendance for r in a["rows"]})
+        att_labels = [f"{d[8:10]}/{d[5:7]}" for d in days]
+        att_series = [[next((r["pct"] for r in a["rows"] if r["day"] == d), None) for d in days] for a in attendance]
+    else:
+        seasons_att = sorted({r["label"] for a in attendance for r in a["rows"]}, key=lambda s: int(s.split('-')[0]))
+        att_labels = seasons_att
+        att_series = [[next((r["pct"] for r in a["rows"] if r["label"] == s), None) for s in seasons_att]
+                      for a in attendance]
+    return {
+        "set_rows": set_rows,
+        "sets_played": any(st["played"] for st in sets_by_comp),
+        "has_local": any(r["won"] or r["lost"] for r in local),
+        "has_visiting": any(r["won"] or r["lost"] for r in visiting),
+        "spaces_chart": {
+            "comps": comps,
+            "local": local,
+            "visiting": visiting,
+            "years": {"labels": labels,
+                      "won": [[years[c["code"]].get(y, {}).get("won", 0) for y in labels] for c in comps]},
+            "attendance": {"labels": att_labels, "series": att_series,
+                           "average": [a["average"] for a in attendance]},
+            "currentSeason": current_season(),
+        },
+    }
 
 
 def team_extra_context(club, season, match_type, log):

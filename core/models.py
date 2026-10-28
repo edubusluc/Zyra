@@ -214,6 +214,11 @@ class Membership(PublicIdModel):
         """True si puede gestionar lo deportivo del club: capitán o gestor."""
         return self.role in (self.ADMIN, self.MANAGER)
 
+    @property
+    def team_role_label(self):
+        """Papel en el equipo para «Tus equipos» del menú: Capitán, Gestor o Jugador (el miembro)."""
+        return _("Jugador") if self.role == self.MEMBER else self.get_role_display()
+
     def __str__(self):
         """Usuario, club y rol."""
         return f"{self.user} - {self.club} ({self.get_role_display()})"

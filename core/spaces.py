@@ -1,15 +1,17 @@
 """
-Vistas que unen los espacios de una cuenta (SNP, LAPI…): lo que se consulta (Enfrentamientos,
-Calendario, Inicio, Estadísticas) junta los espacios con un filtro «Todas · SNP · LAPI»; lo que se
-gestiona (Plantilla, Club, crear, convocar…) sigue siendo del espacio activo.
+Vistas que unen los espacios de una cuenta (su equipo en cada competición: SNP, LAPI…): lo que se
+consulta (Enfrentamientos, Calendario, Inicio, Estadísticas) junta los espacios con un filtro
+«Todas · SNP · LAPI»; lo que se gestiona (Plantilla, Club, crear, convocar…) sigue siendo del
+espacio activo.
 
 El filtro va en la URL (``?espacio=snp``) y se recuerda en la sesión; por defecto, «Todas». Quien
-solo tiene un espacio no ve el filtro y todo funciona como antes.
+solo tiene un espacio no ve el filtro y todo funciona como antes. En la interfaz no se habla de
+«espacios» sino de equipos y competiciones, y el espacio activo cambia sin avisar: al abrir un
+enfrentamiento, al elegir una competición o al ir a Plantilla, Club o Rivales.
 """
 from functools import wraps
 
-from django.contrib import messages
-from django.utils.translation import gettext as _, gettext_lazy
+from django.utils.translation import gettext as _
 
 from .competitions import COMPETITIONS
 from .middleware import SESSION_KEY
@@ -91,13 +93,11 @@ def managed_clubs(request, clubs=None):
     return [c for c in clubs if (m := membership_for(request, c)) and m.can_manage]
 
 
-SWITCHED_MESSAGE = gettext_lazy("Ahora estás en el espacio %(competition)s de %(club)s.")
-
-
 def switch_to(request, club):
     """
     Hace activo el espacio ``club`` (debe ser de los del usuario) para el resto de la petición y
-    las siguientes, y avisa con un mensaje. No hace nada si ya era el activo. Devuelve True si cambia.
+    las siguientes, sin avisar: la página ya dice de qué competición es. No hace nada si ya era el
+    activo. Devuelve True si cambia.
     """
     if request.club is not None and club.id == request.club.id:
         return False
@@ -107,7 +107,6 @@ def switch_to(request, club):
     request.session[SESSION_KEY] = club.id
     request.club = club
     request.membership = membership
-    messages.info(request, SWITCHED_MESSAGE % {"competition": club.rules.name, "club": club.name})
     return True
 
 
@@ -134,11 +133,11 @@ def follow_space(view_func):
 
 def management_view(view_func):
     """
-    Decorador de Plantilla y Club, que son de un solo espacio. Con ``?en=`` cambia a ese espacio
-    (follow_space). Si el usuario gestiona unos espacios y en otros solo juega, estas páginas son
-    solo de los que gestiona: si el activo es uno en el que juega, cambia al primero que gestiona.
-    Deja en ``request.space_switcher`` los espacios entre los que se puede cambiar desde la página
-    (vacío si solo hay uno o si gestiona unos sí y otros no).
+    Decorador de Plantilla, Club y Rivales, que son de un solo espacio. Con ``?en=`` cambia a ese
+    espacio (follow_space). Si el usuario gestiona unos espacios y en otros solo juega, estas
+    páginas son solo de los que gestiona: si el activo es uno en el que juega, cambia al primero
+    que gestiona. Solo quien gestiona todos sus espacios (capitán o gestor en SNP y en LAPI) elige
+    desde la página: deja en ``request.space_switcher`` sus espacios; para los demás, vacío.
     """
     @follow_space
     @wraps(view_func)
@@ -151,7 +150,7 @@ def management_view(view_func):
             if managed and len(managed) < len(clubs):
                 if request.club not in managed:
                     switch_to(request, managed[0])
-            else:
+            elif managed:
                 request.space_switcher = [
                     {"club": c, "code": c.competition, "name": c.rules.name, "active": c.id == request.club.id}
                     for c in clubs]

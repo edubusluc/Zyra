@@ -57,7 +57,7 @@ def club_match(request, match_id):
 def space_match(request, match_id):
     """
     Partido de cualquiera de los espacios del usuario o 404. Si es de otro espacio, ese pasa a ser
-    el activo (con aviso), así el rol y las acciones de la página son los de ese espacio. Solo para
+    el activo (sin aviso), así el rol y las acciones de la página son los de ese espacio. Solo para
     vistas de consulta: las de gestión usan club_match, que no cambia de espacio.
     """
     match = get_object_or_404(Match.objects.select_related("club"), public_id=match_id,

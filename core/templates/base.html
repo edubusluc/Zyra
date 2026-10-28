@@ -96,30 +96,28 @@
             <div class="dropdown z-user-menu">
                 <button class="btn btn-secondary btn-sm dropdown-toggle d-inline-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="fa-solid fa-circle-user" aria-hidden="true"></i>
+                    {% if user_teams|length > 1 %}
+                    {# Con equipo en varias competiciones, el botón lleva su nombre: «Tus equipos» del menú dice dónde está. #}
+                    <span class="z-club-name">{{ user.first_name|default:user.username }}</span>
+                    {% else %}
                     <span class="z-club-name">{% if current_club %}{{ current_club.name }}{% else %}{{ user.username }}{% endif %}</span>
-                    {% if current_club %}{% include 'includes/competition_badge.html' with code=current_club.competition name=current_club.rules.name short=True %}{% endif %}
+                    {% endif %}
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li><span class="dropdown-header">{{ user.username }}</span></li>
-                    {% if user_memberships|length > 1 %}
-                    <li><span class="dropdown-header">{% translate "Cambiar de espacio" %}</span></li>
-                    {% for m in user_memberships %}
-                    <li>
-                        <form action="{% url 'switch_club' %}" method="post" data-loading-text="{% translate 'Cambiando de espacio…' %}">
-                            {% csrf_token %}
-                            <input type="hidden" name="club_id" value="{{ m.club_id }}">
-                            <button type="submit" class="dropdown-item z-space-item {% if m.club_id == current_club.id %}active{% endif %}" {% if m.club_id == current_club.id %}aria-current="true"{% endif %}>
-                                <i class="fa-solid {% if m.club_id == current_club.id %}fa-check{% else %}fa-shield-halved{% endif %}" aria-hidden="true"></i> <span>{{ m.club.name }}</span>
-                                {% include 'includes/competition_badge.html' with code=m.club.competition name=m.club.rules.name short=True %}
-                            </button>
-                        </form>
-                    </li>
+                    {% if user_teams|length > 1 %}
+                    {# Solo informa: no se cambia de equipo desde aquí (core.spaces lo hace al abrir cada página). #}
+                    <li><span class="dropdown-header">{% translate "Tus equipos" %}</span></li>
+                    {% for m in user_teams %}
+                    <li><span class="dropdown-item-text z-team-item">{% include 'includes/competition_badge.html' with code=m.club.competition name=m.club.rules.name short=True %}<span class="z-team-item-name">{{ m.club.name }}</span><small class="text-muted">{{ m.team_role_label }}</small></span></li>
                     {% endfor %}
                     {% endif %}
-                    {% if current_club and free_competitions %}
-                    <li><a class="dropdown-item" href="{% url 'register_club' %}"><i class="fa-solid fa-plus" aria-hidden="true"></i> {% translate "Crear otro espacio" %}</a></li>
+                    {% if current_club %}
+                    {% if free_competitions %}
+                    <li><a class="dropdown-item" href="{% url 'register_club' %}"><i class="fa-solid fa-plus" aria-hidden="true"></i> {% translate "Añadir equipo de otra competición" %}</a></li>
+                    {% else %}
+                    <li><span class="dropdown-item-text small text-muted"><i class="fa-solid fa-check me-1" aria-hidden="true"></i>{% blocktranslate with competitions=team_competitions %}Ya tienes equipo en {{ competitions }}{% endblocktranslate %}</span></li>
                     {% endif %}
-                    {% if user_memberships|length > 1 or current_club and free_competitions %}
                     <li><hr class="dropdown-divider"></li>
                     {% endif %}
                     <li><a class="dropdown-item" href="{% url 'my_profile' %}"><i class="fa-solid fa-id-badge" aria-hidden="true"></i> {% translate "Mi perfil" %}</a></li>

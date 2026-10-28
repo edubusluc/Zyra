@@ -17,6 +17,10 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 - Plantilla y Club: si eres capitán en un espacio y jugador en otro, solo ves el que gestionas; si eres capitán (o jugador) en los dos, cambias con un selector arriba.
 - Estadísticas con «Todas»: tus partidos de todas las competiciones y una fila por equipo; los puntos y el detalle aparecen al elegir una competición.
 - El informe puede **incluir datos de otras competiciones** de los convocados con cuenta enlazada (casilla en «Más opciones» al crear el enfrentamiento).
+- Ya no se habla de «espacios»: el menú de usuario muestra **«Tus equipos»** (equipo, competición y tu papel en cada uno) solo para informar, y con equipos en varias competiciones la cabecera lleva tu nombre. «Cambiar de espacio» desaparece: abrir un enfrentamiento te lleva a su equipo sin avisos.
+- **«Añadir equipo de otra competición»** sustituye a «Crear otro espacio»; el registro enseña desactivadas las competiciones en las que ya tienes equipo («Ya tienes Los Gladiadores en SNP») y, si ya las tienes todas, el menú lo dice.
+- El selector SNP | LAPI de Plantilla, Club y Rivales solo aparece si gestionas los equipos de las dos competiciones.
+- Estadísticas con «Todas» añade gráficos con cada competición al lado de la otra: sets, partidos como local y como visitante, enfrentamientos ganados por año (apilados, con el total) y asistencia a las convocatorias (una línea por competición).
 
 ## 28/10/2026 · Reglas de competición en una ficha (espacios, fase 0)
 

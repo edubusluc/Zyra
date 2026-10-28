@@ -45,9 +45,9 @@ class ClubForm(forms.Form):
     """
     competition = forms.ChoiceField(label=_("Competición"), choices=COMPETITION_CHOICES, widget=forms.RadioSelect,
                                     required=False,
-                                    error_messages={"invalid_choice": _("Ya tienes un espacio en esa competición: elige otra.")},
-                                    help_text=_("Cada competición es un espacio aparte, con sus jugadores, rivales y "
-                                                "enfrentamientos. Puedes tener un espacio en cada competición."))
+                                    error_messages={"invalid_choice": _("Ya tienes equipo en esa competición: elige otra.")},
+                                    help_text=_("Cada competición lleva su propio equipo, con sus jugadores, rivales y "
+                                                "enfrentamientos. Puedes tener un equipo en cada competición."))
     name = forms.CharField(label=_("Nombre del club"), max_length=100)
     location = forms.CharField(label=_("Localización"), max_length=100)
     # Categoría y nacionalidad vienen rellenas con lo más habitual (Masculino, España); la división la elige el usuario.
@@ -80,7 +80,7 @@ class ClubForm(forms.Form):
         """Sin competición, la SNP; tiene que ser una en la que la cuenta aún no tenga espacio."""
         code = self.cleaned_data.get("competition") or "snp"
         if code not in dict(self.fields["competition"].choices):
-            raise forms.ValidationError(_("Ya tienes un espacio en %(competition)s: elige otra competición.")
+            raise forms.ValidationError(_("Ya tienes equipo en %(competition)s: elige otra competición.")
                                         % {"competition": get_competition(code).name})
         return code
 

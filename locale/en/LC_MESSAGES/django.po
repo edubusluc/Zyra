@@ -12014,11 +12014,11 @@ msgstr "Competition"
 msgid "Asistencia a las convocatorias"
 msgstr "Call-up attendance"
 
-msgid "% de la plantilla que se apuntó a cada convocatoria de la temporada."
-msgstr "% of the squad that signed up for each call-up this season."
+msgid "%% de la plantilla que se apuntó a cada convocatoria de la temporada."
+msgstr "%% of the squad that signed up for each call-up this season."
 
-msgid "Media por temporada del % de la plantilla que se apunta a cada convocatoria."
-msgstr "Season average of the % of the squad that signs up for each call-up."
+msgid "Media por temporada del %% de la plantilla que se apunta a cada convocatoria."
+msgstr "Season average of the %% of the squad that signs up for each call-up."
 
 msgid "de media en la temporada"
 msgstr "on average this season"
@@ -12946,3 +12946,96 @@ msgstr "Played: %(played)s · won: %(wins)s · %(pct)s%%"
 #, python-format
 msgid "Jugados: %(played)s · %(won)sV %(drawn)sE %(lost)sD · %(pct)s%%"
 msgstr "Played: %(played)s · %(won)sW %(drawn)sD %(lost)sL · %(pct)s%%"
+
+#: core/templates/base.html
+msgid "Añadir equipo de otra competición"
+msgstr "Add a team from another competition"
+
+#: core/templates/base.html
+#, python-format
+msgid "Ya tienes equipo en %(competitions)s"
+msgstr "You already have a team in %(competitions)s"
+
+#: core/context_processors.py
+msgid "y"
+msgstr "and"
+
+#: core/templates/register_club.html
+msgid "Tu equipo en otra competición tiene su propia plantilla, sus rivales y sus enfrentamientos. Enfrentamientos, Calendario y Estadísticas te enseñan los de todas tus competiciones juntos."
+msgstr "Your team in another competition has its own squad, rivals and fixtures. Fixtures, Calendar and Statistics show those of all your competitions together."
+
+#: core/templates/register_club.html
+#, python-format
+msgid "Ya tienes %(club)s en %(competition)s."
+msgstr "You already have %(club)s in %(competition)s."
+
+#: core/templates/register_club.html
+#, python-format
+msgid "Tu cuenta ya tiene el jugador <strong>%(player)s</strong> en %(space)s. Crearemos tu jugador en este equipo con el mismo nombre."
+msgstr "Your account already has the player <strong>%(player)s</strong> in %(space)s. We will create your player in this team with the same name."
+
+#: core/forms.py
+msgid "Ya tienes equipo en esa competición: elige otra."
+msgstr "You already have a team in that competition: choose another one."
+
+#: core/forms.py
+msgid "Cada competición lleva su propio equipo, con sus jugadores, rivales y enfrentamientos. Puedes tener un equipo en cada competición."
+msgstr "Each competition has its own team, with its players, rivals and fixtures. You can have one team in each competition."
+
+#: core/forms.py
+#, python-format
+msgid "Ya tienes equipo en %(competition)s: elige otra competición."
+msgstr "You already have a team in %(competition)s: choose another competition."
+
+#: core/views.py
+msgid "Ya tienes equipo en cada competición. Para crear otro, abandona antes el de esa competición."
+msgstr "You already have a team in every competition. To create another one, first leave the one in that competition."
+
+#: core/services.py
+#, python-format
+msgid "Ya tienes el equipo %(club)s en %(competition)s y solo se puede tener un equipo por competición. Abandónalo antes de unirte o crear otro de %(competition)s."
+msgstr "You already have the team %(club)s in %(competition)s and you can only have one team per competition. Leave it before joining or creating another %(competition)s team."
+
+#: match/templates/list_match.html
+msgid "Todos tus equipos"
+msgstr "All your teams"
+
+#: data_analyse/templates/stats_spaces.html
+msgid "Cada competición puntúa a su manera: el Top 5, los récords y los puntos se ven al elegir una."
+msgstr "Each competition scores in its own way: the Top 5, records and points are shown when you pick one."
+
+#: data_analyse/templates/stats_spaces.html
+msgid "Competiciones"
+msgstr "Competitions"
+
+#: data_analyse/templates/stats_spaces.html
+msgid "Cómo se ganan y se pierden los partidos, set a set: %% de victorias en cada situación."
+msgstr "How matches are won and lost, set by set: %% won in each situation."
+
+#: data_analyse/templates/stats_spaces.html
+msgid "Partidos como local"
+msgstr "Matches at home"
+
+#: data_analyse/templates/stats_spaces.html
+msgid "Partidos como visitante"
+msgstr "Matches away"
+
+#: data_analyse/templates/stats_spaces.html
+msgid "Partidos ganados y perdidos jugando en casa, en cada competición."
+msgstr "Matches won and lost at home, in each competition."
+
+#: data_analyse/templates/stats_spaces.html
+msgid "Partidos ganados y perdidos jugando fuera, en cada competición."
+msgstr "Matches won and lost away, in each competition."
+
+#: data_analyse/templates/stats_spaces.html
+msgid "Ganados en cada temporada: cada competición con su color y el total encima."
+msgstr "Won each season: each competition in its colour, with the total on top."
+
+#: data_analyse/templates/stats_spaces.html
+msgid "%% de la plantilla que se apuntó a cada convocatoria, una línea por competición."
+msgstr "%% of the squad that signed up for each call-up, one line per competition."
+
+#: data_analyse/templates/stats_spaces.html
+msgid "Media por temporada del %% de la plantilla que se apunta, una línea por competición."
+msgstr "Season average of the %% of the squad that signs up, one line per competition."

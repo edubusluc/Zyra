@@ -3,6 +3,8 @@ Procesadores de contexto: variables disponibles en todas las plantillas (club ac
 sección de la navegación y si el inicio de sesión con Google está activado).
 """
 from django.conf import settings
+from django.utils.text import get_text_list
+from django.utils.translation import gettext as _
 
 from . import seo
 from .competitions import COMPETITIONS
@@ -11,18 +13,27 @@ from .services import is_last_admin, is_only_member
 
 def club(request):
     """
-    Club activo, clubes del usuario (sus espacios), competiciones en las que aún no tiene espacio, si es capitán (``is_club_admin``) o capitán/gestor (``can_manage``) del club activo y si al abandonarlo se
-    eliminaría el club (es su único miembro). Esto último se calcula solo si la plantilla
-    lo usa.
+    Club activo, clubes del usuario (sus espacios), sus equipos para «Tus equipos» del menú (en el
+    orden de las competiciones), competiciones en las que aún no tiene equipo, si es capitán
+    (``is_club_admin``) o capitán/gestor (``can_manage``) del club activo y si al abandonarlo se
+    eliminaría el club (es su único miembro). Esto último y ``team_competitions`` se calculan solo
+    si la plantilla los usa.
     """
     membership = getattr(request, "membership", None)
+    memberships = getattr(request, "user_memberships", [])
+    order = list(COMPETITIONS)
+    teams = sorted(memberships, key=lambda m: order.index(m.club.competition)
+                   if m.club.competition in order else len(order))
     return {
         "current_club": getattr(request, "club", None),
-        "user_memberships": getattr(request, "user_memberships", []),
+        "user_memberships": memberships,
+        "user_teams": teams,
         "is_club_admin": bool(membership and membership.is_admin),
-        # Competiciones en las que aún no tiene espacio («Crear otro espacio» en el menú).
+        # Competiciones en las que aún no tiene equipo («Añadir equipo de otra competición» en el menú).
         "free_competitions": [c for code, c in COMPETITIONS.items()
-                              if code not in {m.club.competition for m in getattr(request, "user_memberships", [])}],
+                              if code not in {m.club.competition for m in memberships}],
+        # «Ya tienes equipo en SNP y LAPI» cuando ya no le queda competición libre.
+        "team_competitions": lambda: get_text_list([str(m.club.rules.name) for m in teams], _("y")),
         "can_manage": bool(membership and membership.can_manage),
         "leaving_deletes_club": lambda: bool(membership and is_last_admin(membership) and is_only_member(membership)),
     }
