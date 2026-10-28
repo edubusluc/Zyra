@@ -86,7 +86,7 @@ tarjeta es pulsable).{% endcomment %}
             {% if m.outcome is None %}<span class="z-fixture-meta"><i class="fa-solid fa-user-check" aria-hidden="true"></i>{% if m.called %}{% blocktranslate trimmed count n=m.called %}{{ n }} convocado{% plural %}{{ n }} convocados{% endblocktranslate %}{% else %}{% translate "Sin convocatoria" %}{% endif %}</span>{% endif %}
             <span class="z-fixture-actions">
                 <a href="{% url 'call_for_match' m.public_id %}" class="z-fixture-open stretched-link" aria-label="{% blocktranslate with local=m.local_name visiting=m.visiting_name %}Ver {{ local }} contra {{ visiting }}{% endblocktranslate %}">{% translate "Ver enfrentamiento" %}<i class="fa-solid fa-chevron-right" aria-hidden="true"></i></a>
-                {% if m.draft_mode and is_club_admin %}
+                {% if m.draft_mode and can_manage %}
                 <a href="{% url 'delete_match' m.public_id %}" class="z-edit z-edit--danger z-fixture-delete" aria-label="{% translate 'Eliminar enfrentamiento' %}" title="{% translate 'Eliminar enfrentamiento' %}"><i class="fa-solid fa-trash" aria-hidden="true"></i></a>
                 {% endif %}
             </span>

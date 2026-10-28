@@ -342,11 +342,11 @@ def edit_match_date(request, match_id):
         return redirect("call_for_match", match.public_id)
     return render(request, "edit_match_date.html", {"form": form, "match": match})
 
-@club_admin_required
+@club_manager_required
 def delete_match(request, match_id):
     """Borrado de un enfrentamiento que aún no está cerrado.
 
-    Solo para administradores del club. En GET pide confirmación (delete_match.html);
+    Para el capitán y los gestores. En GET pide confirmación (delete_match.html);
     en POST lo borra. Si el acta ya está cerrada, avisa y vuelve al listado. Con ``?desde=ficha``
     (se llega desde la página del enfrentamiento) «Cancelar» vuelve a esa página.
     """

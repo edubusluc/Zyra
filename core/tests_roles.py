@@ -30,7 +30,7 @@ class ManagerBase(SecurityBase):
             reverse("create_player"), reverse("edit_player", args=[self.player.public_id]),
             reverse("delete_player", args=[self.player.public_id]), reverse("manage_roster"),
             reverse("create_team"), reverse("edit_team", args=[self.rival.public_id]), reverse("manage_teams"),
-            reverse("warnings_statistics"),
+            reverse("warnings_statistics"), reverse("delete_match", args=[m]),
         ]
 
     def captain_only_urls(self):
@@ -38,7 +38,7 @@ class ManagerBase(SecurityBase):
         invitation = Invitation.objects.create(club=self.club, created_by=self.captain)
         team_import = SnpTeamImport.objects.create(club=self.club, started_by=self.captain)
         return [
-            reverse("delete_match", args=[m]), reverse("reopen_match", args=[m]), reverse("delete_call", args=[m]),
+            reverse("reopen_match", args=[m]), reverse("delete_call", args=[m]),
             reverse("unlink_player", args=[self.player.public_id]),
             reverse("snp_account"), reverse("snp_account_delete"), reverse("complete_team_start"),
             reverse("complete_team_status", args=[team_import.public_id]),
@@ -103,9 +103,10 @@ class ManagerScreensTests(ManagerBase):
         page = self.client.get(reverse("call_for_match", args=[self.match.public_id]))
         self.assertContains(page, reverse("edit_match_date", args=[self.match.public_id]))
         self.assertNotContains(page, reverse("reopen_match", args=[self.match.public_id]))
-        listing = self.client.get(reverse("list_match"))
+        listing = self.client.get(reverse("list_match") + "?season=all")
         self.assertContains(listing, reverse("create_match"))
-        self.assertNotContains(listing, reverse("delete_match", args=[self.match.public_id]))
+        self.assertContains(listing, reverse("delete_match", args=[self.match.public_id]))
+        self.assertContains(page, reverse("delete_match", args=[self.match.public_id]) + "?desde=ficha")
 
     def test_manager_club_page_has_no_members_or_snp(self):
         self.client.login(username="manager", password=PASSWORD)
