@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block page_title %}{% translate "Editar advertencia" %} · {% endblock %}
+
+{% block content %}
+<div class="table-container">
+    <h1>{% translate "Editar advertencia" %}</h1>
+    <p class="text-muted">
+        <strong>{{ penalty.player.full_name }}</strong> ·
+        {{ penalty.call.match.local_name }} vs {{ penalty.call.match.visiting_name }} · {{ penalty.call.match.start_date|date:"j M Y" }}
+    </p>
+
+    {% if error %}<div class="alert alert-danger" role="alert">{{ error }}</div>{% endif %}
+
+    <form method="POST" action="{% url 'edit_penalty' penalty.public_id %}" data-loading-text="{% translate 'Guardando la advertencia…' %}">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ next }}">
+        <div class="z-penalty-fields">
+            <div>
+                <label for="penalty-kind" class="form-label">{% translate "Motivo" %}</label>
+                <select name="kind" id="penalty-kind" class="form-select" required>
+                    {% for value, label in penalty_kinds %}<option value="{{ value }}" {% if kind == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="penalty-reason" class="form-label">{% translate "Detalle" %} <small class="text-muted">({% translate "obligatorio si eliges «Otro»" %})</small></label>
+                <input type="text" name="reason" id="penalty-reason" class="form-control" maxlength="100" autocomplete="off" value="{{ detail }}">
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">{% translate "Guardar cambios" %}</button>
+        <a class="btn btn-outline-secondary" href="{{ back }}">{% translate "Cancelar" %}</a>
+    </form>
+</div>
+{% endblock %}
