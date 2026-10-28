@@ -526,7 +526,7 @@ class DrawStatisticsTests(TestCase):
         self.client.force_login(self.user)
 
     def test_team_statistics_count_draws(self):
-        response = self.client.get(reverse("team_statistics"))
+        response = self.client.get(reverse("team_statistics"), {"season": "all"})
         self.assertEqual(response.context["total_matches"], 3)
         self.assertEqual(response.context["won_matches"], 1)
         self.assertEqual(response.context["drawn_matches"], 1)
@@ -534,6 +534,13 @@ class DrawStatisticsTests(TestCase):
         self.assertEqual(response.context["percentage_drawn"], 33.33)
         self.assertEqual(response.context["dicc_line_chart"], {"2025-2026": {"won": 1, "drawn": 1, "lost": 1}})
         self.assertContains(response, "Empates")
+        self.assertContains(response, 'id="myLineChart"')
+
+    def test_year_chart_only_in_all_seasons(self):
+        """«Enfrentamientos ganados por año» no sale al filtrar una temporada concreta."""
+        response = self.client.get(reverse("team_statistics"), {"season": "2025-2026"})
+        self.assertEqual(response.context["dicc_line_chart"], {})
+        self.assertNotContains(response, 'id="myLineChart"')
 
 
 class OnlyClosedMatchesTests(TestCase):
