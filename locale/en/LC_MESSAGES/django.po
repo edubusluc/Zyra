@@ -12702,8 +12702,8 @@ msgstr "You already have a space in that competition: choose another one."
 msgid "Ya tienes un espacio en %(competition)s: elige otra competición."
 msgstr "You already have a space in %(competition)s: choose another competition."
 
-msgid "Nivel en el que juega el equipo en su competición."
-msgstr "Level the team plays at in its competition."
+msgid "Nivel en el que juega el equipo, por ejemplo Future o 500 en la SNP o 2.ª división en LAPI."
+msgstr "Level the team plays at, for example Future or 500 in SNP or 2nd division in LAPI."
 
 msgid "Elige una división de %(competition)s."
 msgstr "Choose a %(competition)s division."

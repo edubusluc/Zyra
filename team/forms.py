@@ -49,7 +49,7 @@ class Teamform (forms.ModelForm):
         # Ayuda con valores típicos (los tres se piden sin ejemplo en el alta del club y en el de rivales).
         self.fields['gender'].help_text = _("Masculino o Femenino, según la competición del equipo.")
         self.fields['country'].help_text = _("País del circuito en el que juega, por ejemplo España. Decide dónde se buscan sus jugadores en SNP.")
-        self.fields['division'].help_text = _("Nivel en el que juega el equipo en su competición.")
+        self.fields['division'].help_text = _("Nivel en el que juega el equipo, por ejemplo Future o 500 en la SNP o 2.ª división en LAPI.")
         if self.is_bound and self._copies_from_own_team():
             for name in self.group_fields:
                 self.fields[name].required = False

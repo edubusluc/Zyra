@@ -57,7 +57,7 @@ class ClubForm(forms.Form):
                                 initial="ES",
                                 help_text=_("País en el que juega, por ejemplo España. En la SNP decide dónde se buscan tus jugadores."))
     division = forms.ChoiceField(label=_("División"), choices=[("", _("Elige una opción"))] + Team.DIVISIONS,
-                                 help_text=_("Nivel en el que juega el equipo en su competición."))
+                                 help_text=_("Nivel en el que juega el equipo, por ejemplo Future o 500 en la SNP o 2.ª división en LAPI."))
 
     def __init__(self, *args, competitions=None, **kwargs):
         """Limita las competiciones a ``competitions`` y los nombres a texto plano (core.validators)."""
