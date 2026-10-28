@@ -7,6 +7,9 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 - «Enfrentamientos ganados por año» solo aparece en la vista «Todas»; al filtrar una temporada no se muestra. Con muchas temporadas enseña una ventana (8 en escritorio, 5 en móvil) con botones «Antes / Después», para que barras y etiquetas no se aprieten.
 - El buscador de temporadas lleva flecha para desplegar la lista completa.
+## 28/10/2026 · Advertencias del selector de convocatoria
+
+- Al crear o editar una convocatoria, las advertencias que se ven junto a cada jugador son solo las de la temporada actual (antes salían todas las registradas).
 
 ## 26/10/2026 · Aviso «Añade un gestor»
 
