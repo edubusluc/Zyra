@@ -173,7 +173,7 @@ ni se editan parejas (`edit_game_match`).
 
 ## Estadísticas
 
-- Un jugador solo cuenta convocatorias (apuntado, alineado, no apuntado; informe mensual incluido) desde su `joined_season`: `players.models.joined_by`. Los partidos jugados y las advertencias son hechos y no se filtran.
+- Un jugador solo cuenta convocatorias (apuntado, alineado, no apuntado; informe mensual incluido) desde su `joined_season`: `players.models.joined_by`. Los partidos jugados son hechos y no se filtran. El selector de convocatoria solo muestra las advertencias de la temporada actual (`call__match__season`); las estadísticas de advertencias siguen el selector de temporada.
 - [V] Solo cuentan partidos con el acta cerrada (`pairs.club_game_log`, `calculate_match_statistics`). Las consultas de `Game`/`Call` filtran también `match__draft_mode=False`.
 - [V] Una pareja es la misma con independencia de quién juegue en cada lado (`pairs.pair_key`);
   los rankings exigen un mínimo de partidos (`min_games_pair`).
