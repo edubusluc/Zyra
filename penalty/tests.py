@@ -225,3 +225,61 @@ class LegacyMigrationTests(TestCase):
         self.assertEqual((auto.reason, plain.reason, free.reason), ("", "", "Retraso"))
         self.assertEqual(auto.display_reason, "Otro")
         self.assertEqual(free.display_reason, "Retraso")
+
+
+class EditPenaltyTests(PenaltyBase):
+    """Edición de motivo y detalle, y «Eliminar» desde el historial de advertencias."""
+
+    def setUp(self):
+        super().setUp()
+        self.apply([self.ana], kind="late", reason="5 min")
+        self.pen = Penalty.objects.get()
+        self.url = reverse("edit_penalty", args=[self.pen.public_id])
+        self.history = reverse("warnings_statistics") + "?season=all"
+
+    def test_edit_form_prefilled(self):
+        response = self.client.get(self.url)
+        self.assertContains(response, "5 min")
+        self.assertContains(response, "ANA")
+
+    def test_edit_updates_kind_and_detail_and_returns_to_next(self):
+        response = self.client.post(self.url, {"kind": "conduct", "reason": "Gritos", "next": self.history})
+        self.assertRedirects(response, self.history)
+        self.pen.refresh_from_db()
+        self.assertEqual((self.pen.kind, self.pen.reason), ("conduct", "Gritos"))
+        self.assertEqual(self.pen.player, self.ana)
+
+    def test_other_requires_detail(self):
+        response = self.client.post(self.url, {"kind": "other", "reason": " "})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Escribe el detalle")
+        self.pen.refresh_from_db()
+        self.assertEqual(self.pen.kind, "late")
+
+    def test_invalid_kind_rejected(self):
+        response = self.client.post(self.url, {"kind": "zzz", "reason": ""})
+        self.assertContains(response, "Elige el motivo")
+
+    def test_external_next_ignored(self):
+        response = self.client.post(self.url, {"kind": "late", "reason": "", "next": "https://evil.example/"})
+        self.assertRedirects(response, reverse("view_call_log", args=[self.call.public_id]))
+
+    def test_member_cannot_edit(self):
+        self.client.login(username="member", password=PASSWORD)
+        self.assertEqual(self.client.post(self.url, {"kind": "conduct"}).status_code, 403)
+        self.pen.refresh_from_db()
+        self.assertEqual(self.pen.kind, "late")
+
+    def test_other_club_gets_404(self):
+        other = User.objects.create_user("other", password=PASSWORD)
+        create_club("Club B", "Madrid", other)
+        self.client.login(username="other", password=PASSWORD)
+        self.assertEqual(self.client.get(self.url).status_code, 404)
+
+    def test_history_shows_actions_and_delete_returns_to_history(self):
+        response = self.client.get(self.history)
+        self.assertContains(response, self.url)
+        self.assertContains(response, "Acciones")
+        response = self.client.post(reverse("delete_penalty") + f"?ids={self.pen.public_id}", {"next": self.history})
+        self.assertRedirects(response, self.history)
+        self.assertFalse(Penalty.objects.exists())

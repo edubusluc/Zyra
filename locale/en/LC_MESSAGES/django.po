@@ -12650,3 +12650,23 @@ msgstr "Only competitive matches count."
 
 msgid "Mis estadísticas"
 msgstr "My statistics"
+
+#: penalty/views.py
+msgid "Advertencia actualizada."
+msgstr "Warning updated."
+
+#: penalty/views.py
+msgid "Editar advertencia"
+msgstr "Edit warning"
+
+#: penalty/views.py
+msgid "Editar la advertencia de %(name)s"
+msgstr "Edit the warning for %(name)s"
+
+#: penalty/views.py
+msgid "Eliminar la advertencia de %(name)s"
+msgstr "Delete the warning for %(name)s"
+
+#: penalty/views.py
+msgid "Guardando la advertencia…"
+msgstr "Saving the warning…"

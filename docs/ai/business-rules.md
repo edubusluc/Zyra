@@ -109,7 +109,7 @@ Orden obligatorio del ciclo (`match/views.py`) [V], cubierto por `match/tests_fl
 Con el acta cerrada [V]: no se borra el partido (`delete_match`) ni su convocatoria (`delete_call`),
 ni se editan parejas (`edit_game_match`).
 
-- [V] Advertencias (`create_penalty`): solo a jugadores del club con `in_team=True`. El motivo (`kind`) es obligatorio y «Otro» exige detalle. Solo el capitán las aplica y las retira (`delete_penalty`: «Quitar» en el registro de la convocatoria y «Deshacer» en el aviso, que lleva la URL en `extra_tags="undo=…"`); las de otros clubes se ignoran.
+- [V] Advertencias (`create_penalty`): solo a jugadores del club con `in_team=True`. El motivo (`kind`) es obligatorio y «Otro» exige detalle. Solo capitán y gestores las aplican, editan (`edit_penalty`: motivo y detalle, desde el historial de Estadísticas › Advertencias) y retiran (`delete_penalty`, que acepta `next` interno: «Quitar» en el registro de la convocatoria y «Deshacer» en el aviso, que lleva la URL en `extra_tags="undo=…"`); las de otros clubes se ignoran.
 - [V] Alineación sugerida (`suggested_lineup`, `match/advisor.py`): solo propone, no guarda.
 
 ## Informe PDF y correos
