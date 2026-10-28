@@ -328,7 +328,8 @@ def team_statistics(request):
     local_games_won, local_games_lost, percentage_local_games_won, percentage_local_games_lost = calculate_local_game_statistics(selected_season or None, team, match_type)
     visiting_games_won, visiting_games_lost, percentage_visiting_games_won, percentage_visiting_games_lost = calculate_visiting_game_statistics(selected_season or None, team, match_type)
 
-    dicc_line_chart = calculate_matches_won_per_year(team, match_type)
+    # La evolución por temporada solo tiene sentido con «Todas»: al filtrar una temporada no se muestra.
+    dicc_line_chart = calculate_matches_won_per_year(team, match_type) if selected_season is None else {}
     tiebreaks = calculate_tiebreak_stats(selected_season or None, team, match_type)
 
     # Top 5 (jugadores actuales del equipo), respetando la temporada y el tipo de partido elegidos

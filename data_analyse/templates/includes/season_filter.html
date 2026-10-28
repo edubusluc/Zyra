@@ -11,7 +11,7 @@
   <form method="get" action="{{ request.path }}{{ season_anchor }}" class="st-season-search">
     {% for name, value in season_keep %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}
     <label for="season-search" class="visually-hidden">{% translate "Buscar temporada" %}</label>
-    <select class="st-select" name="season" id="season-search" onchange="this.form.submit()" data-picker data-placeholder="{% translate 'Buscar temporada...' %}">
+    <select class="st-select" name="season" id="season-search" onchange="this.form.submit()" data-picker data-picker-toggle data-placeholder="{% translate 'Buscar temporada...' %}">
       <option value="">{% translate "Elige una temporada" %}</option>
       {% for season in season_search %}<option value="{{ season }}">{{ season }}</option>{% endfor %}
     </select>

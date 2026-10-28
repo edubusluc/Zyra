@@ -76,8 +76,16 @@ gamesBar('myVisitingBarChart', teamData.visitingGamesWon, teamData.visitingGames
 // Partidos ganados, empatados y perdidos por temporada. Barras agrupadas por temporada, con la
 // etiqueta horizontal debajo de cada grupo (en pantallas estrechas «24-25», sin rotar ni recortar)
 // y el número encima de cada barra para ver de un vistazo qué color es cada resultado.
-const years = Object.keys(teamData.matchesWonPerYear);
-const lineBox = document.getElementById('myLineChart').parentElement;
+// Solo existe con la vista «Todas». Con muchas temporadas se ve una ventana (5 en pantallas estrechas,
+// 8 en las anchas) y los botones Antes / Después la desplazan: así las barras y etiquetas no se aprietan.
+(function () {
+const lineCanvas = document.getElementById('myLineChart');
+if (!lineCanvas) return;
+const allYears = Object.keys(teamData.matchesWonPerYear);
+const pageSize = () => (lineCanvas.parentElement.clientWidth < 520 ? 5 : 8);
+let offset = 0;  // temporadas que quedan a la derecha de la ventana
+let years = allYears.slice(-pageSize());
+const lineBox = lineCanvas.parentElement;
 const narrowSeasons = () => lineBox.clientWidth < 520;
 const seasonLabel = (y) => {
   const text = narrowSeasons() ? y.replace(/^\d{2}(\d{2})-\d{2}(\d{2})$/, '$1-$2') : y;
@@ -120,7 +128,7 @@ const seasonBands = {
     ctx.restore();
   },
 };
-const seasonChart = new Chart(document.getElementById('myLineChart'), {
+const seasonChart = new Chart(lineCanvas, {
   type: 'bar',
   plugins: [seasonBands, barValues],
   data: {
@@ -145,11 +153,35 @@ const seasonChart = new Chart(document.getElementById('myLineChart'), {
 });
 seasonChart.options.datasets.bar.categoryPercentage = groupWidth(seasonChart.data.datasets.length);
 seasonChart.update('none');
-window.addEventListener('resize', () => {
-  seasonChart.options.datasets.bar.categoryPercentage = groupWidth(seasonChart.data.datasets.length);
+window.addEventListener('resize', () => showWindow());
+
+// Paginador de la ventana de temporadas.
+const pager = document.getElementById('yearPager');
+const prev = document.getElementById('yearPrev');
+const next = document.getElementById('yearNext');
+const range = document.getElementById('yearRange');
+function showWindow() {
+  const size = pageSize();
+  offset = Math.max(0, Math.min(offset, Math.max(0, allYears.length - size)));
+  const end = allYears.length - offset;
+  years = allYears.slice(Math.max(0, end - size), end);
   seasonChart.data.labels = years.map(seasonLabel);
+  seasonChart.data.datasets.forEach((ds) => {
+    const key = { [gettext('Ganados')]: 'won', [gettext('Empatados')]: 'drawn', [gettext('Perdidos')]: 'lost' }[ds.label];
+    ds.data = years.map((y) => teamData.matchesWonPerYear[y][key] || 0);
+  });
+  seasonChart.options.datasets.bar.categoryPercentage = groupWidth(seasonChart.data.datasets.length);
   seasonChart.update('none');
-});
+  pager.hidden = allYears.length <= size;
+  prev.disabled = end - years.length <= 0;
+  next.disabled = offset === 0;
+  const plain = (y) => (narrowSeasons() ? y.replace(/^\d{2}(\d{2})-\d{2}(\d{2})$/, '$1-$2') : y);
+  range.textContent = `${plain(years[0])} → ${plain(years[years.length - 1])} · ${allYears.length} ${gettext('temporadas')}`;
+}
+prev.addEventListener('click', () => { offset += pageSize(); showWindow(); });
+next.addEventListener('click', () => { offset -= pageSize(); showWindow(); });
+showWindow();
+})();
 
 // Asistencia a las convocatorias: % de la plantilla que se apunta. Con «Todas» es la media por temporada;
 // con una temporada, una barra por convocatoria (la etiqueta lleva fecha y rival).

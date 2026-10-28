@@ -186,15 +186,22 @@
           </div>
         </section>
 
+        {% if not selected_season %}
         <section class="st-card st-card--wide">
           <h3 class="st-card-title">{% translate "Enfrentamientos ganados por año" %}</h3>
           <p class="st-card-note">{% translate "Evolución de victorias, empates y derrotas del equipo en cada temporada." %}</p>
+          <div class="st-year-pager" id="yearPager" hidden>
+            <button type="button" class="st-chip" id="yearPrev" aria-label="{% translate 'Temporadas anteriores' %}">‹ {% translate "Antes" %}</button>
+            <span id="yearRange" aria-live="polite"></span>
+            <button type="button" class="st-chip" id="yearNext" aria-label="{% translate 'Temporadas siguientes' %}">{% translate "Después" %} ›</button>
+          </div>
           {% if not dicc_line_chart %}<p class="st-muted st-nodata">{% translate "No hay datos todavía." %}</p>
           {% endif %}
           <div class="st-chart"{% if not dicc_line_chart %} hidden{% endif %}>
             <canvas id="myLineChart" role="img" aria-label="{% translate "Enfrentamientos ganados por año" %}"></canvas>
           </div>
         </section>
+        {% endif %}
 
         <section class="st-card st-card--wide">
           <h3 class="st-card-title">{% translate "Asistencia a las convocatorias" %}{% if selected_season %} · {{ selected_season }}{% endif %}</h3>

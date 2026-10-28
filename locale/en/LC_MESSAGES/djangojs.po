@@ -294,3 +294,6 @@ msgid "%s convocatoria"
 msgid_plural "%s convocatorias"
 msgstr[0] "%s call-up"
 msgstr[1] "%s call-ups"
+
+msgid "temporadas"
+msgstr "seasons"

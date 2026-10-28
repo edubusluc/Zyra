@@ -12650,3 +12650,15 @@ msgstr "Only competitive matches count."
 
 msgid "Mis estadísticas"
 msgstr "My statistics"
+
+msgid "Temporadas anteriores"
+msgstr "Earlier seasons"
+
+msgid "Temporadas siguientes"
+msgstr "Later seasons"
+
+msgid "Antes"
+msgstr "Earlier"
+
+msgid "Después"
+msgstr "Later"

@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 28/10/2026 · Estadísticas por temporadas
+
+- «Enfrentamientos ganados por año» solo aparece en la vista «Todas»; al filtrar una temporada no se muestra. Con muchas temporadas enseña una ventana (8 en escritorio, 5 en móvil) con botones «Antes / Después», para que barras y etiquetas no se aprieten.
+- El buscador de temporadas lleva flecha para desplegar la lista completa.
+
 ## 26/10/2026 · Aviso «Añade un gestor»
 
 - La portada muestra al capitán un aviso para que conozca el rol de gestor, con enlace a «Miembros». Se queda hasta que lo cierra con la ✕; después no vuelve a aparecer (se guarda en su cuenta, `UserPreference.manager_tip_dismissed_at`). Gestores y miembros no lo ven.
