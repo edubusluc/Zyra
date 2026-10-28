@@ -1,7 +1,9 @@
 {# Alineación de las parejas de la competición. Recibe: match, players, players_per_lineup, slots (lista de {gameId, player1Id, player2Id}, una por partido), submit_label #}
-{# A la izquierda se eligen las parejas (buscador al escribir + desplegable); a la derecha se ve el orden por puntos SNP. #}
+{# A la izquierda se eligen las parejas (buscador al escribir + desplegable); a la derecha, solo en la SNP, se ve el orden por puntos SNP. #}
+{# En las competiciones sin puntos SNP (LAPI) las parejas se cruzan por sorteo: no hay puntos ni orden de juego. #}
 {% load static i18n l10n zyra_format %}
-<form method="post" data-lineup class="z-lineup" data-loading-text="{% translate 'Guardando las parejas…' %}">
+{% with ordered=current_club.rules.has_snp %}
+<form method="post" data-lineup class="z-lineup{% if not ordered %} z-lineup--unordered{% endif %}" {% if ordered %}data-lineup-ordered{% endif %} data-loading-text="{% translate 'Guardando las parejas…' %}">
     {% csrf_token %}
     <div class="z-lineup-main">
         <p class="text-muted small mb-3">{% translate "Escribe para buscar un jugador o abre la lista con la flecha. Solo aparecen los convocados que aún no están en otra pareja." %}</p>
@@ -29,8 +31,8 @@
                     <select id="slot{{ forloop.parentloop.counter }}-p{{ key }}" data-player data-picker data-picker-toggle data-picker-clearable data-placeholder="{% translate 'Buscar jugador...' %}">
                         <option value="">{% translate "Elegir jugador" %}</option>
                         {% for p in players %}
-                        {% blocktranslate asvar meta with points=p.snp_score|snp_points:"0" %}{{ points }} pts{% endblocktranslate %}
-                        <option value="{{ p.id }}" data-points="{{ p.snp_score|default:0|unlocalize }}" data-meta="{{ meta }}" data-short="{{ p.short_name }}"
+                        {% if ordered %}{% blocktranslate asvar meta with points=p.snp_score|snp_points:"0" %}{{ points }} pts{% endblocktranslate %}{% endif %}
+                        <option value="{{ p.id }}" data-points="{{ p.snp_score|default:0|unlocalize }}"{% if ordered %} data-meta="{{ meta }}"{% endif %} data-short="{{ p.short_name }}"
                             {% if key == "1" and p.id == slot.player1Id or key == "2" and p.id == slot.player2Id %}selected{% endif %}>{{ p.full_name }}</option>
                         {% endfor %}
                     </select>
@@ -41,11 +43,13 @@
         </div>
     </div>
 
+    {% if ordered %}
     <aside class="z-lineup-side pair-order-container" aria-labelledby="pair-order-title">
         <h2 id="pair-order-title">{% translate "Orden de juego" %}</h2>
         <p class="text-muted small mb-2">{% translate "Se ordena por la suma de puntos SNP: las dos parejas más fuertes juegan los partidos de 3 puntos." %}</p>
         <ol id="pair-order-list" aria-live="polite"></ol>
     </aside>
+    {% endif %}
 
     <input type="hidden" name="ordered_games" data-lineup-output>
     <div class="z-selector-bar">
@@ -53,5 +57,6 @@
         <button type="submit" class="btn btn-primary" data-lineup-save disabled>{{ submit_label }}</button>
     </div>
 </form>
+{% endwith %}
 <script src="{% static 'js/player-picker.js' %}" defer></script>
 <script src="{% static 'js/lineup.js' %}" defer></script>

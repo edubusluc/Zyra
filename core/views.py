@@ -322,8 +322,13 @@ def register_club(request):
     # Nombre y apellidos para el jugador del capitán. Con Google vienen de su perfil si
     # los tiene; si falta alguno, se avisa de que hay que escribirlos.
     known = {} if anonymous else {"name": request.user.first_name.strip(), "last_name": request.user.last_name.strip()}
+    # Si la cuenta ya tiene jugador en otro espacio, el nuevo jugador se crea con su mismo nombre
+    # y no se vuelve a preguntar.
+    linked_player = None if anonymous else (
+        Player.objects.filter(user=request.user).select_related("club").order_by("pk").first())
+    linked_data = {"player-name": linked_player.name, "player-last_name": linked_player.last_name} if linked_player else None
     google_missing_name = (
-        not anonymous and not all(known.values())
+        not anonymous and not linked_player and not all(known.values())
         and SocialAccount.objects.filter(user=request.user, provider="google").exists()
     )
 
@@ -331,7 +336,7 @@ def register_club(request):
         if ratelimit.too_many(request, "register", REGISTER_LIMIT, REGISTER_WINDOW):
             return render(request, "429.html", status=429)
         club_form = ClubForm(request.POST, competitions=free)
-        player_form = CaptainPlayerForm(request.POST, prefix="player")
+        player_form = CaptainPlayerForm(linked_data or request.POST, prefix="player")
         # Fuera de la SNP no hay cuenta SNP: el jugador del capitán se escribe a mano.
         snp_form = CaptainSnpForm(request.POST if club_form.rules.has_snp else {"snp-mode": CaptainSnpForm.MANUAL},
                                   prefix="snp")
@@ -400,7 +405,7 @@ def register_club(request):
     return render(request, "register_club.html", {
         "club_form": club_form, "user_form": user_form, "player_form": player_form, "snp_form": snp_form,
         "google_missing_name": google_missing_name, "snp_service_off": not snp_service.is_enabled(),
-        "new_space": current is not None,
+        "new_space": current is not None, "linked_player": linked_player,
         # Para register-wizard: divisiones de cada competición y si tiene SNP.
         "competition_rules": {c.code: {"divisions": list(c.divisions), "snp": c.has_snp} for c in free},
         "google_next": f"{reverse('register_club')}?{FROM_GOOGLE_PARAM}=1",

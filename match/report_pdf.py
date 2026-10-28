@@ -62,6 +62,8 @@ CELL_PAD = 3.5             # relleno vertical de las filas de las tablas (pt)
 # el SNP (hasta «14062.5») y los registros caben en una sola línea; el nombre se abrevia solo
 PLAYER_COLS = [36 * mm, 17 * mm, 29 * mm, 29 * mm, 20 * mm, 18 * mm, 15 * mm, 18 * mm]
 assert abs(sum(PLAYER_COLS) - CONTENT_W) < 0.01
+# Sin puntos SNP (LAPI) la columna SNP desaparece y su ancho pasa al nombre
+PLAYER_COLS_NO_SNP = [PLAYER_COLS[0] + PLAYER_COLS[1], *PLAYER_COLS[2:]]
 
 MAX_PLAYERS_TABLE = 16     # filas de convocados en las distribuciones más apretadas
 MAX_BENCH_NAMES = 8        # nombres en «Descansan»; el resto se cuenta
@@ -351,6 +353,8 @@ def _story(report, layout):
     match, venue = report["match"], report["venue_label"]
     own = match.local if match.own_is_local else match.visiting
     cell_size, pad = layout.cell_size, layout.cell_pad
+    comp = report["competition"]
+    snp = comp.has_snp  # sin puntos SNP no hay columnas SNP ni orden de juego
     story = []
 
     def section(text):
@@ -418,7 +422,7 @@ def _story(report, layout):
     shown = players[:layout.max_players] if layout.max_players else players
     story.append(Spacer(1, layout.section_gap))
     section(_("CONVOCADOS · RENDIMIENTO COMO %(venue)s") % {"venue": venue.upper()})
-    widths = PLAYER_COLS
+    widths = PLAYER_COLS if snp else PLAYER_COLS_NO_SNP
     name_w = widths[0] - CELL_X_PAD
     usage = report["usage"]
 
@@ -429,7 +433,7 @@ def _story(report, layout):
 
     player_rows = [[
         Paragraph(f"<b>{esc(_player_label(f.player, name_w, size=cell_size))}</b>", st["cell"]),
-        Paragraph(f"{f.snp:g}" if f.snp else "", st["cell"]),
+        *([Paragraph(f"{f.snp:g}" if f.snp else "", st["cell"])] if snp else []),
         Paragraph(_record(f.venue_wins, f.venue_played), st["cell"]),
         Paragraph(_record(f.wins, f.played), st["cell"]),
         Paragraph(f"<b>{usage[f.player.id]['games']}</b>/{usage[f.player.id]['calls']}", st["cell"]),
@@ -438,8 +442,8 @@ def _story(report, layout):
         _pips(f.form),
     ] for f in shown]
     story.append(_data_table(
-        [_("Jugador"), "SNP", _("Como %(venue)s") % {"venue": venue}, _("Global"), _("Jug./Conv."), _("Último"),
-         _("Racha"), _("Forma")],
+        [_("Jugador"), *(["SNP"] if snp else []), _("Como %(venue)s") % {"venue": venue}, _("Global"), _("Jug./Conv."),
+         _("Último"), _("Racha"), _("Forma")],
         player_rows, widths, st, pad=pad))
     note = _("Jug./Conv.: partidos jugados / convocatorias en las que se apuntó esta temporada, sin contar "
              "esta convocatoria ni este partido. Último: fecha del último partido disputado.")
@@ -457,40 +461,53 @@ def _story(report, layout):
         story.append(PageBreak())
     section(_("PAREJAS CON HISTORIAL ENTRE LOS CONVOCADOS"))
     if report["pairs"]:
-        pair_name_w = 84 * mm - CELL_X_PAD
+        pair_col = 84 * mm if snp else 102 * mm
+        pair_name_w = pair_col - CELL_X_PAD
         pair_rows = [[
             Paragraph(f"<b>{esc(_pair_label(p, pair_name_w, size=cell_size))}</b>", st["cell"]),
-            Paragraph(f"{p.snp_sum:g}", st["cell"]),
+            *([Paragraph(f"{p.snp_sum:g}", st["cell"])] if snp else []),
             Paragraph(_record(p.venue_wins, p.venue_played), st["cell"]),
             Paragraph(_record(p.wins, p.played), st["cell"]),
             Paragraph(_streak(p.streak), st["cell"]),
         ] for p in report["pairs"]]
-        story.append(_data_table([_("Pareja"), _("Suma SNP"), _("Como %(venue)s") % {"venue": venue}, _("Juntos"), _("Racha")],
-                                 pair_rows, [84 * mm, 18 * mm, 30 * mm, 30 * mm, 20 * mm], st, pad=pad))
+        story.append(_data_table([_("Pareja"), *([_("Suma SNP")] if snp else []), _("Como %(venue)s") % {"venue": venue},
+                                  _("Juntos"), _("Racha")],
+                                 pair_rows, [pair_col, *([18 * mm] if snp else []), 30 * mm, 30 * mm, 20 * mm], st, pad=pad))
     else:
         story.append(Paragraph(_("Ninguna pareja de convocados ha jugado junta todavía."), st["muted"]))
 
     story.append(Spacer(1, layout.section_gap))
     section(_("ALINEACIONES RECOMENDADAS"))
     if not report["enough_players"]:
-        story.append(Paragraph(_("Hacen falta al menos 10 convocados para proponer una alineación."), st["body"]))
+        story.append(Paragraph(_("Hacen falta al menos %(n)s convocados para proponer una alineación.")
+                               % {"n": comp.players_per_lineup}, st["body"]))
     # Sin saltos forzados las alineaciones van sin tarjeta para que su tabla pueda partirse entre páginas
     lineup_w = CONTENT_W - (0 if layout.flow else 2 * layout.panel_pad)
-    pair_col_w = lineup_w - 80 * mm
+    pair_col_w = lineup_w - (80 * mm if snp else 42 * mm)
     for i, item in enumerate(report["lineups"]):
         if i:
             story.append(Spacer(1, layout.section_gap if layout.flow else 4 * mm))
         lineup = item["lineup"]
-        rows = [[
-            Paragraph(f"<b>{row['n']}</b>", st["cell_bold"]),
-            _badge(_("%(n)s PTS") % {"n": row['value']}, fill=LIME if row['value'] == 3 else SURFACE_2,
-                   fg=INK if row['value'] == 3 else TEXT, width=13 * mm),
-            Paragraph(f"<b>{esc(_pair_label(row['pair'], pair_col_w - CELL_X_PAD, size=cell_size))}</b>", st["cell"]),
-            Paragraph(f"{row['pair'].snp_sum:g}", st["cell"]),
-            Paragraph(f"<b>{row['pct']}%</b>", st["cell"]),
-        ] for row in lineup.rows]
-        table = _data_table([_("Partido"), _("Valor"), _("Pareja"), _("Suma SNP"), _("Victoria est.")], rows,
-                            [16 * mm, 18 * mm, pair_col_w, 20 * mm, 26 * mm], st, highlight_first=True, pad=pad)
+        if snp:
+            rows = [[
+                Paragraph(f"<b>{row['n']}</b>", st["cell_bold"]),
+                _badge(_("%(n)s PTS") % {"n": row['value']}, fill=LIME if row['value'] == 3 else SURFACE_2,
+                       fg=INK if row['value'] == 3 else TEXT, width=13 * mm),
+                Paragraph(f"<b>{esc(_pair_label(row['pair'], pair_col_w - CELL_X_PAD, size=cell_size))}</b>", st["cell"]),
+                Paragraph(f"{row['pair'].snp_sum:g}", st["cell"]),
+                Paragraph(f"<b>{row['pct']}%</b>", st["cell"]),
+            ] for row in lineup.rows]
+            table = _data_table([_("Partido"), _("Valor"), _("Pareja"), _("Suma SNP"), _("Victoria est.")], rows,
+                                [16 * mm, 18 * mm, pair_col_w, 20 * mm, 26 * mm], st, highlight_first=True, pad=pad)
+        else:
+            # Sin orden de juego: las parejas se numeran sin puntos y el cruce lo decide el sorteo
+            rows = [[
+                Paragraph(f"<b>{row['n']}</b>", st["cell_bold"]),
+                Paragraph(f"<b>{esc(_pair_label(row['pair'], pair_col_w - CELL_X_PAD, size=cell_size))}</b>", st["cell"]),
+                Paragraph(f"<b>{row['pct']}%</b>", st["cell"]),
+            ] for row in lineup.rows]
+            table = _data_table([_("Pareja"), _("Jugadores"), _("Victoria est.")], rows,
+                                [16 * mm, pair_col_w, 26 * mm], st, pad=pad)
         title = Paragraph(_("%(title)s · %(pct)s%% DE GANAR LA ELIMINATORIA") % {
             "title": item['title'].upper(), "pct": round(lineup.win * 100)}, st["lineup_title"])
         if layout.flow:
@@ -506,11 +523,16 @@ def _story(report, layout):
         story.extend(block if layout.flow else [KeepTogether([_panel(block, layout.panel_pad)])])
 
     story.append(Spacer(1, layout.section_gap))
-    story.append(Paragraph(
-        _("Formato SNP: 5 partidos; los partidos 1 y 2 valen 3 puntos y los 3, 4 y 5 valen 2. Las parejas se "
-          "ordenan por la suma de puntos SNP de sus jugadores y se necesitan 7 de 12 puntos para ganar la "
-          "eliminatoria. Las estimaciones se basan en el historial del club y son orientativas."),
-        st["muted"]))
+    if snp:
+        format_note = _("Formato SNP: 5 partidos; los partidos 1 y 2 valen 3 puntos y los 3, 4 y 5 valen 2. Las parejas se "
+                        "ordenan por la suma de puntos SNP de sus jugadores y se necesitan 7 de 12 puntos para ganar la "
+                        "eliminatoria. Las estimaciones se basan en el historial del club y son orientativas.")
+    else:
+        format_note = _("Formato %(competition)s: %(games)s partidos de 1 punto y gana la eliminatoria quien gana "
+                        "%(needed)s. Las parejas se cruzan por sorteo, así que no hay orden de juego. Las alineaciones "
+                        "se basan en el historial y la afinidad de los convocados y son orientativas.") % {
+            "competition": comp.name, "games": comp.games, "needed": comp.total_points // 2 + 1}
+    story.append(Paragraph(format_note, st["muted"]))
     return story
 
 

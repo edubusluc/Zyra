@@ -9,6 +9,9 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 - El menú de usuario muestra la competición del espacio activo, «Cambiar de espacio» y **«Crear otro espacio»**, que abre el registro con los datos de tu equipo ya puestos. Al registrarse se elige la competición, y las divisiones son las suyas (Future…Grand Slam en SNP, 1.ª a 5.ª en LAPI).
 - Las invitaciones a un espacio de otra competición se aceptan aunque ya estés en otro; a uno de la misma competición, no.
 - En los espacios LAPI no se ofrece nada de SNP (cuenta, sincronización ni ese paso en «Primeros pasos»).
+- En LAPI la **alineación sugerida** se basa en el historial y la afinidad de los convocados (no en puntos SNP) y funciona con 6 convocados. La pantalla de parejas no muestra puntos ni orden de juego, porque el cruce lo decide el sorteo, y el informe PDF y su correo explican el formato LAPI.
+- Al crear otro espacio, si tu cuenta ya tiene jugador no se te vuelve a pedir el nombre.
+- Dar de baja al último jugador de la plantilla sigue permitido, pero Zyra avisa de que te quedarás sin jugadores.
 
 ## 28/10/2026 · Reglas de competición en una ficha (espacios, fase 0)
 

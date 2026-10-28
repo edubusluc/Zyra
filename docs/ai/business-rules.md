@@ -85,7 +85,7 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
 
 ## Partidos, convocatorias y actas
 
-- [V] Los números del ciclo salen de la ficha de la competición (`core/competitions.py`, `competition_for`): partidos por enfrentamiento y sus puntos, convocados mínimos y partido de desempate. Por ahora solo existe la SNP (5 partidos 3-3-2-2-2, 10 convocados, desempate en el 3) y todos los clubes la juegan; la rama `feature/espacios-competiciones` añade otras (espacios). El recomendador `match/advisor.py` es solo de la SNP. Tests: `core/tests_competitions.py`.
+- [V] Los números del ciclo salen de la ficha de la competición (`core/competitions.py`, `competition_for`): partidos por enfrentamiento y sus puntos, convocados mínimos y partido de desempate. Por ahora solo existe la SNP (5 partidos 3-3-2-2-2, 10 convocados, desempate en el 3) y todos los clubes la juegan; la rama `feature/espacios-competiciones` añade otras (espacios). El recomendador `match/advisor.py` recibe la ficha: en la SNP ordena las parejas por puntos SNP; sin `has_snp` (LAPI) usa solo historial y afinidad, sin orden de juego (cruce por sorteo), y la pantalla de parejas y el PDF no muestran puntos ni orden. Tests: `core/tests_competitions.py`.
 
 Orden obligatorio del ciclo (`match/views.py`) [V], cubierto por `match/tests_flow.py`:
 
@@ -115,7 +115,9 @@ Con el acta cerrada [V]: no se borra el partido (`delete_match`) ni su convocato
 ni se editan parejas (`edit_game_match`).
 
 - [V] Advertencias (`create_penalty`): solo a jugadores del club con `in_team=True`. El motivo (`kind`) es obligatorio y «Otro» exige detalle. Solo capitán y gestores las aplican, editan (`edit_penalty`: motivo y detalle, desde el historial de Estadísticas › Advertencias) y retiran (`delete_penalty`, que acepta `next` interno: «Quitar» en el registro de la convocatoria y «Deshacer» en el aviso, que lleva la URL en `extra_tags="undo=…"`); las de otros clubes se ignoran.
-- [V] Alineación sugerida (`suggested_lineup`, `match/advisor.py`): solo propone, no guarda.
+- [V] Alineación sugerida (`suggested_lineup`, `match/advisor.py`): solo propone, no guarda. Necesita `players_per_lineup` convocados de la competición (10 SNP, 6 LAPI).
+- [V] Dar de baja a todos los jugadores del equipo (`manage_roster`, `edit_player`) se permite, pero avisa antes de guardar y después.
+- [V] Crear otro espacio con una cuenta que ya tiene jugador: no se pide el nombre, el nuevo jugador copia nombre y apellidos del primero (`register_club`).
 
 ## Informe PDF y correos
 

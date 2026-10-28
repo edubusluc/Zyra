@@ -130,7 +130,10 @@ def edit_player(request, player_id):
     form.uploader = request.user
     if request.method == "POST":
         if form.is_valid():
+            was_in_team = Player.objects.filter(pk=player.pk, in_team=True).exists()
             form.save()
+            if was_in_team and not form.instance.in_team:
+                _warn_if_roster_empty(request)
             return redirect('list_players')
 
     context = {
@@ -191,6 +194,13 @@ def player_won(game, player):
     return player in (game.player_1_visiting, game.player_2_visiting)
 
 
+def _warn_if_roster_empty(request):
+    """Avisa (sin impedirlo) de que la baja ha dejado al club sin jugadores en el equipo."""
+    if not Player.objects.filter(club=request.club, in_team=True).exists():
+        messages.warning(request, _("Te has quedado sin jugadores en la plantilla. Vuelve a darlos de alta "
+                                    "para poder convocarlos."))
+
+
 @club_manager_required
 def manage_roster(request):
     """Marca de una vez qué jugadores están en el equipo."""
@@ -204,6 +214,8 @@ def manage_roster(request):
             joined_text = ngettext("%(n)s alta", "%(n)s altas", joined) % {"n": joined}
             left_text = ngettext("%(n)s baja", "%(n)s bajas", left) % {"n": left}
             messages.success(request, _("Plantilla actualizada: %(joined)s y %(left)s.") % {"joined": joined_text, "left": left_text})
+            if left:
+                _warn_if_roster_empty(request)
         else:
             messages.info(request, _("No había cambios que guardar."))
         return redirect('manage_roster')

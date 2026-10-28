@@ -1257,6 +1257,7 @@ a.z-card:hover, .z-card--link:hover {
 .z-lineup-pairs fieldset > div + div { margin-top: 12px; }
 .z-lineup-side.pair-order-container { position: sticky; top: 96px; margin-top: 0; }
 .z-lineup > input, .z-lineup > .z-selector-bar { grid-column: 1 / -1; }
+.z-lineup--unordered { grid-template-columns: minmax(0, 1fr); }
 #pair-order-list li > div { display: grid; flex: 1; min-width: 0; }
 #pair-order-list li small { font-size: .7rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--z-muted); }
 #pair-order-list li span { overflow: hidden; text-overflow: ellipsis; }

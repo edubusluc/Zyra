@@ -745,7 +745,8 @@ def suggested_lineup(request, match_id):
         return JsonResponse({"error": str(error_message)}, status=400)
     lineups = suggested_lineups(call)
     if not lineups:
-        return JsonResponse({"error": _("Hacen falta al menos 10 convocados para sugerir una alineación.")}, status=400)
+        return JsonResponse({"error": _("Hacen falta al menos %(n)s convocados para sugerir una alineación.")
+                             % {"n": competition_for(match).players_per_lineup}}, status=400)
     return JsonResponse({"lineups": lineups})
 
 

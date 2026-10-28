@@ -101,8 +101,12 @@
                 {% if google_missing_name %}
                 <div class="alert alert-warning" role="alert">{% translate "No ha sido posible obtener tu nombre y apellidos de tu cuenta de Google. Indícalos para crear tu jugador." %}</div>
                 {% endif %}
+                {% if linked_player %}
+                <div class="alert alert-info" role="note">{% blocktranslate with player=linked_player.full_name space=linked_player.club.name %}Tu cuenta ya tiene el jugador <strong>{{ player }}</strong> en {{ space }}. Crearemos tu jugador en este espacio con el mismo nombre.{% endblocktranslate %}</div>
+                {% else %}
                 {{ player_form.as_p }}
-                <details class="z-more-options z-snp-match-note" data-snp-only>
+                {% endif %}
+                <details class="z-more-options z-snp-match-note" {% if linked_player %}hidden{% else %}data-snp-only{% endif %}>
                     <summary>{% translate "Importante: debe coincidir con SNP" %}</summary>
                     <p class="small">{% translate "El nombre y los apellidos deben coincidir exactamente con los que tienes registrados en SNP. Si no coinciden, no se te podrán asignar tus puntos SNP." %}</p>
                 </details>

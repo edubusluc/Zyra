@@ -171,3 +171,96 @@ class LapiSpaceWithoutSnpTests(TestCase):
         snp_club = create_club("Club SNP", "Sevilla", User.objects.create_user("x", password=PASSWORD))
         choices = [code for code, _label in Teamform(club=snp_club).fields["division"].choices if code]
         self.assertEqual(choices, list(SNP.divisions))
+
+
+class LapiLineupTests(TestCase):
+    """En LAPI la alineación sugerida, la pantalla de parejas y el informe no usan puntos SNP ni orden."""
+
+    def setUp(self):
+        self.user = User.objects.create_user("capi", password=PASSWORD, email="capi@example.com")
+        self.club = create_club("Club LAPI", "Sevilla", self.user, competition="lapi")
+        self.rival = Team.objects.create(club=self.club, name="Rival", location="X", in_group=True)
+        self.players = [Player.objects.create(club=self.club, name=f"Jug{i:02d}", last_name="X") for i in range(7)]
+        self.match = Match.objects.create(club=self.club, local=self.club.own_team, visiting=self.rival,
+                                          start_date=datetime.date(2026, 10, 20))
+        self.call = Call.objects.create(match=self.match, draft_mode=False)
+        self.call.players.set(self.players[:6])
+        self.client.login(username="capi", password=PASSWORD)
+
+    def test_win_probability_uses_lapi_points(self):
+        from match import advisor
+        self.assertAlmostEqual(advisor.win_probability([1, 1, 0], LAPI)[0], 1.0)
+        self.assertAlmostEqual(advisor.win_probability([1, 0, 0], LAPI)[0], 0.0)
+        self.assertEqual(advisor.win_probability([1, 1, 0], LAPI)[1], 2)
+
+    def test_suggested_lineup_with_six_players(self):
+        data = self.client.get(reverse("suggested_lineup", args=[self.match.public_id])).json()
+        self.assertEqual(len(data["lineups"][0]["pairs"]), 3)
+        self.assertNotIn("SNP", data["lineups"][0]["explanation"])
+        self.assertIn("de 3 puntos esperados", data["lineups"][0]["explanation"])
+
+    def test_lineup_screen_has_no_points_nor_order(self):
+        page = self.client.get(reverse("create_game", args=[self.match.public_id]))
+        self.assertNotContains(page, "Orden de juego")
+        self.assertNotContains(page, "data-lineup-ordered")
+        self.assertNotContains(page, " pts")
+        self.assertContains(page, "z-lineup--unordered")
+
+    def test_not_enough_players_message_uses_competition_minimum(self):
+        self.call.players.set(self.players[:4])
+        self.call.draft_mode = False
+        self.call.save()
+        from match.report import build_report
+        self.assertFalse(build_report(self.call)["enough_players"])
+
+    def test_report_pdf_has_lapi_format(self):
+        from reportlab.platypus import Paragraph
+        from match.report import build_report
+        from match.report_pdf import Layout, _register_fonts, _story
+        _register_fonts()
+        report = build_report(self.call)
+        self.assertEqual(len(report["lineups"][0]["lineup"].pairs), 3)
+        text = " ".join(f.getPlainText() for f in _story(report, Layout()) if isinstance(f, Paragraph))
+        self.assertNotIn("Formato SNP", text)
+        self.assertIn("Formato LAPI", text)
+        self.assertNotIn("al menos 10", text)
+        from match.report_pdf import render_report
+        self.assertTrue(render_report(report).startswith(b"%PDF"))
+
+
+class LinkedPlayerNewSpaceTests(TestCase):
+    """Al crear otro espacio, si la cuenta ya tiene jugador no se vuelve a pedir el nombre."""
+
+    def setUp(self):
+        self.captain = User.objects.create_user("capi", password=PASSWORD, email="capi@example.com")
+        self.club = create_club("Gladiadores", "Sevilla", self.captain, player_name="Eduardo", player_last_name="Bus")
+        self.client.login(username="capi", password=PASSWORD)
+
+    def test_name_is_taken_from_the_linked_player(self):
+        page = self.client.get(reverse("register_club") + "?competicion=lapi")
+        self.assertContains(page, "Tu cuenta ya tiene el jugador")
+        self.assertNotContains(page, 'name="player-name"')
+        data = {k: v for k, v in LAPI_CLUB.items() if not k.startswith("player-")}
+        self.client.post(reverse("register_club"), data)
+        space = Club.objects.get(name="Gladiadores LAPI")
+        player = Player.objects.get(club=space, user=self.captain)
+        self.assertEqual((player.name, player.last_name), ("Eduardo", "Bus"))
+
+
+class EmptyRosterWarningTests(TestCase):
+    """Dar de baja al último jugador del equipo se permite, pero avisa."""
+
+    def setUp(self):
+        self.captain = User.objects.create_user("capi", password=PASSWORD, email="capi@example.com")
+        self.club = create_club("Gladiadores", "Sevilla", self.captain)
+        Player.objects.filter(club=self.club).update(in_team=False)
+        self.player = Player.objects.create(club=self.club, name="Solo", last_name="X", in_team=True)
+        self.client.login(username="capi", password=PASSWORD)
+
+    def test_warning_when_roster_becomes_empty(self):
+        page = self.client.get(reverse("manage_roster"))
+        self.assertContains(page, "Te quedarás sin jugadores en la plantilla.")
+        response = self.client.post(reverse("manage_roster"), {}, follow=True)
+        self.player.refresh_from_db()
+        self.assertFalse(self.player.in_team)
+        self.assertContains(response, "Te has quedado sin jugadores en la plantilla.")

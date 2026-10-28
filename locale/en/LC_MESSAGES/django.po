@@ -12752,3 +12752,81 @@ msgstr "Add player"
 
 msgid "País en el que juega, por ejemplo España. En la SNP decide dónde se buscan tus jugadores."
 msgstr "Country it plays in, for example Spain. In SNP it decides where your players are searched for."
+
+#: match/advisor.py
+#, python-format
+msgid ""
+"%(pair1)s y %(pair2)s son las parejas con más opciones según el historial y "
+"la afinidad (victoria estimada %(pct1)s %% y %(pct2)s %%); el cruce de las "
+"parejas lo decide el sorteo."
+msgstr ""
+"%(pair1)s and %(pair2)s are the pairs with the best chances based on history "
+"and affinity (estimated win %(pct1)s %% and %(pct2)s %%); the pair match-ups "
+"are decided by draw."
+
+#: match/advisor.py
+#, python-format
+msgid ""
+"Ninguna pareja tiene historial, así que se combinan perfiles de derecha y "
+"revés en %(n)s de las %(total)s parejas."
+msgstr ""
+"No pair has any history, so right-side and backhand profiles are combined in "
+"%(n)s of the %(total)s pairs."
+
+#: match/advisor.py
+#, python-format
+msgid ""
+"Probabilidad estimada de ganar la eliminatoria: %(pct)s (%(expected)s de "
+"%(total)s puntos esperados)."
+msgstr ""
+"Estimated probability of winning the tie: %(pct)s (%(expected)s of "
+"%(total)s points expected)."
+
+#: match/report_pdf.py
+#, python-format
+msgid "Hacen falta al menos %(n)s convocados para proponer una alineación."
+msgstr "At least %(n)s called-up players are needed to suggest a lineup."
+
+#: match/report_pdf.py
+#, python-format
+msgid ""
+"Formato %(competition)s: %(games)s partidos de 1 punto y gana la "
+"eliminatoria quien gana %(needed)s. Las parejas se cruzan por sorteo, así "
+"que no hay orden de juego. Las alineaciones se basan en el historial y la "
+"afinidad de los convocados y son orientativas."
+msgstr ""
+"%(competition)s format: %(games)s games worth 1 point each, and whoever wins "
+"%(needed)s wins the tie. Pairs are matched by draw, so there is no playing "
+"order. Lineups are based on the called-up players' history and affinity and "
+"are only a guide."
+
+#: match/notifications.py
+msgid ""
+"Te adjuntamos el informe en PDF con el estado del equipo, las rachas, los "
+"precedentes contra este rival y dos alineaciones recomendadas según el "
+"historial y la afinidad de los convocados."
+msgstr ""
+"Attached is the PDF report with the team's status, streaks, head-to-head "
+"record against this rival and two recommended lineups based on the called-up "
+"players' history and affinity."
+
+#: core/templates/register_club.html
+#, python-format
+msgid ""
+"Tu cuenta ya tiene el jugador <strong>%(player)s</strong> en %(space)s. "
+"Crearemos tu jugador en este espacio con el mismo nombre."
+msgstr ""
+"Your account already has the player <strong>%(player)s</strong> in "
+"%(space)s. We will create your player in this space with the same name."
+
+#: players/views.py
+msgid ""
+"Te has quedado sin jugadores en la plantilla. Vuelve a darlos de alta para "
+"poder convocarlos."
+msgstr ""
+"You have no players left in the squad. Add them back to be able to call them "
+"up."
+
+#: players/templates/manage_roster.html
+msgid "Te quedarás sin jugadores en la plantilla."
+msgstr "You will have no players left in the squad."

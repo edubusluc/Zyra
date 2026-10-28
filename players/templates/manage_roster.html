@@ -52,6 +52,7 @@
         <div>
             {% blocktranslate trimmed with count=in_team_count %}<b data-roster-count>{{ count }}</b> en el equipo{% endblocktranslate %}
             <small data-roster-changes>{% translate "Sin cambios" %}</small>
+            <small class="d-block text-warning" data-roster-empty-warning role="status" hidden><i class="fa-solid fa-triangle-exclamation me-1" aria-hidden="true"></i>{% translate "Te quedarás sin jugadores en la plantilla." %}</small>
         </div>
         <button type="submit" class="btn btn-primary" data-roster-save disabled>{% translate "Guardar cambios" %}</button>
     </div>
@@ -92,6 +93,8 @@
     root.querySelector('[data-roster-count]').textContent = count;
     root.querySelector('[data-roster-changes]').textContent = changes ? (changes === 1 ? T.changeOne : T.changeMany).replace('{n}', changes) : T.none;
     root.querySelector('[data-roster-save]').disabled = !changes;
+    // Dar de baja a todos se puede (p. ej. al acabar la temporada), pero se avisa antes de guardar.
+    root.querySelector('[data-roster-empty-warning]').hidden = !(changes && count === 0 && rows.length);
   }
 
   search.addEventListener('input', refresh);
