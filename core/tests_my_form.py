@@ -91,12 +91,22 @@ class CalculationTests(MyFormBase):
         self.assertEqual(data["win_arc"], round(my_form.RING_LENGTH / 2, 1))
         self.assertEqual(data["played_pct"], 100)
 
-    def test_balance_is_this_season_but_last_games_span_seasons(self):
+    def test_everything_is_this_season_only(self):
         self.play(True, days_ago=400, season="2020-2021")
         self.play(False)
         data = my_form.my_form(self.club, self.me)
-        self.assertEqual(len(data["last"]), 2)
+        self.assertEqual(data["last"], [False])
+        self.assertEqual(data["run"], ("D", 1))
         self.assertEqual((data["wins"], data["losses"]), (0, 1))
+
+    def test_player_card_form_is_this_season_oldest_first(self):
+        from django.urls import reverse
+        self.play(True, days_ago=400, season="2020-2021")
+        self.play(True, days_ago=3)
+        self.play(False, days_ago=1)
+        self.client.login(username="captain", password=PASSWORD)
+        response = self.client.get(reverse("show_player", args=[self.me.public_id]))
+        self.assertEqual(response.context["form"], ["w", "l"])
 
     def test_snp_delta_and_line(self):
         for days, score in ((20, 412), (10, 420), (1, 436)):
@@ -108,6 +118,7 @@ class CalculationTests(MyFormBase):
         self.assertEqual((chart["high"], chart["low"]), (436, 412))
         self.assertEqual((chart["start"], chart["end"]), (self.day - datetime.timedelta(days=30), self.day))
         self.assertGreater(chart["dot"]["x"], 90)
+        self.assertEqual([p["score"] for p in chart["points"]], [412, 420, 436])
 
     def test_snp_without_history_has_no_delta_and_without_score_is_none(self):
         snp = my_form.my_form(self.club, self.me)["snp"]

@@ -6,7 +6,7 @@ from core.models import Club
 from .forms import NewOwnPlayerForm, OwnPlayerForm, PlayerEditForm, PlayerForm, SnpAccountForm, with_placeholder
 from django.contrib import messages
 from match.models import Game
-from players.models import Player, SnpAccount, SnpTeamImport
+from players.models import Player, SnpAccount, SnpTeamImport, current_season
 from core.crypto import DecryptionError
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET, require_POST
@@ -166,17 +166,20 @@ def delete_player(request, player_id):
 
 @club_required
 def show_player(request, player_id):
-    """Ficha de un jugador del club con sus últimos 5 partidos cerrados. Requiere pertenecer al club."""
+    """
+    Ficha de un jugador del club con sus últimos 5 partidos cerrados de la temporada actual, del más antiguo
+    al más reciente. Requiere pertenecer al club.
+    """
     player = get_object_or_404(Player, public_id=player_id, club=request.club)
     games = Game.objects.filter(
         (Q(player_1_local=player) | Q(player_2_local=player) |
         Q(player_1_visiting=player) | Q(player_2_visiting=player)) &
-        Q(draft_mode=False)
+        Q(draft_mode=False) & Q(match__season=current_season())
     ).select_related(
         'match__local', 'match__visiting',
         'player_1_local', 'player_2_local', 'player_1_visiting', 'player_2_visiting',
-    ).order_by('-match__start_date')[:5]
-    games = list(games)
+    ).order_by('-match__start_date', '-n_game')[:5]
+    games = list(reversed(games))
     form = ["w" if player_won(game, player) else "l" for game in games]
     return render(request, "player_detail.html", {"player": player, "games": games, "form": form})
 

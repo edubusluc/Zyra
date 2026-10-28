@@ -301,9 +301,12 @@
                 <polyline points="{{ chart.line }}" class="z-myform-line" vector-effect="non-scaling-stroke"/>
             </svg>
             <i class="z-myform-end" style="left: {{ chart.dot.x|unlocalize }}%; top: {{ chart.dot.y|unlocalize }}%"></i>
+            <i class="z-myform-hover" hidden></i>
+            <span class="z-myform-tip" hidden></span>
             <span class="z-myform-ymax">{{ chart.high|snp_points }}</span>
             <span class="z-myform-ymin">{{ chart.low|snp_points }}</span>
         </div>
+        <ol class="visually-hidden" data-myform-points>{% for p in chart.points %}<li data-x="{{ p.x|unlocalize }}" data-y="{{ p.y|unlocalize }}" data-score="{{ p.score|snp_points }}" data-date="{{ p.date|date:'j M' }}">{{ p.date|date:"j M" }}: {{ p.score|snp_points }}</li>{% endfor %}</ol>
         <div class="z-myform-xaxis"><span>{{ chart.start|date:"j M" }}</span><span>{% translate "Hoy" %}</span></div>
         {% else %}
         <p class="small text-muted mb-0">{% translate "Aún no hay suficientes actualizaciones para dibujar la evolución. Los puntos se actualizan solos cada semana." %}</p>
@@ -381,4 +384,5 @@
     {% translate "Cierra enfrentamientos para ver aquí quién encadena victorias." %}
 </div>
 {% endif %}
+{% if my_form.snp.chart %}<script src="{% static 'js/my-form-chart.js' %}"></script>{% endif %}
 {% endblock %}
