@@ -20,9 +20,13 @@ from itertools import combinations
 
 from django.utils.translation import gettext as _, gettext_lazy
 
-GAME_VALUES = (3, 3, 2, 2, 2)
-POINTS_TO_WIN = 7
-PLAYERS_PER_LINEUP = 10
+from core.competitions import SNP
+
+# Formato de la SNP, sacado de su ficha (core.competitions): este recomendador solo sirve
+# para la SNP porque ordena las parejas por puntos SNP.
+GAME_VALUES = SNP.game_points
+POINTS_TO_WIN = SNP.total_points // 2 + 1
+PLAYERS_PER_LINEUP = SNP.players_per_lineup
 MAX_CANDIDATES = 12      # con más convocados se consideran los 12 en mejor momento
 RECENT_GAMES = 6
 

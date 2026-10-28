@@ -3,6 +3,12 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 28/10/2026 · Reglas de competición en una ficha (espacios, fase 0)
+
+- La página del enfrentamiento tiene **«Eliminar enfrentamiento»** en el menú «Más» (capitán y gestores, con el acta abierta); al cancelar vuelves a la página del enfrentamiento. Los gestores ahora también pueden eliminar enfrentamientos, y la papelera del listado se ve en rojo.
+- «Guardar y cerrar acta» con resultados pendientes guarda lo que hayas puesto y te deja en «Poner resultados» con el aviso, en lugar de llevarte a la página del enfrentamiento.
+- Preparación para tener más competiciones que la SNP: el número de partidos, los puntos de cada uno, los convocados mínimos y el partido de desempate salen de una ficha por competición (`core/competitions.py`) en lugar de estar fijos en el código. Para los usuarios no cambia nada: la SNP sigue con 5 partidos (3, 3, 2, 2 y 2 puntos) y 10 convocados.
+
 ## 28/10/2026 · Editar y eliminar advertencias
 
 - El historial de **Estadísticas › Advertencias** tiene una columna **«Acciones»** con **Editar** (cambia el motivo y el detalle; el jugador y el enfrentamiento no cambian, `penalty.views.edit_penalty`) y **Eliminar** (con confirmación). Al terminar vuelves al historial con la misma temporada. Solo capitán y gestores. En móvil los botones salen en una fila bajo cada advertencia.

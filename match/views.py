@@ -4,6 +4,7 @@ los 5 partidos, resultados, cierre del acta e informe PDF de la convocatoria.
 Todas las vistas trabajan solo con datos del club activo (``request.club``).
 """
 from . import outcomes
+from core.competitions import competition_for
 from core.season_choice import ALL_SEASONS, choose_season
 from django.shortcuts import render, redirect, get_object_or_404
 from core import ratelimit
@@ -76,6 +77,12 @@ def match_outcome(match):
     if match.result == outcomes.VISITING_WIN:
         return "V" if match.own_is_visiting else "D"
     return "E"
+
+
+def _tied_on_points(match):
+    """True si el acta cerrada de ``match`` quedó empatada a puntos (6/6 en la SNP)."""
+    local, visiting = split_points(match.result_points)
+    return local is not None and local == visiting
 
 
 def split_points(result_points):
@@ -232,8 +239,9 @@ def list_match(request):
     # Reto y Play Off cerrados 6-6: la pareja del partido 3 decidió la eliminatoria (una sola consulta).
     tiebreak_pairs = {
         g.match_id: g.pair_label for g in Game.objects.filter(
-            match__in=[m for m in matches if m.no_draw and m.result_points == "6/6"], n_game=Match.TIEBREAK_GAME)}
-    # Actas abiertas con 5 partidos y todos con resultado: solo falta cerrarlas (dos consultas).
+            match__in=[m for m in matches if m.no_draw and _tied_on_points(m)],
+            n_game=competition_for(request.club).tiebreak_game)}
+    # Actas abiertas con todos sus partidos con resultado: solo falta cerrarlas (dos consultas).
     open_ids = [m.id for m in matches if m.draft_mode]
     games_count = dict(Game.objects.filter(match_id__in=open_ids).values('match_id').annotate(n=Count('id'))
                        .values_list('match_id', 'n'))
@@ -242,7 +250,7 @@ def list_match(request):
     for m in matches:
         m.outcome = match_outcome(m)
         n = games_count.get(m.id, 0)
-        m.pending_close = m.draft_mode and n >= 5 and with_result.get(m.id, 0) == n
+        m.pending_close = m.draft_mode and n >= competition_for(m).games and with_result.get(m.id, 0) == n
         m.tiebreak = m.id in tiebreak_pairs and m.outcome in ("V", "D")
         m.tiebreak_pair = tiebreak_pairs.get(m.id, "")
         m.local_points, m.visiting_points = split_points(m.result_points) if m.outcome else (None, None)
@@ -334,12 +342,13 @@ def edit_match_date(request, match_id):
         return redirect("call_for_match", match.public_id)
     return render(request, "edit_match_date.html", {"form": form, "match": match})
 
-@club_admin_required
+@club_manager_required
 def delete_match(request, match_id):
     """Borrado de un enfrentamiento que aún no está cerrado.
 
-    Solo para administradores del club. En GET pide confirmación (delete_match.html);
-    en POST lo borra. Si el acta ya está cerrada, avisa y vuelve al listado.
+    Para el capitán y los gestores. En GET pide confirmación (delete_match.html);
+    en POST lo borra. Si el acta ya está cerrada, avisa y vuelve al listado. Con ``?desde=ficha``
+    (se llega desde la página del enfrentamiento) «Cancelar» vuelve a esa página.
     """
     try:
         match = club_match(request, match_id)
@@ -351,7 +360,8 @@ def delete_match(request, match_id):
                 messages.success(request, _("Enfrentamiento eliminado."))
                 return redirect('list_match')
 
-            return render(request, 'delete_match.html', {'match': match})
+            from_match = request.GET.get('desde') == 'ficha'
+            return render(request, 'delete_match.html', {'match': match, 'from_match': from_match})
         else:
             messages.error(request, _("No se puede eliminar un enfrentamiento ya confirmado"))
 
@@ -408,8 +418,9 @@ def create_call(request, match_id):
     if request.method == 'POST':
         chosen = club_players(request, request.POST.getlist('players'))
         selected_ids = list(chosen.values_list('id', flat=True))
-        if len(selected_ids) < match_phase.MIN_CALL_PLAYERS:
-            messages.error(request, MIN_CALL_ERROR % {"n": match_phase.MIN_CALL_PLAYERS})
+        min_call = competition_for(match).min_call_players
+        if len(selected_ids) < min_call:
+            messages.error(request, MIN_CALL_ERROR % {"n": min_call})
         else:
             call = Call.objects.create(match=match)
             call.players.set(selected_ids)
@@ -421,13 +432,15 @@ def create_call(request, match_id):
         "players": selectable_players(request.club),
         "selected_players": selected_ids,
         "match": match,
+        "min_call_players": competition_for(match).min_call_players,
     })
 
 
 def validate_call(call):
     """Comprueba si la convocatoria se puede cerrar: (True, None) o (False, mensaje de error)."""
-    if call.players.all().count() < 10:
-        return False, _("Para cerrar una convocatoria al menos debes contar con 10 jugadores")
+    min_call = competition_for(call.match).min_call_players
+    if call.players.all().count() < min_call:
+        return False, _("Para cerrar una convocatoria al menos debes contar con %(n)s jugadores") % {"n": min_call}
     if call.draft_mode == False:
         return False, _("Esta convocatoria ha sido cerrada")
     
@@ -437,7 +450,7 @@ def validate_call(call):
 def close_call(request, match_id):
     """Cierra la convocatoria de un enfrentamiento y envía el informe a los capitanes.
 
-    Solo para administradores del club. Exige al menos 10 convocados y que siga
+    Solo para administradores del club. Exige los convocados mínimos de la competición y que siga
     abierta. Solo cierra en POST; siempre vuelve a la página de la convocatoria.
     """
     call = club_call(request, match__public_id=match_id)
@@ -529,10 +542,12 @@ def edit_call(request, call_id):
             selected_players_ids = list(club_players(request, request.POST.getlist("players")).values_list('id', flat=True))
             selected_set = set(selected_players_ids)
             call_set = set(selected_players)
-            if len(selected_set) < match_phase.MIN_CALL_PLAYERS:
-                messages.error(request, MIN_CALL_ERROR % {"n": match_phase.MIN_CALL_PLAYERS})
+            min_call = competition_for(call.match).min_call_players
+            if len(selected_set) < min_call:
+                messages.error(request, MIN_CALL_ERROR % {"n": min_call})
                 return render(request, 'edit_call.html', {
                     'call': call, 'all_players': all_players, 'selected_players': list(selected_set),
+                    'min_call_players': min_call,
                 })
 
             added_players = selected_set - call_set
@@ -571,6 +586,7 @@ def edit_call(request, call_id):
         'call': call,
         'all_players': all_players,
         'selected_players': selected_players,
+        'min_call_players': competition_for(call.match).min_call_players,
     }
     return render(request, 'edit_call.html', context)
 
@@ -654,18 +670,19 @@ def call_for_match(request, match_id):
         "my_status": my_status,
         "report_emails": ", ".join(admin_emails(request.club)) if call and call.draft_mode else "",
         "share_text": share_text(match, games) if not match.draft_mode else "",
-        "min_call_players": match_phase.MIN_CALL_PLAYERS,
+        "min_call_players": competition_for(match).min_call_players,
     })
 
 
 def validate_game_for_match(call):
     """Comprueba si se pueden crear los partidos: hace falta una convocatoria cerrada con
-    al menos 10 jugadores. Devuelve (True, None) o (False, mensaje de error).
+    los convocados mínimos de la competición. Devuelve (True, None) o (False, mensaje de error).
     """
     if not call:
         return False, _("No se pueden alinear parejas, no existe ninguna convocatoria.")
-    if call.players.all().count() < 10:
-        return False, _("Para alinear las parejas debes contar al menos con 10 jugadores")
+    min_call = competition_for(call.match).min_call_players
+    if call.players.all().count() < min_call:
+        return False, _("Para alinear las parejas debes contar al menos con %(n)s jugadores") % {"n": min_call}
     if call.draft_mode != False:
         return False, _("Para alinear las parejas debes cerrar la convocatoria")
 
@@ -674,7 +691,7 @@ def validate_game_for_match(call):
 
 @club_manager_required
 def create_game_for_match(request, match_id):
-    """Crea los 5 partidos (parejas y orden) de un enfrentamiento.
+    """Crea los partidos (parejas y orden) de un enfrentamiento.
 
     Solo para administradores del club, con la convocatoria cerrada. Si los partidos
     ya existen, redirige a su edición. En POST valida y guarda la alineación (ver
@@ -705,7 +722,8 @@ def create_game_for_match(request, match_id):
         "call": call,
         "match": match,
         "players": call.players.order_by('name', 'last_name'),
-        "games_per_match": lineup.GAMES_PER_MATCH,
+        "lineup_slots": range(1, competition_for(match).games + 1),
+        "players_per_lineup": competition_for(match).players_per_lineup,
     })
 
 
@@ -824,8 +842,9 @@ def enter_results(request, match_id):
 
     Solo capitanes y con el acta abierta. En POST valida todos los partidos con casillas
     rellenas (los vacíos se dejan como estén) y solo guarda si todos son correctos; con
-    ``action=close`` y los 5 resultados guardados, cierra además el acta. En GET muestra los
-    resultados actuales.
+    ``action=close`` y los 5 resultados guardados, cierra además el acta; si no se puede cerrar
+    (faltan resultados o la fecha es futura sin confirmar), lo guardado se queda y vuelve a esta
+    pantalla con el aviso. En GET muestra los resultados actuales.
     """
     match = club_match(request, match_id)
     if not match.draft_mode:
@@ -858,8 +877,10 @@ def enter_results(request, match_id):
                 game.winner = outcomes.winner_of(result.result)
                 game.save(update_fields=['winner'])
         if request.POST.get("action") == "close":
-            do_close_match(request, match)
-            return redirect('call_for_match', match_id=match.public_id)
+            # Si el acta no se puede cerrar, se queda en los resultados para completarlos.
+            if do_close_match(request, match):
+                return redirect('call_for_match', match_id=match.public_id)
+            return redirect('enter_results', match_id=match.public_id)
         messages.success(request, _("Resultados guardados."))
         return redirect('call_for_match', match_id=match.public_id)
     if request.method == "POST":
@@ -867,7 +888,7 @@ def enter_results(request, match_id):
 
     return render(request, "enter_results.html", {
         "match": match, "rows": rows, "is_future": match.start_date > timezone.localdate(),
-        "min_close": len(games) == match_phase.GAMES_PER_MATCH,
+        "min_close": len(games) == competition_for(match).games,
     })
 
 
@@ -887,23 +908,26 @@ def calculate_points(games):
 def determine_match_result(points_local, points_visiting, match=None, games=()):
     """'Victoria Local', 'Victoria Visitante' o 'EMPATE' (valor de Match.POSSIBLE_RESULT) según los puntos.
 
-    En Reto y Play Off no hay empate: si queda 6-6 gana quien ganó el partido 3.
+    En Reto y Play Off no hay empate: si quedan empatados (6-6 en la SNP) gana quien ganó el
+    partido de desempate de la competición (el 3 en la SNP).
     """
     result = outcomes.from_points(points_local, points_visiting)
     if result == outcomes.DRAW and match is not None and match.no_draw:
-        tiebreak = next((g for g in games if g.n_game == Match.TIEBREAK_GAME and g.winner in outcomes.WINNERS), None)
+        tiebreak_game = competition_for(match).tiebreak_game
+        tiebreak = next((g for g in games if g.n_game == tiebreak_game and g.winner in outcomes.WINNERS), None)
         if tiebreak is not None:
             return outcomes.tiebreak_result(tiebreak.winner)
     return result
    
 def valid_close_match(games,match):
-    """Comprueba si se puede cerrar el acta: el enfrentamiento sigue abierto y tiene al menos
-    5 partidos, todos con resultado. Devuelve (True, None) o (False, mensaje de error).
+    """Comprueba si se puede cerrar el acta: el enfrentamiento sigue abierto y tiene todos los
+    partidos de su competición, todos con resultado. Devuelve (True, None) o (False, mensaje de error).
     """
     if match.draft_mode == False:
         return False, _("No se pueden cerrar actas, el enfrentamiento ya ha sido cerrado")
-    if len(games) < 5:
-        return False, _("No se pueden cerrar actas, se requieren al menos 5 partidos.")
+    total = competition_for(match).games
+    if len(games) < total:
+        return False, _("No se pueden cerrar actas, se requieren al menos %(n)s partidos.") % {"n": total}
     
     for g in games:
         if g.results.first() is None:
@@ -914,7 +938,7 @@ def valid_close_match(games,match):
 def do_close_match(request, match):
     """Intenta cerrar el acta de ``match`` y apunta en mensajes lo que ocurra; True si se ha cerrado.
 
-    Exige 5 partidos con resultado y, si la fecha del enfrentamiento es futura, que el
+    Exige todos los partidos con resultado y, si la fecha del enfrentamiento es futura, que el
     formulario traiga ``confirm_future`` (las páginas lo envían tras avisar de la fecha y los
     rivales). Calcula los puntos y el resultado final; todo o nada.
     """
@@ -1038,6 +1062,7 @@ def edit_game_match(request, match_id):
         "match": match,
         "call": call,
         "players": call.players.order_by('name', 'last_name'),
+        "players_per_lineup": competition_for(match).players_per_lineup,
     })
 
 
