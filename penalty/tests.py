@@ -15,7 +15,7 @@ from match.models import Match
 from penalty import models as penalty_models
 from penalty.models import Penalty, reason_text
 from penalty.views import UNDO_TAG
-from players.models import Player
+from players.models import Player, current_season
 from team.models import Team
 
 User = get_user_model()
@@ -184,9 +184,19 @@ class CallLogPageTests(PenaltyBase):
 
     def test_call_selector_lists_readable_reasons(self):
         from match.views import selectable_players
+        self.call.match.season = current_season()
+        self.call.match.save(update_fields=["season"])
         Penalty.objects.create(player=self.ana, call=self.call, kind="late", reason="20 min")
         ana = next(p for p in selectable_players(self.club) if p.id == self.ana.id)
         self.assertEqual(ana.penalty_reasons, ["Llegó tarde: 20 min"])
+
+    def test_call_selector_only_counts_current_season_penalties(self):
+        from match.views import selectable_players
+        self.call.match.season = "2000-2001"
+        self.call.match.save(update_fields=["season"])
+        Penalty.objects.create(player=self.ana, call=self.call, kind="late")
+        ana = next(p for p in selectable_players(self.club) if p.id == self.ana.id)
+        self.assertEqual(ana.penalty_reasons, [])
 
     def test_warning_statistics_show_the_reason(self):
         Penalty.objects.create(player=self.ana, call=self.call, kind="late_drop")

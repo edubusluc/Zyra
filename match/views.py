@@ -365,7 +365,7 @@ def selectable_players(club, include_ids=()):
     """
     Jugadores para el selector de convocatorias: los que están en el equipo
     (más los ya convocados aunque ya no estén), por puntos SNP de mayor a menor, con sus
-    sanciones en `penalty_reasons` y cuántos de los enfrentamientos cerrados de la temporada
+    sanciones de la temporada actual en `penalty_reasons` y cuántos de los enfrentamientos cerrados de la temporada
     actual ha jugado (`played`, sobre `season_total`) para decidir sin salir de la pantalla.
     """
     players = list(
@@ -374,7 +374,7 @@ def selectable_players(club, include_ids=()):
         .order_by(F('snp_score').desc(nulls_last=True), 'name', 'last_name')
     )
     reasons = {}
-    for pen in Penalty.objects.filter(player__in=players):
+    for pen in Penalty.objects.filter(player__in=players, call__match__season=current_season()):
         reasons.setdefault(pen.player_id, []).append(pen.display_reason)
     closed = list(Match.objects.filter(club=club, season=current_season(), draft_mode=False).values_list('id', flat=True))
     played = {}

@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 28/10/2026 · Advertencias del selector de convocatoria
+
+- Al crear o editar una convocatoria, las advertencias que se ven junto a cada jugador son solo las de la temporada actual (antes salían todas las registradas).
+
 ## 26/10/2026 · Aviso «Añade un gestor»
 
 - La portada muestra al capitán un aviso para que conozca el rol de gestor, con enlace a «Miembros». Se queda hasta que lo cierra con la ✕; después no vuelve a aparecer (se guarda en su cuenta, `UserPreference.manager_tip_dismissed_at`). Gestores y miembros no lo ven.
