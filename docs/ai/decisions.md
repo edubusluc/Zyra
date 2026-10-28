@@ -98,7 +98,13 @@ cambios: `docs/novedades.md`. Índice general: `ZYRA_CONTEXT.md`. Verificado el 
 
 - **Decisión**: las reglas que cambian entre competiciones (partidos, puntos por partido, convocados mínimos, desempate) viven en `core/competitions.py` y el código las pide con `competition_for(club o enfrentamiento)`.
 - **Motivo**: preparar otras competiciones además de la SNP (LAPI, más adelante Federados), cada una como un espacio (club) con su competición. Estudio del 28/10/2026.
-- **Consecuencias**: no escribir «5», «10» ni «3-3-2-2-2» en lógica, plantillas ni textos; usar la ficha. Mientras `Club` no guarde su competición, `competition_for` devuelve siempre la SNP sin consultar la base de datos.
+- **Consecuencias**: no escribir «5», «10» ni «3-3-2-2-2» en lógica, plantillas ni textos; usar la ficha. `competition_for` la lee de `Club.competition` (si el club no está cargado, una consulta): en listados se pide una vez al club (`request.club`) y `phases_for` la carga para todos los clubes de una vez.
+
+## D15. Un espacio = un club con su competición
+
+- **Decisión**: cada club tiene una competición fija (`Club.competition`: `snp` o `lapi`) y una cuenta tiene como mucho un espacio por competición (`club_of(user, competition)`, `free_competitions`). El selector de club de la cabecera pasa a «Cambiar de espacio» y el menú ofrece «Crear otro espacio» (`register_club`, con los datos del equipo propuestos).
+- **Motivo**: estudio de competiciones del 28/10/2026 (opción B): el aislamiento por club, los roles y la cabecera ya funcionan por club, así que capitanes distintos por competición salen gratis.
+- **Consecuencias**: lo propio de la SNP (cuenta, sincronización, «Completar equipo») solo se ofrece si `club.rules.has_snp`; las divisiones de los equipos salen de la ficha (`divisions_for`). Los clubes que ya existían quedan como SNP.
 
 ## Documentación del repositorio desfasada respecto al código
 

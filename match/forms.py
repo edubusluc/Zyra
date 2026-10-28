@@ -2,6 +2,7 @@
 from django import forms
 from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
+from core.competitions import CHOICES as COMPETITION_CHOICES
 from core.models import REPORT_SCOPES, UserPreference
 from .models import Match, Game, Result
 from team.models import Team
@@ -36,13 +37,10 @@ class MatchForm(forms.ModelForm):
     RIVAL_SOURCES = [(GROUP, _("Equipo del grupo")), (MANUAL, _("Escribir nombre"))]
     SIDES = [("local", _("En casa")), ("visiting", _("Fuera"))]
 
-    # Competición del enfrentamiento. Hoy solo existe SNP, por eso el selector va bloqueado; al
-    # añadir otra competición basta con incluirla en COMPETITIONS y quitar ``disabled``.
-    SNP = "snp"
-    COMPETITIONS = [(SNP, _("SNP"))]
-
-    competition = forms.ChoiceField(label=_("Competición"), choices=COMPETITIONS, initial=SNP, disabled=True,
-                                    required=False)
+    # Competición del enfrentamiento: la del espacio (``Club.competition``). Solo informa, por eso
+    # va bloqueada; para otra competición se cambia de espacio.
+    competition = forms.ChoiceField(label=_("Competición"), choices=COMPETITION_CHOICES, initial="snp",
+                                    disabled=True, required=False)
     mode = forms.ChoiceField(label=_("Modo"), choices=MODES, initial=COMPETITIVE, required=False,
                              widget=forms.RadioSelect)
     # Solo en amistosos: el rival puede ser un equipo del grupo o un nombre escrito a mano
@@ -85,6 +83,8 @@ class MatchForm(forms.ModelForm):
         """
         super(MatchForm, self).__init__(*args, **kwargs)
         self.club = club
+        if club is not None:
+            self.fields['competition'].initial = club.competition
         self.fields['report_scope'].choices = REPORT_SCOPES
         self.fields['report_scope'].widget.choices = REPORT_SCOPES
         # Si el formulario no lo envía, vale la preferencia de la cuenta.

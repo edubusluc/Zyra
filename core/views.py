@@ -7,7 +7,7 @@ from urllib.parse import urlencode
 
 from allauth.account.models import EmailAddress
 from allauth.socialaccount.models import SocialAccount
-from django.forms import Select
+from django.forms import RadioSelect, Select
 from django.forms.utils import ErrorDict
 from django.contrib import messages
 from django.contrib.auth import get_user_model, login, logout
@@ -48,6 +48,7 @@ from players import snp_service
 from .unsubscribe import user_from_result_token, user_from_token
 from .services import (
     CaptaincyError, InvitationError, accept_invitation, account_delete_blocker, club_name_matches, club_of,
+    free_competitions, one_space_message,
     create_club, delete_account, delete_club, eligible_successors, is_last_admin, is_only_member,
     ManagerError, remove_membership, set_manager, transfer_captaincy,
 )
@@ -124,7 +125,7 @@ def home(request):
     # «Prepara la temporada» (julio-octubre) lleva dentro el paso de SNP: no se repite la tarea suelta.
     prep = season_prep.season_prep_for(request.membership)
     snp_sync = None
-    if request.membership.is_admin and prep is None:
+    if request.membership.is_admin and prep is None and club.rules.has_snp:
         from players import snp_import
         snp_sync = snp_import.sync_task(club)
     return render(request, 'home.html', {
@@ -283,17 +284,21 @@ def _style(*forms):
     """Añade las clases de Bootstrap (form-control / form-select) a los campos de los formularios."""
     for form in filter(None, forms):
         for field in form:
+            if isinstance(field.field.widget, RadioSelect):
+                continue  # las opciones se pintan como tarjetas (.z-choice)
             css = 'form-select' if isinstance(field.field.widget, Select) else 'form-control'
             field.field.widget.attrs.update({'class': css})
 
 
 def register_club(request):
     """
-    Alta de un club nuevo. Si el visitante no tiene cuenta, se le crea una. Quien ya
-    pertenece a un club (como miembro o capitán) no puede registrar otro.
+    Alta de un club nuevo: el espacio de una competición (SNP o LAPI). Si el visitante no tiene
+    cuenta, se le crea una. Quien ya tiene sesión solo puede crear espacios de las competiciones
+    en las que aún no está («Crear otro espacio»; ``?competicion=lapi`` la deja elegida) y el
+    formulario viene relleno con los datos de su equipo.
 
-    El jugador del capitán se crea con su nombre y apellidos o, si elige conectar su cuenta
-    de SNP (CaptainSnpForm), se guarda la cuenta y se trae el equipo de SNP con sus puntos
+    El jugador del capitán se crea con su nombre y apellidos o, en la SNP, si elige conectar su
+    cuenta de SNP (CaptainSnpForm), se guarda la cuenta y se trae el equipo de SNP con sus puntos
     («Completar equipo» confirmado solo); al terminar elige cuál de esos jugadores es él.
     """
     anonymous = not request.user.is_authenticated
@@ -306,12 +311,13 @@ def register_club(request):
         messages.info(request, _("Ya tenías una cuenta con este email. Has iniciado sesión con ella."))
         return redirect("home")
 
-    # Una cuenta solo puede pertenecer a un club.
-    current = None if anonymous else club_of(request.user)
-    if current is not None:
-        messages.error(request, _("Ya perteneces a %(club)s y solo se puede pertenecer a un club. "
-                                  "Abandona ese club antes de registrar otro.") % {"club": current.name})
+    # Un espacio por competición y cuenta: solo se ofrecen las competiciones que le faltan.
+    free = free_competitions(request.user)
+    if not free:
+        messages.error(request, _("Ya tienes un espacio en cada competición. Para crear otro, abandona antes "
+                                  "el de esa competición."))
         return redirect("home")
+    current = None if anonymous else club_of(request.user)
 
     # Nombre y apellidos para el jugador del capitán. Con Google vienen de su perfil si
     # los tiene; si falta alguno, se avisa de que hay que escribirlos.
@@ -324,9 +330,11 @@ def register_club(request):
     if request.method == "POST":
         if ratelimit.too_many(request, "register", REGISTER_LIMIT, REGISTER_WINDOW):
             return render(request, "429.html", status=429)
-        club_form = ClubForm(request.POST)
+        club_form = ClubForm(request.POST, competitions=free)
         player_form = CaptainPlayerForm(request.POST, prefix="player")
-        snp_form = CaptainSnpForm(request.POST, prefix="snp")
+        # Fuera de la SNP no hay cuenta SNP: el jugador del capitán se escribe a mano.
+        snp_form = CaptainSnpForm(request.POST if club_form.rules.has_snp else {"snp-mode": CaptainSnpForm.MANUAL},
+                                  prefix="snp")
         user_form = SignUpForm(request.POST) if anonymous else None
         # Con SNP no hace falta escribir el nombre: el jugador se elige después de entre los de SNP.
         valid = all([club_form.is_valid(), snp_form.is_valid(), snp_form.uses_snp or player_form.is_valid(),
@@ -344,7 +352,7 @@ def register_club(request):
                     player = {} if use_snp else player_form.cleaned_data
                     club = create_club(data["name"], data["location"], user, gender=data["gender"], country=data["country"],
                                        division=data["division"], player_name=player.get("name", ""),
-                                       player_last_name=player.get("last_name", ""))
+                                       player_last_name=player.get("last_name", ""), competition=data["competition"])
                     # La cuenta se queda con el nombre del jugador si no tenía uno.
                     if player and not (user.first_name or user.last_name):
                         user.first_name, user.last_name = player["name"], player["last_name"]
@@ -375,7 +383,13 @@ def register_club(request):
                     return redirect("my_player")
                 return redirect("home")
     else:
-        club_form = ClubForm()
+        # Otro espacio de la misma cuenta: el equipo suele ser el mismo, así que se propone su nombre y sus datos.
+        own = current.own_team if current else None
+        initial = {f: getattr(own, f) for f in ("name", "location", "gender", "country")} if own else {}
+        wanted = request.GET.get("competicion")
+        if wanted in {c.code for c in free}:
+            initial["competition"] = wanted
+        club_form = ClubForm(initial=initial, competitions=free)
         player_form = CaptainPlayerForm(initial=known, prefix="player")
         snp_form = CaptainSnpForm(prefix="snp")
         user_form = SignUpForm() if anonymous else None
@@ -386,6 +400,9 @@ def register_club(request):
     return render(request, "register_club.html", {
         "club_form": club_form, "user_form": user_form, "player_form": player_form, "snp_form": snp_form,
         "google_missing_name": google_missing_name, "snp_service_off": not snp_service.is_enabled(),
+        "new_space": current is not None,
+        # Para register-wizard: divisiones de cada competición y si tiene SNP.
+        "competition_rules": {c.code: {"divisions": list(c.divisions), "snp": c.has_snp} for c in free},
         "google_next": f"{reverse('register_club')}?{FROM_GOOGLE_PARAM}=1",
     })
 
@@ -625,11 +642,12 @@ def invitation(request, token):
             request.session[SESSION_KEY] = club.id
             messages.info(request, _("Ya eres miembro de %(club)s.") % {"club": club.name})
             return redirect("home")
-        # Solo se puede pertenecer a un club: explica por qué no puede unirse a este.
-        current = club_of(request.user)
+        # Un espacio por competición: explica por qué no puede unirse a este.
+        current = club_of(request.user, club.competition)
         if current is not None:
             request.session.pop(PENDING_INVITE_KEY, None)
-            return render(request, "invitation.html", {"invitation": invitation, "club": club, "current_club_name": current.name})
+            return render(request, "invitation.html", {"invitation": invitation, "club": club,
+                                                       "one_space_message": one_space_message(current)})
         # Vuelve de iniciar sesión con Google desde esta misma invitación: se une directamente.
         from_google = request.session.pop(PENDING_INVITE_KEY, None) == token
         if request.method == "POST" or from_google:

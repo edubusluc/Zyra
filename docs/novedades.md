@@ -3,6 +3,13 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 28/10/2026 · Espacios por competición (fase 1a)
+
+- Cada club es ahora el **espacio** de una competición: SNP (todos los que ya existían) o **LAPI** (3 partidos de 1 punto y 6 convocados). Una cuenta puede tener un espacio en cada competición, con un rol distinto en cada uno.
+- El menú de usuario muestra la competición del espacio activo, «Cambiar de espacio» y **«Crear otro espacio»**, que abre el registro con los datos de tu equipo ya puestos. Al registrarse se elige la competición, y las divisiones son las suyas (Future…Grand Slam en SNP, 1.ª a 5.ª en LAPI).
+- Las invitaciones a un espacio de otra competición se aceptan aunque ya estés en otro; a uno de la misma competición, no.
+- En los espacios LAPI no se ofrece nada de SNP (cuenta, sincronización ni ese paso en «Primeros pasos»).
+
 ## 28/10/2026 · Reglas de competición en una ficha (espacios, fase 0)
 
 - La página del enfrentamiento tiene **«Eliminar enfrentamiento»** en el menú «Más» (capitán y gestores, con el acta abierta); al cancelar vuelves a la página del enfrentamiento. Los gestores ahora también pueden eliminar enfrentamientos, y la papelera del listado se ve en rojo.

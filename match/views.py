@@ -236,11 +236,12 @@ def list_match(request):
     called = dict(Call.objects.filter(match__in=list(matches))
                   .annotate(n=Count('players')).values_list('match_id', 'n'))
     today = timezone.localdate()
+    rules = competition_for(request.club)
     # Reto y Play Off cerrados 6-6: la pareja del partido 3 decidió la eliminatoria (una sola consulta).
     tiebreak_pairs = {
         g.match_id: g.pair_label for g in Game.objects.filter(
             match__in=[m for m in matches if m.no_draw and _tied_on_points(m)],
-            n_game=competition_for(request.club).tiebreak_game)}
+            n_game=rules.tiebreak_game)}
     # Actas abiertas con todos sus partidos con resultado: solo falta cerrarlas (dos consultas).
     open_ids = [m.id for m in matches if m.draft_mode]
     games_count = dict(Game.objects.filter(match_id__in=open_ids).values('match_id').annotate(n=Count('id'))
@@ -250,7 +251,7 @@ def list_match(request):
     for m in matches:
         m.outcome = match_outcome(m)
         n = games_count.get(m.id, 0)
-        m.pending_close = m.draft_mode and n >= competition_for(m).games and with_result.get(m.id, 0) == n
+        m.pending_close = m.draft_mode and n >= rules.games and with_result.get(m.id, 0) == n
         m.tiebreak = m.id in tiebreak_pairs and m.outcome in ("V", "D")
         m.tiebreak_pair = tiebreak_pairs.get(m.id, "")
         m.local_points, m.visiting_points = split_points(m.result_points) if m.outcome else (None, None)

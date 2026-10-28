@@ -12674,3 +12674,81 @@ msgstr "Delete the warning for %(name)s"
 #: penalty/views.py
 msgid "Guardando la advertencia…"
 msgstr "Saving the warning…"
+
+msgid "LAPI"
+msgstr "LAPI"
+
+msgid "1.ª división"
+msgstr "1st division"
+
+msgid "2.ª división"
+msgstr "2nd division"
+
+msgid "3.ª división"
+msgstr "3rd division"
+
+msgid "4.ª división"
+msgstr "4th division"
+
+msgid "5.ª división"
+msgstr "5th division"
+
+msgid "Cada competición es un espacio aparte, con sus jugadores, rivales y enfrentamientos. Puedes tener un espacio en cada competición."
+msgstr "Each competition is a separate space, with its own players, rivals and fixtures. You can have one space in each competition."
+
+msgid "Ya tienes un espacio en esa competición: elige otra."
+msgstr "You already have a space in that competition: choose another one."
+
+msgid "Ya tienes un espacio en %(competition)s: elige otra competición."
+msgstr "You already have a space in %(competition)s: choose another competition."
+
+msgid "Nivel en el que juega el equipo en su competición."
+msgstr "Level the team plays at in its competition."
+
+msgid "Elige una división de %(competition)s."
+msgstr "Choose a %(competition)s division."
+
+msgid "Ya tienes el espacio %(club)s en %(competition)s y solo se puede tener un espacio por competición. Abandónalo antes de unirte o crear otro de %(competition)s."
+msgstr "You already have the space %(club)s in %(competition)s and you can only have one space per competition. Leave it before joining or creating another %(competition)s space."
+
+msgid "Ya tienes un espacio en cada competición. Para crear otro, abandona antes el de esa competición."
+msgstr "You already have a space in every competition. To create another one, first leave the one in that competition."
+
+msgid "Espacio %(name)s"
+msgstr "%(name)s space"
+
+msgid "Cambiar de espacio"
+msgstr "Switch space"
+
+msgid "Cambiando de espacio…"
+msgstr "Switching space…"
+
+msgid "Crear otro espacio"
+msgstr "Create another space"
+
+msgid "Crear espacio"
+msgstr "Create space"
+
+msgid "Un espacio es tu equipo en otra competición, con su plantilla, sus rivales y sus enfrentamientos. Cambias de uno a otro desde el menú de arriba."
+msgstr "A space is your team in another competition, with its own squad, rivals and fixtures. You switch between them from the menu at the top."
+
+msgid "5 partidos (3-3-2-2-2 puntos), 10 convocados y puntos SNP de cada jugador."
+msgstr "5 matches (3-3-2-2-2 points), 10 called-up players and each player's SNP points."
+
+msgid "Liga Andaluza: 3 partidos de 1 punto y 6 convocados."
+msgstr "Andalusian League: 3 matches worth 1 point each and 6 called-up players."
+
+msgid "Como capitán también juegas: escribe tu nombre y apellidos para crear tu jugador."
+msgstr "As captain you also play: enter your first and last name to create your player."
+
+msgid "Añade a tus jugadores"
+msgstr "Add your players"
+
+msgid "Crea las fichas de los jugadores de tu equipo para poder convocarlos."
+msgstr "Create your team's player profiles so you can call them up."
+
+msgid "Añadir jugador"
+msgstr "Add player"
+
+msgid "País en el que juega, por ejemplo España. En la SNP decide dónde se buscan tus jugadores."
+msgstr "Country it plays in, for example Spain. In SNP it decides where your players are searched for."

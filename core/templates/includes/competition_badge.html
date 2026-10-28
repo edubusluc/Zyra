@@ -1,0 +1,1 @@
+{% load i18n %}{# Etiqueta de la competición de un espacio con su color: code, name y short (solo el nombre). #}<span class="z-comp-badge z-comp-badge--{{ code }}">{% if short %}{{ name }}{% else %}{% blocktranslate trimmed with name=name %}Espacio {{ name }}{% endblocktranslate %}{% endif %}</span>

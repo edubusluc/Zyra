@@ -19,8 +19,11 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
 
 ## Cuentas y clubes
 
-- [V] Una cuenta pertenece a un solo club (no suspendido): `core.services.club_of`; lo comprueban
-  `register_club` y `accept_invitation`. Tests: `core/tests_onboarding.py`, `core/tests_invitations.py`.
+- [V] Cada club es el espacio de una competición (`Club.competition`, SNP o LAPI, fija). Una cuenta tiene como mucho un
+  espacio (no suspendido) por competición: `core.services.club_of(user, competition)`; lo comprueban `register_club`
+  (solo ofrece las competiciones libres, `free_competitions`) y `accept_invitation`/`invitation` (`one_space_message`).
+  En espacios sin SNP no hay cuenta SNP, sincronización ni paso de SNP en «Primeros pasos» o «Prepara la temporada».
+  Tests: `core/tests_spaces.py`, `core/tests_onboarding.py`, `core/tests_invitations.py`.
 - [V] Se puede crear una cuenta sin club (`register_account`, o Google desde esa página): queda en `no_club` hasta aceptar una
   invitación o registrar un club. Back-office: KPI «Sin club» (`accounts_without_club`: activas y no staff), filtro `?kind=no_club`.
   Tests: `core/tests_account_without_club.py`, `AccountsWithoutClubTests` en `backoffice/tests_ops.py`.
@@ -28,7 +31,7 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
 - [V] Un club tiene un único capitán (restricción `unique_captain_per_club`). Se cede con
   `transfer_captaincy` (vista `transfer_captaincy_view`) solo a un miembro enlazado a un `Player` del club
   (`eligible_successors`); el antiguo pasa a miembro y se borra la `SnpAccount` del club (eran sus credenciales) y se reabre «Primeros pasos»
-  (`onboarding_dismissed_at=None`), cuyos 3 pasos son «Conecta SNP o añade a tus jugadores», «Invita a tus jugadores» y «Crea tu primer enfrentamiento» (se muestran primero en la portada y ocultan los bloques vacíos mientras queden pendientes). El capitán no puede quitarse ni abandonar sin ceder antes.
+  (`onboarding_dismissed_at=None`), cuyos 3 pasos son «Conecta SNP o añade a tus jugadores» («Añade a tus jugadores» fuera de la SNP), «Invita a tus jugadores» y «Crea tu primer enfrentamiento» (se muestran primero en la portada y ocultan los bloques vacíos mientras queden pendientes). El capitán no puede quitarse ni abandonar sin ceder antes.
 - [V] Eliminar la cuenta («Mi perfil», `delete_account`): un capitán debe ceder antes la capitanía
   (`account_delete_blocker`); la ficha de jugador se desenlaza (o se borra si se elige). El capitán
   solo puede eliminar el club tras desvincular todas las demás cuentas. Tests: `core/tests_account_lifecycle.py`.

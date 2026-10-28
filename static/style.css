@@ -410,6 +410,7 @@ main:focus { outline: none; }
         position: absolute; width: 1px; height: 1px; overflow: hidden;
         clip: rect(0 0 0 0); white-space: nowrap;
     }
+    .z-user-menu .dropdown-toggle .z-comp-badge { display: none; }
     .z-lang-menu .dropdown-toggle { height: 34px; gap: 6px !important; }
     .z-header-actions .dropdown-menu { max-width: calc(100vw - 32px); }
 }
@@ -2948,3 +2949,15 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .z-myform-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
 .z-myform-dot--w { background: var(--z-lime); }
 .z-myform-dot--l { background: #FF5C63; }
+
+/* Espacios por competición: etiqueta con el color de cada una (cabecera, invitaciones, registro). */
+.z-choice-legend { margin: 0 0 4px; font-size: .9rem; font-weight: 700; color: var(--z-text); }
+.z-comp-badge { display: inline-flex; align-items: center; padding: 2px 8px; font-size: .7rem; font-weight: 800; line-height: 1.4; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; border-radius: 999px; }
+.z-comp-badge--snp { color: var(--z-ink); background: var(--z-lime); }
+.z-comp-badge--lapi { color: #FFFFFF; background: #1E6BC0; }
+.z-user-menu .z-comp-badge { margin-left: 2px; }
+.z-space-item { display: flex; align-items: center; gap: 8px; }
+.z-space-item > span:not(.z-comp-badge) { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.z-choice-help { margin: -8px 0 16px; }
+.dropdown-item.active .z-comp-badge--snp { color: var(--z-lime); background: var(--z-ink); }
+.z-home-hero .z-comp-badge { margin: 2px 0 6px; }

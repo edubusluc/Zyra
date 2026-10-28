@@ -11,7 +11,8 @@ from django.db.models import Count
 from django.utils.translation import gettext_lazy as _
 
 from call.models import Call
-from core.competitions import competition_for
+from core.competitions import competition_for, get_competition
+from core.models import Club
 from .models import Game, Result
 
 DRAFT, CALLED, LINED_UP, PLAYED, CLOSED = "draft", "called", "lined_up", "played", "closed"
@@ -73,9 +74,12 @@ class MatchPhase:
         return ""
 
 
-def phase_of(match, *, has_call, call_closed, called, games, results):
-    """Fase de ``match`` a partir de los recuentos de su convocatoria, partidos y resultados."""
-    competition = competition_for(match)
+def phase_of(match, *, has_call, call_closed, called, games, results, competition=None):
+    """Fase de ``match`` a partir de los recuentos de su convocatoria, partidos y resultados.
+
+    ``competition`` es la ficha de su competición; si no se da, se pide a ``competition_for``.
+    """
+    competition = competition or competition_for(match)
     counts = (has_call, called, games, results, competition.min_call_players, competition.games)
     if not match.draft_mode:
         return MatchPhase(CLOSED, 4, NOTHING, *counts)
@@ -93,10 +97,12 @@ def phase_of(match, *, has_call, call_closed, called, games, results):
 def phases_for(matches):
     """
     Fase de cada enfrentamiento de ``matches`` (iterable): ``{match.id: MatchPhase}``.
-    Hace tres consultas en total, sea cual sea el número de enfrentamientos.
+    Hace cuatro consultas en total, sea cual sea el número de enfrentamientos.
     """
     matches = list(matches)
     ids = [m.id for m in matches]
+    club_rules = {pk: get_competition(code) for pk, code in
+                  Club.objects.filter(pk__in={m.club_id for m in matches}).values_list("pk", "competition")}
     calls = {c.match_id: c for c in Call.objects.filter(match_id__in=ids).annotate(n_players=Count("players"))}
     games = dict(Game.objects.filter(match_id__in=ids).values_list("match_id").annotate(n=Count("id")))
     results = dict(Result.objects.filter(game__match_id__in=ids).values_list("game__match_id").annotate(n=Count("game_id", distinct=True)))
@@ -106,6 +112,7 @@ def phases_for(matches):
         phases[m.id] = phase_of(
             m, has_call=bool(call), call_closed=bool(call and not call.draft_mode),
             called=call.n_players if call else 0, games=games.get(m.id, 0), results=results.get(m.id, 0),
+            competition=club_rules.get(m.club_id),
         )
     return phases
 

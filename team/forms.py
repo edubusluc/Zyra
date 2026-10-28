@@ -4,7 +4,7 @@ from django.utils.translation import gettext as _
 from core.images import clean_photo_field
 from core.similarity import same_name
 from core.validators import plain_text
-from .models import Team
+from .models import Team, divisions_for
 
 GROUP_FIELDS = ('gender', 'country', 'division')
 
@@ -43,10 +43,13 @@ class Teamform (forms.ModelForm):
         for name in ('gender', 'country', 'division'):
             self.fields[name].required = True
             self.fields[name].choices = [("", _("Elige una opción"))] + list(Team._meta.get_field(name).choices)
+        # Solo las divisiones de la competición del club (Future…Grand Slam en la SNP, 1.ª a 5.ª en LAPI).
+        if club is not None:
+            self.fields['division'].choices = [("", _("Elige una opción"))] + divisions_for(club.rules)
         # Ayuda con valores típicos (los tres se piden sin ejemplo en el alta del club y en el de rivales).
         self.fields['gender'].help_text = _("Masculino o Femenino, según la competición del equipo.")
         self.fields['country'].help_text = _("País del circuito en el que juega, por ejemplo España. Decide dónde se buscan sus jugadores en SNP.")
-        self.fields['division'].help_text = _("Nivel del circuito, por ejemplo Future o 500.")
+        self.fields['division'].help_text = _("Nivel en el que juega el equipo en su competición.")
         if self.is_bound and self._copies_from_own_team():
             for name in self.group_fields:
                 self.fields[name].required = False

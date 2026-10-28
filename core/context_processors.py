@@ -5,12 +5,13 @@ sección de la navegación y si el inicio de sesión con Google está activado).
 from django.conf import settings
 
 from . import seo
+from .competitions import COMPETITIONS
 from .services import is_last_admin, is_only_member
 
 
 def club(request):
     """
-    Club activo, clubes del usuario, si es capitán (``is_club_admin``) o capitán/gestor (``can_manage``) del club activo y si al abandonarlo se
+    Club activo, clubes del usuario (sus espacios), competiciones en las que aún no tiene espacio, si es capitán (``is_club_admin``) o capitán/gestor (``can_manage``) del club activo y si al abandonarlo se
     eliminaría el club (es su único miembro). Esto último se calcula solo si la plantilla
     lo usa.
     """
@@ -19,6 +20,9 @@ def club(request):
         "current_club": getattr(request, "club", None),
         "user_memberships": getattr(request, "user_memberships", []),
         "is_club_admin": bool(membership and membership.is_admin),
+        # Competiciones en las que aún no tiene espacio («Crear otro espacio» en el menú).
+        "free_competitions": [c for code, c in COMPETITIONS.items()
+                              if code not in {m.club.competition for m in getattr(request, "user_memberships", [])}],
         "can_manage": bool(membership and membership.can_manage),
         "leaving_deletes_club": lambda: bool(membership and is_last_admin(membership) and is_only_member(membership)),
     }

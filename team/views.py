@@ -1,7 +1,7 @@
 """Vistas de equipos: lista, alta, edición y edición conjunta."""
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import Teamform
-from .models import Team
+from .models import Team, divisions_for
 from django.contrib import messages
 from django.db import transaction
 from django.utils.translation import gettext as _, ngettext
@@ -156,7 +156,7 @@ def edit_team(request, team_id):
         'team': team,
         'genders': Team.GENDERS,
         'countries': Team.COUNTRIES,
-        'divisions': Team.DIVISIONS,
+        'divisions': divisions_for(request.club.rules),
     }
     return render(request, 'edit_team.html', context)
 
@@ -180,6 +180,7 @@ def manage_teams(request):
 
     if request.method == "POST":
         valid = {f: {v for v, _label in Team._meta.get_field(f).choices} for f in BULK_FIELDS}
+        valid['division'] = set(request.club.rules.divisions)
         for row in rows:
             team = row["team"]
             for f in BULK_FIELDS:
@@ -223,6 +224,6 @@ def manage_teams(request):
         "rows": rows,
         "genders": Team.GENDERS,
         "countries": Team.COUNTRIES,
-        "divisions": Team.DIVISIONS,
+        "divisions": divisions_for(request.club.rules),
         "in_group_count": sum(r["in_group"] for r in rows),
     })
