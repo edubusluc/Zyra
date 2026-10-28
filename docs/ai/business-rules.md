@@ -24,6 +24,16 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
   (solo ofrece las competiciones libres, `free_competitions`) y `accept_invitation`/`invitation` (`one_space_message`).
   En espacios sin SNP no hay cuenta SNP, sincronización ni paso de SNP en «Primeros pasos» o «Prepara la temporada».
   Tests: `core/tests_spaces.py`, `core/tests_onboarding.py`, `core/tests_invitations.py`.
+- [V] Vistas unidas (`core/spaces.py`): con más de un espacio, Enfrentamientos, Calendario, Inicio (Pendiente y próximo
+  enfrentamiento) y Estadísticas › Equipo juntan los espacios con el filtro «Todas · SNP · LAPI» (`?espacio=`, se recuerda en
+  sesión, por defecto «Todas»). Cada tarjeta lleva la etiqueta de su competición y sus acciones según el rol en ese espacio.
+  En «Todas», Estadísticas solo suma hechos (`spaces_overview`); el detalle y los puntos, al elegir competición.
+  Abrir un enfrentamiento de otro espacio (`call_for_match`, `space_match`) cambia el espacio activo con aviso; las vistas de
+  gestión nunca cambian de espacio salvo con `?en=` (`follow_space`), que va antes de comprobar el rol.
+  Plantilla, Club y Rivales (`management_view`): si gestiona unos espacios y en otros solo juega, solo ve los que gestiona
+  (sin selector); si gestiona todos o ninguno, selector de espacio. El informe puede incluir los partidos de la temporada
+  en otras competiciones de los convocados con cuenta enlazada (`Match.report_other_competitions`). Tests:
+  `core/tests_spaces_unified.py`.
 - [V] Se puede crear una cuenta sin club (`register_account`, o Google desde esa página): queda en `no_club` hasta aceptar una
   invitación o registrar un club. Back-office: KPI «Sin club» (`accounts_without_club`: activas y no staff), filtro `?kind=no_club`.
   Tests: `core/tests_account_without_club.py`, `AccountsWithoutClubTests` en `backoffice/tests_ops.py`.

@@ -1,0 +1,9 @@
+{% load i18n %}
+{# Selector de espacio de Plantilla y Club (core.spaces.management_view): solo si hay entre qué elegir. #}
+{% if request.space_switcher %}
+<nav class="z-segmented z-space-switcher" aria-label="{% translate 'Espacio' %}">
+    {% for item in request.space_switcher %}
+    <a class="btn btn-sm{% if item.active %} active{% endif %}" href="{{ request.path }}?en={{ item.code }}"{% if item.active %} aria-current="page"{% endif %}>{% include 'includes/competition_badge.html' with code=item.code name=item.name short=True %} <span>{{ item.club.name }}</span></a>
+    {% endfor %}
+</nav>
+{% endif %}

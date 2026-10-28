@@ -20,6 +20,7 @@ from django.core.paginator import Paginator
 from urllib.parse import urlencode
 from django.utils.translation import gettext as _
 from core.decorators import club_required, club_manager_required
+from core import spaces
 from penalty.models import Penalty
 from core.season_choice import ALL_SEASONS, choose_season
 from players.models import current_season, joined_by
@@ -302,7 +303,16 @@ def team_statistics(request):
     Estadísticas del equipo propio: balance de enfrentamientos y juegos, evolución por
     temporada, partidos de 2 y 3 puntos por jugador y top 5 de jugadores y parejas.
     Requiere pertenecer al club y solo GET. Filtra por temporada (``?season=``) y tipo de partido.
+
+    Con varios espacios lleva el filtro de competición (core.spaces): «Todas» muestra el resumen
+    de cada espacio (spaces_overview) y una competición, el detalle de su espacio, que pasa a ser
+    el activo.
     """
+    space, clubs = spaces.selected_spaces(request)
+    if space == spaces.ALL_SPACES:
+        return spaces_overview(request, clubs)
+    if space and clubs:
+        spaces.switch_to(request, clubs[0])
     zero = _zero_state(request, _("Estadísticas del equipo"))
     if zero:
         return zero
@@ -338,6 +348,7 @@ def team_statistics(request):
     context = {
         **match_type_context(request, match_type),
         **season_filter_context(request, seasons, selected_season),
+        **spaces.space_filter_context(request, space),
         'team': team,
         'total_matches': total_matches,
         'won_matches': total_won,
@@ -371,6 +382,49 @@ def team_statistics(request):
     context['attendance'] = signup_attendance(request.club, selected_season, match_type)
 
     return render(request, 'team_statistics.html', context)
+
+
+def spaces_overview(request, clubs):
+    """
+    Estadísticas con «Todas» las competiciones: una fila por espacio con su balance de
+    enfrentamientos (sin sumar puntos de una competición con otra) y, si el usuario tiene jugador
+    enlazado, sus partidos de todas las competiciones juntos y por competición. Filtra por
+    temporada y tipo de partido como el resto. Renderiza stats_spaces.html.
+    """
+    match_type = selected_match_type(request)
+    seasons = sorted(get_total_season(Match.objects.filter(club__in=clubs)),
+                     key=lambda s: int(s.split('-')[0]), reverse=True)
+    selected_season = choose_season(request, seasons)
+    if selected_season == ALL_SEASONS:
+        selected_season = None
+
+    rows = []
+    for club in clubs:
+        team = club.own_team
+        played, won, drawn, lost, pct_won, _pct_drawn, _pct_lost = (
+            calculate_match_statistics(selected_season, team, match_type) if team else (0, 0, 0, 0, 0, 0, 0))
+        rows.append({"club": club, "team": team, "played": played, "won": won, "drawn": drawn, "lost": lost,
+                     "pct": round(pct_won)})
+
+    # Tus partidos (solo con jugador enlazado): juntos y por competición.
+    me_rows, me_log = [], []
+    for player in Player.objects.filter(user=request.user, club__in=clubs).select_related("club"):
+        log = [g for g in build_game_log(player, match_type) if not selected_season or g['season'] == selected_season]
+        me_log += log
+        summary = summarize(log)
+        me_rows.append({"club": player.club, "player": player, "played": summary['played'], "wins": summary['wins'],
+                        "pct": round(summary['pct'])})
+    me = summarize(me_log) if me_rows else None
+
+    return render(request, 'stats_spaces.html', {
+        **match_type_context(request, match_type),
+        **season_filter_context(request, seasons, selected_season),
+        **spaces.space_filter_context(request, spaces.ALL_SPACES),
+        'selected_season': selected_season,
+        'rows': rows,
+        'me': me,
+        'me_rows': me_rows,
+    })
 
 
 def team_extra_context(club, season, match_type, log):
@@ -746,6 +800,7 @@ def summarize_by_season(log, calls_present, calls_total):
     return rows
 
 
+@spaces.consult_view
 @club_required
 @require_GET
 def statistics_per_player(request):
@@ -856,6 +911,7 @@ def statistics_per_player(request):
 # ESTADÍSTICAS POR PAREJAS
 # ---------------------------------------------------------------
 
+@spaces.consult_view
 @club_required
 @require_GET
 def statistics_per_pair(request):
@@ -971,6 +1027,7 @@ def pair_last_games(club, p1, p2, n=PAIR_LAST_GAMES, match_type=None, season=Non
 
 
 
+@spaces.consult_view
 @club_manager_required
 @require_GET
 def warnings_statistics(request):
@@ -1036,6 +1093,7 @@ def _season_and_type(request, with_type):
     return seasons, (None if selected == ALL_SEASONS else selected), (selected_match_type(request) if with_type else None)
 
 
+@spaces.consult_view
 @club_required
 @require_GET
 def rival_statistics(request):
@@ -1079,6 +1137,7 @@ def rival_statistics(request):
     })
 
 
+@spaces.consult_view
 @club_required
 @require_GET
 def rival_detail(request):

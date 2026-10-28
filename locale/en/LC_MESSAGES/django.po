@@ -12830,3 +12830,119 @@ msgstr ""
 #: players/templates/manage_roster.html
 msgid "Te quedarás sin jugadores en la plantilla."
 msgstr "You will have no players left in the squad."
+
+#: core/spaces.py
+#, python-format
+msgid "Ahora estás en el espacio %(competition)s de %(club)s."
+msgstr "You are now in the %(competition)s space of %(club)s."
+
+#: core/templates/includes/create_match_button.html
+#, python-format
+msgid "Nuevo enfrentamiento %(competition)s"
+msgstr "New %(competition)s tie"
+
+#: core/templates/includes/create_match_button.html
+msgid "¿En qué competición?"
+msgstr "In which competition?"
+
+#: core/templates/includes/create_match_button.html
+#, python-format
+msgid "%(games)s partidos · %(players)s convocados"
+msgstr "%(games)s games · %(players)s called up"
+
+#: match/templates/list_match.html match/templates/calendar_match.html
+msgid "Todos tus espacios"
+msgstr "All your spaces"
+
+#: match/templates/list_match.html
+msgid "Eres jugador aquí"
+msgstr "You are a player here"
+
+#: core/templates/includes/space_switcher.html
+msgid "Espacio"
+msgstr "Space"
+
+#: match/templates/create_match.html
+msgid "¿No está el rival?"
+msgstr "Rival not listed?"
+
+#: match/templates/create_match.html
+msgid "Añádelo"
+msgstr "Add it"
+
+#: team/views.py
+#, python-format
+msgid "Rival %(team)s creado. Ya puedes elegirlo."
+msgstr "Rival %(team)s created. You can now pick it."
+
+#: data_analyse/templates/stats_spaces.html
+msgid "Todas tus competiciones"
+msgstr "All your competitions"
+
+#: data_analyse/templates/stats_spaces.html
+msgid "Tus partidos por competición"
+msgstr "Your games by competition"
+
+#: data_analyse/templates/stats_spaces.html
+msgid "Tus equipos"
+msgstr "Your teams"
+
+#: data_analyse/templates/stats_spaces.html
+msgid ""
+"Cada competición puntúa a su manera: los puntos, los récords y los gráficos "
+"se ven al elegir una."
+msgstr ""
+"Each competition scores in its own way: points, records and charts are shown "
+"when you pick one."
+
+#: data_analyse/templates/stats_spaces.html
+msgid "Balance de cada equipo"
+msgstr "Record of each team"
+
+#: data_analyse/templates/stats_spaces.html
+#, python-format
+msgid "Ver %(competition)s"
+msgstr "View %(competition)s"
+
+#: match/models.py
+msgid "Incluir datos de otras competiciones"
+msgstr "Include data from other competitions"
+
+#: match/templates/create_match.html
+msgid ""
+"Añade al informe lo que han jugado esta temporada en sus otras competiciones "
+"los convocados con cuenta enlazada. No cambia las alineaciones."
+msgstr ""
+"Adds to the report what called-up players with a linked account have played "
+"this season in their other competitions. It does not change the lineups."
+
+#: match/report_pdf.py
+#, python-format
+msgid "OTRAS COMPETICIONES · TEMPORADA %(season)s"
+msgstr "OTHER COMPETITIONS · SEASON %(season)s"
+
+#: match/report_pdf.py
+msgid ""
+"Solo convocados con cuenta enlazada. Es informativo: no cuenta en las "
+"alineaciones recomendadas."
+msgstr ""
+"Only called-up players with a linked account. For information only: it does "
+"not count towards the recommended lineups."
+
+#: core/templates/home.html
+msgid ""
+"Todavía no has jugado ningún partido competitivo. Cuando juegues, aquí verás "
+"tu racha y tus últimos resultados."
+msgstr ""
+"You have not played any competitive game yet. Once you do, you will see your "
+"streak and your latest results here."
+
+#: data_analyse/templates/stats_spaces.html
+#, python-format
+msgid "Jugados: %(played)s · ganados: %(wins)s · %(pct)s%%"
+msgstr "Played: %(played)s · won: %(wins)s · %(pct)s%%"
+
+#: data_analyse/templates/stats_spaces.html
+#, python-format
+msgid "Jugados: %(played)s · %(won)sV %(drawn)sE %(lost)sD · %(pct)s%%"
+msgstr "Played: %(played)s · %(won)sW %(drawn)sD %(lost)sL · %(pct)s%%"

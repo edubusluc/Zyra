@@ -38,7 +38,7 @@ from .adapters import GOOGLE_NEW_ACCOUNT_KEY
 from .blocklist import is_user_blocked
 from .decorators import club_admin_required, club_manager_required, club_required
 from .emails import send_invitation_email, send_welcome_email
-from . import guides, season_prep
+from . import guides, season_prep, spaces
 from .forms import CaptainPlayerForm, CaptainSnpForm, ClubForm, EmailChangeForm, InviteMemberForm, SignUpForm
 from .middleware import SESSION_KEY
 from .models import REPORT_SCOPES, Invitation, Membership, UserPreference
@@ -100,21 +100,26 @@ def home(request):
 
     club = request.club
     today = datetime.date.today()
+    # Con varios espacios, lo pendiente y el próximo enfrentamiento son de todos (core.spaces);
+    # lo demás (primeros pasos, rachas, «Mi forma») es del espacio activo.
+    clubs = spaces.user_clubs(request) or [club]
     # Actas abiertas, las más antiguas primero: las pasadas son lo que se quedó a medias (H-02).
-    open_matches = list(Match.objects.filter(club=club, draft_mode=True).select_related('local', 'visiting')
-                        .order_by('start_date', 'id')[:30])
+    open_matches = list(Match.objects.filter(club__in=clubs, draft_mode=True)
+                        .select_related('local', 'visiting', 'club').order_by('start_date', 'id')[:30])
     phases = phases_for(open_matches)
     next_match = next((m for m in open_matches if m.start_date >= today), None)
-    pending = []
-    if request.membership.can_manage:
-        pending = [{"match": m, "phase": phases[m.id], "overdue": m.start_date < today} for m in open_matches]
+    managed = spaces.managed_clubs(request, clubs)
+    pending = [{"match": m, "phase": phases[m.id], "overdue": m.start_date < today}
+               for m in open_matches if m.club in managed]
     my_status = None
     my_player = Player.objects.filter(club=club, user=request.user).first()
-    if next_match and my_player:
+    next_player = my_player if next_match is None or next_match.club_id == club.id else (
+        Player.objects.filter(club=next_match.club, user=request.user).first())
+    if next_match and next_player:
         games = list(next_match.games.select_related('player_1_local', 'player_2_local',
                                                      'player_1_visiting', 'player_2_visiting'))
         call = Call.objects.filter(match=next_match).first()
-        my_status = player_status(my_player, call, games)
+        my_status = player_status(next_player, call, games)
     players = Player.objects.filter(club=club, in_team=True)
     hot_player, hot_pair = pair_stats.hot_streaks(pair_stats.club_game_log(club), players)
 
@@ -136,6 +141,7 @@ def home(request):
         'next_match': next_match,
         'pending': pending[:HOME_PENDING_ROWS],
         'pending_total': len(pending),
+        'multi_space': spaces.is_multi_space(request),
         'my_player': my_player,
         'my_form': my_form_data,
         'my_form_hidden': my_form_hidden,
@@ -487,6 +493,7 @@ def switch_club(request):
     return redirect("home")
 
 
+@spaces.management_view
 @club_required
 @require_safe
 def club_home(request):

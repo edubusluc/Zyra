@@ -1,6 +1,6 @@
 """Vistas de jugadores: alta, lista, ficha, plantilla, cuenta SNP, «Completar equipo» y perfil propio."""
 from django.shortcuts import render, redirect, get_object_or_404
-from core import ratelimit
+from core import ratelimit, spaces
 from core.decorators import club_required, club_admin_required, not_while_syncing, club_manager_required
 from core.models import Club
 from .forms import NewOwnPlayerForm, OwnPlayerForm, PlayerEditForm, PlayerForm, SnpAccountForm, with_placeholder
@@ -70,6 +70,7 @@ def create_player(request):
 ORDER_FIELDS = {'name', '-name', 'last_name', '-last_name', 'position', '-position', 'snp_score', '-snp_score'}
 
 
+@spaces.management_view
 @club_required
 def list_players(request):
     """

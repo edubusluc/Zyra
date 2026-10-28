@@ -5,18 +5,18 @@
 {% block content %}
 <div class="z-page-head">
     <div>
-        <span class="z-eyebrow">{{ current_club.name }}</span>
+        <span class="z-eyebrow">{% if multi_space %}{% translate "Todos tus espacios" %}{% else %}{{ current_club.name }}{% endif %}</span>
         <h1>{% translate "Enfrentamientos" %}</h1>
     </div>
     <div class="z-actions">
-        {% if can_manage %}
-        <a href="{% url 'create_match' %}" class="btn btn-primary text-nowrap"><i class="fa-solid fa-plus me-1" aria-hidden="true"></i> {% translate "Nuevo enfrentamiento" %}</a>
-        {% endif %}
+        {% if create_spaces %}<a href="{% url 'list_teams' %}" class="btn btn-secondary text-nowrap"><i class="fa-solid fa-shield-halved me-1" aria-hidden="true"></i> {% translate "Rivales" %}</a>{% endif %}
+        {% include 'includes/create_match_button.html' %}
     </div>
 </div>
 
 <script src="{% static 'js/player-picker.js' %}" defer></script>
 {% include 'includes/match_view_tabs.html' with current='list' %}
+{% include 'includes/space_filter.html' %}
 {% include 'includes/season_filter.html' %}
 {# Tipo de partido: mismos chips que las estadísticas; se combinan con temporada, rival y buscador. #}
 {% include 'includes/match_type_filter.html' %}
@@ -58,6 +58,7 @@ tarjeta es pulsable).{% endcomment %}
             <time class="z-fixture-date" datetime="{{ m.start_date|date:'Y-m-d' }}" title="{% blocktranslate with season=m.season %}Temporada {{ season }}{% endblocktranslate %}">
                 <i class="fa-regular fa-calendar" aria-hidden="true"></i>{{ m.start_date|date:"D j M Y" }}
             </time>
+            {% if multi_space %}{% include 'includes/competition_badge.html' with code=m.club.competition name=m.club.rules.name short=True %}{% endif %}
             {% if m.match_type != m.ENFRENTAMIENTO %}<span class="z-fixture-type">{{ m.get_match_type_display }}</span>{% endif %}
             {% if m.outcome == 'V' %}<span class="z-fixture-state is-win">{% translate "Victoria" %}</span>
             {% elif m.outcome == 'D' %}<span class="z-fixture-state is-loss">{% translate "Derrota" %}</span>
@@ -86,8 +87,9 @@ tarjeta es pulsable).{% endcomment %}
             {% if m.outcome is None %}<span class="z-fixture-meta"><i class="fa-solid fa-user-check" aria-hidden="true"></i>{% if m.called %}{% blocktranslate trimmed count n=m.called %}{{ n }} convocado{% plural %}{{ n }} convocados{% endblocktranslate %}{% else %}{% translate "Sin convocatoria" %}{% endif %}</span>{% endif %}
             <span class="z-fixture-actions">
                 <a href="{% url 'call_for_match' m.public_id %}" class="z-fixture-open stretched-link" aria-label="{% blocktranslate with local=m.local_name visiting=m.visiting_name %}Ver {{ local }} contra {{ visiting }}{% endblocktranslate %}">{% translate "Ver enfrentamiento" %}<i class="fa-solid fa-chevron-right" aria-hidden="true"></i></a>
-                {% if m.draft_mode and can_manage %}
-                <a href="{% url 'delete_match' m.public_id %}" class="z-edit z-edit--danger z-fixture-delete" aria-label="{% translate 'Eliminar enfrentamiento' %}" title="{% translate 'Eliminar enfrentamiento' %}"><i class="fa-solid fa-trash" aria-hidden="true"></i></a>
+                {% if multi_space and not m.can_manage %}<span class="z-fixture-meta z-fixture-role">{% translate "Eres jugador aquí" %}</span>{% endif %}
+                {% if m.draft_mode and m.can_manage %}
+                <a href="{% url 'delete_match' m.public_id %}{{ m.space_query }}" class="z-edit z-edit--danger z-fixture-delete" aria-label="{% translate 'Eliminar enfrentamiento' %}" title="{% translate 'Eliminar enfrentamiento' %}"><i class="fa-solid fa-trash" aria-hidden="true"></i></a>
                 {% endif %}
             </span>
         </div>
@@ -97,8 +99,8 @@ tarjeta es pulsable).{% endcomment %}
 {% else %}
 <div class="z-empty">
     <i class="fa-solid fa-table-tennis-paddle-ball" aria-hidden="true"></i>
-    {% if filtering %}{% translate "Ningún enfrentamiento coincide con la búsqueda." %}{% elif selected_season != all_seasons %}{% blocktranslate with season=selected_season %}No hay enfrentamientos en la temporada {{ season }}.{% endblocktranslate %}{% elif can_manage %}{% translate "Crea tu primer enfrentamiento para preparar la convocatoria." %}{% else %}{% translate "Cuando tu capitán cree el primer enfrentamiento lo verás aquí." %}{% endif %}
-    {% if can_manage %}<div class="mt-3"><a class="btn btn-primary btn-sm" href="{% url 'create_match' %}">{% translate "Crear enfrentamiento" %}</a></div>{% endif %}
+    {% if filtering %}{% translate "Ningún enfrentamiento coincide con la búsqueda." %}{% elif selected_season != all_seasons %}{% blocktranslate with season=selected_season %}No hay enfrentamientos en la temporada {{ season }}.{% endblocktranslate %}{% elif create_spaces %}{% translate "Crea tu primer enfrentamiento para preparar la convocatoria." %}{% else %}{% translate "Cuando tu capitán cree el primer enfrentamiento lo verás aquí." %}{% endif %}
+    {% if create_spaces %}<div class="mt-3">{% include 'includes/create_match_button.html' with classes='btn btn-primary btn-sm' %}</div>{% endif %}
 </div>
 {% endif %}
 

@@ -11,12 +11,15 @@ from core.decorators import club_required, not_while_syncing, club_manager_requi
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import Q
 from django.http import JsonResponse
-from core import similarity
+from core import similarity, spaces
 
 # Los grupos de SNP tienen unos 15-30 equipos: se ven de una vez, sin paginar.
 TEAMS_PER_PAGE = 30
+# ?volver= de create_team para volver al formulario de enfrentamiento tras crear el rival.
+BACK_TO_MATCH = "enfrentamiento"
 
 
+@spaces.management_view
 @club_required
 @require_GET
 def list_team(request):
@@ -65,7 +68,8 @@ def create_team(request):
     GET muestra el formulario con los valores del equipo propio. POST lo valida y, si hay
     equipos con un nombre igual o parecido, vuelve a mostrarlo para que se confirme. Las
     peticiones de comprobación responden en JSON sin crear nada. Al crearlo redirige a la
-    lista de equipos.
+    lista de equipos o, si se llegó desde el formulario de enfrentamiento (``?volver=enfrentamiento``),
+    de vuelta a él.
     """
     similar = []
     if request.method == "POST":
@@ -80,6 +84,9 @@ def create_team(request):
                 team = form.save(commit=False)
                 team.club = request.club
                 team.save()
+                if request.GET.get("volver") == BACK_TO_MATCH:
+                    messages.success(request, _("Rival %(team)s creado. Ya puedes elegirlo.") % {"team": team.name})
+                    return redirect("create_match")
                 return redirect("list_teams")
         else:
             if similarity.is_check_request(request):

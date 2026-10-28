@@ -454,6 +454,20 @@ def _story(report, layout):
     story.append(Spacer(1, layout.note_gap))
     story.append(Paragraph(note, st["muted"]))
 
+    if report.get("other_competitions"):
+        story.append(Spacer(1, layout.section_gap))
+        section(_("OTRAS COMPETICIONES · TEMPORADA %(season)s") % {"season": match.season})
+        other_rows = [[
+            Paragraph(f"<b>{esc(_player_label(r['player'], 70 * mm - CELL_X_PAD, size=cell_size))}</b>", st["cell"]),
+            Paragraph(esc(f"{r['club'].rules.name} · {r['club'].name}"), st["cell"]),
+            Paragraph(_record(r["wins"], r["played"]) or "0", st["cell"]),
+        ] for r in report["other_competitions"]]
+        story.append(_data_table([_("Jugador"), _("Competición"), _("Partidos")], other_rows,
+                                 [70 * mm, CONTENT_W - 110 * mm, 40 * mm], st, pad=pad))
+        story.append(Spacer(1, layout.note_gap))
+        story.append(Paragraph(_("Solo convocados con cuenta enlazada. Es informativo: no cuenta en las "
+                                 "alineaciones recomendadas."), st["muted"]))
+
     # ---------------- Página 2 ----------------
     if layout.flow:
         story.append(Spacer(1, layout.section_gap))

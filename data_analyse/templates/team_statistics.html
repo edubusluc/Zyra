@@ -58,7 +58,7 @@
         <a href="#sec-numbers">{% translate "Partidos y sets" %}</a>
         <a href="#sec-records">{% translate "Récords" %}</a>
         <a href="#sec-charts">{% translate "Gráficos" %}</a>
-        <a href="#sec-snp">{% translate "Puntos SNP" %}</a>
+        {% if current_club.rules.has_snp %}<a href="#sec-snp">{% translate "Puntos SNP" %}</a>{% endif %}
       </nav>
 
       <section id="sec-resumen" class="st-board" aria-label="{% translate 'Resumen de enfrentamientos' %}">
@@ -232,7 +232,7 @@
 
     {% endif %}
 
-    {% if team %}
+    {% if team and current_club.rules.has_snp %}
       <section id="sec-snp" aria-labelledby="snp-title" class="st-section">
         <h2 class="st-section-title" id="snp-title">{% translate "Puntos SNP" %}</h2>
         {% include 'includes/snp_ranking.html' %}
@@ -249,7 +249,7 @@
         <li><a href="#sec-numbers">{% translate "Partidos y sets" %}</a></li>
         <li><a href="#sec-records">{% translate "Récords" %}</a></li>
         <li><a href="#sec-charts">{% translate "Gráficos" %}</a></li>
-        {% if team %}<li><a href="#sec-snp">{% translate "Puntos SNP" %}</a></li>{% endif %}
+        {% if team and current_club.rules.has_snp %}<li><a href="#sec-snp">{% translate "Puntos SNP" %}</a></li>{% endif %}
       </ul>
     </aside>
     {% endif %}

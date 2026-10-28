@@ -154,8 +154,30 @@ def build_report(call):
         "usage": usage,  # por id de convocado: {'games', 'calls', 'last'}
         "competitive_only": competitive_only,
         "enough_players": len(called) >= comp.players_per_lineup,
+        "other_competitions": other_competitions(called, match) if match.report_other_competitions else [],
         "competition": comp,
     }
+
+
+def other_competitions(called, match):
+    """
+    Partidos de la temporada del enfrentamiento que los convocados con cuenta enlazada han jugado
+    en sus otros espacios (otras competiciones): una fila por jugador y competición con
+    {'player', 'club', 'played', 'wins'}. Solo informativo: no entra en las alineaciones.
+    """
+    from data_analyse.views import build_game_log
+    from players.models import Player
+
+    by_user = {p.user_id: p for p in called if p.user_id}
+    rows = []
+    others = (Player.objects.filter(user_id__in=by_user).exclude(club=match.club)
+              .select_related("club").order_by("club__competition"))
+    for other in others:
+        log = [g for g in build_game_log(other) if g["season"] == match.season]
+        rows.append({"player": by_user[other.user_id], "club": other.club, "played": len(log),
+                     "wins": sum(g["won"] for g in log)})
+    rows.sort(key=lambda r: (r["player"].name, r["player"].last_name))
+    return rows
 
 
 def suggested_lineups(call):

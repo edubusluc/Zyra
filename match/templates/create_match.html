@@ -53,9 +53,7 @@
 
         <div class="z-team-cards" data-group-rival{% if form.manual_rival %} hidden{% endif %}>
             {% include "includes/match_team_card.html" with field=form.rival team=form.rival_team %}
-            {% if can_manage and not form.rival.field.queryset.exists %}
-            <p class="z-rival-empty">{% translate "Todavía no tienes rivales en tu grupo." %} <a href="{% url 'create_team' %}">{% translate "Crear rival" %}</a></p>
-            {% endif %}
+            <p class="z-rival-empty">{% if not form.rival.field.queryset.exists %}{% translate "Todavía no tienes rivales en tu grupo." %}{% else %}{% translate "¿No está el rival?" %}{% endif %} <a href="{% url 'create_team' %}?volver=enfrentamiento">{% translate "Añádelo" %}</a></p>
             {% for error in form.local.errors %}<div class="alert-message">{{ error }}</div>{% endfor %}
         </div>
 
@@ -103,6 +101,13 @@
                 <p class="form-text mb-0"><a href="{% url 'my_profile' %}">{% translate "Edita tus preferencias" %}</a> {% translate "para guardar esta opción por defecto." %}</p>
                 {% for error in form.report_scope.errors %}<div class="alert-message">{{ error }}</div>{% endfor %}
             </fieldset>
+            {% if form.other_competitions_available %}
+            <p class="form-check mt-3">
+                {{ form.report_other_competitions }}
+                <label class="form-check-label" for="{{ form.report_other_competitions.id_for_label }}">{{ form.report_other_competitions.label }}</label>
+                <small class="form-text d-block">{% translate "Añade al informe lo que han jugado esta temporada en sus otras competiciones los convocados con cuenta enlazada. No cambia las alineaciones." %}</small>
+            </p>
+            {% endif %}
         </details>
 
         <div class="d-flex flex-wrap gap-2 mt-3">

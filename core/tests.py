@@ -6,6 +6,8 @@ from django.core.management import call_command
 from django.test import SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 
+from core.middleware import SESSION_KEY
+
 from call.models import Call
 from core.models import Club, Membership
 from core.services import create_club
@@ -107,14 +109,18 @@ class ClubIsolationTests(TestCase):
         self.assertTrue(Match.objects.filter(pk=self.match_b.pk, draft_mode=True).exists())
         self.assertTrue(Call.objects.filter(pk=call_b.pk).exists())
 
-    def test_member_of_both_clubs_only_sees_active_club_matches(self):
-        """Aunque el usuario pertenezca a los dos clubes, solo accede a los partidos del club activo."""
+    def test_member_of_both_clubs_opens_matches_in_their_space(self):
+        """Con los dos clubes, abrir un partido del otro cambia a ese club; la gestión sigue el rol de cada uno."""
         Membership.objects.create(user=self.user_a, club=self.club_b, role=Membership.MEMBER)
-        self.assertEqual(self.client.get(reverse("call_for_match", args=[self.match_b.public_id])).status_code, 404)
-
-        self.client.post(reverse("switch_club"), {"club_id": self.club_b.id})
         self.assertEqual(self.client.get(reverse("call_for_match", args=[self.match_b.public_id])).status_code, 200)
-        self.assertEqual(self.client.get(reverse("call_for_match", args=[self.match_a.public_id])).status_code, 404)
+        self.assertEqual(self.client.session[SESSION_KEY], self.club_b.id)
+        # En el club B es miembro: no gestiona aunque sea capitán en A.
+        self.assertEqual(self.client.get(reverse("create_call", args=[self.match_b.public_id])).status_code, 403)
+        # Las vistas de gestión no cambian de club: con B activo (miembro) tampoco se gestiona el de A.
+        self.assertEqual(self.client.get(reverse("create_call", args=[self.match_a.public_id])).status_code, 403)
+        self.assertEqual(self.client.session[SESSION_KEY], self.club_b.id)
+        self.assertEqual(self.client.get(reverse("call_for_match", args=[self.match_a.public_id])).status_code, 200)
+        self.assertEqual(self.client.session[SESSION_KEY], self.club_a.id)
 
     def test_player_statistics_only_link_own_club_matches(self):
         """La tabla de partidos del jugador no incluye enfrentamientos de otro club."""

@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block page_title %}{% translate "Estadísticas" %} · {% endblock %}
+
+{% block content %}
+{# Estadísticas con «Todas» las competiciones (data_analyse.views.spaces_overview): solo hechos que se pueden sumar; los puntos y el detalle, al elegir una competición. #}
+<div class="st-page">
+    {% include 'includes/stats_tabs.html' %}
+    <header class="st-head">
+      <div>
+        <h1 class="st-title">{% translate "Todas tus competiciones" %}</h1>
+        <p class="st-subtitle">
+          {% if selected_season %}{% blocktranslate with season=selected_season %}Estadísticas de la temporada {{ season }}{% endblocktranslate %}{% else %}{% translate "Estadísticas de todas las temporadas" %}{% endif %}{% if selected_match_type_label %} · {{ selected_match_type_label }}{% endif %}
+        </p>
+      </div>
+    </header>
+
+    {% include 'includes/season_filter.html' %}
+    {% include 'includes/match_type_filter.html' %}
+
+    {% if me %}
+    <section aria-labelledby="me-title" class="st-section">
+      <h2 class="st-section-title" id="me-title">{% translate "Tus partidos" %}</h2>
+      <div class="z-space-kpis">
+        <div><b>{{ me.played }}</b><span>{% translate "Jugados" %}</span></div>
+        <div><b>{{ me.wins }}</b><span>{% translate "Ganados" %}</span></div>
+        <div><b>{{ me.pct|floatformat:0 }}%</b><span>{% translate "Victorias" %}</span></div>
+      </div>
+      <ul class="z-space-rows" aria-label="{% translate 'Tus partidos por competición' %}">
+        {% for row in me_rows %}
+        <li>
+          <span class="z-space-rows-name">{% include 'includes/competition_badge.html' with code=row.club.competition name=row.club.rules.name short=True %} <span>{{ row.club.name }}</span></span>
+          <span class="z-space-rows-nums">{% blocktranslate trimmed with played=row.played wins=row.wins pct=row.pct %}Jugados: {{ played }} · ganados: {{ wins }} · {{ pct }}%{% endblocktranslate %}</span>
+          <a href="{% url 'player_statistics' %}?en={{ row.club.competition }}&amp;player={{ row.player.public_id }}">{% translate "Ver" %} <i class="fa-solid fa-chevron-right" aria-hidden="true"></i></a>
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+
+    <section aria-labelledby="teams-title" class="st-section mt-4">
+      <h2 class="st-section-title" id="teams-title">{% translate "Tus equipos" %}</h2>
+      <p class="st-card-note mt-0 mb-3">{% translate "Cada competición puntúa a su manera: los puntos, los récords y los gráficos se ven al elegir una." %}</p>
+      <ul class="z-space-rows" aria-label="{% translate 'Balance de cada equipo' %}">
+        {% for row in rows %}
+        <li>
+          <span class="z-space-rows-name">{% include 'includes/competition_badge.html' with code=row.club.competition name=row.club.rules.name short=True %} <span>{{ row.team.name|default:row.club.name }}</span></span>
+          <span class="z-space-rows-nums">{% blocktranslate trimmed with played=row.played won=row.won drawn=row.drawn lost=row.lost pct=row.pct %}Jugados: {{ played }} · {{ won }}V {{ drawn }}E {{ lost }}D · {{ pct }}%{% endblocktranslate %}</span>
+          <a href="{% url 'team_statistics' %}?espacio={{ row.club.competition }}">{% blocktranslate with competition=row.club.rules.name %}Ver {{ competition }}{% endblocktranslate %} <i class="fa-solid fa-chevron-right" aria-hidden="true"></i></a>
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
+</div>
+{% endblock %}

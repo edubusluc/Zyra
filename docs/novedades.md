@@ -12,6 +12,11 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 - En LAPI la **alineación sugerida** se basa en el historial y la afinidad de los convocados (no en puntos SNP) y funciona con 6 convocados. La pantalla de parejas no muestra puntos ni orden de juego, porque el cruce lo decide el sorteo, y el informe PDF y su correo explican el formato LAPI.
 - Al crear otro espacio, si tu cuenta ya tiene jugador no se te vuelve a pedir el nombre.
 - Dar de baja al último jugador de la plantilla sigue permitido, pero Zyra avisa de que te quedarás sin jugadores.
+- **Varios espacios en una sola vista**: si estás en un espacio SNP y en uno LAPI, Enfrentamientos, Calendario, Inicio y Estadísticas los juntan, con el filtro **Todas · SNP · LAPI** (empieza en Todas y recuerda tu elección). Cada tarjeta lleva la etiqueta de su competición y solo muestra las acciones que tu rol permite en ese espacio. Abrir un enfrentamiento de otro espacio te cambia a él y te lo dice.
+- «Nuevo enfrentamiento» dice dónde se crea o, si gestionas los dos espacios, pregunta la competición. **Rivales** tiene botón junto a «Nuevo enfrentamiento» y el formulario ofrece «¿No está el rival? Añádelo».
+- Plantilla y Club: si eres capitán en un espacio y jugador en otro, solo ves el que gestionas; si eres capitán (o jugador) en los dos, cambias con un selector arriba.
+- Estadísticas con «Todas»: tus partidos de todas las competiciones y una fila por equipo; los puntos y el detalle aparecen al elegir una competición.
+- El informe puede **incluir datos de otras competiciones** de los convocados con cuenta enlazada (casilla en «Más opciones» al crear el enfrentamiento).
 
 ## 28/10/2026 · Reglas de competición en una ficha (espacios, fase 0)
 
