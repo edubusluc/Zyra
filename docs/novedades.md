@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 28/10/2026 · Editar y eliminar advertencias
+
+- El historial de **Estadísticas › Advertencias** tiene una columna **«Acciones»** con **Editar** (cambia el motivo y el detalle; el jugador y el enfrentamiento no cambian, `penalty.views.edit_penalty`) y **Eliminar** (con confirmación). Al terminar vuelves al historial con la misma temporada. Solo capitán y gestores. En móvil los botones salen en una fila bajo cada advertencia.
+
 ## 28/10/2026 · Advertencias del selector de convocatoria
 
 - Al crear o editar una convocatoria, las advertencias que se ven junto a cada jugador son solo las de la temporada actual (antes salían todas las registradas).

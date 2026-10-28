@@ -2150,11 +2150,15 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 @media (min-width: 1100px) { .st-warn-layout { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); align-items: start; } }
 .st-table--wrap th, .st-table--wrap td { white-space: normal; text-align: left; }
 .st-table--wrap td:first-child { white-space: nowrap; }
+.st-warn-actions { white-space: nowrap; }
+.st-warn-actions form { display: inline-block; margin: 0 0 0 6px; }
 @media (max-width: 575.98px) {
     .st-table--wrap thead { display: none; }
     .st-table--wrap tr { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; padding: 10px 0; border-bottom: 1px solid var(--st-line); }
     .st-table--wrap td { padding: 0; border: 0; }
     .st-table--wrap td:nth-child(3) { grid-column: 1 / -1; color: var(--st-muted); }
+    .st-table--wrap td.st-warn-actions { grid-column: 1 / -1; padding-top: 6px; }
+    .st-table--wrap td.st-warn-actions .btn { min-height: 40px; }
 }
 
 /* Separador "o" y botón de Google en las pantallas de acceso */
