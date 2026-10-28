@@ -347,7 +347,8 @@ def delete_match(request, match_id):
     """Borrado de un enfrentamiento que aún no está cerrado.
 
     Solo para administradores del club. En GET pide confirmación (delete_match.html);
-    en POST lo borra. Si el acta ya está cerrada, avisa y vuelve al listado.
+    en POST lo borra. Si el acta ya está cerrada, avisa y vuelve al listado. Con ``?desde=ficha``
+    (se llega desde la página del enfrentamiento) «Cancelar» vuelve a esa página.
     """
     try:
         match = club_match(request, match_id)
@@ -359,7 +360,8 @@ def delete_match(request, match_id):
                 messages.success(request, _("Enfrentamiento eliminado."))
                 return redirect('list_match')
 
-            return render(request, 'delete_match.html', {'match': match})
+            from_match = request.GET.get('desde') == 'ficha'
+            return render(request, 'delete_match.html', {'match': match, 'from_match': from_match})
         else:
             messages.error(request, _("No se puede eliminar un enfrentamiento ya confirmado"))
 
@@ -840,8 +842,9 @@ def enter_results(request, match_id):
 
     Solo capitanes y con el acta abierta. En POST valida todos los partidos con casillas
     rellenas (los vacíos se dejan como estén) y solo guarda si todos son correctos; con
-    ``action=close`` y los 5 resultados guardados, cierra además el acta. En GET muestra los
-    resultados actuales.
+    ``action=close`` y los 5 resultados guardados, cierra además el acta; si no se puede cerrar
+    (faltan resultados o la fecha es futura sin confirmar), lo guardado se queda y vuelve a esta
+    pantalla con el aviso. En GET muestra los resultados actuales.
     """
     match = club_match(request, match_id)
     if not match.draft_mode:
@@ -874,8 +877,10 @@ def enter_results(request, match_id):
                 game.winner = outcomes.winner_of(result.result)
                 game.save(update_fields=['winner'])
         if request.POST.get("action") == "close":
-            do_close_match(request, match)
-            return redirect('call_for_match', match_id=match.public_id)
+            # Si el acta no se puede cerrar, se queda en los resultados para completarlos.
+            if do_close_match(request, match):
+                return redirect('call_for_match', match_id=match.public_id)
+            return redirect('enter_results', match_id=match.public_id)
         messages.success(request, _("Resultados guardados."))
         return redirect('call_for_match', match_id=match.public_id)
     if request.method == "POST":

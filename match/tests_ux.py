@@ -199,6 +199,14 @@ class EnterResultsTests(UxBase):
         self.assertEqual(self.m.result_points, "12/0")
         self.assertIn("Acta cerrada: Victoria 12-0", " ".join(texts(response)))
 
+    def test_close_with_missing_results_stays_on_the_results_page(self):
+        response = self.client.post(self.url, self.results_post(self.games, only={1, 2, 3}, action="close"))
+        self.assertRedirects(response, self.url, fetch_redirect_response=False)
+        self.m.refresh_from_db()
+        self.assertTrue(self.m.draft_mode)
+        self.assertEqual(sum(g.results.count() for g in self.games), 3)
+        self.assertIn("algunos partidos no tienen resultado", " ".join(texts(response)))
+
     def test_future_match_needs_confirmation_to_close(self):
         self.m.start_date = timezone.localdate() + datetime.timedelta(days=7)
         self.m.save()

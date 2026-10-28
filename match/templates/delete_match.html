@@ -10,7 +10,7 @@
         <form method="POST" class="d-grid gap-2" data-loading-text="{% translate 'Eliminando el enfrentamiento…' %}">
             {% csrf_token %}
             <button type="submit" class="btn btn-danger">{% translate "Eliminar" %}</button>
-            <a href="{% url 'list_match' %}" class="btn btn-secondary">{% translate "Cancelar" %}</a>
+            <a href="{% if from_match %}{% url 'call_for_match' match.public_id %}{% else %}{% url 'list_match' %}{% endif %}" class="btn btn-secondary">{% translate "Cancelar" %}</a>
         </form>
     </div>
 </div>
