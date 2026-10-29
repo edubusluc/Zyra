@@ -272,6 +272,11 @@ class Invitation(PublicIdModel):
     reusable = models.BooleanField(default=False)
     # Cuántas personas se han unido con esta invitación.
     use_count = models.PositiveIntegerField(default=0)
+    # Invitación de una ficha copiada de otro equipo (``players.copy``): al aceptarla, la cuenta se
+    # enlaza a esa ficha. Se ve en el Inicio de la cuenta con ese email.
+    player = models.ForeignKey(
+        "players.Player", on_delete=models.CASCADE, null=True, blank=True, related_name="invitations",
+    )
 
     objects = InvitationQuerySet.as_manager()
 

@@ -50,6 +50,26 @@
 </section>
 {% endif %}
 
+{% for inv in copy_invitations %}
+{# Invitación de una ficha copiada a otro equipo de otra competición (players.copy). #}
+<section class="z-card z-copy-invite" aria-labelledby="copy-invite-{{ forloop.counter }}">
+    <span class="z-eyebrow"><i class="fa-solid fa-envelope-open-text me-1" aria-hidden="true"></i> {% translate "Tienes una invitación" %}</span>
+    <h2 id="copy-invite-{{ forloop.counter }}">{{ inv.club.name }} {% include 'includes/competition_badge.html' with code=inv.club.competition name=inv.club.rules.name %}</h2>
+    <p class="small mb-1">{% if inv.created_by %}{% blocktranslate with name=inv.created_by.get_full_name|default:inv.created_by.username %}Jugador · te invita {{ name }}{% endblocktranslate %}{% else %}{% translate "Jugador" %}{% endif %}</p>
+    <p class="small">{% blocktranslate with player=inv.player.full_name %}Tu ficha allí: {{ player }}. Tus partidos de tus otros equipos no cambian.{% endblocktranslate %}</p>
+    <div class="d-flex flex-wrap gap-2">
+        <form method="post" action="{% url 'respond_copy_invitation' inv.token %}" data-loading-text="{% translate 'Uniéndote al equipo…' %}">
+            {% csrf_token %}<input type="hidden" name="action" value="accept">
+            <button type="submit" class="btn btn-primary btn-sm">{% translate "Aceptar y unirme" %}</button>
+        </form>
+        <form method="post" action="{% url 'respond_copy_invitation' inv.token %}" data-confirm="{% blocktranslate with club=inv.club.name %}No entrarás en {{ club }} y tu ficha allí se quedará sin enlazar a tu cuenta.{% endblocktranslate %}" data-confirm-title="{% translate 'Rechazar la invitación' %}" data-confirm-action="{% translate 'Rechazar' %}" data-loading-text="{% translate 'Rechazando…' %}">
+            {% csrf_token %}<input type="hidden" name="action" value="decline">
+            <button type="submit" class="btn btn-secondary btn-sm">{% translate "Rechazar" %}</button>
+        </form>
+    </div>
+</section>
+{% endfor %}
+
 {% if manager_welcome %}
 {# Bienvenida al gestor recién nombrado; se queda hasta que la cierra (Membership.manager_welcome_pending). #}
 <section class="z-card" role="status" aria-labelledby="manager-welcome-title">
@@ -183,7 +203,7 @@
     <li>
         <a href="{% url 'call_for_match' row.match.public_id %}" class="z-pending-row{% if row.overdue %} is-overdue{% endif %}">
             <span class="z-pending-main">
-                <strong>{% if multi_space %}{% include 'includes/competition_badge.html' with code=row.match.club.competition name=row.match.club.rules.name short=True %} {% endif %}{{ row.match.local_name }} – {{ row.match.visiting_name }}</strong>
+                <strong>{% include 'includes/competition_badge.html' with code=row.match.club.competition name=row.match.club.rules.name short=True %} {{ row.match.local_name }} – {{ row.match.visiting_name }}</strong>
                 <small>{{ row.match.start_date|date:"D j M Y" }}{% if row.overdue %} · {% translate "ya jugado o vencido" %}{% endif %}</small>
             </span>
             <span class="z-pending-action">{{ row.phase.pending_label }} <i class="fa-solid fa-chevron-right" aria-hidden="true"></i></span>
@@ -207,7 +227,7 @@
     <div class="z-next-match-when">
         <span class="z-badge z-badge--lime">{% if days_left == 0 %}{% translate "Hoy" %}{% elif days_left == 1 %}{% translate "Mañana" %}{% else %}{% blocktranslate trimmed count n=days_left %}En {{ n }} día{% plural %}En {{ n }} días{% endblocktranslate %}{% endif %}</span>
         <span>{{ next_match.start_date|date:"D j M Y" }}{% if next_match.start_time %} · {{ next_match.start_time|time:"H:i" }}{% endif %}</span>
-        {% if multi_space %}{% include 'includes/competition_badge.html' with code=next_match.club.competition name=next_match.club.rules.name short=True %}{% endif %}
+        {% include 'includes/competition_badge.html' with code=next_match.club.competition name=next_match.club.rules.name short=True %}
     </div>
     <div class="z-next-match-teams">
         <div class="z-next-match-team {% if next_match.local.is_own %}is-own{% endif %}">

@@ -116,7 +116,7 @@
                     {% endif %}
                     {% if current_club %}
                     {% if free_competitions %}
-                    <li><a class="dropdown-item" href="{% url 'register_club' %}"><i class="fa-solid fa-plus" aria-hidden="true"></i> {% translate "Añadir equipo de otra competición" %}</a></li>
+                    {% for c in free_competitions %}<li><a class="dropdown-item" href="{% url 'register_club' %}?competicion={{ c.code }}"><i class="fa-solid fa-plus" aria-hidden="true"></i> {% blocktranslate with competition=c.name %}Añadir equipo {{ competition }}{% endblocktranslate %}</a></li>{% endfor %}
                     {% else %}
                     <li><span class="dropdown-item-text small text-muted"><i class="fa-solid fa-check me-1" aria-hidden="true"></i>{% blocktranslate with competitions=team_competitions %}Ya tienes equipo en {{ competitions }}{% endblocktranslate %}</span></li>
                     {% endif %}

@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+{% block page_title %}{% blocktranslate with competition=source.rules.name %}Copiar jugadores de {{ competition }}{% endblocktranslate %} · {% endblock %}
+
+{% block content %}
+{# Copiar fichas del equipo de otra competición al activo (players.copy): solo datos de la ficha, nunca estadísticas. #}
+<div class="z-page-head">
+    <div>
+        <a href="{% url 'list_players' %}" class="z-eyebrow"><i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i> {% translate "Jugadores" %}</a>
+        <h1>{% blocktranslate with competition=source.rules.name %}Copiar jugadores de {{ competition }}{% endblocktranslate %}</h1>
+        <p class="z-copy-route">
+            <span>{{ source.name }} {% include 'includes/competition_badge.html' with code=source.competition name=source.rules.name %}</span>
+            <i class="fa-solid fa-arrow-right" aria-hidden="true"></i><span class="visually-hidden">{% translate "a" %}</span>
+            <span>{{ target.name }} {% include 'includes/competition_badge.html' with code=target.competition name=target.rules.name %}</span>
+        </p>
+    </div>
+</div>
+
+{% if sources|length > 1 %}
+<nav class="z-segmented mb-3" aria-label="{% translate 'Copiar desde' %}">
+    {% for c in sources %}<a class="btn btn-sm{% if c == source %} active{% endif %}" href="?desde={{ c.competition }}"{% if c == source %} aria-current="page"{% endif %}>{{ c.rules.name }}</a>{% endfor %}
+</nav>
+{% endif %}
+
+{% if max_roster %}
+<p class="small text-muted">{% blocktranslate with competition=target.rules.name n=roster max=max_roster %}Tu plantilla de {{ competition }} tiene {{ n }} jugadores; el máximo es {{ max }}. Zyra te avisa si te pasas, pero no te lo impide.{% endblocktranslate %}</p>
+{% endif %}
+
+<form method="post" data-copy-players data-loading-text="{% translate 'Copiando los jugadores…' %}">
+    {% csrf_token %}
+    <div data-selector data-page-size="20">
+        <div class="z-toolbar">
+            <div class="z-search">
+                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                <input type="search" placeholder="{% translate 'Buscar jugador...' %}" data-selector-search aria-label="{% translate 'Buscar jugador' %}">
+            </div>
+            {% if copyable %}
+            <label class="form-check mb-0">
+                <input class="form-check-input" type="checkbox" data-copy-all>
+                <span class="form-check-label">{% blocktranslate with n=copyable %}Seleccionar todos los que se pueden copiar ({{ n }}){% endblocktranslate %}</span>
+            </label>
+            {% endif %}
+        </div>
+        <ul class="z-copy-list">
+            {% for row in rows %}
+            {% with p=row.player %}
+            <li class="z-copy-row{% if row.status == 'already' or row.status == 'other_team' %} is-disabled{% endif %}" data-selector-item data-key="{{ p.public_id }}" data-name="{{ p.full_name }}">
+                <input class="form-check-input" type="checkbox" name="players" value="{{ p.pk }}" id="copy-{{ p.pk }}"{% if row.status == 'already' or row.status == 'other_team' %} disabled{% else %} data-copy-item{% endif %}>
+                <label for="copy-{{ p.pk }}">
+                    <strong>{{ p.full_name }}</strong>
+                    <span class="z-copy-status z-copy-status--{{ row.status }}">
+                        {% if row.status == 'already' %}{% blocktranslate with competition=target.rules.name %}Ya está en {{ competition }}{% endblocktranslate %}
+                        {% elif row.status == 'other_team' %}{% blocktranslate with competition=target.rules.name %}Juega en otro equipo {{ competition }}{% endblocktranslate %}
+                        {% elif row.status == 'member' %}{% translate "Ya es miembro: se enlaza su ficha" %}
+                        {% elif row.status == 'invite' %}{% translate "Tiene cuenta: recibirá invitación" %}
+                        {% else %}{% translate "Sin cuenta: se copia la ficha" %}{% endif %}
+                    </span>
+                </label>
+            </li>
+            {% endwith %}
+            {% empty %}
+            <li class="z-empty">{% blocktranslate with club=source.name %}{{ club }} no tiene jugadores en la plantilla.{% endblocktranslate %}</li>
+            {% endfor %}
+        </ul>
+        <p class="z-empty" data-selector-empty hidden><i class="fa-solid fa-user-slash" aria-hidden="true"></i> {% translate "Ningún jugador coincide con la búsqueda." %}</p>
+        <nav class="st-pager" data-selector-pager aria-label="{% translate 'Páginas de jugadores' %}" hidden>
+            <button type="button" class="st-pager-btn" data-step="-1" aria-label="{% translate 'Anterior' %}"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
+            <span class="st-pager-info" aria-live="polite"></span>
+            <button type="button" class="st-pager-btn" data-step="1" aria-label="{% translate 'Siguiente' %}"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+        </nav>
+    </div>
+    <div class="z-copy-foot">
+        {% if not copyable %}<p class="z-callout mb-3"><i class="fa-solid fa-circle-check" aria-hidden="true"></i><span>{% blocktranslate with competition=target.rules.name %}Ya no queda nadie por copiar: todos están en {{ competition }} o juegan en otro equipo.{% endblocktranslate %}</span></p>{% endif %}
+        <p class="small text-muted mb-2">{% blocktranslate with competition=source.rules.name target=target.rules.name %}Se copian nombre, apellidos, foto y posición. Las estadísticas, puntos SNP y convocatorias se quedan en {{ competition }}. Los que tienen cuenta reciben un correo y ven el equipo {{ target }} cuando aceptan.{% endblocktranslate %}</p>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'list_players' %}" class="btn btn-outline-secondary">{% translate "Cancelar" %}</a>
+            {% if copyable %}<button type="submit" class="btn btn-primary" data-copy-submit data-label-one="{% translate 'Copiar 1 jugador' %}" data-label-many="{% translate 'Copiar %(n)s jugadores' %}" disabled>{% translate "Copiar jugadores" %}</button>{% endif %}
+        </div>
+    </div>
+</form>
+<script src="{% static 'js/player-selector.js' %}" defer></script>
+<script src="{% static 'js/copy-players.js' %}" defer></script>
+{% endblock %}

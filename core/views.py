@@ -44,7 +44,7 @@ from .middleware import SESSION_KEY
 from .models import REPORT_SCOPES, Invitation, Membership, UserPreference
 from .onboarding import onboarding_for
 from . import email_verification, ratelimit, seo
-from players import snp_service
+from players import copy as player_copy, snp_service
 from .unsubscribe import user_from_result_token, user_from_token
 from .services import (
     CaptaincyError, InvitationError, accept_invitation, account_delete_blocker, club_name_matches, club_of,
@@ -150,6 +150,8 @@ def home(request):
         snp_sync = snp_import.sync_task(club)
     return render(request, 'home.html', {
         'email_unverified': email_needs_confirmation(request.user),
+        # Invitaciones de fichas copiadas a otro equipo (players.copy): aceptar o rechazar aquí.
+        'copy_invitations': player_copy.pending_for(request.user),
         'snp_sync': snp_sync,
         'own_team': club.own_team,
         'season': current_season(),
@@ -430,6 +432,8 @@ def register_club(request):
         "club_form": club_form, "user_form": user_form, "player_form": player_form, "snp_form": snp_form,
         "google_missing_name": google_missing_name, "snp_service_off": not snp_service.is_enabled(),
         "new_space": current is not None, "linked_player": linked_player,
+        # Con una sola competición libre el título la nombra («Añadir equipo LAPI»).
+        "new_competition": free[0] if current is not None and len(free) == 1 else None,
         # Competiciones en las que ya tiene equipo: se ven desactivadas («Ya tienes X en LAPI»).
         "taken_teams": [] if anonymous else spaces.user_clubs(request),
         # Para register-wizard: divisiones de cada competición y si tiene SNP.
@@ -657,6 +661,25 @@ def _join(request, invitation, user):
     return True
 
 
+@login_required
+@require_POST
+def respond_copy_invitation(request, token):
+    """
+    Aceptar o rechazar desde el Inicio la invitación de una ficha copiada a otro equipo
+    (``action=accept`` o ``decline``). Solo la cuenta con el email invitado. Al aceptar entra como
+    jugador y la ficha queda enlazada; al rechazar la ficha se queda sin cuenta.
+    """
+    invitation = next((i for i in player_copy.pending_for(request.user) if i.token == token), None)
+    if invitation is None:
+        messages.info(request, _("Esa invitación ya no está pendiente."))
+        return redirect("home")
+    if request.POST.get("action") == "decline":
+        player_copy.decline(invitation)
+        messages.success(request, _("Invitación rechazada: no entrarás en %(club)s.") % {"club": invitation.club.name})
+        return redirect("home")
+    return redirect("member_welcome" if _join(request, invitation, request.user) else "home")
+
+
 def invitation(request, token):
     """
     Enlace de invitación. Un visitante sin cuenta se registra con usuario, email y
@@ -877,7 +900,40 @@ def my_profile(request):
         "match_result_email": UserPreference.match_result_for(user),
         "player": Player.objects.filter(club=request.club, user=user).first() if request.club else None,
         "email_unverified": email_needs_confirmation(user),
+        "related_sheets": player_copy.related_unlinked(user),
     })
+
+
+def _related_sheet(request, pk):
+    """La ficha de ``related_unlinked`` con ese id, o 404."""
+    sheet = next((s for s in player_copy.related_unlinked(request.user) if s.pk == pk), None)
+    if sheet is None:
+        raise Http404
+    return sheet
+
+
+@login_required
+@require_POST
+def link_related_sheet(request, pk):
+    """«Sí, enlazarla» en Mi perfil: entra como jugador en el equipo de esa ficha copiada y la enlaza."""
+    sheet = _related_sheet(request, pk)
+    try:
+        player_copy.join_and_link(request.user, sheet)
+    except player_copy.LinkError as exc:
+        messages.error(request, str(exc))
+        return redirect("my_profile")
+    request.session[SESSION_KEY] = sheet.club_id
+    messages.success(request, _("Ficha enlazada: ya estás en %(club)s.") % {"club": sheet.club.name})
+    return redirect("home")
+
+
+@login_required
+@require_POST
+def reject_related_sheet(request, pk):
+    """«No es mía» en Mi perfil: deja de proponer esa ficha."""
+    player_copy.not_mine(request.user, _related_sheet(request, pk))
+    messages.success(request, _("De acuerdo, no volveremos a proponerte esa ficha."))
+    return redirect("my_profile")
 
 
 @login_required

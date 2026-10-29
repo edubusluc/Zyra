@@ -4,6 +4,7 @@ import datetime
 from django.conf import settings
 from django.core.validators import RegexValidator
 from django.db import models
+from django.db.models.signals import post_save
 from django.utils.translation import gettext, gettext_lazy as _
 
 from core import crypto
@@ -91,6 +92,11 @@ class Player(PublicIdModel):
     )
     snp_score = models.FloatField(null=True)
     in_team = models.BooleanField(default=True)
+    # Ficha de otro equipo (de otra competición) de la que se copió con «Copiar jugadores»: solo se
+    # copian nombre, apellidos, foto, posición y mano; las estadísticas se quedan en cada equipo.
+    copied_from = models.ForeignKey(
+        "self", on_delete=models.SET_NULL, null=True, blank=True, related_name="copies",
+    )
     # Copia de la categoría de su equipo (Team.gender): se asigna al guardar.
     gender = models.CharField(_("Categoría"), max_length=1, choices=Team.GENDERS, blank=True, default="")
     joined_season = models.CharField(
@@ -264,6 +270,19 @@ class SnpTeamImport(PublicIdModel):
 
 # Al cambiar o borrar la foto se borra el fichero antiguo (core/images.py).
 connect_photo_cleanup(Player)
+
+SHARED_FIELDS = {"name", "last_name", "photo", "user"}
+
+
+def _sync_linked_sheets(sender, instance, raw=False, update_fields=None, **kwargs):
+    """Al guardar una ficha enlazada, sus otras fichas (otros equipos) toman su nombre, apellidos y foto."""
+    if raw or not instance.user_id or (update_fields is not None and not SHARED_FIELDS & set(update_fields)):
+        return
+    from .copy import sync_linked_sheets
+    sync_linked_sheets(instance)
+
+
+post_save.connect(_sync_linked_sheets, sender=Player, dispatch_uid="players.Player.sync_linked_sheets")
 
 
 class SnpUpdateRequest(PublicIdModel):

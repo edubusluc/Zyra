@@ -72,7 +72,8 @@ def accept_invitation(invitation, user):
     Da de alta a ``user`` como miembro del club de la invitación y apunta el uso. La
     invitación se bloquea mientras tanto, así una invitación de un solo uso (las de
     email) no puede usarse dos veces aunque lleguen dos peticiones a la vez. Los enlaces
-    compartidos (``reusable``) siguen valiendo para más personas.
+    compartidos (``reusable``) siguen valiendo para más personas. Si es la invitación de una
+    ficha copiada (``Invitation.player``), enlaza esa ficha a la cuenta.
     """
     invitation = Invitation.objects.select_for_update().select_related("club").get(pk=invitation.pk)
     if not invitation.is_valid:
@@ -91,6 +92,10 @@ def accept_invitation(invitation, user):
     invitation.used_at = timezone.now()
     invitation.use_count += 1
     invitation.save(update_fields=["used_by", "used_at", "use_count"])
+    if invitation.player_id:
+        # Invitación de una ficha copiada de otro equipo: la cuenta queda enlazada a esa ficha.
+        from players.copy import link_player
+        link_player(invitation, user)
     return membership
 
 

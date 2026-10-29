@@ -2503,6 +2503,8 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 /* Avisos con icono (p. ej. la posición en pista tras traer jugadores de SNP) */
 .z-callout { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; font-size: .9rem; color: var(--z-text); background: rgba(var(--z-lime-rgb), .08); border: 1px solid rgba(var(--z-lime-rgb), .35); border-radius: 12px; }
 .z-callout > i { margin-top: 3px; color: var(--z-lime); }
+.z-callout--warning { background: rgba(255, 201, 64, .08); border-color: rgba(255, 201, 64, .45); }
+.z-callout--warning > i { color: var(--z-warning); }
 
 /* Registro del club: elegir cómo se crea el jugador del capitán */
 .z-choice { display: grid; gap: 8px; margin: 0 0 16px; padding: 0; border: 0; }
@@ -2679,6 +2681,20 @@ a.z-hub-card:hover, a.z-hub-card:focus-visible { border-color: var(--z-lime); co
 .z-finals-rule-title { margin: 0 0 6px; font-size: 1rem; font-weight: 800; color: var(--z-warning); }
 .z-finals-rule p { margin: 0 0 8px; }
 .z-finals-rule .form-check { margin: 4px 0 0; }
+
+/* Copiar jugadores de otra competición (players/templates/copy_players.html) e invitación en el Inicio. */
+.z-copy-route { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 6px 0 0; color: var(--z-muted); }
+.z-copy-list { display: grid; gap: 6px; margin: 12px 0; padding: 0; list-style: none; }
+.z-copy-row { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 14px; background: var(--z-surface-2); border: 1px solid var(--z-border); border-radius: var(--z-radius-sm); }
+.z-copy-row input { flex: none; width: 22px; height: 22px; margin: 0; }
+.z-copy-row label { display: grid; flex: 1; min-width: 0; cursor: pointer; }
+.z-copy-row.is-disabled { opacity: .6; }
+.z-copy-row.is-disabled label { cursor: default; }
+.z-copy-status { font-size: .8rem; color: var(--z-muted); }
+.z-copy-status--invite { color: var(--z-warning); }
+.z-copy-status--member { color: var(--z-lime); }
+.z-copy-foot { padding: 12px 0; border-top: 1px solid var(--z-border); }
+.z-copy-invite { border-left: 4px solid var(--z-lime); }
 
 /* Inicio: bloque «Pendiente» y estado del jugador en el próximo enfrentamiento (core/templates/home.html) */
 .z-pending { display: grid; gap: 8px; margin: 0 0 8px; padding: 0; list-style: none; }

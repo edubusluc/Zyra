@@ -10,12 +10,21 @@
     </div>
     {% if can_manage %}
     <div class="z-actions">
+        {% for c in copy_sources %}<a href="{% url 'copy_players' %}?desde={{ c.competition }}" class="btn btn-secondary"><i class="fa-solid fa-copy me-1" aria-hidden="true"></i> {% blocktranslate with competition=c.rules.name %}Copiar de {{ competition }}{% endblocktranslate %}</a>{% endfor %}
         <a href="{% url 'manage_roster' %}" class="btn btn-secondary"><i class="fa-solid fa-user-check me-1" aria-hidden="true"></i> {% translate "Gestionar plantilla" %}</a>
         <a href="{% url 'create_player' %}" class="btn btn-primary"><i class="fa-solid fa-plus me-1" aria-hidden="true"></i> {% translate "Nuevo jugador" %}</a>
     </div>
     {% endif %}
 </div>
 {% include 'includes/space_switcher.html' %}
+{% if copy_sources and not has_copies %}
+{% with c=copy_sources.0 %}
+<div class="z-callout z-callout--info mb-3">
+    <i class="fa-solid fa-copy" aria-hidden="true"></i>
+    <p class="mb-0">{% blocktranslate with competition=c.rules.name %}¿Tus jugadores de {{ competition }} también juegan aquí? Cópialos en vez de crearlos a mano: solo se copian nombre, foto y posición, nunca sus estadísticas.{% endblocktranslate %} <a href="{% url 'copy_players' %}?desde={{ c.competition }}">{% blocktranslate with competition=c.rules.name %}Copiar de {{ competition }}{% endblocktranslate %}</a></p>
+</div>
+{% endwith %}
+{% endif %}
 {% if snp_import_enabled and not snp_import %}
 <div class="z-card mb-3 p-3">
     <p class="small mb-2">{% translate "¿Han llegado jugadores nuevos? Pide a Zyra que actualice tu equipo desde SNP." %}</p>
@@ -46,10 +55,10 @@
     </div>
 
     <div class="z-toolbar-group">
-        <div class="z-segmented" role="group" aria-label="{% translate 'Ordenar por' %}">
+        {% if current_club.rules.has_snp %}<div class="z-segmented" role="group" aria-label="{% translate 'Ordenar por' %}">
             <a href="?order_by=name{% if can_manage and not only_team %}&amp;team=0{% endif %}" class="btn btn-sm {% if order_by == 'name' %}active{% endif %}">{% translate "Nombre" %}</a>
             <a href="?order_by=-snp_score{% if can_manage and not only_team %}&amp;team=0{% endif %}" class="btn btn-sm {% if order_by == '-snp_score' %}active{% endif %}">SNP</a>
-        </div>
+        </div>{% endif %}
         <div class="z-segmented" role="group" aria-label="{% translate 'Cambiar vista' %}">
             <button type="button" class="btn btn-sm active" id="btn-view-cards" aria-label="{% translate 'Vista de tarjetas' %}"><i class="fa-solid fa-grip" aria-hidden="true"></i></button>
             <button type="button" class="btn btn-sm" id="btn-view-table" aria-label="{% translate 'Vista de tabla' %}"><i class="fa-solid fa-list" aria-hidden="true"></i></button>
@@ -74,12 +83,14 @@
             <p class="z-player-meta">
                 <span><i class="fa-solid fa-location-crosshairs" aria-hidden="true"></i>{{ player.get_position_display }}</span>
                 <span><i class="fa-solid fa-hand" aria-hidden="true"></i>{{ player.get_skillfull_hand_display }}</span>
-                <span><i class="fa-solid fa-trophy" aria-hidden="true"></i>SNP {{ player.snp_score|snp_points }}</span>
+                {% if current_club.rules.has_snp %}<span><i class="fa-solid fa-trophy" aria-hidden="true"></i>SNP {{ player.snp_score|snp_points }}</span>{% endif %}
             </p>
             <div class="z-player-tags">
                 {% if can_manage and not player.in_team %}
                 <span class="z-badge z-badge--danger">{% translate "Fuera del equipo" %}</span>
                 {% endif %}
+                {% if player.pk in pending_copies %}<span class="z-badge z-badge--warning">{% translate "Invitación pendiente" %}</span>
+                {% elif player.copied_from and can_manage %}<span class="z-badge z-badge--outline">{% blocktranslate with competition=player.copied_from.club.rules.name %}Copiado de {{ competition }}{% endblocktranslate %}</span>{% endif %}
             </div>
         </div>
     </div>
@@ -102,7 +113,7 @@
                 <th>{% translate "Nombre" %}</th>
                 <th>{% translate "Posición" %}</th>
                 <th>{% translate "Mano" %}</th>
-                <th>SNP</th>
+                {% if current_club.rules.has_snp %}<th>SNP</th>{% endif %}
                 <th>{% translate "Temporada" %}</th>
                 {% if can_manage %}<th>{% translate "Equipo" %}</th><th><span class="visually-hidden">{% translate "Acciones" %}</span></th>{% endif %}
             </tr>
@@ -120,7 +131,7 @@
                 <td><a href="{% url 'show_player' player.public_id %}" class="text-reset"><strong>{{ player.short_name }}</strong></a></td>
                 <td>{{ player.get_position_display }}</td>
                 <td>{{ player.get_skillfull_hand_display }}</td>
-                <td>{{ player.snp_score|snp_points:"–" }}</td>
+                {% if current_club.rules.has_snp %}<td>{{ player.snp_score|snp_points:"–" }}</td>{% endif %}
                 <td>{{ player.joined_season }}</td>
                 {% if can_manage %}
                 <td>
@@ -170,14 +181,24 @@
                 <div class="z-import-wrap">
                     <table class="z-import-table">
                         <colgroup><col><col class="z-import-cat"><col class="z-import-last"></colgroup>
-                        <thead><tr><th>{% translate "Jugador" %}</th><th>{% translate "Categoría" %}</th><th class="text-end">{% translate "Puntos SNP" %}</th></tr></thead>
+                        <thead><tr><th>{% translate "Jugador" %}</th><th>{% translate "Categoría" %}</th><th class="text-end">{% translate "Puntos SNP" %}</th>{% if same_options %}<th>{% translate "¿Es el mismo jugador?" %}</th>{% endif %}</tr></thead>
                         <tbody>
                         {% for p in snp_import.to_add %}
-                        <tr><td>{{ p.name|upper }} {{ p.last_name|upper }}</td><td>{% include 'includes/snp_category.html' with category=p.category %}</td><td class="text-end">{{ p.score|floatformat:"-1" }}</td></tr>
+                        <tr><td>{{ p.name|upper }} {{ p.last_name|upper }}</td><td>{% include 'includes/snp_category.html' with category=p.category %}</td><td class="text-end">{{ p.score|floatformat:"-1" }}</td>
+                        {% if same_options %}<td><select class="form-select form-select-sm" name="same_{{ forloop.counter0 }}" form="complete-team-confirm" aria-label="{% blocktranslate with name=p.snp_name %}¿Es {{ name }} uno de tus jugadores?{% endblocktranslate %}">
+                            <option value="">{% translate "No, jugador nuevo" %}</option>
+                            {% for o in same_options %}<option value="{{ o.pk }}">{% blocktranslate with name=o.full_name %}Sí, {{ name }}{% endblocktranslate %}</option>{% endfor %}
+                        </select></td>{% endif %}</tr>
                         {% endfor %}
                         </tbody>
                     </table>
                 </div>
+                {% if same_options %}
+                <div class="z-callout z-callout--warning my-3">
+                    <i class="fa-solid fa-user-check" aria-hidden="true"></i>
+                    <p class="mb-0">{% translate "Tienes jugadores sin puntos SNP (por ejemplo, copiados de otro equipo) que pueden estar en SNP con otro nombre. Si alguno de la lista es uno de ellos, elígelo en «¿Es el mismo jugador?»: no se creará otra ficha y recibirá sus puntos." %}</p>
+                </div>
+                {% endif %}
                 <div class="z-callout z-callout--info my-3">
                     <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
                     <p class="mb-0">{% translate "Un detalle: SNP no dice en qué lado de la pista juega cada uno, así que los jugadores nuevos llegarán sin posición. Después, edita cada uno y elige su posición: te ayudará a montar mejor las parejas y las alineaciones." %}</p>
@@ -213,7 +234,7 @@
                     <button type="submit" class="btn btn-outline-secondary">{% if snp_import_changes or snp_import.status == 'running' %}{% translate "Cancelar" %}{% else %}{% translate "Cerrar" %}{% endif %}</button>
                 </form>
                 {% if snp_import.status == 'ready' and snp_import_changes %}
-                <form method="post" action="{% url 'complete_team_confirm' snp_import.public_id %}" data-loading-text="{% translate 'Añadiendo los jugadores…' %}">{% csrf_token %}
+                <form method="post" id="complete-team-confirm" action="{% url 'complete_team_confirm' snp_import.public_id %}" data-loading-text="{% translate 'Añadiendo los jugadores…' %}">{% csrf_token %}
                     <button type="submit" class="btn btn-primary">{% if snp_import.to_add %}{% blocktranslate trimmed count n=snp_import.to_add|length %}Añadir {{ n }} jugador{% plural %}Añadir {{ n }} jugadores{% endblocktranslate %}{% elif snp_import.teams_to_add %}{% translate "Crear equipos del grupo" %}{% else %}{% translate "Actualizar puntos SNP" %}{% endif %}</button>
                 </form>
                 {% endif %}

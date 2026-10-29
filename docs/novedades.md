@@ -3,6 +3,17 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 29/10/2026 · Espacios por competición (fase 2: copiar jugadores entre SNP y LAPI)
+
+- En Plantilla, **«Copiar de SNP»** (o de LAPI) trae jugadores de tu equipo de la otra competición si eres capitán o gestor en los dos. Se copian nombre, apellidos, foto y posición; las estadísticas, los puntos SNP y las convocatorias se quedan donde estaban.
+- Los que ya tienen cuenta reciben una **invitación** por correo y en su Inicio; se les puede convocar antes de que acepten. Si la rechazan, la ficha queda sin cuenta y puedes borrarla.
+- Las fichas de una misma persona comparten nombre, apellidos y foto: si los cambia en un equipo, cambian en todos. La posición es de cada equipo.
+- En LAPI, Zyra avisa si la plantilla pasa de 15 jugadores, sin impedirlo.
+- En «Completar equipo», la columna **«¿Es el mismo jugador?»** deja decir que un nombre de SNP es un jugador que ya tienes (por ejemplo, copiado de LAPI) para no crear otra ficha.
+- En Mi perfil, si te copiaron a otro equipo antes de tener cuenta, puedes enlazar esa ficha («Sí, enlazarla») o decir «No es mía».
+- Aunque solo tengas un equipo, cada enfrentamiento (listado, calendario, Inicio y su página) lleva la etiqueta de su competición, SNP o LAPI.
+- El menú de usuario dice directamente **«Añadir equipo LAPI»** (o SNP) en vez de «Añadir equipo de otra competición», y abre el registro con esa competición elegida.
+
 ## 29/10/2026 · Espacios por competición (fase 1c: no presentados y lesiones en LAPI)
 
 - **No presentado**: en un enfrentamiento LAPI con el acta abierta, «Más» › «No se presentó el rival» o «No nos presentamos» lo cierra con 3-0 para quien sí se presentó. Cuenta en el balance del equipo y en los puntos de liga (4 o 0), pero no en jugadores, parejas ni asistencia. Se puede quitar con «Quitar no presentado».

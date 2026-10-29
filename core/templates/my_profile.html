@@ -153,6 +153,27 @@
     {% endif %}
 </div>
 {% endif %}
+{% for sheet in related_sheets %}
+<div class="z-panel z-account z-copy-invite">
+    <h2 class="z-section-title mt-0">{% translate "Tu ficha también está en otro equipo" %}</h2>
+    <p class="form-text">{% blocktranslate with club=sheet.club.name competition=sheet.club.rules.name %}El capitán de {{ club }} ({{ competition }}) copió tu ficha antes de que tuvieras cuenta. Si es tuya, entrarás en ese equipo como jugador y verás también allí tus estadísticas.{% endblocktranslate %}</p>
+    <div class="z-claim z-account-player">
+        <img src="{% if sheet.photo %}{{ sheet.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="" class="z-avatar z-avatar--sm">
+        <span class="z-pick-body">
+            <span class="z-pick-name">{{ sheet.full_name }}</span>
+            <span class="z-pick-meta">{{ sheet.club.name }} · {{ sheet.club.rules.name }}</span>
+        </span>
+    </div>
+    <div class="d-flex flex-wrap gap-2 mt-3">
+        <form method="post" action="{% url 'link_related_sheet' sheet.pk %}" data-loading-text="{% translate 'Enlazando tu ficha…' %}">{% csrf_token %}
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-link me-1" aria-hidden="true"></i> {% translate "Sí, enlazarla" %}</button>
+        </form>
+        <form method="post" action="{% url 'reject_related_sheet' sheet.pk %}" data-loading-text="{% translate 'Guardando…' %}">{% csrf_token %}
+            <button type="submit" class="btn btn-outline-secondary">{% translate "No es mía" %}</button>
+        </form>
+    </div>
+</div>
+{% endfor %}
 <div class="z-panel z-account">
     <h2 class="z-section-title mt-0">{% translate "Eliminar mi cuenta" %}</h2>
     <p class="form-text">{% translate "Borra tu cuenta y tus preferencias. Si eres capitán, antes tienes que traspasar la capitanía a otro jugador del club." %}</p>

@@ -1,7 +1,7 @@
 {% load i18n %}
-{# Un enfrentamiento dentro del calendario. Recibe m (con outcome, own_points, rival_points, upcoming) y multi_space (etiqueta de su competición). #}
+{# Un enfrentamiento dentro del calendario. Recibe m (con outcome, own_points, rival_points, upcoming) ; siempre lleva la etiqueta de su competición. #}
 <a class="z-cal-event{% if m.upcoming %} is-upcoming{% elif m.outcome %} is-played{% else %} is-open{% endif %}{% if m.is_friendly %} is-friendly{% endif %}" href="{% url 'call_for_match' m.public_id %}">
-  {% if multi_space %}<span class="z-cal-comp z-cal-comp--{{ m.club.competition }}">{{ m.club.rules.name }}</span>{% endif %}
+  <span class="z-cal-comp z-cal-comp--{{ m.club.competition }}">{{ m.club.rules.name }}</span>
   {% if m.start_time %}<time datetime="{{ m.start_time|time:'H:i' }}">{{ m.start_time|time:"H:i" }}</time>{% endif %}
   <span class="z-cal-event-name">{{ m.rival_label|default:m.local_name }}</span>
   {% if m.outcome and m.own_points is not None %}<b>{{ m.own_points }}-{{ m.rival_points }}</b>{% endif %}

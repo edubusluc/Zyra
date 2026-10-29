@@ -95,9 +95,9 @@ class OneSpacePerCompetitionTests(TestCase):
 
     def test_create_lapi_space_from_the_menu(self):
         home = self.client.get(reverse("home"))
-        self.assertContains(home, "Añadir equipo de otra competición")
+        self.assertContains(home, "Añadir equipo LAPI")
         page = self.client.get(reverse("register_club") + "?competicion=lapi")
-        self.assertContains(page, "Añadir equipo de otra competición")
+        self.assertContains(page, "Añadir equipo LAPI")
         # La SNP, que ya tiene, sale desactivada y dice con qué equipo.
         self.assertContains(page, "Ya tienes Gladiadores en SNP.")
         self.assertContains(page, 'value="Gladiadores"')
@@ -117,7 +117,7 @@ class OneSpacePerCompetitionTests(TestCase):
 
         # Con un equipo en cada competición ya no se ofrece crear otro: el menú dice que ya los tiene.
         home = self.client.get(reverse("home"))
-        self.assertNotContains(home, "Añadir equipo de otra competición")
+        self.assertNotContains(home, "Añadir equipo LAPI")
         self.assertContains(home, "Ya tienes equipo en SNP y LAPI")
         self.assertRedirects(self.client.get(reverse("register_club")), reverse("home"), fetch_redirect_response=False)
 

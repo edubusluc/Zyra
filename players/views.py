@@ -2,7 +2,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from core import ratelimit, spaces
 from core.decorators import club_required, club_admin_required, not_while_syncing, club_manager_required
-from core.models import Club
+from core.models import Club, Invitation
 from .forms import NewOwnPlayerForm, OwnPlayerForm, PlayerEditForm, PlayerForm, SnpAccountForm, with_placeholder
 from django.contrib import messages
 from match.models import Game
@@ -15,7 +15,7 @@ from django.db import transaction
 from django.db.models import BooleanField, ExpressionWrapper, Q
 from django.utils import timezone
 from django.utils.translation import gettext as _, gettext_lazy, ngettext
-from . import snp_import, snp_requests, snp_service
+from . import copy as player_copy, snp_import, snp_requests, snp_service
 from .scraper import SnpScrapeError
 from core import similarity
 
@@ -78,7 +78,8 @@ def list_players(request):
     la paginación (9 por página) las hace ``static/js/player-selector.js``, igual que en las
     convocatorias. Requiere pertenecer al club (``club_required``). Por defecto solo se listan los del equipo; los
     capitanes pueden desmarcar «solo mi equipo» (``team=0``) para ver también a los que
-    ya no están en el equipo (al final) y el estado del botón «Completar equipo».
+    ya no están en el equipo (al final) y el estado del botón «Completar equipo». Quien gestiona
+    también un equipo de otra competición ve «Copiar de SNP / LAPI» (``players.copy``).
     """
     order_by = request.GET.get('order_by', 'name')
     if order_by not in ORDER_FIELDS:
@@ -94,9 +95,14 @@ def list_players(request):
         players = players.filter(in_team=True).order_by(order_by)
 
     context = {
-        'players': players,
+        'players': players.select_related('copied_from__club'),
         'order_by': order_by,
         'only_team': only_team,
+        # «Copiar de SNP / LAPI» y las fichas copiadas que esperan a que su jugador acepte.
+        'copy_sources': player_copy.managed_pairs(request),
+        'has_copies': Player.objects.filter(club=request.club, copied_from__isnull=False).exists(),
+        'pending_copies': set(Invitation.objects.pending().filter(club=request.club, player__user__isnull=True)
+                              .values_list('player_id', flat=True)) if request.membership.can_manage else set(),
     }
     if request.membership.is_admin:
         context.update(_complete_team_context(request.club))
@@ -118,6 +124,8 @@ def _complete_team_context(club):
         'snp_import_wait': snp_import.search_limit(club),
         'snp_service_off': not snp_service.is_enabled(),
         'snp_update_request': snp_requests.open_request(club),
+        # «¿Es el mismo jugador?»: jugadores sin puntos SNP a los que asignar un nombre nuevo de SNP.
+        'same_options': snp_import.same_player_options(club) if active and active.to_add else [],
     }
 
 @club_manager_required
@@ -448,12 +456,19 @@ def complete_team_confirm(request, import_id):
     """
     Confirma una búsqueda de «Completar equipo» lista para confirmar: crea los jugadores
     nuevos y actualiza los puntos SNP de los que ya estaban. Solo capitanes y por POST;
-    solo si no se completó ya desde la web. Redirige a la lista de jugadores.
+    solo si no se completó ya desde la web. Los nombres que el capitán asigna a un jugador que ya
+    estaba («¿Es el mismo jugador?», ``same_<n>``) no se crean. Redirige a la lista de jugadores.
     """
     team_import = get_object_or_404(SnpTeamImport, public_id=import_id, club=request.club, source=SnpTeamImport.WEB)
     if team_import.status != SnpTeamImport.READY or not snp_import.has_changes(team_import) or _web_import_closed(request):
         return redirect("list_players")
-    team_import = snp_import.confirm(team_import)
+    # «¿Es el mismo jugador?»: same_<n> es el id del jugador que el capitán eligió para el n-ésimo nombre nuevo.
+    same = {}
+    for n, entry in enumerate(team_import.to_add):
+        value = request.POST.get(f"same_{n}", "")
+        if value.isdigit():
+            same[entry["snp_name"]] = int(value)
+    team_import = snp_import.confirm(team_import, same=same)
     messages.success(request, _("Equipo completado: %(message)s") % {"message": team_import.message})
     if team_import.created_players:
         messages.info(request, POSITION_NOTICE)
@@ -584,3 +599,43 @@ def unlink_player(request, player_id):
     player.save(update_fields=["user"])
     messages.success(request, _("%(player)s ya no está enlazado a ninguna cuenta.") % {"player": player.short_name})
     return redirect("edit_player", player_id=player.public_id)
+
+
+@club_manager_required
+def copy_players(request):
+    """
+    «Copiar jugadores» al equipo activo desde el de otra competición de la misma cuenta (SNP ↔
+    LAPI, ``players.copy``). Hay que ser capitán o gestor en los dos; con varios, ``?desde=`` elige
+    la competición de origen. En GET lista la plantilla de origen con el estado de cada uno; en POST
+    copia los marcados (``players``), invita a los que tienen cuenta y avisa si la plantilla pasa
+    del máximo de la competición (LAPI 15), sin impedirlo.
+    """
+    sources = player_copy.managed_pairs(request)
+    if not sources:
+        messages.info(request, _("Para copiar jugadores tienes que ser capitán o gestor también en tu equipo de otra competición."))
+        return redirect("list_players")
+    source = next((c for c in sources if c.competition == request.GET.get("desde")), sources[0])
+    target = request.club
+    if request.method == "POST":
+        result = player_copy.copy_players(source, target, request.POST.getlist("players"), request.user,
+                                          site_url=request.build_absolute_uri("/"))
+        copied, invited = len(result["copied"]), len(result["invited"])
+        if copied:
+            messages.success(request, ngettext("%(n)s jugador copiado.", "%(n)s jugadores copiados.", copied) % {"n": copied}
+                             + (" " + ngettext("%(n)s recibirá una invitación por correo.",
+                                               "%(n)s recibirán una invitación por correo.", invited) % {"n": invited}
+                                if invited else ""))
+        else:
+            messages.info(request, _("No has elegido a nadie que se pueda copiar."))
+        limit, size = target.rules.max_roster, player_copy.roster_size(target)
+        if limit and size > limit:
+            messages.warning(request, _("Tu plantilla de %(competition)s tiene %(n)s jugadores y el máximo es %(max)s. "
+                                        "Da de baja a los que no vayan a jugar.")
+                             % {"competition": target.rules.name, "n": size, "max": limit})
+        return redirect("list_players")
+    rows = player_copy.candidates(source, target)
+    return render(request, "copy_players.html", {
+        "source": source, "target": target, "sources": sources, "rows": rows,
+        "copyable": sum(r["status"] in (player_copy.MEMBER, player_copy.INVITE, player_copy.COPY) for r in rows),
+        "roster": player_copy.roster_size(target), "max_roster": target.rules.max_roster,
+    })
