@@ -7,6 +7,7 @@
     <div>
         <a href="{% url 'list_match' %}" class="z-eyebrow" aria-label="{% translate 'Volver a Enfrentamientos' %}"><i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i> {% translate "Resumen" %}</a>
         <h1>{{ match.local_name }} – {{ match.visiting_name }}</h1>
+        <p class="mb-0">{% include 'includes/competition_badge.html' with code=match.club.competition name=match.club.rules.name short=True %}</p>
     </div>
     <span class="z-badge{% if not match.draft_mode %} z-badge--lime{% endif %}">{{ phase.label }}</span>
 </div>

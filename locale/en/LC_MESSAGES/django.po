@@ -13732,3 +13732,8 @@ msgstr ""
 #: core/templates/my_profile.html
 msgid "Enlazando tu ficha…"
 msgstr "Linking your player sheet…"
+
+#: core/templates/base.html core/templates/register_club.html
+#, python-format
+msgid "Añadir equipo %(competition)s"
+msgstr "Add %(competition)s team"

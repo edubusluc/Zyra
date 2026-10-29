@@ -30,7 +30,7 @@ def club(request):
         "user_memberships": memberships,
         "user_teams": teams,
         "is_club_admin": bool(membership and membership.is_admin),
-        # Competiciones en las que aún no tiene equipo («Añadir equipo de otra competición» en el menú).
+        # Competiciones en las que aún no tiene equipo («Añadir equipo LAPI» en el menú, una entrada por competición).
         "free_competitions": [c for code, c in COMPETITIONS.items()
                               if code not in {m.club.competition for m in memberships}],
         # «Ya tienes equipo en SNP y LAPI» cuando ya no le queda competición libre.

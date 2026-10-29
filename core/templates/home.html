@@ -203,7 +203,7 @@
     <li>
         <a href="{% url 'call_for_match' row.match.public_id %}" class="z-pending-row{% if row.overdue %} is-overdue{% endif %}">
             <span class="z-pending-main">
-                <strong>{% if multi_space %}{% include 'includes/competition_badge.html' with code=row.match.club.competition name=row.match.club.rules.name short=True %} {% endif %}{{ row.match.local_name }} – {{ row.match.visiting_name }}</strong>
+                <strong>{% include 'includes/competition_badge.html' with code=row.match.club.competition name=row.match.club.rules.name short=True %} {{ row.match.local_name }} – {{ row.match.visiting_name }}</strong>
                 <small>{{ row.match.start_date|date:"D j M Y" }}{% if row.overdue %} · {% translate "ya jugado o vencido" %}{% endif %}</small>
             </span>
             <span class="z-pending-action">{{ row.phase.pending_label }} <i class="fa-solid fa-chevron-right" aria-hidden="true"></i></span>
@@ -227,7 +227,7 @@
     <div class="z-next-match-when">
         <span class="z-badge z-badge--lime">{% if days_left == 0 %}{% translate "Hoy" %}{% elif days_left == 1 %}{% translate "Mañana" %}{% else %}{% blocktranslate trimmed count n=days_left %}En {{ n }} día{% plural %}En {{ n }} días{% endblocktranslate %}{% endif %}</span>
         <span>{{ next_match.start_date|date:"D j M Y" }}{% if next_match.start_time %} · {{ next_match.start_time|time:"H:i" }}{% endif %}</span>
-        {% if multi_space %}{% include 'includes/competition_badge.html' with code=next_match.club.competition name=next_match.club.rules.name short=True %}{% endif %}
+        {% include 'includes/competition_badge.html' with code=next_match.club.competition name=next_match.club.rules.name short=True %}
     </div>
     <div class="z-next-match-teams">
         <div class="z-next-match-team {% if next_match.local.is_own %}is-own{% endif %}">

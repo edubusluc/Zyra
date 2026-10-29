@@ -11,6 +11,8 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 - En LAPI, Zyra avisa si la plantilla pasa de 15 jugadores, sin impedirlo.
 - En «Completar equipo», la columna **«¿Es el mismo jugador?»** deja decir que un nombre de SNP es un jugador que ya tienes (por ejemplo, copiado de LAPI) para no crear otra ficha.
 - En Mi perfil, si te copiaron a otro equipo antes de tener cuenta, puedes enlazar esa ficha («Sí, enlazarla») o decir «No es mía».
+- Aunque solo tengas un equipo, cada enfrentamiento (listado, calendario, Inicio y su página) lleva la etiqueta de su competición, SNP o LAPI.
+- El menú de usuario dice directamente **«Añadir equipo LAPI»** (o SNP) en vez de «Añadir equipo de otra competición», y abre el registro con esa competición elegida.
 
 ## 29/10/2026 · Espacios por competición (fase 1c: no presentados y lesiones en LAPI)
 

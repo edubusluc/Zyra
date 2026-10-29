@@ -432,6 +432,8 @@ def register_club(request):
         "club_form": club_form, "user_form": user_form, "player_form": player_form, "snp_form": snp_form,
         "google_missing_name": google_missing_name, "snp_service_off": not snp_service.is_enabled(),
         "new_space": current is not None, "linked_player": linked_player,
+        # Con una sola competición libre el título la nombra («Añadir equipo LAPI»).
+        "new_competition": free[0] if current is not None and len(free) == 1 else None,
         # Competiciones en las que ya tiene equipo: se ven desactivadas («Ya tienes X en LAPI»).
         "taken_teams": [] if anonymous else spaces.user_clubs(request),
         # Para register-wizard: divisiones de cada competición y si tiene SNP.

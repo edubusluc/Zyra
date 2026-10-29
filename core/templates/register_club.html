@@ -9,7 +9,7 @@
     <div class="z-auth-card z-auth-card--wide">
         <img src="{% static 'zyra/logo.svg' %}" alt="Zyra" class="z-auth-logo">
         {% if new_space %}
-        <h1>{% translate "Añadir equipo de otra competición" %}</h1>
+        <h1>{% if new_competition %}{% blocktranslate with competition=new_competition.name %}Añadir equipo {{ competition }}{% endblocktranslate %}{% else %}{% translate "Añadir equipo de otra competición" %}{% endif %}</h1>
         <p class="text-muted text-center">{% translate "Tu equipo en otra competición tiene su propia plantilla, sus rivales y sus enfrentamientos. Enfrentamientos, Calendario y Estadísticas te enseñan los de todas tus competiciones juntos." %}</p>
         {% else %}
         <h1>{% translate "Registrar un club" %}</h1>
