@@ -15,6 +15,7 @@
 
 <form method="POST" data-loading-text="{% translate 'Creando la convocatoria…' %}">
     {% csrf_token %}
+    {% include 'includes/finals_rule.html' %}
     {% include 'includes/player_selector.html' with selected=selected_players submit_label=_("Crear convocatoria") min_players=min_call_players %}
 </form>
 {% endblock %}

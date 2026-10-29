@@ -224,6 +224,17 @@ class UnifiedSpacesTests(TestCase):
         self.assertNotIn("mine_chips", self.client.get(
             reverse("player_statistics") + f"?player={mate.public_id}").context)
 
+    def test_player_in_every_team_sees_stats_without_player_sheet(self):
+        me_snp, me_lapi = self._me()
+        Membership.objects.filter(user=self.user, club=self.snp).update(role=Membership.MEMBER)
+        listing = self.client.get(reverse("player_statistics") + "?en=lapi")
+        self.assertContains(listing, 'name="player"')  # el apartado Jugador con su selector
+        mate = self.lapi.players.exclude(pk=me_lapi.pk).get()
+        sheet = self.client.get(reverse("player_statistics") + f"?en=lapi&player={mate.public_id}")
+        self.assertNotContains(sheet, reverse("show_player", args=[mate.public_id]))  # sin la pestaña «Resumen»
+        self.assertRedirects(self.client.get(reverse("show_player", args=[mate.public_id])),
+                             f"{reverse('player_statistics')}?player={mate.public_id}", fetch_redirect_response=False)
+
     def test_team_statistics_never_mixes_competitions(self):
         self._close(self.snp_match)
         self._close(self.lapi_match)

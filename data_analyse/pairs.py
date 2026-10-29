@@ -19,7 +19,7 @@ MIN_GAMES_PAIR = 2
 TOP_N = 5
 
 # En retos y play off se juegan pocos partidos: sus parejas se muestran sin mínimo.
-NO_MINIMUM_MATCH_TYPES = (Match.RETO, Match.PLAYOFF)
+NO_MINIMUM_MATCH_TYPES = (Match.RETO, Match.PLAYOFF, Match.FASE_FINAL)
 
 
 # Filtro "Competitivos": todos los tipos de partido competitivo (enfrentamiento, reto, play off).

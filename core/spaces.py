@@ -70,6 +70,15 @@ def selected_spaces(request, allow_all=True, session_key=SESSION_FILTER_KEY):
     return wanted, [c for c in clubs if c.competition == wanted]
 
 
+def plays_only(request):
+    """
+    True si la cuenta tiene varios equipos y en todos es jugador (no gestiona ninguno): no ve
+    Plantilla ni el listado de jugadores de Estadísticas, solo lo suyo («Mis estadísticas»).
+    """
+    memberships = getattr(request, "user_memberships", [])
+    return len(memberships) > 1 and not any(m.can_manage for m in memberships)
+
+
 def linked_players(request):
     """
     Jugadores enlazados a la cuenta en sus espacios, en el orden de las competiciones (uno por

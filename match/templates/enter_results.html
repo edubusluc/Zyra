@@ -43,6 +43,9 @@
             <input type="text" inputmode="numeric" maxlength="2" name="g{{ game.n_game }}_set2_visiting" value="{{ values.set2_visiting }}" aria-label="{% blocktranslate with n=game.n_game team=match.visiting_name %}Partido {{ n }}, set 2, {{ team }}{% endblocktranslate %}" data-set="2" data-side="v">
             <input type="text" inputmode="numeric" maxlength="2" name="g{{ game.n_game }}_set3_visiting" value="{{ values.set3_visiting }}" aria-label="{% blocktranslate with n=game.n_game team=match.visiting_name %}Partido {{ n }}, set 3, {{ team }}{% endblocktranslate %}" data-set="3" data-side="v">
         </div>
+        <div class="z-result-injury">
+        {% include 'includes/injury_fields.html' with prefix=row.prefix retired=values.retired injured=values.injured_side %}
+        </div>
         <ul class="z-result-checks" aria-live="polite" data-result-checks></ul>
     </fieldset>
     {% endwith %}

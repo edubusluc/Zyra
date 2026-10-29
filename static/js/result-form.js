@@ -24,10 +24,16 @@ document.querySelectorAll('[data-result]').forEach(function (form) {
   }
 
   const retiredBox = form.querySelector('[data-retired]');
+  // Sets de un partido acabado por lesión: 0-0 o vacío es un set sin jugar; un 0 con juegos del
+  // rival (0-6) sí cuenta, como en scoring.py.
+  const enteredSets = () => [1, 2, 3].map((n) => {
+    const pair = [val(input(n, 'l')), val(input(n, 'v'))];
+    return pair.every((x) => !x) ? [null, null] : pair;
+  });
 
   // Partido finalizado por lesión: mismas reglas que scoring.validate_retired_result
   function refreshRetired() {
-    const s = [1, 2, 3].map((n) => [val(input(n, 'l')), val(input(n, 'v'))].map((x) => x || null));
+    const s = enteredSets();
     const played = [0, 1, 2].filter((i) => s[i][0] !== null || s[i][1] !== null);
     if (!played.length) return;
     const last = played[played.length - 1];
@@ -50,11 +56,43 @@ document.querySelectorAll('[data-result]').forEach(function (form) {
     else line(true, interpolate(gettext('Ganador del partido: %(team)s'), { team: names[l > v ? 0 : 1] }, true));
   }
 
+  // Lesión en la LAPI: la pareja sana gana y se completan sus juegos (scoring.complete_retired_result).
+  const injuredBox = form.querySelector('[data-injured]');
+  function refreshInjured() {
+    const side = form.querySelector('[data-injured-side]:checked');
+    if (!side) { line(null, gettext('Indica qué pareja se lesionó.')); return; }
+    const flip = side.dataset.injuredSide === 'v';
+    const s = enteredSets();
+    const played = [0, 1, 2].filter((i) => s[i][0] !== null || s[i][1] !== null);
+    const last = played.length ? played[played.length - 1] : -1;
+    for (let i = 0; i <= last; i++) {
+      const [a, b] = s[i];
+      if (a === null || b === null) { line(false, interpolate(gettext('Set %(n)s: falta el resultado.'), { n: i + 1 }, true)); return; }
+      if (i < last && !validSet(a, b)) { line(false, setInvalid(i + 1, a, b)); return; }
+    }
+    // (lesionada, sana) en cada set
+    const own = s.slice(0, last + 1).map(([a, b]) => (flip ? [b, a] : [a, b]));
+    if (own.length && !validSet(own[own.length - 1][0], own[own.length - 1][1])) {
+      const [hurt, healthy] = own[own.length - 1];
+      const target = hurt >= 5 ? 7 : 6;
+      if (healthy > target || hurt > 6) { line(false, setInvalid(own.length, s[last][0], s[last][1])); return; }
+      own[own.length - 1] = [hurt, target];
+    }
+    if (own.filter(([hurt, healthy]) => hurt > healthy).length >= 2) {
+      line(false, gettext('El partido ya estaba decidido: no puede acabar por lesión.'));
+      return;
+    }
+    while (own.filter(([hurt, healthy]) => healthy > hurt).length < 2) own.push([0, 6]);
+    const score = own.map(([a, b]) => (flip ? `${b}-${a}` : `${a}-${b}`)).join(' / ');
+    line(true, interpolate(gettext('Queda %(score)s. Ganador del partido: %(team)s'), { score: score, team: names[flip ? 0 : 1] }, true));
+  }
+
   function refresh() {
     checks.innerHTML = '';
+    if (injuredBox) injuredBox.hidden = !(retiredBox && retiredBox.checked);
     if (retiredBox && retiredBox.checked) {
       input(3, 'l').disabled = input(3, 'v').disabled = false;
-      refreshRetired();
+      if (injuredBox) refreshInjured(); else refreshRetired();
       return;
     }
     const s = [1, 2, 3].map((n) => [val(input(n, 'l')), val(input(n, 'v'))]);
@@ -108,5 +146,6 @@ document.querySelectorAll('[data-result]').forEach(function (form) {
     el.addEventListener('focus', () => el.select());
   });
   if (retiredBox) retiredBox.addEventListener('change', refresh);
+  form.querySelectorAll('[data-injured-side]').forEach((el) => el.addEventListener('change', refresh));
   refresh();
 });

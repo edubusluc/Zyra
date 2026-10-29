@@ -22,6 +22,8 @@ from urllib.parse import urlencode
 from django.utils.translation import gettext as _, gettext_lazy
 from core.decorators import club_required, club_manager_required
 from core import spaces
+from core.competitions import competition_for
+from match.league import season_league_points
 from penalty.models import Penalty
 from core.season_choice import ALL_SEASONS, choose_season
 from players.models import current_season, joined_by
@@ -137,8 +139,11 @@ def match_type_context(request, match_type):
         {'label': _("Competitivos"), 'url': url(COMPETITIVE), 'active': competitive},
         {'label': _("Amistosos"), 'url': url(Match.AMISTOSO), 'active': match_type == Match.AMISTOSO},
     ]
-    competitive_labels = [(COMPETITIVE, _("Todos los enfrentamientos")), (Match.ENFRENTAMIENTO, _("Enfrentamientos")),
-                          (Match.RETO, _("Retos")), (Match.PLAYOFF, _("Play offs"))]
+    # Tipos de la competición del espacio activo (Enfrentamientos, Retos, Play offs en SNP; Liga,
+    # Playoffs, Fase final en LAPI).
+    rules = request.club.rules if getattr(request, "club", None) is not None else competition_for(None)
+    competitive_labels = [(COMPETITIVE, _("Todos los enfrentamientos"))] + [
+        (value, plural) for value, _label, plural in rules.match_types]
     labels = dict(competitive_labels, **{COMPETITIVE: _("Competitivos"), Match.AMISTOSO: _("Amistosos")})
     return {
         'match_types': options,
@@ -379,6 +384,9 @@ def team_statistics(request):
     }
     context.update(team_extra_context(request.club, selected_season, match_type, log))
     context['attendance'] = signup_attendance(request.club, selected_season, match_type)
+    # Puntos de liga (LAPI: 4, 3 o 1 por enfrentamiento de liga) de la temporada; sin amistosos ni fases finales.
+    if match_type in (None, COMPETITIVE, request.club.rules.league_type):
+        context['league'] = season_league_points(request.club, selected_season)
 
     return render(request, 'team_statistics.html', context)
 
@@ -730,7 +738,8 @@ def calls_by_season(player, match_type=None):
     Convocatorias por temporada: ({temporada: a las que se apuntó}, {temporada: total}). Solo cuentan
     las de su temporada de incorporación en adelante (``Player.joined_season``): antes no estaba en el equipo.
     """
-    base = _by_type(Call.objects.filter(match__club=player.club, match__draft_mode=False, draft_mode=False), match_type, "match__")
+    base = _by_type(Call.objects.filter(match__club=player.club, match__draft_mode=False, draft_mode=False,
+                                        match__no_show=""), match_type, "match__")
     total = dict(base.order_by().values_list('match__season').annotate(n=Count('id', distinct=True)))
     present = dict(
         base.filter(players__id=player.id)
@@ -746,7 +755,7 @@ def aligned_by_season(player, match_type=None):
     partido}. Junto con calls_by_season da el "apuntado y alineado".
     """
     signed = _by_type(
-        Call.objects.filter(match__club=player.club, match__draft_mode=False, draft_mode=False,
+        Call.objects.filter(match__club=player.club, match__draft_mode=False, draft_mode=False, match__no_show="",
                             players__id=player.id), match_type, "match__"
     ).values_list('match_id', 'match__season')
     seasons = dict(signed)
@@ -899,6 +908,8 @@ def statistics_per_player(request):
     Estadísticas de un jugador del club (``?player=``): balance, rachas, evolución por
     temporada, afinidad con sus compañeros, puntos SNP y, con ``?season=``, el resumen, la afinidad
     y el detalle de esa temporada (combinable con ``?match_type=``). Sin jugador muestra solo el selector. Requiere pertenecer al club y solo GET.
+    Quien es jugador en todos sus equipos (``spaces.plays_only``) no ve la pestaña «Resumen» de la
+    ficha (la de Plantilla).
     """
     # Con un jugador elegido se sigue viendo su historial de puntos SNP aunque no haya enfrentamientos cerrados.
     zero = None if request.GET.get('player') else _zero_state(request, _("Estadísticas de jugadores"))

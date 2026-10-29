@@ -176,7 +176,7 @@ def build_message(delivery):
     context = {
         "club": club, "rival": match.rival_label, "date": date, "outcome": outcome,
         "label": labels[outcome], "score": f"{own} – {rival}", "friendly": friendly,
-        "tag": (_("Amistoso") if friendly else match.get_match_type_display()).upper(),
+        "tag": match.type_label.upper(),
         "band": band, "accent": accent, "name": user.first_name or user.username,
         "rows": rows, "mine": mine, "correction": delivery.correction,
         "previous": delivery.previous_points.replace("/", "-") if delivery.previous_points else "",

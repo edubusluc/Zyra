@@ -41,6 +41,12 @@
         </p>
         {% for error in form.match_type.errors %}<div class="alert-message">{{ error }}</div>{% endfor %}
         </div>
+        {% if form.has_rounds %}
+        <p data-round-row data-league-type="{{ form.rules.league_type }}">
+            {{ form.round_number.label_tag }} {{ form.round_number }}
+        </p>
+        {% for error in form.round_number.errors %}<div class="alert-message">{{ error }}</div>{% endfor %}
+        {% endif %}
 
         <fieldset class="z-mode" data-rival-source-row{% if form.mode.value != "amistoso" %} hidden{% endif %}>
             <legend class="form-label">{{ form.rival_source.label }}</legend>

@@ -59,7 +59,9 @@ tarjeta es pulsable).{% endcomment %}
                 <i class="fa-regular fa-calendar" aria-hidden="true"></i>{{ m.start_date|date:"D j M Y" }}
             </time>
             {% if multi_space %}{% include 'includes/competition_badge.html' with code=m.club.competition name=m.club.rules.name short=True %}{% endif %}
-            {% if m.match_type != m.ENFRENTAMIENTO %}<span class="z-fixture-type">{{ m.get_match_type_display }}</span>{% endif %}
+            {% if m.match_type != m.club.rules.default_type %}<span class="z-fixture-type">{{ m.type_label }}</span>{% endif %}
+            {% if m.round_number and m.is_league %}<span class="z-fixture-type">{% blocktranslate with n=m.round_number %}Jornada {{ n }}{% endblocktranslate %}</span>{% endif %}
+            {% if m.no_show %}<span class="z-fixture-type">{% translate "No presentado" %}</span>{% endif %}
             {% if m.outcome == 'V' %}<span class="z-fixture-state is-win">{% translate "Victoria" %}</span>
             {% elif m.outcome == 'D' %}<span class="z-fixture-state is-loss">{% translate "Derrota" %}</span>
             {% elif m.outcome == 'E' %}<span class="z-fixture-state is-draw">{% translate "Empate" %}</span>

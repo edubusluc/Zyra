@@ -68,7 +68,8 @@ entero sigue siendo la clave de los FK. Excepciones sin `public_id`: `backoffice
 ### match (`match/models.py`)
 
 - **Match**: `club`, `local`, `visiting` (FK a `Team`, nullable), `start_date`, `match_type`
-  (`enfrentamiento`/`reto`/`playoff`/`amistoso`), `draft_mode` (True = acta abierta), `result`
+  (`enfrentamiento`/`reto`/`playoff`/`liga`/`fase_final`/`amistoso`; los de cada competición en
+  `core.competitions`), `round_number` (jornada de liga, opcional), `no_show` (`own`/`rival`: no presentado, acta cerrada sin partidos), `draft_mode` (True = acta abierta), `result`
   (`Victoria Local`/`Victoria Visitante`/`EMPATE`/`NONE`), `result_points` (`"7/5"`; formato
   antiguo `"7-5"`, ver `match.views.split_points`), `season` y `location` (rellenos en `save()` solo
   si están vacíos; `location` es copia, no enlace), `rival_name` (amistoso con rival escrito a mano:
@@ -78,7 +79,7 @@ entero sigue siendo la clave de los FK. Excepciones sin `public_id`: `backoffice
   2 en 3–5, `match.lineup.game_points`), `winner` (`Local`/`Visitante`), `draft_mode`.
   Solo se rellenan los jugadores del lado del equipo propio. `save()` llama a `clean()`.
 - **Result**: uno por `Game` (`unique_result_per_game`; el FK se llama `results` pese a ello),
-  sets `set1..3_local/visiting` (sets 2 y 3 nullable) y `retired` (finalizado por lesión, admite resultado incompleto). `save()` valida con `match/scoring.py` y normaliza el set 3 no jugado.
+  sets `set1..3_local/visiting` (sets 2 y 3 nullable) y `retired` (finalizado por lesión, admite resultado incompleto) con `injured_side` (pareja lesionada en LAPI, donde se completa para la sana). `save()` valida con `match/scoring.py` y normaliza el set 3 no jugado.
 
 ### call, callLog, penalty
 

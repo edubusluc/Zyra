@@ -2,7 +2,7 @@
 from django import forms
 from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
-from core.competitions import CHOICES as COMPETITION_CHOICES
+from core.competitions import CHOICES as COMPETITION_CHOICES, competition_for
 from core.models import REPORT_SCOPES, UserPreference
 from .models import Match, Game, Result
 from team.models import Team
@@ -57,13 +57,14 @@ class MatchForm(forms.ModelForm):
 
     class Meta:
         model = Match
-        fields = ['match_type', 'local', 'visiting', 'rival_name', 'start_date', 'start_time', 'location', 'report_scope',
+        fields = ['match_type', 'round_number', 'local', 'visiting', 'rival_name', 'start_date', 'start_time', 'location', 'report_scope',
                   'report_other_competitions']
         labels = {'local': _('Local'), 'visiting': _('Visitante'), 'rival_name': _('Nombre del rival'),
                   'start_date': _('Fecha'), 'start_time': _('Hora (opcional)'), 'location': _('Lugar'),
                   'report_scope': _('Datos del informe')}
         widgets = {
             'match_type': forms.Select(),
+            'round_number': forms.NumberInput(attrs={'min': 1, 'max': 99, 'inputmode': 'numeric'}),
             'report_scope': forms.RadioSelect(),
             'report_other_competitions': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'rival_name': forms.TextInput(attrs={'placeholder': _('Ej.: Pádel Norte'), 'autocomplete': 'off'}),
@@ -121,13 +122,24 @@ class MatchForm(forms.ModelForm):
             field.error_messages.update(required=_("Por favor, completa todos los campos."), invalid_choice=missing_team)
         if not self.is_bound and self.own_team and not self.initial.get('local') and not self.initial.get('visiting'):
             self.initial['local'] = self.own_team.pk
-        # El tipo solo se elige en un partido competitivo; si no se envía, es un enfrentamiento.
+        # El tipo solo se elige en un partido competitivo, entre los de la competición del espacio
+        # (Enfrentamiento, Reto, Play Off en SNP; Liga, Playoffs, Fase final en LAPI); si no se envía,
+        # el primero. La jornada solo existe en la liga regular (``Competition.league_type``).
+        self.rules = club.rules if club is not None else competition_for(None)
         self.fields['match_type'].required = False
         self.fields['match_type'].label = _("Tipo de enfrentamiento")
-        self.fields['match_type'].choices = Match.COMPETITIVE_TYPES
+        self.fields['match_type'].choices = [(value, label) for value, label, _plural in self.rules.match_types]
+        if not self.instance.pk:
+            self.initial.setdefault('match_type', self.rules.default_type)
         if self.instance.pk and self.instance.is_friendly:
             self.initial['mode'] = self.FRIENDLY
-            self.initial['match_type'] = Match.ENFRENTAMIENTO
+            self.initial['match_type'] = self.rules.default_type
+        self.has_rounds = bool(self.rules.league_type)
+        self.fields['round_number'].required = False
+        self.fields['round_number'].label = _("Jornada (opcional)")
+        self.fields['round_number'].min_value = 1
+        if not self.has_rounds:
+            del self.fields['round_number']
         self.order_fields(['mode'])
         self.fields['rival_name'].required = False
         self.fields['match_type'].error_messages['invalid_choice'] = _("Tipo de enfrentamiento no válido.")
@@ -174,8 +186,8 @@ class MatchForm(forms.ModelForm):
         return self._selected_team('visiting')
 
     def clean_match_type(self):
-        """Si no se envía tipo, es un enfrentamiento."""
-        return self.cleaned_data.get('match_type') or Match.ENFRENTAMIENTO
+        """Si no se envía tipo, el de por defecto de la competición (Enfrentamiento en SNP, Liga en LAPI)."""
+        return self.cleaned_data.get('match_type') or self.rules.default_type
 
     def clean_report_scope(self):
         """Si no se envía, los datos del informe que prefiere la cuenta."""
@@ -226,6 +238,9 @@ class MatchForm(forms.ModelForm):
         guarda su nombre en el partido.
         """
         cleaned = super().clean()
+        # La jornada solo se guarda en un enfrentamiento de liga.
+        if self.has_rounds and (cleaned.get('mode') == self.FRIENDLY or cleaned.get('match_type') != self.rules.league_type):
+            cleaned['round_number'] = None
         # Un amistoso no tiene tipo (enfrentamiento, reto, play off): se guarda como AMISTOSO.
         if cleaned.get('mode') == self.FRIENDLY:
             self.errors.pop('match_type', None)

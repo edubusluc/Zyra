@@ -13107,3 +13107,174 @@ msgid ""
 msgstr ""
 "%% of each season's closed call-ups you signed up for, one line per "
 "competition."
+
+#: core/competitions.py:108 match/models.py:60
+msgid "Liga"
+msgstr "League"
+
+#: core/competitions.py:109
+msgid "Playoffs"
+msgstr "Play-offs"
+
+#: core/competitions.py:110 match/models.py:61
+msgid "Fase final"
+msgstr "Finals"
+
+#: data_analyse/templates/team_statistics.html:100
+msgid "Puntos de liga"
+msgstr "League points"
+
+#: data_analyse/templates/team_statistics.html:101
+#, python-format
+msgid "en %(n)s jornada"
+msgid_plural "en %(n)s jornadas"
+msgstr[0] "in %(n)s matchday"
+msgstr[1] "in %(n)s matchdays"
+
+#: match/forms.py:139
+msgid "Jornada (opcional)"
+msgstr "Matchday (optional)"
+
+#: match/models.py:73
+msgid "Jornada"
+msgstr "Matchday"
+
+#: match/templates/call_for_match.html:19 match/templates/list_match.html:64
+#, python-format
+msgid "Jornada %(n)s"
+msgstr "Matchday %(n)s"
+
+#: match/templates/call_for_match.html:20
+#, python-format
+msgid "%(n)s punto de liga"
+msgid_plural "%(n)s puntos de liga"
+msgstr[0] "%(n)s league point"
+msgstr[1] "%(n)s league points"
+
+#: match/templates/includes/finals_rule.html:6
+#, python-format
+msgid ""
+"Según el reglamento, solo pueden jugar quienes han jugado al menos %(n)s "
+"enfrentamientos de liga con el equipo esta temporada."
+msgstr ""
+"Under the rules, only players who have played at least %(n)s league matches "
+"with the team this season can play."
+
+#: match/templates/includes/finals_rule.html:8
+msgid "No lo cumplen:"
+msgstr "Not eligible:"
+
+#: match/templates/includes/finals_rule.html:11
+msgid "Convocarlos igualmente (la organización lo ha autorizado)"
+msgstr "Call them up anyway (the organisers have allowed it)"
+
+#: match/templates/includes/finals_rule.html:14
+msgid "Toda la plantilla lo cumple."
+msgstr "The whole squad is eligible."
+
+#: match/templates/includes/player_selector.html:34
+#, python-format
+msgid "%(n)s de liga"
+msgid_plural "%(n)s de liga"
+msgstr[0] "%(n)s league"
+msgstr[1] "%(n)s league"
+
+#: match/templates/includes/player_selector.html:34
+#, python-format
+msgid "necesita %(n)s"
+msgstr "needs %(n)s"
+
+#: match/views.py:497
+#, python-format
+msgid ""
+"Según el reglamento, en esta fase solo pueden jugar quienes han jugado al "
+"menos %(n)s enfrentamientos de liga esta temporada. No lo cumplen: "
+"%(names)s. Marca «Convocarlos igualmente» si la organización lo ha "
+"autorizado."
+msgstr ""
+"Under the rules, only players who have played at least %(n)s league matches "
+"this season can play in this phase. Not eligible: %(names)s. Tick «Call them "
+"up anyway» if the organisers have allowed it."
+
+msgid "Indica qué pareja se lesionó."
+msgstr "Say which pair got injured."
+
+msgid "El partido ya estaba decidido: no puede acabar por lesión."
+msgstr "The match was already decided: it cannot end by injury."
+
+msgid "Se borrarán las parejas y los resultados apuntados."
+msgstr "The pairs and results entered will be deleted."
+
+#, python-format
+msgid ""
+"%(team)s no se presentó: el acta se cierra y ganáis todos los partidos. No "
+"cuenta para jugadores, parejas ni asistencia."
+msgstr ""
+"%(team)s did not show up: the scoresheet is closed and you win every match. "
+"It does not count for players, pairs or attendance."
+
+msgid ""
+"Tu equipo no se presentó: el acta se cierra y el rival gana todos los "
+"partidos (0 puntos de liga). No cuenta para jugadores, parejas ni asistencia."
+msgstr ""
+"Your team did not show up: the scoresheet is closed and the opponent wins "
+"every match (0 league points). It does not count for players, pairs or "
+"attendance."
+
+msgid "El acta vuelve a estar abierta para poner las parejas y los resultados."
+msgstr "The scoresheet is open again to enter the pairs and results."
+
+#, python-format
+msgid "No se jugó: %(team)s no se presentó."
+msgstr "Not played: %(team)s did not show up."
+
+msgid ""
+"Pon los juegos que se llegaron a jugar: Zyra completa el partido para la "
+"pareja sana (p. ej. 3-2 queda 3-6 / 0-6)."
+msgstr ""
+"Enter the games that were played: Zyra completes the match for the healthy "
+"pair (e.g. 3-2 becomes 3-6 / 0-6)."
+
+msgid "¿Qué pareja se lesionó?"
+msgstr "Which pair got injured?"
+
+msgid "Este enfrentamiento no se puede marcar como no presentado."
+msgstr "This fixture cannot be marked as a no-show."
+
+msgid "El acta ya está cerrada: reábrela antes de marcarlo como no presentado."
+msgstr "The scoresheet is already closed: reopen it before marking a no-show."
+
+#, python-format
+msgid "Marcado como no presentado: %(team)s."
+msgstr "Marked as a no-show: %(team)s."
+
+msgid "Este enfrentamiento no está marcado como no presentado."
+msgstr "This fixture is not marked as a no-show."
+
+msgid "Ya no está marcado como no presentado: el acta vuelve a estar abierta."
+msgstr "No longer marked as a no-show: the scoresheet is open again."
+
+msgid "No se presentó el equipo propio"
+msgstr "Our team did not show up"
+
+msgid "No se presentó el rival"
+msgstr "The opponent did not show up"
+
+msgid "No presentado"
+msgstr "No-show"
+
+msgid "Pareja lesionada"
+msgstr "Injured pair"
+
+#, python-format
+msgid "No presentado: %(team)s"
+msgstr "No-show: %(team)s"
+
+msgid "Marcar no presentado"
+msgstr "Mark as no-show"
+
+msgid "No nos presentamos"
+msgstr "We did not show up"
+
+msgid "Quitar no presentado"
+msgstr "Remove no-show"

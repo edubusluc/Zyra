@@ -172,9 +172,12 @@ def delete_player(request, player_id):
 def show_player(request, player_id):
     """
     Ficha de un jugador del club con sus últimos 5 partidos cerrados de la temporada actual, del más antiguo
-    al más reciente. Requiere pertenecer al club.
+    al más reciente. Requiere pertenecer al club. Quien es jugador en todos sus equipos no tiene
+    Plantilla ni esta ficha: va a las estadísticas del jugador.
     """
     player = get_object_or_404(Player, public_id=player_id, club=request.club)
+    if spaces.plays_only(request):
+        return redirect(f"{reverse('player_statistics')}?player={player.public_id}")
     games = Game.objects.filter(
         (Q(player_1_local=player) | Q(player_2_local=player) |
         Q(player_1_visiting=player) | Q(player_2_visiting=player)) &
