@@ -224,14 +224,15 @@ class UnifiedSpacesTests(TestCase):
         self.assertNotIn("mine_chips", self.client.get(
             reverse("player_statistics") + f"?player={mate.public_id}").context)
 
-    def test_player_in_every_team_sees_only_own_sheet(self):
+    def test_player_in_every_team_has_no_player_list(self):
         me_snp, me_lapi = self._me()
         Membership.objects.filter(user=self.user, club=self.snp).update(role=Membership.MEMBER)
         self.assertRedirects(self.client.get(reverse("player_statistics")), reverse("my_statistics"),
                              fetch_redirect_response=False)
         mate = self.lapi.players.exclude(pk=me_lapi.pk).get()
-        self.assertRedirects(self.client.get(reverse("player_statistics") + f"?en=lapi&player={mate.public_id}"),
-                             reverse("my_statistics"), fetch_redirect_response=False)
+        mate_sheet = self.client.get(reverse("player_statistics") + f"?en=lapi&player={mate.public_id}")
+        self.assertEqual(mate_sheet.status_code, 200)  # la ficha de un compañero (p. ej. desde «En racha»)
+        self.assertNotContains(mate_sheet, 'name="player"')
         own = self.client.get(reverse("player_statistics") + f"?en=lapi&player={me_lapi.public_id}")
         self.assertEqual(own.status_code, 200)
         self.assertNotContains(own, f'href="{reverse("player_statistics")}"')  # sin la pestaña «Jugador»
