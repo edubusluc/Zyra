@@ -129,6 +129,22 @@ class UnifiedSpacesTests(TestCase):
         Membership.objects.filter(user=self.user, club=self.lapi).update(role=Membership.MANAGER)
         self.assertContains(self.client.get(reverse("list_teams")), "z-space-switcher")
 
+    def test_home_banner_shows_every_team_whatever_the_active_one(self):
+        for club in (self.snp, self.lapi):
+            session = self.client.session
+            session[SESSION_KEY] = club.id
+            session.save()
+            page = self.client.get(reverse("home"))
+            self.assertEqual([t["club"] for t in page.context["home_teams"]], [self.snp, self.lapi])
+            self.assertContains(page, "z-home-hero--teams")
+            self.assertContains(page, "z-home-team--lapi")
+
+    def test_roster_leaves_the_menu_only_for_player_in_every_team(self):
+        url = reverse("list_players")
+        self.assertContains(self.client.get(reverse("home")), url)  # capitán en SNP: la ve
+        Membership.objects.filter(user=self.user, club=self.snp).update(role=Membership.MEMBER)
+        self.assertNotContains(self.client.get(reverse("home")), f'href="{url}"')
+
     def test_menu_shows_user_name_and_roles(self):
         self.user.first_name = "Edu"
         self.user.save()
@@ -184,6 +200,9 @@ class UnifiedSpacesTests(TestCase):
         self._close(self.snp_match)
         page = self.client.get(reverse("player_statistics"))
         self.assertContains(page, "z-space-chip--lapi")
+        # Jugador, Parejas y Rivales no mezclan competiciones: sin «Todas».
+        for name in ("player_statistics", "pair_statistics", "rival_statistics"):
+            self.assertNotContains(self.client.get(reverse(name)), "espacio=todas")
 
 
 class OtherCompetitionsReportTests(TestCase):

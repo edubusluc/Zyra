@@ -464,7 +464,7 @@ class HomeTests(TestCase):
         self.assertEqual(response.context["hot_pair"]["label"], "ANA ALPHA / BEA BETA")
         self.assertContains(response, "2 victorias seguidas")
         # El botón abre la pareja con sus identificadores públicos (con el id interno daba 404)
-        self.assertContains(response, f"?p1={ana.public_id}&amp;p2={bea.public_id}")
+        self.assertContains(response, f"?en=snp&amp;p1={ana.public_id}&amp;p2={bea.public_id}")
 
 
     def test_pages_load_hide_on_scroll_navigation(self):

@@ -136,7 +136,7 @@ class HomeTests(MyFormBase):
         page = self.client.get(reverse("home"))
         self.assertContains(page, "Mi forma")
         self.assertContains(page, "Ocultar")
-        self.assertContains(page, reverse("player_statistics") + "?player=" + self.me.public_id)
+        self.assertContains(page, reverse("player_statistics") + "?en=snp&amp;player=" + self.me.public_id)
         self.assertNotContains(page, "Ver mi ficha")
 
     def test_empty_state_message(self):
@@ -183,3 +183,53 @@ class HomeTests(MyFormBase):
         self.assertEqual(self.client.get(reverse("toggle_my_form")).status_code, 405)
         self.client.logout()
         self.assertEqual(self.client.post(reverse("toggle_my_form"), {"hide": "1"}).status_code, 302)
+
+
+class SeveralCompetitionsTests(MyFormBase):
+    """Jugador en SNP y en LAPI: «Mi forma» suma las dos y no cambia con el espacio activo."""
+
+    def setUp(self):
+        super().setUp()
+        from core.models import Membership
+        other = User.objects.create_user("capi_lapi", password=PASSWORD, email="lapi@example.com")
+        self.lapi = create_club("Club LAPI", "Sevilla", other, competition="lapi")
+        Membership.objects.create(user=self.user, club=self.lapi, role=Membership.MEMBER)
+        self.me_lapi = Player.objects.create(club=self.lapi, name="Ana", last_name="Alpha", user=self.user)
+        self.mate_lapi = Player.objects.create(club=self.lapi, name="Cris", last_name="Gamma")
+        self.rival_lapi = Team.objects.create(club=self.lapi, name="Rival L", location="X", in_group=True)
+
+    def play_lapi(self, won, days_ago=1):
+        """Un enfrentamiento LAPI cerrado con un partido de ``me_lapi``, convocado."""
+        match = Match.objects.create(
+            club=self.lapi, local=self.lapi.own_team, visiting=self.rival_lapi, draft_mode=False,
+            start_date=self.day - datetime.timedelta(days=days_ago), season=current_season(),
+            result="Victoria Local" if won else "Victoria Visitante")
+        Game.objects.create(match=match, n_game=1, score=1, winner="Local" if won else "Visitante", draft_mode=False,
+                            player_1_local=self.me_lapi, player_2_local=self.mate_lapi)
+        Call.objects.create(match=match, draft_mode=False).players.add(self.me_lapi)
+
+    def test_sums_both_competitions(self):
+        self.play(True, days_ago=3)
+        self.play_lapi(False, days_ago=2)
+        self.play_lapi(True, days_ago=1)
+        data = my_form.my_form(self.club, self.me, others=[self.me_lapi])
+        self.assertEqual((data["wins"], data["losses"]), (2, 1))
+        self.assertEqual([g["code"] for g in data["last_games"]], ["snp", "lapi", "lapi"])
+        self.assertEqual((data["called"], data["played"]), (3, 3))
+        rows = {r["code"]: (r["wins"], r["losses"], r["called"]) for r in data["by_competition"]}
+        self.assertEqual(rows, {"snp": (1, 0, 1), "lapi": (1, 1, 2)})
+        self.assertEqual(data["snp"]["score"], 436)  # puntos SNP del jugador de la SNP
+
+    def test_home_card_does_not_follow_active_space(self):
+        self.play(True, days_ago=2)
+        self.play_lapi(True, days_ago=1)
+        self.client.login(username="jugador", password=PASSWORD)
+        from core.middleware import SESSION_KEY
+        for club in (self.club, self.lapi):
+            session = self.client.session
+            session[SESSION_KEY] = club.id
+            session.save()
+            page = self.client.get(reverse("home"))
+            self.assertEqual((page.context["my_form"]["wins"], page.context["my_form"]["called"]), (2, 2))
+            self.assertEqual(page.context["form_player"], self.me)
+            self.assertContains(page, "z-myform-pip--lapi")

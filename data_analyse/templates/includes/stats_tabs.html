@@ -10,12 +10,11 @@
   {% endif %}
 </nav>
 {% endwith %}
-{# Competición: en Equipo, el filtro «Todas · SNP · LAPI»; en el resto, el espacio de la página (core.spaces). #}
+{# Competición: en Equipo, el filtro «Todas · SNP · LAPI»; en Jugador, Parejas y Rivales solo SNP o LAPI, sin mezclar (core.spaces). #}
 {% if space_chips %}{% include 'includes/space_filter.html' %}{% elif request.space_switcher %}
 <nav aria-label="{% translate 'Competición' %}" class="st-type-filter z-space-filter">
   <ul class="st-seasons">
     <li class="st-filter-label">{% translate "Competición" %}</li>
-    <li><a class="st-chip" href="{% url 'team_statistics' %}?espacio=todas">{% translate "Todas" %}</a></li>
     {% for item in request.space_switcher %}
     <li><a class="st-chip z-space-chip z-space-chip--{{ item.code }}" href="{{ request.path }}?en={{ item.code }}" {% if item.active %}aria-current="page"{% endif %}>{{ item.name }}</a></li>
     {% endfor %}

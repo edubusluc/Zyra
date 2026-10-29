@@ -100,8 +100,8 @@ def home(request):
 
     club = request.club
     today = datetime.date.today()
-    # Con varios espacios, lo pendiente y el próximo enfrentamiento son de todos (core.spaces);
-    # lo demás (primeros pasos, rachas, «Mi forma») es del espacio activo.
+    # Con varios espacios, el banner, lo pendiente, el próximo enfrentamiento, las rachas y «Mi forma»
+    # son de todos (core.spaces); los primeros pasos y la tarea de SNP, del espacio activo.
     clubs = spaces.user_clubs(request) or [club]
     # Actas abiertas, las más antiguas primero: las pasadas son lo que se quedó a medias (H-02).
     open_matches = list(Match.objects.filter(club__in=clubs, draft_mode=True)
@@ -120,11 +120,26 @@ def home(request):
                                                      'player_1_visiting', 'player_2_visiting'))
         call = Call.objects.filter(match=next_match).first()
         my_status = player_status(next_player, call, games)
-    players = Player.objects.filter(club=club, in_team=True)
-    hot_player, hot_pair = pair_stats.hot_streaks(pair_stats.club_game_log(club), players)
+    # «En racha»: una pareja de tarjetas por equipo (con varios, cada una con su competición).
+    streaks = []
+    for c in clubs:
+        hot_p, hot_pr = pair_stats.hot_streaks(pair_stats.club_game_log(c), Player.objects.filter(club=c, in_team=True))
+        if hot_p or hot_pr:
+            streaks.append({"club": c, "player": hot_p, "pair": hot_pr})
+    hot_player = next((s["player"] for s in streaks if s["player"]), None)
+    hot_pair = next((s["pair"] for s in streaks if s["pair"]), None)
+    # Banner: con varios equipos, todos (en el orden de las competiciones), no el del espacio activo.
+    home_teams = [{"club": c, "team": c.own_team, "membership": spaces.membership_for(request, c)}
+                  for c in clubs] if len(clubs) > 1 else []
 
-    my_form_hidden = bool(my_player) and UserPreference.my_form_is_hidden(request.user)
-    my_form_data = my_form_stats.my_form(club, my_player) if my_player and not my_form_hidden else None
+    # «Mi forma» suma los jugadores de la cuenta en todas sus competiciones, en el orden de las
+    # competiciones (no cambia con el espacio activo).
+    form_players = sorted(Player.objects.filter(club__in=clubs, user=request.user).select_related('club'),
+                          key=lambda p: clubs.index(p.club) if p.club in clubs else len(clubs))
+    form_player = form_players[0] if form_players else None
+    my_form_hidden = bool(form_player) and UserPreference.my_form_is_hidden(request.user)
+    my_form_data = (my_form_stats.my_form(form_player.club, form_player, others=form_players[1:])
+                    if form_player and not my_form_hidden else None)
 
     onboarding = onboarding_for(request.membership)
     # «Prepara la temporada» (julio-octubre) lleva dentro el paso de SNP: no se repite la tarea suelta.
@@ -143,12 +158,15 @@ def home(request):
         'pending_total': len(pending),
         'multi_space': spaces.is_multi_space(request),
         'my_player': my_player,
+        'form_player': form_player,
         'my_form': my_form_data,
         'my_form_hidden': my_form_hidden,
         'my_status': my_status,
         'days_left': (next_match.start_date - today).days if next_match else None,
         'hot_player': hot_player,
         'hot_pair': hot_pair,
+        'streaks': streaks,
+        'home_teams': home_teams,
         # Aviso al capitán mientras no haya registrado la cuenta SNP del club (si se muestran los
         # primeros pasos, la tarea de SNP ya va dentro de la lista).
         'season_prep': prep,

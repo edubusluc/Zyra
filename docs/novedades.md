@@ -20,6 +20,9 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 - Ya no se habla de «espacios»: el menú de usuario muestra **«Tus equipos»** (equipo, competición y tu papel en cada uno) solo para informar, y con equipos en varias competiciones la cabecera lleva tu nombre. «Cambiar de espacio» desaparece: abrir un enfrentamiento te lleva a su equipo sin avisos.
 - **«Añadir equipo de otra competición»** sustituye a «Crear otro espacio»; el registro enseña desactivadas las competiciones en las que ya tienes equipo («Ya tienes Los Gladiadores en SNP») y, si ya las tienes todas, el menú lo dice.
 - El selector SNP | LAPI de Plantilla, Club y Rivales solo aparece si gestionas los equipos de las dos competiciones.
+- El Inicio con equipos en varias competiciones enseña **los dos equipos** en el banner (escudo, competición y tu papel) y «En racha» de cada uno; ya no cambia según el último enfrentamiento que abriste.
+- **«Mi forma»** suma tus partidos y convocatorias de SNP y LAPI, con el desglose por competición y la competición de cada uno de tus últimos partidos. Los puntos SNP siguen igual.
+- Si eres jugador en todos tus equipos, **Plantilla** sale del menú. Jugador, Parejas y Rivales ya no tienen «Todas»: se consultan por competición.
 - Estadísticas con «Todas» añade gráficos con cada competición al lado de la otra: sets, partidos como local y como visitante, enfrentamientos ganados por año (apilados, con el total) y asistencia a las convocatorias (una línea por competición).
 
 ## 28/10/2026 · Reglas de competición en una ficha (espacios, fase 0)

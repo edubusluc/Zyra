@@ -35,6 +35,8 @@ def club(request):
         # «Ya tienes equipo en SNP y LAPI» cuando ya no le queda competición libre.
         "team_competitions": lambda: get_text_list([str(m.club.rules.name) for m in teams], _("y")),
         "can_manage": bool(membership and membership.can_manage),
+        # Jugador en todos sus equipos (y tiene varios): Plantilla no le aporta nada y sale del menú.
+        "hide_roster_nav": len(memberships) > 1 and not any(m.can_manage for m in memberships),
         "leaving_deletes_club": lambda: bool(membership and is_last_admin(membership) and is_only_member(membership)),
     }
 

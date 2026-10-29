@@ -13039,3 +13039,8 @@ msgstr "%% of the squad that signed up for each call-up, one line per competitio
 #: data_analyse/templates/stats_spaces.html
 msgid "Media por temporada del %% de la plantilla que se apunta, una línea por competición."
 msgstr "Season average of the %% of the squad that signs up, one line per competition."
+
+#: core/templates/home.html
+#, python-format
+msgid "%(competition)s %(played)s de %(total)s"
+msgstr "%(competition)s %(played)s of %(total)s"

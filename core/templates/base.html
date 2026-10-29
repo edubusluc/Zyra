@@ -60,7 +60,9 @@
             <ul class="z-nav">
                 <li><a href="{% url 'home' %}" class="z-nav-link {% if nav_section == 'home' %}is-active{% endif %}"{% if nav_section == 'home' %} aria-current="page"{% endif %}><i class="fa-solid fa-house" aria-hidden="true"></i> {% translate "Inicio" %}</a></li>
                 <li><a href="{% url 'list_match' %}" class="z-nav-link {% if nav_section == 'matches' %}is-active{% endif %}"{% if nav_section == 'matches' %} aria-current="page"{% endif %}><i class="fa-solid fa-table-tennis-paddle-ball" aria-hidden="true"></i> {% translate "Enfrentamientos" %}</a></li>
+                {% if not hide_roster_nav %}
                 <li><a href="{% url 'list_players' %}" class="z-nav-link {% if nav_section == 'players' %}is-active{% endif %}"{% if nav_section == 'players' %} aria-current="page"{% endif %}><i class="fa-solid fa-user" aria-hidden="true"></i> {% translate "Plantilla" context "equipo" %}</a></li>
+                {% endif %}
                 <li><a href="{% url 'team_statistics' %}" class="z-nav-link {% if nav_section == 'stats' %}is-active{% endif %}"{% if nav_section == 'stats' %} aria-current="page"{% endif %}><i class="fa-solid fa-chart-simple" aria-hidden="true"></i> {% translate "Estadísticas" %}</a></li>
                 <li><a href="{% url 'club_home' %}" class="z-nav-link {% if nav_section == 'club' %}is-active{% endif %}"{% if nav_section == 'club' %} aria-current="page"{% endif %}><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> {% translate "Club" %}</a></li>
             </ul>
@@ -158,7 +160,7 @@
     <a href="{% url 'guide_index' %}">{% translate "Guías" %}</a>
     <a href="mailto:{{ contact_email }}">{% translate "Contacto" %}</a>
   </nav>
-  <p>&copy; {% now "Y" %} Zyra{% if current_club %} · {{ current_club.name }}{% endif %}</p>
+  <p>&copy; {% now "Y" %} Zyra{% if current_club and user_teams|length < 2 %} · {{ current_club.name }}{% endif %}</p>
 </footer>
 
 {% if current_club %}
@@ -166,7 +168,9 @@
     <ul>
         <li><a href="{% url 'home' %}" class="{% if nav_section == 'home' %}is-active{% endif %}" {% if nav_section == 'home' %}aria-current="page"{% endif %}><i class="fa-solid fa-house" aria-hidden="true"></i><span class="z-bn-label">{% translate "Inicio" %}</span></a></li>
         <li><a href="{% url 'list_match' %}" class="{% if nav_section == 'matches' %}is-active{% endif %}" {% if nav_section == 'matches' %}aria-current="page"{% endif %}><i class="fa-solid fa-table-tennis-paddle-ball" aria-hidden="true"></i><span class="z-bn-label">{% translate "Partidos" %}</span></a></li>
+        {% if not hide_roster_nav %}
         <li><a href="{% url 'list_players' %}" class="{% if nav_section == 'players' %}is-active{% endif %}" {% if nav_section == 'players' %}aria-current="page"{% endif %}><i class="fa-solid fa-user" aria-hidden="true"></i><span class="z-bn-label">{% translate "Plantilla" context "equipo" %}</span></a></li>
+        {% endif %}
         <li><a href="{% url 'team_statistics' %}" class="{% if nav_section == 'stats' %}is-active{% endif %}" {% if nav_section == 'stats' %}aria-current="page"{% endif %}><i class="fa-solid fa-chart-simple" aria-hidden="true"></i><span class="z-bn-label">{% translate "Estadísticas" %}</span></a></li>
         <li><a href="{% url 'club_home' %}" class="{% if nav_section == 'club' %}is-active{% endif %}" {% if nav_section == 'club' %}aria-current="page"{% endif %}><i class="fa-solid fa-shield-halved" aria-hidden="true"></i><span class="z-bn-label">{% translate "Club" %}</span></a></li>
     </ul>
