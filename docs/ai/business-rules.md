@@ -106,14 +106,20 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
 
 ## Partidos, convocatorias y actas
 
-- [V] Los números del ciclo salen de la ficha de la competición (`core/competitions.py`, `competition_for`): partidos por enfrentamiento y sus puntos, convocados mínimos y partido de desempate. Por ahora solo existe la SNP (5 partidos 3-3-2-2-2, 10 convocados, desempate en el 3) y todos los clubes la juegan; la rama `feature/espacios-competiciones` añade otras (espacios). El recomendador `match/advisor.py` recibe la ficha: en la SNP ordena las parejas por puntos SNP; sin `has_snp` (LAPI) usa solo historial y afinidad, sin orden de juego (cruce por sorteo), y la pantalla de parejas y el PDF no muestran puntos ni orden. Tests: `core/tests_competitions.py`.
+- [V] Los números del ciclo salen de la ficha de la competición (`core/competitions.py`, `competition_for`): partidos por enfrentamiento y sus puntos, convocados mínimos y partido de desempate. Hay dos: SNP (5 partidos 3-3-2-2-2, 10 convocados, desempate en el 3) y LAPI (3 partidos de 1 punto, 6 convocados, sin empate posible); cada club juega la de su espacio (`Club.competition`). El recomendador `match/advisor.py` recibe la ficha: en la SNP ordena las parejas por puntos SNP; sin `has_snp` (LAPI) usa solo historial y afinidad, sin orden de juego (cruce por sorteo), y la pantalla de parejas y el PDF no muestran puntos ni orden. Tests: `core/tests_competitions.py`.
 
 Orden obligatorio del ciclo (`match/views.py`) [V], cubierto por `match/tests_flow.py`:
 
-1. **Partido** (`MatchForm`): el equipo propio juega como local o visitante; local ≠ visitante. Selector «Competición» bloqueado en SNP (`MatchForm.COMPETITIONS`, no persistido aún).
+1. **Partido** (`MatchForm`): el equipo propio juega como local o visitante; local ≠ visitante. Selector «Competición» bloqueado en la del espacio (`Club.competition`).
+   Tipos según la competición (`Competition.match_types`): SNP Enfrentamiento, Reto, Play Off; LAPI Liga, Playoffs,
+   Fase final (los enfrentamientos LAPI antiguos pasaron a Liga, migración match/0015). Solo la liga
+   (`league_type`) tiene jornada (`Match.round_number`, opcional) y puntos de liga (`Match.league_points`: LAPI
+   ganar 3-0 = 4, 2-1 = 3, perder = 1; total de la temporada en Estadísticas › Equipo, `match/league.py`). En
+   Playoffs y Fase final (`final_types`), convocar a quien no ha jugado `finals_min_regular` (2) enfrentamientos de
+   liga esa temporada pide marcar «Convocarlos igualmente» (`force_finals`, reglamento LAPI 8.2). Tests: `match/tests_league.py`.
    Amistoso: `match_type="amistoso"`; puede tener rival escrito a mano (`rival_name`, sin crear
    `Team`, ese lado `NULL`) que no puede llamarse como el equipo propio.
-2. **Convocatoria** (mínimo 10 jugadores al crearla y al editarla, `MIN_CALL_PLAYERS` en `match/phase.py`): una por partido; si ya existe o el acta está cerrada → `existing_call`.
+2. **Convocatoria** (mínimo `min_call_players` de la competición al crearla y al editarla: 10 SNP, 6 LAPI): una por partido; si ya existe o el acta está cerrada → `existing_call`.
    Se edita mientras el acta siga abierta (`edit_call` mira `match.draft_mode`); cada cambio se anota en `CallLog`.
 3. **Cerrar convocatoria** (`close_call`, POST): ≥10 jugadores y abierta. Siempre se cierra aunque
    falle el envío del informe.

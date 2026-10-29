@@ -3,6 +3,13 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 29/10/2026 · Espacios por competición (fase 1b: enfrentamientos LAPI)
+
+- Los enfrentamientos LAPI tienen sus tipos: **Liga**, **Playoffs** y **Fase final** (los que ya existían pasan a Liga). Los de liga pueden llevar **jornada**, que sale en el listado y en el enfrentamiento.
+- **Puntos de liga**: ganar 3-0 da 4, ganar 2-1 da 3 y perder 1. Se ven en cada enfrentamiento cerrado y el total de la temporada en Estadísticas › Equipo.
+- En Playoffs y Fase final, la convocatoria avisa de quién no ha jugado al menos 2 enfrentamientos de liga esa temporada (reglamento LAPI) y pide marcar «Convocarlos igualmente» para incluirlos.
+- El selector de jugadores de la convocatoria ya no muestra puntos SNP en LAPI.
+
 ## 28/10/2026 · Espacios por competición (fase 1a)
 
 - Cada club es ahora el **espacio** de una competición: SNP (todos los que ya existían) o **LAPI** (3 partidos de 1 punto y 6 convocados). Una cuenta puede tener un espacio en cada competición, con un rol distinto en cada uno.

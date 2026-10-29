@@ -94,6 +94,12 @@
             <dt>{% translate "Enfrentamientos jugados" %}</dt>
             <dd>{{ total_matches }}</dd>
           </div>
+          {% if league.played %}
+          <div class="st-fact">
+            <dt>{% translate "Puntos de liga" %}</dt>
+            <dd>{{ league.total }} <small>{% blocktranslate count n=league.played %}en {{ n }} jornada{% plural %}en {{ n }} jornadas{% endblocktranslate %}</small></dd>
+          </div>
+          {% endif %}
           <div class="st-fact">
             <dt>{% translate "Juegos como local" %}</dt>
             <dd>{{ local_games_won }}–{{ local_games_lost }}</dd>

@@ -1200,6 +1200,7 @@ a.z-card:hover, .z-card--link:hover {
 .z-versus-mid { text-align: center; }
 .z-versus-vs { font-family: var(--z-display); font-style: italic; font-weight: 700; font-size: 1.2rem; color: var(--z-lime); }
 .z-versus-date { font-size: .8rem; color: var(--z-muted); }
+.z-versus-type { font-size: .75rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--z-text); }
 .z-edit-date { margin-left: .35rem; color: var(--z-muted); }
 .z-edit-date:hover, .z-edit-date:focus-visible { color: var(--z-text, inherit); }
 
@@ -2673,6 +2674,11 @@ a.z-hub-card:hover, a.z-hub-card:focus-visible { border-color: var(--z-lime); co
 .z-more-options { margin: 0 0 8px; }
 .z-more-options > summary { padding: 6px 0; font-weight: 700; color: var(--z-lime); cursor: pointer; }
 .z-pick-warn-text { color: var(--z-warning, #F5B544); }
+/* Regla de las fases finales LAPI en la convocatoria (includes/finals_rule.html). */
+.z-finals-rule { margin: 0 0 16px; padding: 14px 16px; border: 1px solid rgba(255, 201, 64, .45); border-radius: var(--z-radius-sm); background: rgba(255, 201, 64, .06); }
+.z-finals-rule-title { margin: 0 0 6px; font-size: 1rem; font-weight: 800; color: var(--z-warning); }
+.z-finals-rule p { margin: 0 0 8px; }
+.z-finals-rule .form-check { margin: 4px 0 0; }
 
 /* Inicio: bloque «Pendiente» y estado del jugador en el próximo enfrentamiento (core/templates/home.html) */
 .z-pending { display: grid; gap: 8px; margin: 0 0 8px; padding: 0; list-style: none; }

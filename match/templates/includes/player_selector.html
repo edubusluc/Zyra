@@ -1,4 +1,4 @@
-{# Selector de jugadores para convocatorias. Recibe: players (con penalty_reasons), selected, submit_label, min_players #}
+{# Selector de jugadores para convocatorias. Recibe: players (con penalty_reasons y, en fases finales LAPI, finals_short/finals_played), selected, submit_label, min_players #}
 {% load static i18n zyra_format %}
 <div class="z-selector" data-selector data-min="{{ min_players|default:0 }}" data-page-size="30">
     <div class="z-selector-tools">
@@ -27,10 +27,11 @@
             <span class="z-pick-body">
                 <span class="z-pick-name" title="{{ player.full_name }}">{{ player.short_name }}</span>
                 <span class="z-pick-meta">
-                    {{ player.get_position_display|default:"—" }} · SNP {{ player.snp_score|snp_points }}{% if not player.in_team %} · {% translate "fuera del equipo" %}{% endif %}
+                    {{ player.get_position_display|default:"—" }}{% if request.club.rules.has_snp %} · SNP {{ player.snp_score|snp_points }}{% endif %}{% if not player.in_team %} · {% translate "fuera del equipo" %}{% endif %}
                 </span>
                 {# Para decidir sin salir de la pantalla: partidos jugados esta temporada y advertencias a la vista #}
                 {% if player.season_total %}<span class="z-pick-meta">{% blocktranslate with n=player.played total=player.season_total %}Jugó {{ n }} de {{ total }}{% endblocktranslate %}</span>{% endif %}
+                {% if player.finals_short %}<span class="z-pick-meta z-pick-warn-text"><i class="fa-solid fa-flag" aria-hidden="true"></i> {% blocktranslate count n=player.finals_played %}{{ n }} de liga{% plural %}{{ n }} de liga{% endblocktranslate %} · {% blocktranslate with n=finals_minimum %}necesita {{ n }}{% endblocktranslate %}</span>{% endif %}
                 {% if player.penalty_reasons %}
                 <span class="z-pick-meta z-pick-warn-text" title="{{ player.penalty_reasons|join:'; ' }}"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> {% blocktranslate count n=player.penalty_reasons|length %}{{ n }} advertencia{% plural %}{{ n }} advertencias{% endblocktranslate %}</span>
                 {% endif %}

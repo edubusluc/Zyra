@@ -13,7 +13,7 @@ from core.decorators import club_required, club_admin_required, not_while_syncin
 from django.contrib import messages
 from .forms import MatchForm, MatchDateForm
 from .models import Match, Game, Result
-from . import lineup, month_view, outcomes, phase as match_phase
+from . import league, lineup, month_view, outcomes, phase as match_phase
 from .notifications import admin_emails, send_call_report, report_filename
 from .result_email import notify_match_closed
 from call.models import ReportDelivery
@@ -447,12 +447,15 @@ def create_call(request, match_id):
         return redirect('existing_call', match.public_id)
 
     selected_ids = []
+    players = selectable_players(request.club)
     if request.method == 'POST':
         chosen = club_players(request, request.POST.getlist('players'))
         selected_ids = list(chosen.values_list('id', flat=True))
         min_call = competition_for(match).min_call_players
         if len(selected_ids) < min_call:
             messages.error(request, MIN_CALL_ERROR % {"n": min_call})
+        elif not _finals_rule_ok(request, match, chosen):
+            pass
         else:
             call = Call.objects.create(match=match)
             call.players.set(selected_ids)
@@ -461,11 +464,41 @@ def create_call(request, match_id):
             return redirect('call_for_match', match.public_id)
 
     return render(request, "create_call.html", {
-        "players": selectable_players(request.club),
+        "players": players,
         "selected_players": selected_ids,
         "match": match,
         "min_call_players": competition_for(match).min_call_players,
+        **_finals_context(match, players),
     })
+
+
+def _finals_context(match, players):
+    """
+    Regla de las fases finales (LAPI 8.2) para la plantilla de la convocatoria: el mínimo de
+    enfrentamientos de liga y los jugadores de ``players`` que no lo cumplen (``includes/finals_rule.html``).
+    """
+    if not league.applies_finals_rule(match):
+        return {}
+    short = league.finals_shortfall(match, players)
+    # Marca en el selector a quien no llega (los jugadores son los mismos objetos que pinta).
+    for player, played in short:
+        player.finals_short, player.finals_played = True, played
+    return {"finals_minimum": match.club.rules.finals_min_regular, "finals_short": short, "finals_label": match.type_label}
+
+
+def _finals_rule_ok(request, match, chosen):
+    """
+    En Playoffs y Fase final (LAPI), convocar a quien no ha jugado el mínimo de enfrentamientos de
+    liga exige marcar «Convocarlos igualmente» (``force_finals``); si no, deja el error y devuelve False.
+    """
+    short = league.finals_shortfall(match, chosen)
+    if not short or request.POST.get("force_finals"):
+        return True
+    messages.error(request, _("Según el reglamento, en esta fase solo pueden jugar quienes han jugado al menos "
+                              "%(n)s enfrentamientos de liga esta temporada. No lo cumplen: %(names)s. Marca "
+                              "«Convocarlos igualmente» si la organización lo ha autorizado.") % {
+        "n": match.club.rules.finals_min_regular, "names": ", ".join(p.full_name for p, _n in short)})
+    return False
 
 
 def validate_call(call):
@@ -575,11 +608,13 @@ def edit_call(request, call_id):
             selected_set = set(selected_players_ids)
             call_set = set(selected_players)
             min_call = competition_for(call.match).min_call_players
-            if len(selected_set) < min_call:
-                messages.error(request, MIN_CALL_ERROR % {"n": min_call})
+            if len(selected_set) < min_call or not _finals_rule_ok(
+                    request, call.match, Player.objects.filter(id__in=selected_set - call_set)):
+                if len(selected_set) < min_call:
+                    messages.error(request, MIN_CALL_ERROR % {"n": min_call})
                 return render(request, 'edit_call.html', {
                     'call': call, 'all_players': all_players, 'selected_players': list(selected_set),
-                    'min_call_players': min_call,
+                    'min_call_players': min_call, **_finals_context(call.match, all_players),
                 })
 
             added_players = selected_set - call_set
@@ -619,6 +654,7 @@ def edit_call(request, call_id):
         'all_players': all_players,
         'selected_players': selected_players,
         'min_call_players': competition_for(call.match).min_call_players,
+        **_finals_context(call.match, all_players),
     }
     return render(request, 'edit_call.html', context)
 

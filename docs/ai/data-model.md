@@ -68,7 +68,8 @@ entero sigue siendo la clave de los FK. Excepciones sin `public_id`: `backoffice
 ### match (`match/models.py`)
 
 - **Match**: `club`, `local`, `visiting` (FK a `Team`, nullable), `start_date`, `match_type`
-  (`enfrentamiento`/`reto`/`playoff`/`amistoso`), `draft_mode` (True = acta abierta), `result`
+  (`enfrentamiento`/`reto`/`playoff`/`liga`/`fase_final`/`amistoso`; los de cada competición en
+  `core.competitions`), `round_number` (jornada de liga, opcional), `draft_mode` (True = acta abierta), `result`
   (`Victoria Local`/`Victoria Visitante`/`EMPATE`/`NONE`), `result_points` (`"7/5"`; formato
   antiguo `"7-5"`, ver `match.views.split_points`), `season` y `location` (rellenos en `save()` solo
   si están vacíos; `location` es copia, no enlace), `rival_name` (amistoso con rival escrito a mano:

@@ -1,0 +1,17 @@
+{% load i18n %}
+{# Regla de las fases finales (LAPI 8.2) en crear y editar convocatoria: recibe finals_minimum, finals_label (tipo del enfrentamiento) y finals_short [(jugador, jugados)] de match.views._finals_context. Va dentro del formulario por la casilla force_finals. #}
+{% if finals_minimum %}
+<section class="z-finals-rule" aria-labelledby="finals-rule-title">
+    <h2 class="z-finals-rule-title" id="finals-rule-title"><i class="fa-solid fa-flag" aria-hidden="true"></i> {{ finals_label }}</h2>
+    <p>{% blocktranslate with n=finals_minimum %}Según el reglamento, solo pueden jugar quienes han jugado al menos {{ n }} enfrentamientos de liga con el equipo esta temporada.{% endblocktranslate %}</p>
+    {% if finals_short %}
+    <p>{% translate "No lo cumplen:" %} {% for player, played in finals_short %}<strong>{{ player.short_name }}</strong> ({{ played }}){% if not forloop.last %}, {% endif %}{% endfor %}.</p>
+    <label class="form-check">
+        <input class="form-check-input" type="checkbox" name="force_finals" value="1"{% if request.POST.force_finals %} checked{% endif %}>
+        <span class="form-check-label">{% translate "Convocarlos igualmente (la organización lo ha autorizado)" %}</span>
+    </label>
+    {% else %}
+    <p>{% translate "Toda la plantilla lo cumple." %}</p>
+    {% endif %}
+</section>
+{% endif %}

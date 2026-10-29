@@ -22,6 +22,13 @@ class Competition:
     competición no puede empatar a puntos. ``divisions`` son las divisiones de sus equipos
     (códigos de ``Team.DIVISIONS``) y ``has_snp`` si sus jugadores tienen puntos SNP (cuenta
     SNP, sincronización, «Completar equipo»).
+
+    ``match_types`` son sus tipos de enfrentamiento competitivo (código de ``Match.match_type``,
+    nombre, nombre en plural para los filtros de Estadísticas); el primero es el de por defecto.
+    ``league_type`` es el tipo de liga regular, el único con jornada y puntos de liga
+    (``league_points``: ganar sin ceder partidos, ganar, perder); None si la competición no tiene.
+    ``final_types`` son las fases finales, en las que solo juega quien ha jugado al menos
+    ``finals_min_regular`` enfrentamientos de liga esa temporada (reglamento LAPI 8.2).
     """
     code: str
     name: str
@@ -30,6 +37,11 @@ class Competition:
     tiebreak_game: int | None
     divisions: tuple = ()
     has_snp: bool = False
+    match_types: tuple = ()
+    league_type: str | None = None
+    league_points: tuple = ()
+    final_types: tuple = ()
+    finals_min_regular: int = 0
 
     @property
     def games(self):
@@ -46,6 +58,22 @@ class Competition:
         """Puntos en juego en un enfrentamiento."""
         return sum(self.game_points)
 
+    @property
+    def default_type(self):
+        """Tipo de enfrentamiento por defecto al crear uno."""
+        return self.match_types[0][0]
+
+    def type_label(self, code):
+        """Nombre del tipo de enfrentamiento ``code`` en esta competición (None si no es suyo)."""
+        return next((label for value, label, _plural in self.match_types if value == code), None)
+
+    def league_points_for(self, own, rival):
+        """Puntos de liga de un enfrentamiento de liga que acaba ``own``-``rival`` (partidos ganados)."""
+        sweep, win, loss = self.league_points
+        if own > rival:
+            return sweep if rival == 0 else win
+        return loss
+
     def points_for(self, n_game):
         """Puntos que vale el partido número ``n_game`` (empezando en 1)."""
         return self.game_points[n_game - 1]
@@ -59,9 +87,16 @@ SNP = Competition(
     tiebreak_game=3,
     divisions=("future", "500", "1000", "grand_slam"),
     has_snp=True,
+    match_types=(
+        ("enfrentamiento", _("Enfrentamiento"), _("Enfrentamientos")),
+        ("reto", _("Reto"), _("Retos")),
+        ("playoff", _("Play Off"), _("Play offs")),
+    ),
 )
 
-# Liga Andaluza de Pádel por Equipos: 3 partidos de 1 punto (al mejor de 3, sin empate posible).
+# Liga LAPI: 3 partidos de 1 punto (al mejor de 3, sin empate posible). En liga, ganar 3-0 da 4
+# puntos, ganar 2-1 da 3 y perder 1; en Playoffs y Fase final (Máster, Supercopa) solo juega quien
+# ha jugado al menos 2 enfrentamientos de liga con el equipo (reglamento 2026-2027, 8.2).
 LAPI = Competition(
     code="lapi",
     name=_("LAPI"),
@@ -69,6 +104,15 @@ LAPI = Competition(
     min_call_players=6,
     tiebreak_game=None,
     divisions=("lapi_1", "lapi_2", "lapi_3", "lapi_4", "lapi_5"),
+    match_types=(
+        ("liga", _("Liga"), _("Liga")),
+        ("playoff", _("Playoffs"), _("Playoffs")),
+        ("fase_final", _("Fase final"), _("Fase final")),
+    ),
+    league_type="liga",
+    league_points=(4, 3, 1),
+    final_types=("playoff", "fase_final"),
+    finals_min_regular=2,
 )
 
 COMPETITIONS = {SNP.code: SNP, LAPI.code: LAPI}

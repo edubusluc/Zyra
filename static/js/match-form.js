@@ -1,9 +1,10 @@
 /*
  * Formulario de partido:
- *  - Modo Amistoso: oculta el tipo de partido (Enfrentamiento, Reto, Play Off) y
+ *  - Modo Amistoso: oculta el tipo de partido (Enfrentamiento, Reto, Play Off; Liga, Playoffs, Fase final) y
  *    deja elegir si el rival es un equipo del grupo o un nombre escrito a mano.
  *  - Cards de local y visitante: al elegir un equipo en el desplegable se
  *    actualizan su nombre y su foto.
+ *  - Jornada: solo visible con el tipo de liga de la competición (LAPI).
  */
 (function () {
   const form = document.querySelector('[data-match-form]');
@@ -45,15 +46,26 @@
   if (kindRow && kindSelect && legacy && typeSelect) {
     kindRow.hidden = false;
     legacy.hidden = true;
-    kindSelect.value = checkedValue('mode') === 'amistoso' ? 'amistoso' : (typeSelect.value || 'enfrentamiento');
+    kindSelect.value = checkedValue('mode') === 'amistoso' ? 'amistoso' : (typeSelect.value || kindSelect.options[0].value);
     kindSelect.addEventListener('change', () => {
       const friendly = kindSelect.value === 'amistoso';
       const mode = form.querySelector(`input[name="mode"][value="${friendly ? 'amistoso' : 'competitivo'}"]`);
       if (mode) { mode.checked = true; mode.dispatchEvent(new Event('change', { bubbles: true })); }
       if (!friendly) typeSelect.value = kindSelect.value;
+      syncRound();
     });
   }
+  // Jornada (LAPI): solo en los enfrentamientos de liga (data-league-type en su fila).
+  const roundRow = form.querySelector('[data-round-row]');
+  function syncRound() {
+    if (!roundRow) return;
+    const kind = kindSelect && !kindRow.hidden ? kindSelect.value : (checkedValue('mode') === 'amistoso' ? 'amistoso' : typeSelect && typeSelect.value);
+    roundRow.hidden = kind !== roundRow.dataset.leagueType;
+  }
+  if (typeSelect) typeSelect.addEventListener('change', syncRound);
+  form.querySelectorAll('input[name="mode"]').forEach((r) => r.addEventListener('change', syncRound));
   syncMode();
+  syncRound();
 
   // Lugar: por defecto el del equipo local (el propio si juega en casa, el rival si juega fuera);
   // si la persona lo ha escrito a mano, no se pisa.

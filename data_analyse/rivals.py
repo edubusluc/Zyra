@@ -43,7 +43,7 @@ def _outcome(match):
 
 def closed_matches(club, season=None, match_type=None):
     """Enfrentamientos cerrados del club en los que juega el equipo propio, con los equipos ya cargados."""
-    qs = Match.objects.filter(club=club, draft_mode=False).select_related("local", "visiting")
+    qs = Match.objects.filter(club=club, draft_mode=False).select_related("local", "visiting", "club")
     if season:
         qs = qs.filter(season=season)
     qs = qs.filter(**match_type_lookup(match_type)).order_by("start_date", "pk")
@@ -62,7 +62,7 @@ def _entry(match):
         "other": other,
         "local": match.own_is_local,
         "friendly": match.is_friendly,
-        "type_label": match.get_match_type_display(),
+        "type_label": match.type_label,
     }
 
 

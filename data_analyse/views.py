@@ -22,6 +22,8 @@ from urllib.parse import urlencode
 from django.utils.translation import gettext as _, gettext_lazy
 from core.decorators import club_required, club_manager_required
 from core import spaces
+from core.competitions import competition_for
+from match.league import season_league_points
 from penalty.models import Penalty
 from core.season_choice import ALL_SEASONS, choose_season
 from players.models import current_season, joined_by
@@ -137,8 +139,11 @@ def match_type_context(request, match_type):
         {'label': _("Competitivos"), 'url': url(COMPETITIVE), 'active': competitive},
         {'label': _("Amistosos"), 'url': url(Match.AMISTOSO), 'active': match_type == Match.AMISTOSO},
     ]
-    competitive_labels = [(COMPETITIVE, _("Todos los enfrentamientos")), (Match.ENFRENTAMIENTO, _("Enfrentamientos")),
-                          (Match.RETO, _("Retos")), (Match.PLAYOFF, _("Play offs"))]
+    # Tipos de la competición del espacio activo (Enfrentamientos, Retos, Play offs en SNP; Liga,
+    # Playoffs, Fase final en LAPI).
+    rules = request.club.rules if getattr(request, "club", None) is not None else competition_for(None)
+    competitive_labels = [(COMPETITIVE, _("Todos los enfrentamientos"))] + [
+        (value, plural) for value, _label, plural in rules.match_types]
     labels = dict(competitive_labels, **{COMPETITIVE: _("Competitivos"), Match.AMISTOSO: _("Amistosos")})
     return {
         'match_types': options,
@@ -379,6 +384,9 @@ def team_statistics(request):
     }
     context.update(team_extra_context(request.club, selected_season, match_type, log))
     context['attendance'] = signup_attendance(request.club, selected_season, match_type)
+    # Puntos de liga (LAPI: 4, 3 o 1 por enfrentamiento de liga) de la temporada; sin amistosos ni fases finales.
+    if match_type in (None, COMPETITIVE, request.club.rules.league_type):
+        context['league'] = season_league_points(request.club, selected_season)
 
     return render(request, 'team_statistics.html', context)
 

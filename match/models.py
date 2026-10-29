@@ -49,11 +49,16 @@ class Match(PublicIdModel):
     RETO = "reto"
     PLAYOFF = "playoff"
     AMISTOSO = "amistoso"
-    # Tipos de un partido competitivo; un amistoso no tiene tipo propio y se guarda como AMISTOSO.
+    LIGA = "liga"
+    FASE_FINAL = "fase_final"
+    # Tipos de un partido competitivo de todas las competiciones (los de cada una, con su nombre,
+    # en ``core.competitions``); un amistoso no tiene tipo propio y se guarda como AMISTOSO.
     COMPETITIVE_TYPES = [
         (ENFRENTAMIENTO, _("Enfrentamiento")),
         (RETO, _("Reto")),
         (PLAYOFF, _("Play Off")),
+        (LIGA, _("Liga")),
+        (FASE_FINAL, _("Fase final")),
     ]
     MATCH_TYPES = COMPETITIVE_TYPES + [(AMISTOSO, _("Amistoso"))]
     # Tipos de eliminatoria sin empate: si quedan empatados a puntos, decide el partido de
@@ -64,6 +69,8 @@ class Match(PublicIdModel):
     # Hora de inicio (opcional): se muestra junto a la fecha y en el informe.
     start_time = models.TimeField(_("Hora"), null=True, blank=True)
     match_type = models.CharField(_("Tipo de partido"), max_length=15, choices=MATCH_TYPES, default=ENFRENTAMIENTO)
+    # Jornada de la liga regular (solo en las competiciones con liga, como la LAPI); opcional.
+    round_number = models.PositiveSmallIntegerField(_("Jornada"), null=True, blank=True)
     result = models.CharField(max_length=20, choices=POSSIBLE_RESULT, blank = True, default=outcomes.NONE)
     result_points = models.CharField(max_length=20, blank = True, default=outcomes.NONE)
     draft_mode = models.BooleanField(default=True)
@@ -125,6 +132,30 @@ class Match(PublicIdModel):
     def is_friendly(self):
         """True si es un partido amistoso."""
         return self.match_type == self.AMISTOSO
+
+    @property
+    def type_label(self):
+        """Nombre del tipo de enfrentamiento en su competición («Playoffs» en LAPI, «Play Off» en SNP)."""
+        if self.is_friendly:
+            return _("Amistoso")
+        return self.club.rules.type_label(self.match_type) or self.get_match_type_display()
+
+    @property
+    def is_league(self):
+        """True si es un enfrentamiento de la liga regular de su competición (con jornada y puntos de liga)."""
+        return bool(self.match_type) and self.match_type == self.club.rules.league_type
+
+    @property
+    def league_points(self):
+        """Puntos de liga del equipo propio en un enfrentamiento de liga cerrado (LAPI: 4, 3 o 1); None si no aplica."""
+        if self.draft_mode or not self.is_league:
+            return None
+        parts = (self.result_points or "").replace("-", "/").split("/")
+        if len(parts) != 2 or not all(p.strip().isdigit() for p in parts):
+            return None
+        local, visiting = (int(p) for p in parts)
+        own, rival = (local, visiting) if self.own_is_local else (visiting, local)
+        return self.club.rules.league_points_for(own, rival)
 
     @property
     def no_draw(self):
