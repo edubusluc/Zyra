@@ -12014,11 +12014,11 @@ msgstr "Competition"
 msgid "Asistencia a las convocatorias"
 msgstr "Call-up attendance"
 
-msgid "% de la plantilla que se apuntó a cada convocatoria de la temporada."
-msgstr "% of the squad that signed up for each call-up this season."
+msgid "%% de la plantilla que se apuntó a cada convocatoria de la temporada."
+msgstr "%% of the squad that signed up for each call-up this season."
 
-msgid "Media por temporada del % de la plantilla que se apunta a cada convocatoria."
-msgstr "Season average of the % of the squad that signs up for each call-up."
+msgid "Media por temporada del %% de la plantilla que se apunta a cada convocatoria."
+msgstr "Season average of the %% of the squad that signs up for each call-up."
 
 msgid "de media en la temporada"
 msgstr "on average this season"
@@ -12674,3 +12674,436 @@ msgstr "Delete the warning for %(name)s"
 #: penalty/views.py
 msgid "Guardando la advertencia…"
 msgstr "Saving the warning…"
+
+msgid "LAPI"
+msgstr "LAPI"
+
+msgid "1.ª división"
+msgstr "1st division"
+
+msgid "2.ª división"
+msgstr "2nd division"
+
+msgid "3.ª división"
+msgstr "3rd division"
+
+msgid "4.ª división"
+msgstr "4th division"
+
+msgid "5.ª división"
+msgstr "5th division"
+
+msgid "Cada competición es un espacio aparte, con sus jugadores, rivales y enfrentamientos. Puedes tener un espacio en cada competición."
+msgstr "Each competition is a separate space, with its own players, rivals and fixtures. You can have one space in each competition."
+
+msgid "Ya tienes un espacio en esa competición: elige otra."
+msgstr "You already have a space in that competition: choose another one."
+
+msgid "Ya tienes un espacio en %(competition)s: elige otra competición."
+msgstr "You already have a space in %(competition)s: choose another competition."
+
+msgid "Nivel en el que juega el equipo, por ejemplo Future o 500 en la SNP o 2.ª división en LAPI."
+msgstr "Level the team plays at, for example Future or 500 in SNP or 2nd division in LAPI."
+
+msgid "Elige una división de %(competition)s."
+msgstr "Choose a %(competition)s division."
+
+msgid "Ya tienes el espacio %(club)s en %(competition)s y solo se puede tener un espacio por competición. Abandónalo antes de unirte o crear otro de %(competition)s."
+msgstr "You already have the space %(club)s in %(competition)s and you can only have one space per competition. Leave it before joining or creating another %(competition)s space."
+
+msgid "Ya tienes un espacio en cada competición. Para crear otro, abandona antes el de esa competición."
+msgstr "You already have a space in every competition. To create another one, first leave the one in that competition."
+
+msgid "Espacio %(name)s"
+msgstr "%(name)s space"
+
+msgid "Cambiar de espacio"
+msgstr "Switch space"
+
+msgid "Cambiando de espacio…"
+msgstr "Switching space…"
+
+msgid "Crear otro espacio"
+msgstr "Create another space"
+
+msgid "Crear espacio"
+msgstr "Create space"
+
+msgid "Un espacio es tu equipo en otra competición, con su plantilla, sus rivales y sus enfrentamientos. Cambias de uno a otro desde el menú de arriba."
+msgstr "A space is your team in another competition, with its own squad, rivals and fixtures. You switch between them from the menu at the top."
+
+msgid "5 partidos (3-3-2-2-2 puntos), 10 convocados y puntos SNP de cada jugador."
+msgstr "5 matches (3-3-2-2-2 points), 10 called-up players and each player's SNP points."
+
+msgid "Liga Andaluza: 3 partidos de 1 punto y 6 convocados."
+msgstr "Andalusian League: 3 matches worth 1 point each and 6 called-up players."
+
+msgid "Como capitán también juegas: escribe tu nombre y apellidos para crear tu jugador."
+msgstr "As captain you also play: enter your first and last name to create your player."
+
+msgid "Añade a tus jugadores"
+msgstr "Add your players"
+
+msgid "Crea las fichas de los jugadores de tu equipo para poder convocarlos."
+msgstr "Create your team's player profiles so you can call them up."
+
+msgid "Añadir jugador"
+msgstr "Add player"
+
+msgid "País en el que juega, por ejemplo España. En la SNP decide dónde se buscan tus jugadores."
+msgstr "Country it plays in, for example Spain. In SNP it decides where your players are searched for."
+
+#: match/advisor.py
+#, python-format
+msgid ""
+"%(pair1)s y %(pair2)s son las parejas con más opciones según el historial y "
+"la afinidad (victoria estimada %(pct1)s %% y %(pct2)s %%); el cruce de las "
+"parejas lo decide el sorteo."
+msgstr ""
+"%(pair1)s and %(pair2)s are the pairs with the best chances based on history "
+"and affinity (estimated win %(pct1)s %% and %(pct2)s %%); the pair match-ups "
+"are decided by draw."
+
+#: match/advisor.py
+#, python-format
+msgid ""
+"Ninguna pareja tiene historial, así que se combinan perfiles de derecha y "
+"revés en %(n)s de las %(total)s parejas."
+msgstr ""
+"No pair has any history, so right-side and backhand profiles are combined in "
+"%(n)s of the %(total)s pairs."
+
+#: match/advisor.py
+#, python-format
+msgid ""
+"Probabilidad estimada de ganar la eliminatoria: %(pct)s (%(expected)s de "
+"%(total)s puntos esperados)."
+msgstr ""
+"Estimated probability of winning the tie: %(pct)s (%(expected)s of "
+"%(total)s points expected)."
+
+#: match/report_pdf.py
+#, python-format
+msgid "Hacen falta al menos %(n)s convocados para proponer una alineación."
+msgstr "At least %(n)s called-up players are needed to suggest a lineup."
+
+#: match/report_pdf.py
+#, python-format
+msgid ""
+"Formato %(competition)s: %(games)s partidos de 1 punto y gana la "
+"eliminatoria quien gana %(needed)s. Las parejas se cruzan por sorteo, así "
+"que no hay orden de juego. Las alineaciones se basan en el historial y la "
+"afinidad de los convocados y son orientativas."
+msgstr ""
+"%(competition)s format: %(games)s games worth 1 point each, and whoever wins "
+"%(needed)s wins the tie. Pairs are matched by draw, so there is no playing "
+"order. Lineups are based on the called-up players' history and affinity and "
+"are only a guide."
+
+#: match/notifications.py
+msgid ""
+"Te adjuntamos el informe en PDF con el estado del equipo, las rachas, los "
+"precedentes contra este rival y dos alineaciones recomendadas según el "
+"historial y la afinidad de los convocados."
+msgstr ""
+"Attached is the PDF report with the team's status, streaks, head-to-head "
+"record against this rival and two recommended lineups based on the called-up "
+"players' history and affinity."
+
+#: core/templates/register_club.html
+#, python-format
+msgid ""
+"Tu cuenta ya tiene el jugador <strong>%(player)s</strong> en %(space)s. "
+"Crearemos tu jugador en este espacio con el mismo nombre."
+msgstr ""
+"Your account already has the player <strong>%(player)s</strong> in "
+"%(space)s. We will create your player in this space with the same name."
+
+#: players/views.py
+msgid ""
+"Te has quedado sin jugadores en la plantilla. Vuelve a darlos de alta para "
+"poder convocarlos."
+msgstr ""
+"You have no players left in the squad. Add them back to be able to call them "
+"up."
+
+#: players/templates/manage_roster.html
+msgid "Te quedarás sin jugadores en la plantilla."
+msgstr "You will have no players left in the squad."
+
+#: core/spaces.py
+#, python-format
+msgid "Ahora estás en el espacio %(competition)s de %(club)s."
+msgstr "You are now in the %(competition)s space of %(club)s."
+
+#: core/templates/includes/create_match_button.html
+#, python-format
+msgid "Nuevo enfrentamiento %(competition)s"
+msgstr "New %(competition)s tie"
+
+#: core/templates/includes/create_match_button.html
+msgid "¿En qué competición?"
+msgstr "In which competition?"
+
+#: core/templates/includes/create_match_button.html
+#, python-format
+msgid "%(games)s partidos · %(players)s convocados"
+msgstr "%(games)s games · %(players)s called up"
+
+#: match/templates/list_match.html match/templates/calendar_match.html
+msgid "Todos tus espacios"
+msgstr "All your spaces"
+
+#: match/templates/list_match.html
+msgid "Eres jugador aquí"
+msgstr "You are a player here"
+
+#: core/templates/includes/space_switcher.html
+msgid "Espacio"
+msgstr "Space"
+
+#: match/templates/create_match.html
+msgid "¿No está el rival?"
+msgstr "Rival not listed?"
+
+#: match/templates/create_match.html
+msgid "Añádelo"
+msgstr "Add it"
+
+#: team/views.py
+#, python-format
+msgid "Rival %(team)s creado. Ya puedes elegirlo."
+msgstr "Rival %(team)s created. You can now pick it."
+
+#: data_analyse/templates/stats_spaces.html
+msgid "Todas tus competiciones"
+msgstr "All your competitions"
+
+#: data_analyse/templates/stats_spaces.html
+msgid "Tus partidos por competición"
+msgstr "Your games by competition"
+
+#: data_analyse/templates/stats_spaces.html
+msgid "Tus equipos"
+msgstr "Your teams"
+
+#: data_analyse/templates/stats_spaces.html
+msgid ""
+"Cada competición puntúa a su manera: los puntos, los récords y los gráficos "
+"se ven al elegir una."
+msgstr ""
+"Each competition scores in its own way: points, records and charts are shown "
+"when you pick one."
+
+#: data_analyse/templates/stats_spaces.html
+msgid "Balance de cada equipo"
+msgstr "Record of each team"
+
+#: data_analyse/templates/stats_spaces.html
+#, python-format
+msgid "Ver %(competition)s"
+msgstr "View %(competition)s"
+
+#: match/models.py
+msgid "Incluir datos de otras competiciones"
+msgstr "Include data from other competitions"
+
+#: match/templates/create_match.html
+msgid ""
+"Añade al informe lo que han jugado esta temporada en sus otras competiciones "
+"los convocados con cuenta enlazada. No cambia las alineaciones."
+msgstr ""
+"Adds to the report what called-up players with a linked account have played "
+"this season in their other competitions. It does not change the lineups."
+
+#: match/report_pdf.py
+#, python-format
+msgid "OTRAS COMPETICIONES · TEMPORADA %(season)s"
+msgstr "OTHER COMPETITIONS · SEASON %(season)s"
+
+#: match/report_pdf.py
+msgid ""
+"Solo convocados con cuenta enlazada. Es informativo: no cuenta en las "
+"alineaciones recomendadas."
+msgstr ""
+"Only called-up players with a linked account. For information only: it does "
+"not count towards the recommended lineups."
+
+#: core/templates/home.html
+msgid ""
+"Todavía no has jugado ningún partido competitivo. Cuando juegues, aquí verás "
+"tu racha y tus últimos resultados."
+msgstr ""
+"You have not played any competitive game yet. Once you do, you will see your "
+"streak and your latest results here."
+
+#: data_analyse/templates/stats_spaces.html
+#, python-format
+msgid "Jugados: %(played)s · ganados: %(wins)s · %(pct)s%%"
+msgstr "Played: %(played)s · won: %(wins)s · %(pct)s%%"
+
+#: data_analyse/templates/stats_spaces.html
+#, python-format
+msgid "Jugados: %(played)s · %(won)sV %(drawn)sE %(lost)sD · %(pct)s%%"
+msgstr "Played: %(played)s · %(won)sW %(drawn)sD %(lost)sL · %(pct)s%%"
+
+#: core/templates/base.html
+msgid "Añadir equipo de otra competición"
+msgstr "Add a team from another competition"
+
+#: core/templates/base.html
+#, python-format
+msgid "Ya tienes equipo en %(competitions)s"
+msgstr "You already have a team in %(competitions)s"
+
+#: core/context_processors.py
+msgid "y"
+msgstr "and"
+
+#: core/templates/register_club.html
+msgid "Tu equipo en otra competición tiene su propia plantilla, sus rivales y sus enfrentamientos. Enfrentamientos, Calendario y Estadísticas te enseñan los de todas tus competiciones juntos."
+msgstr "Your team in another competition has its own squad, rivals and fixtures. Fixtures, Calendar and Statistics show those of all your competitions together."
+
+#: core/templates/register_club.html
+#, python-format
+msgid "Ya tienes %(club)s en %(competition)s."
+msgstr "You already have %(club)s in %(competition)s."
+
+#: core/templates/register_club.html
+#, python-format
+msgid "Tu cuenta ya tiene el jugador <strong>%(player)s</strong> en %(space)s. Crearemos tu jugador en este equipo con el mismo nombre."
+msgstr "Your account already has the player <strong>%(player)s</strong> in %(space)s. We will create your player in this team with the same name."
+
+#: core/forms.py
+msgid "Ya tienes equipo en esa competición: elige otra."
+msgstr "You already have a team in that competition: choose another one."
+
+#: core/forms.py
+msgid "Cada competición lleva su propio equipo, con sus jugadores, rivales y enfrentamientos. Puedes tener un equipo en cada competición."
+msgstr "Each competition has its own team, with its players, rivals and fixtures. You can have one team in each competition."
+
+#: core/forms.py
+#, python-format
+msgid "Ya tienes equipo en %(competition)s: elige otra competición."
+msgstr "You already have a team in %(competition)s: choose another competition."
+
+#: core/views.py
+msgid "Ya tienes equipo en cada competición. Para crear otro, abandona antes el de esa competición."
+msgstr "You already have a team in every competition. To create another one, first leave the one in that competition."
+
+#: core/services.py
+#, python-format
+msgid "Ya tienes el equipo %(club)s en %(competition)s y solo se puede tener un equipo por competición. Abandónalo antes de unirte o crear otro de %(competition)s."
+msgstr "You already have the team %(club)s in %(competition)s and you can only have one team per competition. Leave it before joining or creating another %(competition)s team."
+
+#: match/templates/list_match.html
+msgid "Todos tus equipos"
+msgstr "All your teams"
+
+#: data_analyse/templates/stats_spaces.html
+msgid "Cada competición puntúa a su manera: el Top 5, los récords y los puntos se ven al elegir una."
+msgstr "Each competition scores in its own way: the Top 5, records and points are shown when you pick one."
+
+#: data_analyse/templates/stats_spaces.html
+msgid "Competiciones"
+msgstr "Competitions"
+
+#: data_analyse/templates/stats_spaces.html
+msgid "Cómo se ganan y se pierden los partidos, set a set: %% de victorias en cada situación."
+msgstr "How matches are won and lost, set by set: %% won in each situation."
+
+#: data_analyse/templates/stats_spaces.html
+msgid "Partidos como local"
+msgstr "Matches at home"
+
+#: data_analyse/templates/stats_spaces.html
+msgid "Partidos como visitante"
+msgstr "Matches away"
+
+#: data_analyse/templates/stats_spaces.html
+msgid "Partidos ganados y perdidos jugando en casa, en cada competición."
+msgstr "Matches won and lost at home, in each competition."
+
+#: data_analyse/templates/stats_spaces.html
+msgid "Partidos ganados y perdidos jugando fuera, en cada competición."
+msgstr "Matches won and lost away, in each competition."
+
+#: data_analyse/templates/stats_spaces.html
+msgid "Ganados en cada temporada: cada competición con su color y el total encima."
+msgstr "Won each season: each competition in its colour, with the total on top."
+
+#: data_analyse/templates/stats_spaces.html
+msgid "%% de la plantilla que se apuntó a cada convocatoria, una línea por competición."
+msgstr "%% of the squad that signed up for each call-up, one line per competition."
+
+#: data_analyse/templates/stats_spaces.html
+msgid "Media por temporada del %% de la plantilla que se apunta, una línea por competición."
+msgstr "Season average of the %% of the squad that signs up, one line per competition."
+
+#: core/templates/home.html
+#, python-format
+msgid "%(competition)s %(played)s de %(total)s"
+msgstr "%(competition)s %(played)s of %(total)s"
+
+#: core/templates/home.html
+#, python-format
+msgid "Categoría %(level)s"
+msgstr "Category %(level)s"
+
+#: data_analyse/templates/stats_mine.html:34
+#, python-format
+msgid "Jugados: %(played)s · %(wins)sV %(losses)sD"
+msgstr "Played: %(played)s · %(wins)sW %(losses)sL"
+
+#: data_analyse/templates/stats_mine.html:34
+#, python-format
+msgid "apuntado a %(signed)s de %(total)s convocatorias"
+msgstr "signed up for %(signed)s of %(total)s call-ups"
+
+#: data_analyse/templates/stats_mine.html:39
+msgid ""
+"Cada competición puntúa a su manera: aquí se cuentan partidos, no puntos. "
+"Tus puntos, afinidad y récords están en cada competición."
+msgstr ""
+"Each competition scores in its own way: matches are counted here, not "
+"points. Your points, affinity and records are in each competition."
+
+#: data_analyse/templates/stats_mine.html:51
+#, python-format
+msgid ""
+"Cómo ganas y pierdes tus partidos, set a set: %% de victorias en cada "
+"situación."
+msgstr "How you win and lose your matches, set by set: %% won in each situation."
+
+#: data_analyse/templates/stats_mine.html:75
+msgid "Tus partidos ganados y perdidos jugando en casa, en cada competición."
+msgstr "Your matches won and lost at home, in each competition."
+
+#: data_analyse/templates/stats_mine.html:82
+msgid "Tus partidos ganados y perdidos jugando fuera, en cada competición."
+msgstr "Your matches won and lost away, in each competition."
+
+#: data_analyse/templates/stats_mine.html:89
+msgid "Partidos ganados por temporada"
+msgstr "Matches won per season"
+
+#: data_analyse/templates/stats_mine.html:90
+msgid ""
+"Tus partidos ganados en cada temporada: cada competición con su color y el "
+"total encima."
+msgstr ""
+"Your matches won each season: each competition in its colour, with the total "
+"on top."
+
+#: data_analyse/templates/stats_mine.html:99
+msgid "Convocatorias en las que te apuntas"
+msgstr "Call-ups you sign up for"
+
+#: data_analyse/templates/stats_mine.html:100
+#, python-format
+msgid ""
+"%% de las convocatorias cerradas de cada temporada en las que te apuntaste, "
+"una línea por competición."
+msgstr ""
+"%% of each season's closed call-ups you signed up for, one line per "
+"competition."

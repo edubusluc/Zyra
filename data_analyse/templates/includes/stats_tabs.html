@@ -1,8 +1,12 @@
 {% load i18n %}
 {% with current=request.resolver_match.url_name %}
 <nav class="st-tabs z-segmented" aria-label="{% translate 'Tipo de estadística' %}">
+  {# «Mis estadísticas»: lo tuyo en todas tus competiciones (y tu ficha en cada una, con mine_chips). #}
+  {% if my_stats_available %}
+  <a class="btn btn-sm{% if current == 'my_statistics' or mine_chips %} active{% endif %}" href="{% url 'my_statistics' %}"{% if current == 'my_statistics' or mine_chips %} aria-current="page"{% endif %}><i class="fa-solid fa-id-badge me-1" aria-hidden="true"></i> {% translate "Mis estadísticas" %}</a>
+  {% endif %}
   <a class="btn btn-sm{% if current == 'team_statistics' %} active{% endif %}" href="{% url 'team_statistics' %}"{% if current == 'team_statistics' %} aria-current="page"{% endif %}><i class="fa-solid fa-users me-1" aria-hidden="true"></i> {% translate "Equipo" %}</a>
-  <a class="btn btn-sm{% if current == 'player_statistics' %} active{% endif %}" href="{% url 'player_statistics' %}"{% if current == 'player_statistics' %} aria-current="page"{% endif %}><i class="fa-solid fa-user me-1" aria-hidden="true"></i> {% translate "Jugador" %}</a>
+  <a class="btn btn-sm{% if current == 'player_statistics' and not mine_chips %} active{% endif %}" href="{% url 'player_statistics' %}"{% if current == 'player_statistics' and not mine_chips %} aria-current="page"{% endif %}><i class="fa-solid fa-user me-1" aria-hidden="true"></i> {% translate "Jugador" %}</a>
   <a class="btn btn-sm{% if current == 'pair_statistics' %} active{% endif %}" href="{% url 'pair_statistics' %}"{% if current == 'pair_statistics' %} aria-current="page"{% endif %}><i class="fa-solid fa-user-group me-1" aria-hidden="true"></i> {% translate "Parejas" %}</a>
   <a class="btn btn-sm{% if current == 'rival_statistics' or current == 'rival_detail' %} active{% endif %}" href="{% url 'rival_statistics' %}"{% if current == 'rival_statistics' or current == 'rival_detail' %} aria-current="page"{% endif %}><i class="fa-solid fa-shield-halved me-1" aria-hidden="true"></i> {% translate "Rivales" %}</a>
   {% if can_manage %}
@@ -10,3 +14,23 @@
   {% endif %}
 </nav>
 {% endwith %}
+{# Competición: en «Mis estadísticas», Todas · SNP · LAPI (mine_chips); en Equipo, Jugador, Parejas y Rivales solo SNP o LAPI, sin mezclar (core.spaces). #}
+{% if mine_chips %}
+<nav aria-label="{% translate 'Competición' %}" class="st-type-filter z-space-filter">
+  <ul class="st-seasons">
+    <li class="st-filter-label">{% translate "Competición" %}</li>
+    {% for chip in mine_chips %}
+    <li><a class="st-chip{% if chip.code != 'todas' %} z-space-chip z-space-chip--{{ chip.code }}{% endif %}" href="{{ chip.url }}" {% if chip.active %}aria-current="page"{% endif %}>{{ chip.label }}</a></li>
+    {% endfor %}
+  </ul>
+</nav>
+{% elif space_chips %}{% include 'includes/space_filter.html' %}{% elif request.space_switcher %}
+<nav aria-label="{% translate 'Competición' %}" class="st-type-filter z-space-filter">
+  <ul class="st-seasons">
+    <li class="st-filter-label">{% translate "Competición" %}</li>
+    {% for item in request.space_switcher %}
+    <li><a class="st-chip z-space-chip z-space-chip--{{ item.code }}" href="{{ request.path }}?en={{ item.code }}" {% if item.active %}aria-current="page"{% endif %}>{{ item.name }}</a></li>
+    {% endfor %}
+  </ul>
+</nav>
+{% endif %}

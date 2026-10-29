@@ -2,7 +2,8 @@
 «Mi forma»: resumen personal de un jugador para la tarjeta del Inicio.
 
 Solo cuenta partidos competitivos (los amistosos no entran en nada). Todo es de la temporada actual: los
-últimos partidos, la racha, el balance y las convocatorias. Los puntos SNP salen del histórico que ya se guarda en ``SnpScoreHistory``.
+últimos partidos, la racha, el balance y las convocatorias, sumando las competiciones en las que la cuenta
+tiene jugador (SNP y LAPI). Los puntos SNP salen del histórico que ya se guarda en ``SnpScoreHistory``.
 """
 import datetime
 
@@ -56,34 +57,61 @@ def _snp(player, today):
     return data
 
 
-def my_form(club, player, today=None):
+def _season_entries(club, player, season):
+    """Partidos competitivos de ``player`` en ``club`` esta temporada (orden cronológico) y los enfrentamientos a los que se apuntó."""
+    log = [g for g in pairs.club_game_log(club, match_type=pairs.COMPETITIVE) if player.id in g["pair"]]
+    season_log = [g for g in log if g["season"] == season]
+    called = set(Call.objects.filter(
+        match__club=club, match__season=season, match__draft_mode=False, players=player,
+        match__match_type__in=[value for value, _label in Match.COMPETITIVE_TYPES],
+    ).values_list("match_id", flat=True))
+    return season_log, called
+
+
+def my_form(club, player, today=None, others=()):
     """
     Datos de «Mi forma» de ``player``: ``last`` (últimos 5 partidos, True = victoria, del más antiguo al
     más reciente), ``run`` (``('V' | 'D', n)``, o ``(None, 0)``), ``season`` (ganados, perdidos, %), ``called``
     y ``played`` (a cuántos enfrentamientos cerrados de la temporada se apuntó y en cuántos de ellos jugó),
     ``win_arc`` (largo del arco de victorias del anillo del balance), ``played_pct``, ``snp`` y ``empty``.
+
+    ``others``: jugadores de la misma cuenta en otras competiciones (cada uno en su club). Sus partidos y
+    convocatorias se suman (son partidos ganados y perdidos, no puntos); entonces ``last_games`` dice la
+    competición de cada uno de los últimos partidos y ``by_competition`` trae el desglose (``code``,
+    ``name``, ``wins``, ``losses``, ``called``, ``played``, ``called_pct``: tramo de la barra). Los puntos
+    SNP son del jugador de la SNP.
     """
     today = today or datetime.date.today()
     season = current_season()
-    log = [g for g in pairs.club_game_log(club, match_type=pairs.COMPETITIVE) if player.id in g["pair"]]
-    season_log = [g for g in log if g["season"] == season]
-    results = [g["won"] for g in season_log]
-    wins = sum(g["won"] for g in season_log)
-    called = set(Call.objects.filter(
-        match__club=club, match__season=season, match__draft_mode=False, players=player,
-        match__match_type__in=[value for value, _label in Match.COMPETITIVE_TYPES],
-    ).values_list("match_id", flat=True))
-    played = called & {g["match_id"] for g in season_log}
+    entries, by_competition, called_total, played_total = [], [], 0, 0
+    for p in [player, *others]:
+        season_log, called = _season_entries(p.club, p, season)
+        played = called & {g["match_id"] for g in season_log}
+        code = p.club.competition
+        entries += [{**g, "code": code} for g in season_log]
+        wins = sum(g["won"] for g in season_log)
+        by_competition.append({"code": code, "name": p.club.rules.name, "wins": wins,
+                               "losses": len(season_log) - wins, "called": len(called), "played": len(played)})
+        called_total += len(called)
+        played_total += len(played)
+    entries.sort(key=lambda g: (g["date"], g["match_id"], g["n_game"]))
+    for row in by_competition:
+        row["played_pct"] = round(row["played"] / called_total * 100) if called_total else 0
+    results = [g["won"] for g in entries]
+    wins = sum(results)
+    snp_player = next((p for p in [player, *others] if p.club.rules.has_snp), None)
     return {
         "last": results[-LAST_GAMES:],
+        "last_games": [{"won": g["won"], "code": g["code"]} for g in entries[-LAST_GAMES:]],
+        "by_competition": by_competition if others else [],
         "run": pairs._current_run(results),
         "wins": wins,
-        "losses": len(season_log) - wins,
-        "win_pct": round(wins / len(season_log) * 100) if season_log else 0,
-        "called": len(called),
-        "played": len(played),
-        "win_arc": round(RING_LENGTH * wins / len(season_log), 1) if season_log else 0,
-        "played_pct": round(len(played) / len(called) * 100) if called else 0,
-        "snp": _snp(player, today),
+        "losses": len(entries) - wins,
+        "win_pct": round(wins / len(entries) * 100) if entries else 0,
+        "called": called_total,
+        "played": played_total,
+        "win_arc": round(RING_LENGTH * wins / len(entries), 1) if entries else 0,
+        "played_pct": round(played_total / called_total * 100) if called_total else 0,
+        "snp": _snp(snp_player, today) if snp_player else None,
         "empty": not results,
     }

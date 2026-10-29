@@ -410,6 +410,7 @@ main:focus { outline: none; }
         position: absolute; width: 1px; height: 1px; overflow: hidden;
         clip: rect(0 0 0 0); white-space: nowrap;
     }
+    .z-user-menu .dropdown-toggle .z-comp-badge { display: none; }
     .z-lang-menu .dropdown-toggle { height: 34px; gap: 6px !important; }
     .z-header-actions .dropdown-menu { max-width: calc(100vw - 32px); }
 }
@@ -1256,6 +1257,7 @@ a.z-card:hover, .z-card--link:hover {
 .z-lineup-pairs fieldset > div + div { margin-top: 12px; }
 .z-lineup-side.pair-order-container { position: sticky; top: 96px; margin-top: 0; }
 .z-lineup > input, .z-lineup > .z-selector-bar { grid-column: 1 / -1; }
+.z-lineup--unordered { grid-template-columns: minmax(0, 1fr); }
 #pair-order-list li > div { display: grid; flex: 1; min-width: 0; }
 #pair-order-list li small { font-size: .7rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--z-muted); }
 #pair-order-list li span { overflow: hidden; text-overflow: ellipsis; }
@@ -1354,8 +1356,22 @@ a.z-location:hover span { text-decoration: underline; }
 .z-hot-avatars { display: flex; flex-shrink: 0; }
 .z-hot-avatars .z-avatar + .z-avatar { margin-left: -14px; }
 
+/* Banner con equipos en varias competiciones: todos a la vez, cada uno con su escudo, competición y papel. */
+.z-home-hero--teams { display: grid; gap: 16px; align-items: stretch;
+    background: linear-gradient(135deg, rgba(var(--z-lime-rgb), .12), rgba(var(--z-lime-rgb), 0) 50%, rgba(61, 139, 224, .12)), var(--z-surface-2); }
+.z-home-teams { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
+.z-home-team { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 12px; background: rgba(255, 255, 255, .04); border: 1px solid var(--z-border); border-radius: 12px; }
+.z-home-team-logo { flex-shrink: 0; width: 56px; height: 56px; padding: 4px; object-fit: contain; background: var(--z-surface); border: 2px solid var(--z-lime); border-radius: 50% !important; }
+.z-home-team--lapi .z-home-team-logo { border-color: #3D8BE0; }
+.z-home-team-text { display: grid; gap: 4px; min-width: 0; text-align: left; }
+.z-home-team-text strong { font-weight: 800; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.z-home-team-text > span { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; color: var(--z-muted); font-size: .85rem; }
+.z-home-hero--teams .z-comp-badge { margin: 0; }
+.z-hot .z-eyebrow .z-comp-badge { margin-left: 6px; vertical-align: middle; }
+
 @media (max-width: 575.98px) {
     .z-home-hero { flex-direction: column; text-align: center; }
+    .z-home-hero--teams { text-align: left; }
     .z-home-logo { width: 96px; height: 96px; }
     .z-next-match-team img { width: 48px; height: 48px; }
 }
@@ -2495,6 +2511,7 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 .z-choice-option, .z-choice-option small { margin: 0; text-transform: none; letter-spacing: normal; }
 .z-choice-option span { font-weight: 700; color: var(--z-text); }
 .z-choice-option small { grid-column: 2; font-size: .8rem; color: var(--z-muted); }
+.z-choice-option--taken { cursor: not-allowed; opacity: .6; }
 
 /* Espera mientras se trae el equipo de SNP tras registrar el club */
 .z-welcome-snp { text-align: center; }
@@ -2885,6 +2902,9 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .z-cal-event.is-upcoming:hover { color: var(--z-ink); background: var(--z-lime-hover); }
 .z-cal-event.is-open { color: var(--z-warning); background: transparent; border-color: var(--z-warning); }
 .z-cal-event.is-friendly { border-style: dashed; }
+.z-cal-comp { flex: none; padding: 0 4px; font-size: .62rem; font-weight: 800; letter-spacing: .03em; border-radius: 4px; }
+.z-cal-comp--snp { color: var(--z-ink); background: var(--z-lime); box-shadow: 0 0 0 1px var(--z-ink); }
+.z-cal-comp--lapi { color: #FFFFFF; background: #1E6BC0; }
 .z-cal-agenda { display: none; }
 .z-cal-empty { margin: 16px 0; color: var(--z-muted); }
 .z-cal-legend { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 0; padding: 0; list-style: none; }
@@ -2938,8 +2958,14 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .z-myform-ring-l { stroke: rgba(255, 92, 99, .6); }
 .z-myform-ring-w { stroke: var(--z-lime); }
 .z-myform-ring-t { font-size: 15px; font-weight: 700; fill: currentColor; font-variant-numeric: tabular-nums; }
-.z-myform-seg { display: block; height: 10px; border-radius: 99px; background: var(--z-border-strong, rgba(255, 255, 255, .15)); overflow: hidden; }
+.z-myform-seg { display: flex; height: 10px; border-radius: 99px; background: var(--z-border-strong, rgba(255, 255, 255, .15)); overflow: hidden; }
 .z-myform-seg-w { display: block; height: 100%; background: var(--z-lime); }
+/* «Mi forma» con varias competiciones: cada tramo y cada partido llevan el color de su competición. */
+.z-myform-seg--lapi { background: #3D8BE0; }
+.z-myform-seg-detail { color: var(--z-muted); font-size: .8rem; }
+.z-myform-pip { position: relative; margin-bottom: 6px; }
+.z-myform-pip::after { content: ""; position: absolute; left: 50%; bottom: -7px; width: 14px; height: 4px; border-radius: 2px; transform: translateX(-50%); background: var(--z-lime); }
+.z-myform-pip--lapi::after { background: #3D8BE0; }
 .z-myform-big { font-size: 1.4rem; font-weight: 700; font-variant-numeric: tabular-nums; }
 .z-myform-big small { font-size: .8rem; font-weight: 600; }
 .z-myform-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; color: var(--z-muted, inherit); }
@@ -2948,3 +2974,45 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .z-myform-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
 .z-myform-dot--w { background: var(--z-lime); }
 .z-myform-dot--l { background: #FF5C63; }
+
+/* Espacios por competición: etiqueta con el color de cada una (cabecera, invitaciones, registro). */
+.z-choice-legend { margin: 0 0 4px; font-size: .9rem; font-weight: 700; color: var(--z-text); }
+.z-comp-badge { display: inline-flex; align-items: center; padding: 2px 8px; font-size: .7rem; font-weight: 800; line-height: 1.4; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; border-radius: 999px; }
+.z-comp-badge--snp { color: var(--z-ink); background: var(--z-lime); }
+.z-comp-badge--lapi { color: #FFFFFF; background: #1E6BC0; }
+.z-user-menu .z-comp-badge { margin-left: 2px; }
+.z-space-item { display: flex; align-items: center; gap: 8px; }
+.z-space-item > span:not(.z-comp-badge) { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+/* Estadísticas «Todas»: leyenda de competiciones y una barra por competición en cada situación de sets. */
+.z-comp-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 12px; padding: 0; list-style: none; font-size: .85rem; color: var(--z-muted); }
+.z-comp-legend li { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
+.z-comp-meter { display: grid; grid-template-columns: 3.2rem 1fr 2.6rem; align-items: center; gap: 8px; margin-top: 6px; }
+.z-comp-meter-name { font-size: .72rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--z-muted); }
+.z-comp-meter .st-meter { margin-top: 0; }
+.z-comp-meter b { text-align: right; font-size: .9rem; }
+.z-comp-meter--lapi span { background: #3D8BE0; }
+/* «Tus equipos» del menú de usuario: solo informa (competición, equipo y papel). */
+.z-team-item { display: flex; align-items: center; gap: 8px; min-width: 240px; color: var(--bs-body-color); }
+.z-team-item-name { flex: 1; min-width: 0; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.z-team-item small { white-space: nowrap; }
+.z-choice-help { margin: -8px 0 16px; }
+.dropdown-item.active .z-comp-badge--snp { color: var(--z-lime); background: var(--z-ink); }
+.z-home-hero .z-comp-badge { margin: 2px 0 6px; }
+/* Vistas unidas de varios espacios: etiqueta de la competición en cada tarjeta y chips del filtro */
+.z-fixture-head .z-comp-badge { margin-left: 6px; }
+.z-fixture-role { font-size: .75rem; }
+.z-space-chip--lapi[aria-current="page"] { color: #FFFFFF; background: #1E6BC0; border-color: #1E6BC0; }
+.z-create-choice .dropdown-menu { min-width: 260px; }
+.z-space-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
+.z-space-kpis > div { display: flex; flex-direction: column; padding: 14px 16px; background: var(--st-card); border: 1px solid var(--st-line); border-radius: var(--z-radius); }
+.z-space-kpis b { font-size: 1.6rem; line-height: 1.1; }
+.z-space-kpis span { font-size: .72rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--st-muted); }
+.z-space-rows { list-style: none; margin: 0; padding: 0; }
+.z-space-rows li { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; padding: 12px 0; border-bottom: 1px solid var(--st-line); }
+.z-space-rows-name { display: inline-flex; align-items: center; gap: 8px; flex: 1 1 200px; min-width: 0; font-weight: 700; }
+.z-space-rows-name > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.z-space-rows-nums { color: var(--st-muted); font-variant-numeric: tabular-nums; }
+.z-space-rows a { margin-left: auto; font-weight: 700; white-space: nowrap; }
+.z-space-switcher { margin: 0 0 16px; }
+.z-space-switcher .btn { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
+.z-space-switcher .btn > span:not(.z-comp-badge) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

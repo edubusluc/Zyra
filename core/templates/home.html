@@ -2,6 +2,26 @@
 {% load static i18n l10n zyra_format %}
 
 {% block content %}
+{% if home_teams %}
+{# Con equipos en varias competiciones el banner los enseña todos y no cambia con el último enfrentamiento abierto. #}
+<section class="z-home-hero z-home-hero--teams">
+    <div>
+        <span class="z-eyebrow">{% blocktranslate %}Temporada {{ season }}{% endblocktranslate %}</span>
+        <h1>{% translate "Tus equipos" %}</h1>
+    </div>
+    <ul class="z-home-teams">
+        {% for t in home_teams %}
+        <li class="z-home-team z-home-team--{{ t.club.competition }}">
+            <img class="z-home-team-logo" src="{% if t.team.photo %}{{ t.team.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="{% blocktranslate with club=t.club.name %}Escudo de {{ club }}{% endblocktranslate %}">
+            <span class="z-home-team-text">
+                <strong>{{ t.club.name }}</strong>
+                <span>{% include 'includes/competition_badge.html' with code=t.club.competition name=t.club.rules.name %} {{ t.membership.team_role_label }}<span class="z-home-team-div">· {% if t.club.rules.has_snp %}{% if t.team.division %}{% blocktranslate with level=t.team.get_division_display %}Categoría {{ level }}{% endblocktranslate %}{% else %}{% translate "Sin categoría" %}{% endif %}{% elif t.team.division %}{{ t.team.get_division_display }}{% else %}{% translate "Sin división" %}{% endif %}</span></span>
+            </span>
+        </li>
+        {% endfor %}
+    </ul>
+</section>
+{% else %}
 <section class="z-home-hero">
     <img class="z-home-logo" src="{% if own_team.photo %}{{ own_team.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="{% blocktranslate with club=current_club.name %}Escudo de {{ club }}{% endblocktranslate %}">
     <div>
@@ -9,6 +29,7 @@
         <h1>{{ current_club.name }}</h1>
     </div>
 </section>
+{% endif %}
 
 {% if email_unverified %}
 {# Aviso único hasta que se confirma el email (U6): reenviar el enlace o corregir el email. #}
@@ -153,7 +174,7 @@
 {% endif %}
 
 
-{% if can_manage and pending or can_manage and not onboarding %}
+{% if pending or can_manage and not onboarding %}
 {# Lo que se ha quedado a medias, con la siguiente acción de cada enfrentamiento (H-02). #}
 <h2 class="z-section-title">{% translate "Pendiente" %}</h2>
 {% if pending %}
@@ -162,7 +183,7 @@
     <li>
         <a href="{% url 'call_for_match' row.match.public_id %}" class="z-pending-row{% if row.overdue %} is-overdue{% endif %}">
             <span class="z-pending-main">
-                <strong>{{ row.match.local_name }} – {{ row.match.visiting_name }}</strong>
+                <strong>{% if multi_space %}{% include 'includes/competition_badge.html' with code=row.match.club.competition name=row.match.club.rules.name short=True %} {% endif %}{{ row.match.local_name }} – {{ row.match.visiting_name }}</strong>
                 <small>{{ row.match.start_date|date:"D j M Y" }}{% if row.overdue %} · {% translate "ya jugado o vencido" %}{% endif %}</small>
             </span>
             <span class="z-pending-action">{{ row.phase.pending_label }} <i class="fa-solid fa-chevron-right" aria-hidden="true"></i></span>
@@ -186,6 +207,7 @@
     <div class="z-next-match-when">
         <span class="z-badge z-badge--lime">{% if days_left == 0 %}{% translate "Hoy" %}{% elif days_left == 1 %}{% translate "Mañana" %}{% else %}{% blocktranslate trimmed count n=days_left %}En {{ n }} día{% plural %}En {{ n }} días{% endblocktranslate %}{% endif %}</span>
         <span>{{ next_match.start_date|date:"D j M Y" }}{% if next_match.start_time %} · {{ next_match.start_time|time:"H:i" }}{% endif %}</span>
+        {% if multi_space %}{% include 'includes/competition_badge.html' with code=next_match.club.competition name=next_match.club.rules.name short=True %}{% endif %}
     </div>
     <div class="z-next-match-teams">
         <div class="z-next-match-team {% if next_match.local.is_own %}is-own{% endif %}">
@@ -248,7 +270,7 @@
             <h2 id="my-form-title" class="z-section-title">{% translate "Mi forma" %}</h2>
         </div>
         <div class="d-flex flex-wrap gap-2">
-            <a class="btn btn-secondary btn-sm" href="{% url 'player_statistics' %}?player={{ my_player.public_id }}">{% translate "Mis estadísticas" %}</a>
+            <a class="btn btn-secondary btn-sm" href="{% url 'player_statistics' %}?en={{ form_player.club.competition }}&amp;player={{ form_player.public_id }}">{% translate "Mis estadísticas" %}</a>
             <form method="post" action="{% url 'toggle_my_form' %}" data-loading-text="{% translate 'Ocultando la tarjeta…' %}">
                 {% csrf_token %}<input type="hidden" name="hide" value="1">
                 <button type="submit" class="btn btn-secondary btn-sm">{% translate "Ocultar" %}</button>
@@ -256,11 +278,11 @@
         </div>
     </div>
     {% if my_form.empty %}
-    <p class="mb-0">{% translate "Todavía no has jugado ningún partido competitivo. Cuando juegues, aquí verás tu racha, tus últimos resultados y tus puntos SNP." %}</p>
+    <p class="mb-0">{% if form_player.club.rules.has_snp %}{% translate "Todavía no has jugado ningún partido competitivo. Cuando juegues, aquí verás tu racha, tus últimos resultados y tus puntos SNP." %}{% else %}{% translate "Todavía no has jugado ningún partido competitivo. Cuando juegues, aquí verás tu racha y tus últimos resultados." %}{% endif %}</p>
     {% else %}
     <p class="z-form-strip" aria-label="{% translate 'Últimos partidos' %}">
         <span class="z-eyebrow">{% translate "Últimos partidos" %}</span>
-        {% for won in my_form.last %}<span class="st-pip st-pip--{% if won %}w{% else %}l{% endif %}">{% if won %}{% translate "V" context "victoria" %}{% else %}{% translate "D" context "derrota" %}{% endif %}</span>{% endfor %}
+        {% for g in my_form.last_games %}<span class="st-pip st-pip--{% if g.won %}w{% else %}l{% endif %}{% if my_form.by_competition %} z-myform-pip z-myform-pip--{{ g.code }}{% endif %}"{% if my_form.by_competition %} title="{{ g.code|upper }}"{% endif %}>{% if g.won %}{% translate "V" context "victoria" %}{% else %}{% translate "D" context "derrota" %}{% endif %}</span>{% endfor %}
     </p>
     <dl class="z-myform-kpis">
         {% if my_form.run.1 > 1 %}
@@ -274,7 +296,12 @@
                     {% if my_form.wins %}<circle cx="32" cy="32" r="26" fill="none" class="z-myform-ring-w" stroke-width="8" stroke-dasharray="{{ my_form.win_arc|unlocalize }} 163.4" transform="rotate(-90 32 32)"/>{% endif %}
                     <text x="32" y="37" text-anchor="middle" class="z-myform-ring-t">{{ my_form.wins }}-{{ my_form.losses }}</text>
                 </svg>
+                {% if my_form.by_competition %}
+                {# Con jugador en varias competiciones: el total en el anillo y el desglose al lado. #}
+                <span class="z-myform-legend z-myform-legend--col">{% for c in my_form.by_competition %}<span>{% include 'includes/competition_badge.html' with code=c.code name=c.name %} <strong>{{ c.wins }}-{{ c.losses }}</strong></span>{% endfor %}</span>
+                {% else %}
                 <span class="z-myform-legend z-myform-legend--col"><span><i class="z-myform-dot z-myform-dot--w"></i><strong>{{ my_form.wins }}</strong> {% translate "victorias" %}</span><span><i class="z-myform-dot z-myform-dot--l"></i><strong>{{ my_form.losses }}</strong> {% translate "derrotas" %}</span></span>
+                {% endif %}
             </dd>
         </div>
         {% if my_form.called %}
@@ -282,7 +309,8 @@
             <dt>{% translate "Convocatorias en las que te has apuntado" %}</dt>
             <dd class="z-myform-seg-wrap">
                 <span class="z-myform-big">{{ my_form.played }} <small>{% blocktranslate with total=my_form.called %}jugadas de {{ total }}{% endblocktranslate %}</small></span>
-                <span class="z-myform-seg" role="img" aria-label="{% blocktranslate with played=my_form.played total=my_form.called %}Has jugado en {{ played }} de las {{ total }} convocatorias en las que te apuntaste{% endblocktranslate %}"><i class="z-myform-seg-w" style="width: {{ my_form.played_pct|unlocalize }}%"></i></span>
+                <span class="z-myform-seg" role="img" aria-label="{% blocktranslate with played=my_form.played total=my_form.called %}Has jugado en {{ played }} de las {{ total }} convocatorias en las que te apuntaste{% endblocktranslate %}">{% if my_form.by_competition %}{% for c in my_form.by_competition %}<i class="z-myform-seg-w z-myform-seg--{{ c.code }}" style="width: {{ c.played_pct|unlocalize }}%"></i>{% endfor %}{% else %}<i class="z-myform-seg-w" style="width: {{ my_form.played_pct|unlocalize }}%"></i>{% endif %}</span>
+                {% if my_form.by_competition %}<span class="z-myform-seg-detail">{% for c in my_form.by_competition %}{% blocktranslate with competition=c.name played=c.played total=c.called %}{{ competition }} {{ played }} de {{ total }}{% endblocktranslate %}{% if not forloop.last %} · {% endif %}{% endfor %}</span>{% endif %}
             </dd>
         </div>
         {% endif %}
@@ -341,42 +369,44 @@
 </div>
 {% endif %}
 
-{% if hot_player or hot_pair or not onboarding %}
+{% if streaks or not onboarding %}
 <h2 class="z-section-title">{% translate "En racha" %}</h2>
 {% endif %}
-{% if hot_player or hot_pair %}
+{% if streaks %}
 <div class="z-hot-grid">
-    {% if hot_player %}
-    {% with p=hot_player.player %}
+    {% for s in streaks %}
+    {% if s.player %}
+    {% with p=s.player.player %}
     <article class="z-card z-hot">
-        <span class="z-eyebrow"><i class="fa-solid fa-fire me-1" aria-hidden="true"></i> {% translate "Jugador en racha" %}</span>
+        <span class="z-eyebrow"><i class="fa-solid fa-fire me-1" aria-hidden="true"></i> {% translate "Jugador en racha" %}{% if home_teams %} {% include 'includes/competition_badge.html' with code=s.club.competition name=s.club.rules.name %}{% endif %}</span>
         <div class="z-hot-body">
             <img class="z-avatar" src="{% if p.photo %}{{ p.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="">
             <div>
                 <strong>{{ p.full_name }}</strong>
-                <span>{% blocktranslate trimmed count n=hot_player.streak %}{{ n }} victoria seguida{% plural %}{{ n }} victorias seguidas{% endblocktranslate %}</span>
+                <span>{% blocktranslate trimmed count n=s.player.streak %}{{ n }} victoria seguida{% plural %}{{ n }} victorias seguidas{% endblocktranslate %}</span>
             </div>
         </div>
-        <a class="btn btn-secondary btn-sm" href="{% url 'player_statistics' %}?player={{ p.public_id }}">{% translate "Ver estadísticas" %}</a>
+        <a class="btn btn-secondary btn-sm" href="{% url 'player_statistics' %}?en={{ s.club.competition }}&amp;player={{ p.public_id }}">{% translate "Ver estadísticas" %}</a>
     </article>
     {% endwith %}
     {% endif %}
-    {% if hot_pair %}
+    {% if s.pair %}
     <article class="z-card z-hot">
-        <span class="z-eyebrow"><i class="fa-solid fa-fire me-1" aria-hidden="true"></i> {% translate "Pareja en racha" %}</span>
+        <span class="z-eyebrow"><i class="fa-solid fa-fire me-1" aria-hidden="true"></i> {% translate "Pareja en racha" %}{% if home_teams %} {% include 'includes/competition_badge.html' with code=s.club.competition name=s.club.rules.name %}{% endif %}</span>
         <div class="z-hot-body">
             <div class="z-hot-avatars">
-                <img class="z-avatar" src="{% if hot_pair.p1.photo %}{{ hot_pair.p1.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="">
-                <img class="z-avatar" src="{% if hot_pair.p2.photo %}{{ hot_pair.p2.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="">
+                <img class="z-avatar" src="{% if s.pair.p1.photo %}{{ s.pair.p1.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="">
+                <img class="z-avatar" src="{% if s.pair.p2.photo %}{{ s.pair.p2.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="">
             </div>
             <div>
-                <strong>{{ hot_pair.label }}</strong>
-                <span>{% blocktranslate trimmed count n=hot_pair.streak %}{{ n }} victoria seguida{% plural %}{{ n }} victorias seguidas{% endblocktranslate %}</span>
+                <strong>{{ s.pair.label }}</strong>
+                <span>{% blocktranslate trimmed count n=s.pair.streak %}{{ n }} victoria seguida{% plural %}{{ n }} victorias seguidas{% endblocktranslate %}</span>
             </div>
         </div>
-        <a class="btn btn-secondary btn-sm" href="{% url 'pair_statistics' %}?p1={{ hot_pair.p1.public_id }}&amp;p2={{ hot_pair.p2.public_id }}">{% translate "Ver estadísticas" %}</a>
+        <a class="btn btn-secondary btn-sm" href="{% url 'pair_statistics' %}?en={{ s.club.competition }}&amp;p1={{ s.pair.p1.public_id }}&amp;p2={{ s.pair.p2.public_id }}">{% translate "Ver estadísticas" %}</a>
     </article>
     {% endif %}
+    {% endfor %}
 </div>
 {% elif not onboarding %}
 <div class="z-empty">

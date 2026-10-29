@@ -11,6 +11,7 @@ from django.utils import timezone
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
+from .competitions import CHOICES as COMPETITION_CHOICES
 from .public_id import PublicIdModel
 
 
@@ -112,6 +113,10 @@ class Club(PublicIdModel):
     """
     PUBLIC_ID_PREFIX = "CLB"
     name = models.CharField(max_length=100)
+    # Competición del club (``core.competitions``): cada club es el «espacio» de una competición,
+    # con sus reglas, y no cambia después de crearlo. Una cuenta tiene como mucho un espacio por
+    # competición (``core.services.club_of``).
+    competition = models.CharField(_("Competición"), max_length=10, choices=COMPETITION_CHOICES, default="snp")
     slug = models.SlugField(max_length=120, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     # Club suspendido por el personal de Zyra (back-office): sus miembros no pueden entrar
@@ -130,6 +135,12 @@ class Club(PublicIdModel):
     # Progreso de «Prepara la temporada» (core.season_prep): ``{"year": 2026, "done": ["roster", ...], "closed": false}``.
     # Solo vale para el año que indica; al empezar otra temporada se ignora y se parte de cero.
     season_prep = models.JSONField(default=dict, blank=True)
+
+    @property
+    def rules(self):
+        """Ficha de reglas de su competición (``core.competitions.Competition``)."""
+        from .competitions import get_competition
+        return get_competition(self.competition)
 
     @property
     def is_suspended(self):
@@ -202,6 +213,11 @@ class Membership(PublicIdModel):
     def can_manage(self):
         """True si puede gestionar lo deportivo del club: capitán o gestor."""
         return self.role in (self.ADMIN, self.MANAGER)
+
+    @property
+    def team_role_label(self):
+        """Papel en el equipo para «Tus equipos» del menú: Capitán, Gestor o Jugador (el miembro)."""
+        return _("Jugador") if self.role == self.MEMBER else self.get_role_display()
 
     def __str__(self):
         """Usuario, club y rol."""

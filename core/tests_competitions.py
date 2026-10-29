@@ -63,6 +63,7 @@ class MatchCycleReadsRulesTests(TestCase):
         stack = ExitStack()
         for module in ("match.views", "match.lineup", "match.phase"):
             stack.enter_context(mock.patch(f"{module}.competition_for", return_value=THREE_GAMES))
+        stack.enter_context(mock.patch("match.phase.get_competition", return_value=THREE_GAMES))
         self.addCleanup(stack.close)
         stack.__enter__()
 

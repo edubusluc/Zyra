@@ -3,6 +3,31 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 28/10/2026 · Espacios por competición (fase 1a)
+
+- Cada club es ahora el **espacio** de una competición: SNP (todos los que ya existían) o **LAPI** (3 partidos de 1 punto y 6 convocados). Una cuenta puede tener un espacio en cada competición, con un rol distinto en cada uno.
+- El menú de usuario muestra la competición del espacio activo, «Cambiar de espacio» y **«Crear otro espacio»**, que abre el registro con los datos de tu equipo ya puestos. Al registrarse se elige la competición, y las divisiones son las suyas (Future…Grand Slam en SNP, 1.ª a 5.ª en LAPI).
+- Las invitaciones a un espacio de otra competición se aceptan aunque ya estés en otro; a uno de la misma competición, no.
+- En los espacios LAPI no se ofrece nada de SNP (cuenta, sincronización ni ese paso en «Primeros pasos»).
+- En LAPI la **alineación sugerida** se basa en el historial y la afinidad de los convocados (no en puntos SNP) y funciona con 6 convocados. La pantalla de parejas no muestra puntos ni orden de juego, porque el cruce lo decide el sorteo, y el informe PDF y su correo explican el formato LAPI.
+- Al crear otro espacio, si tu cuenta ya tiene jugador no se te vuelve a pedir el nombre.
+- Dar de baja al último jugador de la plantilla sigue permitido, pero Zyra avisa de que te quedarás sin jugadores.
+- **Varios espacios en una sola vista**: si estás en un espacio SNP y en uno LAPI, Enfrentamientos, Calendario, Inicio y Estadísticas los juntan, con el filtro **Todas · SNP · LAPI** (empieza en Todas y recuerda tu elección). Cada tarjeta lleva la etiqueta de su competición y solo muestra las acciones que tu rol permite en ese espacio. Abrir un enfrentamiento de otro espacio te cambia a él y te lo dice.
+- «Nuevo enfrentamiento» dice dónde se crea o, si gestionas los dos espacios, pregunta la competición. **Rivales** tiene botón junto a «Nuevo enfrentamiento» y el formulario ofrece «¿No está el rival? Añádelo».
+- Plantilla y Club: si eres capitán en un espacio y jugador en otro, solo ves el que gestionas; si eres capitán (o jugador) en los dos, cambias con un selector arriba.
+- Estadísticas con «Todas»: tus partidos de todas las competiciones y una fila por equipo; los puntos y el detalle aparecen al elegir una competición.
+- El informe puede **incluir datos de otras competiciones** de los convocados con cuenta enlazada (casilla en «Más opciones» al crear el enfrentamiento).
+- Ya no se habla de «espacios»: el menú de usuario muestra **«Tus equipos»** (equipo, competición y tu papel en cada uno) solo para informar, y con equipos en varias competiciones la cabecera lleva tu nombre. «Cambiar de espacio» desaparece: abrir un enfrentamiento te lleva a su equipo sin avisos.
+- **«Añadir equipo de otra competición»** sustituye a «Crear otro espacio»; el registro enseña desactivadas las competiciones en las que ya tienes equipo («Ya tienes Los Gladiadores en SNP») y, si ya las tienes todas, el menú lo dice.
+- El selector SNP | LAPI de Plantilla, Club y Rivales aparece si gestionas los equipos de las dos competiciones o eres jugador en los dos; si eres capitán en uno y jugador en otro, ves solo el que gestionas.
+- En el Inicio, si tu equipo no tiene categoría (SNP) o división (LAPI), la tarjeta lo dice.
+- El Inicio con equipos en varias competiciones enseña **los dos equipos** en el banner (escudo, competición y tu papel) y «En racha» de cada uno; ya no cambia según el último enfrentamiento que abriste.
+- **«Mi forma»** suma tus partidos y convocatorias de SNP y LAPI, con el desglose por competición y la competición de cada uno de tus últimos partidos. Los puntos SNP siguen igual.
+- Si eres jugador en todos tus equipos, **Plantilla** sale del menú. Jugador, Parejas y Rivales ya no tienen «Todas»: se consultan por competición.
+- **«Mis estadísticas»**: si juegas en equipos de varias competiciones, Estadísticas abre en una pestaña nueva con lo tuyo. «Todas» cuenta tus partidos de SNP y LAPI (sin sumar puntos) con gráficos de cada competición al lado de la otra: sets, local y visitante, partidos ganados por temporada y convocatorias en las que te apuntas. SNP o LAPI abren tu ficha en esa competición.
+- Equipo, Jugador, Parejas y Rivales se consultan siempre por competición (SNP · LAPI), sin «Todas»; Equipo recuerda la que elegiste.
+- En el Inicio, la tarjeta de cada equipo dice la categoría en SNP («Categoría 500») y la división en LAPI.
+
 ## 28/10/2026 · Reglas de competición en una ficha (espacios, fase 0)
 
 - La página del enfrentamiento tiene **«Eliminar enfrentamiento»** en el menú «Más» (capitán y gestores, con el acta abierta); al cancelar vuelves a la página del enfrentamiento. Los gestores ahora también pueden eliminar enfrentamientos, y la papelera del listado se ve en rojo.

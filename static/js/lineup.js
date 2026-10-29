@@ -1,11 +1,14 @@
 // Alineación de parejas: evita repetir jugadores, muestra en vivo el orden por
-// puntos SNP (columna derecha) y solo deja guardar cuando las 5 parejas están completas.
+// puntos SNP (columna derecha, solo si el formulario lleva data-lineup-ordered) y solo
+// deja guardar cuando todas las parejas están completas. Sin orden (LAPI) las parejas se
+// guardan tal cual, porque el cruce lo decide el sorteo.
 (function () {
   const form = document.querySelector('[data-lineup]');
   if (!form) return;
   const slots = Array.from(form.querySelectorAll('[data-slot]'));
   const selects = Array.from(form.querySelectorAll('select[data-player]'));
   const list = document.getElementById('pair-order-list');
+  const ordered = form.hasAttribute('data-lineup-ordered');
 
   function refresh() {
     const chosen = selects.map((s) => s.value).filter(Boolean);
@@ -30,10 +33,10 @@
         points: (parseFloat(oa.dataset.points) || 0) + (parseFloat(ob.dataset.points) || 0),
       });
     });
-    pairs.sort((x, y) => y.points - x.points);
+    if (ordered) pairs.sort((x, y) => y.points - x.points);
 
-    list.innerHTML = '';
-    slots.forEach(function (_slot, i) {
+    if (list) list.innerHTML = '';
+    if (list) slots.forEach(function (_slot, i) {
       const p = pairs[i];
       const li = document.createElement('li');
       if (!p) li.className = 'is-empty';
@@ -75,7 +78,7 @@
     });
   });
   // «Alineación sugerida»: pide al servidor las alineaciones recomendadas (A y, si la
-  // hay, B) y rellena las 5 parejas en orden de juego. Luego se pueden cambiar a mano.
+  // hay, B) y rellena todas las parejas (en orden de juego en la SNP). Luego se pueden cambiar a mano.
   const suggest = form.querySelector('[data-suggest-url]');
   if (suggest) {
     const info = suggest.querySelector('[data-suggest-info]');

@@ -8,8 +8,13 @@
 <div class="z-auth">
     <div class="z-auth-card z-auth-card--wide">
         <img src="{% static 'zyra/logo.svg' %}" alt="Zyra" class="z-auth-logo">
+        {% if new_space %}
+        <h1>{% translate "Añadir equipo de otra competición" %}</h1>
+        <p class="text-muted text-center">{% translate "Tu equipo en otra competición tiene su propia plantilla, sus rivales y sus enfrentamientos. Enfrentamientos, Calendario y Estadísticas te enseñan los de todas tus competiciones juntos." %}</p>
+        {% else %}
         <h1>{% translate "Registrar un club" %}</h1>
         <p class="text-muted text-center">{% translate "Cada club gestiona sus propios jugadores, equipos rivales, enfrentamientos y estadísticas. Nadie de fuera del club puede ver sus datos." %}</p>
+        {% endif %}
         <div class="alert alert-info" role="note">
             <strong>{% translate "Como capitán serás el encargado del club" %}</strong>
             <ul class="mb-1">
@@ -26,7 +31,38 @@
 
             <section data-wizard-step data-step-title="{% translate 'Tu club' %}">
                 <h2 class="z-section-title">{% translate "Club" %}</h2>
-                {{ club_form.as_p }}
+                <fieldset class="z-choice" data-competition-choice aria-describedby="{{ club_form.competition.auto_id }}_helptext">
+                    <legend class="z-choice-legend">{{ club_form.competition.label }}</legend>
+                    {% for radio in club_form.competition %}
+                    <label class="z-choice-option" for="{{ radio.id_for_label }}">
+                        {{ radio.tag }}
+                        <span>{{ radio.choice_label }}</span>
+                        {% if radio.data.value == 'snp' %}<small>{% translate "5 partidos (3-3-2-2-2 puntos), 10 convocados y puntos SNP de cada jugador." %}</small>
+                        {% elif radio.data.value == 'lapi' %}<small>{% translate "Liga Andaluza: 3 partidos de 1 punto y 6 convocados." %}</small>{% endif %}
+                    </label>
+                    {% endfor %}
+                    {% for club in taken_teams %}
+                    {# Ya tiene equipo en esta competición: se ve, pero no se puede elegir. #}
+                    <label class="z-choice-option z-choice-option--taken" aria-disabled="true">
+                        <input type="radio" disabled aria-label="{{ club.rules.name }}">
+                        <span>{{ club.rules.name }}</span>
+                        <small>{% blocktranslate with club=club.name competition=club.rules.name %}Ya tienes {{ club }} en {{ competition }}.{% endblocktranslate %}</small>
+                    </label>
+                    {% endfor %}
+                </fieldset>
+                <p class="z-choice-help">
+                    <span class="helptext" id="{{ club_form.competition.auto_id }}_helptext">{{ club_form.competition.help_text }}</span>
+                    {% for error in club_form.competition.errors %}<span class="errorlist d-block text-danger small">{{ error }}</span>{% endfor %}
+                </p>
+                {% for field in club_form %}{% if field.name != 'competition' %}
+                <p>
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% if field.help_text %}<span class="helptext" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</span>{% endif %}
+                    {% for error in field.errors %}<span class="errorlist d-block text-danger small">{{ error }}</span>{% endfor %}
+                </p>
+                {% endif %}{% endfor %}
+                {% for error in club_form.non_field_errors %}<p class="errorlist text-danger small">{{ error }}</p>{% endfor %}
                 <div class="z-wizard-actions">
                     <button type="button" class="btn btn-primary btn-lg" data-wizard-next hidden>{% translate "Siguiente" %}</button>
                 </div>
@@ -45,14 +81,23 @@
 
             <section data-wizard-step data-step-title="{% translate 'Tu jugador' %}">
                 <h2 class="z-section-title">{% translate "Tu jugador" %}</h2>
-                <p class="text-muted small">{% translate "Como capitán también juegas. Puedes conectar tu cuenta de SNP para traer tu equipo con sus puntos y elegir después cuál eres tú, o escribir tu nombre." %}</p>
-                <fieldset class="z-choice" data-captain-mode>
+                <p class="text-muted small" data-snp-only>{% translate "Como capitán también juegas. Puedes conectar tu cuenta de SNP para traer tu equipo con sus puntos y elegir después cuál eres tú, o escribir tu nombre." %}</p>
+                <p class="text-muted small" data-no-snp hidden>{% translate "Como capitán también juegas: escribe tu nombre y apellidos para crear tu jugador." %}</p>
+                <fieldset class="z-choice" data-captain-mode data-snp-only>
                     <legend class="visually-hidden">{{ snp_form.mode.label }}</legend>
                     {% for radio in snp_form.mode %}
                     <label class="z-choice-option" for="{{ radio.id_for_label }}">
                         {{ radio.tag }}
                         <span>{{ radio.choice_label }}</span>
                         {% if radio.data.value == 'snp' %}<small>{% translate "Recomendado: tu equipo y tus puntos SNP listos en un minuto." %}</small>{% endif %}
+                    </label>
+                    {% endfor %}
+                    {% for club in taken_teams %}
+                    {# Ya tiene equipo en esta competición: se ve, pero no se puede elegir. #}
+                    <label class="z-choice-option z-choice-option--taken" aria-disabled="true">
+                        <input type="radio" disabled aria-label="{{ club.rules.name }}">
+                        <span>{{ club.rules.name }}</span>
+                        <small>{% blocktranslate with club=club.name competition=club.rules.name %}Ya tienes {{ club }} en {{ competition }}.{% endblocktranslate %}</small>
                     </label>
                     {% endfor %}
                 </fieldset>
@@ -72,17 +117,22 @@
                 {% if google_missing_name %}
                 <div class="alert alert-warning" role="alert">{% translate "No ha sido posible obtener tu nombre y apellidos de tu cuenta de Google. Indícalos para crear tu jugador." %}</div>
                 {% endif %}
+                {% if linked_player %}
+                <div class="alert alert-info" role="note">{% blocktranslate with player=linked_player.full_name space=linked_player.club.name %}Tu cuenta ya tiene el jugador <strong>{{ player }}</strong> en {{ space }}. Crearemos tu jugador en este equipo con el mismo nombre.{% endblocktranslate %}</div>
+                {% else %}
                 {{ player_form.as_p }}
-                <details class="z-more-options z-snp-match-note">
+                {% endif %}
+                <details class="z-more-options z-snp-match-note" {% if linked_player %}hidden{% else %}data-snp-only{% endif %}>
                     <summary>{% translate "Importante: debe coincidir con SNP" %}</summary>
                     <p class="small">{% translate "El nombre y los apellidos deben coincidir exactamente con los que tienes registrados en SNP. Si no coinciden, no se te podrán asignar tus puntos SNP." %}</p>
                 </details>
                 </div>
                 <div class="z-wizard-actions">
-                    <button type="submit" class="btn btn-primary btn-lg">{% translate "Crear club" %}</button>
+                    <button type="submit" class="btn btn-primary btn-lg">{% if new_space %}{% translate "Añadir equipo" %}{% else %}{% translate "Crear club" %}{% endif %}</button>
                     <button type="button" class="btn btn-secondary" data-wizard-back hidden>{% translate "Atrás" %}</button>
                 </div>
             </section>
+            {{ competition_rules|json_script:"competition-rules" }}
             <script>
                 // Muestra solo los campos de la opción elegida (sin JavaScript se ven las dos).
                 (function () {
@@ -95,6 +145,33 @@
                     }
                     radios.forEach(function (r) { r.addEventListener('change', sync); });
                     sync();
+
+                    // Competición: solo sus divisiones y, fuera de la SNP, sin cuenta SNP (nombre a mano).
+                    const rules = JSON.parse(document.getElementById('competition-rules').textContent);
+                    const division = document.getElementById('{{ club_form.division.auto_id }}');
+                    const allDivisions = Array.from(division.options).map(function (o) { return o.cloneNode(true); });
+                    const choices = document.querySelectorAll('[data-competition-choice] input[type=radio]');
+                    function syncCompetition() {
+                        const picked = Array.from(choices).find(function (r) { return r.checked; }) || choices[0];
+                        const rule = rules[picked ? picked.value : ''];
+                        if (!rule) return;
+                        const current = division.value;
+                        division.replaceChildren.apply(division, allDivisions.filter(function (o) {
+                            return !o.value || rule.divisions.indexOf(o.value) !== -1;
+                        }).map(function (o) { return o.cloneNode(true); }));
+                        division.value = rule.divisions.indexOf(current) !== -1 ? current : '';
+                        document.querySelectorAll('[data-snp-only]').forEach(function (el) { el.hidden = !rule.snp; });
+                        document.querySelectorAll('[data-no-snp]').forEach(function (el) { el.hidden = rule.snp; });
+                        const lastNameHelp = document.getElementById('{{ player_form.last_name.auto_id }}_helptext');
+                        if (lastNameHelp) lastNameHelp.hidden = !rule.snp;
+                        if (!rule.snp) {
+                            const manual = Array.from(radios).find(function (r) { return r.value === 'manual'; });
+                            if (manual) manual.checked = true;
+                        }
+                        sync();
+                    }
+                    choices.forEach(function (r) { r.addEventListener('change', syncCompetition); });
+                    syncCompetition();
                 })();
             </script>
         </form>

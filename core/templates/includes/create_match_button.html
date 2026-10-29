@@ -1,0 +1,17 @@
+{% load i18n %}
+{# «Nuevo enfrentamiento» en las vistas unidas. Recibe create_spaces (espacios que gestiona) y multi_space: con un espacio, el botón dice dónde se crea; con varios, pregunta la competición. classes: clases del botón. #}
+{% if create_spaces|length == 1 %}
+{% with club=create_spaces.0 %}
+<a href="{% url 'create_match' %}?en={{ club.competition }}" class="{{ classes|default:'btn btn-primary text-nowrap' }}"><i class="fa-solid fa-plus me-1" aria-hidden="true"></i> {% if multi_space %}{% blocktranslate with competition=club.rules.name %}Nuevo enfrentamiento {{ competition }}{% endblocktranslate %}{% else %}{% translate "Nuevo enfrentamiento" %}{% endif %}</a>
+{% endwith %}
+{% elif create_spaces %}
+<div class="dropdown z-create-choice">
+    <button type="button" class="{{ classes|default:'btn btn-primary text-nowrap' }} dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="fa-solid fa-plus me-1" aria-hidden="true"></i> {% translate "Nuevo enfrentamiento" %}</button>
+    <ul class="dropdown-menu dropdown-menu-end">
+        <li><h2 class="dropdown-header">{% translate "¿En qué competición?" %}</h2></li>
+        {% for club in create_spaces %}
+        <li><a class="dropdown-item z-space-item" href="{% url 'create_match' %}?en={{ club.competition }}">{% include 'includes/competition_badge.html' with code=club.competition name=club.rules.name short=True %}<span>{{ club.name }}<small class="d-block text-muted">{% blocktranslate with games=club.rules.games players=club.rules.min_call_players %}{{ games }} partidos · {{ players }} convocados{% endblocktranslate %}</small></span></a></li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}

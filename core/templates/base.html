@@ -60,8 +60,10 @@
             <ul class="z-nav">
                 <li><a href="{% url 'home' %}" class="z-nav-link {% if nav_section == 'home' %}is-active{% endif %}"{% if nav_section == 'home' %} aria-current="page"{% endif %}><i class="fa-solid fa-house" aria-hidden="true"></i> {% translate "Inicio" %}</a></li>
                 <li><a href="{% url 'list_match' %}" class="z-nav-link {% if nav_section == 'matches' %}is-active{% endif %}"{% if nav_section == 'matches' %} aria-current="page"{% endif %}><i class="fa-solid fa-table-tennis-paddle-ball" aria-hidden="true"></i> {% translate "Enfrentamientos" %}</a></li>
+                {% if not hide_roster_nav %}
                 <li><a href="{% url 'list_players' %}" class="z-nav-link {% if nav_section == 'players' %}is-active{% endif %}"{% if nav_section == 'players' %} aria-current="page"{% endif %}><i class="fa-solid fa-user" aria-hidden="true"></i> {% translate "Plantilla" context "equipo" %}</a></li>
-                <li><a href="{% url 'team_statistics' %}" class="z-nav-link {% if nav_section == 'stats' %}is-active{% endif %}"{% if nav_section == 'stats' %} aria-current="page"{% endif %}><i class="fa-solid fa-chart-simple" aria-hidden="true"></i> {% translate "Estadísticas" %}</a></li>
+                {% endif %}
+                <li><a href="{% if my_stats_available %}{% url 'my_statistics' %}{% else %}{% url 'team_statistics' %}{% endif %}" class="z-nav-link {% if nav_section == 'stats' %}is-active{% endif %}"{% if nav_section == 'stats' %} aria-current="page"{% endif %}><i class="fa-solid fa-chart-simple" aria-hidden="true"></i> {% translate "Estadísticas" %}</a></li>
                 <li><a href="{% url 'club_home' %}" class="z-nav-link {% if nav_section == 'club' %}is-active{% endif %}"{% if nav_section == 'club' %} aria-current="page"{% endif %}><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> {% translate "Club" %}</a></li>
             </ul>
         </nav>
@@ -96,23 +98,28 @@
             <div class="dropdown z-user-menu">
                 <button class="btn btn-secondary btn-sm dropdown-toggle d-inline-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="fa-solid fa-circle-user" aria-hidden="true"></i>
+                    {% if user_teams|length > 1 %}
+                    {# Con equipo en varias competiciones, el botón lleva su nombre: «Tus equipos» del menú dice dónde está. #}
+                    <span class="z-club-name">{{ user.first_name|default:user.username }}</span>
+                    {% else %}
                     <span class="z-club-name">{% if current_club %}{{ current_club.name }}{% else %}{{ user.username }}{% endif %}</span>
+                    {% endif %}
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li><span class="dropdown-header">{{ user.username }}</span></li>
-                    {% if user_memberships|length > 1 %}
-                    <li><span class="dropdown-header">{% translate "Cambiar de club" %}</span></li>
-                    {% for m in user_memberships %}
-                    <li>
-                        <form action="{% url 'switch_club' %}" method="post" data-loading-text="{% translate 'Cambiando de club…' %}">
-                            {% csrf_token %}
-                            <input type="hidden" name="club_id" value="{{ m.club_id }}">
-                            <button type="submit" class="dropdown-item {% if m.club_id == current_club.id %}active{% endif %}">
-                                <i class="fa-solid {% if m.club_id == current_club.id %}fa-check{% else %}fa-shield-halved{% endif %}" aria-hidden="true"></i> {{ m.club.name }}
-                            </button>
-                        </form>
-                    </li>
+                    {% if user_teams|length > 1 %}
+                    {# Solo informa: no se cambia de equipo desde aquí (core.spaces lo hace al abrir cada página). #}
+                    <li><span class="dropdown-header">{% translate "Tus equipos" %}</span></li>
+                    {% for m in user_teams %}
+                    <li><span class="dropdown-item-text z-team-item">{% include 'includes/competition_badge.html' with code=m.club.competition name=m.club.rules.name short=True %}<span class="z-team-item-name">{{ m.club.name }}</span><small class="text-muted">{{ m.team_role_label }}</small></span></li>
                     {% endfor %}
+                    {% endif %}
+                    {% if current_club %}
+                    {% if free_competitions %}
+                    <li><a class="dropdown-item" href="{% url 'register_club' %}"><i class="fa-solid fa-plus" aria-hidden="true"></i> {% translate "Añadir equipo de otra competición" %}</a></li>
+                    {% else %}
+                    <li><span class="dropdown-item-text small text-muted"><i class="fa-solid fa-check me-1" aria-hidden="true"></i>{% blocktranslate with competitions=team_competitions %}Ya tienes equipo en {{ competitions }}{% endblocktranslate %}</span></li>
+                    {% endif %}
                     <li><hr class="dropdown-divider"></li>
                     {% endif %}
                     <li><a class="dropdown-item" href="{% url 'my_profile' %}"><i class="fa-solid fa-id-badge" aria-hidden="true"></i> {% translate "Mi perfil" %}</a></li>
@@ -153,7 +160,7 @@
     <a href="{% url 'guide_index' %}">{% translate "Guías" %}</a>
     <a href="mailto:{{ contact_email }}">{% translate "Contacto" %}</a>
   </nav>
-  <p>&copy; {% now "Y" %} Zyra{% if current_club %} · {{ current_club.name }}{% endif %}</p>
+  <p>&copy; {% now "Y" %} Zyra{% if current_club and user_teams|length < 2 %} · {{ current_club.name }}{% endif %}</p>
 </footer>
 
 {% if current_club %}
@@ -161,8 +168,10 @@
     <ul>
         <li><a href="{% url 'home' %}" class="{% if nav_section == 'home' %}is-active{% endif %}" {% if nav_section == 'home' %}aria-current="page"{% endif %}><i class="fa-solid fa-house" aria-hidden="true"></i><span class="z-bn-label">{% translate "Inicio" %}</span></a></li>
         <li><a href="{% url 'list_match' %}" class="{% if nav_section == 'matches' %}is-active{% endif %}" {% if nav_section == 'matches' %}aria-current="page"{% endif %}><i class="fa-solid fa-table-tennis-paddle-ball" aria-hidden="true"></i><span class="z-bn-label">{% translate "Partidos" %}</span></a></li>
+        {% if not hide_roster_nav %}
         <li><a href="{% url 'list_players' %}" class="{% if nav_section == 'players' %}is-active{% endif %}" {% if nav_section == 'players' %}aria-current="page"{% endif %}><i class="fa-solid fa-user" aria-hidden="true"></i><span class="z-bn-label">{% translate "Plantilla" context "equipo" %}</span></a></li>
-        <li><a href="{% url 'team_statistics' %}" class="{% if nav_section == 'stats' %}is-active{% endif %}" {% if nav_section == 'stats' %}aria-current="page"{% endif %}><i class="fa-solid fa-chart-simple" aria-hidden="true"></i><span class="z-bn-label">{% translate "Estadísticas" %}</span></a></li>
+        {% endif %}
+        <li><a href="{% if my_stats_available %}{% url 'my_statistics' %}{% else %}{% url 'team_statistics' %}{% endif %}" class="{% if nav_section == 'stats' %}is-active{% endif %}" {% if nav_section == 'stats' %}aria-current="page"{% endif %}><i class="fa-solid fa-chart-simple" aria-hidden="true"></i><span class="z-bn-label">{% translate "Estadísticas" %}</span></a></li>
         <li><a href="{% url 'club_home' %}" class="{% if nav_section == 'club' %}is-active{% endif %}" {% if nav_section == 'club' %}aria-current="page"{% endif %}><i class="fa-solid fa-shield-halved" aria-hidden="true"></i><span class="z-bn-label">{% translate "Club" %}</span></a></li>
     </ul>
 </nav>

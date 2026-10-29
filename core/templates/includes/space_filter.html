@@ -1,0 +1,12 @@
+{% load i18n %}
+{# Filtro de espacios «Todas · SNP · LAPI» de las vistas unidas. Recibe space_chips de core.spaces.space_filter_context; vacío con un solo espacio. #}
+{% if space_chips %}
+<nav aria-label="{% translate 'Competición' %}" class="st-type-filter z-space-filter">
+  <ul class="st-seasons">
+    <li class="st-filter-label">{% translate "Competición" %}</li>
+    {% for chip in space_chips %}
+      <li><a class="st-chip{% if chip.code != 'todas' %} z-space-chip z-space-chip--{{ chip.code }}{% endif %}" href="{{ chip.url }}" {% if chip.active %}aria-current="page"{% endif %}>{{ chip.label }}</a></li>
+    {% endfor %}
+  </ul>
+</nav>
+{% endif %}

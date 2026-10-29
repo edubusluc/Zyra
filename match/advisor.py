@@ -1,7 +1,13 @@
 """
-Recomendador de alineaciones para el formato de la SNP (Series Nacionales de Pádel).
+Recomendador de alineaciones a partir del historial del club, para la ficha de cada competición.
 
-Formato de la SNP que se modela aquí:
+Sirve para cualquier competición de ``core.competitions``: estima la probabilidad de victoria
+de cada pareja con el historial y la afinidad de los convocados y busca la combinación que más
+opciones tiene de ganar. Solo en la SNP el orden de las parejas sale de los puntos SNP; en el
+resto (LAPI) las parejas se cruzan por sorteo y todos los partidos valen lo mismo, así que no
+hay orden ni partidos «más valiosos».
+
+Formato de la SNP, el más complejo:
 - Cada eliminatoria son 5 partidos por parejas. Los partidos 1 y 2 valen 3 puntos
   y los partidos 3, 4 y 5 valen 2: hay 12 puntos en juego.
 - El orden NO lo elige el capitán: las parejas se ordenan por la suma de los
@@ -16,14 +22,15 @@ pareja posible a partir del historial del club y busca las combinaciones que
 maximizan la probabilidad de ganar la eliminatoria.
 """
 from dataclasses import dataclass, field
+from functools import lru_cache
 from itertools import combinations
 
 from django.utils.translation import gettext as _, gettext_lazy
 
 from core.competitions import SNP
 
-# Formato de la SNP, sacado de su ficha (core.competitions): este recomendador solo sirve
-# para la SNP porque ordena las parejas por puntos SNP.
+# Formato de la SNP, sacado de su ficha (core.competitions): es la competición por defecto
+# de las funciones que reciben ``comp``.
 GAME_VALUES = SNP.game_points
 POINTS_TO_WIN = SNP.total_points // 2 + 1
 PLAYERS_PER_LINEUP = SNP.players_per_lineup
@@ -212,23 +219,24 @@ def get_pair(pairs, forms, a_id, b_id):
     return pairs[key]
 
 
-def win_probability(ps):
+def win_probability(ps, comp=SNP):
     """
-    P(ganar la eliminatoria) y puntos esperados, con las parejas ya ordenadas.
-    Se construye la distribución de puntos partido a partido (más rápido que
-    enumerar los 32 resultados posibles).
+    P(ganar la eliminatoria) y puntos esperados, con las parejas ya ordenadas, según los
+    puntos de cada partido de ``comp``. Se construye la distribución de puntos partido a
+    partido (más rápido que enumerar todos los resultados posibles).
     """
+    values = comp.game_points
     dist = {0: 1.0}
-    for p, value in zip(ps, GAME_VALUES):
+    for p, value in zip(ps, values):
         nxt = {}
         for pts, prob in dist.items():
             nxt[pts + value] = nxt.get(pts + value, 0.0) + prob * p
             nxt[pts] = nxt.get(pts, 0.0) + prob * (1 - p)
         dist = nxt
-    half = sum(GAME_VALUES) / 2
-    win = sum(prob for pts, prob in dist.items() if pts >= POINTS_TO_WIN)
+    half = comp.total_points / 2
+    win = sum(prob for pts, prob in dist.items() if pts >= comp.total_points // 2 + 1)
     win += dist.get(half, 0.0) / 2  # el empate cuenta como media victoria
-    expected = sum(p * v for p, v in zip(ps, GAME_VALUES))
+    expected = sum(p * v for p, v in zip(ps, values))
     return win, expected
 
 
@@ -243,8 +251,10 @@ def _matchings(ids):
             yield [(first, other)] + tail
 
 
-# Las 945 formas de emparejar 10 posiciones, calculadas una sola vez
-_TEMPLATES = [tuple(m) for m in _matchings(list(range(PLAYERS_PER_LINEUP)))]
+@lru_cache(maxsize=None)
+def _templates(size):
+    """Formas de emparejar ``size`` posiciones (945 para 10, 15 para 6), calculadas una sola vez."""
+    return [tuple(m) for m in _matchings(list(range(size)))]
 
 
 STRATEGY_BEST = "best"
@@ -261,12 +271,14 @@ STRATEGY_TITLES = {
 
 @dataclass
 class Lineup:
-    """Alineación recomendada: parejas en orden SNP, probabilidad de ganar, puntos esperados y banquillo."""
-    pairs: list          # PairForm en orden SNP (partido 1 primero)
+    """Alineación recomendada: parejas (en orden de juego si la competición lo fija), probabilidad
+    de ganar, puntos esperados, banquillo y ficha de la competición."""
+    pairs: list          # PairForm; en la SNP en orden de juego (partido 1 primero), si no de más a menos fuerte
     win: float
     expected: float
     bench: list          # PlayerForm que no juegan
     strategy: str = STRATEGY_BEST
+    comp: object = SNP
 
     @property
     def title(self):
@@ -280,41 +292,44 @@ class Lineup:
 
     @property
     def rows(self):
-        """Filas para mostrar: número de partido, puntos, pareja y % estimado."""
+        """Filas para mostrar: número de partido (o de pareja), puntos, pareja y % estimado."""
         return [
             {'n': n, 'value': v, 'pair': p, 'pct': round(p.strength * 100)}
-            for n, (p, v) in enumerate(zip(self.pairs, GAME_VALUES), start=1)
+            for n, (p, v) in enumerate(zip(self.pairs, self.comp.game_points), start=1)
         ]
 
 
-def recommend(forms, pairs, called_ids):
+def recommend(forms, pairs, called_ids, comp=SNP):
     """
-    Devuelve (alineacion_a, alineacion_b):
+    Devuelve (alineacion_a, alineacion_b) para la competición ``comp``:
     - A: la que maximiza la probabilidad de ganar la eliminatoria.
     - B: alternativa que da más peso a parejas con historial juntas y cambia
       al menos dos parejas respecto a A (si es posible).
     """
+    size = comp.players_per_lineup
     called = [forms[i] for i in called_ids if i in forms]
-    if len(called) < PLAYERS_PER_LINEUP:
+    if len(called) < size:
         return None, None
     called.sort(key=lambda f: f.strength, reverse=True)
     pool = [f.id for f in called[:MAX_CANDIDATES]]
 
-    # Datos de cada pareja posible, precalculados: (orden SNP, fuerza, química)
+    # Datos de cada pareja posible, precalculados: (orden, fuerza, química). En la SNP el orden
+    # oficial es la suma de puntos SNP; sin orden oficial, de la pareja más fuerte a la menos.
     info = {}
     for a, b in combinations(pool, 2):
         pf = get_pair(pairs, forms, a, b)
         # Química: solo cuentan las parejas que ya han jugado juntas y ganan al menos la mitad
         proven = min(pf.played, 6) / 6 if pf.played and pf.wins * 2 >= pf.played else 0
-        info[(a, b)] = info[(b, a)] = ((pf.snp_sum, pf.strength), pf.strength, proven, pf)
+        order = (pf.snp_sum, pf.strength) if comp.has_snp else (pf.strength,)
+        info[(a, b)] = info[(b, a)] = (order, pf.strength, proven, pf)
 
     best_a = None      # (win, expected, pair_infos)
     candidates = []    # (win, expected, chemistry, keys, pair_infos)
-    for group in combinations(pool, PLAYERS_PER_LINEUP):
-        for template in _TEMPLATES:
+    for group in combinations(pool, size):
+        for template in _templates(size):
             ps = [info[(group[i], group[j])] for i, j in template]
-            ps.sort(key=lambda x: x[0], reverse=True)  # orden oficial: suma SNP
-            win, expected = win_probability([x[1] for x in ps])
+            ps.sort(key=lambda x: x[0], reverse=True)
+            win, expected = win_probability([x[1] for x in ps], comp)
             chemistry = sum(x[2] for x in ps) / len(ps)
             item = (win, expected, chemistry, ps)
             if best_a is None or (win, expected) > (best_a[0], best_a[1]):
@@ -325,7 +340,7 @@ def recommend(forms, pairs, called_ids):
         """Convierte un candidato de la búsqueda en un Lineup con su banquillo."""
         ps = [x[3] for x in item[3]]
         playing = {f.id for p in ps for f in (p.a, p.b)}
-        return Lineup(ps, item[0], item[1], [f for f in called if f.id not in playing])
+        return Lineup(ps, item[0], item[1], [f for f in called if f.id not in playing], comp=comp)
 
     a = lineup(best_a)
     options = []
@@ -338,14 +353,15 @@ def recommend(forms, pairs, called_ids):
 
     # Plan B con una estrategia distinta:
     # - si hay parejas con más rodaje juntas que las de A, se priorizan ("consolidadas");
-    # - si no, se refuerzan los dos partidos de 3 puntos (6 de los 12 puntos).
+    # - si no y hay partidos que valen más (los dos de 3 puntos de la SNP), se refuerzan;
+    # - si no, la segunda mejor.
     consolidated = [c for c in options if c[2] >= best_a[2] + 0.05]
+    top = max(options, key=lambda c: (c[3][0][1] * c[3][1][1], c[0])) if comp.has_snp else None
     if consolidated:
         b = lineup(max(consolidated, key=lambda c: (c[0] + 0.15 * c[2], c[1])))
         b.strategy = STRATEGY_CHEMISTRY
     else:
-        top = max(options, key=lambda c: (c[3][0][1] * c[3][1][1], c[0]))
-        if top[3][0][1] * top[3][1][1] > best_a[3][0][1] * best_a[3][1][1] + 0.02:
+        if top and top[3][0][1] * top[3][1][1] > best_a[3][0][1] * best_a[3][1][1] + 0.02:
             b = lineup(top)
             b.strategy = STRATEGY_TOP
         else:
@@ -393,12 +409,21 @@ def explain(lineup, venue_label, compare_to=None):
                   "que valen la mitad de la eliminatoria: %(pct)s %% de ganar ambos.")
                 % {"n": len(new_pairs), "pct": round(both * 100)}
             )
-    sentences.append(
-        _("%(pair1)s y %(pair2)s tienen la mayor suma de puntos SNP, así que disputarán "
-          "los dos partidos de 3 puntos (victoria estimada %(pct1)s %% y %(pct2)s %%).")
-        % {"pair1": p1.name, "pair2": p2.name,
-           "pct1": round(p1.strength * 100), "pct2": round(p2.strength * 100)}
-    )
+    comp = lineup.comp
+    if comp.has_snp:
+        sentences.append(
+            _("%(pair1)s y %(pair2)s tienen la mayor suma de puntos SNP, así que disputarán "
+              "los dos partidos de 3 puntos (victoria estimada %(pct1)s %% y %(pct2)s %%).")
+            % {"pair1": p1.name, "pair2": p2.name,
+               "pct1": round(p1.strength * 100), "pct2": round(p2.strength * 100)}
+        )
+    else:
+        sentences.append(
+            _("%(pair1)s y %(pair2)s son las parejas con más opciones según el historial y la afinidad "
+              "(victoria estimada %(pct1)s %% y %(pct2)s %%); el cruce de las parejas lo decide el sorteo.")
+            % {"pair1": p1.name, "pair2": p2.name,
+               "pct1": round(p1.strength * 100), "pct2": round(p2.strength * 100)}
+        )
 
     with_history = sorted((p for p in lineup.pairs if p.played), key=lambda p: (p.wins / p.played, p.played), reverse=True)
     if with_history:
@@ -413,7 +438,7 @@ def explain(lineup, venue_label, compare_to=None):
         if complementary:
             sentences.append(
                 _("Ninguna pareja tiene historial, así que se combinan perfiles de derecha y revés "
-                  "en %(n)s de las 5 parejas.") % {"n": len(complementary)}
+                  "en %(n)s de las %(total)s parejas.") % {"n": len(complementary), "total": comp.games}
             )
 
     hot = sorted(
@@ -429,7 +454,7 @@ def explain(lineup, venue_label, compare_to=None):
 
     closing = _(
         "Probabilidad estimada de ganar la eliminatoria: %(pct)s "
-        "(%(expected)s de 12 puntos esperados)."
-    ) % {"pct": _pct(lineup.win), "expected": f"{lineup.expected:.1f}"}
+        "(%(expected)s de %(total)s puntos esperados)."
+    ) % {"pct": _pct(lineup.win), "expected": f"{lineup.expected:.1f}", "total": comp.total_points}
     # Máximo 4 frases: la última siempre es la probabilidad
     return " ".join(sentences[:3] + [closing])

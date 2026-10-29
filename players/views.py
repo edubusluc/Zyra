@@ -1,6 +1,6 @@
 """Vistas de jugadores: alta, lista, ficha, plantilla, cuenta SNP, «Completar equipo» y perfil propio."""
 from django.shortcuts import render, redirect, get_object_or_404
-from core import ratelimit
+from core import ratelimit, spaces
 from core.decorators import club_required, club_admin_required, not_while_syncing, club_manager_required
 from core.models import Club
 from .forms import NewOwnPlayerForm, OwnPlayerForm, PlayerEditForm, PlayerForm, SnpAccountForm, with_placeholder
@@ -70,6 +70,7 @@ def create_player(request):
 ORDER_FIELDS = {'name', '-name', 'last_name', '-last_name', 'position', '-position', 'snp_score', '-snp_score'}
 
 
+@spaces.management_view
 @club_required
 def list_players(request):
     """
@@ -130,7 +131,10 @@ def edit_player(request, player_id):
     form.uploader = request.user
     if request.method == "POST":
         if form.is_valid():
+            was_in_team = Player.objects.filter(pk=player.pk, in_team=True).exists()
             form.save()
+            if was_in_team and not form.instance.in_team:
+                _warn_if_roster_empty(request)
             return redirect('list_players')
 
     context = {
@@ -191,6 +195,13 @@ def player_won(game, player):
     return player in (game.player_1_visiting, game.player_2_visiting)
 
 
+def _warn_if_roster_empty(request):
+    """Avisa (sin impedirlo) de que la baja ha dejado al club sin jugadores en el equipo."""
+    if not Player.objects.filter(club=request.club, in_team=True).exists():
+        messages.warning(request, _("Te has quedado sin jugadores en la plantilla. Vuelve a darlos de alta "
+                                    "para poder convocarlos."))
+
+
 @club_manager_required
 def manage_roster(request):
     """Marca de una vez qué jugadores están en el equipo."""
@@ -204,6 +215,8 @@ def manage_roster(request):
             joined_text = ngettext("%(n)s alta", "%(n)s altas", joined) % {"n": joined}
             left_text = ngettext("%(n)s baja", "%(n)s bajas", left) % {"n": left}
             messages.success(request, _("Plantilla actualizada: %(joined)s y %(left)s.") % {"joined": joined_text, "left": left_text})
+            if left:
+                _warn_if_roster_empty(request)
         else:
             messages.info(request, _("No había cambios que guardar."))
         return redirect('manage_roster')

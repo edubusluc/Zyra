@@ -222,6 +222,7 @@
         </div>
         {% endif %}
 
+        {% if current_club.rules.has_snp %}
         <article class="st-card">
           <h3 class="st-card-title">{% translate "Evolución de los puntos SNP" %}</h3>
           <p class="st-card-note">{% blocktranslate with season=snp_season %}Puntos SNP en cada actualización semanal de la temporada {{ season }}.{% endblocktranslate %}</p>
@@ -231,6 +232,7 @@
             <p class="st-muted">{% translate "Todavía no hay puntos SNP guardados en esta temporada." %}</p>
           {% endif %}
         </article>
+        {% endif %}
 
         <article class="st-card">
           <h3 class="st-card-title">{% translate "Detalle por temporada" %}</h3>

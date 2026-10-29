@@ -70,6 +70,9 @@ class Match(PublicIdModel):
     # Qué partidos cuentan en las estadísticas del informe PDF (se elige al crear el partido).
     report_scope = models.CharField(_("Datos del informe"), max_length=15, choices=REPORT_SCOPES,
                                     default=REPORT_SCOPE_ALL)
+    # El informe PDF añade, de los convocados con cuenta enlazada, sus partidos de esta temporada en
+    # sus otros espacios (otras competiciones). Se elige al crear el partido.
+    report_other_competitions = models.BooleanField(_("Incluir datos de otras competiciones"), default=False)
     season = models.CharField(max_length=9, blank = True, default="NONE")
     # Copia de la ubicación del equipo local al crear el partido. Es una copia, no un
     # enlace: si el equipo cambia de sede después, los partidos ya creados no cambian.

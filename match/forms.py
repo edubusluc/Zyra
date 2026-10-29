@@ -2,9 +2,11 @@
 from django import forms
 from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
+from core.competitions import CHOICES as COMPETITION_CHOICES
 from core.models import REPORT_SCOPES, UserPreference
 from .models import Match, Game, Result
 from team.models import Team
+from players.models import Player
 from core.similarity import same_name
 
 class TeamSelect(forms.Select):
@@ -36,13 +38,10 @@ class MatchForm(forms.ModelForm):
     RIVAL_SOURCES = [(GROUP, _("Equipo del grupo")), (MANUAL, _("Escribir nombre"))]
     SIDES = [("local", _("En casa")), ("visiting", _("Fuera"))]
 
-    # Competición del enfrentamiento. Hoy solo existe SNP, por eso el selector va bloqueado; al
-    # añadir otra competición basta con incluirla en COMPETITIONS y quitar ``disabled``.
-    SNP = "snp"
-    COMPETITIONS = [(SNP, _("SNP"))]
-
-    competition = forms.ChoiceField(label=_("Competición"), choices=COMPETITIONS, initial=SNP, disabled=True,
-                                    required=False)
+    # Competición del enfrentamiento: la del espacio (``Club.competition``). Solo informa, por eso
+    # va bloqueada; para otra competición se cambia de espacio.
+    competition = forms.ChoiceField(label=_("Competición"), choices=COMPETITION_CHOICES, initial="snp",
+                                    disabled=True, required=False)
     mode = forms.ChoiceField(label=_("Modo"), choices=MODES, initial=COMPETITIVE, required=False,
                              widget=forms.RadioSelect)
     # Solo en amistosos: el rival puede ser un equipo del grupo o un nombre escrito a mano
@@ -58,13 +57,15 @@ class MatchForm(forms.ModelForm):
 
     class Meta:
         model = Match
-        fields = ['match_type', 'local', 'visiting', 'rival_name', 'start_date', 'start_time', 'location', 'report_scope']
+        fields = ['match_type', 'local', 'visiting', 'rival_name', 'start_date', 'start_time', 'location', 'report_scope',
+                  'report_other_competitions']
         labels = {'local': _('Local'), 'visiting': _('Visitante'), 'rival_name': _('Nombre del rival'),
                   'start_date': _('Fecha'), 'start_time': _('Hora (opcional)'), 'location': _('Lugar'),
                   'report_scope': _('Datos del informe')}
         widgets = {
             'match_type': forms.Select(),
             'report_scope': forms.RadioSelect(),
+            'report_other_competitions': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'rival_name': forms.TextInput(attrs={'placeholder': _('Ej.: Pádel Norte'), 'autocomplete': 'off'}),
             'start_time': forms.TimeInput(format='%H:%M', attrs={'type': 'time'}),
             'location': forms.TextInput(attrs={'autocomplete': 'off', 'maxlength': 100}),
@@ -85,11 +86,17 @@ class MatchForm(forms.ModelForm):
         """
         super(MatchForm, self).__init__(*args, **kwargs)
         self.club = club
+        if club is not None:
+            self.fields['competition'].initial = club.competition
         self.fields['report_scope'].choices = REPORT_SCOPES
         self.fields['report_scope'].widget.choices = REPORT_SCOPES
         # Si el formulario no lo envía, vale la preferencia de la cuenta.
         self.default_report_scope = UserPreference.report_scope_for(user)
         self.fields['report_scope'].required = False
+        # «Incluir datos de otras competiciones»: solo si algún jugador del club con cuenta enlazada
+        # tiene ficha en otro espacio.
+        linked = Player.objects.filter(club=club, user__isnull=False).values("user")
+        self.other_competitions_available = bool(club) and Player.objects.filter(user__in=linked).exclude(club=club).exists()
         if not self.instance.pk:
             self.initial['report_scope'] = self.default_report_scope
         self.own_team = club.own_team if club else None

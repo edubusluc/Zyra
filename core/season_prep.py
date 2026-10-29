@@ -49,8 +49,18 @@ def _save(club, progress):
 
 
 def _steps(club, progress, is_captain):
-    """Los tres pasos con su estado. ``sync`` solo se calcula para el capitán (la cuenta SNP es suya)."""
+    """Los pasos con su estado. ``sync`` solo se calcula para el capitán (la cuenta SNP es suya); en
+    competiciones sin SNP no hay paso de SNP."""
     done = progress["done"]
+    if not club.rules.has_snp:
+        return [
+            {"key": ROSTER, "title": _("Revisa tu plantilla"), "manual": True, "done": ROSTER in done,
+             "help": _("Marca quién sigue en el equipo y da de baja a quien se va."),
+             "url": reverse("manage_roster"), "action": _("Revisar plantilla")},
+            {"key": RIVALS, "title": _("Revisa rivales y divisiones"), "manual": True, "done": RIVALS in done,
+             "help": _("Cambia la división de tu grupo y añade los equipos nuevos."),
+             "url": reverse("manage_teams"), "action": _("Revisar rivales")},
+        ]
     snp_done = snp_import.imported_this_season(club) is not None or snp_requests.fulfilled_this_season(club) is not None
     snp_skipped = SNP_SKIPPED in done
     return [

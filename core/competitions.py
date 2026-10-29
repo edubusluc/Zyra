@@ -3,9 +3,9 @@ Reglas de cada competición: una ficha por competición con todo lo que cambia d
 (número de partidos, puntos de cada partido, convocados mínimos, partido de desempate).
 
 El resto del código no debe dar por hecho ningún número («5 partidos», «3-3-2-2-2»,
-«10 convocados»): lo pide a la ficha con ``competition_for``. Por ahora solo existe la SNP;
-cuando un club tenga su propia competición (espacios), ``competition_for`` la leerá del club
-y añadir una competición nueva será añadir su ficha aquí.
+«10 convocados»): lo pide a la ficha con ``competition_for``, que la lee del club
+(``Club.competition``). Cada club es un «espacio» de una competición; añadir una competición
+nueva es añadir su ficha aquí.
 """
 from dataclasses import dataclass
 
@@ -18,13 +18,18 @@ class Competition:
 
     ``game_points`` son los puntos de cada partido en orden de juego (su longitud es el número
     de partidos del enfrentamiento). ``tiebreak_game`` es el partido que decide un empate a
-    puntos en los tipos de enfrentamiento sin empate (Reto y Play Off en la SNP).
+    puntos en los tipos de enfrentamiento sin empate (Reto y Play Off en la SNP); None si la
+    competición no puede empatar a puntos. ``divisions`` son las divisiones de sus equipos
+    (códigos de ``Team.DIVISIONS``) y ``has_snp`` si sus jugadores tienen puntos SNP (cuenta
+    SNP, sincronización, «Completar equipo»).
     """
     code: str
     name: str
     game_points: tuple
     min_call_players: int
-    tiebreak_game: int
+    tiebreak_game: int | None
+    divisions: tuple = ()
+    has_snp: bool = False
 
     @property
     def games(self):
@@ -52,9 +57,22 @@ SNP = Competition(
     game_points=(3, 3, 2, 2, 2),
     min_call_players=10,
     tiebreak_game=3,
+    divisions=("future", "500", "1000", "grand_slam"),
+    has_snp=True,
 )
 
-COMPETITIONS = {SNP.code: SNP}
+# Liga Andaluza de Pádel por Equipos: 3 partidos de 1 punto (al mejor de 3, sin empate posible).
+LAPI = Competition(
+    code="lapi",
+    name=_("LAPI"),
+    game_points=(1, 1, 1),
+    min_call_players=6,
+    tiebreak_game=None,
+    divisions=("lapi_1", "lapi_2", "lapi_3", "lapi_4", "lapi_5"),
+)
+
+COMPETITIONS = {SNP.code: SNP, LAPI.code: LAPI}
+CHOICES = [(c.code, c.name) for c in COMPETITIONS.values()]
 DEFAULT = SNP
 
 
@@ -64,10 +82,20 @@ def get_competition(code):
 
 
 def competition_for(obj=None):
-    """Ficha de la competición de un club, de un enfrentamiento o de cualquier objeto de un club.
+    """Ficha de la competición de un club, de un enfrentamiento o de cualquier objeto con ``club``.
 
-    Mientras los clubes no guarden su competición todos juegan la de por defecto (SNP), así
-    que no se consulta nada: los listados que piden la ficha de muchos enfrentamientos no
-    hacen consultas de más. Cuando exista ``Club.competition`` se leerá aquí.
+    Sin objeto, la de por defecto (SNP). Si el club del objeto no está ya cargado se lee solo su
+    competición (una consulta): los listados de muchos enfrentamientos deben pedir la ficha al
+    club (``request.club``) una vez y no a cada enfrentamiento.
     """
-    return DEFAULT
+    if obj is None:
+        return DEFAULT
+    code = getattr(obj, "competition", None)
+    if code is None and hasattr(obj, "club_id"):
+        club = obj._state.fields_cache.get("club")
+        if club is not None:
+            code = club.competition
+        elif obj.club_id is not None:
+            from core.models import Club
+            code = Club.objects.filter(pk=obj.club_id).values_list("competition", flat=True).first()
+    return get_competition(code)

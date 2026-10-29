@@ -5,6 +5,7 @@ Todas las vistas trabajan solo con datos del club activo (``request.club``).
 """
 from . import outcomes
 from core.competitions import competition_for
+from core import spaces
 from core.season_choice import ALL_SEASONS, choose_season
 from django.shortcuts import render, redirect, get_object_or_404
 from core import ratelimit
@@ -51,6 +52,18 @@ CREATE_MATCH_HTML = "create_match.html"
 def club_match(request, match_id):
     """Partido del club activo o 404: nunca se accede a partidos de otros clubes."""
     return get_object_or_404(Match, public_id=match_id, club=request.club)
+
+
+def space_match(request, match_id):
+    """
+    Partido de cualquiera de los espacios del usuario o 404. Si es de otro espacio, ese pasa a ser
+    el activo (sin aviso), así el rol y las acciones de la página son los de ese espacio. Solo para
+    vistas de consulta: las de gestión usan club_match, que no cambia de espacio.
+    """
+    match = get_object_or_404(Match.objects.select_related("club"), public_id=match_id,
+                              club__in=spaces.user_clubs(request))
+    spaces.switch_to(request, match.club)
+    return match
 
 
 def club_call(request, **filters):
@@ -190,8 +203,13 @@ def list_match(request):
     de cada lado, cuántos convocados tiene y si es un partido próximo (sin resultado y con
     fecha de hoy en adelante) y si solo le falta cerrar el acta (``pending_close``: 5 o más partidos,
     todos con resultado) para pintar su tarjeta.
+
+    Con varios espacios junta los enfrentamientos de todos (``?espacio=``, core.spaces): cada
+    tarjeta lleva la etiqueta de su competición y sus acciones según el rol en ese espacio, y
+    «Nuevo enfrentamiento» dice dónde se crea o pregunta la competición.
     """
-    club_matches = Match.objects.filter(club=request.club).select_related('local', 'visiting')
+    space, clubs = spaces.selected_spaces(request)
+    club_matches = Match.objects.filter(club__in=clubs).select_related('local', 'visiting', 'club')
     # Temporadas para el selector (desc), incluida la actual aunque aún no tenga partidos
     seasons = set(club_matches.values_list('season', flat=True)) | {current_season()}
     seasons = sorted((x for x in seasons if x and x != "NONE"), reverse=True)
@@ -215,6 +233,7 @@ def list_match(request):
     if search:
         matches = search_matches(matches, search)
 
+    managed = spaces.managed_clubs(request, clubs)
     outcomes = [match_outcome(m) for m in matches]
     summary = {
         'played': sum(o is not None for o in outcomes),
@@ -236,11 +255,12 @@ def list_match(request):
     called = dict(Call.objects.filter(match__in=list(matches))
                   .annotate(n=Count('players')).values_list('match_id', 'n'))
     today = timezone.localdate()
-    # Reto y Play Off cerrados 6-6: la pareja del partido 3 decidió la eliminatoria (una sola consulta).
+    # Reto y Play Off cerrados 6-6: la pareja del partido de desempate decidió la eliminatoria (una sola consulta).
+    tied = [m for m in matches if m.no_draw and m.club.rules.tiebreak_game and _tied_on_points(m)]
     tiebreak_pairs = {
-        g.match_id: g.pair_label for g in Game.objects.filter(
-            match__in=[m for m in matches if m.no_draw and _tied_on_points(m)],
-            n_game=competition_for(request.club).tiebreak_game)}
+        g.match_id: g.pair_label for g in Game.objects.filter(match__in=tied).select_related(
+            'player_1_local', 'player_2_local', 'player_1_visiting', 'player_2_visiting', 'match__club')
+        if g.n_game == g.match.club.rules.tiebreak_game}
     # Actas abiertas con todos sus partidos con resultado: solo falta cerrarlas (dos consultas).
     open_ids = [m.id for m in matches if m.draft_mode]
     games_count = dict(Game.objects.filter(match_id__in=open_ids).values('match_id').annotate(n=Count('id'))
@@ -250,7 +270,10 @@ def list_match(request):
     for m in matches:
         m.outcome = match_outcome(m)
         n = games_count.get(m.id, 0)
-        m.pending_close = m.draft_mode and n >= competition_for(m).games and with_result.get(m.id, 0) == n
+        m.pending_close = m.draft_mode and n >= m.club.rules.games and with_result.get(m.id, 0) == n
+        m.can_manage = m.club in managed
+        # Las acciones de otro espacio llevan ?en= para que se abran en él (core.spaces.follow_space).
+        m.space_query = f"?{spaces.SWITCH_PARAM}={m.club.competition}" if m.club != request.club else ""
         m.tiebreak = m.id in tiebreak_pairs and m.outcome in ("V", "D")
         m.tiebreak_pair = tiebreak_pairs.get(m.id, "")
         m.local_points, m.visiting_points = split_points(m.result_points) if m.outcome else (None, None)
@@ -272,6 +295,9 @@ def list_match(request):
         **match_type_context(request, match_type),
         'page_extra': '&' + urlencode({k: v for k, v in keep.items() if v}),
         **season_filter_context(request, seasons, season, all_value=ALL_SEASONS),
+        **spaces.space_filter_context(request, space),
+        # Espacios donde puede crear: con uno, el botón dice cuál; con varios, pregunta.
+        'create_spaces': managed,
     })
 
 @club_required
@@ -281,12 +307,14 @@ def calendar_match(request):
     Calendario mensual de los enfrentamientos del club (solo lectura, para todos los miembros). ``?month=AAAA-MM``
     elige el mes (por defecto el actual). Cada enfrentamiento enlaza a su página y se ve su hora, rival,
     estado (próximo, jugado con marcador, o amistoso) sin enviar nada. En pantallas estrechas se pinta como
-    agenda por días.
+    agenda por días. Con varios espacios junta los de todos (``?espacio=``, core.spaces), cada uno
+    con la etiqueta de su competición.
     """
     today = timezone.localdate()
     first = month_view.parse_month(request.GET.get(month_view.MONTH_PARAM), today)
     weeks = month_view.month_weeks(first)
-    by_day = month_view.month_events(request.club, weeks)
+    space, clubs = spaces.selected_spaces(request)
+    by_day = month_view.month_events(clubs, weeks)
     for matches in by_day.values():
         for m in matches:
             m.outcome = match_outcome(m)
@@ -305,9 +333,12 @@ def calendar_match(request):
         "grid": grid,
         "agenda": agenda,
         "view_tab": "calendar",
+        **spaces.space_filter_context(request, space),
+        "create_spaces": spaces.managed_clubs(request, clubs),
     })
 
 
+@spaces.follow_space
 @club_manager_required
 @not_while_syncing
 def create_match(request):
@@ -342,6 +373,7 @@ def edit_match_date(request, match_id):
         return redirect("call_for_match", match.public_id)
     return render(request, "edit_match_date.html", {"form": form, "match": match})
 
+@spaces.follow_space
 @club_manager_required
 def delete_match(request, match_id):
     """Borrado de un enfrentamiento que aún no está cerrado.
@@ -612,9 +644,10 @@ def call_for_match(request, match_id):
 
     Requiere pertenecer al club (club_required). Agrupa a los convocados por posición
     (derecha, revés y mixtos), marca los que ya juegan algún partido y muestra el
-    estado de los envíos del informe. Renderiza call_for_match.html.
+    estado de los envíos del informe. Si el enfrentamiento es de otro espacio del usuario, cambia a
+    ese espacio (space_match). Renderiza call_for_match.html.
     """
-    match = club_match(request, match_id)
+    match = space_match(request, match_id)
     call = Call.objects.filter(match=match).first()
     games = list(
         Game.objects.filter(match=match).order_by("n_game")
@@ -744,7 +777,8 @@ def suggested_lineup(request, match_id):
         return JsonResponse({"error": str(error_message)}, status=400)
     lineups = suggested_lineups(call)
     if not lineups:
-        return JsonResponse({"error": _("Hacen falta al menos 10 convocados para sugerir una alineación.")}, status=400)
+        return JsonResponse({"error": _("Hacen falta al menos %(n)s convocados para sugerir una alineación.")
+                             % {"n": competition_for(match).players_per_lineup}}, status=400)
     return JsonResponse({"lineups": lineups})
 
 

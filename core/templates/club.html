@@ -9,6 +9,7 @@
         <h1>{{ current_club.name }}</h1>
     </div>
 </div>
+{% include 'includes/space_switcher.html' %}
 
 <p class="text-muted z-club-legend">{% translate "Tu club reúne a los miembros que usan Zyra. Tu equipo es el que compite; tu grupo son los equipos rivales de tu liga." %}</p>
 
@@ -51,7 +52,7 @@
             {% if rivals_count == 0 and can_manage %}<span class="z-hub-status is-todo">{% translate "Añade tu primer rival" %} <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>{% endif %}
         </a>
     </li>
-    {% if is_club_admin %}
+    {% if is_club_admin and current_club.rules.has_snp %}
     <li>
         <a href="{% url 'snp_account' %}" class="z-hub-card">
             <i class="fa-solid fa-trophy" aria-hidden="true"></i>
