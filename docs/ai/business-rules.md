@@ -42,7 +42,7 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
   los que gestiona; el selector SNP | LAPI sale si gestiona todos o es jugador en todos. El registro muestra desactivadas las
   competiciones en las que ya tiene equipo. Inicio con varios equipos: el banner los enseña todos («Tus equipos»,
   `home_teams`) y «En racha» da tarjetas por equipo (`streaks`); quien es jugador en todos sus equipos no ve Plantilla en
-  el menú (`hide_roster_nav`). Jugador, Parejas y Rivales solo eligen SNP o LAPI (sin «Todas»). El informe puede incluir los partidos de la temporada
+  el menú (`hide_roster_nav`, `spaces.plays_only`); en Estadísticas tampoco ve la pestaña «Jugador» ni el selector de jugadores, y `statistics_per_player` lo lleva a «Mis estadísticas» salvo en su propia ficha. Jugador, Parejas y Rivales solo eligen SNP o LAPI (sin «Todas»). El informe puede incluir los partidos de la temporada
   en otras competiciones de los convocados con cuenta enlazada (`Match.report_other_competitions`). Tests:
   `core/tests_spaces_unified.py`.
 - [V] Se puede crear una cuenta sin club (`register_account`, o Google desde esa página): queda en `no_club` hasta aceptar una
@@ -139,7 +139,7 @@ Orden obligatorio del ciclo (`match/views.py`) [V], cubierto por `match/tests_fl
    (`validate_retired_result`, p. ej. 7-5 / 3-0): gana quien va ganando (más sets, luego más juegos).
    En las competiciones con `injury_completes` (LAPI) se indica la pareja lesionada (`Result.injured_side`) y
    gana siempre la sana: `complete_retired_result` le completa el set a medias a 6 (a 7 si la lesionada
-   tenía 5 o 6) y los sets que falten 6-0 (3-2 queda 3-6 / 0-6).
+   tenía 5 o 6) y los sets que falten 6-0 (3-2 queda 3-6 / 0-6). La casilla y la pareja están en el resultado de un partido y en «Poner resultados» (`match/templates/includes/injury_fields.html`, prefijo `gN_`); la etiqueta «Lesión» dice qué pareja se lesionó.
    Al guardar fija `Game.winner`.
 6. **Cerrar acta** (`close_match`, POST): acta abierta y 5 partidos con resultado. Suma puntos,
    fija `Match.result` (valores canónicos en `match/outcomes.py`; `EMPATE` posible, p. ej. 6/6, salvo en Reto y Play Off: ahí el 6-6 lo decide el ganador del partido 3, `determine_match_result`) y `result_points`,

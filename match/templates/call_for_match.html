@@ -210,7 +210,7 @@
     {% with r=g.result %}
     <div class="z-card z-game" id="partido-{{ g.n_game }}">
         <div class="z-game-head">
-            <h3>{% blocktranslate with n=g.n_game %}Partido {{ n }}{% endblocktranslate %} <span class="text-muted fw-semibold">· {% blocktranslate with score=g.score %}{{ score }} pts{% endblocktranslate %}</span>{% if r.retired %} <span class="z-badge z-badge--outline" title="{% translate 'Partido finalizado por lesión' %}"><i class="fa-solid fa-bandage me-1" aria-hidden="true"></i>{% translate "Lesión" %}</span>{% endif %}</h3>
+            <h3>{% blocktranslate with n=g.n_game %}Partido {{ n }}{% endblocktranslate %} <span class="text-muted fw-semibold">· {% blocktranslate with score=g.score %}{{ score }} pts{% endblocktranslate %}</span>{% if r.retired %} <span class="z-badge z-badge--outline" title="{% translate 'Partido finalizado por lesión' %}"><i class="fa-solid fa-bandage me-1" aria-hidden="true"></i>{% translate "Lesión" %}{% if r.injured_side == 'local' %} · {{ match.local_name }}{% elif r.injured_side == 'visiting' %} · {{ match.visiting_name }}{% endif %}</span>{% endif %}</h3>
             <div class="d-flex align-items-center gap-3">
                 <div class="z-game-sets-head" aria-hidden="true"><span>S1</span><span>S2</span><span>S3</span></div>
                 {% if can_manage %}

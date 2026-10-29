@@ -8,7 +8,7 @@ from django.utils.translation import gettext as _
 
 from . import seo
 from .competitions import COMPETITIONS
-from .spaces import linked_players
+from .spaces import linked_players, plays_only
 from .services import is_last_admin, is_only_member
 
 
@@ -36,8 +36,9 @@ def club(request):
         # «Ya tienes equipo en SNP y LAPI» cuando ya no le queda competición libre.
         "team_competitions": lambda: get_text_list([str(m.club.rules.name) for m in teams], _("y")),
         "can_manage": bool(membership and membership.can_manage),
-        # Jugador en todos sus equipos (y tiene varios): Plantilla no le aporta nada y sale del menú.
-        "hide_roster_nav": len(memberships) > 1 and not any(m.can_manage for m in memberships),
+        # Jugador en todos sus equipos (y tiene varios): Plantilla y el listado de jugadores de
+        # Estadísticas no le aportan nada y salen del menú.
+        "hide_roster_nav": plays_only(request),
         # «Mis estadísticas» (y Estadísticas abre en ella) con jugador enlazado en dos o más equipos.
         "my_stats_available": lambda: len(memberships) > 1 and len(linked_players(request)) > 1,
         "leaving_deletes_club": lambda: bool(membership and is_last_admin(membership) and is_only_member(membership)),

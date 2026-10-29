@@ -35,28 +35,7 @@
             <input type="text" inputmode="numeric" maxlength="2" name="set3_visiting" value="{{ values.set3_visiting }}" aria-label="Set 3, {{ game.match.visiting_name }}" data-set="3" data-side="v">
         </div>
 
-        <div class="form-check mb-3">
-            <input class="form-check-input" type="checkbox" name="retired" id="id_retired" data-retired{% if result.retired %} checked{% endif %}>
-            <label class="form-check-label" for="id_retired">{% translate "Partido finalizado por lesión" %}</label>
-            {% if request.club.rules.injury_completes %}
-            <div class="form-text">{% translate "Pon los juegos que se llegaron a jugar: Zyra completa el partido para la pareja sana (p. ej. 3-2 queda 3-6 / 0-6)." %}</div>
-            {% else %}
-            <div class="form-text">{% translate "Permite guardar un resultado incompleto (p. ej. 7-5 / 3-0): gana quien iba ganando." %}</div>
-            {% endif %}
-        </div>
-        {% if request.club.rules.injury_completes %}
-        <fieldset class="z-injured mb-3" data-injured{% if not result.retired %} hidden{% endif %}>
-            <legend class="form-label">{% translate "¿Qué pareja se lesionó?" %}</legend>
-            <div class="form-check">
-                <input class="form-check-input" type="radio" name="injured_side" id="id_injured_local" value="local" data-injured-side="l"{% if result.injured_side == 'local' %} checked{% endif %}>
-                <label class="form-check-label" for="id_injured_local">{{ game.match.local_name }}{% if game.local_pair_label %} · {{ game.local_pair_label }}{% endif %}</label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="radio" name="injured_side" id="id_injured_visiting" value="visiting" data-injured-side="v"{% if result.injured_side == 'visiting' %} checked{% endif %}>
-                <label class="form-check-label" for="id_injured_visiting">{{ game.match.visiting_name }}{% if game.visiting_pair_label %} · {{ game.visiting_pair_label }}{% endif %}</label>
-            </div>
-        </fieldset>
-        {% endif %}
+        {% include 'includes/injury_fields.html' with prefix='' retired=result.retired injured=result.injured_side %}
 
         <ul class="z-result-checks" aria-live="polite" data-result-checks></ul>
         <p class="text-muted small mb-3">{% translate "Un set se gana 6-0 a 6-4, 7-5 o 7-6. El set 3 solo se juega si cada pareja ha ganado un set; puede ser un set normal o un super tie-break a 10 (10-8, 11-9...)." %}</p>

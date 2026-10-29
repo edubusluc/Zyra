@@ -24,10 +24,16 @@ document.querySelectorAll('[data-result]').forEach(function (form) {
   }
 
   const retiredBox = form.querySelector('[data-retired]');
+  // Sets de un partido acabado por lesión: 0-0 o vacío es un set sin jugar; un 0 con juegos del
+  // rival (0-6) sí cuenta, como en scoring.py.
+  const enteredSets = () => [1, 2, 3].map((n) => {
+    const pair = [val(input(n, 'l')), val(input(n, 'v'))];
+    return pair.every((x) => !x) ? [null, null] : pair;
+  });
 
   // Partido finalizado por lesión: mismas reglas que scoring.validate_retired_result
   function refreshRetired() {
-    const s = [1, 2, 3].map((n) => [val(input(n, 'l')), val(input(n, 'v'))].map((x) => x || null));
+    const s = enteredSets();
     const played = [0, 1, 2].filter((i) => s[i][0] !== null || s[i][1] !== null);
     if (!played.length) return;
     const last = played[played.length - 1];
@@ -56,7 +62,7 @@ document.querySelectorAll('[data-result]').forEach(function (form) {
     const side = form.querySelector('[data-injured-side]:checked');
     if (!side) { line(null, gettext('Indica qué pareja se lesionó.')); return; }
     const flip = side.dataset.injuredSide === 'v';
-    const s = [1, 2, 3].map((n) => [val(input(n, 'l')), val(input(n, 'v'))].map((x) => x || null));
+    const s = enteredSets();
     const played = [0, 1, 2].filter((i) => s[i][0] !== null || s[i][1] !== null);
     const last = played.length ? played[played.length - 1] : -1;
     for (let i = 0; i <= last; i++) {

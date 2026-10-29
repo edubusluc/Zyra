@@ -908,6 +908,7 @@ def statistics_per_player(request):
     Estadísticas de un jugador del club (``?player=``): balance, rachas, evolución por
     temporada, afinidad con sus compañeros, puntos SNP y, con ``?season=``, el resumen, la afinidad
     y el detalle de esa temporada (combinable con ``?match_type=``). Sin jugador muestra solo el selector. Requiere pertenecer al club y solo GET.
+    Quien es jugador en todos sus equipos (``spaces.plays_only``) solo ve su propia ficha.
     """
     # Con un jugador elegido se sigue viendo su historial de puntos SNP aunque no haya enfrentamientos cerrados.
     zero = None if request.GET.get('player') else _zero_state(request, _("Estadísticas de jugadores"))
@@ -916,6 +917,10 @@ def statistics_per_player(request):
     players = Player.objects.filter(club=request.club, in_team=True).order_by('name', 'last_name')
     player_id = request.GET.get('player')
     match_type = selected_match_type(request)
+    # Jugador en todos sus equipos: solo su ficha; el listado y las de los demás, a «Mis estadísticas».
+    if spaces.plays_only(request) and not Player.objects.filter(
+            public_id=player_id or "", club=request.club, user=request.user).exists():
+        return redirect('my_statistics')
 
     if not player_id:
         return render(request, 'player_statistics.html', {'players': players, **match_type_context(request, match_type)})

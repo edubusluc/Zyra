@@ -176,3 +176,21 @@ class LapiMatchTests(TestCase):
         page = self.client.get(reverse("player_statistics") + f"?player={self.players[0].public_id}&season=2026-2027")
         self.assertContains(page, "Sets clutch")
         self.assertNotContains(page, "Por número de partido")
+
+    def test_injury_from_all_results_screen(self):
+        match = self._match()
+        Call.objects.create(match=match, draft_mode=False).players.set(self.players)
+        games = [Game.objects.create(match=match, n_game=n, score=1, player_1_local=self.players[2 * n - 2],
+                                     player_2_local=self.players[2 * n - 1]) for n in (1, 2, 3)]
+        url = reverse("enter_results", args=[match.public_id])
+        page = self.client.get(url)
+        self.assertContains(page, 'name="g1_injured_side"')
+        self.assertNotContains(page, "{#")
+        self.client.post(url, {"g1_set1_local": "1", "g1_set1_visiting": "6", "g1_set2_local": "2",
+                               "g1_set2_visiting": "3", "g1_retired": "on", "g1_injured_side": "visiting",
+                               "action": "save"})
+        result = Result.objects.get(game=games[0])
+        self.assertEqual(result.sets(), [(1, 6), (6, 3), (6, 0)])
+        self.assertEqual((result.retired, result.injured_side, result.result), (True, "visiting", "Victoria Local"))
+        page = self.client.get(reverse("call_for_match", args=[match.public_id]))
+        self.assertContains(page, "Lesión · Padel Norte")

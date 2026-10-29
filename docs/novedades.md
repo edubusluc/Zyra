@@ -8,6 +8,8 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 - **No presentado**: en un enfrentamiento LAPI con el acta abierta, «Más» › «No se presentó el rival» o «No nos presentamos» lo cierra con 3-0 para quien sí se presentó. Cuenta en el balance del equipo y en los puntos de liga (4 o 0), pero no en jugadores, parejas ni asistencia. Se puede quitar con «Quitar no presentado».
 - **Lesión en LAPI**: al marcar «Partido finalizado por lesión» se elige la pareja lesionada y Zyra completa el partido para la sana (3-2 queda 3-6 / 0-6), con la vista previa en el formulario.
 - En LAPI, Estadísticas ya no muestra «Por número de partido» ni «Balance de partidos por jugador»: el orden de los partidos lo decide el sorteo.
+- La lesión también se marca en «Poner resultados», partido a partido, y la etiqueta «Lesión» dice qué pareja se lesionó. Al editar una lesión ya guardada la vista previa ya no da error con los sets 0-6.
+- Si eres jugador en todos tus equipos, Estadísticas no muestra la pestaña «Jugador» ni el listado de jugadores: solo tu ficha desde «Mis estadísticas».
 
 ## 29/10/2026 · Espacios por competición (fase 1b: enfrentamientos LAPI)
 

@@ -891,18 +891,22 @@ RESULT_FIELDS = SET_FIELDS
 
 def _parse_game_results(request, game):
     """
-    Casillas de un partido en la pantalla de resultados: ``(valores, resultado o None, errores)``.
-    Si las seis casillas están vacías, el partido no se toca (``resultado`` None y sin errores).
+    Casillas de un partido en la pantalla de resultados: ``(valores, resultado o None, errores)``,
+    con la casilla de lesión y la pareja lesionada (``retired``, ``injured_side``). Si las seis
+    casillas de juegos están vacías, el partido no se toca (``resultado`` None y sin errores).
     """
     prefix = f"g{game.n_game}_"
     values = {f: request.POST.get(prefix + f, '').strip() for f in RESULT_FIELDS}
-    if not any(values.values()):
+    values["retired"] = request.POST.get(prefix + "retired") == "on"
+    values["injured_side"] = request.POST.get(prefix + "injured_side", "")
+    if not any(values[f] for f in RESULT_FIELDS):
         return values, None, []
     result = game.results.first() or Result(game=game)
-    for field, value in values.items():
-        setattr(result, field, value)
+    for field in RESULT_FIELDS:
+        setattr(result, field, values[field])
+    result.retired, result.injured_side = values["retired"], values["injured_side"]
     try:
-        result.full_clean(exclude=['game', 'result', 'injured_side'] + list(RESULT_FIELDS), validate_unique=False)
+        result.full_clean(exclude=['game', 'result', 'retired', 'injured_side'] + list(RESULT_FIELDS), validate_unique=False)
         result.result = result.determine_winner()
     except ValidationError as e:
         return values, None, e.messages
@@ -941,8 +945,11 @@ def enter_results(request, match_id):
                 to_save.append((game, parsed))
         else:
             values = {f: '' if result is None or getattr(result, f) is None else getattr(result, f) for f in RESULT_FIELDS}
+            values["retired"] = bool(result and result.retired)
+            values["injured_side"] = result.injured_side if result else ""
             errors = []
-        rows.append({"game": game, "values": values, "errors": errors, "has_result": result is not None})
+        rows.append({"game": game, "values": values, "errors": errors, "has_result": result is not None,
+                     "prefix": f"g{game.n_game}_"})
 
     if request.method == "POST" and not failed:
         with transaction.atomic():
