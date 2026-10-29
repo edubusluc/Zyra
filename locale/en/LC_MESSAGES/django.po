@@ -13728,3 +13728,7 @@ msgid ""
 msgstr ""
 "There is no one left to copy: everyone is already in %(competition)s or "
 "plays in another team."
+
+#: core/templates/my_profile.html
+msgid "Enlazando tu ficha…"
+msgstr "Linking your player sheet…"
