@@ -1,4 +1,4 @@
-{# Lesión: casilla y, si la competición lo completa (LAPI), la pareja. Recibe: game, prefix («g1_» en «Poner resultados»), retired, injured #}
+{# Lesión: casilla y, si la competición lo completa (SNP y LAPI), la pareja. Recibe: game, prefix («g1_» en «Poner resultados»), retired, injured #}
 {% load i18n %}
         <div class="form-check mb-3">
             <input class="form-check-input" type="checkbox" name="{{ prefix }}retired" id="id_{{ prefix }}retired" data-retired{% if retired %} checked{% endif %}>

@@ -87,7 +87,7 @@ class Match(PublicIdModel):
     # Rival de un amistoso que no es un equipo del grupo: solo se guarda su nombre en el
     # propio partido (no se crea ningún equipo) y ese lado (local o visiting) queda vacío.
     rival_name = models.CharField(_("Rival"), max_length=100, blank=True, default="")
-    # «No presentado» (solo en competiciones con ``Competition.no_show``, LAPI): qué equipo no se
+    # «No presentado» (competiciones con ``Competition.no_show``: SNP y LAPI): qué equipo no se
     # presentó. El acta se cierra sin partidos; el que no se presenta pierde todos los puntos.
     NO_SHOW_OWN = "own"
     NO_SHOW_RIVAL = "rival"
@@ -259,6 +259,14 @@ class Game(PublicIdModel):
     score = models.IntegerField(choices= NUMBER_GAME, null = True)
     winner = models.CharField(max_length=10, null=True)
     draft_mode = models.BooleanField(default=True)
+    # «Pareja no presentada» (normativa SNP 20.2, ``Competition.pair_no_show``): qué pareja no se
+    # presentó a este partido. No lleva resultado ni jugadores; al cerrar el acta
+    # ``match.pair_no_show.apply`` reparte los puntos del enfrentamiento.
+    NO_SHOW_OWN, NO_SHOW_RIVAL, NO_SHOW_BOTH = "own", "rival", "both"
+    NO_SHOW_CHOICES = [(NO_SHOW_OWN, _("No se presentó nuestra pareja")),
+                       (NO_SHOW_RIVAL, _("No se presentó la pareja rival")),
+                       (NO_SHOW_BOTH, _("No se presentó ninguna de las dos"))]
+    no_show = models.CharField(_("Pareja no presentada"), max_length=5, choices=NO_SHOW_CHOICES, blank=True, default="")
 
     class Meta:
         constraints = [
@@ -345,7 +353,7 @@ class Result(PublicIdModel):
     # Partido finalizado por lesión: admite un resultado incompleto; gana quien iba ganando
     retired = models.BooleanField(default=False)
     # Pareja lesionada ('local' o 'visiting') en las competiciones que completan el partido
-    # para la pareja sana (``Competition.injury_completes``, LAPI); vacío en el resto.
+    # para la pareja sana (``Competition.injury_completes``: SNP y LAPI); vacío en los resultados antiguos.
     INJURED_SIDES = [("local", _("Local")), ("visiting", _("Visitante"))]
     injured_side = models.CharField(_("Pareja lesionada"), max_length=8, choices=INJURED_SIDES, blank=True, default="")
 

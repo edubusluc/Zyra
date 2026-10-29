@@ -26,9 +26,13 @@ def month_label(month):
     return date_format(month, "F Y")
 
 
-def report_filename(report):
-    """Nombre del PDF, p. ej. 'informe-mensual-2026-09.pdf'."""
-    return f"informe-mensual-{report['month']:%Y-%m}.pdf"
+def report_filename(report, with_competition=False):
+    """
+    Nombre del PDF, p. ej. 'informe-mensual-2026-09.pdf'; con ``with_competition`` (correo con
+    un PDF por equipo) lleva la competición: 'informe-mensual-2026-09-lapi.pdf'.
+    """
+    suffix = f"-{report['club'].competition}" if with_competition else ""
+    return f"informe-mensual-{report['month']:%Y-%m}{suffix}.pdf"
 
 
 def scope_label(report):
@@ -41,7 +45,7 @@ def scope_label(report):
 def _on_page(canvas, doc, report):
     """Fondo, cabecera (logo, club y mes) y pie del informe mensual."""
     canvas.saveState()
-    draw_page_header(canvas, report["club"].name, month_label(report["month"]).upper())
+    draw_page_header(canvas, f"{report['club'].name} · {report['club'].rules.name}", month_label(report["month"]).upper())
     canvas.setFont("Archivo", 7)
     canvas.drawString(MARGIN, 8 * mm, _("Informe mensual automático · Zyra"))
     draw_made_with(canvas, PAGE_W - MARGIN, align="right")
@@ -217,7 +221,10 @@ def _story(report):
     cards = Table([[left, right]], colWidths=[CONTENT_W / 2, CONTENT_W / 2])
     cards.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "TOP"), ("LEFTPADDING", (0, 0), (-1, -1), 0)]))
     story += [_panel(cards), Spacer(1, SECTION_GAP)]
-    for section in (_clutch_section, _snp_section, _calls_section):
+    # Sin puntos SNP en las competiciones que no los tienen (LAPI).
+    sections = (_clutch_section, _snp_section, _calls_section) if report["club"].rules.has_snp \
+        else (_clutch_section, _calls_section)
+    for section in sections:
         story += [KeepTogether(section(report, st)), Spacer(1, SECTION_GAP)]
 
     # Parejas

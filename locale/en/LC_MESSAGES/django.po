@@ -13737,3 +13737,49 @@ msgstr "Linking your player sheet…"
 #, python-format
 msgid "Añadir equipo %(competition)s"
 msgstr "Add %(competition)s team"
+
+#: match/models.py:266
+msgid "No se presentó nuestra pareja"
+msgstr "Our pair did not show up"
+
+#: match/models.py:267
+msgid "No se presentó la pareja rival"
+msgstr "The rival pair did not show up"
+
+#: match/models.py:268
+msgid "No se presentó ninguna de las dos"
+msgstr "Neither pair showed up"
+
+#: match/models.py:269
+msgid "Pareja no presentada"
+msgstr "Pair did not show up"
+
+#: match/monthly_email.py:77
+#, python-format
+msgid ""
+"%(club)s (%(competition)s): has jugado %(played)s partidos, ganado %(wins)s "
+"(%(pct)s%%) y sumado %(points)s puntos."
+msgstr ""
+"%(club)s (%(competition)s): you played %(played)s games, won %(wins)s "
+"(%(pct)s%%) and earned %(points)s points."
+
+#: match/monthly_email.py:89
+#, python-format
+msgid "Este es tu resumen de %(month)s en cada uno de tus equipos:"
+msgstr "Here is your %(month)s summary for each of your teams:"
+
+#: match/monthly_email.py:91
+msgid ""
+"Te adjuntamos un informe en PDF por equipo con tus parejas, tus sets y el "
+"detalle de cada partido."
+msgstr ""
+"We attach one PDF report per team with your partners, your sets and the "
+"detail of each game."
+
+#: match/templates/enter_results.html:32
+msgid "¿Se jugó?"
+msgstr "Was it played?"
+
+#: match/templates/enter_results.html:34
+msgid "Sí, se jugó"
+msgstr "Yes, it was played"

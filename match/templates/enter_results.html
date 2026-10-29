@@ -27,6 +27,16 @@
         {% if row.errors %}
         <div class="alert-message warning">{% for e in row.errors %}<p>{{ e }}</p>{% endfor %}</div>
         {% endif %}
+        {% if match.club.rules.pair_no_show %}
+        <div class="z-result-noshow mb-2">
+            <label class="form-label small" for="id_{{ row.prefix }}no_show">{% translate "¿Se jugó?" %}</label>
+            <select class="form-select form-select-sm" name="{{ row.prefix }}no_show" id="id_{{ row.prefix }}no_show" data-pair-no-show>
+                <option value="">{% translate "Sí, se jugó" %}</option>
+                {% for value, label in no_show_choices %}<option value="{{ value }}"{% if values.no_show == value %} selected{% endif %}>{{ label }}</option>{% endfor %}
+            </select>
+        </div>
+        {% endif %}
+        <div data-played>
         <div class="z-result-grid">
             <span></span>
             <span class="z-result-head">Set 1</span>
@@ -45,6 +55,7 @@
         </div>
         <div class="z-result-injury">
         {% include 'includes/injury_fields.html' with prefix=row.prefix retired=values.retired injured=values.injured_side %}
+        </div>
         </div>
         <ul class="z-result-checks" aria-live="polite" data-result-checks></ul>
     </fieldset>

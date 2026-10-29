@@ -137,7 +137,7 @@ def game_rows(match, user=None):
         won = game.winner == own_winner
         rows.append({
             "n": game.n_game, "pair": game.pair_label,
-            "sets": _sets_text(result, match.own_is_local) if result else "",
+            "sets": _sets_text(result, match.own_is_local) if result else (game.get_no_show_display() if game.no_show else ""),
             "won": won, "points": game.score or 0, "mine": bool(mine & ids),
         })
     return rows

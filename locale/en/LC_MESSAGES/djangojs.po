@@ -308,3 +308,11 @@ msgstr "The match was already decided: it cannot end by injury."
 #, javascript-format
 msgid "Queda %(score)s. Ganador del partido: %(team)s"
 msgstr "Final score %(score)s. Match winner: %(team)s"
+
+#: static/js/result-form.js:99
+msgid ""
+"Sin resultado: Zyra reparte los puntos al cerrar el acta (normativa SNP "
+"20.2)."
+msgstr ""
+"No result: Zyra shares out the points when the scoresheet is closed (SNP "
+"rules 20.2)."

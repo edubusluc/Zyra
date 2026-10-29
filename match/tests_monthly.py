@@ -154,6 +154,28 @@ class CommandTests(MonthlyBase):
         self.run_command("--month", "2026-09")
         self.assertEqual(len(mail.outbox), 1)
 
+    def test_one_email_with_a_pdf_per_team(self):
+        lapi = create_club("Club A LAPI", "Sevilla", self.captain, competition="lapi")
+        ana_lapi = Player.objects.create(club=lapi, name="Ana", last_name="López", user=self.user)
+        bea_lapi = Player.objects.create(club=lapi, name="Bea", last_name="Ruiz")
+        rival = Team.objects.create(club=lapi, name="Norte", location="X", in_group=True)
+        match = Match.objects.create(club=lapi, local=lapi.own_team, visiting=rival, start_date=MONTH.replace(day=12),
+                                     match_type="liga", draft_mode=False)
+        make_game(match, 1, ana_lapi, bea_lapi)
+        self.run_command("--month", "2026-09")
+        self.assertEqual(len(mail.outbox), 1)
+        message = mail.outbox[0]
+        self.assertEqual([a[0] for a in message.attachments],
+                         ["informe-mensual-2026-09-snp.pdf", "informe-mensual-2026-09-lapi.pdf"])
+        self.assertIn("Club A (SNP)", message.body)
+        self.assertIn("Club A LAPI (LAPI)", message.body)
+        # Un equipo sin partidos ese mes no lleva PDF.
+        mail.outbox.clear()
+        MonthlyReportDelivery.objects.all().delete()
+        match.delete()
+        self.run_command("--month", "2026-09")
+        self.assertEqual([a[0] for a in mail.outbox[0].attachments], ["informe-mensual-2026-09.pdf"])
+
     def test_skips_disabled_no_games_and_unlinked(self):
         UserPreference.objects.create(user=self.user, monthly_report=False)
         self.assertIn("lo desactivó", self.run_command("--month", "2026-09"))
