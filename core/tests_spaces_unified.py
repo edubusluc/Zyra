@@ -24,7 +24,7 @@ class UnifiedSpacesTests(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user("edu", password=PASSWORD, email="edu@example.com")
-        self.snp = create_club("Gladiadores", "Sevilla", self.user)
+        self.snp = create_club("Gladiadores", "Sevilla", self.user, division="500")
         other = User.objects.create_user("capi", password=PASSWORD, email="capi@example.com")
         self.lapi = create_club("Gladiadores LAPI", "Sevilla", other, competition="lapi")
         Membership.objects.create(user=self.user, club=self.lapi, role=Membership.MEMBER)
@@ -138,6 +138,7 @@ class UnifiedSpacesTests(TestCase):
             self.assertEqual([t["club"] for t in page.context["home_teams"]], [self.snp, self.lapi])
             self.assertContains(page, "z-home-hero--teams")
             self.assertContains(page, "z-home-team--lapi")
+            self.assertContains(page, "Categoría 500")
 
     def test_roster_leaves_the_menu_only_for_player_in_every_team(self):
         url = reverse("list_players")

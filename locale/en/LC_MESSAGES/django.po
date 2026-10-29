@@ -13044,3 +13044,8 @@ msgstr "Season average of the %% of the squad that signs up, one line per compet
 #, python-format
 msgid "%(competition)s %(played)s de %(total)s"
 msgstr "%(competition)s %(played)s of %(total)s"
+
+#: core/templates/home.html
+#, python-format
+msgid "Categoría %(level)s"
+msgstr "Category %(level)s"

@@ -15,7 +15,7 @@
             <img class="z-home-team-logo" src="{% if t.team.photo %}{{ t.team.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="{% blocktranslate with club=t.club.name %}Escudo de {{ club }}{% endblocktranslate %}">
             <span class="z-home-team-text">
                 <strong>{{ t.club.name }}</strong>
-                <span>{% include 'includes/competition_badge.html' with code=t.club.competition name=t.club.rules.name %} {{ t.membership.team_role_label }}{% if t.team.get_division_display %}<span class="z-home-team-div"> · {{ t.team.get_division_display }}</span>{% endif %}</span>
+                <span>{% include 'includes/competition_badge.html' with code=t.club.competition name=t.club.rules.name %} {{ t.membership.team_role_label }}{% if t.team.division %}<span class="z-home-team-div">· {% if t.club.rules.has_snp %}{% blocktranslate with level=t.team.get_division_display %}Categoría {{ level }}{% endblocktranslate %}{% else %}{{ t.team.get_division_display }}{% endif %}</span>{% endif %}</span>
             </span>
         </li>
         {% endfor %}
