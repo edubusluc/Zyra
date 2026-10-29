@@ -1,4 +1,4 @@
-// Estadísticas «Todas» (stats_spaces.html): cada gráfico pone las competiciones una al lado de la otra,
+// «Mis estadísticas · Todas» (stats_mine.html): cada gráfico pone las competiciones una al lado de la otra,
 // con su color (lima SNP, azul LAPI). Nunca suma puntos de una competición con otra.
 (function () {
   const source = document.getElementById('spaces-chart-data');
@@ -39,7 +39,7 @@
   sideChart('spacesLocalChart', data.local);
   sideChart('spacesVisitingChart', data.visiting);
 
-  // Enfrentamientos ganados por temporada: apilados por competición y el total encima de cada columna.
+  // Partidos ganados por temporada: apilados por competición y el total encima de cada columna.
   const yearsCanvas = document.getElementById('spacesYearsChart');
   if (yearsCanvas) {
     const labels = data.years.labels;
@@ -93,7 +93,7 @@
     });
   }
 
-  // Asistencia a las convocatorias: una línea por competición (por temporada o, con temporada, por fecha).
+  // Convocatorias en las que te apuntas: una línea por competición, por temporada.
   const attCanvas = document.getElementById('spacesAttendanceChart');
   if (attCanvas) {
     new Chart(attCanvas, {

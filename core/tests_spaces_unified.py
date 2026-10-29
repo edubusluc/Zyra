@@ -160,36 +160,74 @@ class UnifiedSpacesTests(TestCase):
         match.result_points = "2/1"
         match.save()
 
-    def test_statistics_all_shows_each_space_without_mixing(self):
-        self._close(self.snp_match)
-        self._close(self.lapi_match, won=False)
-        page = self.client.get(reverse("team_statistics") + "?espacio=todas&season=all")
-        self.assertTemplateUsed(page, "stats_spaces.html")
-        rows = {r["club"]: (r["played"], r["won"]) for r in page.context["rows"]}
-        self.assertEqual(rows, {self.snp: (1, 1), self.lapi: (1, 0)})
-        self.assertNotContains(page, "Tus partidos")  # sin jugador enlazado no hay «Tus partidos»
+    def _me(self):
+        """Jugadores de la cuenta en SNP y LAPI, cada uno con un partido ganado en su enfrentamiento."""
+        from call.models import Call
+        from match.models import Game
         from players.models import Player
-        Player.objects.create(club=self.lapi, user=self.user, name="Edu", last_name="B")
-        self.assertContains(self.client.get(reverse("team_statistics") + "?espacio=todas&season=all"), "Tus partidos")
+        players = []
+        for club, match in ((self.snp, self.snp_match), (self.lapi, self.lapi_match)):
+            me = Player.objects.create(club=club, user=self.user, name="Edu", last_name="B")
+            mate = Player.objects.create(club=club, name="Mate", last_name=club.competition)
+            Game.objects.create(match=match, n_game=1, score=1, winner="Local", draft_mode=False,
+                                player_1_local=me, player_2_local=mate)
+            Call.objects.create(match=match, draft_mode=False).players.add(me)
+            self._close(match)
+            players.append(me)
+        return players
 
-    def test_statistics_all_charts_keep_competitions_apart(self):
-        self._close(self.snp_match)
-        self._close(self.lapi_match)
-        page = self.client.get(reverse("team_statistics") + "?espacio=todas&season=all")
+    def test_my_statistics_needs_players_in_several_spaces(self):
+        # Sin jugador enlazado: a Equipo; con uno solo: a su ficha.
+        self.assertRedirects(self.client.get(reverse("my_statistics")), reverse("team_statistics"),
+                             fetch_redirect_response=False)
+        self.assertNotContains(self.client.get(reverse("team_statistics")), "Mis estadísticas")
+        from players.models import Player
+        me = Player.objects.create(club=self.lapi, user=self.user, name="Edu", last_name="B")
+        self.assertRedirects(self.client.get(reverse("my_statistics")),
+                             f"{reverse('player_statistics')}?en=lapi&player={me.public_id}",
+                             fetch_redirect_response=False)
+
+    def test_my_statistics_all_counts_matches_without_mixing(self):
+        self._me()
+        home = self.client.get(reverse("home"))
+        self.assertContains(home, f'href="{reverse("my_statistics")}"')
+        page = self.client.get(reverse("my_statistics") + "?season=all")
+        self.assertTemplateUsed(page, "stats_mine.html")
+        self.assertEqual(page.context["me"]["played"], 2)
+        rows = {r["club"]: (r["played"], r["wins"]) for r in page.context["rows"]}
+        self.assertEqual(rows, {self.snp: (1, 1), self.lapi: (1, 1)})
+        self.assertEqual([c["code"] for c in page.context["mine_chips"]], ["todas", "snp", "lapi"])
         chart = page.context["spaces_chart"]
         self.assertEqual([c["code"] for c in chart["comps"]], ["snp", "lapi"])
-        # Ganados por temporada: una serie por competición (se apilan en el gráfico), nunca sumadas aquí.
         season = self.snp_match.season
         self.assertEqual(chart["years"]["labels"], [season])
         self.assertEqual(chart["years"]["won"], [[1], [1]])
-        self.assertEqual(len(chart["local"]), 2)
         self.assertEqual(len(chart["attendance"]["series"]), 2)
         self.assertEqual([c["code"] for c in page.context["set_rows"][0]["comps"]], ["snp", "lapi"])
-        self.assertContains(page, "spacesYearsChart")
         self.assertContains(page, "js/stats_spaces.js")
-        # Con una temporada elegida no hay gráfico por años.
-        self.assertNotContains(self.client.get(reverse("team_statistics") + f"?espacio=todas&season={season}"),
-                               "spacesYearsChart")
+        # Con una temporada elegida no hay gráficos por temporada.
+        self.assertNotContains(self.client.get(reverse("my_statistics") + f"?season={season}"), "spacesYearsChart")
+
+    def test_my_statistics_of_one_competition_opens_own_sheet(self):
+        me_snp, me_lapi = self._me()
+        page = self.client.get(reverse("my_statistics") + "?espacio=lapi&season=all")
+        self.assertRedirects(page, f"{reverse('player_statistics')}?season=all&en=lapi&player={me_lapi.public_id}",
+                             fetch_redirect_response=False)
+        sheet = self.client.get(page.url)
+        self.assertEqual(sheet.context["current_club"], self.lapi)
+        self.assertEqual([c["active"] for c in sheet.context["mine_chips"]], [False, False, True])
+        # La ficha de otro jugador no lleva los chips de «Mis estadísticas».
+        mate = self.lapi.players.exclude(pk=me_lapi.pk).get()
+        self.assertNotIn("mine_chips", self.client.get(
+            reverse("player_statistics") + f"?player={mate.public_id}").context)
+
+    def test_team_statistics_never_mixes_competitions(self):
+        self._close(self.snp_match)
+        self._close(self.lapi_match)
+        page = self.client.get(reverse("team_statistics") + "?espacio=todas&season=all")
+        self.assertTemplateUsed(page, "team_statistics.html")
+        self.assertEqual(page.context["current_club"], self.snp)  # el equipo que gestiona
+        self.assertEqual([c["code"] for c in page.context["space_chips"]], ["snp", "lapi"])
 
     def test_statistics_of_one_competition_switches_space(self):
         self._close(self.lapi_match)

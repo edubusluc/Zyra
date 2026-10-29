@@ -25,11 +25,15 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
   En espacios sin SNP no hay cuenta SNP, sincronización ni paso de SNP en «Primeros pasos» o «Prepara la temporada».
   Tests: `core/tests_spaces.py`, `core/tests_onboarding.py`, `core/tests_invitations.py`.
 - [V] Vistas unidas (`core/spaces.py`): con más de un espacio, Enfrentamientos, Calendario, Inicio (Pendiente y próximo
-  enfrentamiento) y Estadísticas › Equipo juntan los espacios con el filtro «Todas · SNP · LAPI» (`?espacio=`, se recuerda en
-  sesión, por defecto «Todas»). Cada tarjeta lleva la etiqueta de su competición y sus acciones según el rol en ese espacio.
-  En «Todas», Estadísticas (`spaces_overview`, `spaces_charts`, `static/js/stats_spaces.js`) pone cada competición al lado
-  de la otra con su color (sets, partidos como local/visitante, ganados por temporada apilados con total, asistencia con
-  una línea por competición) y nunca suma puntos; Top 5, récords, número de partido y puntos SNP, al elegir competición.
+  enfrentamiento) juntan los espacios con el filtro «Todas · SNP · LAPI» (`?espacio=`, se recuerda en sesión, por defecto
+  «Todas»). Cada tarjeta lleva la etiqueta de su competición y sus acciones según el rol en ese espacio.
+  Estadísticas nunca mezcla equipos: Equipo, Jugador, Parejas y Rivales son siempre de una competición (chips SNP · LAPI;
+  Equipo recuerda la suya en `TEAM_SPACE_KEY`, la primera vez la del primer equipo que gestiona). Lo global es de la persona:
+  con jugador enlazado en dos o más espacios (`spaces.linked_players`, `my_stats_available`) hay una primera pestaña
+  «Mis estadísticas» (`my_statistics`, `data_analyse/templates/stats_mine.html`, `static/js/stats_spaces.js`) con chips Todas · SNP · LAPI y
+  el enlace Estadísticas del menú abre en ella. «Todas» cuenta sus partidos (no puntos) y pone cada competición al lado de
+  la otra con su color (sets, local/visitante, ganados por temporada apilados con total, convocatorias en las que se
+  apunta); SNP o LAPI (`?espacio=`) redirige a su ficha de jugador en esa competición, que mantiene la pestaña y los chips.
   En la interfaz no se dice «espacio» sino equipo/competición. El menú de usuario solo informa («Tus equipos»: equipo,
   competición y papel; `Membership.team_role_label`) y no cambia de espacio; con varios equipos la cabecera muestra el
   nombre del usuario. El espacio activo cambia sin aviso (`switch_to`): al abrir un enfrentamiento de otro espacio

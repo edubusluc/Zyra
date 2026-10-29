@@ -23,7 +23,9 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 - El Inicio con equipos en varias competiciones enseña **los dos equipos** en el banner (escudo, competición y tu papel) y «En racha» de cada uno; ya no cambia según el último enfrentamiento que abriste.
 - **«Mi forma»** suma tus partidos y convocatorias de SNP y LAPI, con el desglose por competición y la competición de cada uno de tus últimos partidos. Los puntos SNP siguen igual.
 - Si eres jugador en todos tus equipos, **Plantilla** sale del menú. Jugador, Parejas y Rivales ya no tienen «Todas»: se consultan por competición.
-- Estadísticas con «Todas» añade gráficos con cada competición al lado de la otra: sets, partidos como local y como visitante, enfrentamientos ganados por año (apilados, con el total) y asistencia a las convocatorias (una línea por competición).
+- **«Mis estadísticas»**: si juegas en equipos de varias competiciones, Estadísticas abre en una pestaña nueva con lo tuyo. «Todas» cuenta tus partidos de SNP y LAPI (sin sumar puntos) con gráficos de cada competición al lado de la otra: sets, local y visitante, partidos ganados por temporada y convocatorias en las que te apuntas. SNP o LAPI abren tu ficha en esa competición.
+- Equipo, Jugador, Parejas y Rivales se consultan siempre por competición (SNP · LAPI), sin «Todas»; Equipo recuerda la que elegiste.
+- En el Inicio, la tarjeta de cada equipo dice la categoría en SNP («Categoría 500») y la división en LAPI.
 
 ## 28/10/2026 · Reglas de competición en una ficha (espacios, fase 0)
 

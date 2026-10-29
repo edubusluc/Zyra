@@ -13049,3 +13049,61 @@ msgstr "%(competition)s %(played)s of %(total)s"
 #, python-format
 msgid "Categoría %(level)s"
 msgstr "Category %(level)s"
+
+#: data_analyse/templates/stats_mine.html:34
+#, python-format
+msgid "Jugados: %(played)s · %(wins)sV %(losses)sD"
+msgstr "Played: %(played)s · %(wins)sW %(losses)sL"
+
+#: data_analyse/templates/stats_mine.html:34
+#, python-format
+msgid "apuntado a %(signed)s de %(total)s convocatorias"
+msgstr "signed up for %(signed)s of %(total)s call-ups"
+
+#: data_analyse/templates/stats_mine.html:39
+msgid ""
+"Cada competición puntúa a su manera: aquí se cuentan partidos, no puntos. "
+"Tus puntos, afinidad y récords están en cada competición."
+msgstr ""
+"Each competition scores in its own way: matches are counted here, not "
+"points. Your points, affinity and records are in each competition."
+
+#: data_analyse/templates/stats_mine.html:51
+#, python-format
+msgid ""
+"Cómo ganas y pierdes tus partidos, set a set: %% de victorias en cada "
+"situación."
+msgstr "How you win and lose your matches, set by set: %% won in each situation."
+
+#: data_analyse/templates/stats_mine.html:75
+msgid "Tus partidos ganados y perdidos jugando en casa, en cada competición."
+msgstr "Your matches won and lost at home, in each competition."
+
+#: data_analyse/templates/stats_mine.html:82
+msgid "Tus partidos ganados y perdidos jugando fuera, en cada competición."
+msgstr "Your matches won and lost away, in each competition."
+
+#: data_analyse/templates/stats_mine.html:89
+msgid "Partidos ganados por temporada"
+msgstr "Matches won per season"
+
+#: data_analyse/templates/stats_mine.html:90
+msgid ""
+"Tus partidos ganados en cada temporada: cada competición con su color y el "
+"total encima."
+msgstr ""
+"Your matches won each season: each competition in its colour, with the total "
+"on top."
+
+#: data_analyse/templates/stats_mine.html:99
+msgid "Convocatorias en las que te apuntas"
+msgstr "Call-ups you sign up for"
+
+#: data_analyse/templates/stats_mine.html:100
+#, python-format
+msgid ""
+"%% de las convocatorias cerradas de cada temporada en las que te apuntaste, "
+"una línea por competición."
+msgstr ""
+"%% of each season's closed call-ups you signed up for, one line per "
+"competition."

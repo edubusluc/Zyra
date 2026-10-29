@@ -8,6 +8,7 @@ from django.utils.translation import gettext as _
 
 from . import seo
 from .competitions import COMPETITIONS
+from .spaces import linked_players
 from .services import is_last_admin, is_only_member
 
 
@@ -17,7 +18,7 @@ def club(request):
     orden de las competiciones), competiciones en las que aún no tiene equipo, si es capitán
     (``is_club_admin``) o capitán/gestor (``can_manage``) del club activo y si al abandonarlo se
     eliminaría el club (es su único miembro). Esto último y ``team_competitions`` se calculan solo
-    si la plantilla los usa.
+    si la plantilla los usa, igual que ``my_stats_available`` (tiene «Mis estadísticas»).
     """
     membership = getattr(request, "membership", None)
     memberships = getattr(request, "user_memberships", [])
@@ -37,6 +38,8 @@ def club(request):
         "can_manage": bool(membership and membership.can_manage),
         # Jugador en todos sus equipos (y tiene varios): Plantilla no le aporta nada y sale del menú.
         "hide_roster_nav": len(memberships) > 1 and not any(m.can_manage for m in memberships),
+        # «Mis estadísticas» (y Estadísticas abre en ella) con jugador enlazado en dos o más equipos.
+        "my_stats_available": lambda: len(memberships) > 1 and len(linked_players(request)) > 1,
         "leaving_deletes_club": lambda: bool(membership and is_last_admin(membership) and is_only_member(membership)),
     }
 

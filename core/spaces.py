@@ -38,31 +38,53 @@ def membership_for(request, club):
     return next((m for m in getattr(request, "user_memberships", []) if m.club_id == club.id), None)
 
 
-def selected_spaces(request):
+def selected_spaces(request, allow_all=True, session_key=SESSION_FILTER_KEY):
     """
     Espacios que se consultan: (código elegido, clubes). El código es «todas» o el de una
     competición en la que el usuario tiene espacio; viene de ``?espacio=`` (y se recuerda en la
-    sesión) o, si no, de lo último elegido. Con un solo espacio devuelve (None, [club activo]).
+    sesión, en ``session_key``) o, si no, de lo último elegido. Con un solo espacio devuelve
+    (None, [club activo]).
+
+    Sin ``allow_all`` (páginas que no mezclan competiciones, como Estadísticas › Equipo) siempre es
+    una competición: la primera vez, la del primer equipo que gestiona o, si no gestiona ninguno,
+    la primera (SNP).
     """
     if not is_multi_space(request):
         return None, [request.club] if request.club else []
     clubs = user_clubs(request)
     codes = {c.competition for c in clubs}
+    valid = codes | ({ALL_SPACES} if allow_all else set())
     wanted = request.GET.get(SPACE_PARAM)
-    if wanted in codes or wanted == ALL_SPACES:
-        request.session[SESSION_FILTER_KEY] = wanted
+    if wanted in valid:
+        request.session[session_key] = wanted
     else:
-        wanted = request.session.get(SESSION_FILTER_KEY)
-        if wanted not in codes:
-            wanted = ALL_SPACES
+        wanted = request.session.get(session_key)
+        if wanted not in valid:
+            if allow_all:
+                wanted = ALL_SPACES
+            else:
+                managed = managed_clubs(request, clubs)
+                wanted = (managed or clubs)[0].competition
     if wanted == ALL_SPACES:
         return ALL_SPACES, clubs
     return wanted, [c for c in clubs if c.competition == wanted]
 
 
-def space_filter_context(request, selected):
+def linked_players(request):
     """
-    Chips «Todas» y una por competición (``space_chips``) para la plantilla
+    Jugadores enlazados a la cuenta en sus espacios, en el orden de las competiciones (uno por
+    competición). «Mis estadísticas» existe cuando hay dos o más.
+    """
+    from players.models import Player
+    clubs = user_clubs(request)
+    players = Player.objects.filter(user=request.user, club__in=clubs).select_related("club") \
+        if clubs and request.user.is_authenticated else []
+    return sorted(players, key=lambda p: clubs.index(p.club) if p.club in clubs else len(clubs))
+
+
+def space_filter_context(request, selected, allow_all=True):
+    """
+    Chips «Todas» (salvo sin ``allow_all``) y una por competición (``space_chips``) para la plantilla
     ``includes/space_filter.html``; vacío con un solo espacio. Cada enlace conserva el resto de la
     URL salvo la página.
     """
@@ -76,7 +98,8 @@ def space_filter_context(request, selected):
         params[SPACE_PARAM] = value
         return f"{request.path}?{params.urlencode()}"
 
-    chips = [{"code": ALL_SPACES, "label": _("Todas"), "url": url(ALL_SPACES), "active": selected == ALL_SPACES}]
+    chips = [{"code": ALL_SPACES, "label": _("Todas"), "url": url(ALL_SPACES), "active": selected == ALL_SPACES}] \
+        if allow_all else []
     seen = set()
     for club in user_clubs(request):
         if club.competition in seen:
