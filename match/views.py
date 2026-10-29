@@ -134,7 +134,8 @@ OUTCOME_EMOJI = {"V": "✅", "D": "❌", "E": "🤝"}
 def share_text(match, games):
     """
     Resultado listo para pegar en WhatsApp u otro chat: una cabecera en negrita con el desenlace, el
-    marcador y el rival, el enfrentamiento con la fecha (y «Amistoso» si lo es) y una línea por partido
+    marcador y el rival, el enfrentamiento con la fecha (y «Amistoso» si lo es), quién no se presentó si
+    es el caso y una línea por partido
     con su pareja, el resultado de sus sets desde el punto de vista del club y los puntos que valía. Usa
     solo negrita (*texto*) y emojis, que se ven igual en WhatsApp y Telegram, y acaba con «Hecho con Zyra».
     """
@@ -148,6 +149,8 @@ def share_text(match, games):
         head = f"*{match.local_name} – {match.visiting_name}*"
     date = match.start_date.strftime("%d/%m/%Y")
     lines = [head, f"{match.local_name} – {match.visiting_name} · {date}" + (f" · {_('Amistoso')}" if match.is_friendly else ""), ""]
+    if match.no_show:
+        lines.append(_("No presentado: %(team)s") % {"team": match.no_show_team})
     for g in games:
         result = g.result
         sets = ""
@@ -827,8 +830,9 @@ def _save_result(request, game, result, template):
     for field, value in values.items():
         setattr(result, field, value)
     result.retired = request.POST.get('retired') == 'on'
+    result.injured_side = request.POST.get('injured_side', '')
     try:
-        result.full_clean(exclude=['game', 'result', 'retired'] + list(SET_FIELDS), validate_unique=False)
+        result.full_clean(exclude=['game', 'result', 'retired', 'injured_side'] + list(SET_FIELDS), validate_unique=False)
         result.result = result.determine_winner()
         result.save()
     except ValidationError as e:
@@ -898,7 +902,7 @@ def _parse_game_results(request, game):
     for field, value in values.items():
         setattr(result, field, value)
     try:
-        result.full_clean(exclude=['game', 'result'] + list(RESULT_FIELDS), validate_unique=False)
+        result.full_clean(exclude=['game', 'result', 'injured_side'] + list(RESULT_FIELDS), validate_unique=False)
         result.result = result.determine_winner()
     except ValidationError as e:
         return values, None, e.messages
@@ -1083,9 +1087,65 @@ def reopen_match(request, match_id):
     with transaction.atomic():
         match.games.update(draft_mode=True)
         match.result, match.result_points, match.draft_mode = outcomes.NONE, outcomes.NONE, True
+        match.no_show = ""
         match.reopened_at, match.reopened_by = timezone.now(), request.user
         match.save()
     messages.success(request, _("Acta reabierta. Corrige lo que haga falta y vuelve a cerrarla."))
+    return redirect('call_for_match', match_id=match.public_id)
+
+
+def no_show_score(match, side):
+    """(resultado, «local/visitante») de un enfrentamiento en que ``side`` (``Match.NO_SHOW_OWN`` o
+    ``NO_SHOW_RIVAL``) no se presentó: el otro equipo gana todos los puntos (3-0 en la LAPI)."""
+    total = competition_for(match).total_points
+    own_wins = side == Match.NO_SHOW_RIVAL
+    local_wins = own_wins == match.own_is_local
+    points = (total, 0) if local_wins else (0, total)
+    return (outcomes.LOCAL_WIN if local_wins else outcomes.VISITING_WIN), f"{points[0]}/{points[1]}"
+
+
+@club_manager_required
+@require_POST
+def mark_no_show(request, match_id):
+    """Marca un enfrentamiento como «No presentado» y cierra su acta (solo POST, capitán o gestor).
+
+    Solo en las competiciones que lo tienen (LAPI), en enfrentamientos competitivos con el acta
+    abierta, sea cual sea su fase. ``side`` dice quién no se presentó (``own`` o ``rival``): el
+    otro gana todos los puntos. Las parejas y resultados que hubiera se borran, así no cuenta
+    para jugadores ni parejas; la convocatoria se queda pero no cuenta en la asistencia. No envía
+    el correo del resultado.
+    """
+    match = club_match(request, match_id)
+    side = request.POST.get("side")
+    if not competition_for(match).no_show or match.is_friendly or side not in (Match.NO_SHOW_OWN, Match.NO_SHOW_RIVAL):
+        messages.error(request, _("Este enfrentamiento no se puede marcar como no presentado."))
+        return redirect('call_for_match', match_id=match.public_id)
+    if not match.draft_mode:
+        messages.error(request, _("El acta ya está cerrada: reábrela antes de marcarlo como no presentado."))
+        return redirect('call_for_match', match_id=match.public_id)
+
+    with transaction.atomic():
+        match.games.all().delete()
+        match.result, match.result_points = no_show_score(match, side)
+        match.no_show, match.draft_mode = side, False
+        match.save()
+    messages.success(request, _("Marcado como no presentado: %(team)s.") % {"team": match.no_show_team})
+    return redirect('call_for_match', match_id=match.public_id)
+
+
+@club_manager_required
+@require_POST
+def undo_no_show(request, match_id):
+    """Quita el «No presentado» de un enfrentamiento (solo POST, capitán o gestor): el acta vuelve
+    a estar abierta en la fase en que estaba su convocatoria, sin parejas ni resultados."""
+    match = club_match(request, match_id)
+    if not match.no_show:
+        messages.info(request, _("Este enfrentamiento no está marcado como no presentado."))
+        return redirect('call_for_match', match_id=match.public_id)
+    match.no_show = ""
+    match.result, match.result_points, match.draft_mode = outcomes.NONE, outcomes.NONE, True
+    match.save()
+    messages.success(request, _("Ya no está marcado como no presentado: el acta vuelve a estar abierta."))
     return redirect('call_for_match', match_id=match.public_id)
 
 

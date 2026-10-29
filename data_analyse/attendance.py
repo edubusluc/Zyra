@@ -23,7 +23,7 @@ def signup_attendance(club, season=None, match_type=None):
     fila por convocatoria, por fecha (``day``: AAAA-MM-DD). Cada fila: ``label``, ``signed``, ``eligible``, ``pct`` (y
     ``calls`` en el modo por temporadas). ``average`` es None si no hay convocatorias.
     """
-    calls = Call.objects.filter(match__club=club, match__draft_mode=False, draft_mode=False,
+    calls = Call.objects.filter(match__club=club, match__draft_mode=False, draft_mode=False, match__no_show="",
                                 **match_type_lookup(match_type, "match__"))
     if season:
         calls = calls.filter(match__season=season)

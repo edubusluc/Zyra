@@ -91,10 +91,11 @@ def team_records(club, season=None, match_type=None, log=None):
         m = r['match']
         return {'own': r['own'], 'rival': r['rival'], 'name': m.rival_label, 'date': m.start_date, 'public_id': m.public_id}
 
-    wins = [r for r in rows if r['outcome'] == 'V' and r['own'] + r['rival']]
+    # Un «No presentado» cuenta en las rachas, pero no es la mayor victoria ni la peor derrota.
+    wins = [r for r in rows if r['outcome'] == 'V' and r['own'] + r['rival'] and not r['match'].no_show]
     if wins:
         records['biggest_win'] = score_row(max(wins, key=lambda r: (r['own'] - r['rival'], r['match'].start_date)))
-    losses = [r for r in rows if r['outcome'] == 'D' and r['own'] + r['rival']]
+    losses = [r for r in rows if r['outcome'] == 'D' and r['own'] + r['rival'] and not r['match'].no_show]
     if losses:
         records['worst_defeat'] = score_row(max(losses, key=lambda r: (r['rival'] - r['own'], r['match'].start_date)))
 

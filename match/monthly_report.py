@@ -59,7 +59,8 @@ def monthly_calls(player, start, end, scope=None):
     ``CALL_BENCHED`` (se apuntó pero no jugó: no convocado) o ``CALL_ABSENT`` (no se apuntó).
     """
     calls = (
-        Call.objects.filter(match__club=player.club, match__start_date__range=(start, end), match__draft_mode=False, draft_mode=False)
+        Call.objects.filter(match__club=player.club, match__start_date__range=(start, end), match__draft_mode=False, draft_mode=False,
+                            match__no_show="")
         .filter(**match_type_lookup(COMPETITIVE if scope == REPORT_SCOPE_COMPETITIVE else None, "match__"))
         .select_related("match__local", "match__visiting", "match__club")
         .order_by("match__start_date", "match_id")

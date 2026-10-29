@@ -298,3 +298,13 @@ msgstr[1] "%s call-ups"
 #: static/js/stats_spaces.js
 msgid "Total"
 msgstr "Total"
+
+msgid "Indica qué pareja se lesionó."
+msgstr "Say which pair got injured."
+
+msgid "El partido ya estaba decidido: no puede acabar por lesión."
+msgstr "The match was already decided: it cannot end by injury."
+
+#, javascript-format
+msgid "Queda %(score)s. Ganador del partido: %(team)s"
+msgstr "Final score %(score)s. Match winner: %(team)s"

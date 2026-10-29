@@ -106,7 +106,7 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
 
 ## Partidos, convocatorias y actas
 
-- [V] Los números del ciclo salen de la ficha de la competición (`core/competitions.py`, `competition_for`): partidos por enfrentamiento y sus puntos, convocados mínimos y partido de desempate. Hay dos: SNP (5 partidos 3-3-2-2-2, 10 convocados, desempate en el 3) y LAPI (3 partidos de 1 punto, 6 convocados, sin empate posible); cada club juega la de su espacio (`Club.competition`). El recomendador `match/advisor.py` recibe la ficha: en la SNP ordena las parejas por puntos SNP; sin `has_snp` (LAPI) usa solo historial y afinidad, sin orden de juego (cruce por sorteo), y la pantalla de parejas y el PDF no muestran puntos ni orden. Tests: `core/tests_competitions.py`.
+- [V] Los números del ciclo salen de la ficha de la competición (`core/competitions.py`, `competition_for`): partidos por enfrentamiento y sus puntos, convocados mínimos y partido de desempate. Hay dos: SNP (5 partidos 3-3-2-2-2, 10 convocados, desempate en el 3) y LAPI (3 partidos de 1 punto, 6 convocados, sin empate posible); cada club juega la de su espacio (`Club.competition`). El recomendador `match/advisor.py` recibe la ficha: en la SNP ordena las parejas por puntos SNP; sin `has_snp` (LAPI) usa solo historial y afinidad, sin orden de juego (cruce por sorteo), y la pantalla de parejas y el PDF no muestran puntos ni orden. Por eso mismo (`ordered_pairs=False`) Estadísticas no muestra en LAPI «Por número de partido» (equipo y jugador) ni «Balance de partidos por jugador». Tests: `core/tests_competitions.py`.
 
 Orden obligatorio del ciclo (`match/views.py`) [V], cubierto por `match/tests_flow.py`:
 
@@ -117,6 +117,13 @@ Orden obligatorio del ciclo (`match/views.py`) [V], cubierto por `match/tests_fl
    ganar 3-0 = 4, 2-1 = 3, perder = 1; total de la temporada en Estadísticas › Equipo, `match/league.py`). En
    Playoffs y Fase final (`final_types`), convocar a quien no ha jugado `finals_min_regular` (2) enfrentamientos de
    liga esa temporada pide marcar «Convocarlos igualmente» (`force_finals`, reglamento LAPI 8.2). Tests: `match/tests_league.py`.
+   **No presentado** (competiciones con `no_show`, LAPI; no en amistosos): con el acta abierta, en cualquier
+   fase, «Más» › «No se presentó el rival» / «No nos presentamos» (`mark_no_show`, capitán o gestor) borra
+   parejas y resultados, guarda `Match.no_show` (`own`/`rival`) y cierra el acta con todos los puntos para el
+   que sí se presentó (3-0). Cuenta en el balance del equipo, sus rachas y Rivales (no como mayor victoria o peor
+   derrota), no en jugadores, parejas ni asistencia (las consultas de convocatorias filtran `match__no_show=""`); no envía el correo de resultado.
+   Puntos de liga: 4 si no se presentó el rival, 0 si no nos presentamos (las sanciones del reglamento no se
+   muestran nunca). «Quitar no presentado» (`undo_no_show`) reabre el acta; reabrirla también lo quita.
    Amistoso: `match_type="amistoso"`; puede tener rival escrito a mano (`rival_name`, sin crear
    `Team`, ese lado `NULL`) que no puede llamarse como el equipo propio.
 2. **Convocatoria** (mínimo `min_call_players` de la competición al crearla y al editarla: 10 SNP, 6 LAPI): una por partido; si ya existe o el acta está cerrada → `existing_call`.
@@ -130,6 +137,9 @@ Orden obligatorio del ciclo (`match/views.py`) [V], cubierto por `match/tests_fl
    gana los dos primeros; con 1-1 el tercero es obligatorio (set normal o super tie-break a 10 con
    2 de diferencia). Con `Result.retired` (partido finalizado por lesión) vale un resultado incompleto
    (`validate_retired_result`, p. ej. 7-5 / 3-0): gana quien va ganando (más sets, luego más juegos).
+   En las competiciones con `injury_completes` (LAPI) se indica la pareja lesionada (`Result.injured_side`) y
+   gana siempre la sana: `complete_retired_result` le completa el set a medias a 6 (a 7 si la lesionada
+   tenía 5 o 6) y los sets que falten 6-0 (3-2 queda 3-6 / 0-6).
    Al guardar fija `Game.winner`.
 6. **Cerrar acta** (`close_match`, POST): acta abierta y 5 partidos con resultado. Suma puntos,
    fija `Match.result` (valores canónicos en `match/outcomes.py`; `EMPATE` posible, p. ej. 6/6, salvo en Reto y Play Off: ahí el 6-6 lo decide el ganador del partido 3, `determine_match_result`) y `result_points`,

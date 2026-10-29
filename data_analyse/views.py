@@ -738,7 +738,8 @@ def calls_by_season(player, match_type=None):
     Convocatorias por temporada: ({temporada: a las que se apuntó}, {temporada: total}). Solo cuentan
     las de su temporada de incorporación en adelante (``Player.joined_season``): antes no estaba en el equipo.
     """
-    base = _by_type(Call.objects.filter(match__club=player.club, match__draft_mode=False, draft_mode=False), match_type, "match__")
+    base = _by_type(Call.objects.filter(match__club=player.club, match__draft_mode=False, draft_mode=False,
+                                        match__no_show=""), match_type, "match__")
     total = dict(base.order_by().values_list('match__season').annotate(n=Count('id', distinct=True)))
     present = dict(
         base.filter(players__id=player.id)
@@ -754,7 +755,7 @@ def aligned_by_season(player, match_type=None):
     partido}. Junto con calls_by_season da el "apuntado y alineado".
     """
     signed = _by_type(
-        Call.objects.filter(match__club=player.club, match__draft_mode=False, draft_mode=False,
+        Call.objects.filter(match__club=player.club, match__draft_mode=False, draft_mode=False, match__no_show="",
                             players__id=player.id), match_type, "match__"
     ).values_list('match_id', 'match__season')
     seasons = dict(signed)

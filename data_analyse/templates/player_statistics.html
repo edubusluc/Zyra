@@ -121,8 +121,10 @@
       <section aria-labelledby="clutch-title" class="st-section">
         <h2 class="st-section-title" id="clutch-title">{% translate "Partidos y sets" %}</h2>
         <div class="st-row st-row--pair">
+          {% if player.club.rules.ordered_pairs %}
           {% translate "Por número de partido" as t_title %}{% translate "% de victorias en cada partido del enfrentamiento." as t_note %}
           {% include 'includes/game_numbers.html' with rows=game_numbers title=t_title note=t_note best=best_number worst=worst_number %}
+          {% endif %}
           {% translate "Sets clutch" as t_title %}{% translate "Cómo responde en los momentos decisivos: tercer set, tie-breaks y remontadas." as t_note %}
           {% include 'includes/set_stats.html' with st=clutch title=t_title note=t_note %}
         </div>

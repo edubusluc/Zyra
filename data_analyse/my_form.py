@@ -62,7 +62,7 @@ def _season_entries(club, player, season):
     log = [g for g in pairs.club_game_log(club, match_type=pairs.COMPETITIVE) if player.id in g["pair"]]
     season_log = [g for g in log if g["season"] == season]
     called = set(Call.objects.filter(
-        match__club=club, match__season=season, match__draft_mode=False, players=player,
+        match__club=club, match__season=season, match__draft_mode=False, match__no_show="", players=player,
         match__match_type__in=[value for value, _label in Match.COMPETITIVE_TYPES],
     ).values_list("match_id", flat=True))
     return season_log, called

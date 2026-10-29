@@ -87,6 +87,12 @@ class Match(PublicIdModel):
     # Rival de un amistoso que no es un equipo del grupo: solo se guarda su nombre en el
     # propio partido (no se crea ningún equipo) y ese lado (local o visiting) queda vacío.
     rival_name = models.CharField(_("Rival"), max_length=100, blank=True, default="")
+    # «No presentado» (solo en competiciones con ``Competition.no_show``, LAPI): qué equipo no se
+    # presentó. El acta se cierra sin partidos; el que no se presenta pierde todos los puntos.
+    NO_SHOW_OWN = "own"
+    NO_SHOW_RIVAL = "rival"
+    NO_SHOW_CHOICES = [(NO_SHOW_OWN, _("No se presentó el equipo propio")), (NO_SHOW_RIVAL, _("No se presentó el rival"))]
+    no_show = models.CharField(_("No presentado"), max_length=5, choices=NO_SHOW_CHOICES, blank=True, default="")
     # Última vez que un capitán reabrió el acta ya cerrada para corregirla (y quién).
     reopened_at = models.DateTimeField(null=True, blank=True)
     reopened_by = models.ForeignKey(
@@ -147,15 +153,27 @@ class Match(PublicIdModel):
 
     @property
     def league_points(self):
-        """Puntos de liga del equipo propio en un enfrentamiento de liga cerrado (LAPI: 4, 3 o 1); None si no aplica."""
+        """Puntos de liga del equipo propio en un enfrentamiento de liga cerrado (LAPI: 4, 3 o 1; 0 si no se
+        presentó); None si no aplica."""
         if self.draft_mode or not self.is_league:
             return None
+        if self.no_show == self.NO_SHOW_OWN:
+            return 0  # sin las sanciones del reglamento: Zyra nunca las muestra
         parts = (self.result_points or "").replace("-", "/").split("/")
         if len(parts) != 2 or not all(p.strip().isdigit() for p in parts):
             return None
         local, visiting = (int(p) for p in parts)
         own, rival = (local, visiting) if self.own_is_local else (visiting, local)
         return self.club.rules.league_points_for(own, rival)
+
+    @property
+    def no_show_team(self):
+        """Nombre del equipo que no se presentó; '' si el enfrentamiento se jugó."""
+        if self.no_show == self.NO_SHOW_OWN:
+            return self.local_name if self.own_is_local else self.visiting_name
+        if self.no_show == self.NO_SHOW_RIVAL:
+            return self.rival_label
+        return ""
 
     @property
     def no_draw(self):
@@ -326,6 +344,10 @@ class Result(PublicIdModel):
     draft_mode = models.BooleanField(default=True)
     # Partido finalizado por lesión: admite un resultado incompleto; gana quien iba ganando
     retired = models.BooleanField(default=False)
+    # Pareja lesionada ('local' o 'visiting') en las competiciones que completan el partido
+    # para la pareja sana (``Competition.injury_completes``, LAPI); vacío en el resto.
+    INJURED_SIDES = [("local", _("Local")), ("visiting", _("Visitante"))]
+    injured_side = models.CharField(_("Pareja lesionada"), max_length=8, choices=INJURED_SIDES, blank=True, default="")
 
     class Meta:
         constraints = [
@@ -342,12 +364,20 @@ class Result(PublicIdModel):
         ]
 
     def clean(self):
-        """Valida el resultado con las reglas del pádel y normaliza el set 3 no jugado."""
+        """Valida el resultado con las reglas del pádel y normaliza el set 3 no jugado.
+
+        Si acabó por lesión en una competición que lo completa (LAPI), rellena los juegos de la
+        pareja sana (``scoring.complete_retired_result``).
+        """
         values = [scoring.to_int(v) for pair in self.sets() for v in pair]
-        validate = scoring.validate_retired_result if self.retired else scoring.validate_padel_result
-        sets, self._winner = validate(
-            (values[0], values[1]), (values[2], values[3]), (values[4], values[5])
-        )
+        sets = (values[0], values[1]), (values[2], values[3]), (values[4], values[5])
+        if self.retired and self.game.match.club.rules.injury_completes:
+            sets, self._winner = scoring.complete_retired_result(*sets, injured=self.injured_side)
+        else:
+            if not self.retired:
+                self.injured_side = ""
+            validate = scoring.validate_retired_result if self.retired else scoring.validate_padel_result
+            sets, self._winner = validate(*sets)
         (self.set1_local, self.set1_visiting), (self.set2_local, self.set2_visiting), \
             (self.set3_local, self.set3_visiting) = sets
 

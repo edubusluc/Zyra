@@ -133,3 +133,47 @@ def validate_retired_result(set1, set2, set3):
     if local_sets == visiting_sets:
         raise ValidationError(_("No se puede saber quién iba ganando: el resultado está empatado."))
     return sets, "local" if local_sets > visiting_sets else "visiting"
+
+
+def complete_retired_result(set1, set2, set3, injured):
+    """
+    Completa un partido que acabó por lesión dándoselo a la pareja sana (reglamento LAPI):
+    en el set a medias la pareja sana llega a 6 juegos (a 7 si la lesionada tenía 5 o 6) y los
+    sets que falten hasta que gane el partido quedan 6-0 para ella. ``injured`` es 'local' o
+    'visiting'. Ejemplo con la local lesionada: 6-4 / 3-2 queda 6-4 / 3-6 / 0-6.
+
+    Devuelve (sets_completos, ganador); lanza ValidationError si faltan sets intermedios o si el
+    partido ya estaba decidido a favor de la pareja lesionada.
+    """
+    if injured not in ("local", "visiting"):
+        raise ValidationError(_("Indica qué pareja se lesionó."))
+    sets = [(None, None) if (a in (None, 0) and b in (None, 0)) else (a, b) for a, b in (set1, set2, set3)]
+    played = [i for i, (a, b) in enumerate(sets) if a is not None or b is not None]
+    last = played[-1] if played else -1
+    errors = []
+    for i in range(last + 1):
+        a, b = sets[i]
+        if a is None or b is None:
+            errors.append(_("Set %(n)s: falta el resultado.") % {"n": i + 1})
+        elif i < last and not is_valid_set(a, b):
+            errors.append(_("Set %(n)s: %(score)s no es un resultado válido. %(rule)s")
+                          % {"n": i + 1, "score": f"{a}-{b}", "rule": SET_RULE})
+    if errors:
+        raise ValidationError(errors)
+
+    # Juegos de cada set como (lesionada, sana) para completar sin pensar en local o visitante.
+    flip = injured == "visiting"
+    own = [((b, a) if flip else (a, b)) for a, b in sets[:last + 1]]
+    if own and not is_valid_set(*own[-1]):
+        hurt, healthy = own[-1]
+        target = 7 if hurt >= 5 else 6
+        if healthy > target or hurt > 6:
+            raise ValidationError(_("Set %(n)s: %(score)s no es un resultado válido. %(rule)s")
+                                  % {"n": len(own), "score": f"{sets[last][0]}-{sets[last][1]}", "rule": SET_RULE})
+        own[-1] = (hurt, target)
+    if sum(hurt > healthy for hurt, healthy in own) >= 2:
+        raise ValidationError(_("El partido ya estaba decidido: no puede acabar por lesión."))
+    while sum(healthy > hurt for hurt, healthy in own) < 2:
+        own.append((0, 6))
+    completed = [((b, a) if flip else (a, b)) for a, b in own] + [(None, None)] * (3 - len(own))
+    return completed, "local" if flip else "visiting"
