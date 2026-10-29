@@ -50,6 +50,26 @@
 </section>
 {% endif %}
 
+{% for inv in copy_invitations %}
+{# Invitación de una ficha copiada a otro equipo de otra competición (players.copy). #}
+<section class="z-card z-copy-invite" aria-labelledby="copy-invite-{{ forloop.counter }}">
+    <span class="z-eyebrow"><i class="fa-solid fa-envelope-open-text me-1" aria-hidden="true"></i> {% translate "Tienes una invitación" %}</span>
+    <h2 id="copy-invite-{{ forloop.counter }}">{{ inv.club.name }} {% include 'includes/competition_badge.html' with code=inv.club.competition name=inv.club.rules.name %}</h2>
+    <p class="small mb-1">{% if inv.created_by %}{% blocktranslate with name=inv.created_by.get_full_name|default:inv.created_by.username %}Jugador · te invita {{ name }}{% endblocktranslate %}{% else %}{% translate "Jugador" %}{% endif %}</p>
+    <p class="small">{% blocktranslate with player=inv.player.full_name %}Tu ficha allí: {{ player }}. Tus partidos de tus otros equipos no cambian.{% endblocktranslate %}</p>
+    <div class="d-flex flex-wrap gap-2">
+        <form method="post" action="{% url 'respond_copy_invitation' inv.token %}" data-loading-text="{% translate 'Uniéndote al equipo…' %}">
+            {% csrf_token %}<input type="hidden" name="action" value="accept">
+            <button type="submit" class="btn btn-primary btn-sm">{% translate "Aceptar y unirme" %}</button>
+        </form>
+        <form method="post" action="{% url 'respond_copy_invitation' inv.token %}" data-confirm="{% blocktranslate with club=inv.club.name %}No entrarás en {{ club }} y tu ficha allí se quedará sin enlazar a tu cuenta.{% endblocktranslate %}" data-confirm-title="{% translate 'Rechazar la invitación' %}" data-confirm-action="{% translate 'Rechazar' %}" data-loading-text="{% translate 'Rechazando…' %}">
+            {% csrf_token %}<input type="hidden" name="action" value="decline">
+            <button type="submit" class="btn btn-secondary btn-sm">{% translate "Rechazar" %}</button>
+        </form>
+    </div>
+</section>
+{% endfor %}
+
 {% if manager_welcome %}
 {# Bienvenida al gestor recién nombrado; se queda hasta que la cierra (Membership.manager_welcome_pending). #}
 <section class="z-card" role="status" aria-labelledby="manager-welcome-title">

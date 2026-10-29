@@ -80,6 +80,10 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
   suspendido, email bloqueado, ya miembro, o miembro de otro club.
 - [V] No se invita a un email que ya es miembro ni a uno bloqueado (`InviteMemberForm.clean_email`).
 - [V] Los capitanes no crean cuentas ajenas: cada jugador crea la suya desde el enlace.
+- [V] Invitación de ficha copiada (`Invitation.player`, `players/copy.py`): dura 30 días
+  (`COPY_INVITATION_TTL`), llega por correo y sale en el Inicio («Aceptar y unirme» / «Rechazar»,
+  `respond_copy_invitation`). Al aceptarla, `accept_invitation` crea la membresía como jugador y
+  `link_player` enlaza la ficha. Al rechazarla se borra la invitación y la ficha queda sin cuenta.
 
 ## Jugadores
 
@@ -92,6 +96,18 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
   muestran solo `in_team=True` más los ya convocados (`selectable_players`).
 - [V] Nombres en mayúsculas al mostrarse (`full_name`, `short_name`); texto plano sin HTML
   (`core/validators.py`). Nombres parecidos → aviso antes de guardar (`core/similarity.py`, cabecera `X-Similar-Check`).
+- [V] «Copiar jugadores» (`players/copy.py`, vista `copy_players`): del equipo de otra competición de
+  la misma cuenta al activo; hay que ser capitán o gestor en los dos (`managed_pairs`). Se copian
+  nombre, apellidos, foto (mismo fichero), posición y mano; estadísticas, puntos SNP y convocatorias
+  se quedan en el origen (`Player.copied_from`). Estados de `candidates`: `already` (ya tiene ficha,
+  por copia, cuenta o nombre parecido), `other_team` (su cuenta está en otro equipo de esa
+  competición), `member` (ya es miembro sin ficha: se enlaza directamente), `invite` (tiene cuenta:
+  invitación) y `copy`. Si la plantilla pasa de `rules.max_roster` (LAPI 15) se avisa, no se impide.
+- [V] Las fichas enlazadas a una misma cuenta comparten nombre, apellidos y foto: el `post_save` de
+  `Player` llama a `sync_linked_sheets`. La posición y la mano son de cada equipo.
+- [V] Mi perfil propone enlazar las fichas copiadas antes de que el jugador tuviera cuenta
+  (`related_unlinked`): «Sí, enlazarla» (`join_and_link`, entra como jugador) o «No es mía»
+  (`not_mine`, quita `copied_from`).
 
 ## Equipos
 
@@ -191,6 +207,10 @@ ni se editan parejas (`edit_game_match`).
   Correos y PDF salen en el idioma del usuario; los de procesos programados, en español (`Readme.md`).
 
 ## SNP
+
+- [V] «Completar equipo» no duplica fichas copiadas: los jugadores sin puntos SNP
+  (`same_player_options`) se ofrecen en «¿Es el mismo jugador?» y `confirm(team_import, same=...)`
+  les da los puntos en vez de crear otra ficha.
 
 - [V] Credenciales SNP cifradas con `FIELD_ENCRYPTION_KEY`; cambiar la clave invalida las guardadas.
 - [V] Cruce de nombres SNP ↔ jugador sin mayúsculas, tildes, categoría final ni segundo apellido

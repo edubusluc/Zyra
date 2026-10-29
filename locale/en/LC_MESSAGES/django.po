@@ -13278,3 +13278,453 @@ msgstr "We did not show up"
 
 msgid "Quitar no presentado"
 msgstr "Remove no-show"
+
+#: backoffice/mass_email.py:37
+msgid "Todos los usuarios activos"
+msgstr "All active users"
+
+#: backoffice/mass_email.py:48
+#, python-brace-format
+msgid ""
+"Hola {nombre},\n"
+"\n"
+"Hemos añadido mejoras en Zyra que pueden venirte bien en {club}. Entra y échales un vistazo; si algo no te cuadra, respóndeme a este correo.\n"
+"\n"
+"Un saludo."
+msgstr ""
+"Hi {nombre},\n"
+"\n"
+"We have added improvements to Zyra that may help you at {club}. Log in and take a look; if anything does not fit, reply to this email.\n"
+"\n"
+"Best regards."
+
+#: backoffice/mass_email.py:53
+#, python-brace-format
+msgid ""
+"Hola {nombre},\n"
+"\n"
+"He visto que {club} lleva un tiempo sin actividad en Zyra. ¿Hay algo que no te haya funcionado o que eches de menos? Cuéntamelo y lo arreglamos.\n"
+"\n"
+"Un saludo."
+msgstr ""
+"Hi {nombre},\n"
+"\n"
+"I noticed {club} has had no activity in Zyra for a while. Is there something that did not work for you or that you miss? Tell me and we will fix it.\n"
+"\n"
+"Best regards."
+
+#: backoffice/mass_email.py:58
+#, python-brace-format
+msgid ""
+"Hola {nombre},\n"
+"\n"
+"Quería saber qué tal os va con Zyra en {club} y qué mejoraríais. Cualquier comentario me sirve.\n"
+"\n"
+"Un saludo."
+msgstr ""
+"Hi {nombre},\n"
+"\n"
+"I wanted to know how Zyra is going at {club} and what you would improve. Any feedback helps.\n"
+"\n"
+"Best regards."
+
+#: backoffice/mass_email.py:68
+#, python-brace-format
+msgid ""
+"Hola {nombre},\n"
+"\n"
+"Vamos a hacer tareas de mantenimiento en Zyra y puede que el servicio no esté disponible unos minutos. Perdona las molestias.\n"
+"\n"
+"Un saludo."
+msgstr ""
+"Hi {nombre},\n"
+"\n"
+"We are going to do maintenance on Zyra and the service may be unavailable for a few minutes. Sorry for the inconvenience.\n"
+"\n"
+"Best regards."
+
+#: backoffice/templates/backoffice/email_compose.html:17
+#, python-brace-format
+msgid ""
+"Sale con el formato de los correos de Zyra y cada persona recibe el suyo, sin"
+" ver a las demás. En el asunto y el texto puedes usar <code>{nombre}</code> y"
+" <code>{club}</code>. Respondes tú: las respuestas van a tu email. Cada envío"
+" queda en «Correos enviados» y en la auditoría."
+msgstr ""
+"It goes out in the Zyra email format and each person gets their own, without "
+"seeing the others. In the subject and text you can use <code>{nombre}</code> "
+"and <code>{club}</code>. Replies go to your email. Each send is kept in “Sent"
+" emails” and in the audit log."
+
+#: backoffice/templates/backoffice/email_compose.html:57
+#: backoffice/templates/backoffice/email_preview.html:20
+#, python-format
+msgid "Llegaría a %(n)s persona"
+msgid_plural "Llegaría a %(n)s personas"
+msgstr[0] "Would reach %(n)s person"
+msgstr[1] "Would reach %(n)s people"
+
+#: backoffice/templates/backoffice/email_compose.html:58
+#: backoffice/templates/backoffice/email_preview.html:20
+#, python-format
+msgid "%(blocked)s omitidos por estar bloqueados"
+msgstr "%(blocked)s skipped because they are blocked"
+
+#: backoffice/templates/backoffice/email_compose.html:67
+#, python-format
+msgid ""
+"Confirmo que quiero enviarlo a todos los destinatarios (máximo "
+"%(max_recipients)s por envío)"
+msgstr ""
+"I confirm I want to send it to all recipients (at most %(max_recipients)s per"
+" send)"
+
+#: core/competitions.py:97
+msgid "SNP"
+msgstr "SNP"
+
+#: core/templates/home.html:56
+msgid "Tienes una invitación"
+msgstr "You have an invitation"
+
+#: core/templates/home.html:58
+#, python-format
+msgid "Jugador · te invita %(name)s"
+msgstr "Player · invited by %(name)s"
+
+#: core/templates/home.html:59
+#, python-format
+msgid ""
+"Tu ficha allí: %(player)s. Tus partidos de tus otros equipos no cambian."
+msgstr ""
+"Your player sheet there: %(player)s. Your matches in your other teams do not "
+"change."
+
+#: core/templates/home.html:61
+msgid "Uniéndote al equipo…"
+msgstr "Joining the team…"
+
+#: core/templates/home.html:63
+msgid "Aceptar y unirme"
+msgstr "Accept and join"
+
+#: core/templates/home.html:65
+#, python-format
+msgid ""
+"No entrarás en %(club)s y tu ficha allí se quedará sin enlazar a tu cuenta."
+msgstr ""
+"You will not join %(club)s and your player sheet there will stay unlinked "
+"from your account."
+
+#: core/templates/home.html:65
+msgid "Rechazar la invitación"
+msgstr "Decline the invitation"
+
+#: core/templates/home.html:65 core/templates/home.html:67
+msgid "Rechazar"
+msgstr "Decline"
+
+#: core/templates/home.html:65
+msgid "Rechazando…"
+msgstr "Declining…"
+
+#: core/templates/my_profile.html:159
+msgid "Tu ficha también está en otro equipo"
+msgstr "Your player sheet is also in another team"
+
+#: core/templates/my_profile.html:160
+#, python-format
+msgid ""
+"El capitán de %(club)s (%(competition)s) copió tu ficha antes de que tuvieras"
+" cuenta. Si es tuya, entrarás en ese equipo como jugador y verás también allí"
+" tus estadísticas."
+msgstr ""
+"The captain of %(club)s (%(competition)s) copied your player sheet before you"
+" had an account. If it is yours, you will join that team as a player and see "
+"your statistics there too."
+
+#: core/templates/my_profile.html:170
+msgid "Sí, enlazarla"
+msgstr "Yes, link it"
+
+#: core/templates/my_profile.html:173
+msgid "No es mía"
+msgstr "It is not mine"
+
+#: core/views.py:672
+msgid "Esa invitación ya no está pendiente."
+msgstr "That invitation is no longer pending."
+
+#: core/views.py:676
+#, python-format
+msgid "Invitación rechazada: no entrarás en %(club)s."
+msgstr "Invitation declined: you will not join %(club)s."
+
+#: core/views.py:924
+#, python-format
+msgid "Ficha enlazada: ya estás en %(club)s."
+msgstr "Player sheet linked: you are now in %(club)s."
+
+#: core/views.py:933
+msgid "De acuerdo, no volveremos a proponerte esa ficha."
+msgstr "OK, we will not suggest that player sheet again."
+
+#: players/copy.py:103
+#, python-format
+msgid "Te han añadido a %(club)s en Zyra"
+msgstr "You have been added to %(club)s on Zyra"
+
+#: players/copy.py:233
+msgid "Esa ficha ya no se puede enlazar a tu cuenta."
+msgstr "That player sheet can no longer be linked to your account."
+
+#: players/templates/copy_players.html:3 players/templates/copy_players.html:10
+#, python-format
+msgid "Copiar jugadores de %(competition)s"
+msgstr "Copy players from %(competition)s"
+
+#: players/templates/copy_players.html:13
+msgid "a"
+msgstr "to"
+
+#: players/templates/copy_players.html:20
+msgid "Copiar desde"
+msgstr "Copy from"
+
+#: players/templates/copy_players.html:26
+#, python-format
+msgid ""
+"Tu plantilla de %(competition)s tiene %(n)s jugadores; el máximo es %(max)s. "
+"Zyra te avisa si te pasas, pero no te lo impide."
+msgstr ""
+"Your %(competition)s squad has %(n)s players; the maximum is %(max)s. Zyra "
+"warns you if you go over, but does not stop you."
+
+#: players/templates/copy_players.html:29
+msgid "Copiando los jugadores…"
+msgstr "Copying the players…"
+
+#: players/templates/copy_players.html:40
+#, python-format
+msgid "Seleccionar todos los que se pueden copiar (%(n)s)"
+msgstr "Select all that can be copied (%(n)s)"
+
+#: players/templates/copy_players.html:52
+#, python-format
+msgid "Ya está en %(competition)s"
+msgstr "Already in %(competition)s"
+
+#: players/templates/copy_players.html:53
+#, python-format
+msgid "Juega en otro equipo %(competition)s"
+msgstr "Plays in another %(competition)s team"
+
+#: players/templates/copy_players.html:54
+msgid "Ya es miembro: se enlaza su ficha"
+msgstr "Already a member: their sheet gets linked"
+
+#: players/templates/copy_players.html:55
+msgid "Tiene cuenta: recibirá invitación"
+msgstr "Has an account: will get an invitation"
+
+#: players/templates/copy_players.html:56
+msgid "Sin cuenta: se copia la ficha"
+msgstr "No account: the sheet is copied"
+
+#: players/templates/copy_players.html:62
+#, python-format
+msgid "%(club)s no tiene jugadores en la plantilla."
+msgstr "%(club)s has no players in the squad."
+
+#: players/templates/copy_players.html:73
+#, python-format
+msgid ""
+"Se copian nombre, apellidos, foto y posición. Las estadísticas, puntos SNP y "
+"convocatorias se quedan en %(competition)s. Los que tienen cuenta reciben un "
+"correo y ven el equipo %(target)s cuando aceptan."
+msgstr ""
+"First name, last name, photo and position are copied. Statistics, SNP points "
+"and call-ups stay in %(competition)s. Those with an account get an email and "
+"see the %(target)s team when they accept."
+
+#: players/templates/copy_players.html:76
+msgid "Copiar 1 jugador"
+msgstr "Copy 1 player"
+
+#: players/templates/copy_players.html:76
+#, python-format
+msgid "Copiar %%(n)s jugadores"
+msgstr "Copy %%(n)s players"
+
+#: players/templates/copy_players.html:76
+msgid "Copiar jugadores"
+msgstr "Copy players"
+
+#: players/templates/emails/player_copy_invitation.html:1
+#: players/templates/emails/player_copy_invitation.txt:1
+#, python-format
+msgid "Te han añadido a %(club)s"
+msgstr "You have been added to %(club)s"
+
+#: players/templates/emails/player_copy_invitation.html:2
+#, python-format
+msgid ""
+"<strong>%(name)s</strong>, capitán de %(source)s, ha copiado tu ficha al "
+"equipo <strong>%(club)s</strong> (%(competition)s)."
+msgstr ""
+"<strong>%(name)s</strong>, captain of %(source)s, has copied your player "
+"sheet to the team <strong>%(club)s</strong> (%(competition)s)."
+
+#: players/templates/emails/player_copy_invitation.html:2
+#, python-format
+msgid ""
+"Han copiado tu ficha al equipo <strong>%(club)s</strong> (%(competition)s)."
+msgstr ""
+"Your player sheet has been copied to the team <strong>%(club)s</strong> "
+"(%(competition)s)."
+
+#: players/templates/emails/player_copy_invitation.html:2
+#: players/templates/emails/player_copy_invitation.txt:3
+msgid ""
+"Acepta para verlo en Zyra con tu misma cuenta, apuntarte a sus convocatorias "
+"y ver tus estadísticas de las dos competiciones en «Mis estadísticas»."
+msgstr ""
+"Accept to see it in Zyra with the same account, sign up for its call-ups and "
+"see your statistics from both competitions in “My statistics”."
+
+#: players/templates/emails/player_copy_invitation.html:3
+#: players/templates/emails/player_copy_invitation.txt:5
+msgid ""
+"Si no juegas en ese equipo, recházala y tu ficha allí se queda sin enlazar a "
+"tu cuenta."
+msgstr ""
+"If you do not play in that team, decline it and your player sheet there stays"
+" unlinked from your account."
+
+#: players/templates/emails/player_copy_invitation.html:4
+msgid "Ver la invitación"
+msgstr "View the invitation"
+
+#: players/templates/emails/player_copy_invitation.html:5
+#: players/templates/emails/player_copy_invitation.txt:10
+msgid "También la tienes en el Inicio de Zyra."
+msgstr "You also have it on the Zyra Home page."
+
+#: players/templates/emails/player_copy_invitation.txt:3
+#, python-format
+msgid ""
+"%(name)s, capitán de %(source)s, ha copiado tu ficha al equipo %(club)s "
+"(%(competition)s)."
+msgstr ""
+"%(name)s, captain of %(source)s, has copied your player sheet to the team "
+"%(club)s (%(competition)s)."
+
+#: players/templates/emails/player_copy_invitation.txt:3
+#, python-format
+msgid "Han copiado tu ficha al equipo %(club)s (%(competition)s)."
+msgstr ""
+"Your player sheet has been copied to the team %(club)s (%(competition)s)."
+
+#: players/templates/emails/player_copy_invitation.txt:7
+msgid "Ver la invitación:"
+msgstr "View the invitation:"
+
+#: players/templates/list_players.html:13
+#: players/templates/list_players.html:24
+#, python-format
+msgid "Copiar de %(competition)s"
+msgstr "Copy from %(competition)s"
+
+#: players/templates/list_players.html:24
+#, python-format
+msgid ""
+"¿Tus jugadores de %(competition)s también juegan aquí? Cópialos en vez de "
+"crearlos a mano: solo se copian nombre, foto y posición, nunca sus "
+"estadísticas."
+msgstr ""
+"Do your %(competition)s players also play here? Copy them instead of creating"
+" them by hand: only name, photo and position are copied, never their "
+"statistics."
+
+#: players/templates/list_players.html:92
+msgid "Invitación pendiente"
+msgstr "Invitation pending"
+
+#: players/templates/list_players.html:93
+#, python-format
+msgid "Copiado de %(competition)s"
+msgstr "Copied from %(competition)s"
+
+#: players/templates/list_players.html:184
+msgid "¿Es el mismo jugador?"
+msgstr "Is it the same player?"
+
+#: players/templates/list_players.html:188
+#, python-format
+msgid "¿Es %(name)s uno de tus jugadores?"
+msgstr "Is %(name)s one of your players?"
+
+#: players/templates/list_players.html:189
+msgid "No, jugador nuevo"
+msgstr "No, new player"
+
+#: players/templates/list_players.html:190
+#, python-format
+msgid "Sí, %(name)s"
+msgstr "Yes, %(name)s"
+
+#: players/templates/list_players.html:199
+msgid ""
+"Tienes jugadores sin puntos SNP (por ejemplo, copiados de otro equipo) que "
+"pueden estar en SNP con otro nombre. Si alguno de la lista es uno de ellos, "
+"elígelo en «¿Es el mismo jugador?»: no se creará otra ficha y recibirá sus "
+"puntos."
+msgstr ""
+"You have players without SNP points (for example, copied from another team) "
+"who may be in SNP under another name. If someone on the list is one of them, "
+"choose them in “Is it the same player?”: no new sheet will be created and "
+"they will get the points."
+
+#: players/views.py:615
+msgid ""
+"Para copiar jugadores tienes que ser capitán o gestor también en tu equipo de"
+" otra competición."
+msgstr ""
+"To copy players you must also be captain or manager of your team in another "
+"competition."
+
+#: players/views.py:624
+#, python-format
+msgid "%(n)s jugador copiado."
+msgid_plural "%(n)s jugadores copiados."
+msgstr[0] "%(n)s player copied."
+msgstr[1] "%(n)s players copied."
+
+#: players/views.py:625
+#, python-format
+msgid "%(n)s recibirá una invitación por correo."
+msgid_plural "%(n)s recibirán una invitación por correo."
+msgstr[0] "%(n)s will get an invitation by email."
+msgstr[1] "%(n)s will get an invitation by email."
+
+#: players/views.py:629
+msgid "No has elegido a nadie que se pueda copiar."
+msgstr "You have not chosen anyone who can be copied."
+
+#: players/views.py:632
+#, python-format
+msgid ""
+"Tu plantilla de %(competition)s tiene %(n)s jugadores y el máximo es %(max)s."
+" Da de baja a los que no vayan a jugar."
+msgstr ""
+"Your %(competition)s squad has %(n)s players and the maximum is %(max)s. "
+"Remove those who will not play."
+
+#: players/templates/copy_players.html:68
+#, python-format
+msgid ""
+"Ya no queda nadie por copiar: todos están en %(competition)s o juegan en "
+"otro equipo."
+msgstr ""
+"There is no one left to copy: everyone is already in %(competition)s or "
+"plays in another team."

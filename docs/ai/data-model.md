@@ -33,6 +33,8 @@ entero sigue siendo la clave de los FK. Excepciones sin `public_id`: `backoffice
   Única por (`user`, `club`). `can_manage` = capitán o gestor. El valor guardado sigue siendo `admin` aunque la interfaz diga «Capitán».
 - **Invitation**: `token` único, `email` (vacío = enlace), `reusable` (enlace compartido, varios
   usos), `use_count`, `expires_at` (24 h, `INVITATION_TTL`). `Invitation.objects.pending()`.
+  `player` (FK a `Player`, `CASCADE`, nulo): invitación de una ficha copiada a otro equipo (30 días,
+  `players/copy.py`); al aceptarla la ficha se enlaza a la cuenta.
 - **AccountNoticeLog** (`backoffice/models.py`): registro de avisos de «email sin confirmar» y de cuentas eliminadas por ese motivo; guarda copia de usuario y email, `deadline_at`, `email_sent` y quién lo hizo (`performed_by`, `SET_NULL`).
 - **PhotoCheck** (`approved`/`rejected`/`unchecked`), **PhotoRemoval**, **BlockedEmail** (`email`
   único, normalizado por `core/blocklist.py`): moderación. FKs con `SET_NULL` para conservar el registro.
@@ -53,6 +55,8 @@ entero sigue siendo la clave de los FK. Excepciones sin `public_id`: `backoffice
 - `in_team` (False = ya no está en la plantilla, se conserva para estadísticas), `snp_score`,
   `joined_season` (`AAAA-AAAA`, selector con las de `season_choices`; las convocatorias anteriores no cuentan en sus estadísticas, `joined_by`), `position`, `skillfull_hand` (sic).
 - Mostrar siempre `full_name` / `short_name` (mayúsculas); lo guardado no se toca.
+- `copied_from` (FK a sí mismo, `SET_NULL`, `related_name="copies"`): ficha de la que se copió con
+  «Copiar jugadores». Las fichas con la misma `user` comparten nombre, apellidos y foto (`SHARED_FIELDS`).
 - Temporada: de septiembre a agosto (`SEASON_START_MONTH = 9`, `current_season()`).
 
 #### SNP

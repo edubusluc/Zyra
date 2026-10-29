@@ -22,6 +22,8 @@ urlpatterns = (
     path('manager-tip/dismiss/', views.dismiss_manager_tip, name='dismiss_manager_tip'),
     path('welcome/', views.member_welcome, name='member_welcome'),
     path('profile/', views.my_profile, name='my_profile'),
+    path('profile/sheets/<int:pk>/link/', views.link_related_sheet, name='link_related_sheet'),
+    path('profile/sheets/<int:pk>/not-mine/', views.reject_related_sheet, name='reject_related_sheet'),
     path('profile/verify-email/', views.resend_verification, name='resend_verification'),
     path('profile/delete/', views.delete_account_view, name='delete_account'),
     path('club/', views.club_home, name='club_home'),
@@ -37,5 +39,6 @@ urlpatterns = (
     path('monthly-report/unsubscribe/<str:token>/', views.monthly_unsubscribe, name='monthly_unsubscribe'),
     path('match-result/unsubscribe/<str:token>/', views.result_unsubscribe, name='result_unsubscribe'),
     path('invite/<str:token>/', views.invitation, name='invitation'),
+    path('invite/<str:token>/respond/', views.respond_copy_invitation, name='respond_copy_invitation'),
     path('password-check/', views.password_check, name='password_check'),
 )

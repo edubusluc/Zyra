@@ -33,7 +33,8 @@ class Competition:
     alinean por puntos y cada partido vale distinto); en la LAPI las parejas se cruzan por
     sorteo y Estadísticas no muestra el balance por número de partido ni el de 3 y 2 puntos.
 
-    ``no_show`` permite marcar un enfrentamiento como «No presentado» (el que no se presenta
+    ``max_roster`` es el máximo de jugadores de la plantilla (LAPI 15): al copiar jugadores se avisa
+    si se pasa, sin impedirlo. ``no_show`` permite marcar un enfrentamiento como «No presentado» (el que no se presenta
     pierde todos los partidos; no cuenta para jugadores, parejas ni asistencia) y
     ``injury_completes`` hace que un partido acabado por lesión lo gane siempre la pareja sana,
     con sus juegos completados hasta ganar el set y los que falten 6-0 (LAPI: 3-2 queda 3-6, 0-6).
@@ -52,6 +53,7 @@ class Competition:
     finals_min_regular: int = 0
     ordered_pairs: bool = True
     no_show: bool = False
+    max_roster: int | None = None
     injury_completes: bool = False
 
     @property
@@ -128,6 +130,7 @@ LAPI = Competition(
     finals_min_regular=2,
     ordered_pairs=False,
     no_show=True,
+    max_roster=15,
     injury_completes=True,
 )
 
