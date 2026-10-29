@@ -19,7 +19,8 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 - El informe puede **incluir datos de otras competiciones** de los convocados con cuenta enlazada (casilla en «Más opciones» al crear el enfrentamiento).
 - Ya no se habla de «espacios»: el menú de usuario muestra **«Tus equipos»** (equipo, competición y tu papel en cada uno) solo para informar, y con equipos en varias competiciones la cabecera lleva tu nombre. «Cambiar de espacio» desaparece: abrir un enfrentamiento te lleva a su equipo sin avisos.
 - **«Añadir equipo de otra competición»** sustituye a «Crear otro espacio»; el registro enseña desactivadas las competiciones en las que ya tienes equipo («Ya tienes Los Gladiadores en SNP») y, si ya las tienes todas, el menú lo dice.
-- El selector SNP | LAPI de Plantilla, Club y Rivales solo aparece si gestionas los equipos de las dos competiciones.
+- El selector SNP | LAPI de Plantilla, Club y Rivales aparece si gestionas los equipos de las dos competiciones o eres jugador en los dos; si eres capitán en uno y jugador en otro, ves solo el que gestionas.
+- En el Inicio, si tu equipo no tiene categoría (SNP) o división (LAPI), la tarjeta lo dice.
 - El Inicio con equipos en varias competiciones enseña **los dos equipos** en el banner (escudo, competición y tu papel) y «En racha» de cada uno; ya no cambia según el último enfrentamiento que abriste.
 - **«Mi forma»** suma tus partidos y convocatorias de SNP y LAPI, con el desglose por competición y la competición de cada uno de tus últimos partidos. Los puntos SNP siguen igual.
 - Si eres jugador en todos tus equipos, **Plantilla** sale del menú. Jugador, Parejas y Rivales ya no tienen «Todas»: se consultan por competición.

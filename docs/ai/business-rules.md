@@ -39,7 +39,7 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
   nombre del usuario. El espacio activo cambia sin aviso (`switch_to`): al abrir un enfrentamiento de otro espacio
   (`call_for_match`, `space_match`), con `?en=` (`follow_space`, antes de comprobar el rol) y al elegir competición en
   Estadísticas. Plantilla, Club y Rivales (`management_view`): si gestiona unos espacios y en otros solo juega, solo ve
-  los que gestiona; el selector SNP | LAPI solo sale si gestiona todos. El registro muestra desactivadas las
+  los que gestiona; el selector SNP | LAPI sale si gestiona todos o es jugador en todos. El registro muestra desactivadas las
   competiciones en las que ya tiene equipo. Inicio con varios equipos: el banner los enseña todos («Tus equipos»,
   `home_teams`) y «En racha» da tarjetas por equipo (`streaks`); quien es jugador en todos sus equipos no ve Plantilla en
   el menú (`hide_roster_nav`). Jugador, Parejas y Rivales solo eligen SNP o LAPI (sin «Todas»). El informe puede incluir los partidos de la temporada

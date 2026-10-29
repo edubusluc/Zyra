@@ -119,11 +119,13 @@ class UnifiedSpacesTests(TestCase):
         page = self.client.get(reverse("list_players") + "?en=lapi")
         self.assertEqual(page.context["current_club"], self.lapi)
 
-    def test_player_in_both_does_not_choose(self):
+    def test_player_in_both_chooses_team_in_club(self):
         Membership.objects.filter(user=self.user, club=self.snp).update(role=Membership.MEMBER)
         page = self.client.get(reverse("club_home"))
-        self.assertNotContains(page, "z-space-switcher")
+        self.assertContains(page, "z-space-switcher")
         self.assertNotContains(page, "Nuevo enfrentamiento")
+        lapi = self.client.get(reverse("club_home") + "?en=lapi")
+        self.assertEqual(lapi.context["own_team"], self.lapi.own_team)
 
     def test_captain_in_both_has_switcher_in_rivals(self):
         Membership.objects.filter(user=self.user, club=self.lapi).update(role=Membership.MANAGER)
@@ -139,6 +141,7 @@ class UnifiedSpacesTests(TestCase):
             self.assertContains(page, "z-home-hero--teams")
             self.assertContains(page, "z-home-team--lapi")
             self.assertContains(page, "Categoría 500")
+        self.assertContains(page, "Sin división")  # equipo LAPI sin división
 
     def test_roster_leaves_the_menu_only_for_player_in_every_team(self):
         url = reverse("list_players")

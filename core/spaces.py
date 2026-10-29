@@ -159,8 +159,9 @@ def management_view(view_func):
     Decorador de Plantilla, Club y Rivales, que son de un solo espacio. Con ``?en=`` cambia a ese
     espacio (follow_space). Si el usuario gestiona unos espacios y en otros solo juega, estas
     páginas son solo de los que gestiona: si el activo es uno en el que juega, cambia al primero
-    que gestiona. Solo quien gestiona todos sus espacios (capitán o gestor en SNP y en LAPI) elige
-    desde la página: deja en ``request.space_switcher`` sus espacios; para los demás, vacío.
+    que gestiona. Quien gestiona todos sus espacios (capitán o gestor en SNP y en LAPI) o es jugador
+    en todos elige desde la página: deja en ``request.space_switcher`` sus espacios; para los demás
+    (gestiona unos y juega en otros), vacío.
     """
     @follow_space
     @wraps(view_func)
@@ -173,7 +174,7 @@ def management_view(view_func):
             if managed and len(managed) < len(clubs):
                 if request.club not in managed:
                     switch_to(request, managed[0])
-            elif managed:
+            else:
                 request.space_switcher = [
                     {"club": c, "code": c.competition, "name": c.rules.name, "active": c.id == request.club.id}
                     for c in clubs]
