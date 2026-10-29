@@ -228,7 +228,8 @@ def join_and_link(user, sheet):
     Desde Mi perfil: ``user`` entra como jugador en el equipo de ``sheet`` (una copia de su ficha
     hecha antes de tener cuenta) y la ficha queda enlazada a su cuenta.
     """
-    sheet = Player.objects.select_for_update().select_related("club").get(pk=sheet.pk)
+    # Sin select_related: el club es FK nula y PostgreSQL no admite FOR UPDATE en un LEFT JOIN.
+    sheet = Player.objects.select_for_update().get(pk=sheet.pk)
     if sheet not in related_unlinked(user):
         raise LinkError(_("Esa ficha ya no se puede enlazar a tu cuenta."))
     if is_user_blocked(user):
