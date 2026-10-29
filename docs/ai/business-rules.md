@@ -42,7 +42,7 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
   los que gestiona; el selector SNP | LAPI sale si gestiona todos o es jugador en todos. El registro muestra desactivadas las
   competiciones en las que ya tiene equipo. Inicio con varios equipos: el banner los enseña todos («Tus equipos»,
   `home_teams`) y «En racha» da tarjetas por equipo (`streaks`); quien es jugador en todos sus equipos no ve Plantilla en
-  el menú (`hide_roster_nav`, `spaces.plays_only`); en Estadísticas tampoco ve la pestaña «Jugador» ni el selector de jugadores, y `statistics_per_player` sin `?player=` lo lleva a «Mis estadísticas»; las fichas de sus compañeros (enlaces de Inicio, Parejas…) sí las ve. Jugador, Parejas y Rivales solo eligen SNP o LAPI (sin «Todas»). El informe puede incluir los partidos de la temporada
+  el menú (`hide_roster_nav`, `spaces.plays_only`); tampoco tiene la ficha de Plantilla (`show_player` lo lleva a las estadísticas del jugador) ni su pestaña «Resumen» en Estadísticas › Jugador, que sí ve con su selector. Jugador, Parejas y Rivales solo eligen SNP o LAPI (sin «Todas»). El informe puede incluir los partidos de la temporada
   en otras competiciones de los convocados con cuenta enlazada (`Match.report_other_competitions`). Tests:
   `core/tests_spaces_unified.py`.
 - [V] Se puede crear una cuenta sin club (`register_account`, o Google desde esa página): queda en `no_club` hasta aceptar una

@@ -9,7 +9,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 - **Lesión en LAPI**: al marcar «Partido finalizado por lesión» se elige la pareja lesionada y Zyra completa el partido para la sana (3-2 queda 3-6 / 0-6), con la vista previa en el formulario.
 - En LAPI, Estadísticas ya no muestra «Por número de partido» ni «Balance de partidos por jugador»: el orden de los partidos lo decide el sorteo.
 - La lesión también se marca en «Poner resultados», partido a partido, y la etiqueta «Lesión» dice qué pareja se lesionó. Al editar una lesión ya guardada la vista previa ya no da error con los sets 0-6.
-- Si eres jugador en todos tus equipos, Estadísticas no muestra la pestaña «Jugador» ni el listado de jugadores (vista de capitán); las fichas de tus compañeros se siguen abriendo desde sus enlaces, como «Ver estadísticas» en Inicio.
+- Si eres jugador en todos tus equipos, en Estadísticas › Jugador ves las estadísticas de tus compañeros, pero sin la pestaña «Resumen» de la ficha de Plantilla, que es de la vista de capitán.
 
 ## 29/10/2026 · Espacios por competición (fase 1b: enfrentamientos LAPI)
 

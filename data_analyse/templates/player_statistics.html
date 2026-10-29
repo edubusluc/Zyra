@@ -7,7 +7,7 @@
   <div class="st-page">
     {% include 'includes/stats_tabs.html' %}
 
-    {% if selected_player %}{% include 'includes/player_tabs.html' with current='stats' %}{% endif %}
+    {% if selected_player and not hide_roster_nav %}{% include 'includes/player_tabs.html' with current='stats' %}{% endif %}
     <header class="st-head">
       <div>
         <h1 class="st-title">{% if selected_player %}{{ player.full_name }}{% else %}{% translate "Estadísticas de jugadores" %}{% endif %}</h1>
@@ -16,7 +16,6 @@
         {% endif %}
       </div>
 
-      {% if not hide_roster_nav %}
       <form class="st-picker" method="GET" action="{% url 'player_statistics' %}">
         <label class="st-label" for="player">{% translate "Jugador" %}</label>
         <select class="st-select" name="player" id="player" onchange="this.form.submit()" data-picker data-picker-toggle data-placeholder="{% translate 'Busca o elige un jugador' %}">
@@ -29,7 +28,6 @@
         {% if selected_match_type %}<input type="hidden" name="match_type" value="{{ selected_match_type }}">{% endif %}
         <noscript><button class="st-btn" type="submit">{% translate "Ver" %}</button></noscript>
       </form>
-      {% endif %}
     </header>
     {% if selected_player %}{% include 'includes/season_filter.html' %}{% endif %}
     {% include 'includes/match_type_filter.html' %}
