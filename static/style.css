@@ -1195,24 +1195,76 @@ a.z-card:hover, .z-card--link:hover {
 
 /* ---------- Detalle de enfrentamiento ---------- */
 
+.z-ficha-top { display: grid; gap: 12px; margin-bottom: 14px; }
 .z-versus {
+    position: relative;
     display: grid;
-    grid-template-columns: 1fr auto 1fr;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: center;
-    gap: 16px;
-    padding: 24px;
-    margin-bottom: 22px;
-    background: linear-gradient(135deg, rgba(var(--z-lime-rgb), .12), rgba(var(--z-lime-rgb), 0) 60%), var(--z-surface-2);
+    gap: 12px;
+    padding: 22px 18px;
+    background: var(--z-surface);
     border: 1px solid var(--z-border);
-    border-radius: var(--z-radius);
+    border-radius: 22px;
+    overflow: hidden;
 }
-.z-versus-team { font-size: clamp(1rem, 2.4vw, 1.4rem); font-weight: 800; text-transform: uppercase; color: #FFFFFF; }
-.z-versus-team small { display: block; font-size: .7rem; font-weight: 700; letter-spacing: .1em; color: var(--z-muted); }
+.z-versus > * { position: relative; }
+.z-versus-team { font: 400 clamp(1.05rem, 4.6vw, 2.6rem)/1 var(--z-display); text-transform: uppercase; color: #FFFFFF; overflow-wrap: break-word; hyphens: none; }
+.z-versus-team small { display: block; margin-top: 6px; font: 700 .7rem var(--z-body); letter-spacing: .1em; color: var(--z-muted); }
 .z-versus-team:last-child { text-align: right; }
-.z-versus-mid { text-align: center; }
-.z-versus-vs { font-family: var(--z-display); font-weight: 400; font-size: 1.6rem; color: var(--z-lime); }
-.z-versus-date { font-size: .8rem; color: var(--z-muted); }
-.z-versus-type { font-size: .75rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--z-text); }
+.z-versus-mid { grid-column: 1 / -1; grid-row: 1; text-align: center; }
+.z-versus-vs { font: 400 clamp(3.4rem, 17vw, 6rem)/.9 var(--z-display); color: var(--z-lime); white-space: nowrap; }
+.z-ficha-side { display: grid; align-content: start; gap: 8px; padding: 16px 18px; background: var(--z-surface); border: 1px solid var(--z-border); border-radius: 22px; }
+.z-ficha-side p { margin: 0; }
+.z-kind { display: flex; align-items: center; gap: 12px; }
+.z-kind-ic { display: grid; place-items: center; flex-shrink: 0; width: 42px; height: 42px; font: 400 1.2rem/1 var(--z-display); color: var(--z-ink); background: var(--z-lime); border-radius: 12px; }
+.z-kind b { display: block; font: 400 1.5rem/1.05 var(--z-display); text-transform: uppercase; color: #FFFFFF; }
+.z-kind small { color: var(--z-muted); font-size: .78rem; }
+.z-ficha-outcome { font: 400 clamp(2.4rem, 9vw, 4rem)/1 var(--z-display); text-transform: uppercase; color: var(--z-text); }
+.z-ficha-outcome.is-win { color: var(--z-lime); }
+.z-ficha-outcome.is-loss { color: var(--z-danger); }
+.z-ficha-when { font-weight: 800; color: var(--z-text); }
+.z-ficha-when .z-location { font-weight: 600; }
+.z-ficha-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.z-tag { display: inline-block; padding: 4px 11px; font-size: .72rem; font-weight: 800; color: var(--z-text); background: var(--z-surface-3); border-radius: 999px; }
+.z-tag.is-lime { color: var(--z-ink); background: var(--z-lime); }
+.z-tag.is-amber { color: var(--z-ink); background: var(--z-warning); }
+/* Escritorio: el marcador es la pista (2:1, sin deformarla) con la red entre local y visitante;
+   a su lado, el tipo de enfrentamiento, el desenlace y el lugar. */
+@media (min-width: 992px) {
+    .z-ficha-top { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); align-items: stretch; }
+    .z-versus { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); aspect-ratio: 2 / 1; padding: 0 8%; }
+    .z-versus::before {
+        content: ""; position: absolute; inset: 0; pointer-events: none;
+        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 100' fill='none' stroke='%23B4F100' stroke-opacity='.22' stroke-width='2'%3E%3Crect x='3' y='6' width='194' height='88' rx='1' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M100 6V94M30.5 6V94M169.5 6V94M30.5 50H169.5' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") center / contain no-repeat;
+    }
+    .z-versus-team { font-size: 1.7rem; }
+    .z-versus-team:first-child { padding-right: 96px; text-align: right; }
+    .z-versus-team:last-child { padding-left: 96px; text-align: left; }
+    .z-versus-mid { grid-column: auto; grid-row: auto; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); padding: 4px 16px; background: var(--z-surface); }
+    .z-ficha-side { padding: 22px 26px; }
+}
+.z-status4 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 0 0 18px; padding: 0; list-style: none; }
+.z-status4 li { position: relative; display: grid; gap: 2px; padding: 14px 16px; background: var(--z-surface); border: 1px solid var(--z-border); border-radius: 18px; }
+.z-status4 b { font: 400 1.7rem/1 var(--z-display); color: #FFFFFF; }
+.z-status4-label { font-size: .74rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--z-muted); }
+.z-status4-ic { position: absolute; top: 12px; right: 12px; display: grid; place-items: center; width: 24px; height: 24px; font-size: .72rem; font-weight: 800; color: var(--z-muted); background: var(--z-surface-3); border-radius: 50%; }
+.z-status4 .is-done .z-status4-ic { color: var(--z-ink); background: var(--z-lime); }
+.z-status4 .is-cur { border-color: var(--z-warning); }
+.z-status4 .is-cur .z-status4-ic { color: var(--z-ink); background: var(--z-warning); }
+.z-status4 .is-done .z-status4-label { color: var(--z-text); }
+.z-status4-bar { display: block; height: 6px; margin-top: 8px; overflow: hidden; background: var(--z-surface-3); border-radius: 999px; }
+.z-status4-bar i { display: block; height: 100%; background: var(--z-lime); border-radius: inherit; }
+.z-status4 .is-cur .z-status4-bar i { background: var(--z-warning); }
+@media (min-width: 768px) { .z-status4 { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.z-callist { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; }
+.z-pl { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 8px 12px 8px 8px; background: var(--z-surface-2); border: 1px solid var(--z-border); border-radius: 16px; }
+.z-pl.is-me { outline: 2px solid var(--z-lime); outline-offset: 1px; }
+.z-pl-av { display: grid; place-items: center; flex-shrink: 0; width: 40px; height: 40px; object-fit: cover; font: 400 1rem/1 var(--z-display); color: var(--z-ink); background: var(--z-lime); border-radius: 50%; }
+.z-pl-who { flex: 1; min-width: 0; }
+.z-pl-who b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .9rem; text-transform: uppercase; color: #FFFFFF; }
+.z-pl-who small { display: flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; white-space: nowrap; color: var(--z-muted); font-size: .76rem; }
+.z-pl-pair { padding: 1px 7px; font-weight: 800; color: var(--z-ink); background: var(--z-lime); border-radius: 6px; }
 .z-edit-date { margin-left: .35rem; color: var(--z-muted); }
 .z-edit-date:hover, .z-edit-date:focus-visible { color: var(--z-text, inherit); }
 
@@ -1238,8 +1290,6 @@ a.z-card:hover, .z-card--link:hover {
 
 @media (max-width: 767.98px) {
     .z-positions { grid-template-columns: 1fr; }
-    .z-versus { grid-template-columns: 1fr; text-align: center; }
-    .z-versus-team:last-child { text-align: center; }
 }
 
 /* Orden de parejas en la creación de partidos */
@@ -2243,31 +2293,7 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 .z-call { margin-top: 8px; padding: 18px; background: var(--z-surface); border: 1px solid var(--z-border); border-radius: var(--z-radius); }
 .z-call-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-bottom: 16px; color: var(--z-muted); }
 .z-call-head b { font-size: 1.3rem; color: #FFFFFF; }
-.z-call-legend { margin-left: auto; font-size: .8rem; }
-/* Una fila por posición con los jugadores en varias columnas: la lista no crece tanto con muchos convocados */
-.z-call-groups { display: grid; gap: 14px; }
-.z-call-group { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 8px 16px; align-items: start; }
-.z-call-group + .z-call-group { padding-top: 14px; border-top: 1px solid var(--z-border); }
-.z-call-group h3 { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 6px 0 0; font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--z-lime); }
-.z-call-group h3 span { display: grid; place-items: center; min-width: 24px; height: 24px; padding: 0 6px; font-size: .75rem; color: var(--z-text); background: var(--z-surface-3); border-radius: 999px; }
-.z-call-group ul { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 6px; margin: 0; padding: 0; list-style: none; }
-.z-call-group ul.is-collapsed li:nth-child(n+9) { display: none; }
-.z-call-more { margin-top: 8px; padding: 4px 0; font: inherit; font-size: .82rem; font-weight: 700; color: var(--z-lime); background: none; border: 0; cursor: pointer; }
-.z-call-more:hover { text-decoration: underline; }
-.z-call-group p { margin: 0; font-size: .88rem; color: var(--z-muted); }
-.z-chip { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 4px 10px 4px 4px; font-size: .88rem; font-weight: 600; background: var(--z-surface-2); border: 1px solid var(--z-border); border-radius: 999px; }
-.z-chip img { width: 26px; height: 26px; flex-shrink: 0; object-fit: cover; border-radius: 50%; }
-.z-chip span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.z-chip.is-playing { border-color: rgba(var(--z-lime-rgb), .5); }
 .z-dot { display: inline-block; flex-shrink: 0; width: 8px; height: 8px; background: var(--z-lime); border-radius: 50%; }
-@media (max-width: 767.98px) {
-    .z-call-group { grid-template-columns: 1fr; }
-    .z-call-group h3 { margin: 0; }
-    .z-call-group ul { grid-template-columns: minmax(0, 1fr); }
-    .z-call .z-chip { gap: 6px; font-size: .78rem; }
-    .z-call .z-chip img { width: 22px; height: 22px; }
-    .z-call-legend { margin-left: 0; }
-}
 
 /* ---------- Advertencias: historial a ancho completo y legible ---------- */
 .st-warn-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
@@ -2724,14 +2750,6 @@ a.z-hub-card:hover, a.z-hub-card:focus-visible { border-color: var(--z-lime); co
 .z-hub-note { font-size: .88rem; color: var(--z-muted); }
 
 /* ---------- Enfrentamiento: fases, siguiente paso y estado del jugador (match/templates/call_for_match.html) ---------- */
-.z-phases { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 0 0 16px; padding: 0; list-style: none; counter-reset: none; }
-.z-phases li { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 8px 10px; font-size: .82rem; font-weight: 700; color: var(--z-muted); background: var(--z-surface-2); border: 1px solid var(--z-border); border-radius: 999px; }
-.z-phases li > span:last-of-type { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.z-step-n { display: grid; place-items: center; flex-shrink: 0; width: 22px; height: 22px; font-size: .72rem; font-weight: 800; color: var(--z-muted); background: var(--z-surface-3); border-radius: 50%; }
-.z-phases .is-done { color: #FFFFFF; }
-.z-phases .is-done .z-step-n { color: var(--z-ink); background: var(--z-lime); }
-.z-phases .is-current { color: var(--z-ink); background: var(--z-lime); border-color: var(--z-lime); }
-.z-phases .is-current .z-step-n { color: var(--z-lime); background: var(--z-ink); }
 
 .z-next { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px; margin: 0 0 22px; padding: 14px; background: var(--z-surface-2); border: 1px solid var(--z-lime); border-radius: var(--z-radius); }
 .z-next-main { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0; }
@@ -2756,7 +2774,6 @@ a.z-hub-card:hover, a.z-hub-card:focus-visible { border-color: var(--z-lime); co
 .z-mystatus.is-in > i { color: var(--z-lime); }
 .z-mystatus strong { display: block; color: #FFFFFF; }
 .z-mystatus span { display: block; font-size: .88rem; color: var(--z-muted); }
-.z-chip.is-me { outline: 2px solid var(--z-lime); outline-offset: 1px; }
 
 .z-closed { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 22px; padding: 14px 16px; background: var(--z-surface-2); border: 1px solid var(--z-border); border-left: 4px solid var(--z-muted); border-radius: var(--z-radius); }
 .z-closed.is-win { border-left-color: var(--z-lime); }
@@ -2770,8 +2787,6 @@ a.z-hub-card:hover, a.z-hub-card:focus-visible { border-color: var(--z-lime); co
 .z-result-legend { float: none; width: auto; margin: 0 0 8px; padding: 0; font-size: .8rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 
 @media (max-width: 575.98px) {
-    .z-phases { gap: 4px; }
-    .z-phases li { flex-direction: column; gap: 4px; padding: 8px 4px; font-size: .7rem; text-align: center; border-radius: 14px; }
 }
 /* En móvil el botón «Siguiente» se queda al alcance, justo encima de la barra inferior */
 @media (max-width: 991.98px) {

@@ -5,6 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 30/10/2026 · Nuevo estilo visual (fase 2: listado de enfrentamientos)
 
+- **Ficha del enfrentamiento**: marcador y nombres de los equipos en grande (en escritorio, sobre la pista 2:1 con la red entre local y visitante), banner del tipo («Liga · Jornada 2»), desenlace y lugar al lado, cuatro tarjetas de estado con cifra y barra (convocatoria, parejas, resultados, acta) y lista de convocados identificable: avatar, nombre en mayúsculas, pareja P1/P2/P3 con su compañero y etiqueta Convocado o Suplente.
 - **Tarjeta del listado**: una fila por enfrentamiento con franja de la competición (SNP ámbar, LAPI turquesa), fecha en bloque con el color del resultado, píldora de tipo (★ eliminatoria, ● resto, «Jornada N») y recorrido de cuatro pasos (Convoc. · Parejas · Result. · Acta) con ✓ hecho y «!» actual, calculado por `MatchPhase.track`. El marcador grande y el estado van a la derecha; en móvil, debajo.
 
 ## 30/10/2026 · Nuevo estilo visual (fase 1: base e Inicio)

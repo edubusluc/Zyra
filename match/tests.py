@@ -190,16 +190,19 @@ class MatchesAndCallsTests(TestCase):
         self.assertTrue(response.context["filtering"])
         self.assertContains(response, 'aria-current="page">Amistosos')
 
-    def test_long_call_groups_are_collapsed(self):
-        """Con muchos convocados en una posición, se ven los primeros y el resto tras «Ver N más»."""
-        players = [Player.objects.create(club=self.club, name=f"P{i:02d}", last_name="X", position="Derecha")
-                   for i in range(11)]
+    def test_call_roster_shows_pairs_and_substitutes(self):
+        """La ficha lista a los convocados con su pareja (P1, P2...) y marca como suplentes a los demás."""
+        players = [Player.objects.create(club=self.club, name=f"P{i}", last_name="X") for i in range(3)]
         call = Call.objects.create(match=self.current, draft_mode=False)
         call.players.set(players)
+        Game.objects.create(match=self.current, n_game=1, player_1_local=players[0], player_2_local=players[1])
         response = self.client.get(reverse("call_for_match", args=[self.current.public_id]))
-        drive = next(g for g in response.context["groups"] if len(g["players"]) == 11)
-        self.assertEqual(drive["hidden"], 3)
-        self.assertContains(response, "Ver 3 más")
+        roster = {p.name: p for p in response.context["convocados"]}
+        self.assertEqual(roster["P0"].pair_n, 1)
+        self.assertEqual(roster["P0"].partner, players[1])
+        self.assertIsNone(roster["P2"].pair_n)
+        self.assertContains(response, "Suplente")
+        self.assertContains(response, "z-status4")
 
     def test_call_players_are_alphabetical_and_current(self):
         response = self.client.get(reverse("create_call", args=[self.current.public_id]))

@@ -14622,3 +14622,12 @@ msgstr "Result"
 
 msgid "Recorrido del enfrentamiento"
 msgstr "Match progress"
+
+msgid "%(n)s de %(total)s"
+msgstr "%(n)s of %(total)s"
+
+msgid "Suplente"
+msgstr "Substitute"
+
+msgid "Sin pareja asignada"
+msgstr "No pair assigned"

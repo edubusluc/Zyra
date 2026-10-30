@@ -80,8 +80,6 @@ def club_players(request, ids):
 
 
 MATCHES_PER_PAGE = 12
-# Jugadores de cada posición que se ven en el detalle del partido antes de pulsar «Ver todos».
-CALL_GROUP_PREVIEW = 8
 
 
 def match_outcome(match):
@@ -121,14 +119,6 @@ def club_score(match):
 
 
 OUTCOME_LABELS = {"V": gettext_lazy("Victoria"), "D": gettext_lazy("Derrota"), "E": gettext_lazy("Empate")}
-
-
-def phase_steps(phase):
-    """Pasos del indicador de fases con su estado: hecho, actual o pendiente."""
-    return [
-        {"label": label, "done": i < phase.step, "current": i == phase.step}
-        for i, label in enumerate(match_phase.STEPS)
-    ]
 
 
 OUTCOME_EMOJI = {"V": "✅", "D": "❌", "E": "🤝"}
@@ -712,7 +702,59 @@ def existing_call_view(request, match_id):
     match = club_match(request, match_id)
     return render(request, 'existing_call.html', {'match': match})
 
-POSITION_GROUPS = (("Derecha", gettext_lazy("Derecha")), ("Revés", gettext_lazy("Revés")), ("Mixto", gettext_lazy("Mixtos")))
+
+def call_roster(call, games):
+    """
+    Convocados de ``call`` para la lista de la ficha: primero quienes juegan, ordenados por partido,
+    y después los suplentes por nombre. Cada jugador lleva ``pair_n`` (número de partido o ``None``),
+    ``partner`` (su pareja, si la tiene) e ``is_playing``.
+    """
+    slots = []
+    for g in games:
+        slots.append((g.n_game, g.player_1_local, g.player_2_local))
+        slots.append((g.n_game, g.player_1_visiting, g.player_2_visiting))
+    players = list(call.players.order_by("name", "last_name"))
+    for p in players:
+        p.pair_n, p.partner = None, None
+        for n, first, second in slots:
+            if first and first.id == p.id:
+                p.pair_n, p.partner = n, second
+            elif second and second.id == p.id:
+                p.pair_n, p.partner = n, first
+        p.is_playing = p.pair_n is not None
+    players.sort(key=lambda p: (p.pair_n is None, p.pair_n or 0))
+    return players
+
+
+def status_cards(phase):
+    """
+    Las cuatro tarjetas de estado de la ficha: ``[{"label", "figure", "pct", "state"}]`` con state «done»,
+    «cur» o «». La convocatoria cuenta apuntados contra el mínimo; parejas y resultados, partidos contra
+    el total; el acta es «Cerrada» o «Abierta».
+    """
+    total = phase.total_games or 1
+    figures = [
+        (_("%(n)s de %(total)s") % {"n": phase.called, "total": phase.min_call} if phase.called <= phase.min_call
+         else str(phase.called), min(phase.called / (phase.min_call or 1), 1)),
+        (_("%(n)s de %(total)s") % {"n": phase.games, "total": phase.total_games}, min(phase.games / total, 1)),
+        (_("%(n)s de %(total)s") % {"n": phase.results, "total": phase.total_games}, min(phase.results / total, 1)),
+        (_("Cerrada") if phase.step >= 4 else _("Abierta"), 1 if phase.step >= 4 else 0),
+    ]
+    return [
+        {"label": label, "figure": figure, "pct": round(pct * 100),
+         "state": "done" if i < phase.step else "cur" if i == phase.step else ""}
+        for i, (label, (figure, pct)) in enumerate(zip(match_phase.STEPS, figures))
+    ]
+
+
+def match_kind(match):
+    """Banner del tipo de enfrentamiento: letra, título («Liga · Jornada 2») y subtítulo con la competición."""
+    title = match.type_label
+    if match.round_number and match.is_league:
+        title = _("Jornada %(n)s") % {"n": match.round_number}
+        title = f"{match.type_label} · {title}" if match.type_label else title
+    return {"letter": (match.type_label or "?")[:1].upper(), "title": title,
+            "subtitle": match.club.rules.name, "no_draw": match.no_draw}
 
 
 @club_required
@@ -734,19 +776,7 @@ def call_for_match(request, match_id):
     for g in games:
         g.result = next(iter(g.results.all()), None)  # usa el prefetch: sin consulta extra por partido
 
-    groups = []
-    if call:
-        players = list(call.players.order_by("name", "last_name"))
-        playing = {pid for g in games for pid in (g.player_1_local_id, g.player_2_local_id,
-                                                  g.player_1_visiting_id, g.player_2_visiting_id) if pid}
-        for p in players:
-            p.is_playing = p.id in playing
-        known = {key for key, _label in POSITION_GROUPS}
-        for key, label in POSITION_GROUPS:
-            members = [p for p in players if p.position == key or (key == "Mixto" and p.position not in known)]
-            # Primero los que juegan un partido: son los que se ven antes de desplegar el grupo
-            members.sort(key=lambda p: not p.is_playing)
-            groups.append({"label": label, "players": members, "hidden": max(len(members) - CALL_GROUP_PREVIEW, 0)})
+    convocados = call_roster(call, games) if call else []
 
     phase = match_phase.phase_for(match)
     today = timezone.localdate()
@@ -756,9 +786,8 @@ def call_for_match(request, match_id):
     me = Player.objects.filter(club=request.club, user=request.user).first()
     my_status = match_phase.player_status(me, call, games) if me else None
     if me:
-        for g in groups:
-            for p in g["players"]:
-                p.is_me = p.id == me.id
+        for p in convocados:
+            p.is_me = p.id == me.id
 
     return render(request, "call_for_match.html", {
         "call_for_match": call,
@@ -766,11 +795,12 @@ def call_for_match(request, match_id):
         "game_for_match": games,
         "games_count": len(games),
         "match": match,
-        "groups": groups,
-        "players_count": sum(len(g["players"]) for g in groups),
+        "convocados": convocados,
+        "players_count": len(convocados),
+        "status_cards": status_cards(phase),
+        "kind": match_kind(match),
         "report_deliveries": list(call.report_deliveries.order_by("email")) if call else [],
         "phase": phase,
-        "steps": phase_steps(phase),
         "outcome": outcome,
         "outcome_label": OUTCOME_LABELS.get(outcome, ""),
         "own_points": own_points, "rival_points": rival_points,
