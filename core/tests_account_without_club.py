@@ -45,7 +45,7 @@ class RegisterAccountTests(TestCase):
         user = User.objects.get(username="espera")
         self.assertFalse(Membership.objects.filter(user=user).exists())
         self.assertEqual(self.client.get(reverse("home")).status_code, 302)
-        self.assertContains(self.client.get(reverse("no_club")), "todavía no perteneces a ningún club")
+        self.assertContains(self.client.get(reverse("no_club")), "todavía no perteneces a ningún equipo")
 
     def test_duplicate_email_is_rejected(self):
         User.objects.create_user("otro", email="espera@example.com", password=PASSWORD)

@@ -128,6 +128,7 @@ def _complete_team_context(club):
         'same_options': snp_import.same_player_options(club) if active and active.to_add else [],
     }
 
+@spaces.follow_player
 @club_manager_required
 def edit_player(request, player_id):
     """
@@ -154,6 +155,7 @@ def edit_player(request, player_id):
     return render(request, 'edit_player.html', context)
 
 
+@spaces.follow_player
 @club_manager_required
 def delete_player(request, player_id):
     """Elimina un jugador tras avisar de que se borran sus estadísticas. Los partidos se conservan."""
@@ -176,6 +178,7 @@ def delete_player(request, player_id):
     })
 
 
+@spaces.follow_player
 @club_required
 def show_player(request, player_id):
     """
@@ -517,6 +520,7 @@ def own_player(request):
     return Player.objects.filter(club=request.club, user=request.user).first()
 
 
+@spaces.follow_space
 @club_required
 def my_player(request):
     """
@@ -568,6 +572,7 @@ def my_player(request):
     })
 
 
+@spaces.follow_player
 @club_required
 @require_POST
 def link_player(request, player_id):
@@ -590,6 +595,7 @@ def link_player(request, player_id):
     return redirect("my_player")
 
 
+@spaces.follow_player
 @club_admin_required
 @require_POST
 def unlink_player(request, player_id):

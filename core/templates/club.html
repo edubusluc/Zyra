@@ -1,17 +1,18 @@
 {% extends 'base.html' %}
 {% load static i18n %}
-{% block page_title %}{% translate "Club" %} · {% endblock %}
+{% block page_title %}{% translate "Equipo" %} · {% endblock %}
 
 {% block content %}
 <div class="z-page-head">
     <div>
         <span class="z-eyebrow">{% translate "Configuración" %}</span>
         <h1>{{ current_club.name }}</h1>
+        {% include 'includes/competition_badge.html' with code=current_club.competition name=current_club.rules.name %}
     </div>
 </div>
 {% include 'includes/space_switcher.html' %}
 
-<p class="text-muted z-club-legend">{% translate "Tu club reúne a los miembros que usan Zyra. Tu equipo es el que compite; tu grupo son los equipos rivales de tu liga." %}</p>
+<p class="text-muted z-club-legend">{% translate "Aquí configuras este equipo: sus miembros (las cuentas que lo usan en Zyra), sus datos y sus rivales. Cada equipo es de una competición y tiene sus propios miembros." %}</p>
 
 {% if can_manage %}
 {# Accesos rápidos: cualquier alta de uso frecuente queda a dos toques del inicio. #}
@@ -39,7 +40,7 @@
     <li>
         {% if can_manage %}<a href="{% url 'edit_team' own_team.public_id %}" class="z-hub-card">{% else %}<div class="z-hub-card">{% endif %}
             <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
-            <span class="z-hub-title">{% translate "Mi equipo" %}</span>
+            <span class="z-hub-title">{% translate "Datos del equipo" %}</span>
             <span class="z-hub-note">{{ own_team.name }}{% if own_team.location %} · {{ own_team.location }}{% endif %}</span>
         {% if can_manage %}</a>{% else %}</div>{% endif %}
     </li>
@@ -67,7 +68,7 @@
 {# Zona de peligro (U14): lejos de las acciones habituales, con su explicación y confirmación en un cuadro aparte. #}
 <section class="z-danger-zone" aria-labelledby="danger-title">
     <h2 id="danger-title">{% translate "Zona de peligro" %}</h2>
-    <p class="text-muted">{% translate "Si abandonas el club dejarás de ver sus jugadores, enfrentamientos y estadísticas. Te pediremos confirmarlo." %}</p>
-    <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#leaveClubModal"><i class="fa-solid fa-door-open me-1" aria-hidden="true"></i> {% translate "Abandonar el club" %}</button>
+    <p class="text-muted">{% translate "Si abandonas este equipo dejarás de ver sus jugadores, enfrentamientos y estadísticas; tus otros equipos no cambian. Te pediremos confirmarlo." %}</p>
+    <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#leaveClubModal"><i class="fa-solid fa-door-open me-1" aria-hidden="true"></i> {% blocktranslate with club=current_club.name %}Abandonar {{ club }}{% endblocktranslate %}</button>
 </section>
 {% endblock %}

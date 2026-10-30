@@ -16,7 +16,7 @@
 
         {% if one_space_message %}
         <div class="alert alert-warning text-center">{{ one_space_message }}</div>
-        <a class="btn btn-secondary btn-lg mt-2" href="{% url 'home' %}">{% translate "Volver a mi club" %}</a>
+        <a class="btn btn-secondary btn-lg mt-2" href="{% url 'home' %}">{% translate "Volver a mi equipo" %}</a>
         {% elif user.is_authenticated %}
         <form method="post" data-loading-text="{% translate 'Uniéndote al club…' %}">
             {% csrf_token %}

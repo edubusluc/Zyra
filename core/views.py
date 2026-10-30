@@ -404,7 +404,7 @@ def register_club(request):
                     email_verification.start_verification(request, user)
                 request.session[SESSION_KEY] = club.id
                 send_welcome_email(user, club, created=True, site_url=_site_url(request))
-                messages.success(request, _("Club %(club)s creado correctamente.") % {"club": club.name})
+                messages.success(request, _("Equipo %(club)s creado correctamente.") % {"club": club.name})
                 if use_snp and snp_service.is_enabled():
                     from players import snp_import
                     team_import = snp_import.start_search(club, user, auto_confirm=True)
@@ -479,7 +479,7 @@ def register_account(request):
         if user is not None:
             login(request, user, backend=LOGIN_BACKEND)
             email_verification.start_verification(request, user)
-            messages.success(request, _("Cuenta creada. Ya puedes unirte a un club cuando te inviten."))
+            messages.success(request, _("Cuenta creada. Ya puedes unirte a un equipo cuando te inviten."))
             return redirect("no_club")
     else:
         form = SignUpForm()
@@ -802,7 +802,7 @@ def set_manager_view(request, membership_id):
     except ManagerError as exc:
         messages.error(request, str(exc))
     else:
-        messages.success(request, (_("%(username)s es ahora gestor del club.") if enable
+        messages.success(request, (_("%(username)s es ahora gestor del equipo.") if enable
                                    else _("%(username)s vuelve a ser miembro.")) % {"username": target.user.username})
     return redirect("club_members")
 
@@ -820,7 +820,7 @@ def transfer_captaincy_view(request, membership_id):
     except CaptaincyError as exc:
         messages.error(request, str(exc))
         return redirect("club_members")
-    messages.success(request, _("%(username)s es ahora el capitán de %(club)s. Tú sigues en el club como miembro.")
+    messages.success(request, _("%(username)s es ahora el capitán de %(club)s. Tú sigues en el equipo como jugador.")
                      % {"username": target.user.username, "club": request.club.name})
     return redirect("home")
 
@@ -898,10 +898,24 @@ def my_profile(request):
         "monthly_report": UserPreference.monthly_for(user)[0],
         "monthly_scope": UserPreference.monthly_for(user)[1],
         "match_result_email": UserPreference.match_result_for(user),
-        "player": Player.objects.filter(club=request.club, user=user).first() if request.club else None,
+        # Una fila por equipo de la cuenta (Mi perfil es de la cuenta, no del equipo activo).
+        "sheets": _profile_sheets(request, user),
         "email_unverified": email_needs_confirmation(user),
         "related_sheets": player_copy.related_unlinked(user),
     })
+
+
+def _profile_sheets(request, user):
+    """
+    Fichas de «Mi perfil»: una por equipo del usuario (en el orden de las competiciones), con su
+    jugador enlazado o None. Con varios equipos, ``query`` lleva ``?en=`` para abrir cada enlace en
+    su equipo.
+    """
+    clubs = spaces.user_clubs(request)
+    players = {p.club_id: p for p in Player.objects.filter(club__in=clubs, user=user)}
+    multi = len(clubs) > 1
+    return [{"club": c, "player": players.get(c.id),
+             "query": f"?{spaces.SWITCH_PARAM}={c.competition}" if multi else ""} for c in clubs]
 
 
 def _related_sheet(request, pk):
@@ -1041,7 +1055,7 @@ def remove_member(request, membership_id):
         return leave_club(request)
     else:
         remove_membership(membership)
-        messages.success(request, _("%(username)s ya no es miembro del club.") % {"username": membership.user.username})
+        messages.success(request, _("%(username)s ya no es miembro del equipo.") % {"username": membership.user.username})
     return redirect("club_members")
 
 
@@ -1063,12 +1077,12 @@ def leave_club(request):
     if is_last_admin(membership) and is_only_member(membership):
         club = membership.club
         if not club_name_matches(club, request.POST.get("confirm_name")):
-            messages.error(request, _("Para eliminar el club escribe su nombre exactamente: %(club)s.") % {"club": club.name})
+            messages.error(request, _("Para eliminar el equipo escribe su nombre exactamente: %(club)s.") % {"club": club.name})
             return redirect("home")
         club_name = club.name
         delete_club(club)
         request.session.pop(SESSION_KEY, None)
-        messages.success(request, _("Has abandonado %(club)s y el club se ha eliminado con todos sus datos.") % {"club": club_name})
+        messages.success(request, _("Has abandonado %(club)s y el equipo se ha eliminado con todos sus datos.") % {"club": club_name})
         return redirect("home")
     if is_last_admin(membership):
         messages.error(request, _("Eres el capitán de %(club)s: traspasa la capitanía a otro jugador enlazado antes de "

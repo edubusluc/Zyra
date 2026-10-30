@@ -6,9 +6,11 @@ from callLog.models import CallLog
 from players.models import Player
 from penalty.models import Penalty, KINDS
 from django.views.decorators.http import require_http_methods
+from core import spaces
 from core.decorators import club_required
 
 # Create your views here.
+@spaces.follow_call
 @club_required
 @require_http_methods(["GET", "POST"])
 def view_call_log(request, call_id):

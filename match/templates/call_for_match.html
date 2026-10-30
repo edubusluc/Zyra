@@ -76,7 +76,7 @@
         {% elif phase.action == 'create_games' %}
         <a href="{% url 'create_game' match_id %}" class="btn btn-primary"><i class="fa-solid fa-shuffle me-1" aria-hidden="true"></i> {% translate "Siguiente: Alinear parejas" %}</a>
         {% elif phase.action == 'enter_results' %}
-        <a href="{% url 'enter_results' match.public_id %}" class="btn btn-primary"><i class="fa-solid fa-pen-to-square me-1" aria-hidden="true"></i> {% blocktranslate with n=phase.results total=games_count %}Siguiente: Poner resultados ({{ n }}/{{ total }}){% endblocktranslate %}</a>
+        <a href="{% url 'enter_results' match.public_id %}" class="btn btn-primary"><i class="fa-solid fa-pen-to-square me-1" aria-hidden="true"></i> {% translate "Siguiente:" %} {{ phase.pending_label }}</a>
         {% elif phase.action == 'close_match' %}
         <form method="POST" action="{% url 'close_match' match.public_id %}"
               data-confirm-title="{% translate 'Cerrar el acta' %}" data-confirm-action="{% translate 'Cerrar acta' %}"
@@ -89,7 +89,7 @@
         <p class="z-next-hint" id="next-hint">
             {% if phase.action == 'create_call' %}{% translate "Primero crea la convocatoria." %}
             {% elif phase.action == 'close_call' %}
-                {% if phase.missing_players %}{% blocktranslate trimmed count n=phase.missing_players %}Falta {{ n }} convocado para cerrar la convocatoria.{% plural %}Faltan {{ n }} convocados para cerrar la convocatoria.{% endblocktranslate %} <a href="{% url 'edit_call' call_for_match.public_id %}">{% translate "Editar convocatoria" %}</a>
+                {% if phase.missing_players %}{% blocktranslate trimmed with called=phase.called total=phase.min_call count n=phase.missing_players %}Falta {{ n }} apuntado para cerrar la convocatoria ({{ called }} de {{ total }}).{% plural %}Faltan {{ n }} apuntados para cerrar la convocatoria ({{ called }} de {{ total }}).{% endblocktranslate %} <a href="{% url 'edit_call' call_for_match.public_id %}">{% translate "Editar convocatoria" %}</a>
                 {% elif report_emails %}{% blocktranslate with emails=report_emails %}Se enviará el informe PDF a: {{ emails }}{% endblocktranslate %}
                 {% else %}{% translate "Ningún capitán tiene email: no se enviará el informe. Añádelo en «Mi perfil»." %}{% endif %}
             {% elif phase.action == 'create_games' %}{% translate "Ya puedes alinear las parejas." %}

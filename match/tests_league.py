@@ -57,7 +57,7 @@ class LapiMatchTests(TestCase):
         self.assertEqual(form.initial['match_type'], "liga")
         self.assertIn('round_number', form.fields)
         self.assertNotIn('round_number', MatchForm(club=create_club("SNP", "Sevilla", self.user)).fields)
-        page = self.client.get(reverse("create_match"))
+        page = self.client.get(reverse("create_match") + "?en=lapi")
         self.assertContains(page, "Playoffs")
         self.assertContains(page, "data-round-row")
         self.assertNotContains(page, ">Reto<")

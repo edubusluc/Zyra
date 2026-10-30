@@ -368,7 +368,8 @@ main:focus { outline: none; }
     padding: 0;
     list-style: none;
 }
-.z-bottom-nav li { flex: 1 1 0; min-width: 0; }
+/* Cada pestaña mide lo que su etiqueta: «Enfrentamientos» cabe entera a 390 px sin recortar a las demás */
+.z-bottom-nav li { flex: 1 1 auto; min-width: 0; }
 .z-bottom-nav a {
     display: flex;
     flex-direction: column;
@@ -1367,6 +1368,14 @@ a.z-location:hover span { text-decoration: underline; }
 .z-home-team-text { display: grid; gap: 4px; min-width: 0; text-align: left; }
 .z-home-team-text strong { font-weight: 800; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .z-home-team-text > span { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; color: var(--z-muted); font-size: .85rem; }
+/* Elegir equipo al crear un enfrentamiento (match/templates/create_match_choose.html). */
+.z-choose-teams { margin-top: 16px; }
+.z-account-sheet-team { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.z-create-in { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 12px 14px; margin-bottom: 20px; background: rgba(255, 255, 255, .04); border: 1px solid var(--z-border); border-radius: var(--z-radius-sm); }
+.z-create-in > i { color: var(--z-muted); }
+.z-create-in-change { margin-left: auto; font-weight: 700; }
+.z-choose-team { color: var(--z-text); text-decoration: none; min-height: 80px; transition: border-color .15s var(--z-ease), background .15s var(--z-ease); }
+.z-choose-team:hover, .z-choose-team:focus-visible { color: var(--z-text); border-color: var(--z-lime); background: rgba(var(--z-lime-rgb), .06); }
 .z-home-hero--teams .z-comp-badge { margin: 0; }
 .z-hot .z-eyebrow .z-comp-badge { margin-left: 6px; vertical-align: middle; }
 

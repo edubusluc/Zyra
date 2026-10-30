@@ -116,10 +116,8 @@ class ClubIsolationTests(TestCase):
         self.assertEqual(self.client.session[SESSION_KEY], self.club_b.id)
         # En el club B es miembro: no gestiona aunque sea capitán en A.
         self.assertEqual(self.client.get(reverse("create_call", args=[self.match_b.public_id])).status_code, 403)
-        # Las vistas de gestión no cambian de club: con B activo (miembro) tampoco se gestiona el de A.
-        self.assertEqual(self.client.get(reverse("create_call", args=[self.match_a.public_id])).status_code, 403)
-        self.assertEqual(self.client.session[SESSION_KEY], self.club_b.id)
-        self.assertEqual(self.client.get(reverse("call_for_match", args=[self.match_a.public_id])).status_code, 200)
+        # Las vistas de gestión siguen al club del enfrentamiento: con B activo, el de A se gestiona y A pasa a ser el activo.
+        self.assertEqual(self.client.get(reverse("create_call", args=[self.match_a.public_id])).status_code, 200)
         self.assertEqual(self.client.session[SESSION_KEY], self.club_a.id)
 
     def test_player_statistics_only_link_own_club_matches(self):
