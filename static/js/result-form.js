@@ -192,3 +192,82 @@ document.querySelectorAll('[data-result]').forEach(function (form) {
   });
   refreshClose();
 })();
+
+// Vista previa del reparto de puntos con parejas no presentadas (SNP, normativa 20.2), antes de cerrar el acta.
+// Replica match/pair_no_show.py: 6 puntos al equipo cumplidor y 2/2/1/1 en los cuatro partidos jugados.
+(function () {
+  const box = document.querySelector('[data-noshow-preview]');
+  if (!box) return;
+  const cards = Array.from(document.querySelectorAll('[data-result]'));
+  const points = box.dataset.points.split(',').map(Number);
+  const total = points.reduce((a, b) => a + b, 0);
+  const ownLocal = box.dataset.ownLocal === '1';
+  const names = { l: box.dataset.local, v: box.dataset.visiting };
+  const own = ownLocal ? 'l' : 'v';
+  const rival = ownLocal ? 'v' : 'l';
+  const num = (card, name) => {
+    const el = card.querySelector(`[name$="${name}"]`);
+    return el && el.value.trim() !== '' ? parseInt(el.value, 10) : null;
+  };
+  // Lado ganador de un partido jugado según sus sets, o null si aún no se sabe.
+  const winnerOf = (card) => {
+    let l = 0, v = 0;
+    ['1', '2', '3'].forEach((n) => {
+      const a = num(card, `set${n}_local`), b = num(card, `set${n}_visiting`);
+      if (a === null || b === null || a === b) return;
+      if (a > b) l += 1; else v += 1;
+    });
+    return l > v ? 'l' : v > l ? 'v' : null;
+  };
+  const tally = () => ({ l: 0, v: 0 });
+  function refresh() {
+    const rows = cards.map((card, i) => ({ card, pts: points[i], ns: (card.querySelector('[data-pair-no-show]') || {}).value || '' }));
+    const ownMissing = rows.filter((r) => r.ns === 'own' || r.ns === 'both');
+    const rivalMissing = rows.filter((r) => r.ns === 'rival' || r.ns === 'both');
+    if (!ownMissing.length && !rivalMissing.length) { box.hidden = true; return; }
+    const sum = tally();
+    let note = '';
+    if (ownMissing.length >= 2 || rivalMissing.length >= 2) {
+      if (ownMissing.length >= 2 && rivalMissing.length < 2) sum[rival] = total;
+      else if (rivalMissing.length >= 2 && ownMissing.length < 2) sum[own] = total;
+      note = gettext('Dos parejas sin presentarse: el equipo pierde el enfrentamiento 0-%(total)s.');
+    } else if (rows.some((r) => r.ns === 'both')) {
+      rows.forEach((r) => { if (!r.ns) { const w = winnerOf(r.card); if (w) sum[w] += r.pts; } });
+      note = gettext('La misma pareja falta en los dos equipos: ese partido se anula y el resto puntúa normal.');
+    } else if (ownMissing.length && rivalMissing.length) {
+      sum[rival] += ownMissing[0].pts; sum[own] += rivalMissing[0].pts;
+      rows.forEach((r) => { if (!r.ns) { const w = winnerOf(r.card); if (w) sum[w] += r.pts; } });
+      note = gettext('Cada equipo pierde la pareja que no presentó, con sus puntos normales.');
+    } else {
+      const keeper = ownMissing.length ? rival : own;
+      const infractor = keeper === own ? rival : own;
+      sum[keeper] += total / 2;
+      const played = rows.filter((r) => !r.ns);
+      let unknown = false, allInfractor = played.length === 4;
+      played.forEach((r, i) => {
+        const w = winnerOf(r.card);
+        if (!w) { unknown = true; allInfractor = false; return; }
+        sum[w] += i < 2 ? 2 : 1;
+        if (w !== infractor) allInfractor = false;
+      });
+      note = gettext('Una pareja sin presentarse: %(keeper)s se lleva 6 puntos por ella y los otros cuatro partidos reparten 2, 2, 1 y 1 (los 2 para las parejas con número más bajo).');
+      if (unknown) note += ' ' + gettext('Faltan resultados por rellenar: el reparto es provisional.');
+      if (allInfractor && sum.l === sum.v) note += ' ' + interpolate(gettext('6-6: gana %(team)s por haber ganado los cuatro partidos jugados.'), { team: names[infractor] }, true);
+      note = interpolate(note, { keeper: names[keeper] }, true);
+    }
+    note = interpolate(note, { total: total }, true);
+    box.innerHTML = '';
+    const head = document.createElement('p');
+    const strong = document.createElement('strong');
+    strong.textContent = interpolate(gettext('Reparto previsto: %(local)s %(a)s – %(b)s %(visiting)s'),
+      { local: names.l, a: sum.l, b: sum.v, visiting: names.v }, true);
+    head.appendChild(strong);
+    const p = document.createElement('p');
+    p.className = 'mb-0 small';
+    p.textContent = note;
+    box.append(head, p);
+    box.hidden = false;
+  }
+  cards.forEach((c) => { c.addEventListener('input', refresh); c.addEventListener('change', refresh); });
+  refresh();
+})();

@@ -402,13 +402,16 @@ def my_statistics(request):
     «Mis estadísticas»: lo de la persona en todas sus competiciones, para quien tiene jugador en
     varias (``spaces.linked_players``). «Todas» junta sus partidos y pone cada competición al lado de
     la otra en los gráficos, sin sumar puntos; ``?espacio=snp`` (o lapi) lleva a su ficha de jugador
-    en esa competición. Con un solo jugador enlazado va directo a su ficha. Filtra por temporada y
+    en esa competición. Con un solo jugador enlazado va directo a su ficha; con ninguno (y varios
+    equipos) explica cómo enlazar la ficha (stats_mine_link.html). Filtra por temporada y
     tipo de partido. Renderiza stats_mine.html.
     """
     players = spaces.linked_players(request)
     if len(players) < 2:
         if players:
             return redirect(f"{reverse('player_statistics')}?en={players[0].club.competition}&player={players[0].public_id}")
+        if len(spaces.user_clubs(request)) > 1:
+            return render(request, 'stats_mine_link.html')
         return redirect('team_statistics')
     wanted = request.GET.get(spaces.SPACE_PARAM)
     chosen = next((p for p in players if p.club.competition == wanted), None)

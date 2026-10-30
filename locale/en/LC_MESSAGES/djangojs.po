@@ -342,3 +342,41 @@ msgid "Falta %(n)s resultado para cerrar el acta"
 msgid_plural "Faltan %(n)s resultados para cerrar el acta"
 msgstr[0] "%(n)s result missing to close the scoresheet"
 msgstr[1] "%(n)s results missing to close the scoresheet"
+
+#: static/js/result-form.js:0
+msgid ""
+"Dos parejas sin presentarse: el equipo pierde el enfrentamiento 0-%(total)s."
+msgstr "Two pairs did not show up: the team loses the match 0-%(total)s."
+
+#: static/js/result-form.js:0
+msgid ""
+"La misma pareja falta en los dos equipos: ese partido se anula y el resto "
+"puntúa normal."
+msgstr ""
+"The same pair is missing in both teams: that game is annulled and the rest "
+"score as usual."
+
+#: static/js/result-form.js:0
+msgid "Cada equipo pierde la pareja que no presentó, con sus puntos normales."
+msgstr "Each team loses the pair it did not field, with its usual points."
+
+#: static/js/result-form.js:0
+msgid ""
+"Una pareja sin presentarse: %(keeper)s se lleva 6 puntos por ella y los "
+"otros cuatro partidos reparten 2, 2, 1 y 1 (los 2 para las parejas con "
+"número más bajo)."
+msgstr ""
+"One pair did not show up: %(keeper)s gets 6 points for it and the other four"
+" games share 2, 2, 1 and 1 (the 2s go to the lowest-numbered pairs)."
+
+#: static/js/result-form.js:0
+msgid "Faltan resultados por rellenar: el reparto es provisional."
+msgstr "Some results are still missing: the split is provisional."
+
+#: static/js/result-form.js:0
+msgid "6-6: gana %(team)s por haber ganado los cuatro partidos jugados."
+msgstr "6-6: %(team)s wins for having won all four games played."
+
+#: static/js/result-form.js:0
+msgid "Reparto previsto: %(local)s %(a)s – %(b)s %(visiting)s"
+msgstr "Expected split: %(local)s %(a)s – %(b)s %(visiting)s"

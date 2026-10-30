@@ -3,6 +3,16 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 30/10/2026 · Espacios por competición (pendientes de la auditoría, PR #211)
+
+- **Plantilla, Club y Rivales**: con rol mixto (gestionas un equipo y juegas en otro) la página dice «Equipo: X · LAPI» en vez de no mostrar nada.
+- **Enfrentamientos**: el filtro de rival tiene etiqueta visible y «Quitar el rival» solo quita el rival (mantiene temporada y tipo). Al crear uno de liga se propone la jornada siguiente; la hora es un campo de 24 h (escribe 2030 y queda 20:30).
+- **Poner resultados (SNP)**: la pregunta es «¿Se presentaron las dos parejas?» y, al marcar una pareja no presentada, se ve el reparto previsto de puntos (normativa 20.2) antes de cerrar el acta.
+- **Reabrir acta**: también pueden el capitán y los gestores (queda anotado quién).
+- **Convocatoria**: una ficha copiada que aún no aceptó la invitación se puede convocar y sale «Pendiente de aceptar».
+- **Informes**: los datos de otras competiciones solo se incluyen si todos los que reciben el informe gestionan también ese otro equipo.
+- **Mis estadísticas**: con dos equipos y sin ficha enlazada la pestaña explica cómo enlazarla.
+
 ## 30/10/2026 · Espacios por competición (selectores, datos y zonas grises)
 
 - **Inicio**: «Ver los N pendientes» indica cuántos tienen la fecha pasada; el capitán ve «Pon la categoría» (enlace a editar el equipo) cuando falta.

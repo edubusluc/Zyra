@@ -6,10 +6,11 @@ Todas las vistas trabajan solo con datos del club activo (``request.club``).
 from . import outcomes
 from core.competitions import competition_for
 from core import spaces
+from core.models import Invitation
 from core.season_choice import ALL_SEASONS, choose_season
 from django.shortcuts import render, redirect, get_object_or_404
 from core import ratelimit
-from core.decorators import club_required, club_admin_required, not_while_syncing, club_manager_required
+from core.decorators import club_required, not_while_syncing, club_manager_required
 from django.contrib import messages
 from .forms import MatchForm, MatchDateForm
 from .models import Match, Game, Result
@@ -303,6 +304,7 @@ def list_match(request):
         'rival': rival,
         'rivals': rivals,
         'filtering': bool(search or rival or match_type),
+        'rival_filtering': bool(search or rival),
         **match_type_context(request, match_type),
         'page_extra': '&' + urlencode({k: v for k, v in keep.items() if v}),
         **season_filter_context(request, seasons, season, all_value=ALL_SEASONS),
@@ -443,8 +445,13 @@ def selectable_players(club, include_ids=()):
             'match_id', 'player_1_local_id', 'player_2_local_id', 'player_1_visiting_id', 'player_2_visiting_id'):
         for pid in set(slots) - {None}:
             played.setdefault(pid, set()).add(match_id)
+    # Fichas copiadas de otro equipo cuya invitación aún no se ha aceptado (Z-06): se pueden convocar,
+    # pero la persona no recibe nada hasta que acepte.
+    waiting = set(Invitation.objects.pending().filter(club=club, player__in=players, player__user__isnull=True)
+                  .values_list("player_id", flat=True))
     for p in players:
         p.penalty_reasons = reasons.get(p.id, [])
+        p.copy_pending = p.id in waiting
         p.played = len(played.get(p.id, ()))
         p.season_total = len(closed)
     return players
@@ -1042,6 +1049,9 @@ def enter_results(request, match_id):
     return render(request, "enter_results.html", {
         "match": match, "rows": rows, "is_future": match.start_date > timezone.localdate(),
         "no_show_choices": Game.NO_SHOW_CHOICES,
+        # Para la vista previa del reparto de «pareja no presentada» (SNP, 20.2) en result-form.js.
+        "no_show_points": [match.club.rules.points_for(g.n_game) for g in games],
+        "own_is_local": match.own_is_local,
         "min_close": len(games) == competition_for(match).games,
     })
 
@@ -1159,10 +1169,10 @@ def close_match(request, match_id):
 
 
 @spaces.follow_match
-@club_admin_required
+@club_manager_required
 @require_POST
 def reopen_match(request, match_id):
-    """Reabre el acta de un enfrentamiento cerrado para corregirla (solo POST, administradores).
+    """Reabre el acta de un enfrentamiento cerrado para corregirla (solo POST, capitán o gestor).
 
     El partido y sus parejas vuelven a estar abiertos: se pueden editar los resultados y las
     parejas, o eliminar el enfrentamiento. Mientras está abierto no cuenta en las estadísticas;

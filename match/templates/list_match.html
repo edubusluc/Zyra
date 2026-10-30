@@ -29,7 +29,7 @@
     {% if request.GET.season %}<input type="hidden" name="season" value="{{ selected_season }}">{% endif %}
     {% if selected_match_type %}<input type="hidden" name="match_type" value="{{ selected_match_type }}">{% endif %}
     {% if rivals %}
-    <label for="rival-filter" class="visually-hidden">{% translate "Rival" %}</label>
+    <label for="rival-filter" class="st-filter-label">{% translate "Rival" %}</label>
     <select class="st-select" name="rival" id="rival-filter" onchange="this.form.submit()" data-picker data-picker-toggle data-placeholder="{% translate 'Filtrar por rival...' %}">
         <option value="">{% translate "Todos los rivales" %}</option>
         {% for name in rivals %}<option value="{{ name }}" {% if name == rival %}selected{% endif %}>{{ name }}</option>{% endfor %}
@@ -38,7 +38,9 @@
     <noscript><button type="submit" class="btn btn-secondary btn-sm">{% translate "Buscar" %}</button></noscript>
     {% if filtering %}
     <span class="z-match-filters-count">{% blocktranslate trimmed count n=matches.paginator.count %}{{ n }} enfrentamiento{% plural %}{{ n }} enfrentamientos{% endblocktranslate %}</span>
-    <a href="{{ request.path }}{% if request.GET.season %}?season={{ selected_season|urlencode }}{% endif %}" class="btn btn-outline-secondary btn-sm">{% translate "Limpiar" %}</a>
+    {% endif %}
+    {% if rival_filtering %}
+    <a href="{{ request.path }}{% if request.GET.season or selected_match_type %}?{% if request.GET.season %}season={{ selected_season|urlencode }}{% endif %}{% if request.GET.season and selected_match_type %}&amp;{% endif %}{% if selected_match_type %}match_type={{ selected_match_type|urlencode }}{% endif %}{% endif %}" class="btn btn-outline-secondary btn-sm">{% translate "Quitar el rival" %}</a>
     {% endif %}
 </form>
 </details>

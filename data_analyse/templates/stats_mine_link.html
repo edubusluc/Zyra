@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block page_title %}{% translate "Mis estadísticas" %} · {% endblock %}
+
+{% block content %}
+{# «Mis estadísticas» sin ficha enlazada (data_analyse.views.my_statistics): dice por qué no hay datos y lleva a enlazarla. #}
+<div class="st-page">
+    {% include 'includes/stats_tabs.html' %}
+    <header class="st-head">
+      <div>
+        <h1 class="st-title">{% translate "Mis estadísticas" %}</h1>
+      </div>
+    </header>
+    <div class="st-empty">
+      <strong>{% translate "Enlaza tu ficha para verlas" %}</strong>
+      {% translate "Aquí aparecen tus partidos de todos tus equipos cuando tu cuenta está enlazada a tu ficha de jugador. Las estadísticas del equipo y de sus jugadores las tienes en las otras pestañas." %}
+      <p class="mt-3 mb-0"><a href="{% url 'my_player' %}" class="btn btn-primary"><i class="fa-solid fa-link me-1" aria-hidden="true"></i> {% translate "Enlazarme a un jugador" %}</a></p>
+    </div>
+</div>
+{% endblock %}

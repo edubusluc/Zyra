@@ -42,6 +42,8 @@ def club(request):
         # Estadísticas no le aportan nada y salen del menú.
         "hide_roster_nav": plays_only(request),
         # «Mis estadísticas» (y Estadísticas abre en ella) con jugador enlazado en dos o más equipos.
+        # La pestaña «Mis estadísticas» se ve con dos o más equipos; sin ficha enlazada explica cómo enlazarla (Z-05).
+        "my_stats_tab": lambda: len(memberships) > 1,
         "my_stats_available": lambda: len(memberships) > 1 and len(linked_players(request)) > 1,
         "leaving_deletes_club": lambda: bool(membership and is_last_admin(membership) and is_only_member(membership)),
     }

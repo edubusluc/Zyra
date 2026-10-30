@@ -6,4 +6,6 @@
     <a class="btn btn-sm{% if item.active %} active{% endif %}" href="{{ request.path }}?en={{ item.code }}"{% if item.active %} aria-current="page"{% endif %}>{% include 'includes/competition_badge.html' with code=item.code name=item.name short=True %} <span>{{ item.club.name }}</span></a>
     {% endfor %}
 </nav>
+{% elif request.space_current %}
+<p class="z-space-note">{% translate "Equipo:" %} {% include 'includes/competition_badge.html' with code=request.space_current.competition name=request.space_current.rules.name short=True %} <strong>{{ request.space_current.name }}</strong></p>
 {% endif %}
