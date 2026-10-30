@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zyra\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-15 11:12+0000\n"
+"POT-Creation-Date: 2026-10-30 13:42+0100\n"
 "PO-Revision-Date: 2026-10-01 20:00+0200\n"
 "Last-Translator: Zyra\n"
 "Language-Team: English\n"
@@ -62,57 +62,70 @@ msgstr "Today"
 msgid "Borrar"
 msgstr "Clear"
 
-#: static/js/lineup.js:29
+#: static/js/lineup.js:32
 msgid "%(a)s y %(b)s"
 msgstr "%(a)s and %(b)s"
 
-#: static/js/lineup.js:43
+#: static/js/lineup.js:46
 msgid "Partido %(n)s · %(value)s puntos"
 msgstr "Match %(n)s · %(value)s points"
 
-#: static/js/lineup.js:47
+#: static/js/lineup.js:50
 msgid "%(points)s pts"
 msgstr "%(points)s pts"
 
-#: static/js/lineup.js:51
+#: static/js/lineup.js:54
 msgid "Pareja sin completar"
 msgstr "Pair not complete"
 
-#: static/js/lineup.js:62
+#: static/js/lineup.js:65
 msgid "Completa todas las parejas para guardar"
 msgstr "Complete all pairs to save"
 
-#: static/js/lineup.js:96
-msgid "%(title)s: %(win)s de opciones de ganar. "
-msgstr "%(title)s: %(win)s chance of winning. "
+#: static/js/lineup.js:100
+msgid ""
+"%(title)s: %(win)s de opciones de ganar, con poca información (%(n)s "
+"enfrentamientos de historial). "
+msgstr ""
+"%(title)s: %(win)s chance of winning, with little information (%(n)s ties of"
+" history). "
 
-#: static/js/lineup.js:102
+#: static/js/lineup.js:101
+msgid ""
+"%(title)s: %(win)s de opciones de ganar (según %(n)s enfrentamientos de "
+"historial). "
+msgstr ""
+"%(title)s: %(win)s chance of winning (based on %(n)s ties of history). "
+
+#: static/js/lineup.js:107
 msgid "Ver por qué"
 msgstr "See why"
 
-#: static/js/lineup.js:104
+#: static/js/lineup.js:109
 msgid "%(explanation)s Puedes cambiar cualquier pareja antes de guardar."
 msgstr "%(explanation)s You can change any pair before saving."
 
-#: static/js/lineup.js:123
+#: static/js/lineup.js:128
 msgid "Calculando la mejor alineación…"
 msgstr "Working out the best lineup…"
 
-#: static/js/lineup.js:134
+#: static/js/lineup.js:139
 msgid "No se ha podido calcular la alineación. Inténtalo de nuevo."
 msgstr "The lineup could not be worked out. Please try again."
 
-#: static/js/match-form.js:62
+#: static/js/match-form.js:91
 msgid "Elige equipo"
 msgstr "Choose team"
 
 #: static/js/pair_statistics.js:21 static/js/player_statistics.js:34
-#: static/js/team_statistics.js:68 static/js/team_statistics.js:84
+#: static/js/stats_spaces.js:26 static/js/team_statistics.js:68
+#: static/js/team_statistics.js:129
 msgid "Ganados"
 msgstr "Won"
 
 #: static/js/pair_statistics.js:22 static/js/player_statistics.js:35
-#: static/js/team_statistics.js:68 static/js/team_statistics.js:86
+#: static/js/stats_spaces.js:26 static/js/team_statistics.js:68
+#: static/js/team_statistics.js:131
 msgid "Perdidos"
 msgstr "Lost"
 
@@ -134,7 +147,8 @@ msgstr "Adjust the photo"
 
 #: static/js/photo-crop.js:54
 msgid ""
-"Arrastra la foto y usa el zoom para elegir lo que se verá dentro del círculo."
+"Arrastra la foto y usa el zoom para elegir lo que se verá dentro del "
+"círculo."
 msgstr ""
 "Drag the photo and use the zoom to choose what will show inside the circle."
 
@@ -186,7 +200,7 @@ msgstr "Show all"
 msgid "Sin resultados"
 msgstr "No results"
 
-#: static/js/player-selector.js:47 static/js/team_statistics.js:199
+#: static/js/player-selector.js:47 static/js/team_statistics.js:293
 msgid "%(first)s–%(last)s de %(total)s"
 msgstr "%(first)s–%(last)s of %(total)s"
 
@@ -194,118 +208,94 @@ msgstr "%(first)s–%(last)s of %(total)s"
 msgid "Mínimo %(min)s para cerrar la convocatoria"
 msgstr "At least %(min)s needed to close the call-up"
 
+#: static/js/player-selector.js:55
+msgid "Mínimo %(min)s cumplido"
+msgstr "Minimum of %(min)s met"
+
 #: static/js/player_statistics.js:85
 msgid "Puntos SNP"
 msgstr "SNP points"
 
-#: static/js/player_statistics.js:99
+#: static/js/player_statistics.js:100
 msgid "%(n)s puntos"
 msgstr "%(n)s points"
 
-#: static/js/player_statistics.js:128
+#: static/js/player_statistics.js:135
 msgid "Afinidad"
 msgstr "Affinity"
 
-#: static/js/player_statistics.js:139
+#: static/js/player_statistics.js:146
 msgid "%(wins)sV - %(losses)sD"
 msgstr "%(wins)sW - %(losses)sL"
 
-#: static/js/player_statistics.js:141
+#: static/js/player_statistics.js:148
 msgid "Ya no está en el equipo"
 msgstr "No longer on the team"
 
-#: static/js/result-form.js:14
-msgid "Set %(n)s: %(score)s no es un resultado válido"
-msgstr "Set %(n)s: %(score)s is not a valid score"
-
-#: static/js/result-form.js:61
-msgid "Ganador del partido: %(team)s"
-msgstr "Match winner: %(team)s"
-
-#: static/js/team_statistics.js:35
-msgid "Media del equipo"
-msgstr "Team average"
-
-#: static/js/team_statistics.js:78
-msgid "en curso"
-msgstr "in progress"
-
-#: static/js/team_statistics.js:85
-msgid "Empatados"
-msgstr "Drawn"
-
-#: static/js/team_statistics.js:93 static/js/team_statistics.js:159
-#: static/js/team_statistics.js:172
-msgid "Partidos"
-msgstr "Matches"
-
-#: static/js/team_statistics.js:103
-msgid "3 puntos ganados"
-msgstr "3 points won"
-
-#: static/js/team_statistics.js:104
-msgid "2 puntos ganados"
-msgstr "2 points won"
-
-#: static/js/team_statistics.js:105
-msgid "3 puntos perdidos"
-msgstr "3 points lost"
-
-#: static/js/team_statistics.js:106
-msgid "2 puntos perdidos"
-msgstr "2 points lost"
-
-msgid "Set %(n)s: falta el resultado."
-msgstr "Set %(n)s: result missing."
-
-msgid "Set 3: no se juega si la misma pareja ha ganado los dos primeros sets. Déjalo vacío."
-msgstr "Set 3: it is not played if the same pair won the first two sets. Leave it empty."
-
-msgid "No se puede saber quién iba ganando: el resultado está empatado."
-msgstr "Cannot tell who was ahead: the score is tied."
-
+#: static/js/register-wizard.js:37 static/js/register-wizard.js:57
 msgid "Este campo es obligatorio."
 msgstr "This field is required."
 
+#: static/js/register-wizard.js:38
 msgid "Escribe un email válido."
 msgstr "Enter a valid email."
 
+#: static/js/register-wizard.js:41
 msgid "Las contraseñas no coinciden."
 msgstr "The passwords do not match."
 
+#: static/js/register-wizard.js:67
+#, javascript-format
 msgid "Falta %s campo"
 msgid_plural "Faltan %s campos"
 msgstr[0] "%s field is missing"
 msgstr[1] "%s fields are missing"
 
+#: static/js/register-wizard.js:68
+#, javascript-format
 msgid "Revisa %s campo"
 msgid_plural "Revisa %s campos"
 msgstr[0] "Check %s field"
 msgstr[1] "Check %s fields"
 
+#: static/js/register-wizard.js:77
+#, javascript-format
 msgid "Paso %s de %s"
 msgstr "Step %s of %s"
 
-msgid "Procesando…"
-msgstr "Processing…"
+#: static/js/result-form.js:14
+msgid "Set %(n)s: %(score)s no es un resultado válido"
+msgstr "Set %(n)s: %(score)s is not a valid score"
 
-#: static/js/team_statistics.js
-msgid "%s convocatoria"
-msgid_plural "%s convocatorias"
-msgstr[0] "%s call-up"
-msgstr[1] "%s call-ups"
+#: static/js/result-form.js:43 static/js/result-form.js:70
+msgid "Set %(n)s: falta el resultado."
+msgstr "Set %(n)s: result missing."
 
-#: static/js/stats_spaces.js
-msgid "Total"
-msgstr "Total"
+#: static/js/result-form.js:48
+msgid ""
+"Set 3: no se juega si la misma pareja ha ganado los dos primeros sets. "
+"Déjalo vacío."
+msgstr ""
+"Set 3: it is not played if the same pair won the first two sets. Leave it "
+"empty."
 
+#: static/js/result-form.js:55
+msgid "No se puede saber quién iba ganando: el resultado está empatado."
+msgstr "Cannot tell who was ahead: the score is tied."
+
+#: static/js/result-form.js:56 static/js/result-form.js:143
+msgid "Ganador del partido: %(team)s"
+msgstr "Match winner: %(team)s"
+
+#: static/js/result-form.js:63
 msgid "Indica qué pareja se lesionó."
 msgstr "Say which pair got injured."
 
+#: static/js/result-form.js:82
 msgid "El partido ya estaba decidido: no puede acabar por lesión."
 msgstr "The match was already decided: it cannot end by injury."
 
-#, javascript-format
+#: static/js/result-form.js:87
 msgid "Queda %(score)s. Ganador del partido: %(team)s"
 msgstr "Final score %(score)s. Match winner: %(team)s"
 
@@ -316,3 +306,52 @@ msgid ""
 msgstr ""
 "No result: Zyra shares out the points when the scoresheet is closed (SNP "
 "rules 20.2)."
+
+#: static/js/result-form.js:185
+msgid "Falta %(n)s resultado para cerrar el acta"
+msgid_plural "Faltan %(n)s resultados para cerrar el acta"
+msgstr[0] "%(n)s result missing to close the scoresheet"
+msgstr[1] "%(n)s results missing to close the scoresheet"
+
+#: static/js/stats_spaces.js:49 static/js/team_statistics.js:84
+msgid "en curso"
+msgstr "in progress"
+
+#: static/js/stats_spaces.js:82
+msgid "Total"
+msgstr "Total"
+
+#: static/js/team_statistics.js:35
+msgid "Media del equipo"
+msgstr "Team average"
+
+#: static/js/team_statistics.js:130 static/js/team_statistics.js:132
+msgid "Empatados"
+msgstr "Drawn"
+
+#: static/js/team_statistics.js:176
+#, javascript-format
+msgid "%s convocatoria"
+msgid_plural "%s convocatorias"
+msgstr[0] "%s call-up"
+msgstr[1] "%s call-ups"
+
+#: static/js/team_statistics.js:198
+msgid "3 puntos ganados"
+msgstr "3 points won"
+
+#: static/js/team_statistics.js:199
+msgid "2 puntos ganados"
+msgstr "2 points won"
+
+#: static/js/team_statistics.js:200
+msgid "3 puntos perdidos"
+msgstr "3 points lost"
+
+#: static/js/team_statistics.js:201
+msgid "2 puntos perdidos"
+msgstr "2 points lost"
+
+#: static/js/team_statistics.js:253 static/js/team_statistics.js:266
+msgid "Partidos"
+msgstr "Matches"

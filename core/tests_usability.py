@@ -43,8 +43,8 @@ class RegisterWizardTests(TestCase):
         self.assertEqual(form["country"].value(), "ES")
         self.assertFalse(form["division"].value())  # la división la elige el usuario
 
-    def test_division_has_a_help_line_with_examples(self):
-        self.assertContains(self.client.get(reverse("register_club")), "por ejemplo Future o 500")
+    def test_division_has_a_help_line_with_help(self):
+        self.assertContains(self.client.get(reverse("register_club")), "Nivel en el que juega el equipo")
 
     def test_snp_is_preselected_and_the_exact_match_notice_is_folded(self):
         page = self.client.get(reverse("register_club"))

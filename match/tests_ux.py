@@ -211,7 +211,17 @@ class EnterResultsTests(UxBase):
         self.m.refresh_from_db()
         self.assertTrue(self.m.draft_mode)
         self.assertEqual(sum(g.results.count() for g in self.games), 3)
-        self.assertIn("algunos partidos no tienen resultado", " ".join(texts(response)))
+        self.assertIn("falta el resultado de Partido 4 y Partido 5", " ".join(texts(response)))
+
+    def test_results_page_disables_close_until_all_results_and_lists_one_game_per_row(self):
+        page = self.client.get(self.url)
+        self.assertContains(page, "data-close-match")
+        self.assertContains(page, "data-close-hint")
+
+    def test_competitions_only_have_draws_when_the_points_allow_it(self):
+        from core.competitions import LAPI, SNP
+        self.assertTrue(SNP.has_draws)
+        self.assertFalse(LAPI.has_draws)
 
     def test_future_match_needs_confirmation_to_close(self):
         self.m.start_date = timezone.localdate() + datetime.timedelta(days=7)

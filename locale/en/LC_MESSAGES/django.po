@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zyra\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-30 11:10+0100\n"
+"POT-Creation-Date: 2026-10-30 13:42+0100\n"
 "PO-Revision-Date: 2026-10-01 20:00+0200\n"
 "Last-Translator: Zyra\n"
 "Language-Team: English\n"
@@ -243,9 +243,9 @@ msgstr "Players"
 #: backoffice/templates/backoffice/club_list.html:22
 #: backoffice/templates/backoffice/sql_console.html:35
 #: backoffice/templates/backoffice/user_detail.html:33 core/forms.py:101
-#: data_analyse/templates/team_statistics.html:229
+#: data_analyse/templates/team_statistics.html:231
 #: players/templates/list_players.html:59
-#: players/templates/list_players.html:113 team/templates/list_teams.html:88
+#: players/templates/list_players.html:112 team/templates/list_teams.html:88
 msgid "Nombre"
 msgstr "Name"
 
@@ -253,11 +253,11 @@ msgstr "Name"
 msgid "Apellidos"
 msgstr "Surname"
 
-#: backoffice/importer.py:254 players/templates/list_players.html:114
+#: backoffice/importer.py:254 players/templates/list_players.html:113
 msgid "Posición"
 msgstr "Position"
 
-#: backoffice/importer.py:255 players/templates/list_players.html:115
+#: backoffice/importer.py:255 players/templates/list_players.html:114
 msgid "Mano"
 msgstr "Hand"
 
@@ -300,7 +300,7 @@ msgstr ""
 #: backoffice/templates/backoffice/club_detail.html:80
 #: backoffice/templates/backoffice/includes/club_rows.html:5
 #: match/monthly_pdf.py:196 match/report_pdf.py:465
-#: match/templates/call_for_match.html:203
+#: match/templates/call_for_match.html:227
 msgid "Partidos"
 msgstr "Matches"
 
@@ -325,14 +325,14 @@ msgstr "Matches"
 msgid "Fecha"
 msgstr "Date"
 
-#: backoffice/importer.py:276 core/templates/home.html:236
+#: backoffice/importer.py:276 core/templates/home.html:238
 #: data_analyse/templates/rival_detail.html:63 match/forms.py:62
 #: match/models.py:357 match/report.py:104
 #: match/templates/call_for_match.html:16
 msgid "Local"
 msgstr "Home"
 
-#: backoffice/importer.py:277 core/templates/home.html:242
+#: backoffice/importer.py:277 core/templates/home.html:244
 #: data_analyse/templates/rival_detail.html:63 match/forms.py:62
 #: match/models.py:357 match/report.py:104
 #: match/templates/call_for_match.html:25
@@ -1216,7 +1216,7 @@ msgstr "Person, object or id"
 #: backoffice/templates/backoffice/search.html:14
 #: backoffice/templates/backoffice/search.html:15
 #: data_analyse/templates/rival_statistics.html:21
-#: match/templates/list_match.html:35
+#: match/templates/list_match.html:38
 msgid "Buscar"
 msgstr "Search"
 
@@ -1529,7 +1529,7 @@ msgstr "Blocked by"
 #: backoffice/templates/backoffice/unverified_list.html:31
 #: core/templates/club_members.html:11 core/templates/club_members.html:89
 #: data_analyse/templates/warnings_statistics.html:71
-#: players/templates/list_players.html:118 team/templates/list_teams.html:90
+#: players/templates/list_players.html:117 team/templates/list_teams.html:90
 msgid "Acciones"
 msgstr "Actions"
 
@@ -1689,7 +1689,7 @@ msgstr "Own"
 #: backoffice/templates/backoffice/club_detail.html:73
 #: core/templates/my_profile.html:150
 #: data_analyse/templates/warnings_statistics.html:82
-#: players/templates/list_players.html:141
+#: players/templates/list_players.html:140
 #: players/templates/player_detail.html:9
 #: players/templates/snp_account.html:36 team/templates/list_teams.html:101
 msgid "Editar"
@@ -1780,8 +1780,8 @@ msgid "Sin miembros."
 msgstr "No members."
 
 #: backoffice/templates/backoffice/club_detail.html:105
-#: core/templates/home.html:303 core/templates/home.html:304
-#: players/templates/player_detail.html:40
+#: core/templates/home.html:306 core/templates/home.html:307
+#: players/templates/player_detail.html:41
 msgid "Últimos partidos"
 msgstr "Latest matches"
 
@@ -1975,8 +1975,9 @@ msgid "Enviando el aviso…"
 msgstr "Sending the warning…"
 
 #: backoffice/templates/backoffice/club_detail.html:214
-#: backoffice/templates/backoffice/health.html:113 core/competitions.py:107
+#: backoffice/templates/backoffice/health.html:113 core/competitions.py:112
 #: data_analyse/templates/warnings_statistics.html:70 match/models.py:57
+#: match/templates/call_for_match.html:139
 msgid "Enfrentamiento"
 msgstr "League match"
 
@@ -2452,13 +2453,13 @@ msgstr "Saving the changes…"
 #: match/templates/create_match_choose.html:30
 #: match/templates/delete_match.html:13
 #: match/templates/edit_match_date.html:17
-#: match/templates/enter_results.html:81
+#: match/templates/enter_results.html:82
 #: penalty/templates/edit_penalty.html:31
 #: players/templates/complete_team_welcome.html:23
 #: players/templates/confirm_delete.html:25
-#: players/templates/copy_players.html:76
+#: players/templates/copy_players.html:78
 #: players/templates/link_player.html:67
-#: players/templates/list_players.html:234
+#: players/templates/list_players.html:233
 #: players/templates/snp_account.html:88
 msgid "Cancelar"
 msgstr "Cancel"
@@ -2679,8 +2680,8 @@ msgstr ""
 
 #: backoffice/templates/backoffice/health.html:15
 #: data_analyse/templates/team_statistics.html:57
-#: data_analyse/templates/team_statistics.html:258
-#: match/templates/call_for_match.html:8 match/templates/list_match.html:42
+#: data_analyse/templates/team_statistics.html:260
+#: match/templates/call_for_match.html:8 match/templates/list_match.html:57
 #: players/templates/includes/player_tabs.html:4
 msgid "Resumen"
 msgstr "Summary"
@@ -2806,7 +2807,8 @@ msgid "Informes con problemas"
 msgstr "Reports with problems"
 
 #: backoffice/templates/backoffice/health.html:92 match/phase.py:36
-#: match/templates/call_for_match.html:141
+#: match/templates/call_for_match.html:119
+#: match/templates/call_for_match.html:165
 msgid "Convocatoria"
 msgstr "Call-up"
 
@@ -3247,6 +3249,7 @@ msgstr "Duration"
 
 #: backoffice/templates/backoffice/includes/run_rows.html:3
 #: backoffice/templates/backoffice/run_detail.html:26
+#: data_analyse/templates/includes/match_type_filter.html:5
 #: data_analyse/templates/rival_detail.html:57 match/monthly_pdf.py:175
 #: match/monthly_pdf.py:254
 msgid "Tipo"
@@ -3597,7 +3600,7 @@ msgid "Ahora mismo Rekognition no valida las fotos nuevas (%(reason)s)."
 msgstr "Rekognition is not checking new photos right now (%(reason)s)."
 
 #: backoffice/templates/backoffice/photo_list.html:35 core/models.py:366
-#: players/templates/list_players.html:112
+#: players/templates/list_players.html:111
 msgid "Foto"
 msgstr "Photo"
 
@@ -3829,16 +3832,16 @@ msgid "Pidiendo el proceso…"
 msgstr "Requesting the process…"
 
 #: backoffice/templates/backoffice/snp_request_list.html:29
-#: players/templates/list_players.html:166
+#: players/templates/list_players.html:165
 msgid "Completar equipo"
 msgstr "Complete team"
 
 #: backoffice/templates/backoffice/snp_request_list.html:30
 #: core/templates/includes/season_prep.html:69
 #: core/templates/includes/season_prep_skip.html:3
-#: core/templates/my_profile.html:180 match/templates/call_for_match.html:114
-#: match/templates/call_for_match.html:116
-#: match/templates/call_for_match.html:132
+#: core/templates/my_profile.html:180 match/templates/call_for_match.html:134
+#: match/templates/call_for_match.html:136
+#: match/templates/call_for_match.html:156
 msgid "Guardando…"
 msgstr "Saving…"
 
@@ -4072,6 +4075,7 @@ msgid "Responsable"
 msgstr "Assigned to"
 
 #: backoffice/templates/backoffice/task_list.html:32
+#: match/templates/list_match.html:22
 msgid "Filtros"
 msgstr "Filters"
 
@@ -4137,7 +4141,7 @@ msgid "Buscar cuenta"
 msgstr "Search account"
 
 #: backoffice/templates/backoffice/unverified_list.html:22 core/spaces.py:110
-#: data_analyse/templates/includes/season_filter.html:5
+#: data_analyse/templates/includes/season_filter.html:6
 #: data_analyse/views.py:461
 msgid "Todas"
 msgstr "All"
@@ -5040,7 +5044,7 @@ msgid "Pendiente"
 msgstr "Pending"
 
 #: call/templates/closed_call.html:3 call/templates/closed_call.html:6
-#: match/views.py:551
+#: match/views.py:560
 msgid "Convocatoria cerrada"
 msgstr "Call-up closed"
 
@@ -5056,7 +5060,7 @@ msgstr "Existing call-up"
 msgid "Ya existe una convocatoria para este enfrentamiento."
 msgstr "A call-up already exists for this fixture."
 
-#: call/templates/existing_call.html:10 core/templates/home.html:267
+#: call/templates/existing_call.html:10 core/templates/home.html:270
 msgid "Ver convocatoria"
 msgstr "View call-up"
 
@@ -5066,8 +5070,8 @@ msgstr "The call-up of a confirmed fixture cannot be deleted."
 
 #: callLog/templates/view_call_log.html:3
 #: callLog/templates/view_call_log.html:7
-msgid "Cambios en la convocatoria"
-msgstr "Call-up changes"
+msgid "Advertencias y cambios de la convocatoria"
+msgstr "Warnings and changes of the call-up"
 
 #: callLog/templates/view_call_log.html:21
 msgid "No hay cambios registrados en la convocatoria."
@@ -5075,12 +5079,13 @@ msgstr "No changes have been recorded for this call-up."
 
 #: callLog/templates/view_call_log.html:26
 #: callLog/templates/view_call_log.html:43
-msgid "Aplicar sanciones"
-msgstr "Apply penalties"
+msgid "Poner advertencia"
+msgstr "Give a warning"
 
 #: callLog/templates/view_call_log.html:27
-msgid "Guardando la penalización…"
-msgstr "Saving the penalty…"
+#: penalty/templates/edit_penalty.html:15
+msgid "Guardando la advertencia…"
+msgstr "Saving the warning…"
 
 #: callLog/templates/view_call_log.html:29
 msgid ""
@@ -5116,7 +5121,7 @@ msgstr "Remove warning"
 
 #: callLog/templates/view_call_log.html:55
 #: callLog/templates/view_call_log.html:56 core/templates/club_members.html:46
-#: core/templates/club_members.html:48 match/templates/call_for_match.html:132
+#: core/templates/club_members.html:48 match/templates/call_for_match.html:156
 msgid "Quitar"
 msgstr "Remove"
 
@@ -5141,13 +5146,12 @@ msgstr "This email can't be used on Zyra."
 msgid "Contraseña actualizada."
 msgstr "Password updated."
 
-#: core/competitions.py:100
+#: core/competitions.py:105
 msgid "SNP"
 msgstr "SNP"
 
-#: core/competitions.py:107 core/templates/base.html:62
+#: core/competitions.py:112 core/templates/base.html:62
 #: core/templates/base.html:170
-#: data_analyse/templates/includes/match_type_filter.html:5
 #: data_analyse/templates/pair_statistics.html:190
 #: match/templates/calendar_match.html:9
 #: match/templates/create_match_choose.html:9
@@ -5155,35 +5159,35 @@ msgstr "SNP"
 msgid "Enfrentamientos"
 msgstr "Fixtures"
 
-#: core/competitions.py:108 match/models.py:58
+#: core/competitions.py:113 match/models.py:58
 msgid "Reto"
 msgstr "Challenge"
 
-#: core/competitions.py:108
+#: core/competitions.py:113
 msgid "Retos"
 msgstr "Challenges"
 
-#: core/competitions.py:109 match/models.py:59
+#: core/competitions.py:114 match/models.py:59
 msgid "Play Off"
 msgstr "Play-off"
 
-#: core/competitions.py:109
+#: core/competitions.py:114
 msgid "Play offs"
 msgstr "Play-offs"
 
-#: core/competitions.py:125
+#: core/competitions.py:130
 msgid "LAPI"
 msgstr "LAPI"
 
-#: core/competitions.py:131 match/models.py:60
+#: core/competitions.py:136 match/models.py:60
 msgid "Liga"
 msgstr "League"
 
-#: core/competitions.py:132
+#: core/competitions.py:137
 msgid "Playoffs"
 msgstr "Play-offs"
 
-#: core/competitions.py:133 match/models.py:61
+#: core/competitions.py:138 match/models.py:61
 msgid "Fase final"
 msgstr "Finals"
 
@@ -5291,7 +5295,7 @@ msgid "Localización"
 msgstr "Location"
 
 #: core/forms.py:54 players/models.py:101
-#: players/templates/list_players.html:184 team/models.py:48
+#: players/templates/list_players.html:183 team/models.py:48
 #: team/templates/manage_teams.html:35 team/templates/manage_teams.html:67
 msgid "Categoría"
 msgstr "Category"
@@ -5313,25 +5317,17 @@ msgid "Nacionalidad del equipo"
 msgstr "Team nationality"
 
 #: core/forms.py:58
-msgid ""
-"País en el que juega, por ejemplo España. En la SNP decide dónde se buscan "
-"tus jugadores."
-msgstr ""
-"Country it plays in, for example Spain. In SNP it decides where your players"
-" are searched for."
+msgid "País en el que juega, por ejemplo España."
+msgstr "Country it plays in, for example Spain."
 
 #: core/forms.py:59 team/models.py:50 team/templates/manage_teams.html:43
 #: team/templates/manage_teams.html:75
 msgid "División"
 msgstr "Division"
 
-#: core/forms.py:60 team/forms.py:52
-msgid ""
-"Nivel en el que juega el equipo, por ejemplo Future o 500 en la SNP o 2.ª "
-"división en LAPI."
-msgstr ""
-"Level the team plays at, for example Future or 500 in SNP or 2nd division in"
-" LAPI."
+#: core/forms.py:60
+msgid "Nivel en el que juega el equipo en su competición."
+msgstr "Level the team plays at in its competition."
 
 #: core/forms.py:83
 #, python-format
@@ -5444,11 +5440,11 @@ msgstr "Current password"
 msgid "Ese ya es tu email."
 msgstr "That is already your email."
 
-#: core/forms.py:267 core/views.py:843
+#: core/forms.py:267 core/views.py:845
 msgid "Ese email ya lo usa otra cuenta."
 msgstr "That email is already used by another account."
 
-#: core/forms.py:276 core/views.py:992
+#: core/forms.py:276 core/views.py:994
 msgid "La contraseña no es correcta."
 msgstr "The password is not correct."
 
@@ -5465,7 +5461,7 @@ msgstr "Repeat the new password"
 #: data_analyse/templates/rival_statistics.html:45 data_analyse/views.py:1232
 #: match/forms.py:49 match/forms.py:55 match/models.py:89
 #: match/monthly_pdf.py:175 match/monthly_pdf.py:254
-#: match/templates/list_match.html:29
+#: match/templates/list_match.html:32
 msgid "Rival"
 msgstr "Opponent"
 
@@ -5482,18 +5478,18 @@ msgstr "Venue"
 #: data_analyse/templates/includes/stats_tabs.html:9
 #: data_analyse/templates/player_statistics.html:20
 #: data_analyse/templates/warnings_statistics.html:68 match/report_pdf.py:445
-#: match/report_pdf.py:465 players/templates/list_players.html:184
+#: match/report_pdf.py:465 players/templates/list_players.html:183
 msgid "Jugador"
 msgstr "Player"
 
-#: core/guides.py:139 core/templates/home.html:341
+#: core/guides.py:139 core/templates/home.html:344
 #: core/templates/landing.html:45 data_analyse/templates/stats_empty.html:20
 #: data_analyse/templates/team_statistics.html:62
-#: data_analyse/templates/team_statistics.html:248
-#: data_analyse/templates/team_statistics.html:263
-#: players/templates/list_players.html:184
-#: players/templates/list_players.html:214
-#: players/templates/player_detail.html:28
+#: data_analyse/templates/team_statistics.html:250
+#: data_analyse/templates/team_statistics.html:265
+#: players/templates/list_players.html:183
+#: players/templates/list_players.html:213
+#: players/templates/player_detail.html:29
 msgid "Puntos SNP"
 msgstr "SNP points"
 
@@ -5658,7 +5654,7 @@ msgid ""
 msgstr "Schedule the next fixture to prepare the call-up and the pairs."
 
 #: core/onboarding.py:61 core/templates/club.html:23
-#: core/templates/home.html:276 data_analyse/templates/stats_empty.html:25
+#: core/templates/home.html:279 data_analyse/templates/stats_empty.html:25
 #: match/templates/create_match.html:3 match/templates/create_match.html:7
 #: match/templates/create_match.html:123
 #: match/templates/create_match_choose.html:3
@@ -5815,7 +5811,7 @@ msgstr "This club is suspended and does not accept new members."
 msgid "Tu email está bloqueado en Zyra y no puede unirse a clubes."
 msgstr "Your email is blocked on Zyra and cannot join clubs."
 
-#: core/services.py:86 core/views.py:698
+#: core/services.py:86 core/views.py:700
 #, python-format
 msgid "Ya eres miembro de %(club)s."
 msgstr "You are already a member of %(club)s."
@@ -6282,13 +6278,13 @@ msgstr "Statistics"
 #: core/templates/club.html:3 core/templates/emails/welcome.html:13
 #: core/templates/emails/welcome.txt:6 core/templates/register_club.html:33
 #: data_analyse/templates/includes/stats_tabs.html:8
-#: players/templates/list_players.html:118 team/templates/list_teams.html:8
+#: players/templates/list_players.html:117 team/templates/list_teams.html:8
 msgid "Equipo"
 msgstr "Team"
 
-#: core/templates/base.html:112 core/templates/home.html:10
-msgid "Tus equipos"
-msgstr "Your teams"
+#: core/templates/base.html:112
+msgid "Estás en:"
+msgstr "You are in:"
 
 #: core/templates/base.html:119 core/templates/register_club.html:12
 #, python-format
@@ -6366,7 +6362,7 @@ msgstr "Leave %(club)s?"
 #: core/templates/includes/messages_popup.html:32
 #: core/templates/includes/similar_modal.html:9
 #: players/templates/link_player.html:59
-#: players/templates/list_players.html:234
+#: players/templates/list_players.html:233
 msgid "Cerrar"
 msgstr "Close"
 
@@ -6380,12 +6376,12 @@ msgstr ""
 #: core/templates/base.html:198
 msgid ""
 "Se borrarán para siempre tu equipo, los equipos rivales, los jugadores y sus"
-" fotos, los enfrentamientos, las convocatorias, las sanciones, las "
+" fotos, los enfrentamientos, las convocatorias, las advertencias, las "
 "estadísticas y la cuenta SNP. Esto no se puede deshacer."
 msgstr ""
-"Your team, rival teams, players and their photos, fixtures, call-ups, "
-"penalties, statistics and SNP account will be permanently deleted. This "
-"cannot be undone."
+"Your team, rival teams, players and their photos, ties, call-ups, warnings, "
+"statistics and the SNP account will be deleted forever. This cannot be "
+"undone."
 
 #: core/templates/base.html:200
 #, python-format
@@ -6434,7 +6430,7 @@ msgid "Crear rival"
 msgstr "Create rival"
 
 #: core/templates/club.html:22 players/templates/list_players.html:15
-#: players/templates/list_players.html:101
+#: players/templates/list_players.html:100
 msgid "Nuevo jugador"
 msgstr "New player"
 
@@ -6653,7 +6649,7 @@ msgid_plural "%(n)s resultados"
 msgstr[0] "%(n)s result"
 msgstr[1] "%(n)s results"
 
-#: core/templates/club_members.html:83 match/templates/list_match.html:38
+#: core/templates/club_members.html:83 match/templates/list_match.html:41
 #: team/templates/list_teams.html:37
 msgid "Limpiar"
 msgstr "Clear"
@@ -7018,12 +7014,16 @@ msgstr ""
 "experience."
 
 #: core/templates/home.html:9 core/templates/home.html:28
-#: core/templates/home.html:289 data_analyse/templates/stats_mine.html:15
+#: core/templates/home.html:292 data_analyse/templates/stats_mine.html:15
 #: data_analyse/templates/warnings_statistics.html:14
-#: match/templates/list_match.html:59
+#: match/templates/list_match.html:74
 #, python-format
 msgid "Temporada %(season)s"
 msgstr "Season %(season)s"
+
+#: core/templates/home.html:10
+msgid "Tus equipos"
+msgstr "Your teams"
 
 #: core/templates/home.html:15 core/templates/home.html:26
 #, python-format
@@ -7052,7 +7052,7 @@ msgstr "We have sent a link to %(email)s."
 msgid "Reenviando el email…"
 msgstr "Resending the email…"
 
-#: core/templates/home.html:46
+#: core/templates/home.html:46 match/templates/call_for_match.html:126
 msgid "Reenviar"
 msgstr "Resend"
 
@@ -7146,22 +7146,27 @@ msgstr "Closing the notice…"
 msgid "Cerrar aviso"
 msgstr "Close notice"
 
-#: core/templates/home.html:99 core/templates/home.html:102
+#: core/templates/home.html:99
 msgid "Añade un gestor"
 msgstr "Add a manager"
+
+#: core/templates/home.html:102
+#, python-format
+msgid "%(team)s no tiene gestor"
+msgstr "%(team)s has no manager"
 
 #: core/templates/home.html:103
 msgid ""
 "Un gestor te ayuda con los enfrentamientos, las convocatorias, los "
-"resultados y los jugadores. Puedes nombrar hasta 2 entre los jugadores de tu"
-" equipo."
+"resultados y los jugadores. Puedes nombrar hasta 2 entre los jugadores de "
+"este equipo."
 msgstr ""
 "A manager helps you with ties, call-ups, results and players. You can "
-"appoint up to 2 among your team's players."
+"appoint up to 2 among the players of this team."
 
 #: core/templates/home.html:106
-msgid "Gestionar miembros"
-msgstr "Manage members"
+msgid "Nombrar gestor"
+msgstr "Appoint a manager"
 
 #: core/templates/home.html:118 core/templates/home.html:145
 msgid "Sincronizar datos"
@@ -7289,7 +7294,7 @@ msgid "Hecho"
 msgstr "Done"
 
 #: core/templates/home.html:207 match/templates/includes/calendar_event.html:9
-#: match/templates/list_match.html:71
+#: match/templates/list_match.html:86
 msgid "fecha pasada"
 msgstr "date passed"
 
@@ -7306,7 +7311,7 @@ msgstr "All caught up"
 msgid "Próximo enfrentamiento"
 msgstr "Next fixture"
 
-#: core/templates/home.html:228 core/templates/home.html:358
+#: core/templates/home.html:228 core/templates/home.html:361
 #: match/templates/calendar_match.html:24
 msgid "Hoy"
 msgstr "Today"
@@ -7322,53 +7327,63 @@ msgid_plural "En %(n)s días"
 msgstr[0] "In %(n)s day"
 msgstr[1] "In %(n)s days"
 
-#: core/templates/home.html:248 match/templates/call_for_match.html:51
+#: core/templates/home.html:232 match/templates/call_for_match.html:20
+#: match/templates/list_match.html:79
+#, python-format
+msgid "Jornada %(n)s"
+msgstr "Matchday %(n)s"
+
+#: core/templates/home.html:250 match/templates/call_for_match.html:51
 msgid "Todavía no hay convocatoria"
 msgstr "There is no call-up yet"
 
-#: core/templates/home.html:249 match/templates/call_for_match.html:53
+#: core/templates/home.html:251 match/templates/call_for_match.html:53
+msgid "Te has apuntado"
+msgstr "You have signed up"
+
+#: core/templates/home.html:251 core/templates/home.html:253
+msgid "la convocatoria sigue abierta"
+msgstr "the call-up is still open"
+
+#: core/templates/home.html:252 match/templates/call_for_match.html:56
 msgid "Estás convocado"
 msgstr "You are called up"
 
-#: core/templates/home.html:249 match/templates/call_for_match.html:55
+#: core/templates/home.html:252 match/templates/call_for_match.html:57
 #, python-format
 msgid "Partido %(n)s · %(pts)s pts"
 msgstr "Match %(n)s · %(pts)s pts"
 
-#: core/templates/home.html:249 match/templates/call_for_match.html:55
+#: core/templates/home.html:252 match/templates/call_for_match.html:57
 #, python-format
 msgid "con %(name)s"
 msgstr "with %(name)s"
 
-#: core/templates/home.html:249
+#: core/templates/home.html:252
 msgid "las parejas aún no están decididas"
 msgstr "the pairs are not decided yet"
 
-#: core/templates/home.html:250 match/templates/call_for_match.html:58
+#: core/templates/home.html:253 match/templates/call_for_match.html:63
 msgid "No estás convocado"
 msgstr "You are not called up"
 
-#: core/templates/home.html:250
-msgid "la convocatoria sigue abierta"
-msgstr "the call-up is still open"
-
-#: core/templates/home.html:253
+#: core/templates/home.html:256
 msgid "Enlaza tu cuenta con tu jugador para ver si estás convocado."
 msgstr "Link your account to your player to see whether you are called up."
 
-#: core/templates/home.html:261 team/templates/list_teams.html:56
+#: core/templates/home.html:264 team/templates/list_teams.html:56
 msgid "Sin ubicación"
 msgstr "No location"
 
-#: core/templates/home.html:265
+#: core/templates/home.html:268
 msgid "Cómo llegar"
 msgstr "Directions"
 
-#: core/templates/home.html:275
+#: core/templates/home.html:278
 msgid "Programa el próximo enfrentamiento para preparar la convocatoria."
 msgstr "Schedule the next match to prepare the call-up."
 
-#: core/templates/home.html:278
+#: core/templates/home.html:281
 msgid ""
 "Cuando tu capitán programe el próximo enfrentamiento verás aquí si estás "
 "convocado, con quién juegas y cómo llegar."
@@ -7376,25 +7391,25 @@ msgstr ""
 "When your captain schedules the next match you will see here whether you are"
 " called up, who you play with and how to get there."
 
-#: core/templates/home.html:290
+#: core/templates/home.html:293
 msgid "Mi forma"
 msgstr "My form"
 
-#: core/templates/home.html:293
+#: core/templates/home.html:296
 #: data_analyse/templates/includes/stats_tabs.html:6
 #: data_analyse/templates/stats_mine.html:13
 msgid "Mis estadísticas"
 msgstr "My statistics"
 
-#: core/templates/home.html:294
+#: core/templates/home.html:297
 msgid "Ocultando la tarjeta…"
 msgstr "Hiding the card…"
 
-#: core/templates/home.html:296
+#: core/templates/home.html:299
 msgid "Ocultar"
 msgstr "Hide"
 
-#: core/templates/home.html:301
+#: core/templates/home.html:304
 msgid ""
 "Todavía no has jugado ningún partido competitivo. Cuando juegues, aquí verás"
 " tu racha, tus últimos resultados y tus puntos SNP."
@@ -7402,7 +7417,7 @@ msgstr ""
 "You haven't played any competitive match yet. Once you do, you'll see your "
 "streak, your latest results and your SNP points here."
 
-#: core/templates/home.html:301
+#: core/templates/home.html:304
 msgid ""
 "Todavía no has jugado ningún partido competitivo. Cuando juegues, aquí verás"
 " tu racha y tus últimos resultados."
@@ -7410,80 +7425,80 @@ msgstr ""
 "You have not played any competitive game yet. Once you do, you will see your"
 " streak and your latest results here."
 
-#: core/templates/home.html:305 players/templates/player_detail.html:37
-#: players/templates/player_detail.html:53
+#: core/templates/home.html:308 players/templates/player_detail.html:38
+#: players/templates/player_detail.html:54
 msgctxt "victoria"
 msgid "V"
 msgstr "W"
 
-#: core/templates/home.html:305 players/templates/player_detail.html:37
-#: players/templates/player_detail.html:53
+#: core/templates/home.html:308 players/templates/player_detail.html:38
+#: players/templates/player_detail.html:54
 msgctxt "derrota"
 msgid "D"
 msgstr "L"
 
-#: core/templates/home.html:309
+#: core/templates/home.html:312
 #: data_analyse/templates/includes/team_records.html:7
 msgid "Racha de victorias"
 msgstr "Winning streak"
 
-#: core/templates/home.html:309
+#: core/templates/home.html:312
 msgid "Racha de derrotas"
 msgstr "Losing streak"
 
-#: core/templates/home.html:312
+#: core/templates/home.html:315
 msgid "Balance de la temporada"
 msgstr "Season record"
 
-#: core/templates/home.html:314
+#: core/templates/home.html:317
 #, python-format
 msgid "%(w)s victorias y %(l)s derrotas"
 msgstr "%(w)s wins and %(l)s losses"
 
-#: core/templates/home.html:323
+#: core/templates/home.html:326
 msgid "victorias"
 msgstr "wins"
 
-#: core/templates/home.html:323
+#: core/templates/home.html:326
 msgid "derrotas"
 msgstr "losses"
 
-#: core/templates/home.html:329
-msgid "Convocatorias en las que te has apuntado"
-msgstr "Call-ups you signed up for"
-
-#: core/templates/home.html:331
-#, python-format
-msgid "jugadas de %(total)s"
-msgstr "played out of %(total)s"
-
 #: core/templates/home.html:332
+msgid "Jugaste, de las convocatorias a las que te apuntaste"
+msgstr "You played, out of the call-ups you signed up for"
+
+#: core/templates/home.html:334
+#, python-format
+msgid "de las %(total)s a las que te apuntaste"
+msgstr "of the %(total)s you signed up for"
+
+#: core/templates/home.html:335
 #, python-format
 msgid ""
 "Has jugado en %(played)s de las %(total)s convocatorias en las que te "
 "apuntaste"
 msgstr "You played in %(played)s of the %(total)s call-ups you signed up for"
 
-#: core/templates/home.html:333
+#: core/templates/home.html:336
 #, python-format
-msgid "%(competition)s %(played)s de %(total)s"
-msgstr "%(competition)s %(played)s of %(total)s"
+msgid "%(competition)s: %(played)s de %(total)s"
+msgstr "%(competition)s: %(played)s of %(total)s"
 
-#: core/templates/home.html:341
+#: core/templates/home.html:344
 msgid "últimos 30 días"
 msgstr "last 30 days"
 
-#: core/templates/home.html:342
+#: core/templates/home.html:345
 msgid "en los últimos 30 días"
 msgstr "in the last 30 days"
 
-#: core/templates/home.html:346
+#: core/templates/home.html:349
 #, python-format
 msgid ""
 "Evolución de tus puntos SNP en los últimos 30 días, entre %(low)s y %(high)s"
 msgstr "Your SNP points over the last 30 days, between %(low)s and %(high)s"
 
-#: core/templates/home.html:360
+#: core/templates/home.html:363
 msgid ""
 "Aún no hay suficientes actualizaciones para dibujar la evolución. Los puntos"
 " se actualizan solos cada semana."
@@ -7491,23 +7506,23 @@ msgstr ""
 "Not enough updates yet to draw the trend. Points update automatically every "
 "week."
 
-#: core/templates/home.html:365
+#: core/templates/home.html:368
 msgid "Solo cuentan los partidos competitivos."
 msgstr "Only competitive matches count."
 
-#: core/templates/home.html:369
+#: core/templates/home.html:372
 msgid "Mostrando la tarjeta…"
 msgstr "Showing the card…"
 
-#: core/templates/home.html:371
+#: core/templates/home.html:374
 msgid "Mostrar mi forma"
 msgstr "Show my form"
 
-#: core/templates/home.html:380
+#: core/templates/home.html:383
 msgid "Registra tu cuenta de SNP"
 msgstr "Register your SNP account"
 
-#: core/templates/home.html:382
+#: core/templates/home.html:385
 msgid ""
 "Mantén actualizados semanalmente los puntos SNP de tus jugadores y carga "
 "automáticamente sus datos para ahorrar tiempo y tenerlo todo siempre al día."
@@ -7515,35 +7530,35 @@ msgstr ""
 "Keep your players' SNP points updated every week and load their data "
 "automatically to save time and keep everything up to date."
 
-#: core/templates/home.html:387
+#: core/templates/home.html:390
 msgid "Registrar cuenta"
 msgstr "Register account"
 
-#: core/templates/home.html:393
+#: core/templates/home.html:396
 msgid "En racha"
 msgstr "On a streak"
 
-#: core/templates/home.html:401 data_analyse/templates/stats_empty.html:19
+#: core/templates/home.html:404 data_analyse/templates/stats_empty.html:19
 msgid "Jugador en racha"
 msgstr "Player on a streak"
 
-#: core/templates/home.html:406 core/templates/home.html:423
+#: core/templates/home.html:409 core/templates/home.html:426
 #, python-format
 msgid "%(n)s victoria seguida"
 msgid_plural "%(n)s victorias seguidas"
 msgstr[0] "%(n)s win in a row"
 msgstr[1] "%(n)s wins in a row"
 
-#: core/templates/home.html:409 core/templates/home.html:426
-#: match/templates/call_for_match.html:130
+#: core/templates/home.html:412 core/templates/home.html:429
+#: match/templates/call_for_match.html:154
 msgid "Ver estadísticas"
 msgstr "View statistics"
 
-#: core/templates/home.html:415
+#: core/templates/home.html:418
 msgid "Pareja en racha"
 msgstr "Pair on a streak"
 
-#: core/templates/home.html:434
+#: core/templates/home.html:437
 msgid "Cierra enfrentamientos para ver aquí quién encadena victorias."
 msgstr "Close matches to see here who is on a winning streak."
 
@@ -7614,10 +7629,10 @@ msgid "Primera"
 msgstr "First"
 
 #: core/templates/includes/pagination.html:8
-#: data_analyse/templates/team_statistics.html:235
+#: data_analyse/templates/team_statistics.html:237
 #: match/templates/includes/player_selector.html:47
-#: players/templates/copy_players.html:67
-#: players/templates/list_players.html:155
+#: players/templates/copy_players.html:69
+#: players/templates/list_players.html:154
 msgid "Anterior"
 msgstr "Previous"
 
@@ -7628,10 +7643,10 @@ msgstr "%(number)s of %(total)s"
 
 #: core/templates/includes/pagination.html:12
 #: core/templates/register_club.html:67 core/templates/register_club.html:76
-#: data_analyse/templates/team_statistics.html:237
+#: data_analyse/templates/team_statistics.html:239
 #: match/templates/includes/player_selector.html:49
-#: players/templates/copy_players.html:69
-#: players/templates/list_players.html:157
+#: players/templates/copy_players.html:71
+#: players/templates/list_players.html:156
 msgid "Siguiente"
 msgstr "Next"
 
@@ -7733,6 +7748,23 @@ msgstr "Reactivating the team…"
 msgid "¿Quieres continuar con la creación?"
 msgstr "Do you want to create it anyway?"
 
+#: core/templates/includes/space_filter.html:12
+msgid ""
+"Cada competición puntúa distinto: estas estadísticas son de una sola. Para "
+"verlas juntas, abre «Mis estadísticas»."
+msgstr ""
+"Each competition scores differently: these statistics are for a single one. "
+"To see them together, open “My statistics”."
+
+#: core/templates/includes/space_filter.html:13
+#, python-format
+msgid "Mostrando solo %(name)s."
+msgstr "Showing only %(name)s."
+
+#: core/templates/includes/space_filter.html:13
+msgid "Ver todas"
+msgstr "View all"
+
 #: core/templates/includes/sync_bar.html:7
 msgid "Sincronizando tu equipo con SNP"
 msgstr "Syncing your team with SNP"
@@ -7744,7 +7776,7 @@ msgstr "Queued"
 
 #: core/templates/includes/sync_bar.html:10
 #: players/templates/complete_team_welcome.html:21
-#: players/templates/list_players.html:233
+#: players/templates/list_players.html:232
 msgid "Cancelando la búsqueda…"
 msgstr "Cancelling the search…"
 
@@ -8447,7 +8479,7 @@ msgstr "Sign-up progress"
 #: match/templates/enter_results.html:46 match/templates/enter_results.html:51
 #: match/templates/includes/result_form.html:27
 #: match/templates/includes/result_form.html:32
-#: players/templates/list_players.html:226 team/templates/list_teams.html:58
+#: players/templates/list_players.html:225 team/templates/list_teams.html:58
 #: team/templates/list_teams.html:97
 msgid "Tu equipo"
 msgstr "Your team"
@@ -8468,6 +8500,10 @@ msgstr ""
 #, python-format
 msgid "Ya tienes %(club)s en %(competition)s."
 msgstr "You already have %(club)s in %(competition)s."
+
+#: core/templates/register_club.html:61
+msgid "En la SNP decide dónde se buscan tus jugadores."
+msgstr "In SNP it decides where your players are searched for."
 
 #: core/templates/register_club.html:72
 msgid "Tu cuenta"
@@ -8708,11 +8744,11 @@ msgstr "No SNP"
 msgid "No se admiten los signos < > ni saltos de línea."
 msgstr "The characters < > and line breaks are not allowed."
 
-#: core/views.py:265
+#: core/views.py:267
 msgid "Demasiados intentos fallidos. Espera 15 minutos y vuelve a intentarlo."
 msgstr "Too many failed attempts. Wait 15 minutes and try again."
 
-#: core/views.py:298
+#: core/views.py:300
 msgid ""
 "No se ha podido comprobar el formulario: puede que haya caducado o que venga"
 " de otra web. Vuelve a la página, recárgala e inténtalo de nuevo."
@@ -8720,12 +8756,12 @@ msgstr ""
 "The form could not be verified: it may have expired or come from another "
 "website. Go back, reload the page and try again."
 
-#: core/views.py:337
+#: core/views.py:339
 msgid "Ya tenías una cuenta con este email. Has iniciado sesión con ella."
 msgstr ""
 "You already had an account with this email. You are now signed in to it."
 
-#: core/views.py:343
+#: core/views.py:345
 msgid ""
 "Ya tienes equipo en cada competición. Para crear otro, abandona antes el de "
 "esa competición."
@@ -8733,35 +8769,35 @@ msgstr ""
 "You already have a team in every competition. To create another one, first "
 "leave the one in that competition."
 
-#: core/views.py:375
+#: core/views.py:377
 msgid "Tu email está bloqueado en Zyra y no puede crear clubes."
 msgstr "Your email is blocked on Zyra and cannot create clubs."
 
-#: core/views.py:407
+#: core/views.py:409
 #, python-format
 msgid "Equipo %(club)s creado correctamente."
 msgstr "Team %(club)s created successfully."
 
-#: core/views.py:482
+#: core/views.py:484
 msgid "Cuenta creada. Ya puedes unirte a un equipo cuando te inviten."
 msgstr "Account created. You can join a team as soon as you are invited."
 
-#: core/views.py:562
+#: core/views.py:564
 #, python-format
 msgid "Únete a %(club)s en Zyra: %(url)s"
 msgstr "Join %(club)s on Zyra: %(url)s"
 
-#: core/views.py:590
+#: core/views.py:592
 #, python-format
 msgid "Invitación enviada a %(email)s. El enlace caduca en 24 horas."
 msgstr "Invitation sent to %(email)s. The link expires in 24 hours."
 
-#: core/views.py:593
+#: core/views.py:595
 #, python-format
 msgid "No se pudo enviar el correo a %(email)s. Inténtalo de nuevo más tarde."
 msgstr "The email to %(email)s could not be sent. Please try again later."
 
-#: core/views.py:610
+#: core/views.py:612
 msgid ""
 "Enlace nuevo creado: el anterior ya no funciona. Cópialo y compártelo. Lo "
 "pueden usar varias personas y caduca en 24 horas."
@@ -8769,7 +8805,7 @@ msgstr ""
 "New link created: the previous one no longer works. Copy and share it. "
 "Several people can use it and it expires in 24 hours."
 
-#: core/views.py:613
+#: core/views.py:615
 msgid ""
 "Enlace creado: cópialo y compártelo. Lo pueden usar varias personas y caduca"
 " en 24 horas."
@@ -8777,44 +8813,44 @@ msgstr ""
 "Link created: copy it and share it. Several people can use it and it expires"
 " in 24 hours."
 
-#: core/views.py:626
+#: core/views.py:628
 msgid "Invitación anulada."
 msgstr "Invitation revoked."
 
-#: core/views.py:660 core/views.py:743
+#: core/views.py:662 core/views.py:745
 #, python-format
 msgid "¡Bienvenido a %(club)s!"
 msgstr "Welcome to %(club)s!"
 
-#: core/views.py:674
+#: core/views.py:676
 msgid "Esa invitación ya no está pendiente."
 msgstr "That invitation is no longer pending."
 
-#: core/views.py:678
+#: core/views.py:680
 #, python-format
 msgid "Invitación rechazada: no entrarás en %(club)s."
 msgstr "Invitation declined: you will not join %(club)s."
 
-#: core/views.py:776
+#: core/views.py:778
 msgid "Solo el capitán del club puede omitir el paso de SNP."
 msgstr "Only the club captain can skip the SNP step."
 
-#: core/views.py:778
+#: core/views.py:780
 #, python-format
 msgid "Temporada %(label)s lista. ¡A competir!"
 msgstr "Season %(label)s is ready. Let's compete!"
 
-#: core/views.py:805
+#: core/views.py:807
 #, python-format
 msgid "%(username)s es ahora gestor del equipo."
 msgstr "%(username)s is now a manager of the team."
 
-#: core/views.py:806
+#: core/views.py:808
 #, python-format
 msgid "%(username)s vuelve a ser miembro."
 msgstr "%(username)s is a member again."
 
-#: core/views.py:823
+#: core/views.py:825
 #, python-format
 msgid ""
 "%(username)s es ahora el capitán de %(club)s. Tú sigues en el equipo como "
@@ -8823,7 +8859,7 @@ msgstr ""
 "%(username)s is now the captain of %(club)s. You stay in the team as a "
 "player."
 
-#: core/views.py:837
+#: core/views.py:839
 msgid ""
 "El email es obligatorio: lo necesitas para recuperar tu contraseña y recibir"
 " los informes."
@@ -8831,66 +8867,66 @@ msgstr ""
 "The email is required: you need it to recover your password and receive "
 "reports."
 
-#: core/views.py:841
+#: core/views.py:843
 #, python-format
 msgid "'%(email)s' no es un email válido."
 msgstr "'%(email)s' is not a valid email."
 
-#: core/views.py:881
+#: core/views.py:883
 msgid "Preferencias guardadas."
 msgstr "Preferences saved."
 
-#: core/views.py:887
+#: core/views.py:889
 msgid "Email actualizado."
 msgstr "Email updated."
 
-#: core/views.py:940
+#: core/views.py:942
 #, python-format
 msgid "Ficha enlazada: ya estás en %(club)s."
 msgstr "Player sheet linked: you are now in %(club)s."
 
-#: core/views.py:949
+#: core/views.py:951
 msgid "De acuerdo, no volveremos a proponerte esa ficha."
 msgstr "OK, we will not suggest that player sheet again."
 
-#: core/views.py:961
+#: core/views.py:963
 msgid "Te hemos enviado un enlace para confirmar tu email."
 msgstr "We have sent you a link to confirm your email."
 
-#: core/views.py:963
+#: core/views.py:965
 msgid "No se pudo enviar el correo. Inténtalo de nuevo más tarde."
 msgstr "The email could not be sent. Try again later."
 
-#: core/views.py:992
+#: core/views.py:994
 msgid "Escribe tu nombre de usuario tal cual para confirmar."
 msgstr "Type your username exactly to confirm."
 
-#: core/views.py:999
+#: core/views.py:1001
 msgid "Tu cuenta se ha eliminado. Gracias por haber usado Zyra."
 msgstr "Your account has been deleted. Thanks for using Zyra."
 
-#: core/views.py:1052
+#: core/views.py:1054
 msgid "No puedes quitar al capitán: traspasa antes la capitanía."
 msgstr "You cannot remove the captain: hand the captaincy over first."
 
-#: core/views.py:1058
+#: core/views.py:1060
 #, python-format
 msgid "%(username)s ya no es miembro del equipo."
 msgstr "%(username)s is no longer a member of the team."
 
-#: core/views.py:1080
+#: core/views.py:1082
 #, python-format
 msgid "Para eliminar el equipo escribe su nombre exactamente: %(club)s."
 msgstr "To delete the team, type its name exactly: %(club)s."
 
-#: core/views.py:1085
+#: core/views.py:1087
 #, python-format
 msgid ""
 "Has abandonado %(club)s y el equipo se ha eliminado con todos sus datos."
 msgstr ""
 "You have left %(club)s and the team has been deleted with all its data."
 
-#: core/views.py:1088
+#: core/views.py:1090
 #, python-format
 msgid ""
 "Eres el capitán de %(club)s: traspasa la capitanía a otro jugador enlazado "
@@ -8901,7 +8937,7 @@ msgstr ""
 "player before leaving the club. To delete the club, first remove all the "
 "members."
 
-#: core/views.py:1095
+#: core/views.py:1097
 #, python-format
 msgid "Has abandonado %(club)s."
 msgstr "You have left %(club)s."
@@ -8967,7 +9003,7 @@ msgstr "No more pairs with enough matches."
 #: data_analyse/templates/pair_statistics.html:101
 #: data_analyse/templates/player_statistics.html:103 match/result_email.py:160
 #: match/templates/includes/calendar_event.html:9
-#: match/templates/list_match.html:66 match/views.py:122
+#: match/templates/list_match.html:81 match/views.py:122
 msgid "Victoria"
 msgstr "Win"
 
@@ -8976,14 +9012,14 @@ msgstr "Win"
 #: data_analyse/templates/pair_statistics.html:101
 #: data_analyse/templates/player_statistics.html:103 match/result_email.py:160
 #: match/templates/includes/calendar_event.html:9
-#: match/templates/list_match.html:67 match/views.py:122
+#: match/templates/list_match.html:82 match/views.py:122
 msgid "Derrota"
 msgstr "Loss"
 
 #: data_analyse/templates/includes/rival_outcome.html:4
 #: data_analyse/templates/includes/rival_outcome.html:5 match/models.py:44
 #: match/result_email.py:160 match/templates/includes/calendar_event.html:9
-#: match/templates/list_match.html:68 match/views.py:122
+#: match/templates/list_match.html:83 match/views.py:122
 msgid "Empate"
 msgstr "Draw"
 
@@ -8991,19 +9027,26 @@ msgstr "Draw"
 msgid "Temporadas"
 msgstr "Seasons"
 
-#: data_analyse/templates/includes/season_filter.html:13
+#: data_analyse/templates/includes/season_filter.html:5
+#: data_analyse/templates/pair_statistics.html:189
+#: data_analyse/templates/player_statistics.html:245 match/report_pdf.py:382
+#: players/templates/list_players.html:116
+msgid "Temporada"
+msgstr "Season"
+
+#: data_analyse/templates/includes/season_filter.html:14
 msgid "Buscar temporada"
 msgstr "Search season"
 
-#: data_analyse/templates/includes/season_filter.html:14
+#: data_analyse/templates/includes/season_filter.html:15
 msgid "Buscar temporada..."
 msgstr "Search season..."
 
-#: data_analyse/templates/includes/season_filter.html:15
+#: data_analyse/templates/includes/season_filter.html:16
 msgid "Elige una temporada"
 msgstr "Choose a season"
 
-#: data_analyse/templates/includes/season_filter.html:18
+#: data_analyse/templates/includes/season_filter.html:19
 #: data_analyse/templates/player_statistics.html:29
 msgid "Ver"
 msgstr "View"
@@ -9014,13 +9057,20 @@ msgid "%(wins)sV – %(losses)sD"
 msgstr "%(wins)sW – %(losses)sL"
 
 #: data_analyse/templates/includes/set_rate.html:6
+#, python-format
+msgid "solo %(n)s caso"
+msgid_plural "solo %(n)s casos"
+msgstr[0] "only %(n)s case"
+msgstr[1] "only %(n)s cases"
+
+#: data_analyse/templates/includes/set_rate.html:6
 msgid "Ninguno todavía"
 msgstr "None yet"
 
 #: data_analyse/templates/includes/set_stats.html:9
 #: data_analyse/templates/pair_statistics.html:126
 #: data_analyse/templates/stats_mine.html:50
-#: data_analyse/templates/team_statistics.html:159 match/monthly_pdf.py:213
+#: data_analyse/templates/team_statistics.html:161 match/monthly_pdf.py:213
 #: match/monthly_pdf.py:254
 msgid "Sets"
 msgstr "Sets"
@@ -9034,8 +9084,9 @@ msgid "Roscos (6-0)"
 msgstr "Bagels (6-0)"
 
 #: data_analyse/templates/includes/set_stats.html:18
-msgid "Dados – recibidos"
-msgstr "Given – received"
+#, python-format
+msgid "%(a)s a favor · %(b)s en contra"
+msgstr "%(a)s for · %(b)s against"
 
 #: data_analyse/templates/includes/set_stats.html:22 data_analyse/views.py:470
 #: match/monthly_pdf.py:135
@@ -9140,6 +9191,7 @@ msgid "Ver solo los 10 primeros"
 msgstr "Show only the top 10"
 
 #: data_analyse/templates/includes/snp_ranking.html:51
+#: players/templates/copy_players.html:32
 #, python-format
 msgid "Ver los %(n)s jugadores"
 msgstr "Show all %(n)s players"
@@ -9175,7 +9227,7 @@ msgstr "Warnings"
 #: data_analyse/templates/includes/team_records.html:8
 #: data_analyse/templates/includes/team_records.html:15
 #: data_analyse/templates/rival_detail.html:30
-#: match/templates/list_match.html:37
+#: match/templates/list_match.html:40
 #, python-format
 msgid "%(n)s enfrentamiento"
 msgid_plural "%(n)s enfrentamientos"
@@ -9257,13 +9309,13 @@ msgstr[1] "Minimum %(n)s matches."
 #: data_analyse/templates/player_statistics.html:68
 #: data_analyse/templates/stats_empty.html:16
 #: data_analyse/templates/team_statistics.html:71
-#: data_analyse/templates/team_statistics.html:228 match/monthly_pdf.py:197
+#: data_analyse/templates/team_statistics.html:230 match/monthly_pdf.py:197
 msgid "Victorias"
 msgstr "Wins"
 
 #: data_analyse/templates/includes/venue_rate.html:6
 #: data_analyse/templates/stats_empty.html:16
-#: data_analyse/templates/team_statistics.html:81
+#: data_analyse/templates/team_statistics.html:83
 msgid "Derrotas"
 msgstr "Losses"
 
@@ -9276,7 +9328,7 @@ msgstr "%(wins)sW – %(losses)sL · best streak %(best)sW"
 #: data_analyse/templates/pair_statistics.html:192
 #: data_analyse/templates/player_statistics.html:247
 #: data_analyse/templates/stats_mine.html:27
-#: match/templates/list_match.html:44
+#: match/templates/list_match.html:59
 msgid "Ganados"
 msgstr "Won"
 
@@ -9284,7 +9336,7 @@ msgstr "Won"
 #: data_analyse/templates/pair_statistics.html:193
 #: data_analyse/templates/player_statistics.html:248
 #: data_analyse/templates/stats_mine.html:28
-#: match/templates/list_match.html:46
+#: match/templates/list_match.html:61
 msgid "Perdidos"
 msgstr "Lost"
 
@@ -9382,7 +9434,7 @@ msgstr "%(wins)s won · %(losses)s lost"
 #: data_analyse/templates/player_statistics.html:170
 #: data_analyse/templates/player_statistics.html:214
 #: data_analyse/templates/player_statistics.html:216
-#: data_analyse/templates/team_statistics.html:227
+#: data_analyse/templates/team_statistics.html:229
 msgid "Partidos jugados"
 msgstr "Matches played"
 
@@ -9437,8 +9489,8 @@ msgstr "worst streak: %(n)sL"
 
 #: data_analyse/templates/pair_statistics.html:97
 #: data_analyse/templates/player_statistics.html:99
-#: players/templates/player_detail.html:35
 #: players/templates/player_detail.html:36
+#: players/templates/player_detail.html:37
 msgid "Forma reciente"
 msgstr "Recent form"
 
@@ -9555,16 +9607,10 @@ msgstr "Percentage of matches won together per season."
 msgid "Detalle por temporada"
 msgstr "Season breakdown"
 
-#: data_analyse/templates/pair_statistics.html:189
-#: data_analyse/templates/player_statistics.html:245 match/report_pdf.py:382
-#: players/templates/list_players.html:117
-msgid "Temporada"
-msgstr "Season"
-
 #: data_analyse/templates/pair_statistics.html:191
 #: data_analyse/templates/player_statistics.html:246
 #: data_analyse/templates/stats_mine.html:26 match/monthly_pdf.py:235
-#: match/templates/list_match.html:43
+#: match/templates/list_match.html:58
 msgid "Jugados"
 msgstr "Played"
 
@@ -9691,28 +9737,26 @@ msgid "%% de victorias y juegos ganados según dónde juega."
 msgstr "Win %% and games won by venue."
 
 #: data_analyse/templates/player_statistics.html:112
-#: data_analyse/templates/team_statistics.html:105
-#: data_analyse/templates/team_statistics.html:173
-#: data_analyse/templates/team_statistics.html:177
+#: data_analyse/templates/team_statistics.html:175
+#: data_analyse/templates/team_statistics.html:179
 msgid "Juegos como local"
 msgstr "Games at home"
 
 #: data_analyse/templates/player_statistics.html:114
-#: data_analyse/templates/team_statistics.html:109
-#: data_analyse/templates/team_statistics.html:186
-#: data_analyse/templates/team_statistics.html:190
+#: data_analyse/templates/team_statistics.html:188
+#: data_analyse/templates/team_statistics.html:192
 msgid "Juegos como visitante"
 msgstr "Games away"
 
 #: data_analyse/templates/player_statistics.html:122
 #: data_analyse/templates/team_statistics.html:59
-#: data_analyse/templates/team_statistics.html:153
-#: data_analyse/templates/team_statistics.html:260
+#: data_analyse/templates/team_statistics.html:155
+#: data_analyse/templates/team_statistics.html:262
 msgid "Partidos y sets"
 msgstr "Matches and sets"
 
 #: data_analyse/templates/player_statistics.html:125
-#: data_analyse/templates/team_statistics.html:156
+#: data_analyse/templates/team_statistics.html:158
 msgid "Por número de partido"
 msgstr "By match number"
 
@@ -9848,7 +9892,7 @@ msgid "Compañeros a mostrar"
 msgstr "Partners to show"
 
 #: data_analyse/templates/player_statistics.html:293
-#: players/templates/list_players.html:138
+#: players/templates/list_players.html:137
 #: players/templates/manage_roster.html:24
 #: players/templates/manage_roster.html:61
 msgid "En el equipo"
@@ -9937,8 +9981,8 @@ msgid "Ordenar rivales"
 msgstr "Sort opponents"
 
 #: data_analyse/templates/rival_statistics.html:37
-#: data_analyse/templates/team_statistics.html:225
-#: data_analyse/templates/team_statistics.html:226
+#: data_analyse/templates/team_statistics.html:227
+#: data_analyse/templates/team_statistics.html:228
 #: players/templates/list_players.html:58
 msgid "Ordenar por"
 msgstr "Sort by"
@@ -9948,7 +9992,7 @@ msgid "Balance contra cada rival"
 msgstr "Record against each opponent"
 
 #: data_analyse/templates/rival_statistics.html:46
-#: data_analyse/templates/team_statistics.html:95
+#: data_analyse/templates/team_statistics.html:97
 msgid "Enfrentamientos jugados"
 msgstr "Matches played"
 
@@ -9963,6 +10007,14 @@ msgstr "Won – drawn – lost"
 #: data_analyse/templates/rival_statistics.html:47
 msgid "G-E-P"
 msgstr "W-D-L"
+
+#: data_analyse/templates/rival_statistics.html:47
+msgid "Ganados – perdidos"
+msgstr "Won – lost"
+
+#: data_analyse/templates/rival_statistics.html:47
+msgid "G-P"
+msgstr "W-L"
 
 #: data_analyse/templates/rival_statistics.html:48
 msgid "Puntos a favor – en contra"
@@ -10008,7 +10060,7 @@ msgid "Ejemplo"
 msgstr "Example"
 
 #: data_analyse/templates/stats_empty.html:16
-#: data_analyse/templates/team_statistics.html:76
+#: data_analyse/templates/team_statistics.html:77
 msgid "Empates"
 msgstr "Draws"
 
@@ -10044,8 +10096,8 @@ msgstr "Played: %(played)s · %(wins)sW %(losses)sL"
 
 #: data_analyse/templates/stats_mine.html:34
 #, python-format
-msgid "apuntado a %(signed)s de %(total)s convocatorias"
-msgstr "signed up for %(signed)s of %(total)s call-ups"
+msgid "te apuntaste a %(signed)s de %(total)s convocatorias"
+msgstr "you signed up for %(signed)s of %(total)s call-ups"
 
 #: data_analyse/templates/stats_mine.html:35
 #, python-format
@@ -10062,8 +10114,8 @@ msgstr ""
 
 #: data_analyse/templates/stats_mine.html:44
 #: data_analyse/templates/team_statistics.html:61
-#: data_analyse/templates/team_statistics.html:170
-#: data_analyse/templates/team_statistics.html:262
+#: data_analyse/templates/team_statistics.html:172
+#: data_analyse/templates/team_statistics.html:264
 msgid "Gráficos"
 msgstr "Charts"
 
@@ -10092,11 +10144,11 @@ msgstr "Your matches won and lost at home, in each competition."
 #: data_analyse/templates/stats_mine.html:83
 #: data_analyse/templates/stats_mine.html:93
 #: data_analyse/templates/stats_mine.html:103
-#: data_analyse/templates/team_statistics.html:174
-#: data_analyse/templates/team_statistics.html:187
-#: data_analyse/templates/team_statistics.html:201
-#: data_analyse/templates/team_statistics.html:211
-#: data_analyse/templates/team_statistics.html:224
+#: data_analyse/templates/team_statistics.html:176
+#: data_analyse/templates/team_statistics.html:189
+#: data_analyse/templates/team_statistics.html:203
+#: data_analyse/templates/team_statistics.html:213
+#: data_analyse/templates/team_statistics.html:226
 msgid "No hay datos todavía."
 msgstr "No data yet."
 
@@ -10167,18 +10219,18 @@ msgid "Las estadísticas aparecerán cuando se cierre el primero."
 msgstr "Statistics will appear once the first match is closed."
 
 #: data_analyse/templates/team_statistics.html:56
-#: data_analyse/templates/team_statistics.html:255
+#: data_analyse/templates/team_statistics.html:257
 msgid "Secciones de la página"
 msgstr "Page sections"
 
 #: data_analyse/templates/team_statistics.html:58
-#: data_analyse/templates/team_statistics.html:138
-#: data_analyse/templates/team_statistics.html:259
+#: data_analyse/templates/team_statistics.html:140
+#: data_analyse/templates/team_statistics.html:261
 msgid "Top 5"
 msgstr "Top 5"
 
 #: data_analyse/templates/team_statistics.html:60
-#: data_analyse/templates/team_statistics.html:261
+#: data_analyse/templates/team_statistics.html:263
 msgid "Récords"
 msgstr "Records"
 
@@ -10190,31 +10242,45 @@ msgstr "Match summary"
 msgid "Balance de enfrentamientos"
 msgstr "Match balance"
 
-#: data_analyse/templates/team_statistics.html:84
+#: data_analyse/templates/team_statistics.html:86
 #, python-format
 msgid "%(pct)s %% de enfrentamientos ganados"
 msgstr "%(pct)s %% of matches won"
 
-#: data_analyse/templates/team_statistics.html:91
+#: data_analyse/templates/team_statistics.html:93
 msgid "Enfrentamientos ganados"
 msgstr "Matches won"
 
-#: data_analyse/templates/team_statistics.html:100
+#: data_analyse/templates/team_statistics.html:102
 msgid "Puntos de liga"
 msgstr "League points"
 
-#: data_analyse/templates/team_statistics.html:101
+#: data_analyse/templates/team_statistics.html:103
 #, python-format
 msgid "en %(n)s jornada"
 msgid_plural "en %(n)s jornadas"
 msgstr[0] "in %(n)s matchday"
 msgstr[1] "in %(n)s matchdays"
 
-#: data_analyse/templates/team_statistics.html:117
+#: data_analyse/templates/team_statistics.html:107
+msgid "Juegos en casa"
+msgstr "Games at home"
+
+#: data_analyse/templates/team_statistics.html:108
+#: data_analyse/templates/team_statistics.html:112
+#, python-format
+msgid "%(won)s ganados · %(lost)s perdidos"
+msgstr "%(won)s won · %(lost)s lost"
+
+#: data_analyse/templates/team_statistics.html:111
+msgid "Juegos fuera"
+msgstr "Games away"
+
+#: data_analyse/templates/team_statistics.html:119
 msgid "Eliminatorias 6-6"
 msgstr "6-6 ties"
 
-#: data_analyse/templates/team_statistics.html:118
+#: data_analyse/templates/team_statistics.html:120
 msgid ""
 "Reto y Play Off que quedaron 6-6: no hay empate y decide el ganador del "
 "partido 3."
@@ -10222,84 +10288,84 @@ msgstr ""
 "Challenge and Play Off ties that ended 6-6: there are no draws and the "
 "winner of game 3 decides."
 
-#: data_analyse/templates/team_statistics.html:121
+#: data_analyse/templates/team_statistics.html:123
 msgid "A favor"
 msgstr "In favour"
 
-#: data_analyse/templates/team_statistics.html:123
-#: data_analyse/templates/team_statistics.html:128
+#: data_analyse/templates/team_statistics.html:125
+#: data_analyse/templates/team_statistics.html:130
 #, python-format
 msgid "%(n)s eliminatoria"
 msgid_plural "%(n)s eliminatorias"
 msgstr[0] "%(n)s tie"
 msgstr[1] "%(n)s ties"
 
-#: data_analyse/templates/team_statistics.html:126
+#: data_analyse/templates/team_statistics.html:128
 msgid "En contra"
 msgstr "Against"
 
-#: data_analyse/templates/team_statistics.html:131
+#: data_analyse/templates/team_statistics.html:133
 #, python-format
 msgid "%(a)s %% a favor y %(b)s %% en contra"
 msgstr "%(a)s %% in favour and %(b)s %% against"
 
-#: data_analyse/templates/team_statistics.html:139
+#: data_analyse/templates/team_statistics.html:141
 msgid "Solo jugadores que siguen en el equipo."
 msgstr "Only players still in the team."
 
-#: data_analyse/templates/team_statistics.html:141
+#: data_analyse/templates/team_statistics.html:143
 msgid "Mejores jugadores como local"
 msgstr "Best players at home"
 
-#: data_analyse/templates/team_statistics.html:141
+#: data_analyse/templates/team_statistics.html:143
 #, python-format
 msgid "%% de victorias jugando en casa."
 msgstr "%% of wins playing at home."
 
-#: data_analyse/templates/team_statistics.html:141
+#: data_analyse/templates/team_statistics.html:143
 msgid "No hay ningún jugador con datos favorables que mostrar como local."
 msgstr "No player has favourable data to show at home."
 
-#: data_analyse/templates/team_statistics.html:143
+#: data_analyse/templates/team_statistics.html:145
 msgid "Mejores jugadores como visitante"
 msgstr "Best players away"
 
-#: data_analyse/templates/team_statistics.html:143
+#: data_analyse/templates/team_statistics.html:145
 #, python-format
 msgid "%% de victorias jugando fuera."
 msgstr "%% of wins playing away."
 
-#: data_analyse/templates/team_statistics.html:143
+#: data_analyse/templates/team_statistics.html:145
 msgid "No hay ningún jugador con datos favorables que mostrar como visitante."
 msgstr "No player has favourable data to show away."
 
-#: data_analyse/templates/team_statistics.html:145
+#: data_analyse/templates/team_statistics.html:147
 msgid "Mejores parejas como local"
 msgstr "Best pairs at home"
 
-#: data_analyse/templates/team_statistics.html:145
+#: data_analyse/templates/team_statistics.html:147
 #, python-format
 msgid "%% de victorias de la pareja en casa."
 msgstr "The pair's win %% at home."
 
-#: data_analyse/templates/team_statistics.html:145
+#: data_analyse/templates/team_statistics.html:147
 msgid "No hay ninguna pareja con datos favorables que mostrar como local."
 msgstr "No pair has favourable data to show at home."
 
-#: data_analyse/templates/team_statistics.html:147
+#: data_analyse/templates/team_statistics.html:149
 msgid "Mejores parejas como visitante"
 msgstr "Best pairs away"
 
-#: data_analyse/templates/team_statistics.html:147
+#: data_analyse/templates/team_statistics.html:149
 #, python-format
 msgid "%% de victorias de la pareja fuera."
 msgstr "The pair's win %% away."
 
-#: data_analyse/templates/team_statistics.html:147
+#: data_analyse/templates/team_statistics.html:149
 msgid "No hay ninguna pareja con datos favorables que mostrar como visitante."
 msgstr "No pair has favourable data to show away."
 
-#: data_analyse/templates/team_statistics.html:156
+#: data_analyse/templates/team_statistics.html:158
 #, python-format
 msgid ""
 "%% de victorias en cada partido del enfrentamiento. Las parejas se ordenan "
@@ -10307,78 +10373,78 @@ msgid ""
 msgstr ""
 "%% of wins in each match of the fixture. Pairs are ordered by SNP points."
 
-#: data_analyse/templates/team_statistics.html:159
+#: data_analyse/templates/team_statistics.html:161
 msgid "Cómo se ganan y se pierden los partidos, set a set."
 msgstr "How matches are won and lost, set by set."
 
-#: data_analyse/templates/team_statistics.html:165
+#: data_analyse/templates/team_statistics.html:167
 msgid "Récords del equipo"
 msgstr "Team records"
 
-#: data_analyse/templates/team_statistics.html:180
-#: data_analyse/templates/team_statistics.html:193
+#: data_analyse/templates/team_statistics.html:182
+#: data_analyse/templates/team_statistics.html:195
 msgid "ganados"
 msgstr "won"
 
-#: data_analyse/templates/team_statistics.html:181
-#: data_analyse/templates/team_statistics.html:194
+#: data_analyse/templates/team_statistics.html:183
+#: data_analyse/templates/team_statistics.html:196
 msgid "perdidos"
 msgstr "lost"
 
-#: data_analyse/templates/team_statistics.html:199
-#: data_analyse/templates/team_statistics.html:204
+#: data_analyse/templates/team_statistics.html:201
+#: data_analyse/templates/team_statistics.html:206
 msgid "Enfrentamientos ganados por año"
 msgstr "Matches won per year"
 
-#: data_analyse/templates/team_statistics.html:200
+#: data_analyse/templates/team_statistics.html:202
 msgid ""
 "Evolución de victorias, empates y derrotas del equipo en cada temporada."
 msgstr "The team's wins, draws and losses in each season."
 
-#: data_analyse/templates/team_statistics.html:209
-#: data_analyse/templates/team_statistics.html:216
+#: data_analyse/templates/team_statistics.html:211
+#: data_analyse/templates/team_statistics.html:218
 msgid "Asistencia a las convocatorias"
 msgstr "Call-up attendance"
 
-#: data_analyse/templates/team_statistics.html:210
+#: data_analyse/templates/team_statistics.html:212
 #, python-format
 msgid "%% de la plantilla que se apuntó a cada convocatoria de la temporada."
 msgstr "%% of the squad that signed up for each call-up this season."
 
-#: data_analyse/templates/team_statistics.html:210
+#: data_analyse/templates/team_statistics.html:212
 #, python-format
 msgid ""
 "Media por temporada del %% de la plantilla que se apunta a cada "
 "convocatoria."
 msgstr "Season average of the %% of the squad that signs up for each call-up."
 
-#: data_analyse/templates/team_statistics.html:214
+#: data_analyse/templates/team_statistics.html:216
 msgid "de media en la temporada"
 msgstr "on average this season"
 
-#: data_analyse/templates/team_statistics.html:214
+#: data_analyse/templates/team_statistics.html:216
 msgid "de media en total"
 msgstr "on average overall"
 
-#: data_analyse/templates/team_statistics.html:222
-#: data_analyse/templates/team_statistics.html:232
+#: data_analyse/templates/team_statistics.html:224
+#: data_analyse/templates/team_statistics.html:234
 msgid "Balance de partidos por jugador"
 msgstr "Match record by player"
 
-#: data_analyse/templates/team_statistics.html:223
+#: data_analyse/templates/team_statistics.html:225
 msgid ""
 "Partidos de 3 y de 2 puntos, ganados y perdidos, de cada jugador actual del "
 "equipo."
 msgstr "3- and 2-point matches won and lost by each current team player."
 
-#: data_analyse/templates/team_statistics.html:234
+#: data_analyse/templates/team_statistics.html:236
 #: match/templates/includes/player_selector.html:46
-#: players/templates/copy_players.html:66
-#: players/templates/list_players.html:154
+#: players/templates/copy_players.html:68
+#: players/templates/list_players.html:153
 msgid "Páginas de jugadores"
 msgstr "Player pages"
 
-#: data_analyse/templates/team_statistics.html:256
+#: data_analyse/templates/team_statistics.html:258
 msgid "En esta página"
 msgstr "On this page"
 
@@ -10580,7 +10646,7 @@ msgstr "Type a name"
 msgid "En casa"
 msgstr "Home"
 
-#: match/forms.py:39 players/templates/list_players.html:138
+#: match/forms.py:39 players/templates/list_players.html:137
 #: players/templates/manage_roster.html:25
 msgid "Fuera"
 msgstr "Off"
@@ -10730,12 +10796,12 @@ msgstr "Include data from other competitions"
 msgid "No se presentó el equipo propio"
 msgstr "Our team did not show up"
 
-#: match/models.py:94 match/templates/call_for_match.html:113
-#: match/templates/call_for_match.html:114
+#: match/models.py:94 match/templates/call_for_match.html:133
+#: match/templates/call_for_match.html:134
 msgid "No se presentó el rival"
 msgstr "The opponent did not show up"
 
-#: match/models.py:95 match/templates/list_match.html:65
+#: match/models.py:95 match/templates/list_match.html:80
 msgid "No presentado"
 msgstr "No-show"
 
@@ -11081,7 +11147,7 @@ msgid_plural "Poner resultados · faltan %(n)s"
 msgstr[0] "Enter results · %(n)s missing"
 msgstr[1] "Enter results · %(n)s missing"
 
-#: match/phase.py:91 match/templates/call_for_match.html:82
+#: match/phase.py:91 match/templates/call_for_match.html:97
 msgid "Cerrar acta"
 msgstr "Close match sheet"
 
@@ -11392,6 +11458,11 @@ msgid "Calendario"
 msgstr "Calendar"
 
 #: match/templates/calendar_match.html:8 match/templates/list_match.html:8
+#, python-format
+msgid "Equipos de %(name)s"
+msgstr "%(name)s teams"
+
+#: match/templates/calendar_match.html:8 match/templates/list_match.html:8
 msgid "Todos tus equipos"
 msgstr "All your teams"
 
@@ -11432,13 +11503,8 @@ msgstr "Date passed, not closed"
 msgid "Volver a Enfrentamientos"
 msgstr "Back to Fixtures"
 
-#: match/templates/call_for_match.html:20 match/templates/list_match.html:64
-#, python-format
-msgid "Jornada %(n)s"
-msgstr "Matchday %(n)s"
-
 #: match/templates/call_for_match.html:21
-#: match/templates/call_for_match.html:127 match/views.py:155
+#: match/templates/call_for_match.html:151 match/views.py:155
 #, python-format
 msgid "No presentado: %(team)s"
 msgstr "No-show: %(team)s"
@@ -11451,7 +11517,7 @@ msgstr[0] "%(n)s league point"
 msgstr[1] "%(n)s league points"
 
 #: match/templates/call_for_match.html:23
-#: match/templates/call_for_match.html:110
+#: match/templates/call_for_match.html:140
 #: match/templates/edit_match_date.html:3
 #: match/templates/edit_match_date.html:7
 msgid "Cambiar fecha"
@@ -11466,39 +11532,104 @@ msgid "hecho"
 msgstr "done"
 
 #: match/templates/call_for_match.html:54
-#: match/templates/call_for_match.html:59
+#: match/templates/call_for_match.html:61
 msgid "La convocatoria sigue abierta: puede cambiar."
 msgstr "The call-up is still open: it may change."
 
-#: match/templates/call_for_match.html:56
+#: match/templates/call_for_match.html:58
 msgid "Las parejas aún no están decididas."
 msgstr "The pairs are not decided yet."
 
-#: match/templates/call_for_match.html:70
+#: match/templates/call_for_match.html:60
+msgid "Todavía no te has apuntado"
+msgstr "You haven't signed up yet"
+
+#: match/templates/call_for_match.html:71
+msgid "Reglamento"
+msgstr "Rules"
+
+#: match/templates/call_for_match.html:72
+#, python-format
+msgid ""
+"%(n)s apuntado no ha jugado %(min)s enfrentamientos de liga con el equipo "
+"esta temporada:"
+msgid_plural ""
+"%(n)s apuntados no han jugado %(min)s enfrentamientos de liga con el equipo "
+"esta temporada:"
+msgstr[0] ""
+"%(n)s signed-up player has not played %(min)s league ties with the team this"
+" season:"
+msgstr[1] ""
+"%(n)s signed-up players have not played %(min)s league ties with the team "
+"this season:"
+
+#: match/templates/call_for_match.html:74
+msgid "Revisar convocatoria"
+msgstr "Review the call-up"
+
+#: match/templates/call_for_match.html:83
 msgid "Siguiente: Crear convocatoria"
 msgstr "Next: Create call-up"
 
-#: match/templates/call_for_match.html:72
+#: match/templates/call_for_match.html:85
 msgid "Cerrando la convocatoria…"
 msgstr "Closing the call-up…"
 
-#: match/templates/call_for_match.html:74
+#: match/templates/call_for_match.html:86
+msgid "Cerrar la convocatoria"
+msgstr "Close the call-up"
+
+#: match/templates/call_for_match.html:86
+msgid "Cerrar y enviar"
+msgstr "Close and send"
+
+#: match/templates/call_for_match.html:86
+#: match/templates/includes/finals_rule.html:12
+msgid "Convocarlos igualmente (la organización lo ha autorizado)"
+msgstr "Call them up anyway (the organisers have allowed it)"
+
+#: match/templates/call_for_match.html:87
+#, python-format
+msgid ""
+"Se cierra la convocatoria con %(n)s convocado: ya no se podrá apuntar ni "
+"quitar a nadie."
+msgid_plural ""
+"Se cierra la convocatoria con %(n)s convocados: ya no se podrá apuntar ni "
+"quitar a nadie."
+msgstr[0] ""
+"The call-up closes with %(n)s player called up: nobody can be added or "
+"removed any more."
+msgstr[1] ""
+"The call-up closes with %(n)s players called up: nobody can be added or "
+"removed any more."
+
+#: match/templates/call_for_match.html:87
+#: match/templates/call_for_match.html:108
+#, python-format
+msgid "Se enviará el informe PDF a: %(emails)s"
+msgstr "The PDF report will be sent to: %(emails)s"
+
+#: match/templates/call_for_match.html:87
+msgid "Ningún capitán tiene email: no se enviará el informe."
+msgstr "No captain has an email: the report will not be sent."
+
+#: match/templates/call_for_match.html:89
 msgid "Siguiente: Cerrar convocatoria"
 msgstr "Next: Close call-up"
 
-#: match/templates/call_for_match.html:77
+#: match/templates/call_for_match.html:92
 msgid "Siguiente: Alinear parejas"
 msgstr "Next: Set pairs"
 
-#: match/templates/call_for_match.html:79
+#: match/templates/call_for_match.html:94
 msgid "Siguiente:"
 msgstr "Next:"
 
-#: match/templates/call_for_match.html:82
+#: match/templates/call_for_match.html:97
 msgid "Cerrar el acta"
 msgstr "Close the match sheet"
 
-#: match/templates/call_for_match.html:83
+#: match/templates/call_for_match.html:98
 #, python-format
 msgid ""
 "%(local)s – %(visiting)s, %(date)s. Después no se podrán cambiar parejas ni "
@@ -11507,15 +11638,15 @@ msgstr ""
 "%(local)s – %(visiting)s, %(date)s. Afterwards pairs and results cannot be "
 "changed unless you reopen it."
 
-#: match/templates/call_for_match.html:83
+#: match/templates/call_for_match.html:98
 msgid "La fecha es futura: comprueba que es el enfrentamiento correcto."
 msgstr "The date is in the future: check this is the right fixture."
 
-#: match/templates/call_for_match.html:83
+#: match/templates/call_for_match.html:98
 msgid "Volver a enviar el correo con los resultados"
 msgstr "Send the results email again"
 
-#: match/templates/call_for_match.html:83
+#: match/templates/call_for_match.html:98
 msgid ""
 "El acta ya se cerró antes y el correo ya se envió. Si no lo marcas, no se "
 "enviará otro."
@@ -11523,19 +11654,19 @@ msgstr ""
 "The record was already closed before and the email was already sent. If you "
 "leave this unticked, no other email will be sent."
 
-#: match/templates/call_for_match.html:83
+#: match/templates/call_for_match.html:98
 msgid "Cerrando el acta…"
 msgstr "Closing the match report…"
 
-#: match/templates/call_for_match.html:86
+#: match/templates/call_for_match.html:101
 msgid "Siguiente: Cerrar acta"
 msgstr "Next: Close match sheet"
 
-#: match/templates/call_for_match.html:90
+#: match/templates/call_for_match.html:105
 msgid "Primero crea la convocatoria."
 msgstr "Create the call-up first."
 
-#: match/templates/call_for_match.html:92
+#: match/templates/call_for_match.html:107
 #, python-format
 msgid ""
 "Falta %(n)s apuntado para cerrar la convocatoria (%(called)s de %(total)s)."
@@ -11547,18 +11678,14 @@ msgstr[0] ""
 msgstr[1] ""
 "%(n)s more players needed to close the call-up (%(called)s of %(total)s)."
 
-#: match/templates/call_for_match.html:92
-#: match/templates/call_for_match.html:103 match/templates/edit_call.html:3
+#: match/templates/call_for_match.html:107
+#: match/templates/call_for_match.html:120 match/templates/edit_call.html:3
 #: match/templates/edit_call.html:9
 msgid "Editar convocatoria"
 msgstr "Edit call-up"
 
-#: match/templates/call_for_match.html:93
-#, python-format
-msgid "Se enviará el informe PDF a: %(emails)s"
-msgstr "The PDF report will be sent to: %(emails)s"
-
-#: match/templates/call_for_match.html:94
+#: match/templates/call_for_match.html:109
+#: match/templates/call_for_match.html:127
 msgid ""
 "Ningún capitán tiene email: no se enviará el informe. Añádelo en «Mi "
 "perfil»."
@@ -11566,223 +11693,270 @@ msgstr ""
 "No captain has an email: the report will not be sent. Add it in «My "
 "profile»."
 
-#: match/templates/call_for_match.html:95
+#: match/templates/call_for_match.html:110
 msgid "Ya puedes alinear las parejas."
 msgstr "You can set the pairs now."
 
-#: match/templates/call_for_match.html:96
+#: match/templates/call_for_match.html:111
 msgid "Apunta los resultados de los partidos jugados."
 msgstr "Record the results of the matches already played."
 
-#: match/templates/call_for_match.html:97
+#: match/templates/call_for_match.html:112
 #, python-format
 msgid "Están los %(n)s resultados: cierra el acta."
 msgstr "All %(n)s results are in: close the match sheet."
 
-#: match/templates/call_for_match.html:101
+#: match/templates/call_for_match.html:116
 msgid "Más"
 msgstr "More"
 
-#: match/templates/call_for_match.html:104
+#: match/templates/call_for_match.html:121
 #: match/templates/edit_game_match.html:3
 #: match/templates/edit_game_match.html:9
 msgid "Editar parejas"
 msgstr "Edit pairs"
 
-#: match/templates/call_for_match.html:105
-msgid "Penalizaciones"
-msgstr "Penalties"
+#: match/templates/call_for_match.html:122
+msgid "Advertencias y cambios"
+msgstr "Warnings and changes"
 
-#: match/templates/call_for_match.html:106
+#: match/templates/call_for_match.html:123
 msgid "Informe PDF"
 msgstr "PDF report"
 
-#: match/templates/call_for_match.html:108
+#: match/templates/call_for_match.html:125
 msgid "Enviando el informe…"
 msgstr "Sending the report…"
 
-#: match/templates/call_for_match.html:108
+#: match/templates/call_for_match.html:126
+msgid "Reenviar el informe"
+msgstr "Resend the report"
+
+#: match/templates/call_for_match.html:127
+#, python-format
+msgid "Se enviará de nuevo el informe PDF a: %(emails)s"
+msgstr "The PDF report will be sent again to: %(emails)s"
+
+#: match/templates/call_for_match.html:127
 msgid "Reenviar informe"
 msgstr "Resend report"
 
-#: match/templates/call_for_match.html:112
+#: match/templates/call_for_match.html:131
+msgid "Resultado especial"
+msgstr "Special result"
+
+#: match/templates/call_for_match.html:132
 msgid "Se borrarán las parejas y los resultados apuntados."
 msgstr "The pairs and results entered will be deleted."
 
-#: match/templates/call_for_match.html:113
-#: match/templates/call_for_match.html:115
+#: match/templates/call_for_match.html:133
+#: match/templates/call_for_match.html:135
 msgid "Marcar no presentado"
 msgstr "Mark as no-show"
 
-#: match/templates/call_for_match.html:114
+#: match/templates/call_for_match.html:134
 #, python-format
 msgid ""
-"%(team)s no se presentó: el acta se cierra y ganáis todos los partidos. No "
-"cuenta para jugadores, parejas ni asistencia."
+"%(team)s no se presentó: el acta se cierra, ganáis todos los partidos (3-0) "
+"y sumáis los puntos de liga de ganar sin ceder partidos. No cuenta para "
+"jugadores, parejas ni asistencia."
 msgstr ""
-"%(team)s did not show up: the scoresheet is closed and you win every match. "
-"It does not count for players, pairs or attendance."
+"%(team)s did not show up: the scoresheet is closed, you win every match "
+"(3-0) and get the league points for a clean sweep. It does not count for "
+"players, pairs or attendance."
 
-#: match/templates/call_for_match.html:115
-#: match/templates/call_for_match.html:116
+#: match/templates/call_for_match.html:134
+#, python-format
+msgid ""
+"%(team)s no se presentó: el acta se cierra y ganáis todos los partidos "
+"(12-0). No cuenta para jugadores, parejas ni asistencia."
+msgstr ""
+"%(team)s did not show up: the scoresheet is closed and you win every match "
+"(12-0). It does not count for players, pairs or attendance."
+
+#: match/templates/call_for_match.html:135
+#: match/templates/call_for_match.html:136
 msgid "No nos presentamos"
 msgstr "We did not show up"
 
-#: match/templates/call_for_match.html:116
+#: match/templates/call_for_match.html:136
+msgid ""
+"Tu equipo no se presentó: el acta se cierra, el rival gana todos los "
+"partidos (3-0) y tu equipo suma 0 puntos de liga. No cuenta para jugadores, "
+"parejas ni asistencia."
+msgstr ""
+"Your team did not show up: the scoresheet is closed, the rival wins every "
+"match (3-0) and your team gets 0 league points. It does not count for "
+"players, pairs or attendance."
+
+#: match/templates/call_for_match.html:136
 msgid ""
 "Tu equipo no se presentó: el acta se cierra y el rival gana todos los "
-"partidos (0 puntos de liga). No cuenta para jugadores, parejas ni "
-"asistencia."
+"partidos (12-0). No cuenta para jugadores, parejas ni asistencia."
 msgstr ""
-"Your team did not show up: the scoresheet is closed and the opponent wins "
-"every match (0 league points). It does not count for players, pairs or "
-"attendance."
+"Your team did not show up: the scoresheet is closed and the rival wins every"
+" match (12-0). It does not count for players, pairs or attendance."
 
-#: match/templates/call_for_match.html:118 match/templates/delete_match.html:3
-#: match/templates/delete_match.html:8 match/templates/list_match.html:95
+#: match/templates/call_for_match.html:141 match/templates/delete_match.html:3
+#: match/templates/delete_match.html:8
 msgid "Eliminar enfrentamiento"
 msgstr "Delete fixture"
 
-#: match/templates/call_for_match.html:127 match/views.py:1128
+#: match/templates/call_for_match.html:151 match/views.py:1142
 #, python-format
 msgid "Acta cerrada: %(outcome)s %(own)s-%(rival)s"
 msgstr "Match sheet closed: %(outcome)s %(own)s-%(rival)s"
 
-#: match/templates/call_for_match.html:129
+#: match/templates/call_for_match.html:153
 msgid "Compartir resultado"
 msgstr "Share result"
 
-#: match/templates/call_for_match.html:132
+#: match/templates/call_for_match.html:156
 msgid ""
 "El acta vuelve a estar abierta para poner las parejas y los resultados."
 msgstr "The scoresheet is open again to enter the pairs and results."
 
-#: match/templates/call_for_match.html:132
-#: match/templates/call_for_match.html:134
+#: match/templates/call_for_match.html:156
+#: match/templates/call_for_match.html:158
 msgid "Quitar no presentado"
 msgstr "Remove no-show"
 
-#: match/templates/call_for_match.html:144
+#: match/templates/call_for_match.html:168
 msgid "Informe por email:"
 msgstr "Report by email:"
 
-#: match/templates/call_for_match.html:146
+#: match/templates/call_for_match.html:170
 #, python-format
 msgid "enviado %(when)s"
 msgstr "sent %(when)s"
 
-#: match/templates/call_for_match.html:147
+#: match/templates/call_for_match.html:171
 #, python-format
 msgid "reintento %(when)s"
 msgstr "retry %(when)s"
 
-#: match/templates/call_for_match.html:147
+#: match/templates/call_for_match.html:171
 msgid "pendiente"
 msgstr "pending"
 
-#: match/templates/call_for_match.html:148
+#: match/templates/call_for_match.html:172
 msgid "no enviado"
 msgstr "not sent"
 
-#: match/templates/call_for_match.html:156
+#: match/templates/call_for_match.html:180
+#, python-format
+msgid "<b>%(n)s</b> apuntado"
+msgid_plural "<b>%(n)s</b> apuntados"
+msgstr[0] "<b>%(n)s</b> signed up"
+msgstr[1] "<b>%(n)s</b> signed up"
+
+#: match/templates/call_for_match.html:180
 #, python-format
 msgid "<b>%(n)s</b> convocado"
 msgid_plural "<b>%(n)s</b> convocados"
 msgstr[0] "<b>%(n)s</b> player called up"
 msgstr[1] "<b>%(n)s</b> players called up"
 
-#: match/templates/call_for_match.html:157 players/models.py:297
+#: match/templates/call_for_match.html:181 players/models.py:297
 msgid "Abierta"
 msgstr "Open"
 
-#: match/templates/call_for_match.html:157
+#: match/templates/call_for_match.html:181
 msgid "Cerrada"
 msgstr "Closed"
 
-#: match/templates/call_for_match.html:158
+#: match/templates/call_for_match.html:182
 msgid "juega un partido"
 msgstr "plays a match"
 
-#: match/templates/call_for_match.html:168
+#: match/templates/call_for_match.html:192
 msgid "tú"
 msgstr "you"
 
-#: match/templates/call_for_match.html:171
+#: match/templates/call_for_match.html:195
 msgid "Juega un partido"
 msgstr "Plays a match"
 
-#: match/templates/call_for_match.html:177
+#: match/templates/call_for_match.html:201
 #, python-format
 msgid "Ver %(n)s más"
 msgstr "Show %(n)s more"
 
-#: match/templates/call_for_match.html:177
+#: match/templates/call_for_match.html:201
 msgid "Ver menos"
 msgstr "Show less"
 
-#: match/templates/call_for_match.html:181
+#: match/templates/call_for_match.html:205
 msgid "Nadie en esta posición."
 msgstr "No one in this position."
 
-#: match/templates/call_for_match.html:199
+#: match/templates/call_for_match.html:223
 msgid "Crea la convocatoria para elegir quién juega este enfrentamiento."
 msgstr "Create the call-up to choose who plays this match."
 
-#: match/templates/call_for_match.html:199
+#: match/templates/call_for_match.html:223
 msgid "Tu capitán aún no ha creado la convocatoria de este enfrentamiento."
 msgstr "Your captain has not created the call-up for this match yet."
 
-#: match/templates/call_for_match.html:205
+#: match/templates/call_for_match.html:229
 #: match/templates/enter_results.html:3
 msgid "Poner resultados"
 msgstr "Enter results"
 
-#: match/templates/call_for_match.html:214
+#: match/templates/call_for_match.html:238
 #: match/templates/enter_results.html:23
-#: match/templates/includes/result_form.html:11
-#: players/templates/player_detail.html:51
+#: match/templates/includes/result_form.html:11 match/views.py:1089
+#: players/templates/player_detail.html:52
 #, python-format
 msgid "Partido %(n)s"
 msgstr "Match %(n)s"
 
-#: match/templates/call_for_match.html:214
+#: match/templates/call_for_match.html:238
 #: match/templates/enter_results.html:24
 #: match/templates/includes/result_form.html:11
 #, python-format
 msgid "%(score)s pts"
 msgstr "%(score)s pts"
 
-#: match/templates/call_for_match.html:214
+#: match/templates/call_for_match.html:238
 #: match/templates/includes/injury_fields.html:5
 msgid "Partido finalizado por lesión"
 msgstr "Match ended by injury"
 
-#: match/templates/call_for_match.html:214
+#: match/templates/call_for_match.html:238
 msgid "Lesión"
 msgstr "Injury"
 
-#: match/templates/call_for_match.html:219
-#: match/templates/call_for_match.html:221 match/templates/edit_result.html:3
+#: match/templates/call_for_match.html:243
+#: match/templates/call_for_match.html:245 match/templates/edit_result.html:3
 #: match/templates/edit_result.html:6
 msgid "Editar resultado"
 msgstr "Edit result"
 
-#: match/templates/call_for_match.html:223
+#: match/templates/call_for_match.html:247
 msgid "Añadir resultado"
 msgstr "Add result"
 
-#: match/templates/call_for_match.html:251
+#: match/templates/call_for_match.html:275
 #, python-format
 msgid "No se jugó: %(team)s no se presentó."
 msgstr "Not played: %(team)s did not show up."
 
-#: match/templates/call_for_match.html:252
+#: match/templates/call_for_match.html:276
+msgid ""
+"Todavía no hay partidos. La convocatoria está cerrada: ya puedes alinear las"
+" parejas."
+msgstr ""
+"There are no matches yet. The call-up is closed: you can now line up the "
+"pairs."
+
+#: match/templates/call_for_match.html:277
 msgid ""
 "Todavía no hay partidos. Primero hay que cerrar la convocatoria y alinear "
 "las parejas."
 msgstr "There are no matches yet. First close the call-up and set the pairs."
 
-#: match/templates/call_for_match.html:258
+#: match/templates/call_for_match.html:283
 msgid ""
 "¿Reabrir el acta? Mientras esté abierta este enfrentamiento no cuenta en las"
 " estadísticas. Tendrás que volver a cerrarla."
@@ -11790,11 +11964,11 @@ msgstr ""
 "Reopen the match report? While it is open this match does not count in the "
 "statistics. You will have to close it again."
 
-#: match/templates/call_for_match.html:258
+#: match/templates/call_for_match.html:283
 msgid "Reabriendo el acta…"
 msgstr "Reopening the match report…"
 
-#: match/templates/call_for_match.html:260
+#: match/templates/call_for_match.html:285
 msgid "Reabrir acta para corregirla"
 msgstr "Reopen the report to correct it"
 
@@ -11846,9 +12020,11 @@ msgstr ""
 
 #: match/templates/create_match.html:98
 msgid ""
-"Por defecto, la sede del equipo local. Cámbiala si se juega en otro sitio."
+"Por defecto, la localidad del equipo local. Escribe la dirección del club "
+"para que «Cómo llegar» funcione."
 msgstr ""
-"By default, the home team's venue. Change it if it is played elsewhere."
+"By default, the home team’s town. Type the club’s address so that “How to "
+"get there” works."
 
 #: match/templates/create_match.html:102
 msgid "Más opciones"
@@ -12156,14 +12332,14 @@ msgstr ""
 "with the team this season can play."
 
 #: match/templates/includes/finals_rule.html:8
-msgid "No lo cumplen:"
-msgstr "Not eligible:"
+msgid "Apuntados que no lo cumplen:"
+msgstr "Signed-up players who do not meet it:"
 
-#: match/templates/includes/finals_rule.html:11
-msgid "Convocarlos igualmente (la organización lo ha autorizado)"
-msgstr "Call them up anyway (the organisers have allowed it)"
+#: match/templates/includes/finals_rule.html:9
+msgid "Resto de la plantilla que no lo cumple:"
+msgstr "Rest of the squad who do not meet it:"
 
-#: match/templates/includes/finals_rule.html:14
+#: match/templates/includes/finals_rule.html:15
 msgid "Toda la plantilla lo cumple."
 msgstr "The whole squad is eligible."
 
@@ -12206,7 +12382,7 @@ msgstr "Suggested lineup"
 msgid "Ver la alternativa"
 msgstr "See the alternative"
 
-#: match/templates/includes/lineup_form.html:19 match/views.py:843
+#: match/templates/includes/lineup_form.html:19 match/views.py:855
 #, python-format
 msgid "Hacen falta al menos %(n)s convocados para sugerir una alineación."
 msgstr "At least %(n)s called-up players are needed to suggest a lineup."
@@ -12227,8 +12403,8 @@ msgid "Pareja %(n)s"
 msgstr "Pair %(n)s"
 
 #: match/templates/includes/lineup_form.html:26
-msgid "Resetear"
-msgstr "Reset"
+msgid "Vaciar pareja"
+msgstr "Clear pair"
 
 #: match/templates/includes/lineup_form.html:30
 #, python-format
@@ -12237,7 +12413,7 @@ msgstr "Player %(key)s"
 
 #: match/templates/includes/lineup_form.html:31
 #: match/templates/includes/player_selector.html:7
-#: players/templates/copy_players.html:35
+#: players/templates/copy_players.html:37
 #: players/templates/link_player.html:29
 #: players/templates/list_players.html:41
 #: players/templates/manage_roster.html:20
@@ -12250,8 +12426,8 @@ msgstr "Choose player"
 
 #: match/templates/includes/lineup_form.html:34
 #, python-format
-msgid "%(points)s pts"
-msgstr "%(points)s pts"
+msgid "%(position)s · %(points)s pts"
+msgstr "%(position)s · %(points)s pts"
 
 #: match/templates/includes/lineup_form.html:48
 msgid "Orden de juego"
@@ -12279,7 +12455,7 @@ msgid "Lista"
 msgstr "List"
 
 #: match/templates/includes/player_selector.html:7
-#: players/templates/copy_players.html:35
+#: players/templates/copy_players.html:37
 #: players/templates/link_player.html:29
 #: players/templates/list_players.html:41
 #: players/templates/manage_roster.html:20
@@ -12290,12 +12466,12 @@ msgstr "Search player"
 msgid "Filtrar por posición"
 msgstr "Filter by position"
 
-#: match/templates/includes/player_selector.html:11 match/views.py:699
+#: match/templates/includes/player_selector.html:11 match/views.py:708
 #: players/models.py:71
 msgid "Derecha"
 msgstr "Right side"
 
-#: match/templates/includes/player_selector.html:12 match/views.py:699
+#: match/templates/includes/player_selector.html:12 match/views.py:708
 #: players/models.py:72
 msgid "Revés"
 msgstr "Left side"
@@ -12304,14 +12480,18 @@ msgstr "Left side"
 msgid "Mixto"
 msgstr "Both sides"
 
-#: match/templates/includes/player_selector.html:14
-msgid "Elegidos"
-msgstr "Selected"
+#: match/templates/includes/player_selector.html:16
+msgid "Ver solo elegidos"
+msgstr "Show only selected"
 
 #: match/templates/includes/player_selector.html:17
-#: team/templates/manage_teams.html:33 team/templates/manage_teams.html:101
-msgid "Marcar visibles"
-msgstr "Select visible"
+msgid ""
+"Marca todos los jugadores que se ven con el filtro y la búsqueda actuales"
+msgstr "Selects every player shown with the current filter and search"
+
+#: match/templates/includes/player_selector.html:17
+msgid "Marcar todos los de la lista"
+msgstr "Select everyone in the list"
 
 #: match/templates/includes/player_selector.html:18
 msgid "Quitar todos"
@@ -12319,22 +12499,21 @@ msgstr "Clear all"
 
 #: match/templates/includes/player_selector.html:33
 #, python-format
-msgid "Jugó %(n)s de %(total)s"
-msgstr "Played %(n)s of %(total)s"
+msgid "Jugó %(n)s de %(total)s enfrentamientos esta temporada"
+msgstr "Played %(n)s of %(total)s ties this season"
+
+#: match/templates/includes/player_selector.html:33
+#, python-format
+msgid "Jugó %(n)s/%(total)s esta temporada"
+msgstr "Played %(n)s/%(total)s this season"
 
 #: match/templates/includes/player_selector.html:34
 #, python-format
-msgid "%(n)s de liga"
-msgid_plural "%(n)s de liga"
-msgstr[0] "%(n)s league"
-msgstr[1] "%(n)s league"
-
-#: match/templates/includes/player_selector.html:34
-#, python-format
-msgid "necesita %(n)s"
-msgstr "needs %(n)s"
+msgid "Liga: %(n)s de %(need)s necesarios"
+msgstr "League: %(n)s of %(need)s required"
 
 #: match/templates/includes/player_selector.html:36
+#: players/templates/confirm_delete.html:16
 #, python-format
 msgid "%(n)s advertencia"
 msgid_plural "%(n)s advertencias"
@@ -12346,9 +12525,9 @@ msgid "No hay jugadores en el equipo."
 msgstr "There are no players in the team."
 
 #: match/templates/includes/player_selector.html:43
-#: players/templates/copy_players.html:65
+#: players/templates/copy_players.html:67
 #: players/templates/link_player.html:51
-#: players/templates/list_players.html:104
+#: players/templates/list_players.html:103
 #: players/templates/manage_roster.html:48
 msgid "Ningún jugador coincide con la búsqueda."
 msgstr "No players match your search."
@@ -12403,115 +12582,126 @@ msgstr "drawn"
 msgid "Mejor pareja contra ellos"
 msgstr "Best pair against them"
 
-#: match/templates/list_match.html:30
+#: match/templates/list_match.html:22
+msgid "activos"
+msgstr "active"
+
+#: match/templates/list_match.html:33
 msgid "Filtrar por rival..."
 msgstr "Filter by opponent..."
 
-#: match/templates/list_match.html:31
+#: match/templates/list_match.html:34
 msgid "Todos los rivales"
 msgstr "All opponents"
 
-#: match/templates/list_match.html:45
+#: match/templates/list_match.html:60
 msgid "Empatados"
 msgstr "Drawn"
 
-#: match/templates/list_match.html:47
+#: match/templates/list_match.html:62
 msgid "Pendientes"
 msgstr "Pending"
 
-#: match/templates/list_match.html:71
+#: match/templates/list_match.html:86
 msgid "Fecha pasada"
 msgstr "Date passed"
 
-#: match/templates/list_match.html:89
+#: match/templates/list_match.html:104
 #, python-format
 msgid "6-6: la pareja 3 ganó su partido y desempató (%(pair)s)"
 msgstr "6-6: pair 3 won their game and broke the tie (%(pair)s)"
 
-#: match/templates/list_match.html:89
+#: match/templates/list_match.html:104
 msgid "6-6: la pareja 3 ganó su partido y desempató"
 msgstr "6-6: pair 3 won their game and broke the tie"
 
-#: match/templates/list_match.html:89
+#: match/templates/list_match.html:104
 msgid "6-6: la pareja 3 perdió su partido y desempató el rival"
 msgstr "6-6: pair 3 lost their game and the opponent broke the tie"
 
-#: match/templates/list_match.html:90
+#: match/templates/list_match.html:105
+#, python-format
+msgid "%(n)s apuntado"
+msgid_plural "%(n)s apuntados"
+msgstr[0] "%(n)s signed up"
+msgstr[1] "%(n)s signed up"
+
+#: match/templates/list_match.html:105
 #, python-format
 msgid "%(n)s convocado"
 msgid_plural "%(n)s convocados"
 msgstr[0] "%(n)s player called up"
 msgstr[1] "%(n)s players called up"
 
-#: match/templates/list_match.html:90
+#: match/templates/list_match.html:105
 msgid "Sin convocatoria"
 msgstr "No call-up"
 
-#: match/templates/list_match.html:92
+#: match/templates/list_match.html:107
 #, python-format
 msgid "Ver %(local)s contra %(visiting)s"
 msgstr "View %(local)s vs %(visiting)s"
 
-#: match/templates/list_match.html:92
+#: match/templates/list_match.html:107
 msgid "Ver enfrentamiento"
 msgstr "View fixture"
 
-#: match/templates/list_match.html:93
+#: match/templates/list_match.html:108
 msgid "Eres jugador aquí"
 msgstr "You are a player here"
 
-#: match/templates/list_match.html:105
+#: match/templates/list_match.html:117
 msgid "Ningún enfrentamiento coincide con la búsqueda."
 msgstr "No fixture matches your search."
 
-#: match/templates/list_match.html:105
+#: match/templates/list_match.html:117
 #, python-format
 msgid "No hay enfrentamientos en la temporada %(season)s."
 msgstr "There are no fixtures in the %(season)s season."
 
-#: match/templates/list_match.html:105
+#: match/templates/list_match.html:117
 msgid "Crea tu primer enfrentamiento para preparar la convocatoria."
 msgstr "Create your first match to prepare the call-up."
 
-#: match/templates/list_match.html:105
+#: match/templates/list_match.html:117
 msgid "Cuando tu capitán cree el primer enfrentamiento lo verás aquí."
 msgstr "When your captain creates the first match you will see it here."
 
-#: match/views.py:370
+#: match/views.py:371
 msgid "Enfrentamiento creado."
 msgstr "Fixture created."
 
-#: match/views.py:384
+#: match/views.py:385
 msgid "Reabre el acta para cambiar la fecha del enfrentamiento."
 msgstr "Reopen the match sheet to change the fixture date."
 
-#: match/views.py:389
+#: match/views.py:390
 msgid "Fecha del enfrentamiento actualizada."
 msgstr "Fixture date updated."
 
-#: match/views.py:410
+#: match/views.py:411
 msgid "Enfrentamiento eliminado."
 msgstr "Fixture deleted."
 
-#: match/views.py:416
+#: match/views.py:417
 msgid "No se puede eliminar un enfrentamiento ya confirmado"
 msgstr "A closed fixture cannot be deleted"
 
-#: match/views.py:420
+#: match/views.py:421
 msgid "El enfrentamiento no existe"
 msgstr "The fixture does not exist"
 
-#: match/views.py:452
+#: match/views.py:453
 #, python-format
 msgid "La convocatoria necesita al menos %(n)s jugadores."
 msgstr "The call-up needs at least %(n)s players."
 
-#: match/views.py:482
+#: match/views.py:483
 #, python-format
 msgid "Convocatoria creada con %(n)s jugadores."
 msgstr "Call-up created with %(n)s players."
 
-#: match/views.py:516
+#: match/views.py:521
 #, python-format
 msgid ""
 "Según el reglamento, en esta fase solo pueden jugar quienes han jugado al "
@@ -12523,16 +12713,16 @@ msgstr ""
 "this season can play in this phase. Not eligible: %(names)s. Tick «Call them"
 " up anyway» if the organisers have allowed it."
 
-#: match/views.py:527
+#: match/views.py:532
 #, python-format
 msgid "Para cerrar una convocatoria al menos debes contar con %(n)s jugadores"
 msgstr "You need at least %(n)s players to close a call-up"
 
-#: match/views.py:529
+#: match/views.py:534
 msgid "Esta convocatoria ha sido cerrada"
 msgstr "This call-up has been closed"
 
-#: match/views.py:566
+#: match/views.py:575
 #, python-format
 msgid ""
 "%(done)s, pero no se pudo enviar el informe por email. Puedes descargarlo "
@@ -12541,7 +12731,7 @@ msgstr ""
 "%(done)s, but the report could not be sent by email. You can download it "
 "from this page."
 
-#: match/views.py:570
+#: match/views.py:579
 #, python-format
 msgid ""
 "%(done)s. Ningún capitán tiene email: añádelo en Miembros para recibir el "
@@ -12550,12 +12740,12 @@ msgstr ""
 "%(done)s. No captain has an email address: add one in Members to receive the"
 " report automatically."
 
-#: match/views.py:576
+#: match/views.py:585
 #, python-format
 msgid "%(done)s. Informe enviado a %(emails)s."
 msgstr "%(done)s. Report sent to %(emails)s."
 
-#: match/views.py:579
+#: match/views.py:588
 #, python-format
 msgid ""
 "No se pudo enviar el informe a %(emails)s: se reintentará automáticamente. "
@@ -12564,7 +12754,7 @@ msgstr ""
 "The report could not be sent to %(emails)s: it will be retried "
 "automatically. Meanwhile, you can download it from this page."
 
-#: match/views.py:582
+#: match/views.py:591
 #, python-format
 msgid ""
 "%(done)s. No se pudo enviar el informe a %(emails)s: se reintentará "
@@ -12573,78 +12763,83 @@ msgstr ""
 "%(done)s. The report could not be sent to %(emails)s: it will be retried "
 "automatically. Meanwhile, you can download it from this page."
 
-#: match/views.py:595
+#: match/views.py:604
 msgid "Informe reenviado"
 msgstr "Report resent"
 
-#: match/views.py:670
+#: match/views.py:679
 msgid "Convocatoria actualizada."
 msgstr "Call-up updated."
 
-#: match/views.py:699
+#: match/views.py:708
 msgid "Mixtos"
 msgstr "Mixed"
 
-#: match/views.py:776
+#: match/views.py:788
 msgid "No se pueden alinear parejas, no existe ninguna convocatoria."
 msgstr "Pairs cannot be set: there is no call-up."
 
-#: match/views.py:779
+#: match/views.py:791
 #, python-format
 msgid "Para alinear las parejas debes contar al menos con %(n)s jugadores"
 msgstr "To set the pairs you need at least %(n)s players"
 
-#: match/views.py:781
+#: match/views.py:793
 msgid "Para alinear las parejas debes cerrar la convocatoria"
 msgstr "To set the pairs you must close the call-up"
 
-#: match/views.py:804
+#: match/views.py:816
 msgid "Las parejas ya están alineadas: puedes cambiarlas desde aquí."
 msgstr "The pairs are already set: you can change them here."
 
-#: match/views.py:813
+#: match/views.py:825
 msgid "Parejas alineadas."
 msgstr "Pairs set."
 
-#: match/views.py:867
+#: match/views.py:879
 #, python-format
 msgid "Resultado del partido %(n)s guardado."
 msgstr "Match %(n)s result saved."
 
-#: match/views.py:882
+#: match/views.py:894
 msgid "No se pueden añadir resultados a un enfrentamiento ya confirmado"
 msgstr "Results cannot be added to a closed fixture"
 
-#: match/views.py:905 match/views.py:979
+#: match/views.py:917 match/views.py:991
 msgid "No se pueden editar los resultados de un enfrentamiento ya confirmado"
 msgstr "The results of a closed fixture cannot be edited"
 
-#: match/views.py:983
+#: match/views.py:995
 msgid "Primero hay que alinear las parejas."
 msgstr "The pairs must be set first."
 
-#: match/views.py:1025
+#: match/views.py:1037
 msgid "Resultados guardados."
 msgstr "Results saved."
 
-#: match/views.py:1028
+#: match/views.py:1040
 msgid "Revisa los resultados marcados: no se ha guardado nada."
 msgstr "Check the highlighted results: nothing was saved."
 
-#: match/views.py:1069
+#: match/views.py:1081
 msgid "No se pueden cerrar actas, el enfrentamiento ya ha sido cerrado"
 msgstr "The match sheet cannot be closed: the fixture is already closed"
 
-#: match/views.py:1072
+#: match/views.py:1084
 #, python-format
 msgid "No se pueden cerrar actas, se requieren al menos %(n)s partidos."
 msgstr "The scoresheet cannot be closed: at least %(n)s matches are required."
 
-#: match/views.py:1077
-msgid "No se pueden cerrar actas, algunos partidos no tienen resultado."
-msgstr "The scoresheet cannot be closed: some matches have no result."
+#: match/views.py:1090
+#, python-format
+msgid "No se puede cerrar el acta: falta el resultado de %(games)s."
+msgstr "The scoresheet cannot be closed: the result of %(games)s is missing."
 
-#: match/views.py:1097
+#: match/views.py:1091
+msgid " y "
+msgstr " and "
+
+#: match/views.py:1111
 #, python-format
 msgid ""
 "La fecha de %(local)s – %(visiting)s es el %(date)s y aún no se ha jugado. "
@@ -12653,41 +12848,41 @@ msgstr ""
 "The date of %(local)s – %(visiting)s is %(date)s and it has not been played "
 "yet. Check this is the right fixture before closing the match sheet."
 
-#: match/views.py:1159
+#: match/views.py:1173
 msgid "El acta ya estaba abierta."
 msgstr "The match report was already open."
 
-#: match/views.py:1168
+#: match/views.py:1182
 msgid "Acta reabierta. Corrige lo que haga falta y vuelve a cerrarla."
 msgstr "Match report reopened. Fix whatever is needed and close it again."
 
-#: match/views.py:1197
+#: match/views.py:1211
 msgid "Este enfrentamiento no se puede marcar como no presentado."
 msgstr "This fixture cannot be marked as a no-show."
 
-#: match/views.py:1200
+#: match/views.py:1214
 msgid ""
 "El acta ya está cerrada: reábrela antes de marcarlo como no presentado."
 msgstr "The scoresheet is already closed: reopen it before marking a no-show."
 
-#: match/views.py:1208
+#: match/views.py:1222
 #, python-format
 msgid "Marcado como no presentado: %(team)s."
 msgstr "Marked as a no-show: %(team)s."
 
-#: match/views.py:1220
+#: match/views.py:1234
 msgid "Este enfrentamiento no está marcado como no presentado."
 msgstr "This fixture is not marked as a no-show."
 
-#: match/views.py:1225
+#: match/views.py:1239
 msgid "Ya no está marcado como no presentado: el acta vuelve a estar abierta."
 msgstr "No longer marked as a no-show: the scoresheet is open again."
 
-#: match/views.py:1241
+#: match/views.py:1255
 msgid "No se pueden editar los partidos de un enfrentamiento ya confirmado"
 msgstr "The matches of a confirmed fixture cannot be edited"
 
-#: match/views.py:1255
+#: match/views.py:1269
 msgid "Parejas actualizadas."
 msgstr "Pairs updated."
 
@@ -12714,10 +12909,6 @@ msgstr "Other"
 #: penalty/templates/edit_penalty.html:3 penalty/templates/edit_penalty.html:7
 msgid "Editar advertencia"
 msgstr "Edit warning"
-
-#: penalty/templates/edit_penalty.html:15
-msgid "Guardando la advertencia…"
-msgstr "Saving the warning…"
 
 #: penalty/views.py:41 penalty/views.py:92
 msgid "Elige el motivo de la advertencia."
@@ -13037,13 +13228,6 @@ msgid_plural "%(n)s convocatorias"
 msgstr[0] "%(n)s call-up"
 msgstr[1] "%(n)s call-ups"
 
-#: players/templates/confirm_delete.html:16
-#, python-format
-msgid "%(n)s sanción"
-msgid_plural "%(n)s sanciones"
-msgstr[0] "%(n)s penalty"
-msgstr[1] "%(n)s penalties"
-
 #: players/templates/confirm_delete.html:17
 msgid "Su historial de puntos SNP"
 msgstr "Their SNP points history"
@@ -13088,42 +13272,6 @@ msgstr ""
 "warns you if you go over, but does not stop you."
 
 #: players/templates/copy_players.html:29
-msgid "Copiando los jugadores…"
-msgstr "Copying the players…"
-
-#: players/templates/copy_players.html:40
-#, python-format
-msgid "Seleccionar todos los que se pueden copiar (%(n)s)"
-msgstr "Select all that can be copied (%(n)s)"
-
-#: players/templates/copy_players.html:52
-#, python-format
-msgid "Ya está en %(competition)s"
-msgstr "Already in %(competition)s"
-
-#: players/templates/copy_players.html:53
-#, python-format
-msgid "Juega en otro equipo %(competition)s"
-msgstr "Plays in another %(competition)s team"
-
-#: players/templates/copy_players.html:54
-msgid "Ya es miembro: se enlaza su ficha"
-msgstr "Already a member: their sheet gets linked"
-
-#: players/templates/copy_players.html:55
-msgid "Tiene cuenta: recibirá invitación"
-msgstr "Has an account: will get an invitation"
-
-#: players/templates/copy_players.html:56
-msgid "Sin cuenta: se copia la ficha"
-msgstr "No account: the sheet is copied"
-
-#: players/templates/copy_players.html:62
-#, python-format
-msgid "%(club)s no tiene jugadores en la plantilla."
-msgstr "%(club)s has no players in the squad."
-
-#: players/templates/copy_players.html:73
 #, python-format
 msgid ""
 "Ya no queda nadie por copiar: todos están en %(competition)s o juegan en "
@@ -13132,7 +13280,43 @@ msgstr ""
 "There is no one left to copy: everyone is already in %(competition)s or "
 "plays in another team."
 
-#: players/templates/copy_players.html:74
+#: players/templates/copy_players.html:30
+msgid "Copiando los jugadores…"
+msgstr "Copying the players…"
+
+#: players/templates/copy_players.html:42
+#, python-format
+msgid "Seleccionar los %(n)s que se pueden copiar (de todas las páginas)"
+msgstr "Select the %(n)s that can be copied (across all pages)"
+
+#: players/templates/copy_players.html:54
+#, python-format
+msgid "Ya está en %(competition)s"
+msgstr "Already in %(competition)s"
+
+#: players/templates/copy_players.html:55
+#, python-format
+msgid "Juega en otro equipo %(competition)s"
+msgstr "Plays in another %(competition)s team"
+
+#: players/templates/copy_players.html:56
+msgid "Ya es miembro: se enlaza su ficha"
+msgstr "Already a member: their sheet gets linked"
+
+#: players/templates/copy_players.html:57
+msgid "Tiene cuenta: recibirá invitación"
+msgstr "Has an account: will get an invitation"
+
+#: players/templates/copy_players.html:58
+msgid "Sin cuenta: se copia la ficha"
+msgstr "No account: the sheet is copied"
+
+#: players/templates/copy_players.html:64
+#, python-format
+msgid "%(club)s no tiene jugadores en la plantilla."
+msgstr "%(club)s has no players in the squad."
+
+#: players/templates/copy_players.html:76
 #, python-format
 msgid ""
 "Se copian nombre, apellidos, foto y posición. Las estadísticas, puntos SNP y"
@@ -13143,16 +13327,16 @@ msgstr ""
 " and call-ups stay in %(competition)s. Those with an account get an email "
 "and see the %(target)s team when they accept."
 
-#: players/templates/copy_players.html:77
+#: players/templates/copy_players.html:79
 msgid "Copiar 1 jugador"
 msgstr "Copy 1 player"
 
-#: players/templates/copy_players.html:77
+#: players/templates/copy_players.html:79
 #, python-format
 msgid "Copiar %%(n)s jugadores"
 msgstr "Copy %%(n)s players"
 
-#: players/templates/copy_players.html:77
+#: players/templates/copy_players.html:79
 msgid "Copiar jugadores"
 msgstr "Copy players"
 
@@ -13482,54 +13666,49 @@ msgstr "Off the team"
 msgid "Invitación pendiente"
 msgstr "Invitation pending"
 
-#: players/templates/list_players.html:93
-#, python-format
-msgid "Copiado de %(competition)s"
-msgstr "Copied from %(competition)s"
-
-#: players/templates/list_players.html:100
-#: players/templates/list_players.html:147
+#: players/templates/list_players.html:99
+#: players/templates/list_players.html:146
 msgid "Añade a tu primer jugador para empezar a preparar convocatorias."
 msgstr "Add your first player to start preparing call-ups."
 
-#: players/templates/list_players.html:171
+#: players/templates/list_players.html:170
 msgid "Buscando los jugadores de tu equipo en SNP. Puede tardar un minuto…"
 msgstr "Searching SNP for your team's players. This may take a minute…"
 
-#: players/templates/list_players.html:175 players/views.py:448
+#: players/templates/list_players.html:174 players/views.py:448
 msgid "Comprueba que la configuración de tu equipo es correcta."
 msgstr "Check that your team settings are correct."
 
-#: players/templates/list_players.html:176
+#: players/templates/list_players.html:175
 msgid "Revisar mi equipo"
 msgstr "Review my team"
 
-#: players/templates/list_players.html:180
+#: players/templates/list_players.html:179
 #, python-format
 msgid "Se van a añadir <strong>%(n)s</strong> jugador:"
 msgid_plural "Se van a añadir <strong>%(n)s</strong> jugadores:"
 msgstr[0] "<strong>%(n)s</strong> player will be added:"
 msgstr[1] "<strong>%(n)s</strong> players will be added:"
 
-#: players/templates/list_players.html:184
+#: players/templates/list_players.html:183
 msgid "¿Es el mismo jugador?"
 msgstr "Is it the same player?"
 
-#: players/templates/list_players.html:188
+#: players/templates/list_players.html:187
 #, python-format
 msgid "¿Es %(name)s uno de tus jugadores?"
 msgstr "Is %(name)s one of your players?"
 
-#: players/templates/list_players.html:189
+#: players/templates/list_players.html:188
 msgid "No, jugador nuevo"
 msgstr "No, new player"
 
-#: players/templates/list_players.html:190
+#: players/templates/list_players.html:189
 #, python-format
 msgid "Sí, %(name)s"
 msgstr "Yes, %(name)s"
 
-#: players/templates/list_players.html:199
+#: players/templates/list_players.html:198
 msgid ""
 "Tienes jugadores sin puntos SNP (por ejemplo, copiados de otro equipo) que "
 "pueden estar en SNP con otro nombre. Si alguno de la lista es uno de ellos, "
@@ -13541,7 +13720,7 @@ msgstr ""
 " choose them in “Is it the same player?”: no new sheet will be created and "
 "they will get the points."
 
-#: players/templates/list_players.html:204
+#: players/templates/list_players.html:203
 msgid ""
 "Un detalle: SNP no dice en qué lado de la pista juega cada uno, así que los "
 "jugadores nuevos llegarán sin posición. Después, edita cada uno y elige su "
@@ -13551,7 +13730,7 @@ msgstr ""
 "new players will arrive without a position. Afterwards, edit each one and "
 "choose their position: it will help you build better pairs and lineups."
 
-#: players/templates/list_players.html:207
+#: players/templates/list_players.html:206
 msgid ""
 "Todos los jugadores de tu equipo de SNP ya están en Zyra: no hay nadie nuevo"
 " que añadir."
@@ -13559,29 +13738,29 @@ msgstr ""
 "All the players from your SNP team are already in Zyra: there's nobody new "
 "to add."
 
-#: players/templates/list_players.html:210
+#: players/templates/list_players.html:209
 #, python-format
 msgid ""
 "Ya están registrados en el equipo; solo se actualizan sus puntos SNP "
 "(%(n)s):"
 msgstr "Already on the team; only their SNP points are updated (%(n)s):"
 
-#: players/templates/list_players.html:214
+#: players/templates/list_players.html:213
 msgid "Nombre en SNP"
 msgstr "Name in SNP"
 
-#: players/templates/list_players.html:214
+#: players/templates/list_players.html:213
 msgid "Jugador en Zyra"
 msgstr "Player in Zyra"
 
-#: players/templates/list_players.html:224
+#: players/templates/list_players.html:223
 #, python-format
 msgid "Se va a crear <strong>%(n)s</strong> equipo del grupo:"
 msgid_plural "Se van a crear <strong>%(n)s</strong> equipos del grupo:"
 msgstr[0] "<strong>%(n)s</strong> group team will be created:"
 msgstr[1] "<strong>%(n)s</strong> group teams will be created:"
 
-#: players/templates/list_players.html:229
+#: players/templates/list_players.html:228
 msgid ""
 "De los jugadores que ya existen solo cambian los puntos SNP. Solo se puede "
 "completar el equipo una vez por temporada."
@@ -13589,26 +13768,26 @@ msgstr ""
 "For existing players only the SNP points change. The team can only be "
 "completed once per season."
 
-#: players/templates/list_players.html:237
+#: players/templates/list_players.html:236
 msgid "Añadiendo los jugadores…"
 msgstr "Adding the players…"
 
-#: players/templates/list_players.html:238
+#: players/templates/list_players.html:237
 #, python-format
 msgid "Añadir %(n)s jugador"
 msgid_plural "Añadir %(n)s jugadores"
 msgstr[0] "Add %(n)s player"
 msgstr[1] "Add %(n)s players"
 
-#: players/templates/list_players.html:238
+#: players/templates/list_players.html:237
 msgid "Crear equipos del grupo"
 msgstr "Create group teams"
 
-#: players/templates/list_players.html:238
+#: players/templates/list_players.html:237
 msgid "Actualizar puntos SNP"
 msgstr "Update SNP points"
 
-#: players/templates/list_players.html:245 players/views.py:439
+#: players/templates/list_players.html:244 players/views.py:439
 #, python-format
 msgid "No se ha podido leer el equipo de SNP: %(message)s"
 msgstr "Couldn't read the SNP team: %(message)s"
@@ -13617,10 +13796,10 @@ msgstr "Couldn't read the SNP team: %(message)s"
 msgid ""
 "Activa o desactiva a los jugadores que están en el equipo y guarda todos los"
 " cambios de una vez. Los jugadores fuera del equipo no aparecen en "
-"convocatorias, sanciones ni en los rankings."
+"convocatorias, advertencias ni en los rankings."
 msgstr ""
-"Turn players on or off the team and save all changes at once. Players off "
-"the team don't appear in call-ups, penalties or rankings."
+"Turn players on or off the team and save all changes at once. Players "
+"outside the team do not appear in call-ups, warnings or rankings."
 
 #: players/templates/manage_roster.html:15
 msgid "Guardando la plantilla…"
@@ -13704,12 +13883,17 @@ msgstr "New photo:"
 msgid "Perfil del jugador"
 msgstr "Player profile"
 
-#: players/templates/player_detail.html:50
+#: players/templates/player_detail.html:25
+#, python-format
+msgid "Copiado de %(competition)s"
+msgstr "Copied from %(competition)s"
+
+#: players/templates/player_detail.html:51
 #, python-format
 msgid "%(local)s vs %(visiting)s"
 msgstr "%(local)s vs %(visiting)s"
 
-#: players/templates/player_detail.html:56
+#: players/templates/player_detail.html:57
 msgid "Todavía no ha disputado ningún partido."
 msgstr "Hasn't played any matches yet."
 
@@ -14000,6 +14184,14 @@ msgstr ""
 "Country of the circuit it plays in, for example Spain. It decides where its "
 "players are searched for in SNP."
 
+#: team/forms.py:52
+msgid ""
+"Nivel en el que juega el equipo, por ejemplo Future o 500 en la SNP o 2.ª "
+"división en LAPI."
+msgstr ""
+"Level the team plays at, for example Future or 500 in SNP or 2nd division in"
+" LAPI."
+
 #: team/forms.py:85 team/views.py:211
 msgid "Ya existe un equipo con ese nombre en esa división en tu club."
 msgstr "Your club already has a team with that name in that division."
@@ -14247,6 +14439,10 @@ msgstr "All teams"
 #: team/templates/manage_teams.html:32
 msgid "Marcar los equipos visibles"
 msgstr "Tick the visible teams"
+
+#: team/templates/manage_teams.html:33 team/templates/manage_teams.html:101
+msgid "Marcar visibles"
+msgstr "Select visible"
 
 #: team/templates/manage_teams.html:36
 msgid "Categoría…"

@@ -3,6 +3,22 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 30/10/2026 · Espacios por competición (revisión de usabilidad, prioridades 2 y 3)
+
+- **Convocatoria**: con la convocatoria abierta la web dice «apuntados» y «Te has apuntado»; «convocados» y «Estás convocado» solo cuando está cerrada. «Cerrar convocatoria» y «Reenviar informe» piden confirmación y dicen a qué correos se envía. En Playoffs y Fase final, la regla de los 2 enfrentamientos de liga se ve en la ficha, se vuelve a comprobar al cerrar y separa a los apuntados que no la cumplen del resto.
+- **Advertencias**: una sola palabra en todos los textos («Advertencias y cambios», «Poner advertencia»).
+- **Menú «Más»** de la ficha agrupado en Convocatoria, Resultado especial y Enfrentamiento. Los textos de «No presentado» dicen lo que pasa en cada competición (SNP 12-0; LAPI 3-0 y puntos de liga).
+- **Poner resultados**: un partido por fila con los nombres enteros; «Guardar y cerrar acta» se activa cuando están todos los resultados y dice cuántos faltan; el error nombra los partidos que faltan. La ayuda de lesión solo sale al marcar la casilla.
+- **Alinear parejas**: nombre corto y posición en el selector, «Vaciar pareja», y la alineación sugerida dice cuántos enfrentamientos de historial la respaldan.
+- **Selector de convocatoria**: «Jugó 2/3 esta temporada», «Mínimo 6 cumplido», «Marcar todos los de la lista» y «Ver solo elegidos».
+- **LAPI**: sin «· 1 pts» en cada partido ni empates en el balance, el listado y Rivales.
+- **Listado**: en móvil, temporada, tipo y rival van plegados tras «Filtros»; las etiquetas se llaman Temporada y Tipo; el filtro de competición recordado se ve en la cabecera con «Ver todas»; sin papelera en cada tarjeta; «Eres jugador aquí» solo si gestionas otro equipo.
+- **Inicio**: «Próximo enfrentamiento» muestra tipo y jornada; el aviso del gestor dice de qué equipo habla y no sale si ya tiene uno; «Mi forma» y «Mis estadísticas» usan las mismas palabras.
+- **Estadísticas**: «Juegos en casa: 59 ganados · 60 perdidos», «Roscos: 0 a favor · 0 en contra», muestras pequeñas avisadas, y una nota en Equipo, Jugador, Parejas y Rivales de por qué no hay «Todas».
+- **Menú de usuario**: «Estás en:» presenta tus equipos como texto, no como opciones.
+- **Plantilla y copiar jugadores**: «Copiado de SNP» pasa a la ficha del jugador; primero salen los que se pueden copiar y, si no hay nadie, el aviso va arriba y la lista queda plegada.
+- **Colores**: SNP dorado (#DBA400), LAPI turquesa (#61E2C9) y el lima queda para Zyra (acción, activo, victoria).
+
 ## 30/10/2026 · Espacios por competición (revisión de usabilidad, prioridad 1, PR #208)
 
 - Los enlaces de gestión (convocatoria, parejas, resultados, jugadores, advertencias…) abren siempre el **equipo correcto**, aunque en otra pestaña hayas cambiado de equipo. Si en ese equipo no tienes permiso, el aviso dice de qué equipo es y qué papel tienes.
