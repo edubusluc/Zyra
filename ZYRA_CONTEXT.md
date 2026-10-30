@@ -69,7 +69,7 @@ estadísticas y back-office del dueño de la plataforma. Español con traducció
 | Cambio | Toca siempre | Comprueba con |
 |---|---|---|
 | Texto visible nuevo o cambiado | `{% translate %}` / `gettext` + `locale/en/LC_MESSAGES/django.po` (y `locale/en/LC_MESSAGES/djangojs.po` si es JS) + `compilemessages` | `DJANGO_DEBUG=True python manage.py test core.tests_i18n` |
-| Cambio visual | Busca la sección con `grep -n "^/\* ---" static/style.css` (Portada, Listados, Tarjetas, Formularios, «Móvil: revisión general»…); el bloque `st-` es de estadísticas | tests del área + `core.tests_accessibility` |
+| Cambio visual | Los títulos usan `--z-display` (Anton; `--z-brand` = Syncopate solo para logotipo y portada). La pista 2:1 del Inicio es `.z-home-grid--both .z-next-match`. Busca la sección con `grep -n "^/\* ---" static/style.css` (Portada, Listados, Tarjetas, Formularios, «Móvil: revisión general»…); el bloque `st-` es de estadísticas | tests del área + `core.tests_accessibility` |
 | Pantalla nueva | URL en `<app>/urls.py`, vista con `club_required`, plantilla con `{% block page_title %}`, URL en `core/tests_accessibility.py`, fila en esta tabla | tests del área |
 | Campo o modelo nuevo | `makemigrations` en el mismo PR; si se expone en URL, `PublicIdModel`; filtrar por `request.club`; `docs/ai/data-model.md` | `makemigrations --check --dry-run` |
 | Regla de negocio | Lógica en el módulo de la fila (no en la plantilla); `docs/ai/business-rules.md` | tests del área |

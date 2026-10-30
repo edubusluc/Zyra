@@ -46,8 +46,8 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
   Estadísticas › Advertencias solo la ven capitán y gestores (`manages_any`) y solo de los equipos que gestionan
   (`managed_consult_view`). Mi perfil lista la ficha de cada equipo («Mis fichas»). Cada competición tiene su color (SNP `--z-snp`, LAPI `--z-lapi`; el lima es de Zyra) y solo muestra lo que le aplica: `Competition.has_draws` oculta los empates en LAPI y las «pts» por partido salen solo con `ordered_pairs`. Con la convocatoria abierta se dice «apuntados»; «convocados», al cerrarla. Cerrar convocatoria (`close_call`) vuelve a comprobar la regla de fases finales (`force_finals`). Plantilla, Club y Rivales (`management_view`): si gestiona unos espacios y en otros solo juega, solo ve
   los que gestiona; el selector SNP | LAPI sale si gestiona todos o es jugador en todos. El registro muestra desactivadas las
-  competiciones en las que ya tiene equipo. Inicio con varios equipos: el banner los enseña todos («Tus equipos»,
-  `home_teams`) y «En racha» da tarjetas por equipo (`streaks`); quien es jugador en todos sus equipos no ve Plantilla en
+  competiciones en las que ya tiene equipo. Inicio con varios equipos: la tira de equipos los enseña todos («Tus equipos»,
+  `home_teams`); quien es jugador en todos sus equipos no ve Plantilla en
   el menú (`hide_roster_nav`, `spaces.plays_only`); tampoco tiene la ficha de Plantilla (`show_player` lo lleva a las estadísticas del jugador) ni su pestaña «Resumen» en Estadísticas › Jugador, que sí ve con su selector. Jugador, Parejas y Rivales solo eligen SNP o LAPI (sin «Todas»). El informe puede incluir los partidos de la temporada
   en otras competiciones de los convocados con cuenta enlazada (`Match.report_other_competitions`), solo de los equipos que gestionan todos los destinatarios del informe (`report.can_share_other_competition`). Tests:
   `core/tests_spaces_unified.py`.

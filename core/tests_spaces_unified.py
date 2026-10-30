@@ -202,7 +202,7 @@ class UnifiedSpacesTests(TestCase):
             session.save()
             page = self.client.get(reverse("home"))
             self.assertEqual([t["club"] for t in page.context["home_teams"]], [self.snp, self.lapi])
-            self.assertContains(page, "z-home-hero--teams")
+            self.assertContains(page, "z-home-strip")
             self.assertContains(page, "z-home-team--lapi")
             self.assertContains(page, "Categoría 500")
         self.assertContains(page, "Sin división")  # equipo LAPI sin división

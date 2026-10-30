@@ -437,6 +437,10 @@ class HomeTests(TestCase):
         self.assertEqual(response.context["days_left"], 3)
         self.assertContains(response, soon.maps_url.replace("&", "&amp;"))
         self.assertNotEqual(response.context["next_match"], later)
+        # El enfrentamiento es el bloque protagonista: indicador de días y los dos equipos.
+        self.assertContains(response, 'class="z-next-match-days"')
+        self.assertContains(response, "En 3 días")
+        self.assertContains(response, "z-next-match-teams")
 
     def test_empty_home(self):
         response = self.client.get(reverse("home"))
@@ -446,24 +450,6 @@ class HomeTests(TestCase):
         self.client.post(reverse("dismiss_onboarding"))
         response = self.client.get(reverse("home"))
         self.assertContains(response, "Programa el próximo enfrentamiento para preparar la convocatoria.")
-        self.assertContains(response, "Cierra enfrentamientos para ver aquí quién encadena victorias.")
-
-    def test_hot_player_and_pair(self):
-        ana = Player.objects.create(club=self.club, name="Ana", last_name="Alpha")
-        bea = Player.objects.create(club=self.club, name="Bea", last_name="Beta")
-        for n, day in enumerate((1, 2), start=1):
-            m = Match.objects.create(club=self.club, local=self.own, visiting=self.rival, draft_mode=False,
-                                     start_date=self.today - datetime.timedelta(days=10 - day))
-            Game.objects.create(match=m, n_game=1, score=3, winner="Local", draft_mode=False,
-                                player_1_local=ana, player_2_local=bea)
-
-        response = self.client.get(reverse("home"))
-        self.assertEqual(response.context["hot_player"]["streak"], 2)
-        self.assertEqual(response.context["hot_pair"]["label"], "ANA ALPHA / BEA BETA")
-        self.assertContains(response, "2 victorias seguidas")
-        # El botón abre la pareja con sus identificadores públicos (con el id interno daba 404)
-        self.assertContains(response, f"?en=snp&amp;p1={ana.public_id}&amp;p2={bea.public_id}")
-
 
     def test_pages_load_hide_on_scroll_navigation(self):
         # Cabecera y barra inferior se esconden al bajar (static/js/nav.js)

@@ -4,11 +4,7 @@
 {% block content %}
 {% if home_teams %}
 {# Con equipos en varias competiciones el banner los enseña todos y no cambia con el último enfrentamiento abierto. #}
-<section class="z-home-hero z-home-hero--teams">
-    <div>
-        <span class="z-eyebrow">{% blocktranslate %}Temporada {{ season }}{% endblocktranslate %}</span>
-        <h1>{% translate "Tus equipos" %}</h1>
-    </div>
+<section class="z-home-strip" aria-label="{% translate 'Tus equipos' %}">
     <ul class="z-home-teams">
         {% for t in home_teams %}
         <li class="z-home-team z-home-team--{{ t.club.competition }}">
@@ -111,6 +107,18 @@
     </div>
 </section>
 {% endif %}
+{% if snp_missing %}
+<section class="z-notice z-snp-notice" role="status" aria-label="{% translate 'Registra tu cuenta de SNP' %}">
+    <i class="fa-solid fa-trophy" aria-hidden="true"></i>
+    <div class="z-notice-text">
+        <strong>{% translate "Registra tu cuenta de SNP" %}</strong>
+        <span>{% translate "Mantén actualizados semanalmente los puntos SNP de tus jugadores y carga automáticamente sus datos para ahorrar tiempo y tenerlo todo siempre al día." %}</span>
+    </div>
+    <div class="z-notice-actions">
+        <a class="btn btn-primary btn-sm" href="{% url 'snp_account' %}">{% translate "Registrar cuenta" %}</a>
+    </div>
+</section>
+{% endif %}
 {% if season_prep %}{% include 'includes/season_prep.html' %}{% endif %}
 
 {% if snp_sync and snp_sync.state != 'running' %}
@@ -194,9 +202,69 @@
 {% endif %}
 
 
+<div class="z-home-grid{% if next_match and pending or next_match and can_manage and not onboarding %} z-home-grid--both{% endif %}">
+{% if next_match %}
+{# Enfrentamiento protagonista: bloque lima; en escritorio es una pista de pádel de proporción 2:1 (la red separa local y visitante). #}
+<article class="z-next-match" aria-labelledby="next-match-title">
+    <h2 id="next-match-title" class="visually-hidden">{% translate "Próximo enfrentamiento" %}</h2>
+    <div class="z-next-match-when">
+        <span class="z-next-match-tags">
+            {% include 'includes/competition_badge.html' with code=next_match.club.competition name=next_match.club.rules.name short=True %}
+            {% if next_match.match_type != next_match.club.rules.default_type %}<span class="z-fixture-type">{{ next_match.type_label }}</span>{% endif %}
+            {% if next_match.round_number and next_match.is_league %}<span class="z-fixture-type">{% blocktranslate with n=next_match.round_number %}Jornada {{ n }}{% endblocktranslate %}</span>{% endif %}
+        </span>
+        <span class="z-next-match-days">{% if days_left == 0 %}{% translate "Hoy" %}{% elif days_left == 1 %}{% translate "Mañana" %}{% else %}{% blocktranslate trimmed count n=days_left %}En {{ n }} día{% plural %}En {{ n }} días{% endblocktranslate %}{% endif %}</span>
+    </div>
+    <div class="z-next-match-date">
+        <p class="z-next-match-day">{{ next_match.start_date|date:"D j M" }}<small>{{ next_match.start_date|date:"Y" }}</small></p>
+        <p class="z-next-match-meta">{% if next_match.start_time %}<strong>{{ next_match.start_time|time:"H:i" }}</strong>{% endif %}{% if next_match.location %}<a class="z-location" href="{{ next_match.maps_url }}" target="_blank" rel="noopener" title="{% translate 'Cómo llegar' %}"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>{{ next_match.location }}</span></a>{% else %}<span class="z-location"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>{% translate "Sin ubicación" %}</span></span>{% endif %}</p>
+    </div>
+    {% if my_status %}
+    <p class="z-next-match-me{% if my_status.called %} is-in{% endif %}" role="status">
+        <i class="fa-solid {% if my_status.called %}fa-circle-check{% else %}fa-circle-info{% endif %}" aria-hidden="true"></i>
+        <span>{% if not my_status.has_call %}{% translate "Todavía no hay convocatoria" %}
+        {% elif my_status.called and not my_status.closed %}<strong>{% translate "Te has apuntado" %}</strong> · {% translate "la convocatoria sigue abierta" %}
+        {% elif my_status.called %}<strong>{% translate "Estás convocado" %}</strong>{% if my_status.game %} · {% blocktranslate with n=my_status.game.n_game pts=my_status.game.score %}Partido {{ n }} · {{ pts }} pts{% endblocktranslate %}{% if my_status.partner %} · {% blocktranslate with name=my_status.partner.full_name %}con {{ name }}{% endblocktranslate %}{% endif %}{% elif my_status.closed %} · {% translate "las parejas aún no están decididas" %}{% endif %}
+        {% else %}<strong>{% translate "No estás convocado" %}</strong>{% if not my_status.closed %} · {% translate "la convocatoria sigue abierta" %}{% endif %}{% endif %}</span>
+    </p>
+    {% elif not my_player and not can_manage %}
+    <p class="z-next-match-me"><i class="fa-solid fa-link" aria-hidden="true"></i> <a href="{% url 'my_player' %}">{% translate "Enlaza tu cuenta con tu jugador para ver si estás convocado." %}</a></p>
+    {% endif %}
+    <div class="z-next-match-cta">
+        <a class="btn btn-secondary" href="{% url 'call_for_match' next_match.public_id %}"><i class="fa-solid fa-clipboard-list me-1" aria-hidden="true"></i> {% translate "Ver convocatoria" %}</a>
+    </div>
+    <div class="z-next-match-teams">
+        <div class="z-next-match-team {% if next_match.local.is_own %}is-own{% endif %}">
+            <span>{{ next_match.local_name }}</span>
+            <small>{% translate "Local" %}</small>
+        </div>
+        <div class="z-versus-vs" aria-hidden="true">VS</div>
+        <div class="z-next-match-team {% if next_match.visiting.is_own %}is-own{% endif %}">
+            <span>{{ next_match.visiting_name }}</span>
+            <small>{% translate "Visitante" %}</small>
+        </div>
+    </div>
+</article>
+{% elif not onboarding %}
+<h2 class="z-section-title">{% translate "Próximo enfrentamiento" %}</h2>
+<div class="z-empty">
+    <i class="fa-regular fa-calendar" aria-hidden="true"></i>
+    {% if can_manage %}
+    {% translate "Programa el próximo enfrentamiento para preparar la convocatoria." %}
+    <div class="mt-3"><a class="btn btn-primary btn-sm" href="{% url 'create_match' %}">{% translate "Crear enfrentamiento" %}</a></div>
+    {% else %}
+    {% translate "Cuando tu capitán programe el próximo enfrentamiento verás aquí si estás convocado, con quién juegas y cómo llegar." %}
+    {% endif %}
+</div>
+{% endif %}
+
 {% if pending or can_manage and not onboarding %}
 {# Lo que se ha quedado a medias, con la siguiente acción de cada enfrentamiento (H-02). #}
-<h2 class="z-section-title">{% translate "Pendiente" %}</h2>
+<section class="z-card z-home-pending" aria-labelledby="pending-title">
+    <div class="z-home-pending-head">
+        <h2 id="pending-title" class="z-panel-title">{% translate "Pendiente" %}{% if pending_total %} <span>· {{ pending_total }}</span>{% endif %}</h2>
+        {% if can_manage %}<a class="btn btn-primary btn-sm" href="{% url 'create_match' %}">+ {% translate "Nuevo" %}</a>{% endif %}
+    </div>
 {% if pending %}
 <ul class="z-pending">
     {% for row in pending %}
@@ -217,72 +285,9 @@
 {% else %}
 <div class="z-empty"><i class="fa-solid fa-circle-check" aria-hidden="true"></i>{% translate "Todo al día" %}</div>
 {% endif %}
+</section>
 {% endif %}
-
-{% if next_match or not onboarding %}
-<h2 class="z-section-title">{% translate "Próximo enfrentamiento" %}</h2>
-{% endif %}
-{% if next_match %}
-<article class="z-card z-next-match">
-    <div class="z-next-match-when">
-        <span class="z-badge z-badge--lime">{% if days_left == 0 %}{% translate "Hoy" %}{% elif days_left == 1 %}{% translate "Mañana" %}{% else %}{% blocktranslate trimmed count n=days_left %}En {{ n }} día{% plural %}En {{ n }} días{% endblocktranslate %}{% endif %}</span>
-        <span>{{ next_match.start_date|date:"D j M Y" }}{% if next_match.start_time %} · {{ next_match.start_time|time:"H:i" }}{% endif %}</span>
-        {% include 'includes/competition_badge.html' with code=next_match.club.competition name=next_match.club.rules.name short=True %}
-        {% if next_match.match_type != next_match.club.rules.default_type %}<span class="z-fixture-type">{{ next_match.type_label }}</span>{% endif %}
-        {% if next_match.round_number and next_match.is_league %}<span class="z-fixture-type">{% blocktranslate with n=next_match.round_number %}Jornada {{ n }}{% endblocktranslate %}</span>{% endif %}
-    </div>
-    <div class="z-next-match-teams">
-        <div class="z-next-match-team {% if next_match.local.is_own %}is-own{% endif %}">
-            <img src="{% if next_match.local.photo %}{{ next_match.local.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="">
-            <span>{{ next_match.local_name }}</span>
-            <small>{% translate "Local" %}</small>
-        </div>
-        <div class="z-versus-vs">VS</div>
-        <div class="z-next-match-team {% if next_match.visiting.is_own %}is-own{% endif %}">
-            <img src="{% if next_match.visiting.photo %}{{ next_match.visiting.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="">
-            <span>{{ next_match.visiting_name }}</span>
-            <small>{% translate "Visitante" %}</small>
-        </div>
-    </div>
-    {% if my_status %}
-    <p class="z-next-match-me{% if my_status.called %} is-in{% endif %}" role="status">
-        <i class="fa-solid {% if my_status.called %}fa-circle-check{% else %}fa-circle-info{% endif %}" aria-hidden="true"></i>
-        <span>{% if not my_status.has_call %}{% translate "Todavía no hay convocatoria" %}
-        {% elif my_status.called and not my_status.closed %}<strong>{% translate "Te has apuntado" %}</strong> · {% translate "la convocatoria sigue abierta" %}
-        {% elif my_status.called %}<strong>{% translate "Estás convocado" %}</strong>{% if my_status.game %} · {% blocktranslate with n=my_status.game.n_game pts=my_status.game.score %}Partido {{ n }} · {{ pts }} pts{% endblocktranslate %}{% if my_status.partner %} · {% blocktranslate with name=my_status.partner.full_name %}con {{ name }}{% endblocktranslate %}{% endif %}{% elif my_status.closed %} · {% translate "las parejas aún no están decididas" %}{% endif %}
-        {% else %}<strong>{% translate "No estás convocado" %}</strong>{% if not my_status.closed %} · {% translate "la convocatoria sigue abierta" %}{% endif %}{% endif %}</span>
-    </p>
-    {% elif not my_player and not can_manage %}
-    <p class="z-next-match-me"><i class="fa-solid fa-link" aria-hidden="true"></i> <a href="{% url 'my_player' %}">{% translate "Enlaza tu cuenta con tu jugador para ver si estás convocado." %}</a></p>
-    {% endif %}
-    <div class="z-next-match-foot">
-        {% if next_match.location %}
-        <a class="z-location" href="{{ next_match.maps_url }}" target="_blank" rel="noopener">
-            <i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>{{ next_match.location }}</span>
-        </a>
-        {% else %}
-        <span class="z-location text-muted"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>{% translate "Sin ubicación" %}</span></span>
-        {% endif %}
-        <div class="d-flex flex-wrap gap-2">
-            {% if next_match.location %}
-            <a class="btn btn-secondary btn-sm" href="{{ next_match.maps_url }}" target="_blank" rel="noopener"><i class="fa-solid fa-map-location-dot me-1" aria-hidden="true"></i> {% translate "Cómo llegar" %}</a>
-            {% endif %}
-            <a class="btn btn-primary btn-sm" href="{% url 'call_for_match' next_match.public_id %}"><i class="fa-solid fa-clipboard-list me-1" aria-hidden="true"></i> {% translate "Ver convocatoria" %}</a>
-        </div>
-    </div>
-</article>
-{% elif not onboarding %}
-<div class="z-empty">
-    <i class="fa-regular fa-calendar" aria-hidden="true"></i>
-    {% if can_manage %}
-    {% translate "Programa el próximo enfrentamiento para preparar la convocatoria." %}
-    <div class="mt-3"><a class="btn btn-primary btn-sm" href="{% url 'create_match' %}">{% translate "Crear enfrentamiento" %}</a></div>
-    {% else %}
-    {% translate "Cuando tu capitán programe el próximo enfrentamiento verás aquí si estás convocado, con quién juegas y cómo llegar." %}
-    {% endif %}
 </div>
-{% endif %}
-
 
 {% if my_form %}
 {# «Mi forma» (data_analyse.my_form): solo para quien tiene su cuenta enlazada a un jugador; se puede ocultar y volver a mostrar. #}
@@ -303,68 +308,66 @@
     {% if my_form.empty %}
     <p class="mb-0">{% if form_player.club.rules.has_snp %}{% translate "Todavía no has jugado ningún partido competitivo. Cuando juegues, aquí verás tu racha, tus últimos resultados y tus puntos SNP." %}{% else %}{% translate "Todavía no has jugado ningún partido competitivo. Cuando juegues, aquí verás tu racha y tus últimos resultados." %}{% endif %}</p>
     {% else %}
-    <p class="z-form-strip" aria-label="{% translate 'Últimos partidos' %}">
-        <span class="z-eyebrow">{% translate "Últimos partidos" %}</span>
-        {% for g in my_form.last_games %}<span class="st-pip st-pip--{% if g.won %}w{% else %}l{% endif %}{% if my_form.by_competition %} z-myform-pip z-myform-pip--{{ g.code }}{% endif %}"{% if my_form.by_competition %} title="{{ g.code|upper }}"{% endif %}>{% if g.won %}{% translate "V" context "victoria" %}{% else %}{% translate "D" context "derrota" %}{% endif %}</span>{% endfor %}
-    </p>
-    <dl class="z-myform-kpis">
-        {% if my_form.run.1 > 1 %}
-        <div><dt>{% if my_form.run.0 == 'V' %}{% translate "Racha de victorias" %}{% else %}{% translate "Racha de derrotas" %}{% endif %}</dt><dd>{{ my_form.run.1 }}</dd></div>
-        {% endif %}
-        <div class="z-myform-balance">
-            <dt>{% translate "Balance de la temporada" %}</dt>
-            <dd class="z-myform-ring-wrap">
-                <svg class="z-myform-ring" viewBox="0 0 64 64" role="img" aria-label="{% blocktranslate with w=my_form.wins l=my_form.losses %}{{ w }} victorias y {{ l }} derrotas{% endblocktranslate %}">
-                    <circle cx="32" cy="32" r="26" fill="none" class="z-myform-ring-l" stroke-width="8"/>
-                    {% if my_form.wins %}<circle cx="32" cy="32" r="26" fill="none" class="z-myform-ring-w" stroke-width="8" stroke-dasharray="{{ my_form.win_arc|unlocalize }} 163.4" transform="rotate(-90 32 32)"/>{% endif %}
-                    <text x="32" y="37" text-anchor="middle" class="z-myform-ring-t">{{ my_form.wins }}-{{ my_form.losses }}</text>
-                </svg>
+    <div class="z-myform-zones">
+        <div class="z-myform-zone z-myform-balance">
+            <svg class="z-myform-ring" viewBox="0 0 64 64" role="img" aria-label="{% blocktranslate with w=my_form.wins l=my_form.losses %}{{ w }} victorias y {{ l }} derrotas{% endblocktranslate %}">
+                <circle cx="32" cy="32" r="26" fill="none" class="z-myform-ring-l" stroke-width="8"/>
+                {% if my_form.wins %}<circle cx="32" cy="32" r="26" fill="none" class="z-myform-ring-w" stroke-width="8" stroke-linecap="round" stroke-dasharray="{{ my_form.win_arc|unlocalize }} 163.4" transform="rotate(-90 32 32)"/>{% endif %}
+                <text x="32" y="38" text-anchor="middle" class="z-myform-ring-t">{{ my_form.wins }}–{{ my_form.losses }}</text>
+            </svg>
+            <div>
+                <span class="z-eyebrow">{% translate "Balance de la temporada" %}</span>
                 {% if my_form.by_competition %}
                 {# Con jugador en varias competiciones: el total en el anillo y el desglose al lado. #}
                 <span class="z-myform-legend z-myform-legend--col">{% for c in my_form.by_competition %}<span>{% include 'includes/competition_badge.html' with code=c.code name=c.name %} <strong>{{ c.wins }}-{{ c.losses }}</strong></span>{% endfor %}</span>
                 {% else %}
                 <span class="z-myform-legend z-myform-legend--col"><span><i class="z-myform-dot z-myform-dot--w"></i><strong>{{ my_form.wins }}</strong> {% translate "victorias" %}</span><span><i class="z-myform-dot z-myform-dot--l"></i><strong>{{ my_form.losses }}</strong> {% translate "derrotas" %}</span></span>
                 {% endif %}
-            </dd>
+            </div>
+        </div>
+        <div class="z-myform-zone">
+            <p class="z-form-strip" aria-label="{% translate 'Últimos partidos' %}">
+                <span class="z-eyebrow">{% translate "Últimos partidos" %}</span>
+                <span class="z-myform-pips">{% for g in my_form.last_games %}<span class="st-pip st-pip--{% if g.won %}w{% else %}l{% endif %}{% if my_form.by_competition %} z-myform-pip z-myform-pip--{{ g.code }}{% endif %}"{% if my_form.by_competition %} title="{{ g.code|upper }}"{% endif %}>{% if g.won %}{% translate "V" context "victoria" %}{% else %}{% translate "D" context "derrota" %}{% endif %}</span>{% endfor %}</span>
+            </p>
+            {% if my_form.run.1 > 1 %}<p class="z-myform-run">{% if my_form.run.0 == 'V' %}{% translate "Racha de victorias" %}{% else %}{% translate "Racha de derrotas" %}{% endif %} · <strong>{{ my_form.run.1 }}</strong></p>{% endif %}
         </div>
         {% if my_form.called %}
-        <div>
-            <dt>{% translate "Jugaste, de las convocatorias a las que te apuntaste" %}</dt>
-            <dd class="z-myform-seg-wrap">
-                <span class="z-myform-big">{{ my_form.played }} <small>{% blocktranslate with total=my_form.called %}de las {{ total }} a las que te apuntaste{% endblocktranslate %}</small></span>
-                <span class="z-myform-seg" role="img" aria-label="{% blocktranslate with played=my_form.played total=my_form.called %}Has jugado en {{ played }} de las {{ total }} convocatorias en las que te apuntaste{% endblocktranslate %}">{% if my_form.by_competition %}{% for c in my_form.by_competition %}<i class="z-myform-seg-w z-myform-seg--{{ c.code }}" style="width: {{ c.played_pct|unlocalize }}%"></i>{% endfor %}{% else %}<i class="z-myform-seg-w" style="width: {{ my_form.played_pct|unlocalize }}%"></i>{% endif %}</span>
-                {% if my_form.by_competition %}<span class="z-myform-seg-detail">{% for c in my_form.by_competition %}{% blocktranslate with competition=c.name played=c.played total=c.called %}{{ competition }}: {{ played }} de {{ total }}{% endblocktranslate %}{% if not forloop.last %} · {% endif %}{% endfor %}</span>{% endif %}
-            </dd>
+        <div class="z-myform-zone z-myform-seg-wrap">
+            <span class="z-eyebrow">{% translate "Jugaste, de las convocatorias a las que te apuntaste" %}</span>
+            <span class="z-myform-big">{{ my_form.played }} <small>{% blocktranslate with total=my_form.called %}de las {{ total }} a las que te apuntaste{% endblocktranslate %}</small></span>
+            <span class="z-myform-seg" role="img" aria-label="{% blocktranslate with played=my_form.played total=my_form.called %}Has jugado en {{ played }} de las {{ total }} convocatorias en las que te apuntaste{% endblocktranslate %}">{% if my_form.by_competition %}{% for c in my_form.by_competition %}<i class="z-myform-seg-w z-myform-seg--{{ c.code }}" style="width: {{ c.played_pct|unlocalize }}%"></i>{% endfor %}{% else %}<i class="z-myform-seg-w" style="width: {{ my_form.played_pct|unlocalize }}%"></i>{% endif %}</span>
+            {% if my_form.by_competition %}<span class="z-myform-seg-detail">{% for c in my_form.by_competition %}{% blocktranslate with competition=c.name played=c.played total=c.called %}{{ competition }}: {{ played }} de {{ total }}{% endblocktranslate %}{% if not forloop.last %} · {% endif %}{% endfor %}</span>{% endif %}
         </div>
         {% endif %}
-    </dl>
-    {% if my_form.snp %}
-    <div class="z-myform-snp">
-        <div class="z-myform-snp-head">
-            <span class="z-myform-snp-title">{% translate "Puntos SNP" %} <span class="z-myform-snp-period">· {% translate "últimos 30 días" %}</span></span>
-            <span class="z-myform-big">{{ my_form.snp.score|snp_points }}{% if my_form.snp.delta %} <small class="{% if my_form.snp.delta > 0 %}z-myform-up{% else %}z-myform-down{% endif %}">{% if my_form.snp.delta > 0 %}+{% endif %}{{ my_form.snp.delta|floatformat:"-1" }} <span class="visually-hidden">{% translate "en los últimos 30 días" %}</span></small>{% endif %}</span>
+        {% if my_form.snp %}
+        <div class="z-myform-zone z-myform-snp">
+            <div class="z-myform-snp-head">
+                <span class="z-eyebrow">{% translate "Puntos SNP" %} <span class="z-myform-snp-period">· {% translate "últimos 30 días" %}</span></span>
+                <span class="z-myform-big">{{ my_form.snp.score|snp_points }}{% if my_form.snp.delta %} <small class="{% if my_form.snp.delta > 0 %}z-myform-up{% else %}z-myform-down{% endif %}">{% if my_form.snp.delta > 0 %}+{% endif %}{{ my_form.snp.delta|floatformat:"-1" }} <span class="visually-hidden">{% translate "en los últimos 30 días" %}</span></small>{% endif %}</span>
+            </div>
+            {% with chart=my_form.snp.chart %}
+            {% if chart %}
+            <div class="z-myform-chart" role="img" aria-label="{% blocktranslate with low=chart.low|snp_points high=chart.high|snp_points %}Evolución de tus puntos SNP en los últimos 30 días, entre {{ low }} y {{ high }}{% endblocktranslate %}">
+                <svg viewBox="0 0 300 80" preserveAspectRatio="none" focusable="false" aria-hidden="true">
+                    <polygon points="{{ chart.area }}" class="z-myform-area"/>
+                    <polyline points="{{ chart.line }}" class="z-myform-line" vector-effect="non-scaling-stroke"/>
+                </svg>
+                <i class="z-myform-end" style="left: {{ chart.dot.x|unlocalize }}%; top: {{ chart.dot.y|unlocalize }}%"></i>
+                <i class="z-myform-hover" hidden></i>
+                <span class="z-myform-tip" hidden></span>
+                <span class="z-myform-ymax">{{ chart.high|snp_points }}</span>
+                <span class="z-myform-ymin">{{ chart.low|snp_points }}</span>
+            </div>
+            <ol class="visually-hidden" data-myform-points>{% for p in chart.points %}<li data-x="{{ p.x|unlocalize }}" data-y="{{ p.y|unlocalize }}" data-score="{{ p.score|snp_points }}" data-date="{{ p.date|date:'j M' }}">{{ p.date|date:"j M" }}: {{ p.score|snp_points }}</li>{% endfor %}</ol>
+            <div class="z-myform-xaxis"><span>{{ chart.start|date:"j M" }}</span><span>{% translate "Hoy" %}</span></div>
+            {% else %}
+            <p class="small text-muted mb-0">{% translate "Aún no hay suficientes actualizaciones para dibujar la evolución. Los puntos se actualizan solos cada semana." %}</p>
+            {% endif %}
+            {% endwith %}
         </div>
-        {% with chart=my_form.snp.chart %}
-        {% if chart %}
-        <div class="z-myform-chart" role="img" aria-label="{% blocktranslate with low=chart.low|snp_points high=chart.high|snp_points %}Evolución de tus puntos SNP en los últimos 30 días, entre {{ low }} y {{ high }}{% endblocktranslate %}">
-            <svg viewBox="0 0 300 80" preserveAspectRatio="none" focusable="false" aria-hidden="true">
-                <polygon points="{{ chart.area }}" class="z-myform-area"/>
-                <polyline points="{{ chart.line }}" class="z-myform-line" vector-effect="non-scaling-stroke"/>
-            </svg>
-            <i class="z-myform-end" style="left: {{ chart.dot.x|unlocalize }}%; top: {{ chart.dot.y|unlocalize }}%"></i>
-            <i class="z-myform-hover" hidden></i>
-            <span class="z-myform-tip" hidden></span>
-            <span class="z-myform-ymax">{{ chart.high|snp_points }}</span>
-            <span class="z-myform-ymin">{{ chart.low|snp_points }}</span>
-        </div>
-        <ol class="visually-hidden" data-myform-points>{% for p in chart.points %}<li data-x="{{ p.x|unlocalize }}" data-y="{{ p.y|unlocalize }}" data-score="{{ p.score|snp_points }}" data-date="{{ p.date|date:'j M' }}">{{ p.date|date:"j M" }}: {{ p.score|snp_points }}</li>{% endfor %}</ol>
-        <div class="z-myform-xaxis"><span>{{ chart.start|date:"j M" }}</span><span>{% translate "Hoy" %}</span></div>
-        {% else %}
-        <p class="small text-muted mb-0">{% translate "Aún no hay suficientes actualizaciones para dibujar la evolución. Los puntos se actualizan solos cada semana." %}</p>
         {% endif %}
-        {% endwith %}
     </div>
-    {% endif %}
     <p class="small text-muted mb-0">{% translate "Solo cuentan los partidos competitivos." %}</p>
     {% endif %}
 </section>
@@ -375,70 +378,7 @@
 </form>
 {% endif %}
 
-{% if snp_missing %}
-<div class="z-card z-card--link z-snp-notice d-flex flex-column align-items-start" style = "margin-top: 2rem;">
-    <i class="fa-solid fa-trophy" aria-hidden="true"></i>
 
-    <span>
-        <strong>{% translate "Registra tu cuenta de SNP" %}</strong>
-        <span class="text-muted d-block">
-            {% translate "Mantén actualizados semanalmente los puntos SNP de tus jugadores y carga automáticamente sus datos para ahorrar tiempo y tenerlo todo siempre al día." %}
-        </span>
-    </span>
 
-    <a class="btn btn-primary" href="{% url 'snp_account' %}">
-        {% translate "Registrar cuenta" %}
-    </a>
-</div>
-{% endif %}
-
-{% if streaks or not onboarding %}
-<h2 class="z-section-title">{% translate "En racha" %}</h2>
-{% endif %}
-{% if streaks %}
-{% for s in streaks %}
-{% if home_teams %}
-<h3 class="z-hot-team">{% include 'includes/competition_badge.html' with code=s.club.competition name=s.club.rules.name %} <span>{{ s.club.name }}</span></h3>
-{% endif %}
-<div class="z-hot-grid">
-    {% if s.player %}
-    {% with p=s.player.player %}
-    <article class="z-card z-hot">
-        <span class="z-eyebrow"><i class="fa-solid fa-fire me-1" aria-hidden="true"></i> {% translate "Jugador en racha" %}</span>
-        <div class="z-hot-body">
-            <img class="z-avatar" src="{% if p.photo %}{{ p.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="">
-            <div>
-                <strong>{{ p.full_name }}</strong>
-                <span>{% blocktranslate trimmed count n=s.player.streak %}{{ n }} victoria seguida{% plural %}{{ n }} victorias seguidas{% endblocktranslate %}</span>
-            </div>
-        </div>
-        <a class="btn btn-secondary btn-sm" href="{% url 'player_statistics' %}?en={{ s.club.competition }}&amp;player={{ p.public_id }}">{% translate "Ver estadísticas" %}</a>
-    </article>
-    {% endwith %}
-    {% endif %}
-    {% if s.pair %}
-    <article class="z-card z-hot">
-        <span class="z-eyebrow"><i class="fa-solid fa-fire me-1" aria-hidden="true"></i> {% translate "Pareja en racha" %}</span>
-        <div class="z-hot-body">
-            <div class="z-hot-avatars">
-                <img class="z-avatar" src="{% if s.pair.p1.photo %}{{ s.pair.p1.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="">
-                <img class="z-avatar" src="{% if s.pair.p2.photo %}{{ s.pair.p2.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="">
-            </div>
-            <div>
-                <strong>{{ s.pair.label }}</strong>
-                <span>{% blocktranslate trimmed count n=s.pair.streak %}{{ n }} victoria seguida{% plural %}{{ n }} victorias seguidas{% endblocktranslate %}</span>
-            </div>
-        </div>
-        <a class="btn btn-secondary btn-sm" href="{% url 'pair_statistics' %}?en={{ s.club.competition }}&amp;p1={{ s.pair.p1.public_id }}&amp;p2={{ s.pair.p2.public_id }}">{% translate "Ver estadísticas" %}</a>
-    </article>
-    {% endif %}
-</div>
-{% endfor %}
-{% elif not onboarding %}
-<div class="z-empty">
-    <i class="fa-solid fa-fire" aria-hidden="true"></i>
-    {% translate "Cierra enfrentamientos para ver aquí quién encadena victorias." %}
-</div>
-{% endif %}
 {% if my_form.snp.chart %}<script src="{% static 'js/my-form-chart.js' %}"></script>{% endif %}
 {% endblock %}

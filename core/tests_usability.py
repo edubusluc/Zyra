@@ -110,14 +110,14 @@ class HomeFirstStepsTests(TestCase):
     def test_first_steps_come_first_and_empty_blocks_are_hidden(self):
         html = self.client.get(reverse("home")).content.decode()
         self.assertIn("Prepara tu equipo en Zyra", html)
-        for hidden in ("Todo al día", "Próximo enfrentamiento", "En racha", "Nadie encadena"):
+        for hidden in ("Todo al día", "Próximo enfrentamiento"):
             self.assertNotIn(hidden, html)
         self.assertIn("Siguiente paso", html)
 
     def test_empty_blocks_come_back_when_first_steps_are_dismissed(self):
         self.client.post(reverse("dismiss_onboarding"))
         html = self.client.get(reverse("home")).content.decode()
-        for shown in ("Todo al día", "Próximo enfrentamiento", "En racha"):
+        for shown in ("Todo al día", "Próximo enfrentamiento"):
             self.assertIn(shown, html)
 
     def test_next_step_order_is_players_invite_match(self):

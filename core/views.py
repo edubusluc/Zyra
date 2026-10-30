@@ -28,7 +28,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_http_methods, require_POST, require_safe
 
-from data_analyse import my_form as my_form_stats, pairs as pair_stats
+from data_analyse import my_form as my_form_stats
 from call.models import Call
 from match.models import Match
 from match.phase import phases_for, player_status
@@ -120,14 +120,6 @@ def home(request):
                                                      'player_1_visiting', 'player_2_visiting'))
         call = Call.objects.filter(match=next_match).first()
         my_status = player_status(next_player, call, games)
-    # «En racha»: una pareja de tarjetas por equipo (con varios, cada una con su competición).
-    streaks = []
-    for c in clubs:
-        hot_p, hot_pr = pair_stats.hot_streaks(pair_stats.club_game_log(c), Player.objects.filter(club=c, in_team=True))
-        if hot_p or hot_pr:
-            streaks.append({"club": c, "player": hot_p, "pair": hot_pr})
-    hot_player = next((s["player"] for s in streaks if s["player"]), None)
-    hot_pair = next((s["pair"] for s in streaks if s["pair"]), None)
     # Banner: con varios equipos, todos (en el orden de las competiciones), no el del espacio activo.
     home_teams = [{"club": c, "team": c.own_team, "membership": spaces.membership_for(request, c)}
                   for c in clubs] if len(clubs) > 1 else []
@@ -166,9 +158,6 @@ def home(request):
         'my_form_hidden': my_form_hidden,
         'my_status': my_status,
         'days_left': (next_match.start_date - today).days if next_match else None,
-        'hot_player': hot_player,
-        'hot_pair': hot_pair,
-        'streaks': streaks,
         'home_teams': home_teams,
         # Aviso al capitán mientras no haya registrado la cuenta SNP del club (si se muestran los
         # primeros pasos, la tarea de SNP ya va dentro de la lista).
