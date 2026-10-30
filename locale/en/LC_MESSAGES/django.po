@@ -14603,8 +14603,22 @@ msgid_plural "%(n)s equipos actualizados."
 msgstr[0] "%(n)s team updated."
 msgstr[1] "%(n)s teams updated."
 
-msgid "% de las convocatorias cerradas en las que te apuntaste, por competición (una línea por temporada o, con una temporada elegida, una barra por competición)."
-msgstr "% of closed call-ups you signed up to, per competition (one line per season or, with a season selected, one bar per competition)."
+msgid ""
+"% de las convocatorias cerradas en las que te apuntaste, por competición "
+"(una línea por temporada o, con una temporada elegida, una barra por "
+"competición)."
+msgstr ""
+"% of closed call-ups you signed up to, per competition (one line per season "
+"or, with a season selected, one bar per competition)."
 
 msgid "Nuevo"
 msgstr "New"
+
+msgid "Convoc."
+msgstr "Call-up"
+
+msgid "Result."
+msgstr "Result"
+
+msgid "Recorrido del enfrentamiento"
+msgstr "Match progress"

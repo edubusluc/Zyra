@@ -67,49 +67,53 @@
 </div>
 
 {% if matches %}
-{% comment %}Una tarjeta por partido: fecha, tipo (si no es un enfrentamiento) y estado arriba;
-un equipo por fila con sus puntos; abajo lugar, convocados y el enlace al partido (toda la
-tarjeta es pulsable).{% endcomment %}
+{% comment %}Una fila por enfrentamiento: franja de la competición, fecha, competición y tipo, equipos,
+lugar y convocados, recorrido de cuatro pasos (convocatoria, parejas, resultados, acta) y resultado
+o estado. Toda la tarjeta es pulsable.{% endcomment %}
 <ol class="z-fixtures">
     {% for m in matches %}
-    <li class="z-fixture {% if m.outcome == 'V' %}is-win{% elif m.outcome == 'D' %}is-loss{% elif m.outcome == 'E' %}is-draw{% else %}is-pending{% endif %}">
-        <div class="z-fixture-head">
-            <time class="z-fixture-date" datetime="{{ m.start_date|date:'Y-m-d' }}" title="{% blocktranslate with season=m.season %}Temporada {{ season }}{% endblocktranslate %}">
-                <i class="fa-regular fa-calendar" aria-hidden="true"></i>{{ m.start_date|date:"D j M Y" }}
-            </time>
-            {% include 'includes/competition_badge.html' with code=m.club.competition name=m.club.rules.name short=True %}
-            {% if m.match_type != m.club.rules.default_type %}<span class="z-fixture-type">{{ m.type_label }}</span>{% endif %}
-            {% if m.round_number and m.is_league %}<span class="z-fixture-type">{% blocktranslate with n=m.round_number %}Jornada {{ n }}{% endblocktranslate %}</span>{% endif %}
-            {% if m.no_show %}<span class="z-fixture-type">{% translate "No presentado" %}</span>{% endif %}
-            {% if m.outcome == 'V' %}<span class="z-fixture-state is-win">{% translate "Victoria" %}</span>
-            {% elif m.outcome == 'D' %}<span class="z-fixture-state is-loss">{% translate "Derrota" %}</span>
-            {% elif m.outcome == 'E' %}<span class="z-fixture-state is-draw">{% translate "Empate" %}</span>
-            {% elif m.pending_close %}<span class="z-fixture-state is-pending-close">{{ m.phase.label }}</span>
-            {% elif m.upcoming %}<span class="z-fixture-state is-upcoming">{{ m.phase.label }}</span>
-            {% else %}<span class="z-fixture-state is-open" title="{% translate 'Fecha pasada' %}">{{ m.phase.label }}<span class="visually-hidden"> · {% translate "fecha pasada" %}</span></span>{% endif %}
-        </div>
+    <li class="z-fixture {% if m.outcome == 'V' %}is-win{% elif m.outcome == 'D' %}is-loss{% elif m.outcome == 'E' %}is-draw{% else %}is-pending{% endif %}" data-comp="{{ m.club.competition }}">
+        <time class="z-fixture-date" datetime="{{ m.start_date|date:'Y-m-d' }}" title="{% blocktranslate with season=m.season %}Temporada {{ season }}{% endblocktranslate %}">
+            <b>{{ m.start_date|date:"d" }}</b><small>{{ m.start_date|date:"M" }}</small>
+        </time>
+        <div class="z-fixture-main">
+            <div class="z-fixture-head">
+                {% include 'includes/competition_badge.html' with code=m.club.competition name=m.club.rules.name short=True %}
+                <span class="z-fixture-type"><i aria-hidden="true">{% if m.no_draw %}&#9733;{% else %}&#9679;{% endif %}</i>{% if m.round_number and m.is_league %}{% blocktranslate with n=m.round_number %}Jornada {{ n }}{% endblocktranslate %}{% else %}{{ m.type_label }}{% endif %}</span>
+                {% if m.no_show %}<span class="z-fixture-type">{% translate "No presentado" %}</span>{% endif %}
+                <span class="visually-hidden">{{ m.start_date|date:"D j M Y" }}</span>
+            </div>
         <div class="z-fixture-teams">
             {% with lp=m.local_points vp=m.visiting_points %}
             <div class="z-fixture-team {% if m.local.is_own %}is-own{% endif %} {% if lp and vp and lp|add:0 > vp|add:0 %}is-winner{% elif lp and vp and lp|add:0 < vp|add:0 %}is-loser{% endif %}">
                 <img src="{% if m.local.photo %}{{ m.local.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="" width="36" height="36" loading="lazy">
                 <span class="z-fixture-name">{{ m.local_name }}</span>
-                {% if lp %}<b class="z-fixture-points">{{ lp }}</b>{% endif %}
             </div>
             <div class="z-fixture-team {% if m.visiting.is_own %}is-own{% endif %} {% if lp and vp and vp|add:0 > lp|add:0 %}is-winner{% elif lp and vp and vp|add:0 < lp|add:0 %}is-loser{% endif %}">
                 <img src="{% if m.visiting.photo %}{{ m.visiting.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="" width="36" height="36" loading="lazy">
                 <span class="z-fixture-name">{{ m.visiting_name }}</span>
-                {% if vp %}<b class="z-fixture-points">{{ vp }}</b>{% endif %}
             </div>
             {% endwith %}
         </div>
-        <div class="z-fixture-foot">
-            {% if m.location %}<span class="z-fixture-meta z-fixture-place"><i class="fa-solid fa-location-dot" aria-hidden="true"></i>{{ m.location }}</span>{% endif %}
-            {% if m.tiebreak %}<span class="z-fixture-meta z-fixture-tiebreak"><i class="fa-solid fa-scale-balanced" aria-hidden="true"></i>{% if m.outcome == 'V' %}{% if m.tiebreak_pair %}{% blocktranslate trimmed with pair=m.tiebreak_pair %}6-6: la pareja 3 ganó su partido y desempató ({{ pair }}){% endblocktranslate %}{% else %}{% translate "6-6: la pareja 3 ganó su partido y desempató" %}{% endif %}{% else %}{% translate "6-6: la pareja 3 perdió su partido y desempató el rival" %}{% endif %}</span>{% endif %}
-            {% if m.outcome is None %}<span class="z-fixture-meta"><i class="fa-solid fa-user-check" aria-hidden="true"></i>{% if m.called and m.phase.action == 'close_call' %}{% blocktranslate trimmed count n=m.called %}{{ n }} apuntado{% plural %}{{ n }} apuntados{% endblocktranslate %}{% elif m.called %}{% blocktranslate trimmed count n=m.called %}{{ n }} convocado{% plural %}{{ n }} convocados{% endblocktranslate %}{% else %}{% translate "Sin convocatoria" %}{% endif %}</span>{% endif %}
-            <span class="z-fixture-actions">
-                <a href="{% url 'call_for_match' m.public_id %}" class="z-fixture-open stretched-link" aria-label="{% blocktranslate with local=m.local_name visiting=m.visiting_name %}Ver {{ local }} contra {{ visiting }}{% endblocktranslate %}">{% translate "Ver enfrentamiento" %}<i class="fa-solid fa-chevron-right" aria-hidden="true"></i></a>
-                {% if multi_space and not m.can_manage and create_spaces %}<span class="z-fixture-meta z-fixture-role">{% translate "Eres jugador aquí" %}</span>{% endif %}
-            </span>
+            <div class="z-fixture-foot">
+                {% if m.location %}<span class="z-fixture-meta z-fixture-place"><i class="fa-solid fa-location-dot" aria-hidden="true"></i>{{ m.location }}</span>{% endif %}
+                {% if m.tiebreak %}<span class="z-fixture-meta z-fixture-tiebreak"><i class="fa-solid fa-scale-balanced" aria-hidden="true"></i>{% if m.outcome == 'V' %}{% if m.tiebreak_pair %}{% blocktranslate trimmed with pair=m.tiebreak_pair %}6-6: la pareja 3 ganó su partido y desempató ({{ pair }}){% endblocktranslate %}{% else %}{% translate "6-6: la pareja 3 ganó su partido y desempató" %}{% endif %}{% else %}{% translate "6-6: la pareja 3 perdió su partido y desempató el rival" %}{% endif %}</span>{% endif %}
+                {% if m.outcome is None %}<span class="z-fixture-meta"><i class="fa-solid fa-user-check" aria-hidden="true"></i>{% if m.called and m.phase.action == 'close_call' %}{% blocktranslate trimmed count n=m.called %}{{ n }} apuntado{% plural %}{{ n }} apuntados{% endblocktranslate %}{% elif m.called %}{% blocktranslate trimmed count n=m.called %}{{ n }} convocado{% plural %}{{ n }} convocados{% endblocktranslate %}{% else %}{% translate "Sin convocatoria" %}{% endif %}</span>{% endif %}
+                <span class="z-fixture-actions">
+                    <a href="{% url 'call_for_match' m.public_id %}" class="z-fixture-open stretched-link" aria-label="{% blocktranslate with local=m.local_name visiting=m.visiting_name %}Ver {{ local }} contra {{ visiting }}{% endblocktranslate %}">{% translate "Ver enfrentamiento" %}<i class="fa-solid fa-chevron-right" aria-hidden="true"></i></a>
+                    {% if multi_space and not m.can_manage and create_spaces %}<span class="z-fixture-meta z-fixture-role">{% translate "Eres jugador aquí" %}</span>{% endif %}
+                </span>
+            </div>
+        </div>
+        <ol class="z-flow4" aria-label="{% translate 'Recorrido del enfrentamiento' %}">
+            {% for step in m.phase.track %}<li class="{% if step.state == 'done' %}is-done{% elif step.state == 'cur' %}is-cur{% endif %}"><i aria-hidden="true">{% if step.state == 'done' %}&#10003;{% elif step.state == 'cur' %}!{% endif %}</i>{{ step.label }}</li>{% endfor %}
+        </ol>
+        <div class="z-fixture-result">
+            {% if m.outcome %}<b class="z-fixture-score">{{ m.local_points }} – {{ m.visiting_points }}</b>
+            <span class="z-fixture-state {% if m.outcome == 'V' %}is-win{% elif m.outcome == 'D' %}is-loss{% else %}is-draw{% endif %}">{% if m.outcome == 'V' %}{% translate "Victoria" %}{% elif m.outcome == 'D' %}{% translate "Derrota" %}{% else %}{% translate "Empate" %}{% endif %}</span>
+            {% elif m.pending_close %}<span class="z-fixture-state is-pending-close">{{ m.phase.label }}</span>
+            {% elif m.upcoming %}<span class="z-fixture-state is-upcoming">{{ m.phase.label }}</span>
+            {% else %}<span class="z-fixture-state is-open" title="{% translate 'Fecha pasada' %}">{{ m.phase.label }}<span class="visually-hidden"> · {% translate "fecha pasada" %}</span></span>{% endif %}
         </div>
     </li>
     {% endfor %}

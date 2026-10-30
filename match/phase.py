@@ -34,6 +34,8 @@ ACTION_LABELS = {
 
 # Pasos del indicador de fases, en orden.
 STEPS = (_("Convocatoria"), _("Parejas"), _("Resultados"), _("Acta"))
+# Los mismos pasos con etiqueta corta para el recorrido de la tarjeta del listado.
+SHORT_STEPS = (_("Convoc."), _("Parejas"), _("Result."), _("Acta"))
 
 
 @dataclass(frozen=True)
@@ -59,6 +61,12 @@ class MatchPhase:
             missing = max(self.total_games - self.results, 0)
             return ngettext("Falta %(n)s resultado", "Faltan %(n)s resultados", missing) % {"n": missing}
         return ACTION_LABELS[self.action]
+
+    @property
+    def track(self):
+        """Recorrido de cuatro pasos para pintar: ``[{"label", "state"}]`` con state «done», «cur» o «»."""
+        return [{"label": label, "state": "done" if i < self.step else "cur" if i == self.step else ""}
+                for i, label in enumerate(SHORT_STEPS)]
 
     @property
     def missing_players(self):
