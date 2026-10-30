@@ -484,7 +484,8 @@ def players_charts(players, logs, season, match_type):
     una cifra (los puntos de un partido no valen lo mismo en SNP que en LAPI). ``logs``: partidos de
     cada jugador de ``players`` (build_game_log, ya filtrados por temporada).
 
-    Devuelve ``set_rows`` (cada situación de sets con el % de cada competición) y ``spaces_chart``
+    Devuelve ``set_rows`` (cada situación de sets con el % de cada competición), ``set_panels`` (lo mismo
+    agrupado por competición, para los paneles de stats_mine.html) y ``spaces_chart``
     para stats_spaces.js: competiciones, partidos ganados y perdidos como local y como visitante,
     partidos ganados por temporada (sin temporada elegida) y % de convocatorias en las que se apuntó
     por temporada (sin temporada elegida).
@@ -510,11 +511,18 @@ def players_charts(players, logs, season, match_type):
         "comps": [{"code": c["code"], "name": c["name"], "r": st[key]} for c, st in zip(comps, sets_by_comp)],
     } for key, label, hint in SET_SITUATIONS]
 
+    # Lo mismo agrupado por competición: un panel por competición con todas sus situaciones (idea «marco y dato»).
+    set_panels = [{
+        "code": c["code"], "name": c["name"], "club": c["club"],
+        "rows": [{"label": label, "hint": hint, "r": st[key]} for key, label, hint in SET_SITUATIONS],
+    } for c, st in zip(comps, sets_by_comp)]
+
     by_start = lambda s: int(s.split('-')[0])
     labels = sorted({y for per in years for y in per}, key=by_start)
     att_labels = sorted({s for per in attendance for s in per}, key=by_start)
     return {
         "set_rows": set_rows,
+        "set_panels": set_panels,
         "sets_played": any(st["played"] for st in sets_by_comp),
         "has_local": any(r["won"] or r["lost"] for r in local),
         "has_visiting": any(r["won"] or r["lost"] for r in visiting),

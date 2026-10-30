@@ -29,7 +29,7 @@
       </div>
       <ul class="z-space-rows" aria-label="{% translate 'Tus partidos por competición' %}">
         {% for row in rows %}
-        <li>
+        <li class="z-comp-frame z-comp-frame--{{ row.club.competition }}">
           <span class="z-space-rows-name">{% include 'includes/competition_badge.html' with code=row.club.competition name=row.club.rules.name %} <span>{{ row.club.name }}</span></span>
           <span class="z-space-rows-nums">{% blocktranslate trimmed with played=row.played wins=row.wins losses=row.losses %}Jugados: {{ played }} · {{ wins }}V {{ losses }}D{% endblocktranslate %}{% if row.calls.total %} · {% blocktranslate trimmed with signed=row.calls.signed total=row.calls.total %}te apuntaste a {{ signed }} de {{ total }} convocatorias{% endblocktranslate %}{% endif %}</span>
           <a href="{% url 'my_statistics' %}?espacio={{ row.club.competition }}">{% blocktranslate with competition=row.club.rules.name %}Ver {{ competition }}{% endblocktranslate %} <i class="fa-solid fa-chevron-right" aria-hidden="true"></i></a>
@@ -50,19 +50,19 @@
           <h3 class="st-card-title">{% translate "Sets" %}</h3>
           <p class="st-card-note">{% translate "Cómo ganas y pierdes tus partidos, set a set: % de victorias en cada situación." %}</p>
           {% if sets_played %}
-          <div class="st-sets-grid">
-            {% for item in set_rows %}
-            <div class="st-rate z-comp-rate">
-              <div class="st-split-head"><span>{{ item.label }}</span></div>
-              {% for c in item.comps %}
-              <div class="z-comp-meter">
-                <span class="z-comp-meter-name">{{ c.name }}</span>
-                <div class="st-meter z-comp-meter--{{ c.code }}"><span style="width: {{ c.r.pct|default:0 }}%"></span></div>
-                <b>{% if c.r.pct is None %}—{% else %}{{ c.r.pct }}%{% endif %}</b>
+          {# Un panel por competición (marco con su color) y los datos en lima, el color de Zyra. #}
+          <div class="z-comp-panels">
+            {% for panel in set_panels %}
+            <section class="z-comp-frame z-comp-frame--{{ panel.code }} z-comp-panel" aria-label="{{ panel.name }}">
+              <header>{% include 'includes/competition_badge.html' with code=panel.code name=panel.name %} <span>{{ panel.club }}</span></header>
+              {% for item in panel.rows %}
+              <div class="z-comp-meter" title="{{ item.hint }}">
+                <span class="z-comp-meter-name">{{ item.label }}</span>
+                <div class="st-meter"><span style="width: {{ item.r.pct|default:0 }}%"></span></div>
+                <b>{% if item.r.pct is None %}—{% else %}{{ item.r.pct }}%{% endif %}</b>
               </div>
               {% endfor %}
-              <p class="st-split-foot">{{ item.hint }}</p>
-            </div>
+            </section>
             {% endfor %}
           </div>
           {% else %}

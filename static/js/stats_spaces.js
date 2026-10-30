@@ -1,5 +1,5 @@
 // «Mis estadísticas · Todas» (stats_mine.html): cada gráfico pone las competiciones una al lado de la otra,
-// con su color (lima SNP, azul LAPI). Nunca suma puntos de una competición con otra.
+// con su color (dorado SNP, turquesa LAPI; en los gráficos que comparan, el color es lo que separa las series). Nunca suma puntos de una competición con otra.
 (function () {
   const source = document.getElementById('spaces-chart-data');
   if (!source || typeof Chart === 'undefined') return;
