@@ -75,6 +75,11 @@ class Competition:
         return sum(self.game_points)
 
     @property
+    def has_draws(self):
+        """Si un enfrentamiento puede acabar en empate (puntos totales pares: SNP sí, LAPI con tres partidos de 1 punto no)."""
+        return self.total_points % 2 == 0
+
+    @property
     def default_type(self):
         """Tipo de enfrentamiento por defecto al crear uno."""
         return self.match_types[0][0]

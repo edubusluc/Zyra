@@ -42,7 +42,7 @@
 <div class="z-summary" role="group" aria-label="{% translate 'Resumen' %}">
     <div><b>{{ summary.played }}</b><span>{% translate "Jugados" %}</span></div>
     <div class="is-win"><b>{{ summary.won }}</b><span>{% translate "Ganados" %}</span></div>
-    <div class="is-draw"><b>{{ summary.drawn }}</b><span>{% translate "Empatados" %}</span></div>
+    {% if summary.drawn or has_draws %}<div class="is-draw"><b>{{ summary.drawn }}</b><span>{% translate "Empatados" %}</span></div>{% endif %}
     <div class="is-loss"><b>{{ summary.lost }}</b><span>{% translate "Perdidos" %}</span></div>
     <div><b>{{ summary.pending }}</b><span>{% translate "Pendientes" %}</span></div>
 </div>
@@ -86,13 +86,10 @@ tarjeta es pulsable).{% endcomment %}
         <div class="z-fixture-foot">
             {% if m.location %}<span class="z-fixture-meta z-fixture-place"><i class="fa-solid fa-location-dot" aria-hidden="true"></i>{{ m.location }}</span>{% endif %}
             {% if m.tiebreak %}<span class="z-fixture-meta z-fixture-tiebreak"><i class="fa-solid fa-scale-balanced" aria-hidden="true"></i>{% if m.outcome == 'V' %}{% if m.tiebreak_pair %}{% blocktranslate trimmed with pair=m.tiebreak_pair %}6-6: la pareja 3 ganó su partido y desempató ({{ pair }}){% endblocktranslate %}{% else %}{% translate "6-6: la pareja 3 ganó su partido y desempató" %}{% endif %}{% else %}{% translate "6-6: la pareja 3 perdió su partido y desempató el rival" %}{% endif %}</span>{% endif %}
-            {% if m.outcome is None %}<span class="z-fixture-meta"><i class="fa-solid fa-user-check" aria-hidden="true"></i>{% if m.called %}{% blocktranslate trimmed count n=m.called %}{{ n }} convocado{% plural %}{{ n }} convocados{% endblocktranslate %}{% else %}{% translate "Sin convocatoria" %}{% endif %}</span>{% endif %}
+            {% if m.outcome is None %}<span class="z-fixture-meta"><i class="fa-solid fa-user-check" aria-hidden="true"></i>{% if m.called and m.phase.action == 'close_call' %}{% blocktranslate trimmed count n=m.called %}{{ n }} apuntado{% plural %}{{ n }} apuntados{% endblocktranslate %}{% elif m.called %}{% blocktranslate trimmed count n=m.called %}{{ n }} convocado{% plural %}{{ n }} convocados{% endblocktranslate %}{% else %}{% translate "Sin convocatoria" %}{% endif %}</span>{% endif %}
             <span class="z-fixture-actions">
                 <a href="{% url 'call_for_match' m.public_id %}" class="z-fixture-open stretched-link" aria-label="{% blocktranslate with local=m.local_name visiting=m.visiting_name %}Ver {{ local }} contra {{ visiting }}{% endblocktranslate %}">{% translate "Ver enfrentamiento" %}<i class="fa-solid fa-chevron-right" aria-hidden="true"></i></a>
-                {% if multi_space and not m.can_manage %}<span class="z-fixture-meta z-fixture-role">{% translate "Eres jugador aquí" %}</span>{% endif %}
-                {% if m.draft_mode and m.can_manage %}
-                <a href="{% url 'delete_match' m.public_id %}{{ m.space_query }}" class="z-edit z-edit--danger z-fixture-delete" aria-label="{% translate 'Eliminar enfrentamiento' %}" title="{% translate 'Eliminar enfrentamiento' %}"><i class="fa-solid fa-trash" aria-hidden="true"></i></a>
-                {% endif %}
+                {% if multi_space and not m.can_manage and create_spaces %}<span class="z-fixture-meta z-fixture-role">{% translate "Eres jugador aquí" %}</span>{% endif %}
             </span>
         </div>
     </li>

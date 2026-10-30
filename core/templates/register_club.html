@@ -58,7 +58,7 @@
                 <p>
                     {{ field.label_tag }}
                     {{ field }}
-                    {% if field.help_text %}<span class="helptext" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</span>{% endif %}
+                    {% if field.help_text %}<span class="helptext" id="{{ field.auto_id }}_helptext">{{ field.help_text }}{% if field.name == 'country' %} <span data-snp-only>{% translate "En la SNP decide dónde se buscan tus jugadores." %}</span>{% endif %}</span>{% endif %}
                     {% for error in field.errors %}<span class="errorlist d-block text-danger small">{{ error }}</span>{% endfor %}
                 </p>
                 {% endif %}{% endfor %}

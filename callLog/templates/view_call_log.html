@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 {% load static i18n %}
-{% block page_title %}{% translate "Cambios en la convocatoria" %} · {% endblock %}
+{% block page_title %}{% translate "Advertencias y cambios de la convocatoria" %} · {% endblock %}
 
 {% block content %}
 <div class="table-container">
-    <h1>{% translate "Cambios en la convocatoria" %}</h1>
+    <h1>{% translate "Advertencias y cambios de la convocatoria" %}</h1>
 
     {% if log_lines %}
         <div class="log-container">
@@ -23,8 +23,8 @@
 
     {% if can_manage %}
     <div class="mt-4">
-        <h2 class="z-section-title">{% translate "Aplicar sanciones" %}</h2>
-        <form method="POST" action="{% url 'create_penalty' call_id %}" data-loading-text="{% translate 'Guardando la penalización…' %}">
+        <h2 class="z-section-title">{% translate "Poner advertencia" %}</h2>
+        <form method="POST" action="{% url 'create_penalty' call_id %}" data-loading-text="{% translate 'Guardando la advertencia…' %}">
             {% csrf_token %}
             <p class="text-muted small">{% translate "Marca a los jugadores que quieres advertir (solo jugadores actuales del equipo) y elige el motivo." %}</p>
             <div class="z-penalty-fields">
@@ -40,7 +40,7 @@
                     <input type="text" name="reason" id="penalty-reason" class="form-control" maxlength="100" autocomplete="off">
                 </div>
             </div>
-            {% translate "Aplicar sanciones" as penalty_label %}
+            {% translate "Poner advertencia" as penalty_label %}
             {% include 'includes/player_selector.html' with selected=None submit_label=penalty_label %}
         </form>
     </div>

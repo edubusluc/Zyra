@@ -1330,6 +1330,7 @@ a.z-card:hover, .z-card--link:hover {
 
 .z-next-match { display: grid; gap: 18px; }
 .z-next-match-when { display: flex; align-items: center; gap: 10px; font-weight: 700; color: var(--z-muted); }
+.z-next-match-teams > div > span { text-transform: uppercase; }
 .z-next-match-teams { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; }
 .z-next-match-team { display: grid; justify-items: center; gap: 6px; text-align: center; font-weight: 800; text-transform: uppercase; color: #FFFFFF; }
 .z-next-match-team img { width: 64px; height: 64px; object-fit: contain; }
@@ -1812,7 +1813,7 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 .z-fixture-teams { display: grid; gap: 8px; }
 .z-fixture-team { display: flex; align-items: center; gap: 12px; min-width: 0; font-size: 1rem; font-weight: 700; color: #D9DBD3; }
 .z-fixture-team img { width: 36px; height: 36px; flex-shrink: 0; object-fit: cover; border-radius: 50%; background: var(--z-surface-2); border: 1px solid var(--z-border-strong); }
-.z-fixture-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.z-fixture-name { text-transform: uppercase; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .z-fixture-team.is-own .z-fixture-name { color: #FFFFFF; font-weight: 800; }
 .z-fixture-team.is-own img { border-color: var(--z-lime); }
 .z-fixture-points { min-width: 2ch; font-size: 1.5rem; font-weight: 800; line-height: 1; text-align: right; color: #FFFFFF; font-variant-numeric: tabular-nums; }
@@ -2649,6 +2650,8 @@ a.z-hub-card:hover, a.z-hub-card:focus-visible { border-color: var(--z-lime); co
 .z-more li a, .z-more li button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; font: inherit; color: var(--z-text, inherit); text-align: left; text-decoration: none; background: none; border: 0; border-radius: 8px; }
 .z-more li a:hover, .z-more li button:hover, .z-more li a:focus-visible, .z-more li button:focus-visible { background: var(--z-surface-3); }
 .z-more li i { width: 18px; color: var(--z-lime); text-align: center; }
+.z-more li.z-more-title { padding: 8px 12px 2px; font-size: .7rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--z-muted); }
+.z-more li.z-more-title:not(:first-child) { margin-top: 4px; border-top: 1px solid var(--z-border); }
 .z-more li.z-more-danger { margin-top: 4px; padding-top: 4px; border-top: 1px solid var(--z-border); }
 .z-more li a.is-danger, .z-more li a.is-danger i { color: var(--z-danger); }
 .z-more li a.is-danger:hover, .z-more li a.is-danger:focus-visible { background: rgba(255, 92, 99, .12); }

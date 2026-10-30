@@ -298,6 +298,7 @@ def list_match(request):
         'selected_season': season,
         'all_seasons': ALL_SEASONS,
         'summary': summary,
+        'has_draws': any(c.rules.has_draws for c in clubs),
         'search': search,
         'rival': rival,
         'rivals': rivals,
@@ -762,7 +763,7 @@ def call_for_match(request, match_id):
         "score_visiting": split_points(match.result_points)[1] if outcome else None,
         "is_future": match.start_date > today,
         "my_status": my_status,
-        "report_emails": ", ".join(admin_emails(request.club)) if call and call.draft_mode else "",
+        "report_emails": ", ".join(admin_emails(request.club)) if call else "",
         "share_text": share_text(match, games) if not match.draft_mode else "",
         "min_call_players": competition_for(match).min_call_players,
     })

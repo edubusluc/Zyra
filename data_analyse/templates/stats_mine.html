@@ -31,7 +31,7 @@
         {% for row in rows %}
         <li>
           <span class="z-space-rows-name">{% include 'includes/competition_badge.html' with code=row.club.competition name=row.club.rules.name %} <span>{{ row.club.name }}</span></span>
-          <span class="z-space-rows-nums">{% blocktranslate trimmed with played=row.played wins=row.wins losses=row.losses %}Jugados: {{ played }} · {{ wins }}V {{ losses }}D{% endblocktranslate %}{% if row.calls.total %} · {% blocktranslate trimmed with signed=row.calls.signed total=row.calls.total %}apuntado a {{ signed }} de {{ total }} convocatorias{% endblocktranslate %}{% endif %}</span>
+          <span class="z-space-rows-nums">{% blocktranslate trimmed with played=row.played wins=row.wins losses=row.losses %}Jugados: {{ played }} · {{ wins }}V {{ losses }}D{% endblocktranslate %}{% if row.calls.total %} · {% blocktranslate trimmed with signed=row.calls.signed total=row.calls.total %}te apuntaste a {{ signed }} de {{ total }} convocatorias{% endblocktranslate %}{% endif %}</span>
           <a href="{% url 'my_statistics' %}?espacio={{ row.club.competition }}">{% blocktranslate with competition=row.club.rules.name %}Ver {{ competition }}{% endblocktranslate %} <i class="fa-solid fa-chevron-right" aria-hidden="true"></i></a>
         </li>
         {% endfor %}
