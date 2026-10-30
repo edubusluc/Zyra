@@ -1,13 +1,15 @@
 {% load i18n %}
-{# Selector de temporadas: Todas, las tres últimas y un buscador para el resto. Recibe el contexto de data_analyse.views.season_filter_context. #}
-<nav aria-label="{% translate 'Temporadas' %}" class="st-season-filter">
-  <ul class="st-seasons">
-    <li class="st-filter-label">{% translate "Temporada" %}</li>
-    <li><a class="st-chip" href="{{ season_all.url }}" {% if season_all.active %}aria-current="page"{% endif %}>{% translate "Todas" %}</a></li>
-    {% for chip in season_chips %}
-      <li><a class="st-chip" href="{{ chip.url }}" {% if chip.active %}aria-current="page"{% endif %}>{{ chip.label }}</a></li>
-    {% endfor %}
-  </ul>
+{# Selector de temporadas (desplegable «Temporada»): Todas, las tres últimas y un buscador para el resto. Recibe el contexto de data_analyse.views.season_filter_context. #}
+<nav aria-label="{% translate 'Temporadas' %}" class="z-fsel-wrap st-season-filter">
+  <details class="z-fsel{% if not season_all.active %} is-active{% endif %}" data-filter-menu>
+    <summary><small>{% translate "Temporada" %}</small><span>{% if season_all.active %}{% translate "Todas" %}{% else %}{% for chip in season_chips %}{% if chip.active %}{{ chip.label }}{% endif %}{% endfor %}{% endif %}</span></summary>
+    <ul class="z-fsel-menu">
+      <li><a href="{{ season_all.url }}" {% if season_all.active %}aria-current="page"{% endif %}>{% translate "Todas" %}</a></li>
+      {% for chip in season_chips %}
+      <li><a href="{{ chip.url }}" {% if chip.active %}aria-current="page"{% endif %}>{{ chip.label }}</a></li>
+      {% endfor %}
+    </ul>
+  </details>
   {% if season_search %}
   <form method="get" action="{{ request.path }}{{ season_anchor }}" class="st-season-search">
     {% for name, value in season_keep %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}

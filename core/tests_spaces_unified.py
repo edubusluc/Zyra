@@ -244,10 +244,10 @@ class UnifiedSpacesTests(TestCase):
         return players
 
     def test_my_statistics_needs_players_in_several_spaces(self):
-        # Sin jugador enlazado: a Equipo; con uno solo: a su ficha.
-        self.assertRedirects(self.client.get(reverse("my_statistics")), reverse("team_statistics"),
-                             fetch_redirect_response=False)
-        self.assertNotContains(self.client.get(reverse("team_statistics")), "Mis estadísticas")
+        # Con dos equipos y sin jugador enlazado explica cómo enlazarlo (la pestaña se ve); con uno solo: a su ficha.
+        page = self.client.get(reverse("my_statistics"))
+        self.assertTemplateUsed(page, "stats_mine_link.html")
+        self.assertContains(page, "Mis estadísticas")
         from players.models import Player
         me = Player.objects.create(club=self.lapi, user=self.user, name="Edu", last_name="B")
         self.assertRedirects(self.client.get(reverse("my_statistics")),
@@ -272,8 +272,11 @@ class UnifiedSpacesTests(TestCase):
         self.assertEqual(len(chart["attendance"]["series"]), 2)
         self.assertEqual([c["code"] for c in page.context["set_rows"][0]["comps"]], ["snp", "lapi"])
         self.assertContains(page, "js/stats_spaces.js")
-        # Con una temporada elegida no hay gráficos por temporada.
-        self.assertNotContains(self.client.get(reverse("my_statistics") + f"?season={season}"), "spacesYearsChart")
+        # Con una temporada elegida no hay victorias por temporada, pero sí las convocatorias de esa temporada.
+        chosen = self.client.get(reverse("my_statistics") + f"?season={season}")
+        self.assertNotContains(chosen, "spacesYearsChart")
+        self.assertContains(chosen, "spacesAttendanceChart")
+        self.assertEqual(chosen.context["spaces_chart"]["attendance"]["labels"], [season])
 
     def test_my_statistics_of_one_competition_opens_own_sheet(self):
         me_snp, me_lapi = self._me()

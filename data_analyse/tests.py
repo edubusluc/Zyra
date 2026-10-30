@@ -382,7 +382,7 @@ class MatchTypeFilterTests(TestCase):
         self.assertEqual([o["label"] for o in response.context["match_types"] if o["active"]], ["Competitivos"])
         self.assertEqual([o["label"] for o in response.context["competitive_types"]],
                          ["Todos los enfrentamientos", "Enfrentamientos", "Retos", "Play offs"])
-        self.assertContains(response, 'id="competitive-type"')
+        self.assertContains(response, "<small>Competitivo</small>", html=True)
 
         # Un tipo concreto sigue dentro de Competitivos, con el selector en ese tipo
         response = self.client.get(reverse("team_statistics"), {"match_type": Match.RETO})
@@ -396,13 +396,15 @@ class MatchTypeFilterTests(TestCase):
     def test_competitive_selector_keeps_other_parameters(self):
         response = self.client.get(reverse("player_statistics"), {"player": self.a.public_id, "match_type": "competitivo"})
         self.assertEqual(response.context["match_type_keep"], [("player", self.a.public_id)])
-        self.assertContains(response, f'<input type="hidden" name="player" value="{self.a.public_id}">', html=True)
-        self.assertContains(response, '<option value="reto" >')
+        # Cada opción del desplegable es un enlace que conserva el jugador.
+        urls = [o["url"] for o in response.context["competitive_types"]]
+        self.assertTrue(all(f"player={self.a.public_id}" in u for u in urls))
+        self.assertContains(response, "match_type=reto")
 
     def test_all_hides_competitive_selector(self):
         response = self.client.get(reverse("team_statistics"))
         self.assertEqual(response.context["competitive_types"], [])
-        self.assertNotContains(response, 'id="competitive-type"')
+        self.assertNotContains(response, "<small>Competitivo</small>", html=True)
 
 
 class SeasonFilterTests(TestCase):

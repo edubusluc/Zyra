@@ -15,7 +15,7 @@
             <img class="z-home-team-logo" src="{% if t.team.photo %}{{ t.team.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="{% blocktranslate with club=t.club.name %}Escudo de {{ club }}{% endblocktranslate %}">
             <span class="z-home-team-text">
                 <strong>{{ t.club.name }}</strong>
-                <span>{% include 'includes/competition_badge.html' with code=t.club.competition name=t.club.rules.name %} {{ t.membership.team_role_label }}<span class="z-home-team-div">· {% if t.club.rules.has_snp %}{% if t.team.division %}{% blocktranslate with level=t.team.get_division_display %}Categoría {{ level }}{% endblocktranslate %}{% else %}{% translate "Sin categoría" %}{% endif %}{% elif t.team.division %}{{ t.team.get_division_display }}{% else %}{% translate "Sin división" %}{% endif %}</span></span>
+                <span>{% include 'includes/competition_badge.html' with code=t.club.competition name=t.club.rules.name %} {{ t.membership.team_role_label }}<span class="z-home-team-div">· {% if t.club.rules.has_snp %}{% if t.team.division %}{% blocktranslate with level=t.team.get_division_display %}Categoría {{ level }}{% endblocktranslate %}{% elif t.membership.is_admin %}<a href="{% url 'edit_team' t.team.public_id %}">{% translate "Pon la categoría" %}</a>{% else %}{% translate "Sin categoría" %}{% endif %}{% elif t.team.division %}{{ t.team.get_division_display }}{% else %}{% translate "Sin división" %}{% endif %}</span></span>
             </span>
         </li>
         {% endfor %}
@@ -212,7 +212,7 @@
     {% endfor %}
 </ul>
 {% if pending_total > pending|length %}
-<p><a href="{% url 'list_match' %}?season=all">{% blocktranslate with n=pending_total %}Ver los {{ n }} pendientes{% endblocktranslate %}</a></p>
+<p><a href="{% url 'list_match' %}?season=all">{% blocktranslate with n=pending_total %}Ver los {{ n }} pendientes{% endblocktranslate %}{% if pending_overdue %} {% blocktranslate trimmed count o=pending_overdue %}({{ o }} con fecha pasada){% plural %}({{ o }} con fecha pasada){% endblocktranslate %}{% endif %}</a></p>
 {% endif %}
 {% else %}
 <div class="z-empty"><i class="fa-solid fa-circle-check" aria-hidden="true"></i>{% translate "Todo al día" %}</div>
@@ -396,12 +396,15 @@
 <h2 class="z-section-title">{% translate "En racha" %}</h2>
 {% endif %}
 {% if streaks %}
+{% for s in streaks %}
+{% if home_teams %}
+<h3 class="z-hot-team">{% include 'includes/competition_badge.html' with code=s.club.competition name=s.club.rules.name %} <span>{{ s.club.name }}</span></h3>
+{% endif %}
 <div class="z-hot-grid">
-    {% for s in streaks %}
     {% if s.player %}
     {% with p=s.player.player %}
     <article class="z-card z-hot">
-        <span class="z-eyebrow"><i class="fa-solid fa-fire me-1" aria-hidden="true"></i> {% translate "Jugador en racha" %}{% if home_teams %} {% include 'includes/competition_badge.html' with code=s.club.competition name=s.club.rules.name %}{% endif %}</span>
+        <span class="z-eyebrow"><i class="fa-solid fa-fire me-1" aria-hidden="true"></i> {% translate "Jugador en racha" %}</span>
         <div class="z-hot-body">
             <img class="z-avatar" src="{% if p.photo %}{{ p.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="">
             <div>
@@ -415,7 +418,7 @@
     {% endif %}
     {% if s.pair %}
     <article class="z-card z-hot">
-        <span class="z-eyebrow"><i class="fa-solid fa-fire me-1" aria-hidden="true"></i> {% translate "Pareja en racha" %}{% if home_teams %} {% include 'includes/competition_badge.html' with code=s.club.competition name=s.club.rules.name %}{% endif %}</span>
+        <span class="z-eyebrow"><i class="fa-solid fa-fire me-1" aria-hidden="true"></i> {% translate "Pareja en racha" %}</span>
         <div class="z-hot-body">
             <div class="z-hot-avatars">
                 <img class="z-avatar" src="{% if s.pair.p1.photo %}{{ s.pair.p1.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="">
@@ -429,8 +432,8 @@
         <a class="btn btn-secondary btn-sm" href="{% url 'pair_statistics' %}?en={{ s.club.competition }}&amp;p1={{ s.pair.p1.public_id }}&amp;p2={{ s.pair.p2.public_id }}">{% translate "Ver estadísticas" %}</a>
     </article>
     {% endif %}
-    {% endfor %}
 </div>
+{% endfor %}
 {% elif not onboarding %}
 <div class="z-empty">
     <i class="fa-solid fa-fire" aria-hidden="true"></i>

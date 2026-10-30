@@ -178,3 +178,19 @@ class CopyPlayersTests(TestCase):
         luis_lapi.refresh_from_db()
         self.assertEqual(luis_lapi.snp_score, 80)
         self.assertEqual(Player.objects.filter(club=self.lapi).count(), 1)
+
+    def test_offer_disappears_after_a_copy(self):
+        page = self.client.get(reverse("list_players"))
+        self.assertContains(page, "¿Tus jugadores de SNP también juegan aquí?")
+        player_copy.copy_players(self.snp, self.lapi, [self.luis.pk], self.edu)
+        self.assertNotContains(self.client.get(reverse("list_players")), "también juegan aquí?")
+
+    def test_offer_from_lapi_to_snp(self):
+        self._activate(self.snp)
+        Player.objects.create(club=self.lapi, team=self.lapi.own_team, name="Pablo", last_name="Sanz")
+        self.assertContains(self.client.get(reverse("list_players")), "¿Tus jugadores de LAPI también juegan aquí?")
+
+    def test_manage_roster_names_the_team(self):
+        page = self.client.get(reverse("manage_roster"))
+        self.assertContains(page, "Equipo:")
+        self.assertContains(page, "Gladiadores LAPI")

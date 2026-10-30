@@ -100,13 +100,24 @@ def list_players(request):
         'only_team': only_team,
         # «Copiar de SNP / LAPI» y las fichas copiadas que esperan a que su jugador acepte.
         'copy_sources': player_copy.managed_pairs(request),
-        'has_copies': Player.objects.filter(club=request.club, copied_from__isnull=False).exists(),
+        'copy_offer': _copy_offer(request),
         'pending_copies': set(Invitation.objects.pending().filter(club=request.club, player__user__isnull=True)
                               .values_list('player_id', flat=True)) if request.membership.can_manage else set(),
     }
     if request.membership.is_admin:
         context.update(_complete_team_context(request.club))
     return render(request, 'list_players.html', context)
+
+
+def _copy_offer(request):
+    """
+    Equipo de otra competición desde el que ofrecer copiar jugadores (SNP → LAPI o LAPI → SNP), o None
+    si ya se copió alguno al club activo (el aviso desaparece) o no hay de dónde copiar.
+    """
+    if Player.objects.filter(club=request.club, copied_from__isnull=False).exists():
+        return None
+    sources = player_copy.managed_pairs(request)
+    return {"club": sources[0]} if sources else None
 
 
 def _complete_team_context(club):

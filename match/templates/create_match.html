@@ -47,6 +47,7 @@
         {% if form.has_rounds %}
         <p data-round-row data-league-type="{{ form.rules.league_type }}">
             {{ form.round_number.label_tag }} {{ form.round_number }}
+            <small class="text-muted d-block mt-1">{% translate "Te proponemos la siguiente a la última de liga que has creado; puedes cambiarla." %}</small>
         </p>
         {% for error in form.round_number.errors %}<div class="alert-message">{{ error }}</div>{% endfor %}
         {% endif %}

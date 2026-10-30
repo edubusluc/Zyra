@@ -34,12 +34,13 @@
         </select>
         {% if selected_season %}<input type="hidden" name="season" value="{{ selected_season }}">{% endif %}
         {% if selected_match_type %}<input type="hidden" name="match_type" value="{{ selected_match_type }}">{% endif %}
-        <button class="st-btn" type="submit">{% translate "Ver pareja" %}</button>
+        <button class="st-btn" type="submit" id="pair-go"{% if not selected_p1 or not selected_p2 %} disabled{% endif %}>{% translate "Ver pareja" %}</button>
       </form>
       <script>
         // Al elegir los dos jugadores se abre directamente su detalle
         document.querySelectorAll('#p1, #p2').forEach(function (sel) {
           sel.addEventListener('change', function () {
+            document.getElementById('pair-go').disabled = !(document.getElementById('p1').value && document.getElementById('p2').value);
             if (document.getElementById('p1').value && document.getElementById('p2').value) sel.form.submit();
           });
         });

@@ -402,13 +402,16 @@ def my_statistics(request):
     «Mis estadísticas»: lo de la persona en todas sus competiciones, para quien tiene jugador en
     varias (``spaces.linked_players``). «Todas» junta sus partidos y pone cada competición al lado de
     la otra en los gráficos, sin sumar puntos; ``?espacio=snp`` (o lapi) lleva a su ficha de jugador
-    en esa competición. Con un solo jugador enlazado va directo a su ficha. Filtra por temporada y
+    en esa competición. Con un solo jugador enlazado va directo a su ficha; con ninguno (y varios
+    equipos) explica cómo enlazar la ficha (stats_mine_link.html). Filtra por temporada y
     tipo de partido. Renderiza stats_mine.html.
     """
     players = spaces.linked_players(request)
     if len(players) < 2:
         if players:
             return redirect(f"{reverse('player_statistics')}?en={players[0].club.competition}&player={players[0].public_id}")
+        if len(spaces.user_clubs(request)) > 1:
+            return render(request, 'stats_mine_link.html')
         return redirect('team_statistics')
     wanted = request.GET.get(spaces.SPACE_PARAM)
     chosen = next((p for p in players if p.club.competition == wanted), None)
@@ -481,10 +484,11 @@ def players_charts(players, logs, season, match_type):
     una cifra (los puntos de un partido no valen lo mismo en SNP que en LAPI). ``logs``: partidos de
     cada jugador de ``players`` (build_game_log, ya filtrados por temporada).
 
-    Devuelve ``set_rows`` (cada situación de sets con el % de cada competición) y ``spaces_chart``
+    Devuelve ``set_rows`` (cada situación de sets con el % de cada competición), ``set_panels`` (lo mismo
+    agrupado por competición, para los paneles de stats_mine.html) y ``spaces_chart``
     para stats_spaces.js: competiciones, partidos ganados y perdidos como local y como visitante,
     partidos ganados por temporada (sin temporada elegida) y % de convocatorias en las que se apuntó
-    por temporada (sin temporada elegida).
+    por temporada (con una temporada elegida, solo esa: se dibuja con barras).
     """
     comps, sets_by_comp, local, visiting, years, attendance = [], [], [], [], [], []
     for player, log in zip(players, logs):
@@ -499,7 +503,9 @@ def players_charts(players, logs, season, match_type):
         for g in log:
             per_year[g["season"]] = per_year.get(g["season"], 0) + g["won"]
         years.append(per_year if not season else {})
-        present, total = calls_by_season(player, match_type) if not season else ({}, {})
+        present, total = calls_by_season(player, match_type)
+        if season:
+            present, total = {season: present.get(season, 0)}, {season: total.get(season, 0)}
         attendance.append({s: round(present.get(s, 0) / n * 100) for s, n in total.items() if n})
 
     set_rows = [{
@@ -507,11 +513,18 @@ def players_charts(players, logs, season, match_type):
         "comps": [{"code": c["code"], "name": c["name"], "r": st[key]} for c, st in zip(comps, sets_by_comp)],
     } for key, label, hint in SET_SITUATIONS]
 
+    # Lo mismo agrupado por competición: un panel por competición con todas sus situaciones (idea «marco y dato»).
+    set_panels = [{
+        "code": c["code"], "name": c["name"], "club": c["club"],
+        "rows": [{"label": label, "hint": hint, "r": st[key]} for key, label, hint in SET_SITUATIONS],
+    } for c, st in zip(comps, sets_by_comp)]
+
     by_start = lambda s: int(s.split('-')[0])
     labels = sorted({y for per in years for y in per}, key=by_start)
     att_labels = sorted({s for per in attendance for s in per}, key=by_start)
     return {
         "set_rows": set_rows,
+        "set_panels": set_panels,
         "sets_played": any(st["played"] for st in sets_by_comp),
         "has_local": any(r["won"] or r["lost"] for r in local),
         "has_visiting": any(r["won"] or r["lost"] for r in visiting),

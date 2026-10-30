@@ -160,11 +160,29 @@ def build_report(call):
     }
 
 
+def _manager_ids(club):
+    """Ids de los usuarios que son capitán o gestor de ``club``."""
+    from core.models import Membership
+    return set(Membership.objects.filter(club=club, role__in=[Membership.ADMIN, Membership.MANAGER])
+               .values_list("user_id", flat=True))
+
+
+def can_share_other_competition(club, other):
+    """
+    True si el informe de ``club`` puede llevar datos de ``other`` (otro equipo de la misma persona):
+    solo cuando todos los capitanes y gestores que reciben el informe de ``club`` lo son también de
+    ``other``. Así nadie ve datos de un equipo que no gestiona.
+    """
+    return _manager_ids(club) <= _manager_ids(other)
+
+
 def other_competitions(called, match):
     """
     Partidos de la temporada del enfrentamiento que los convocados con cuenta enlazada han jugado
     en sus otros espacios (otras competiciones): una fila por jugador y competición con
-    {'player', 'club', 'played', 'wins'}. Solo informativo: no entra en las alineaciones.
+    {'player', 'club', 'played', 'wins'}. Solo informativo: no entra en las alineaciones. Solo
+    cuenta los otros equipos que gestionan todos los destinatarios del informe
+    (``can_share_other_competition``).
     """
     from data_analyse.views import build_game_log
     from players.models import Player
@@ -173,7 +191,10 @@ def other_competitions(called, match):
     rows = []
     others = (Player.objects.filter(user_id__in=by_user).exclude(club=match.club)
               .select_related("club").order_by("club__competition"))
+    shareable = {}
     for other in others:
+        if shareable.setdefault(other.club_id, can_share_other_competition(match.club, other.club)) is False:
+            continue
         log = [g for g in build_game_log(other) if g["season"] == match.season]
         rows.append({"player": by_user[other.user_id], "club": other.club, "played": len(log),
                      "wins": sum(g["won"] for g in log)})

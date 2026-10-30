@@ -29,9 +29,9 @@
         {% endif %}
         {% if match.club.rules.pair_no_show %}
         <div class="z-result-noshow mb-2">
-            <label class="form-label small" for="id_{{ row.prefix }}no_show">{% translate "¿Se jugó?" %}</label>
+            <label class="form-label small" for="id_{{ row.prefix }}no_show">{% translate "¿Se presentaron las dos parejas?" %}</label>
             <select class="form-select form-select-sm" name="{{ row.prefix }}no_show" id="id_{{ row.prefix }}no_show" data-pair-no-show>
-                <option value="">{% translate "Sí, se jugó" %}</option>
+                <option value="">{% translate "Sí, se jugó el partido" %}</option>
                 {% for value, label in no_show_choices %}<option value="{{ value }}"{% if values.no_show == value %} selected{% endif %}>{{ label }}</option>{% endfor %}
             </select>
         </div>
@@ -62,6 +62,12 @@
     {% endwith %}
     {% endfor %}
     </div>
+
+    {% if match.club.rules.pair_no_show %}
+    <div class="alert-message z-noshow-preview" role="status" aria-live="polite" hidden data-noshow-preview
+         data-points="{{ no_show_points|join:',' }}" data-own-local="{% if own_is_local %}1{% else %}0{% endif %}"
+         data-local="{{ match.local_name }}" data-visiting="{{ match.visiting_name }}"></div>
+    {% endif %}
 
     {% if is_future %}
     <div class="alert-message warning" role="note">

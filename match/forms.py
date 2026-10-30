@@ -1,9 +1,9 @@
 """Formularios de la app de partidos: alta y edición de enfrentamientos, partidos y resultados."""
 from django import forms
-from django.db.models import Q
+from django.db.models import Max, Q
 from django.utils.translation import gettext_lazy as _
 from core.competitions import CHOICES as COMPETITION_CHOICES, competition_for
-from core.models import REPORT_SCOPES, UserPreference
+from core.models import Club, REPORT_SCOPES, UserPreference
 from .models import Match, Game, Result
 from team.models import Team
 from players.models import Player
@@ -68,7 +68,9 @@ class MatchForm(forms.ModelForm):
             'report_scope': forms.RadioSelect(),
             'report_other_competitions': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'rival_name': forms.TextInput(attrs={'placeholder': _('Ej.: Pádel Norte'), 'autocomplete': 'off'}),
-            'start_time': forms.TimeInput(format='%H:%M', attrs={'type': 'time'}),
+            'start_time': forms.TimeInput(format='%H:%M', attrs={
+                'type': 'text', 'inputmode': 'numeric', 'placeholder': '20:30', 'maxlength': 5, 'autocomplete': 'off',
+                'pattern': '([01][0-9]|2[0-3]):[0-5][0-9]', 'data-time-24h': '', 'title': _('Hora en formato 24 h, por ejemplo 20:30')}),
             'location': forms.TextInput(attrs={'autocomplete': 'off', 'maxlength': 100}),
             'local': TeamSelect(),
             'visiting': TeamSelect(),
@@ -97,7 +99,11 @@ class MatchForm(forms.ModelForm):
         # «Incluir datos de otras competiciones»: solo si algún jugador del club con cuenta enlazada
         # tiene ficha en otro espacio.
         linked = Player.objects.filter(club=club, user__isnull=False).values("user")
-        self.other_competitions_available = bool(club) and Player.objects.filter(user__in=linked).exclude(club=club).exists()
+        # Y solo de equipos que gestionan todos los destinatarios del informe (report.can_share_other_competition).
+        from .report import can_share_other_competition
+        self.other_competitions_available = bool(club) and any(
+            can_share_other_competition(club, other_club) for other_club in Club.objects.filter(
+                players__user__in=linked).exclude(pk=club.pk).distinct())
         if not self.instance.pk:
             self.initial['report_scope'] = self.default_report_scope
         self.own_team = club.own_team if club else None
@@ -140,6 +146,11 @@ class MatchForm(forms.ModelForm):
         self.fields['round_number'].min_value = 1
         if not self.has_rounds:
             del self.fields['round_number']
+        elif not self.instance.pk and not self.is_bound and club is not None:
+            # Propone la jornada siguiente a la última de liga ya creada (S-09); se puede cambiar.
+            last = Match.objects.filter(club=club, match_type=self.rules.league_type).aggregate(m=Max('round_number'))['m']
+            if last:
+                self.initial.setdefault('round_number', min(last + 1, 99))
         self.order_fields(['mode'])
         self.fields['rival_name'].required = False
         self.fields['match_type'].error_messages['invalid_choice'] = _("Tipo de enfrentamiento no válido.")

@@ -10,6 +10,8 @@
     </div>
 </div>
 
+<p class="z-space-note">{% translate "Equipo:" %} {% include 'includes/competition_badge.html' with code=request.club.competition name=request.club.rules.name short=True %} <strong>{{ request.club.name }}</strong></p>
+
 <p class="text-muted">{% translate "Activa o desactiva a los jugadores que están en el equipo y guarda todos los cambios de una vez. Los jugadores fuera del equipo no aparecen en convocatorias, advertencias ni en los rankings." %}</p>
 
 <form method="post" data-roster data-loading-text="{% translate 'Guardando la plantilla…' %}">

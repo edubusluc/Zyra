@@ -49,12 +49,12 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
   competiciones en las que ya tiene equipo. Inicio con varios equipos: el banner los enseña todos («Tus equipos»,
   `home_teams`) y «En racha» da tarjetas por equipo (`streaks`); quien es jugador en todos sus equipos no ve Plantilla en
   el menú (`hide_roster_nav`, `spaces.plays_only`); tampoco tiene la ficha de Plantilla (`show_player` lo lleva a las estadísticas del jugador) ni su pestaña «Resumen» en Estadísticas › Jugador, que sí ve con su selector. Jugador, Parejas y Rivales solo eligen SNP o LAPI (sin «Todas»). El informe puede incluir los partidos de la temporada
-  en otras competiciones de los convocados con cuenta enlazada (`Match.report_other_competitions`). Tests:
+  en otras competiciones de los convocados con cuenta enlazada (`Match.report_other_competitions`), solo de los equipos que gestionan todos los destinatarios del informe (`report.can_share_other_competition`). Tests:
   `core/tests_spaces_unified.py`.
 - [V] Se puede crear una cuenta sin club (`register_account`, o Google desde esa página): queda en `no_club` hasta aceptar una
   invitación o registrar un club. Back-office: KPI «Sin club» (`accounts_without_club`: activas y no staff), filtro `?kind=no_club`.
   Tests: `core/tests_account_without_club.py`, `AccountsWithoutClubTests` en `backoffice/tests_ops.py`.
-- [V] Rol de gestor (`Membership.MANAGER`, hasta `MAX_MANAGERS`=2 por club): lo nombra y quita solo el capitán (`set_manager`, vista `set_manager_view`). `club_manager_required` (capitán o gestor) protege lo deportivo: enfrentamientos (también eliminarlos con el acta abierta), convocatorias, alineaciones, resultados, cierre de acta, advertencias, jugadores y equipos. `club_admin_required` (solo capitán) protege miembros, invitaciones, traspaso, cuenta SNP, «Completar equipo», reabrir actas, eliminar convocatorias, desenlazar jugadores y eliminar el club. Al traspasar la capitanía los gestores se mantienen; `admin_emails` incluye a los gestores. Prueba: `core/tests_roles.py` (cada URL por rol).
+- [V] Rol de gestor (`Membership.MANAGER`, hasta `MAX_MANAGERS`=2 por club): lo nombra y quita solo el capitán (`set_manager`, vista `set_manager_view`). `club_manager_required` (capitán o gestor) protege lo deportivo: enfrentamientos (también eliminarlos con el acta abierta), convocatorias, alineaciones, resultados, cierre y reapertura de acta, advertencias, jugadores y equipos. `club_admin_required` (solo capitán) protege miembros, invitaciones, traspaso, cuenta SNP, «Completar equipo», eliminar convocatorias, desenlazar jugadores y eliminar el club. Al traspasar la capitanía los gestores se mantienen; `admin_emails` incluye a los gestores. Prueba: `core/tests_roles.py` (cada URL por rol).
 - [V] Un club tiene un único capitán (restricción `unique_captain_per_club`). Se cede con
   `transfer_captaincy` (vista `transfer_captaincy_view`) solo a un miembro enlazado a un `Player` del club
   (`eligible_successors`); el antiguo pasa a miembro y se borra la `SnpAccount` del club (eran sus credenciales) y se reabre «Primeros pasos»
@@ -175,7 +175,7 @@ Orden obligatorio del ciclo (`match/views.py`) [V], cubierto por `match/tests_fl
    y cierra `Game.draft_mode`. Con fecha futura exige `confirm_future`. Los resultados se pueden
    meter de una vez en `enter_results` (guardado parcial; «Guardar y cerrar acta»). La fase y la siguiente acción salen siempre de
    `match/phase.py` (`phase_of`/`phases_for`), que usan el inicio, el listado y la página del enfrentamiento. Siempre son 5 partidos: no se contempla un acta con menos. Todo en una transacción.
-7. **Reabrir acta** (`reopen_match`, POST, capitán): vuelve a borrador, resultado `NONE`, anota `reopened_at/by`.
+7. **Reabrir acta** (`reopen_match`, POST, capitán o gestor): vuelve a borrador, resultado `NONE`, anota `reopened_at/by`.
 
 Con el acta cerrada [V]: no se borra el partido (`delete_match`) ni su convocatoria (`delete_call`),
 ni se editan parejas (`edit_game_match`).

@@ -175,6 +175,14 @@ class AccessibilityTests(TestCase):
                 titles.setdefault(title, []).append(url)
         return titles
 
+    def test_my_statistics_without_a_linked_sheet(self):
+        """«Mis estadísticas» con dos equipos y sin ficha enlazada explica cómo enlazarla."""
+        other = User.objects.create_user("dos", email="dos@example.com", password="pass-12345")
+        create_club("Dos SNP", "Sevilla", other)
+        create_club("Dos LAPI", "Sevilla", other, competition="lapi")
+        self.client.login(username="dos", password="pass-12345")
+        self._assert_accessible([reverse("my_statistics")])
+
     def test_public_pages(self):
         self._assert_accessible([
             reverse("home"), reverse("login"), reverse("register"), reverse("register_club"), reverse("privacy"),

@@ -174,19 +174,22 @@ def management_view(view_func):
     páginas son solo de los que gestiona: si el activo es uno en el que juega, cambia al primero
     que gestiona. Quien gestiona todos sus espacios (capitán o gestor en SNP y en LAPI) o es jugador
     en todos elige desde la página: deja en ``request.space_switcher`` sus espacios; para los demás
-    (gestiona unos y juega en otros), vacío.
+    (gestiona unos y juega en otros), vacío y ``request.space_current`` lleva el equipo mostrado.
     """
     @follow_space
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
         """Elige el espacio de la página y prepara el selector."""
         request.space_switcher = []
+        request.space_current = None
         if getattr(request, "club", None) is not None and is_multi_space(request):
             clubs = user_clubs(request)
             managed = managed_clubs(request, clubs)
             if managed and len(managed) < len(clubs):
                 if request.club not in managed:
                     switch_to(request, managed[0])
+                # Sin selector (gestiona unos y juega en otros): la página dice de qué equipo es (S-03).
+                request.space_current = request.club
             else:
                 request.space_switcher = [
                     {"club": c, "code": c.competition, "name": c.rules.name, "active": c.id == request.club.id}

@@ -2767,7 +2767,7 @@ a.z-hub-card:hover, a.z-hub-card:focus-visible { border-color: var(--z-lime); co
 
 /* Estadísticas del equipo en escritorio: panel lateral con las secciones, fijo al hacer scroll. */
 .st-side { display: none; }
-@media (min-width: 1200px) {
+@media (min-width: 1024px) {
   .st-index { display: none; }
   .st-layout { display: grid; grid-template-columns: minmax(0, 1fr) 190px; gap: 32px; align-items: start; }
   .st-side { display: block; position: sticky; top: 92px; padding: 16px 0 16px 18px; border-left: 1px solid var(--z-border); }
@@ -3035,8 +3035,6 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .z-comp-meter-name { font-size: .72rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--z-muted); }
 .z-comp-meter .st-meter { margin-top: 0; }
 .z-comp-meter b { text-align: right; font-size: .9rem; }
-.z-comp-meter--snp span { background: var(--z-snp); }
-.z-comp-meter--lapi span { background: var(--z-lapi); }
 /* «Tus equipos» del menú de usuario: solo informa (competición, equipo y papel). */
 /* Solo informan (no se pueden pulsar): más pequeños y apagados que las opciones del menú (H-26). */
 .z-team-item { display: flex; align-items: center; gap: 8px; min-width: 240px; padding-top: 2px; padding-bottom: 2px; font-size: .82rem; color: var(--z-muted); cursor: default; user-select: none; }
@@ -3071,3 +3069,47 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .z-filters > summary::-webkit-details-marker { display: none; }
 @media (min-width: 768px) { .z-filters > summary { display: none; } }
 .z-space-note { margin: -4px 0 12px; }
+
+/* Filtros en una fila de desplegables (Competición, Temporada, Tipo; el rival en el listado): cada uno dice su valor
+   y se marca en lima si no es «Todas». Los menús son <details> con enlaces (static/js/filter-menu.js los cierra). */
+.z-fsel-wrap { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 0 10px 10px 0; vertical-align: top; }
+.z-fsel { position: relative; }
+.z-fsel > summary { list-style: none; cursor: pointer; display: flex; flex-direction: column; gap: 1px; min-width: 128px; padding: 6px 14px; border: 1px solid var(--z-border); border-radius: 12px; background: var(--z-surface-2); color: var(--z-text); }
+.z-fsel > summary::-webkit-details-marker { display: none; }
+.z-fsel > summary small { font-size: .62rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--z-muted); }
+.z-fsel > summary span { font-size: .88rem; font-weight: 700; }
+.z-fsel > summary span::after { content: "\25BE"; margin-left: 8px; color: var(--z-muted); }
+.z-fsel > summary:hover, .z-fsel[open] > summary { border-color: var(--z-lime); }
+.z-fsel.is-active > summary { border-color: var(--z-lime); }
+.z-fsel.is-active > summary small { color: var(--z-lime); }
+.z-fsel-menu { position: absolute; z-index: 30; top: calc(100% + 6px); left: 0; min-width: 100%; width: max-content; max-width: 280px; margin: 0; padding: 6px; list-style: none; background: var(--z-surface); border: 1px solid var(--z-border); border-radius: 12px; box-shadow: 0 12px 30px rgba(0, 0, 0, .5); }
+.z-fsel-menu a { display: block; padding: 8px 12px; border-radius: 8px; color: var(--z-text); font-size: .88rem; font-weight: 600; text-decoration: none; }
+.z-fsel-menu a:hover, .z-fsel-menu a:focus-visible { background: var(--z-surface-2); }
+.z-fsel-menu a[aria-current="page"] { color: var(--z-lime); background: var(--z-surface-2); }
+.z-fsel-wrap .st-type-select, .z-fsel-wrap .st-season-search { margin: 0; }
+.z-fsel-row { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 0 10px; }
+.z-fsel-row > .z-fsel-wrap, .z-fsel-row > .z-match-filters { margin: 0 0 10px; }
+.z-fsel-row .z-match-filters { display: flex; align-items: center; gap: 8px; }
+.z-fsel-row .z-space-note { flex: 0 0 100%; order: 9; margin: 0 0 10px; }
+.z-fsel-row .z-match-filters { flex-wrap: nowrap; align-items: center; align-self: flex-start; min-height: 52px; }
+.z-fsel-row .z-match-filters .st-filter-label { margin: 0; }
+
+/* Idea «marco de competición, dato en lima»: cada competición tiene su marco (tinte suave y línea superior de su color) y
+   los datos dentro van en lima, el color de Zyra. Los gráficos que comparan competiciones mantienen su color para distinguir series. */
+.z-comp-frame { border: 1px solid var(--st-line, var(--z-border)); border-top: 3px solid var(--z-snp); border-radius: var(--z-radius); background: linear-gradient(180deg, rgba(var(--z-snp-rgb), .12), rgba(var(--z-snp-rgb), .03)); }
+.z-comp-frame--lapi { border-top-color: var(--z-lapi); background: linear-gradient(180deg, rgba(var(--z-lapi-rgb), .12), rgba(var(--z-lapi-rgb), .03)); }
+.z-comp-panels { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 14px; }
+.z-comp-panel { padding: 16px 18px 14px; }
+.z-comp-panel > header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-weight: 700; min-width: 0; }
+.z-comp-panel > header > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.z-comp-panel .z-comp-meter { grid-template-columns: minmax(6.5rem, 9rem) 1fr 2.8rem; margin-top: 10px; }
+.z-comp-panel .z-comp-meter-name { font-size: .78rem; letter-spacing: 0; text-transform: none; color: var(--z-text); font-weight: 600; }
+.z-comp-panel .st-meter span { background: var(--z-lime); }
+.z-comp-panel .z-comp-meter b { color: var(--z-lime); }
+.z-space-rows li.z-comp-frame { padding: 12px 16px; margin-bottom: 10px; border-bottom-width: 1px; }
+.z-space-rows li.z-comp-frame:last-child { margin-bottom: 0; }
+
+/* Cabecera de equipo de «En racha» (varios espacios) y explicación bajo cada dato de sets. */
+.z-comp-meter-name small { display: block; margin-top: 1px; font-size: .7rem; font-weight: 500; line-height: 1.3; color: var(--z-muted); }
+.z-hot-team { display: flex; align-items: center; gap: 8px; margin: 18px 0 10px; font-size: .95rem; font-weight: 700; }
+.z-hot-team:first-of-type { margin-top: 0; }

@@ -1,5 +1,5 @@
 // «Mis estadísticas · Todas» (stats_mine.html): cada gráfico pone las competiciones una al lado de la otra,
-// con su color (lima SNP, azul LAPI). Nunca suma puntos de una competición con otra.
+// con su color (dorado SNP, turquesa LAPI; en los gráficos que comparan, el color es lo que separa las series). Nunca suma puntos de una competición con otra.
 (function () {
   const source = document.getElementById('spaces-chart-data');
   if (!source || typeof Chart === 'undefined') return;
@@ -96,8 +96,10 @@
   // Convocatorias en las que te apuntas: una línea por competición, por temporada.
   const attCanvas = document.getElementById('spacesAttendanceChart');
   if (attCanvas) {
+    // Con una sola temporada una línea no dibuja nada: barras, una por competición.
+    const single = data.attendance.labels.length === 1;
     new Chart(attCanvas, {
-      type: 'line',
+      type: single ? 'bar' : 'line',
       data: {
         labels: data.attendance.labels,
         datasets: comps.map((c, i) => ({
@@ -108,6 +110,7 @@
           spanGaps: true,
           tension: 0.3,
           pointRadius: 4,
+          maxBarThickness: 48,
         })),
       },
       options: {

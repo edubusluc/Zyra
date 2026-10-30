@@ -1,22 +1,23 @@
 {% load i18n %}
-{# Filtro por tipo de partido. Recibe match_types y competitive_types de data_analyse.views.match_type_context. #}
-<nav aria-label="{% translate 'Tipo de enfrentamiento' %}" class="st-type-filter">
-  <ul class="st-seasons">
-    <li class="st-filter-label">{% translate "Tipo" %}</li>
-    {% for option in match_types %}
-      <li><a class="st-chip" href="{{ option.url }}" {% if option.active %}aria-current="page"{% endif %}>{{ option.label }}</a></li>
-    {% endfor %}
-  </ul>
-  {% if competitive_types %}
-  <form method="get" class="st-type-select">
-    {% for name, value in match_type_keep %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}
-    <label for="competitive-type" class="visually-hidden">{% translate "Tipo de enfrentamiento competitivo" %}</label>
-    <select id="competitive-type" name="match_type" onchange="this.form.submit()">
-      {% for option in competitive_types %}
-      <option value="{{ option.value }}" {% if option.active %}selected{% endif %}>{{ option.label }}</option>
+{# Filtro por tipo de partido (desplegable «Tipo»). Recibe match_types y competitive_types de data_analyse.views.match_type_context. #}
+<nav aria-label="{% translate 'Tipo de enfrentamiento' %}" class="z-fsel-wrap st-type-filter">
+  <details class="z-fsel{% if selected_match_type %} is-active{% endif %}" data-filter-menu>
+    <summary><small>{% translate "Tipo" %}</small><span>{% for option in match_types %}{% if option.active %}{{ option.label }}{% endif %}{% endfor %}</span></summary>
+    <ul class="z-fsel-menu">
+      {% for option in match_types %}
+      <li><a href="{{ option.url }}" {% if option.active %}aria-current="page"{% endif %}>{{ option.label }}</a></li>
       {% endfor %}
-    </select>
-    <noscript><button type="submit" class="st-chip">{% translate "Filtrar" %}</button></noscript>
-  </form>
+    </ul>
+  </details>
+  {% if competitive_types %}
+  {# Dentro de Competitivos: todos los enfrentamientos o un solo tipo, con el mismo desplegable que Tipo. #}
+  <details class="z-fsel{% for option in competitive_types %}{% if option.active and option.url != competitive_types.0.url %} is-active{% endif %}{% endfor %}" data-filter-menu>
+    <summary><small>{% translate "Competitivo" %}</small><span>{% for option in competitive_types %}{% if option.active %}{{ option.label }}{% endif %}{% endfor %}</span></summary>
+    <ul class="z-fsel-menu">
+      {% for option in competitive_types %}
+      <li><a href="{{ option.url }}" {% if option.active %}aria-current="page"{% endif %}>{{ option.label }}</a></li>
+      {% endfor %}
+    </ul>
+  </details>
   {% endif %}
 </nav>

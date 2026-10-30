@@ -3,6 +3,29 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 30/10/2026 · Espacios por competición (pendientes de la auditoría, PR #210)
+
+- **Plantilla, Club y Rivales**: con rol mixto (gestionas un equipo y juegas en otro) la página dice «Equipo: X · LAPI» en vez de no mostrar nada.
+- **Enfrentamientos**: el filtro de rival tiene etiqueta visible y «Quitar el rival» solo quita el rival (mantiene temporada y tipo). Al crear uno de liga se propone la jornada siguiente; la hora es un campo de 24 h (escribe 2030 y queda 20:30).
+- **Poner resultados (SNP)**: la pregunta es «¿Se presentaron las dos parejas?» y, al marcar una pareja no presentada, se ve el reparto previsto de puntos (normativa 20.2) antes de cerrar el acta.
+- **Reabrir acta**: también pueden el capitán y los gestores (queda anotado quién).
+- **Convocatoria**: una ficha copiada que aún no aceptó la invitación se puede convocar y sale «Pendiente de aceptar».
+- **Informes**: los datos de otras competiciones solo se incluyen si todos los que reciben el informe gestionan también ese otro equipo.
+- **Filtros**: Competición, Temporada y Tipo son desplegables en una sola fila (con el rival en el listado); cada uno dice su valor y se marca en lima si no es «Todas». El panel lateral de Estadísticas › Equipo aparece desde 1024 px.
+- **Mis estadísticas**: con dos equipos y sin ficha enlazada la pestaña explica cómo enlazarla.
+- **Inicio › En racha**: con varios equipos, cada competición tiene su bloque (SNP y LAPI por separado).
+- **Enfrentamientos y estadísticas**: el selector de enfrentamientos competitivos es un desplegable igual que Competición, Temporada y Tipo.
+- **Gestionar plantilla**: arriba dice de qué equipo es la plantilla que editas.
+- **Jugadores**: el aviso «Cópialos en vez de crearlos a mano» sale en ambos sentidos (SNP → LAPI y LAPI → SNP) y desaparece en cuanto se copia un jugador.
+- **Mis estadísticas**: la tarjeta de sets explica cada dato dentro de la propia tarjeta, bajo su nombre (set decisivo, tie-breaks…) y, con una temporada elegida, se ve la gráfica de convocatorias de esa temporada (barras por competición).
+- **Colores SNP/LAPI**: en Mis estadísticas cada competición tiene su marco (tinte suave y línea superior de su color) y los datos van en lima; las gráficas comparativas mantienen dorado y turquesa para distinguir series.
+
+## 30/10/2026 · Espacios por competición (selectores, datos y zonas grises)
+
+- **Inicio**: «Ver los N pendientes» indica cuántos tienen la fecha pasada; el capitán ve «Pon la categoría» (enlace a editar el equipo) cuando falta.
+- **Estadísticas**: la ficha de jugador muestra la competición en el título; «Ver pareja» solo se activa al elegir los dos jugadores.
+- **Avisos**: la preferencia del correo de resultado dice que vale para todos tus equipos; la página de advertencias dice de qué equipo son.
+
 ## 30/10/2026 · Espacios por competición (revisión de usabilidad, prioridades 2 y 3, PR #209)
 
 - **Convocatoria**: con la convocatoria abierta la web dice «apuntados» y «Te has apuntado»; «convocados» y «Estás convocado» solo cuando está cerrada. «Cerrar convocatoria» y «Reenviar informe» piden confirmación y dicen a qué correos se envía. En Playoffs y Fase final, la regla de los 2 enfrentamientos de liga se ve en la ficha, se vuelve a comprobar al cerrar y separa a los apuntados que no la cumplen del resto.

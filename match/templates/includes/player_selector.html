@@ -32,6 +32,7 @@
                 {# Para decidir sin salir de la pantalla: partidos jugados esta temporada y advertencias a la vista #}
                 {% if player.season_total %}<span class="z-pick-meta" title="{% blocktranslate with n=player.played total=player.season_total %}Jugó {{ n }} de {{ total }} enfrentamientos esta temporada{% endblocktranslate %}">{% blocktranslate with n=player.played total=player.season_total %}Jugó {{ n }}/{{ total }} esta temporada{% endblocktranslate %}</span>{% endif %}
                 {% if player.finals_short %}<span class="z-pick-meta z-pick-warn-text"><i class="fa-solid fa-flag" aria-hidden="true"></i> {% blocktranslate with n=player.finals_played need=finals_minimum %}Liga: {{ n }} de {{ need }} necesarios{% endblocktranslate %}</span>{% endif %}
+                {% if player.copy_pending %}<span class="z-pick-meta" title="{% translate 'Esta persona aún no ha aceptado la invitación al equipo: no recibe correos hasta que acepte.' %}"><i class="fa-solid fa-hourglass-half" aria-hidden="true"></i> {% translate "Pendiente de aceptar" %}</span>{% endif %}
                 {% if player.penalty_reasons %}
                 <span class="z-pick-meta z-pick-warn-text" title="{{ player.penalty_reasons|join:'; ' }}"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> {% blocktranslate count n=player.penalty_reasons|length %}{{ n }} advertencia{% plural %}{{ n }} advertencias{% endblocktranslate %}</span>
                 {% endif %}

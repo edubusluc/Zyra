@@ -279,7 +279,7 @@
 {% endfor %}
 </div>
 
-{% if is_club_admin and not match.draft_mode and not match.no_show %}
+{% if can_manage and not match.draft_mode and not match.no_show %}
 <form method="POST" action="{% url 'reopen_match' match.public_id %}" class="text-center mt-4" data-confirm="{% translate "¿Reabrir el acta? Mientras esté abierta este enfrentamiento no cuenta en las estadísticas. Tendrás que volver a cerrarla." %}" data-loading-text="{% translate 'Reabriendo el acta…' %}">
     {% csrf_token %}
     <button type="submit" class="btn btn-outline-secondary"><i class="fa-solid fa-lock-open me-1" aria-hidden="true"></i> {% translate "Reabrir acta para corregirla" %}</button>

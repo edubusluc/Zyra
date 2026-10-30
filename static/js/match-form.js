@@ -99,4 +99,13 @@
     select.addEventListener('change', sync);
     sync();
   });
+
+  // Hora en 24 h con el mismo aspecto que el resto de campos: escribe 2030 y queda 20:30 (S-12).
+  const time = form.querySelector('[data-time-24h]');
+  if (time) {
+    time.addEventListener('input', () => {
+      const digits = time.value.replace(/\D/g, '').slice(0, 4);
+      time.value = digits.length > 2 ? digits.slice(0, 2) + ':' + digits.slice(2) : digits;
+    });
+  }
 })();

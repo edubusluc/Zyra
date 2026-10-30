@@ -158,6 +158,7 @@ def home(request):
         'next_match': next_match,
         'pending': pending[:HOME_PENDING_ROWS],
         'pending_total': len(pending),
+        'pending_overdue': sum(1 for p in pending if p['overdue']),
         'multi_space': spaces.is_multi_space(request),
         'my_player': my_player,
         'form_player': form_player,
