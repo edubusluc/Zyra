@@ -76,7 +76,7 @@
     <div class="d-flex justify-content-between align-items-start gap-3">
         <div>
             <span class="z-eyebrow"><i class="fa-solid fa-user-gear me-1" aria-hidden="true"></i> {% translate "Nuevo rol" %}</span>
-            <h2 id="manager-welcome-title">{% translate "Ahora eres gestor del club" %}</h2>
+            <h2 id="manager-welcome-title">{% translate "Ahora eres gestor del equipo" %}</h2>
             <p class="small">{% translate "El capitán te ha dado acceso a la parte deportiva. Desde ahora puedes:" %}</p>
             <ul class="small mb-2">
                 <li>{% translate "Crear enfrentamientos y preparar convocatorias y alineaciones." %}</li>
@@ -100,7 +100,7 @@
     <i class="fa-solid fa-user-gear" aria-hidden="true"></i>
     <div class="z-notice-text">
         <strong>{% translate "Añade un gestor" %}</strong>
-        <span>{% translate "Un gestor te ayuda con los enfrentamientos, las convocatorias, los resultados y los jugadores. Puedes nombrar hasta 2 entre los miembros de tu club." %}</span>
+        <span>{% translate "Un gestor te ayuda con los enfrentamientos, las convocatorias, los resultados y los jugadores. Puedes nombrar hasta 2 entre los jugadores de tu equipo." %}</span>
     </div>
     <div class="z-notice-actions">
         <a class="btn btn-primary btn-sm" href="{% url 'club_members' %}">{% translate "Gestionar miembros" %}</a>
@@ -157,7 +157,7 @@
     <div class="z-onboarding-head">
         <div>
             <span class="z-eyebrow"><i class="fa-solid fa-flag-checkered me-1" aria-hidden="true"></i> {% translate "Primeros pasos" %} · {% blocktranslate with done=onboarding_done total=onboarding|length %}{{ done }} de {{ total }} hechos{% endblocktranslate %}</span>
-            <h2 id="onboarding-title">{% translate "Prepara tu club en Zyra" %}</h2>
+            <h2 id="onboarding-title">{% translate "Prepara tu equipo en Zyra" %}</h2>
             <p class="small mb-0">{% url 'club_members' as members_url %}{% blocktranslate trimmed %}Eres el capitán: tú invitas a los jugadores, creas los equipos y apuntas los resultados. Si prefieres que lo gestione otra persona, <a href="{{ members_url }}">traspasa la capitanía</a>.{% endblocktranslate %}</p>
         </div>
         <form method="post" action="{% url 'dismiss_onboarding' %}" data-loading-text="{% translate 'Ocultando los primeros pasos…' %}">
@@ -204,7 +204,7 @@
         <a href="{% url 'call_for_match' row.match.public_id %}" class="z-pending-row{% if row.overdue %} is-overdue{% endif %}">
             <span class="z-pending-main">
                 <strong>{% include 'includes/competition_badge.html' with code=row.match.club.competition name=row.match.club.rules.name short=True %} {{ row.match.local_name }} – {{ row.match.visiting_name }}</strong>
-                <small>{{ row.match.start_date|date:"D j M Y" }}{% if row.overdue %} · {% translate "ya jugado o vencido" %}{% endif %}</small>
+                <small>{{ row.match.start_date|date:"D j M Y" }} · {{ row.phase.label }}{% if row.overdue %} · {% translate "fecha pasada" %}{% endif %}</small>
             </span>
             <span class="z-pending-action">{{ row.phase.pending_label }} <i class="fa-solid fa-chevron-right" aria-hidden="true"></i></span>
         </a>

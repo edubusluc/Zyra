@@ -124,7 +124,7 @@ class MatchesAndCallsTests(TestCase):
         self.assertEqual(cards[self.current.id].called, 2)
         self.assertTrue(cards[self.current.id].upcoming)
         self.assertContains(response, "Victoria")
-        self.assertContains(response, "Próximo")
+        self.assertContains(response, "Convocatoria abierta")
         self.assertContains(response, "2 convocados")
         self.assertContains(response, "Ver enfrentamiento")
 
@@ -702,15 +702,15 @@ class PendingCloseLabelTests(TestCase):
     def test_all_results_shows_pending_close(self):
         self._games(5)
         page = self.client.get(reverse("list_match"), {"season": "all"})
-        self.assertContains(page, "Pdt. cerrar acta")
-        self.assertNotContains(page, "Sin resultado")
+        self.assertContains(page, "Acta por cerrar")
+        self.assertNotContains(page, "Faltan")
 
-    def test_missing_results_keeps_no_result(self):
+    def test_missing_results_says_how_many(self):
         self._games(4)
         page = self.client.get(reverse("list_match"), {"season": "all"})
-        self.assertContains(page, "Sin resultado")
-        self.assertNotContains(page, "Pdt. cerrar acta")
+        self.assertContains(page, "Falta 1 resultado")
+        self.assertNotContains(page, "Acta por cerrar")
 
-    def test_no_games_keeps_no_result(self):
+    def test_no_games_says_next_step(self):
         page = self.client.get(reverse("list_match"), {"season": "all"})
-        self.assertContains(page, "Sin resultado")
+        self.assertContains(page, "Por convocar")

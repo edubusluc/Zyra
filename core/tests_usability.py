@@ -109,7 +109,7 @@ class HomeFirstStepsTests(TestCase):
 
     def test_first_steps_come_first_and_empty_blocks_are_hidden(self):
         html = self.client.get(reverse("home")).content.decode()
-        self.assertIn("Prepara tu club en Zyra", html)
+        self.assertIn("Prepara tu equipo en Zyra", html)
         for hidden in ("Todo al día", "Próximo enfrentamiento", "En racha", "Nadie encadena"):
             self.assertNotIn(hidden, html)
         self.assertIn("Siguiente paso", html)
@@ -249,7 +249,7 @@ class ClubHubTests(TestCase):
         self.assertIn("<summary>Más información</summary>", html)
 
     def test_club_legend_explains_club_team_and_group(self):
-        self.assertContains(self.client.get(reverse("club_home")), "Tu club reúne a los miembros")
+        self.assertContains(self.client.get(reverse("club_home")), "Aquí configuras este equipo: sus miembros")
 
 
 class EmptyStatesTests(TestCase):

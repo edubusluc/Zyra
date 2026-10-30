@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+{% block page_title %}{% translate "Crear enfrentamiento" %} · {% endblock %}
+
+{% block content %}
+{# Quien gestiona equipos de varias competiciones elige primero en cuál se crea el enfrentamiento (core.spaces.choose_managed_space). #}
+<div class="z-page-head">
+    <div>
+        <a href="{% url 'list_match' %}" class="z-eyebrow"><i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i> {% translate "Enfrentamientos" %}</a>
+        <h1>{% translate "Crear enfrentamiento" %}</h1>
+    </div>
+</div>
+<p class="text-muted">{% translate "Gestionas equipos en varias competiciones. ¿En cuál quieres crear el enfrentamiento?" %}</p>
+<ul class="z-home-teams z-choose-teams">
+    {% for club in clubs %}
+    {% with team=club.own_team %}
+    <li>
+        <a class="z-home-team z-home-team--{{ club.competition }} z-choose-team" href="{% url 'create_match' %}?en={{ club.competition }}">
+            <img class="z-home-team-logo" src="{% if team.photo %}{{ team.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="">
+            <span class="z-home-team-text">
+                <strong>{{ club.name }}</strong>
+                <span>{% include 'includes/competition_badge.html' with code=club.competition name=club.rules.name %} {% blocktranslate with games=club.rules.games players=club.rules.min_call_players %}{{ games }} partidos · {{ players }} convocados{% endblocktranslate %}</span>
+            </span>
+            <i class="fa-solid fa-chevron-right ms-auto" aria-hidden="true"></i>
+        </a>
+    </li>
+    {% endwith %}
+    {% endfor %}
+</ul>
+<p class="mt-3"><a href="{% url 'list_match' %}" class="btn btn-outline-secondary">{% translate "Cancelar" %}</a></p>
+{% endblock %}

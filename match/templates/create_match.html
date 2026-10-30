@@ -10,12 +10,15 @@
     <div class="alert-message">{{ error }}</div>
     {% endfor %}
 
-    <form method="POST" class="z-match-form" data-match-form novalidate data-loading-text="{% translate 'Creando el enfrentamiento…' %}" data-own-location="{{ form.own_team.location|default:'' }}">
+    <form method="POST" action="{{ request.get_full_path }}" class="z-match-form" data-match-form novalidate data-loading-text="{% translate 'Creando el enfrentamiento…' %}" data-own-location="{{ form.own_team.location|default:'' }}">
         {% csrf_token %}
 
-        <p>
-            <label for="{{ form.competition.id_for_label }}">{{ form.competition.label }}:</label>
-            {{ form.competition }}
+        {# Competición: es la del equipo, así que se muestra como dato (no como un selector bloqueado). Quien gestiona varios equipos puede volver a elegir. #}
+        <p class="z-create-in">
+            <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+            <span>{% blocktranslate with team=current_club.name %}Se creará en <strong>{{ team }}</strong>{% endblocktranslate %}</span>
+            {% include 'includes/competition_badge.html' with code=current_club.competition name=current_club.rules.name %}
+            {% if can_change_team %}<a href="{% url 'create_match' %}" class="z-create-in-change">{% translate "Cambiar de equipo" %}</a>{% endif %}
         </p>
 
         {# Un solo selector (U12): static/js/match-form.js lo sincroniza con «Modo» y «Tipo de partido», que sin JavaScript se ven tal cual. #}

@@ -52,7 +52,8 @@ class UnifiedSpacesTests(TestCase):
         self.assertContains(page, "Nuevo enfrentamiento SNP")
         lapi_only = self.client.get(reverse("list_match") + "?season=all&espacio=lapi")
         self.assertNotContains(lapi_only, "Iconico")
-        self.assertNotContains(lapi_only, "Nuevo enfrentamiento")
+        # El botón de crear no depende del filtro: dice siempre dónde se crea (SNP, el que gestiona).
+        self.assertContains(lapi_only, "Nuevo enfrentamiento SNP")
         # Se recuerda la elección.
         self.assertNotContains(self.client.get(reverse("list_match") + "?season=all"), "Iconico")
 
@@ -73,10 +74,73 @@ class UnifiedSpacesTests(TestCase):
         # En LAPI es jugador: no puede gestionar aunque sea capitán en SNP.
         self.assertEqual(self.client.get(reverse("create_call", args=[self.lapi_match.public_id])).status_code, 403)
 
-    def test_management_views_do_not_switch_spaces(self):
+    def test_management_views_follow_the_object_and_check_its_role(self):
+        # Las páginas de gestión siguen al equipo del enfrentamiento (sin 404) y aplican el rol de ese
+        # equipo: aquí es jugador, así que «Sin permiso» dice de qué equipo es.
         response = self.client.get(reverse("create_call", args=[self.lapi_match.public_id]))
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(self.client.session[SESSION_KEY], self.lapi.id)
+        self.assertContains(response, "Gladiadores LAPI (LAPI), donde eres jugador", status_code=403)
+
+    def test_management_views_work_after_switching_in_another_tab(self):
+        # Capitán en los dos: con SNP activo (otra pestaña), las páginas de un enfrentamiento LAPI funcionan.
+        Membership.objects.filter(user=self.user, club=self.lapi).update(role=Membership.MANAGER)
+        for name in ("create_call", "enter_results", "edit_match_date"):
+            session = self.client.session
+            session[SESSION_KEY] = self.snp.id
+            session.save()
+            response = self.client.get(reverse(name, args=[self.lapi_match.public_id]))
+            self.assertNotEqual(response.status_code, 404, name)
+            self.assertEqual(self.client.session[SESSION_KEY], self.lapi.id, name)
+        player = self.lapi.own_team.team_players.create(club=self.lapi, name="Ana", last_name="L")
+        session = self.client.session
+        session[SESSION_KEY] = self.snp.id
+        session.save()
+        self.assertEqual(self.client.get(reverse("show_player", args=[player.public_id])).status_code, 200)
+
+    def test_create_match_asks_the_team_when_managing_several(self):
+        Membership.objects.filter(user=self.user, club=self.lapi).update(role=Membership.MANAGER)
+        page = self.client.get(reverse("create_match"))
+        self.assertTemplateUsed(page, "create_match_choose.html")
+        self.assertContains(page, reverse("create_match") + "?en=lapi")
+        self.assertContains(page, reverse("create_match") + "?en=snp")
+        form = self.client.get(reverse("create_match") + "?en=lapi")
+        self.assertTemplateUsed(form, "create_match.html")
+        self.assertContains(form, "Cambiar de equipo")
+        self.assertContains(form, 'action="/match/create_match?en=lapi"')
+
+    def test_create_match_goes_to_the_only_managed_team(self):
+        # Gestiona solo SNP: aunque el activo sea LAPI (donde juega), no pregunta y crea en SNP.
+        session = self.client.session
+        session[SESSION_KEY] = self.lapi.id
+        session.save()
+        page = self.client.get(reverse("create_match"))
+        self.assertTemplateUsed(page, "create_match.html")
         self.assertEqual(self.client.session[SESSION_KEY], self.snp.id)
+        self.assertNotContains(page, "Cambiar de equipo")
+
+    def test_warnings_only_for_managed_teams(self):
+        # Capitán en SNP, jugador en LAPI: Advertencias abre SNP y no ofrece LAPI, aunque se pida.
+        session = self.client.session
+        session[SESSION_KEY] = self.lapi.id
+        session.save()
+        page = self.client.get(reverse("warnings_statistics") + "?en=lapi")
+        self.assertEqual(page.status_code, 200)
+        self.assertEqual(self.client.session[SESSION_KEY], self.snp.id)
+        self.assertNotContains(page, "z-space-chip--lapi")
+        # Desde una página de LAPI la pestaña sigue a la vista: la tiene quien gestiona algún equipo.
+        self.assertTrue(self.client.get(reverse("rival_statistics") + "?en=lapi").context["manages_any"])
+
+    def test_profile_lists_every_team_sheet(self):
+        self.snp.own_team.team_players.create(club=self.snp, name="Edu", last_name="B", user=self.user)
+        session = self.client.session
+        session[SESSION_KEY] = self.lapi.id
+        session.save()
+        page = self.client.get(reverse("my_profile"))
+        self.assertContains(page, "Mis fichas")
+        self.assertContains(page, "Tu cuenta está enlazada a este jugador de Gladiadores")
+        self.assertContains(page, "Tu cuenta no está enlazada a ningún jugador de Gladiadores LAPI")
+        self.assertContains(page, reverse("my_player") + "?en=lapi")
 
     def test_follow_space_checks_the_role_of_that_space(self):
         self.assertEqual(self.client.get(reverse("create_match") + "?en=lapi").status_code, 403)

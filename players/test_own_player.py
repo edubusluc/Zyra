@@ -181,7 +181,7 @@ class OwnPlayerTests(MediaMixin, TestCase):
     def test_member_leaves_club_and_is_unlinked(self):
         self.ana.user = self.user
         self.ana.save()
-        self.assertContains(self.client.get(reverse("home")), "Abandonar el club")
+        self.assertContains(self.client.get(reverse("home")), f"Abandonar {self.club.name}")
         response = self.client.post(reverse("leave_club"))
         self.assertRedirects(response, reverse("home"), fetch_redirect_response=False)
         self.assertFalse(Membership.objects.filter(user=self.user, club=self.club).exists())

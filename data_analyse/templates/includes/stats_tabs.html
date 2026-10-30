@@ -9,7 +9,7 @@
   <a class="btn btn-sm{% if current == 'player_statistics' and not mine_chips %} active{% endif %}" href="{% url 'player_statistics' %}"{% if current == 'player_statistics' and not mine_chips %} aria-current="page"{% endif %}><i class="fa-solid fa-user me-1" aria-hidden="true"></i> {% translate "Jugador" %}</a>
   <a class="btn btn-sm{% if current == 'pair_statistics' %} active{% endif %}" href="{% url 'pair_statistics' %}"{% if current == 'pair_statistics' %} aria-current="page"{% endif %}><i class="fa-solid fa-user-group me-1" aria-hidden="true"></i> {% translate "Parejas" %}</a>
   <a class="btn btn-sm{% if current == 'rival_statistics' or current == 'rival_detail' %} active{% endif %}" href="{% url 'rival_statistics' %}"{% if current == 'rival_statistics' or current == 'rival_detail' %} aria-current="page"{% endif %}><i class="fa-solid fa-shield-halved me-1" aria-hidden="true"></i> {% translate "Rivales" %}</a>
-  {% if can_manage %}
+  {% if manages_any %}
   <a class="btn btn-sm{% if current == 'warnings_statistics' %} active{% endif %}" href="{% url 'warnings_statistics' %}"{% if current == 'warnings_statistics' %} aria-current="page"{% endif %}><i class="fa-solid fa-triangle-exclamation me-1" aria-hidden="true"></i> {% translate "Advertencias" %}</a>
   {% endif %}
 </nav>

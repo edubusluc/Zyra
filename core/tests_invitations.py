@@ -531,5 +531,5 @@ class GoogleSameAccountTests(TestCase):
     def test_new_email_with_google_from_register_continues_to_create_club(self):
         response = self.register_with_google("nuevo@example.com", sub="nuevo")
         self.assertRedirects(response, reverse("register_club"))
-        self.assertContains(response, "Crear club")
+        self.assertContains(response, "Crear equipo")
         self.assertNotIn("google_new_account", self.client.session)

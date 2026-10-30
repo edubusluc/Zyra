@@ -126,6 +126,7 @@ def similar_team_item(team):
     }
 
 
+@spaces.follow_object("team.Team", "team_id")
 @club_manager_required
 @require_POST
 def reactivate_team(request, team_id):
@@ -138,6 +139,7 @@ def reactivate_team(request, team_id):
     return redirect("list_teams")
 
 
+@spaces.follow_object("team.Team", "team_id")
 @club_manager_required
 @require_http_methods(["GET", "POST"])
 def edit_team(request, team_id):

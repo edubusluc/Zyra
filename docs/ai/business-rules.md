@@ -37,8 +37,14 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
   En la interfaz no se dice «espacio» sino equipo/competición. El menú de usuario solo informa («Tus equipos»: equipo,
   competición y papel; `Membership.team_role_label`) y no cambia de espacio; con varios equipos la cabecera muestra el
   nombre del usuario. El espacio activo cambia sin aviso (`switch_to`): al abrir un enfrentamiento de otro espacio
-  (`call_for_match`, `space_match`), con `?en=` (`follow_space`, antes de comprobar el rol) y al elegir competición en
-  Estadísticas. Plantilla, Club y Rivales (`management_view`): si gestiona unos espacios y en otros solo juega, solo ve
+  (`call_for_match`, `space_match`), con `?en=` (`follow_space`, antes de comprobar el rol), al abrir cualquier pantalla de
+  gestión de un objeto de otro equipo suyo (`follow_object`/`follow_match`/`follow_call`/`follow_game`/`follow_player`:
+  sigue al club del objeto antes de comprobar el rol, así un enlace de otra pestaña nunca da un 403 equivocado; si en ese
+  equipo no tiene permiso, el 403 dice de qué equipo es y qué papel tiene, `_team_reason`) y al elegir competición en
+  Estadísticas. «Nuevo enfrentamiento» (`choose_managed_space`) pregunta en qué equipo si gestiona más de uno
+  (`match/templates/create_match_choose.html`) y va directo si gestiona uno; el formulario dice «Se creará en …» y envía con su `?en=`.
+  Estadísticas › Advertencias solo la ven capitán y gestores (`manages_any`) y solo de los equipos que gestionan
+  (`managed_consult_view`). Mi perfil lista la ficha de cada equipo («Mis fichas»). Plantilla, Club y Rivales (`management_view`): si gestiona unos espacios y en otros solo juega, solo ve
   los que gestiona; el selector SNP | LAPI sale si gestiona todos o es jugador en todos. El registro muestra desactivadas las
   competiciones en las que ya tiene equipo. Inicio con varios equipos: el banner los enseña todos («Tus equipos»,
   `home_teams`) y «En racha» da tarjetas por equipo (`streaks`); quien es jugador en todos sus equipos no ve Plantilla en

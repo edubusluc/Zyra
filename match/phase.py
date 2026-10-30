@@ -3,12 +3,14 @@ Fase de un enfrentamiento: una única regla para saber en qué punto del ciclo e
 el siguiente paso (convocatoria, parejas, resultados, acta). La usan la página del partido,
 el inicio («Pendiente») y el listado, para que todas digan lo mismo.
 
-Estados (una palabra): borrador, convocado, alineado, jugado y acta cerrada.
+Estado visible (``MatchPhase.label``): dice lo que falta y es el mismo en la ficha, el listado, el
+calendario y el inicio: «Por convocar», «Convocatoria abierta», «Por alinear», «Faltan 2 resultados»,
+«Acta por cerrar» y «Acta cerrada».
 """
 from dataclasses import dataclass
 
 from django.db.models import Count
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import gettext_lazy as _, ngettext
 
 from call.models import Call
 from core.competitions import competition_for, get_competition
@@ -16,17 +18,19 @@ from core.models import Club
 from .models import Game, Result
 
 DRAFT, CALLED, LINED_UP, PLAYED, CLOSED = "draft", "called", "lined_up", "played", "closed"
-STATE_LABELS = {
-    DRAFT: _("Borrador"),
-    CALLED: _("Convocado"),
-    LINED_UP: _("Alineado"),
-    PLAYED: _("Jugado"),
-    CLOSED: _("Acta cerrada"),
-}
 
 # Siguiente acción de cada estado (clave que interpretan las plantillas y el inicio).
 CREATE_CALL, CLOSE_CALL, CREATE_GAMES, ENTER_RESULTS, CLOSE_MATCH, NOTHING = (
     "create_call", "close_call", "create_games", "enter_results", "close_match", "nothing")
+
+# Estado visible de cada siguiente acción (el de «Poner resultados» lleva cuántos faltan: MatchPhase.label).
+ACTION_LABELS = {
+    CREATE_CALL: _("Por convocar"),
+    CLOSE_CALL: _("Convocatoria abierta"),
+    CREATE_GAMES: _("Por alinear"),
+    CLOSE_MATCH: _("Acta por cerrar"),
+    NOTHING: _("Acta cerrada"),
+}
 
 # Pasos del indicador de fases, en orden.
 STEPS = (_("Convocatoria"), _("Parejas"), _("Resultados"), _("Acta"))
@@ -50,8 +54,11 @@ class MatchPhase:
 
     @property
     def label(self):
-        """Palabra de estado para mostrar («Borrador», «Convocado»...)."""
-        return STATE_LABELS[self.state]
+        """Estado para mostrar, según lo que falta: «Por convocar», «Convocatoria abierta», «Faltan 2 resultados»..."""
+        if self.action == ENTER_RESULTS:
+            missing = max(self.total_games - self.results, 0)
+            return ngettext("Falta %(n)s resultado", "Faltan %(n)s resultados", missing) % {"n": missing}
+        return ACTION_LABELS[self.action]
 
     @property
     def missing_players(self):
@@ -60,15 +67,26 @@ class MatchPhase:
 
     @property
     def pending_label(self):
-        """Siguiente acción con su progreso: «Cerrar convocatoria (8/10)», «Poner resultados (3/5)»..."""
+        """
+        Siguiente acción con su progreso, con cada número explicado: «Cerrar convocatoria · 8 apuntados
+        (mín. 6)», «Faltan 2 para cerrar la convocatoria (4 de 6)», «Poner resultados · faltan 2»...
+        """
         if self.action == CREATE_CALL:
             return _("Convocar")
         if self.action == CLOSE_CALL:
-            return _("Cerrar convocatoria (%(n)s/%(total)s)") % {"n": self.called, "total": self.min_call}
+            if self.missing_players:
+                return ngettext(
+                    "Falta %(missing)s para cerrar la convocatoria (%(n)s de %(total)s)",
+                    "Faltan %(missing)s para cerrar la convocatoria (%(n)s de %(total)s)",
+                    self.missing_players) % {"missing": self.missing_players, "n": self.called, "total": self.min_call}
+            return ngettext("Cerrar convocatoria · %(n)s apuntado (mín. %(total)s)",
+                            "Cerrar convocatoria · %(n)s apuntados (mín. %(total)s)",
+                            self.called) % {"n": self.called, "total": self.min_call}
         if self.action == CREATE_GAMES:
             return _("Alinear parejas")
         if self.action == ENTER_RESULTS:
-            return _("Poner resultados (%(n)s/%(total)s)") % {"n": self.results, "total": self.total_games}
+            missing = max(self.total_games - self.results, 0)
+            return ngettext("Poner resultados · falta %(n)s", "Poner resultados · faltan %(n)s", missing) % {"n": missing}
         if self.action == CLOSE_MATCH:
             return _("Cerrar acta")
         return ""

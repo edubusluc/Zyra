@@ -49,11 +49,13 @@ CREATE_MATCH_HTML = "create_match.html"
 # Create your views here.
 
 
+@spaces.follow_match
 def club_match(request, match_id):
     """Partido del club activo o 404: nunca se accede a partidos de otros clubes."""
     return get_object_or_404(Match, public_id=match_id, club=request.club)
 
 
+@spaces.follow_match
 def space_match(request, match_id):
     """
     Partido de cualquiera de los espacios del usuario o 404. Si es de otro espacio, ese pasa a ser
@@ -272,8 +274,11 @@ def list_match(request):
                        .values_list('match_id', 'n'))
     with_result = dict(Game.objects.filter(match_id__in=open_ids, results__isnull=False).values('match_id')
                        .annotate(n=Count('id', distinct=True)).values_list('match_id', 'n'))
+    # Estado de cada enfrentamiento abierto (mismas palabras que la ficha y el inicio: match.phase).
+    phases = match_phase.phases_for(matches)
     for m in matches:
         m.outcome = match_outcome(m)
+        m.phase = phases[m.id]
         n = games_count.get(m.id, 0)
         m.pending_close = m.draft_mode and n >= m.club.rules.games and with_result.get(m.id, 0) == n
         m.can_manage = m.club in managed
@@ -301,8 +306,9 @@ def list_match(request):
         'page_extra': '&' + urlencode({k: v for k, v in keep.items() if v}),
         **season_filter_context(request, seasons, season, all_value=ALL_SEASONS),
         **spaces.space_filter_context(request, space),
-        # Espacios donde puede crear: con uno, el botón dice cuál; con varios, pregunta.
-        'create_spaces': managed,
+        # Equipos donde puede crear (todos, no solo los del filtro): con uno, el botón dice cuál; con
+        # varios, pregunta siempre.
+        'create_spaces': spaces.managed_clubs(request),
     })
 
 @club_required
@@ -320,9 +326,11 @@ def calendar_match(request):
     weeks = month_view.month_weeks(first)
     space, clubs = spaces.selected_spaces(request)
     by_day = month_view.month_events(clubs, weeks)
+    phases = match_phase.phases_for(m for ms in by_day.values() for m in ms)
     for matches in by_day.values():
         for m in matches:
             m.outcome = match_outcome(m)
+            m.phase = phases[m.id]
             m.own_points, m.rival_points = club_score(m) if m.outcome else (None, None)
             m.upcoming = m.outcome is None and m.start_date >= today
     grid = [[{"date": d, "in_month": d.month == first.month, "today": d == today, "matches": by_day.get(d, [])}
@@ -339,27 +347,31 @@ def calendar_match(request):
         "agenda": agenda,
         "view_tab": "calendar",
         **spaces.space_filter_context(request, space),
-        "create_spaces": spaces.managed_clubs(request, clubs),
+        "create_spaces": spaces.managed_clubs(request),
     })
 
 
-@spaces.follow_space
+@spaces.choose_managed_space("create_match_choose.html")
 @club_manager_required
 @not_while_syncing
 def create_match(request):
     """Alta de un enfrentamiento.
 
-    Solo para administradores del club (club_admin_required). En GET muestra el
-    formulario; en POST lo valida (las reglas están en MatchForm), lo guarda y
+    Para el capitán o los gestores del equipo. Quien gestiona equipos de varias competiciones elige
+    primero en cuál (``create_match_choose.html``) y llega al formulario con ``?en=`` (el formulario se
+    envía también con ``?en=``, así se crea en ese equipo aunque en otra pestaña se haya abierto otro).
+    En GET muestra el formulario; en POST lo valida (las reglas están en MatchForm), lo guarda y
     redirige a la página del partido recién creado.
     """
+    managed = spaces.managed_clubs(request)
     form = MatchForm(request.POST or None, club=request.club, user=request.user)
     if request.method == "POST" and form.is_valid():
         match = form.save()
         messages.success(request, _("Enfrentamiento creado."))
         return redirect("call_for_match", match.public_id)
-    return render(request, CREATE_MATCH_HTML, {"form": form})
+    return render(request, CREATE_MATCH_HTML, {"form": form, "can_change_team": len(managed) > 1})
 
+@spaces.follow_match
 @club_manager_required
 def edit_match_date(request, match_id):
     """Cambia la fecha de un partido que aún no está cerrado.
@@ -378,6 +390,7 @@ def edit_match_date(request, match_id):
         return redirect("call_for_match", match.public_id)
     return render(request, "edit_match_date.html", {"form": form, "match": match})
 
+@spaces.follow_match
 @spaces.follow_space
 @club_manager_required
 def delete_match(request, match_id):
@@ -439,6 +452,7 @@ def selectable_players(club, include_ids=()):
 MIN_CALL_ERROR = gettext_lazy("La convocatoria necesita al menos %(n)s jugadores.")
 
 
+@spaces.follow_match
 @club_manager_required
 def create_call(request, match_id):
     """Crea la convocatoria de un enfrentamiento.
@@ -516,6 +530,7 @@ def validate_call(call):
     
     return True, None
 
+@spaces.follow_match
 @club_manager_required
 def close_call(request, match_id):
     """Cierra la convocatoria de un enfrentamiento y envía el informe a los capitanes.
@@ -569,6 +584,7 @@ def _send_report(request, call, done):
         messages.warning(request, text % {"done": done, "emails": ", ".join(pending)})
 
 
+@spaces.follow_match
 @club_manager_required
 def resend_call_report(request, match_id):
     """Vuelve a enviar el informe de una convocatoria cerrada a los capitanes."""
@@ -580,6 +596,7 @@ def resend_call_report(request, match_id):
     return redirect('call_for_match', call.match.public_id)
 
 
+@spaces.follow_match
 @club_manager_required
 def call_report_pdf(request, match_id):
     """Descarga manual del informe de convocatoria."""
@@ -591,6 +608,7 @@ def call_report_pdf(request, match_id):
     response["Content-Disposition"] = f'inline; filename="{report_filename(call.match)}"'
     return response
 
+@spaces.follow_call
 @club_manager_required
 def edit_call(request, call_id):
     """Edición de los jugadores de una convocatoria.
@@ -663,6 +681,7 @@ def edit_call(request, call_id):
     }
     return render(request, 'edit_call.html', context)
 
+@spaces.follow_call
 @club_manager_required
 def closed_call(request, call_id):
     """Aviso al intentar modificar una convocatoria ya cerrada (solo administradores del club)."""
@@ -670,6 +689,7 @@ def closed_call(request, call_id):
     return render(request, 'closed_call.html', {'match': call})
 
 
+@spaces.follow_match
 @club_manager_required
 def existing_call_view(request, match_id):
     """Aviso al intentar crear una convocatoria que ya existe (solo administradores del club)."""
@@ -763,6 +783,7 @@ def validate_game_for_match(call):
     
     return True, None
 
+@spaces.follow_match
 @club_manager_required
 def create_game_for_match(request, match_id):
     """Crea los partidos (parejas y orden) de un enfrentamiento.
@@ -801,6 +822,7 @@ def create_game_for_match(request, match_id):
     })
 
 
+@spaces.follow_match
 @club_manager_required
 @require_GET
 def suggested_lineup(request, match_id):
@@ -846,6 +868,7 @@ def _save_result(request, game, result, template):
     return redirect(reverse('call_for_match', args=[game.match.public_id]) + f"#partido-{game.n_game}")
 
 
+@spaces.follow_game
 @club_manager_required
 def create_result(request, game_id):
     """Añade el resultado de un partido.
@@ -866,6 +889,7 @@ def create_result(request, game_id):
     return render(request, "create_result.html", {"game": game, "values": {}})
 
 
+@spaces.follow_game
 @club_manager_required
 def edit_result(request, game_id):
     """Edita el resultado de un partido.
@@ -938,6 +962,7 @@ def _mark_pair_no_show(game, side):
                              'player_1_visiting', 'player_2_visiting'])
 
 
+@spaces.follow_match
 @club_manager_required
 def enter_results(request, match_id):
     """
@@ -1105,6 +1130,7 @@ def do_close_match(request, match):
     return True
 
 
+@spaces.follow_match
 @club_manager_required
 @require_POST
 def close_match(request, match_id):
@@ -1118,6 +1144,7 @@ def close_match(request, match_id):
     return redirect('call_for_match', match_id=match.public_id)
 
 
+@spaces.follow_match
 @club_admin_required
 @require_POST
 def reopen_match(request, match_id):
@@ -1152,6 +1179,7 @@ def no_show_score(match, side):
     return (outcomes.LOCAL_WIN if local_wins else outcomes.VISITING_WIN), f"{points[0]}/{points[1]}"
 
 
+@spaces.follow_match
 @club_manager_required
 @require_POST
 def mark_no_show(request, match_id):
@@ -1181,6 +1209,7 @@ def mark_no_show(request, match_id):
     return redirect('call_for_match', match_id=match.public_id)
 
 
+@spaces.follow_match
 @club_manager_required
 @require_POST
 def undo_no_show(request, match_id):
@@ -1197,6 +1226,7 @@ def undo_no_show(request, match_id):
     return redirect('call_for_match', match_id=match.public_id)
 
 
+@spaces.follow_match
 @club_manager_required
 def edit_game_match(request, match_id):
     """Cambia las parejas y el orden de los partidos ya creados.

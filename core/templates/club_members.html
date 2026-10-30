@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="table-container my-4">
-    <h1>{% blocktranslate with club=current_club.name %}Miembros de {{ club }}{% endblocktranslate %}</h1>
+    <h1>{% blocktranslate with club=current_club.name competition=current_club.rules.name %}Miembros de {{ club }} ({{ competition }}){% endblocktranslate %}</h1>
 
     <div class="z-table-wrap"><table class="table align-middle z-table-stack">
         <thead>
@@ -17,7 +17,7 @@
                 <td>
                     <div class="d-flex flex-wrap gap-2 align-items-center">
                         <span class="text-muted">{{ m.user.email|default:"—" }}</span>
-                        {% if m.is_admin %}<span class="z-badge z-badge--lime">{% translate "Capitán" %}</span>{% elif m.is_manager %}<span class="z-badge">{% translate "Gestor" %}</span>{% else %}<span class="text-muted">{% translate "Miembro (solo lectura)" %}</span>{% endif %}
+                        {% if m.is_admin %}<span class="z-badge z-badge--lime">{% translate "Capitán" %}</span>{% elif m.is_manager %}<span class="z-badge">{% translate "Gestor" %}</span>{% else %}<span class="text-muted">{% translate "Jugador (solo consulta)" %}</span>{% endif %}
                         {# El email se cambia en «Mi perfil», que pide la contraseña actual. #}
                         {% if m.user_id == request.user.id %}<a href="{% url 'my_profile' %}?edit=email" class="btn btn-sm btn-outline-primary">{% translate "Cambiar email" %}</a>{% endif %}
                     </div>
@@ -30,7 +30,7 @@
                         <button type="submit" class="btn btn-sm btn-outline-secondary">{% translate "Quitar gestor" %}</button>
                     </form>
                     {% elif managers_full %}
-                    <button type="button" class="btn btn-sm btn-outline-secondary" disabled title="{% translate 'Un club puede tener como máximo dos gestores.' %}">{% translate "Hacer gestor" %}</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" disabled title="{% translate 'Un equipo puede tener como máximo dos gestores.' %}">{% translate "Hacer gestor" %}</button>
                     {% else %}
                     <form method="post" action="{% url 'set_manager' m.public_id %}" class="d-inline" data-confirm="{% blocktranslate with username=m.user.username %}¿Hacer gestor a {{ username }}? Podrá crear enfrentamientos, convocatorias, alineaciones y resultados, cerrar actas, poner advertencias y gestionar jugadores y equipos. No podrá gestionar miembros, la cuenta SNP, reabrir actas ni eliminar el club.{% endblocktranslate %}" data-loading-text="{% translate 'Guardando el rol…' %}">
                         {% csrf_token %}<input type="hidden" name="enable" value="1">
@@ -53,7 +53,7 @@
         {% endfor %}
         </tbody>
     </table></div>
-    <p class="text-muted small">{% translate "Un club tiene un solo capitán, que invita a los jugadores y gestiona el club, y hasta dos gestores, que le ayudan con los enfrentamientos, los resultados, los jugadores y los equipos. Para pasar la gestión a otra persona, pulsa «Hacer capitán» en su fila: tú pasarás a ser miembro (solo lectura). Para poder hacerlo, el miembro tiene que estar enlazado a un jugador del club («Mi perfil»). Para eliminar el club, quita antes a todos los miembros y abandónalo desde el menú." %}</p>
+    <p class="text-muted small">{% translate "Cada equipo tiene un solo capitán, que invita a los jugadores y gestiona el equipo, y hasta dos gestores, que le ayudan con los enfrentamientos, los resultados, los jugadores y los rivales. Los miembros son de este equipo: tus equipos de otras competiciones tienen los suyos. Para pasar la gestión a otra persona, pulsa «Hacer capitán» en su fila: tú pasarás a ser jugador (solo consulta). Para poder hacerlo, tiene que estar enlazado a un jugador de este equipo («Mi perfil»). Para eliminar el equipo, quita antes a todos los miembros y abandónalo desde Equipo." %}</p>
 
     <h2 class="h4 z-heading-plain mt-4" id="invitaciones">{% translate "Invitar jugadores" %}</h2>
     <p class="text-muted mb-2">{% translate "Invita por email o comparte un enlace. Caduca a las 24 horas." %}</p>

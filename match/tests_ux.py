@@ -67,17 +67,23 @@ class PhaseTests(UxBase):
         call.players.set(self.players[:8])
         p = phase.phase_for(match)
         self.assertEqual((p.state, p.action, p.missing_players), (phase.DRAFT, phase.CLOSE_CALL, 2))
-        self.assertIn("8/10", str(p.pending_label))
+        self.assertEqual(str(p.pending_label), "Faltan 2 para cerrar la convocatoria (8 de 10)")
+        self.assertEqual(str(p.label), "Convocatoria abierta")
         call.players.set(self.players[:12])
+        self.assertEqual(str(phase.phase_for(match).pending_label), "Cerrar convocatoria · 12 apuntados (mín. 10)")
         call.draft_mode = False
         call.save()
         self.assertEqual(phase.phase_for(match).state, phase.CALLED)
+        self.assertEqual(str(phase.phase_for(match).label), "Por alinear")
         games = self.lineup(match)
         p = phase.phase_for(match)
         self.assertEqual((p.state, p.action), (phase.LINED_UP, phase.ENTER_RESULTS))
+        self.assertEqual(str(p.label), "Faltan 5 resultados")
+        self.assertEqual(str(p.pending_label), "Poner resultados · faltan 5")
         self.client.post(reverse("enter_results", args=[match.public_id]), self.results_post(games))
         self.assertEqual(phase.phase_for(match).state, phase.PLAYED)
         self.assertEqual(phase.phase_for(match).action, phase.CLOSE_MATCH)
+        self.assertEqual(str(phase.phase_for(match).label), "Acta por cerrar")
         self.client.post(reverse("close_match", args=[match.public_id]))
         match.refresh_from_db()
         self.assertEqual(phase.phase_for(match).state, phase.CLOSED)
@@ -115,7 +121,7 @@ class MatchPageTests(UxBase):
         call.players.set(self.players[:8])
         page = self.client.get(reverse("call_for_match", args=[match.public_id]))
         self.assertContains(page, "Siguiente: Cerrar convocatoria")
-        self.assertContains(page, "Faltan 2 convocados")
+        self.assertContains(page, "Faltan 2 apuntados para cerrar la convocatoria (8 de 10)")
         self.assertContains(page, "disabled")
         call.players.set(self.players[:12])
         page = self.client.get(reverse("call_for_match", args=[match.public_id]))
@@ -272,11 +278,13 @@ class CreateMatchFormTests(UxBase):
         self.assertContains(response, "novalidate")
         self.assertFalse(Match.objects.exists())
 
-    def test_competition_selector_is_locked_on_snp(self):
+    def test_competition_is_shown_as_data(self):
+        # La competición es la del equipo: se muestra como dato, no como un selector bloqueado.
         page = self.client.get(reverse("create_match"))
-        self.assertContains(page, 'name="competition"')
-        self.assertContains(page, "disabled")
-        self.assertContains(page, '<option value="snp" selected>SNP</option>', html=True)
+        self.assertNotContains(page, 'name="competition"')
+        self.assertContains(page, "z-create-in")
+        self.assertContains(page, "Se creará en")
+        self.assertNotContains(page, "Cambiar de equipo")
         form = page.context["form"]
         self.assertTrue(form.fields["competition"].disabled)
 

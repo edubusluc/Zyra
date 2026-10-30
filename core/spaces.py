@@ -208,3 +208,101 @@ def consult_view(view_func):
                 for c in user_clubs(request)]
         return view_func(request, *args, **kwargs)
     return wrapper
+
+
+def follow_object(model_label, kwarg, club_path="club"):
+    """
+    Decorador de las vistas de un objeto concreto (enfrentamiento, convocatoria, partido, jugador…):
+    si el objeto ``kwarg`` (su ``public_id`` en la URL) es de otro equipo del usuario, cambia antes a
+    ese equipo, así la página funciona aunque en otra pestaña o con «Atrás» se haya abierto otro
+    equipo. Los permisos que se comprueban después (``club_manager_required``…) son los de ese equipo.
+    ``model_label`` es «app.Modelo» y ``club_path`` el camino hasta su club (``match__club`` en una
+    convocatoria). Va encima de los decoradores de permisos.
+    """
+    def decorator(view_func):
+        """Envuelve la vista para que siga al equipo del objeto."""
+        @wraps(view_func)
+        def wrapper(request, *args, **kwargs):
+            """Cambia al equipo del objeto de la URL, si es de otro equipo del usuario."""
+            value = kwargs.get(kwarg)
+            if value and is_multi_space(request):
+                from django.apps import apps
+                clubs = user_clubs(request)
+                club_id = (apps.get_model(model_label).objects
+                           .filter(public_id=value, **{f"{club_path}__in": clubs})
+                           .values_list(club_path, flat=True).first())
+                club = next((c for c in clubs if c.id == club_id), None)
+                if club is not None:
+                    switch_to(request, club)
+            return view_func(request, *args, **kwargs)
+        return wrapper
+    return decorator
+
+
+def follow_match(view_func):
+    """``follow_object`` para las vistas con ``match_id``."""
+    return follow_object("match.Match", "match_id")(view_func)
+
+
+def follow_call(view_func):
+    """``follow_object`` para las vistas con ``call_id`` (convocatoria)."""
+    return follow_object("call.Call", "call_id", "match__club")(view_func)
+
+
+def follow_game(view_func):
+    """``follow_object`` para las vistas con ``game_id`` (partido de un enfrentamiento)."""
+    return follow_object("match.Game", "game_id", "match__club")(view_func)
+
+
+def follow_player(view_func):
+    """``follow_object`` para las vistas con ``player_id``."""
+    return follow_object("players.Player", "player_id")(view_func)
+
+
+def choose_managed_space(choose_template):
+    """
+    Decorador de las altas que se hacen en un equipo (crear un enfrentamiento): con ``?en=`` cambia a
+    ese equipo (follow_space); sin él, si el usuario gestiona un solo equipo pasa a ese (aunque el
+    activo sea uno en el que solo juega) y si gestiona varios pinta ``choose_template`` con
+    ``clubs`` para que elija en cuál, sin dar por hecho el equipo activo. Va encima de los permisos.
+    """
+    def decorator(view_func):
+        """Envuelve la vista del alta."""
+        @follow_space
+        @wraps(view_func)
+        def wrapper(request, *args, **kwargs):
+            """Elige el equipo del alta o pregunta."""
+            if is_multi_space(request) and not request.GET.get(SWITCH_PARAM):
+                managed = managed_clubs(request)
+                if len(managed) > 1:
+                    from django.shortcuts import render
+                    return render(request, choose_template, {"clubs": managed})
+                if managed:
+                    switch_to(request, managed[0])
+            return view_func(request, *args, **kwargs)
+        return wrapper
+    return decorator
+
+
+def managed_consult_view(view_func):
+    """
+    Decorador de las páginas de consulta reservadas a quien gestiona (Estadísticas › Advertencias): con
+    ``?en=`` cambia a ese equipo; si el activo es uno en el que solo juega, pasa al primero que
+    gestiona; el selector de competición (``request.space_switcher``) solo ofrece los equipos que
+    gestiona, y no sale si gestiona uno. Va encima de los permisos.
+    """
+    @follow_space
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        """Elige un equipo gestionado y prepara el selector."""
+        request.space_switcher = []
+        if getattr(request, "club", None) is not None and is_multi_space(request):
+            managed = managed_clubs(request)
+            if managed and request.club not in managed:
+                switch_to(request, managed[0])
+            if len(managed) > 1:
+                request.space_switcher = [
+                    {"club": c, "code": c.competition, "name": c.rules.name, "active": c.id == request.club.id}
+                    for c in managed]
+        return view_func(request, *args, **kwargs)
+    return wrapper

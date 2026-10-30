@@ -1134,12 +1134,14 @@ def pair_last_games(club, p1, p2, n=PAIR_LAST_GAMES, match_type=None, season=Non
 
 
 
-@spaces.consult_view
+@spaces.managed_consult_view
 @club_manager_required
 @require_GET
 def warnings_statistics(request):
     """
-    Advertencias del club por jugador y su ranking. Solo capitanes y solo GET. Sin
+    Advertencias del club por jugador y su ranking. Solo capitán y gestores, y solo de los equipos que
+    gestionan (``spaces.managed_consult_view``: con rol mixto se abre el equipo que gestiona y el
+    selector de competición solo ofrece esos). Solo GET. Sin
     ``?season=`` muestra la temporada actual; ``?season=all``, todas.
     """
     penalties = (

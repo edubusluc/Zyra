@@ -3,6 +3,15 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 30/10/2026 · Espacios por competición (revisión de usabilidad, prioridad 1)
+
+- Los enlaces de gestión (convocatoria, parejas, resultados, jugadores, advertencias…) abren siempre el **equipo correcto**, aunque en otra pestaña hayas cambiado de equipo. Si en ese equipo no tienes permiso, el aviso dice de qué equipo es y qué papel tienes.
+- **Advertencias** solo la ven el capitán y los gestores, y solo de los equipos que gestionan.
+- **Nuevo enfrentamiento** pregunta en qué equipo crearlo si eres capitán o gestor de varios; el formulario dice «Se creará en …» con un enlace para cambiar de equipo.
+- La web habla de **equipo** en vez de «club» (menú, registro, miembros, abandonar…).
+- Un mismo **estado** para cada enfrentamiento en el listado, el calendario, el Inicio y su página: «Por convocar», «Convocatoria abierta», «Por alinear», «Faltan 2 resultados», «Acta por cerrar», «Acta cerrada». Los avisos de progreso explican cada número («Faltan 2 apuntados para cerrar la convocatoria (8 de 10)»).
+- **Mi perfil** muestra tu ficha en cada equipo («Mis fichas»), y la barra inferior del móvil dice «Enfrentamientos».
+
 ## 29/10/2026 · Espacios por competición (informe mensual por equipo y normativa SNP)
 
 - El **informe mensual** llega en un solo correo con un PDF por cada equipo en el que jugaste ese mes (SNP y LAPI), cada uno con su competición en la cabecera. El de LAPI no lleva la gráfica de puntos SNP.

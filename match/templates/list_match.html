@@ -65,9 +65,9 @@ tarjeta es pulsable).{% endcomment %}
             {% if m.outcome == 'V' %}<span class="z-fixture-state is-win">{% translate "Victoria" %}</span>
             {% elif m.outcome == 'D' %}<span class="z-fixture-state is-loss">{% translate "Derrota" %}</span>
             {% elif m.outcome == 'E' %}<span class="z-fixture-state is-draw">{% translate "Empate" %}</span>
-            {% elif m.pending_close %}<span class="z-fixture-state is-pending-close">{% translate "Pdt. cerrar acta" %}</span>
-            {% elif m.upcoming %}<span class="z-fixture-state is-upcoming">{% translate "Próximo" %}</span>
-            {% else %}<span class="z-fixture-state is-open">{% translate "Sin resultado" %}</span>{% endif %}
+            {% elif m.pending_close %}<span class="z-fixture-state is-pending-close">{{ m.phase.label }}</span>
+            {% elif m.upcoming %}<span class="z-fixture-state is-upcoming">{{ m.phase.label }}</span>
+            {% else %}<span class="z-fixture-state is-open" title="{% translate 'Fecha pasada' %}">{{ m.phase.label }}<span class="visually-hidden"> · {% translate "fecha pasada" %}</span></span>{% endif %}
         </div>
         <div class="z-fixture-teams">
             {% with lp=m.local_points vp=m.visiting_points %}
