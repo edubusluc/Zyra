@@ -1427,20 +1427,6 @@ a.z-card:hover, .z-card--link:hover {
 .z-location i { margin-top: 3px; color: var(--z-lime); }
 a.z-location:hover span { text-decoration: underline; }
 
-.z-hot-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 16px; }
-.z-hot { display: grid; gap: 14px; align-content: start; }
-.z-hot .z-eyebrow { color: var(--z-lime); }
-.z-hot .btn { justify-self: start; }
-.z-hot-body { display: grid; gap: 14px; }
-.z-hot { padding: 22px 24px; border-radius: 26px; }
-.z-hot-streak { display: flex; align-items: baseline; gap: 10px; margin: 0; font-family: var(--z-display); font-size: 4.5rem; line-height: .9; color: var(--z-lime); }
-.z-hot-streak small { font-family: var(--z-body); font-size: .8rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--z-muted); }
-.z-hot-who { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.z-hot-who strong { font-size: .95rem; text-transform: uppercase; overflow-wrap: anywhere; }
-.z-section-title--display { font-family: var(--z-display); font-size: 1.9rem; font-weight: 400; letter-spacing: .01em; line-height: 1; }
-.z-hot-body strong { display: block; font-size: 1.05rem; color: #FFFFFF; }
-.z-hot-avatars { display: flex; flex-shrink: 0; }
-.z-hot-avatars .z-avatar + .z-avatar { margin-left: -14px; }
 
 /* Banner con equipos en varias competiciones: todos a la vez, cada uno con su escudo, competición y papel. */
 .z-home-hero--teams { display: grid; gap: 16px; align-items: stretch;
@@ -1470,7 +1456,6 @@ a.z-location:hover span { text-decoration: underline; }
 .z-choose-team { color: var(--z-text); text-decoration: none; min-height: 80px; transition: border-color .15s var(--z-ease), background .15s var(--z-ease); }
 .z-choose-team:hover, .z-choose-team:focus-visible { color: var(--z-text); border-color: var(--z-lime); background: rgba(var(--z-lime-rgb), .06); }
 .z-home-hero--teams .z-comp-badge { margin: 0; }
-.z-hot .z-eyebrow .z-comp-badge { margin-left: 6px; vertical-align: middle; }
 
 @media (max-width: 575.98px) {
     .z-home-hero { flex-direction: column; text-align: center; }
@@ -3223,18 +3208,5 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .z-space-rows li.z-comp-frame { padding: 12px 16px; margin-bottom: 10px; border-bottom-width: 1px; }
 .z-space-rows li.z-comp-frame:last-child { margin-bottom: 0; }
 
-/* Cabecera de equipo de «En racha» (varios espacios) y explicación bajo cada dato de sets. */
+/* Explicación bajo cada dato de sets. */
 .z-comp-meter-name small { display: block; margin-top: 1px; font-size: .7rem; font-weight: 500; line-height: 1.3; color: var(--z-muted); }
-.z-hot-team span { text-transform: uppercase; }
-.z-hot-panel { margin-bottom: 14px; padding: 0; overflow: hidden; border-radius: 26px; }
-.z-hot-panel .z-hot-team { margin: 0; padding: 18px 26px 0; }
-.z-hot-zones { display: grid; grid-template-columns: 1fr; margin-top: 6px; }
-.z-hot-zone { display: grid; align-content: start; justify-items: start; gap: 12px; min-width: 0; padding: 18px 26px 22px; }
-.z-hot-zone + .z-hot-zone { border-top: 1px solid var(--z-border); }
-.z-hot-zone .z-eyebrow { color: var(--z-lime); }
-@media (min-width: 992px) {
-    .z-hot-zones { grid-template-columns: 1fr 1fr; }
-    .z-hot-zone + .z-hot-zone { border-top: 0; border-left: 1px solid var(--z-border); }
-}
-.z-hot-team { display: flex; align-items: center; gap: 8px; margin: 18px 0 10px; font-size: .95rem; font-weight: 700; }
-.z-hot-team:first-of-type { margin-top: 0; }

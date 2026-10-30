@@ -11,7 +11,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 - **Inicio**: el próximo enfrentamiento es un bloque lima con la fecha enorme, un indicador de días de fondo oscuro y los equipos local y visitante a cada lado de la red. En escritorio, junto a «Pendiente», el bloque es una pista de pádel de proporción 2:1 (nunca se deforma).
 - **Pendiente**: panel propio con su contador y el botón «+ Nuevo»; las filas son una lista plana.
 - **Equipos**: el banner grande «Tus equipos» pasa a una tira compacta con cada equipo (escudo, competición, rol y categoría).
-- **En racha**: un panel por equipo con dos zonas (jugador y pareja), la racha como cifra grande en lima, igual que «Mi forma». «Registra tu cuenta de SNP» es un aviso como el del gestor.
+- **En racha** desaparece del Inicio (la racha de cada jugador y pareja sigue en sus estadísticas). «Registra tu cuenta de SNP» es un aviso como el del gestor, junto a él.
 - **Mi forma**: cuatro zonas (balance en anillo, últimos partidos con la racha, «te apuntaste → jugaste» y puntos SNP con su gráfica).
 
 ## 30/10/2026 · Espacios por competición (pendientes de la auditoría, PR #210)
