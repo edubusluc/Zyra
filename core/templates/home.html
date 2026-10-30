@@ -4,11 +4,7 @@
 {% block content %}
 {% if home_teams %}
 {# Con equipos en varias competiciones el banner los enseña todos y no cambia con el último enfrentamiento abierto. #}
-<section class="z-home-hero z-home-hero--teams">
-    <div>
-        <span class="z-eyebrow">{% blocktranslate %}Temporada {{ season }}{% endblocktranslate %}</span>
-        <h1>{% translate "Tus equipos" %}</h1>
-    </div>
+<section class="z-home-strip" aria-label="{% translate 'Tus equipos' %}">
     <ul class="z-home-teams">
         {% for t in home_teams %}
         <li class="z-home-team z-home-team--{{ t.club.competition }}">
@@ -209,7 +205,7 @@
     </div>
     <div class="z-next-match-date">
         <p class="z-next-match-day">{{ next_match.start_date|date:"D j M" }}<small>{{ next_match.start_date|date:"Y" }}</small></p>
-        <p class="z-next-match-meta">{% if next_match.start_time %}{{ next_match.start_time|time:"H:i" }}{% endif %}{% if next_match.location %}{% if next_match.start_time %} · {% endif %}<a class="z-location" href="{{ next_match.maps_url }}" target="_blank" rel="noopener"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>{{ next_match.location }}</span></a>{% else %}{% if next_match.start_time %} · {% endif %}<span class="z-location"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>{% translate "Sin ubicación" %}</span></span>{% endif %}</p>
+        <p class="z-next-match-meta">{% if next_match.start_time %}<strong>{{ next_match.start_time|time:"H:i" }}</strong>{% endif %}{% if next_match.location %}<a class="z-location" href="{{ next_match.maps_url }}" target="_blank" rel="noopener" title="{% translate 'Cómo llegar' %}"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>{{ next_match.location }}</span></a>{% else %}<span class="z-location"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>{% translate "Sin ubicación" %}</span></span>{% endif %}</p>
     </div>
     {% if my_status %}
     <p class="z-next-match-me{% if my_status.called %} is-in{% endif %}" role="status">
@@ -224,7 +220,6 @@
     {% endif %}
     <div class="z-next-match-cta">
         <a class="btn btn-secondary btn-sm" href="{% url 'call_for_match' next_match.public_id %}"><i class="fa-solid fa-clipboard-list me-1" aria-hidden="true"></i> {% translate "Ver convocatoria" %}</a>
-        {% if next_match.location %}<a class="btn btn-link btn-sm" href="{{ next_match.maps_url }}" target="_blank" rel="noopener"><i class="fa-solid fa-map-location-dot me-1" aria-hidden="true"></i> {% translate "Cómo llegar" %}</a>{% endif %}
     </div>
     <div class="z-next-match-teams">
         <div class="z-next-match-team {% if next_match.local.is_own %}is-own{% endif %}">
@@ -389,7 +384,7 @@
 {% endif %}
 
 {% if streaks or not onboarding %}
-<h2 class="z-section-title">{% translate "En racha" %}</h2>
+<h2 class="z-section-title z-section-title--display">{% translate "En racha" %}</h2>
 {% endif %}
 {% if streaks %}
 {% for s in streaks %}
@@ -402,10 +397,10 @@
     <article class="z-card z-hot">
         <span class="z-eyebrow"><i class="fa-solid fa-fire me-1" aria-hidden="true"></i> {% translate "Jugador en racha" %}</span>
         <div class="z-hot-body">
-            <img class="z-avatar" src="{% if p.photo %}{{ p.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="">
-            <div>
+            <p class="z-hot-streak" aria-label="{% blocktranslate trimmed count n=s.player.streak %}{{ n }} victoria seguida{% plural %}{{ n }} victorias seguidas{% endblocktranslate %}">{{ s.player.streak }}<small>{% blocktranslate trimmed count n=s.player.streak %}victoria seguida{% plural %}victorias seguidas{% endblocktranslate %}</small></p>
+            <div class="z-hot-who">
+                <img class="z-avatar" src="{% if p.photo %}{{ p.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="">
                 <strong>{{ p.full_name }}</strong>
-                <span>{% blocktranslate trimmed count n=s.player.streak %}{{ n }} victoria seguida{% plural %}{{ n }} victorias seguidas{% endblocktranslate %}</span>
             </div>
         </div>
         <a class="btn btn-secondary btn-sm" href="{% url 'player_statistics' %}?en={{ s.club.competition }}&amp;player={{ p.public_id }}">{% translate "Ver estadísticas" %}</a>
@@ -416,13 +411,13 @@
     <article class="z-card z-hot">
         <span class="z-eyebrow"><i class="fa-solid fa-fire me-1" aria-hidden="true"></i> {% translate "Pareja en racha" %}</span>
         <div class="z-hot-body">
-            <div class="z-hot-avatars">
-                <img class="z-avatar" src="{% if s.pair.p1.photo %}{{ s.pair.p1.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="">
-                <img class="z-avatar" src="{% if s.pair.p2.photo %}{{ s.pair.p2.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="">
-            </div>
-            <div>
+            <p class="z-hot-streak" aria-label="{% blocktranslate trimmed count n=s.pair.streak %}{{ n }} victoria seguida{% plural %}{{ n }} victorias seguidas{% endblocktranslate %}">{{ s.pair.streak }}<small>{% blocktranslate trimmed count n=s.pair.streak %}victoria seguida{% plural %}victorias seguidas{% endblocktranslate %}</small></p>
+            <div class="z-hot-who">
+                <span class="z-hot-avatars">
+                    <img class="z-avatar" src="{% if s.pair.p1.photo %}{{ s.pair.p1.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="">
+                    <img class="z-avatar" src="{% if s.pair.p2.photo %}{{ s.pair.p2.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="">
+                </span>
                 <strong>{{ s.pair.label }}</strong>
-                <span>{% blocktranslate trimmed count n=s.pair.streak %}{{ n }} victoria seguida{% plural %}{{ n }} victorias seguidas{% endblocktranslate %}</span>
             </div>
         </div>
         <a class="btn btn-secondary btn-sm" href="{% url 'pair_statistics' %}?en={{ s.club.competition }}&amp;p1={{ s.pair.p1.public_id }}&amp;p2={{ s.pair.p2.public_id }}">{% translate "Ver estadísticas" %}</a>

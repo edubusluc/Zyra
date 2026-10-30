@@ -1365,10 +1365,14 @@ a.z-card:hover, .z-card--link:hover {
 .z-next-match-days { flex: none; padding: 7px 14px; font-size: .78rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--z-lime); background: var(--z-ink); border-radius: 999px; transform: rotate(4deg); }
 .z-next-match-day { margin: 0; font-family: var(--z-display); font-size: clamp(3.4rem, 22cqw, 7.5rem); line-height: .95; text-transform: uppercase; }
 .z-next-match-day small { margin-left: .35em; font-size: .28em; letter-spacing: .06em; opacity: .7; }
-.z-next-match-meta { margin: 6px 0 0; font-weight: 700; }
+.z-next-match-meta { display: flex; align-items: center; gap: 10px; margin: 6px 0 0; font-weight: 700; }
+.z-next-match-meta strong { flex: none; font-family: var(--z-display); font-size: 1.5rem; font-weight: 400; line-height: 1; }
+.z-next-match-meta .z-location { align-items: center; min-width: 0; font-size: .9rem; }
+.z-next-match-meta .z-location i { margin: 0; }
+.z-next-match-meta .z-location span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .z-next-match .z-location { color: var(--z-ink); }
 .z-next-match .z-location i { color: var(--z-ink); }
-.z-next-match .z-next-match-me { margin: 10px 0 0; color: var(--z-ink); background: rgba(10, 10, 10, .12); font-weight: 600; }
+.z-next-match .z-next-match-me { margin: 0; padding: 0; color: var(--z-ink); background: none; font-size: .88rem; font-weight: 600; }
 .z-next-match .z-next-match-me.is-in, .z-next-match .z-next-match-me.is-in i { color: var(--z-ink); }
 .z-next-match .z-next-match-me a { color: var(--z-ink); font-weight: 800; }
 .z-next-match-cta { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -1396,7 +1400,7 @@ a.z-card:hover, .z-card--link:hover {
     }
     .z-home-grid--both .z-next-match::before {
         content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
-        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 100' fill='none' stroke='%230A0A0A' stroke-opacity='.24' stroke-width='2'%3E%3Crect x='3' y='6' width='194' height='88' rx='1' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M100 6V94M30.5 6V94M169.5 6V94M30.5 50H169.5' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") center / contain no-repeat;
+        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 100' fill='none' stroke='%230A0A0A' stroke-opacity='.15' stroke-width='2'%3E%3Crect x='3' y='6' width='194' height='88' rx='1' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M100 6V94M30.5 6V94M169.5 6V94M30.5 50H169.5' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") center / contain no-repeat;
     }
     .z-home-grid--both .z-next-match-when { grid-area: when; }
     .z-home-grid--both .z-next-match-date { grid-area: date; }
@@ -1425,9 +1429,14 @@ a.z-location:hover span { text-decoration: underline; }
 .z-hot { display: grid; gap: 14px; align-content: start; }
 .z-hot .z-eyebrow { color: var(--z-lime); }
 .z-hot .btn { justify-self: start; }
-.z-hot-body { display: flex; align-items: center; gap: 14px; }
+.z-hot-body { display: grid; gap: 14px; }
+.z-hot { padding: 22px 24px; border-radius: 26px; }
+.z-hot-streak { display: flex; align-items: baseline; gap: 10px; margin: 0; font-family: var(--z-display); font-size: 4.5rem; line-height: .9; color: var(--z-lime); }
+.z-hot-streak small { font-family: var(--z-body); font-size: .8rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--z-muted); }
+.z-hot-who { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.z-hot-who strong { font-size: .95rem; text-transform: uppercase; overflow-wrap: anywhere; }
+.z-section-title--display { font-family: var(--z-display); font-size: 1.9rem; font-weight: 400; letter-spacing: .01em; line-height: 1; }
 .z-hot-body strong { display: block; font-size: 1.05rem; color: #FFFFFF; }
-.z-hot-body span { color: var(--z-muted); }
 .z-hot-avatars { display: flex; flex-shrink: 0; }
 .z-hot-avatars .z-avatar + .z-avatar { margin-left: -14px; }
 
@@ -1435,6 +1444,14 @@ a.z-location:hover span { text-decoration: underline; }
 .z-home-hero--teams { display: grid; gap: 16px; align-items: stretch;
     background: linear-gradient(135deg, rgba(var(--z-snp-rgb), .14), rgba(var(--z-snp-rgb), 0) 50%, rgba(var(--z-lapi-rgb), .14)), var(--z-surface-2); }
 .z-home-teams { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
+/* Tira compacta de equipos sobre el enfrentamiento (sustituye al banner grande «Tus equipos») */
+.z-home-strip { margin-bottom: 4px; }
+.z-home-strip .z-home-team { padding: 8px 14px 8px 8px; background: var(--z-surface); border-radius: 999px; }
+.z-home-strip .z-home-team-logo { width: 40px; height: 40px; padding: 3px; border-width: 2px; }
+.z-home-strip .z-home-team-text { gap: 0; }
+.z-home-strip .z-home-team-text strong { font-size: .9rem; }
+.z-home-strip .z-home-team-text > span { font-size: .78rem; flex-wrap: nowrap; white-space: nowrap; overflow: hidden; }
+.z-home-strip .z-comp-badge { margin: 0; }
 .z-home-team { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 12px; background: rgba(255, 255, 255, .04); border: 1px solid var(--z-border); border-radius: 12px; }
 .z-home-team-logo { flex-shrink: 0; width: 56px; height: 56px; padding: 4px; object-fit: contain; background: var(--z-surface); border: 2px solid var(--z-lime); border-radius: 50% !important; }
 .z-home-team--snp .z-home-team-logo { border-color: var(--z-snp); }
@@ -3208,5 +3225,6 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 
 /* Cabecera de equipo de «En racha» (varios espacios) y explicación bajo cada dato de sets. */
 .z-comp-meter-name small { display: block; margin-top: 1px; font-size: .7rem; font-weight: 500; line-height: 1.3; color: var(--z-muted); }
+.z-hot-team span { text-transform: uppercase; }
 .z-hot-team { display: flex; align-items: center; gap: 8px; margin: 18px 0 10px; font-size: .95rem; font-weight: 700; }
 .z-hot-team:first-of-type { margin-top: 0; }
