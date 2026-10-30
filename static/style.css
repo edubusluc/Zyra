@@ -2283,9 +2283,8 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 .z-or::before, .z-or::after { content: ""; flex: 1; height: 1px; background: var(--z-border); }
 .z-google-btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; }
 
-/* Aviso de la portada para registrar la cuenta SNP */
-.z-snp-notice { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; border-color: var(--z-lime); }
-.z-snp-notice > .fa-trophy { font-size: 1.5rem; color: var(--z-lime); }
+/* Aviso de la portada para registrar la cuenta SNP (es un .z-notice, como el del gestor) */
+.z-snp-notice { margin-top: 16px; }
 
 /* ---------- Móvil: revisión general ----------
    Acciones de cabecera a todo el ancho, pestañas de estadísticas en una
@@ -3226,5 +3225,15 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 /* Cabecera de equipo de «En racha» (varios espacios) y explicación bajo cada dato de sets. */
 .z-comp-meter-name small { display: block; margin-top: 1px; font-size: .7rem; font-weight: 500; line-height: 1.3; color: var(--z-muted); }
 .z-hot-team span { text-transform: uppercase; }
+.z-hot-panel { margin-bottom: 14px; padding: 0; overflow: hidden; border-radius: 26px; }
+.z-hot-panel .z-hot-team { margin: 0; padding: 18px 26px 0; }
+.z-hot-zones { display: grid; grid-template-columns: 1fr; margin-top: 6px; }
+.z-hot-zone { display: grid; align-content: start; justify-items: start; gap: 12px; min-width: 0; padding: 18px 26px 22px; }
+.z-hot-zone + .z-hot-zone { border-top: 1px solid var(--z-border); }
+.z-hot-zone .z-eyebrow { color: var(--z-lime); }
+@media (min-width: 992px) {
+    .z-hot-zones { grid-template-columns: 1fr 1fr; }
+    .z-hot-zone + .z-hot-zone { border-top: 0; border-left: 1px solid var(--z-border); }
+}
 .z-hot-team { display: flex; align-items: center; gap: 8px; margin: 18px 0 10px; font-size: .95rem; font-weight: 700; }
 .z-hot-team:first-of-type { margin-top: 0; }

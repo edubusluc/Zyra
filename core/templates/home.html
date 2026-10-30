@@ -367,20 +367,16 @@
 {% endif %}
 
 {% if snp_missing %}
-<div class="z-card z-card--link z-snp-notice d-flex flex-column align-items-start" style = "margin-top: 2rem;">
+<section class="z-notice z-snp-notice" role="status" aria-label="{% translate 'Registra tu cuenta de SNP' %}">
     <i class="fa-solid fa-trophy" aria-hidden="true"></i>
-
-    <span>
+    <div class="z-notice-text">
         <strong>{% translate "Registra tu cuenta de SNP" %}</strong>
-        <span class="text-muted d-block">
-            {% translate "Mantén actualizados semanalmente los puntos SNP de tus jugadores y carga automáticamente sus datos para ahorrar tiempo y tenerlo todo siempre al día." %}
-        </span>
-    </span>
-
-    <a class="btn btn-primary" href="{% url 'snp_account' %}">
-        {% translate "Registrar cuenta" %}
-    </a>
-</div>
+        <span>{% translate "Mantén actualizados semanalmente los puntos SNP de tus jugadores y carga automáticamente sus datos para ahorrar tiempo y tenerlo todo siempre al día." %}</span>
+    </div>
+    <div class="z-notice-actions">
+        <a class="btn btn-primary btn-sm" href="{% url 'snp_account' %}">{% translate "Registrar cuenta" %}</a>
+    </div>
+</section>
 {% endif %}
 
 {% if streaks or not onboarding %}
@@ -388,29 +384,27 @@
 {% endif %}
 {% if streaks %}
 {% for s in streaks %}
-{% if home_teams %}
-<h3 class="z-hot-team">{% include 'includes/competition_badge.html' with code=s.club.competition name=s.club.rules.name %} <span>{{ s.club.name }}</span></h3>
-{% endif %}
-<div class="z-hot-grid">
-    {% if s.player %}
-    {% with p=s.player.player %}
-    <article class="z-card z-hot">
-        <span class="z-eyebrow"><i class="fa-solid fa-fire me-1" aria-hidden="true"></i> {% translate "Jugador en racha" %}</span>
-        <div class="z-hot-body">
+<section class="z-card z-hot-panel"{% if home_teams %} aria-label="{{ s.club.name }}"{% endif %}>
+    {% if home_teams %}
+    <h3 class="z-hot-team">{% include 'includes/competition_badge.html' with code=s.club.competition name=s.club.rules.name %} <span>{{ s.club.name }}</span></h3>
+    {% endif %}
+    <div class="z-hot-zones">
+        {% if s.player %}
+        {% with p=s.player.player %}
+        <article class="z-hot-zone">
+            <span class="z-eyebrow"><i class="fa-solid fa-fire me-1" aria-hidden="true"></i> {% translate "Jugador en racha" %}</span>
             <p class="z-hot-streak" aria-label="{% blocktranslate trimmed count n=s.player.streak %}{{ n }} victoria seguida{% plural %}{{ n }} victorias seguidas{% endblocktranslate %}">{{ s.player.streak }}<small>{% blocktranslate trimmed count n=s.player.streak %}victoria seguida{% plural %}victorias seguidas{% endblocktranslate %}</small></p>
             <div class="z-hot-who">
                 <img class="z-avatar" src="{% if p.photo %}{{ p.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="">
                 <strong>{{ p.full_name }}</strong>
             </div>
-        </div>
-        <a class="btn btn-secondary btn-sm" href="{% url 'player_statistics' %}?en={{ s.club.competition }}&amp;player={{ p.public_id }}">{% translate "Ver estadísticas" %}</a>
-    </article>
-    {% endwith %}
-    {% endif %}
-    {% if s.pair %}
-    <article class="z-card z-hot">
-        <span class="z-eyebrow"><i class="fa-solid fa-fire me-1" aria-hidden="true"></i> {% translate "Pareja en racha" %}</span>
-        <div class="z-hot-body">
+            <a class="btn btn-secondary btn-sm" href="{% url 'player_statistics' %}?en={{ s.club.competition }}&amp;player={{ p.public_id }}">{% translate "Ver estadísticas" %}</a>
+        </article>
+        {% endwith %}
+        {% endif %}
+        {% if s.pair %}
+        <article class="z-hot-zone">
+            <span class="z-eyebrow"><i class="fa-solid fa-fire me-1" aria-hidden="true"></i> {% translate "Pareja en racha" %}</span>
             <p class="z-hot-streak" aria-label="{% blocktranslate trimmed count n=s.pair.streak %}{{ n }} victoria seguida{% plural %}{{ n }} victorias seguidas{% endblocktranslate %}">{{ s.pair.streak }}<small>{% blocktranslate trimmed count n=s.pair.streak %}victoria seguida{% plural %}victorias seguidas{% endblocktranslate %}</small></p>
             <div class="z-hot-who">
                 <span class="z-hot-avatars">
@@ -419,11 +413,11 @@
                 </span>
                 <strong>{{ s.pair.label }}</strong>
             </div>
-        </div>
-        <a class="btn btn-secondary btn-sm" href="{% url 'pair_statistics' %}?en={{ s.club.competition }}&amp;p1={{ s.pair.p1.public_id }}&amp;p2={{ s.pair.p2.public_id }}">{% translate "Ver estadísticas" %}</a>
-    </article>
-    {% endif %}
-</div>
+            <a class="btn btn-secondary btn-sm" href="{% url 'pair_statistics' %}?en={{ s.club.competition }}&amp;p1={{ s.pair.p1.public_id }}&amp;p2={{ s.pair.p2.public_id }}">{% translate "Ver estadísticas" %}</a>
+        </article>
+        {% endif %}
+    </div>
+</section>
 {% endfor %}
 {% elif not onboarding %}
 <div class="z-empty">
