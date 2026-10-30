@@ -396,12 +396,15 @@
 <h2 class="z-section-title">{% translate "En racha" %}</h2>
 {% endif %}
 {% if streaks %}
+{% for s in streaks %}
+{% if home_teams %}
+<h3 class="z-hot-team">{% include 'includes/competition_badge.html' with code=s.club.competition name=s.club.rules.name %} <span>{{ s.club.name }}</span></h3>
+{% endif %}
 <div class="z-hot-grid">
-    {% for s in streaks %}
     {% if s.player %}
     {% with p=s.player.player %}
     <article class="z-card z-hot">
-        <span class="z-eyebrow"><i class="fa-solid fa-fire me-1" aria-hidden="true"></i> {% translate "Jugador en racha" %}{% if home_teams %} {% include 'includes/competition_badge.html' with code=s.club.competition name=s.club.rules.name %}{% endif %}</span>
+        <span class="z-eyebrow"><i class="fa-solid fa-fire me-1" aria-hidden="true"></i> {% translate "Jugador en racha" %}</span>
         <div class="z-hot-body">
             <img class="z-avatar" src="{% if p.photo %}{{ p.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="">
             <div>
@@ -415,7 +418,7 @@
     {% endif %}
     {% if s.pair %}
     <article class="z-card z-hot">
-        <span class="z-eyebrow"><i class="fa-solid fa-fire me-1" aria-hidden="true"></i> {% translate "Pareja en racha" %}{% if home_teams %} {% include 'includes/competition_badge.html' with code=s.club.competition name=s.club.rules.name %}{% endif %}</span>
+        <span class="z-eyebrow"><i class="fa-solid fa-fire me-1" aria-hidden="true"></i> {% translate "Pareja en racha" %}</span>
         <div class="z-hot-body">
             <div class="z-hot-avatars">
                 <img class="z-avatar" src="{% if s.pair.p1.photo %}{{ s.pair.p1.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="">
@@ -429,8 +432,8 @@
         <a class="btn btn-secondary btn-sm" href="{% url 'pair_statistics' %}?en={{ s.club.competition }}&amp;p1={{ s.pair.p1.public_id }}&amp;p2={{ s.pair.p2.public_id }}">{% translate "Ver estadísticas" %}</a>
     </article>
     {% endif %}
-    {% endfor %}
 </div>
+{% endfor %}
 {% elif not onboarding %}
 <div class="z-empty">
     <i class="fa-solid fa-fire" aria-hidden="true"></i>

@@ -65,6 +65,10 @@
             </section>
             {% endfor %}
           </div>
+          {# Qué mide cada barra: las mismas situaciones en todas las competiciones. #}
+          <dl class="z-glossary" aria-label="{% translate 'Qué significa cada dato' %}">
+            {% for item in set_panels.0.rows %}<div><dt>{{ item.label }}</dt><dd>{{ item.hint }}</dd></div>{% endfor %}
+          </dl>
           {% else %}
           <p class="st-muted st-nodata">{% translate "Todavía no hay resultados set a set." %}</p>
           {% endif %}
@@ -94,15 +98,13 @@
         </section>
         {% endif %}
 
-        {% if not selected_season %}
         <section class="st-card st-card--wide">
           <h3 class="st-card-title">{% translate "Convocatorias en las que te apuntas" %}</h3>
-          <p class="st-card-note">{% translate "% de las convocatorias cerradas de cada temporada en las que te apuntaste, una línea por competición." %}</p>
+          <p class="st-card-note">{% translate "% de las convocatorias cerradas en las que te apuntaste, por competición (una línea por temporada o, con una temporada elegida, una barra por competición)." %}</p>
           {% if spaces_chart.attendance.labels %}
           <div class="st-chart"><canvas id="spacesAttendanceChart" role="img" aria-label="{% translate 'Convocatorias en las que te apuntas' %}"></canvas></div>
           {% else %}<p class="st-muted st-nodata">{% translate "No hay datos todavía." %}</p>{% endif %}
         </section>
-        {% endif %}
       </div>
     </section>
 </div>

@@ -13,6 +13,11 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 - **Informes**: los datos de otras competiciones solo se incluyen si todos los que reciben el informe gestionan también ese otro equipo.
 - **Filtros**: Competición, Temporada y Tipo son desplegables en una sola fila (con el rival en el listado); cada uno dice su valor y se marca en lima si no es «Todas». El panel lateral de Estadísticas › Equipo aparece desde 1024 px.
 - **Mis estadísticas**: con dos equipos y sin ficha enlazada la pestaña explica cómo enlazarla.
+- **Inicio › En racha**: con varios equipos, cada competición tiene su bloque (SNP y LAPI por separado).
+- **Enfrentamientos y estadísticas**: el selector de enfrentamientos competitivos es un desplegable igual que Competición, Temporada y Tipo.
+- **Gestionar plantilla**: arriba dice de qué equipo es la plantilla que editas.
+- **Jugadores**: el aviso «Cópialos en vez de crearlos a mano» sale en ambos sentidos (SNP → LAPI y LAPI → SNP) mientras queden jugadores sin copiar.
+- **Mis estadísticas**: la tarjeta de sets explica cada dato (set decisivo, tie-breaks…) y, con una temporada elegida, se ve la gráfica de convocatorias de esa temporada (barras por competición).
 - **Colores SNP/LAPI**: en Mis estadísticas cada competición tiene su marco (tinte suave y línea superior de su color) y los datos van en lima; las gráficas comparativas mantienen dorado y turquesa para distinguir series.
 
 ## 30/10/2026 · Espacios por competición (selectores, datos y zonas grises)

@@ -488,7 +488,7 @@ def players_charts(players, logs, season, match_type):
     agrupado por competición, para los paneles de stats_mine.html) y ``spaces_chart``
     para stats_spaces.js: competiciones, partidos ganados y perdidos como local y como visitante,
     partidos ganados por temporada (sin temporada elegida) y % de convocatorias en las que se apuntó
-    por temporada (sin temporada elegida).
+    por temporada (con una temporada elegida, solo esa: se dibuja con barras).
     """
     comps, sets_by_comp, local, visiting, years, attendance = [], [], [], [], [], []
     for player, log in zip(players, logs):
@@ -503,7 +503,9 @@ def players_charts(players, logs, season, match_type):
         for g in log:
             per_year[g["season"]] = per_year.get(g["season"], 0) + g["won"]
         years.append(per_year if not season else {})
-        present, total = calls_by_season(player, match_type) if not season else ({}, {})
+        present, total = calls_by_season(player, match_type)
+        if season:
+            present, total = {season: present.get(season, 0)}, {season: total.get(season, 0)}
         attendance.append({s: round(present.get(s, 0) / n * 100) for s, n in total.items() if n})
 
     set_rows = [{

@@ -10,15 +10,14 @@
     </ul>
   </details>
   {% if competitive_types %}
-  <form method="get" class="st-type-select">
-    {% for name, value in match_type_keep %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}
-    <label for="competitive-type" class="visually-hidden">{% translate "Tipo de enfrentamiento competitivo" %}</label>
-    <select id="competitive-type" name="match_type" onchange="this.form.submit()">
+  {# Dentro de Competitivos: todos los enfrentamientos o un solo tipo, con el mismo desplegable que Tipo. #}
+  <details class="z-fsel{% for option in competitive_types %}{% if option.active and option.url != competitive_types.0.url %} is-active{% endif %}{% endfor %}" data-filter-menu>
+    <summary><small>{% translate "Competitivo" %}</small><span>{% for option in competitive_types %}{% if option.active %}{{ option.label }}{% endif %}{% endfor %}</span></summary>
+    <ul class="z-fsel-menu">
       {% for option in competitive_types %}
-      <option value="{{ option.value }}" {% if option.active %}selected{% endif %}>{{ option.label }}</option>
+      <li><a href="{{ option.url }}" {% if option.active %}aria-current="page"{% endif %}>{{ option.label }}</a></li>
       {% endfor %}
-    </select>
-    <noscript><button type="submit" class="st-chip">{% translate "Filtrar" %}</button></noscript>
-  </form>
+    </ul>
+  </details>
   {% endif %}
 </nav>

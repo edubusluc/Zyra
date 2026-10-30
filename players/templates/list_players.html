@@ -17,8 +17,8 @@
     {% endif %}
 </div>
 {% include 'includes/space_switcher.html' %}
-{% if copy_sources and not has_copies %}
-{% with c=copy_sources.0 %}
+{% if copy_offer %}
+{% with c=copy_offer.club %}
 <div class="z-callout z-callout--info mb-3">
     <i class="fa-solid fa-copy" aria-hidden="true"></i>
     <p class="mb-0">{% blocktranslate with competition=c.rules.name %}¿Tus jugadores de {{ competition }} también juegan aquí? Cópialos en vez de crearlos a mano: solo se copian nombre, foto y posición, nunca sus estadísticas.{% endblocktranslate %} <a href="{% url 'copy_players' %}?desde={{ c.competition }}">{% blocktranslate with competition=c.rules.name %}Copiar de {{ competition }}{% endblocktranslate %}</a></p>
