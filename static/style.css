@@ -259,9 +259,7 @@ main:focus { outline: none; }
     position: sticky;
     top: 0;
     z-index: 1030;
-    background: rgba(10, 11, 9, .72);
-    border-bottom: 1px solid rgba(255, 255, 255, .06);
-    backdrop-filter: blur(18px) saturate(140%);
+    background: var(--z-bg);
 }
 
 .z-header-inner {
@@ -269,7 +267,7 @@ main:focus { outline: none; }
     align-items: center;
     gap: 24px;
     max-width: 1200px;
-    height: 68px;
+    height: 76px;
     margin: 0 auto;
     padding: 0 24px;
 }
@@ -282,7 +280,8 @@ main:focus { outline: none; }
     flex-shrink: 0;
 }
 .z-brand:hover { color: #FFFFFF; }
-.z-brand img { width: 30px; height: auto; border-radius: 0; }
+.z-brand img { width: 46px; height: 46px; padding: 12px 13px; object-fit: contain; background: var(--z-surface-2); border-radius: 50%; }
+@media (max-width: 991.98px) { .z-brand img { width: 38px; height: 38px; padding: 9px 10px; } }
 
 .z-wordmark {
     font-family: var(--z-display);
@@ -305,17 +304,17 @@ main:focus { outline: none; }
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 9px 14px;
-    font-size: .82rem;
+    padding: 11px 20px;
+    font-size: .85rem;
     font-weight: 700;
-    letter-spacing: .06em;
-    text-transform: uppercase;
-    color: var(--z-muted);
+    color: var(--z-text);
     border-radius: 999px;
     transition: color .2s var(--z-ease), background-color .2s var(--z-ease), box-shadow .2s var(--z-ease);
 }
 .z-nav-link:hover { color: #FFFFFF; background: var(--z-surface-2); }
-.z-nav-link.is-active { color: var(--z-ink); background: var(--z-lime); box-shadow: var(--z-glow); }
+.z-nav-link.is-active { color: var(--z-ink); background: var(--z-lime); }
+/* Cabecera como el mockup: pestañas solo con texto; los iconos quedan para la barra móvil */
+.z-nav-link i { display: none; }
 
 .z-header-actions {
     display: flex;
@@ -324,6 +323,9 @@ main:focus { outline: none; }
     flex-shrink: 0;
 }
 
+.z-club-role { font-weight: 700; }
+.z-header-actions .btn-secondary { --bs-btn-bg: var(--z-surface); --bs-btn-border-color: transparent; --bs-btn-hover-bg: var(--z-surface-2); --bs-btn-hover-border-color: transparent; --bs-btn-padding-x: 1.1rem; --bs-btn-padding-y: .6rem; }
+@media (min-width: 992px) { .z-user-menu .dropdown-toggle > i { display: none; } }
 .z-club-name {
     max-width: 200px;
     overflow: hidden;
@@ -1818,7 +1820,7 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 @media (min-width: 992px) and (max-width: 1199.98px) {
     .z-header-inner { gap: 12px; padding: 0 16px; }
     .z-nav { gap: 2px; }
-    .z-nav-link { padding: 9px 10px; gap: 6px; font-size: .76rem; letter-spacing: .04em; }
+    .z-nav-link { padding: 9px 12px; gap: 6px; font-size: .8rem; }
     .z-header-actions { gap: 6px; min-width: 0; }
     .z-club-name { max-width: 110px; }
 }

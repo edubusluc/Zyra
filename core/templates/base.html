@@ -102,7 +102,7 @@
                     {# Con equipo en varias competiciones, el botón lleva su nombre: «Tus equipos» del menú dice dónde está. #}
                     <span class="z-club-name">{{ user.first_name|default:user.username }}</span>
                     {% else %}
-                    <span class="z-club-name">{% if current_club %}{{ current_club.name }}{% else %}{{ user.username }}{% endif %}</span>
+                    <span class="z-club-name">{{ user.first_name|default:user.username }}{% if current_role %}<span class="z-club-role"> · {{ current_role }}</span>{% endif %}</span>
                     {% endif %}
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">

@@ -6,6 +6,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 ## 30/10/2026 · Nuevo estilo visual (fase 1: base e Inicio)
 
 - **Tipografía**: los títulos pasan a Anton (condensada, deportiva, en mayúsculas y sin cursiva); el cuerpo sigue en Archivo. El logotipo y la portada pública conservan Syncopate. Anton va en `static/zyra/fonts/` (licencia OFL).
+- **Cabecera**: como el mockup. Escudo en círculo, pestañas solo con texto (sin iconos ni mayúsculas) con la activa en lima sin brillo, y botones de idioma y usuario en píldora plana. Con un solo equipo el botón de usuario dice «Nombre · Rol».
 - **Barra móvil**: oscura, con el lima reservado a la pestaña activa.
 - **Inicio**: el próximo enfrentamiento es un bloque lima con la fecha enorme, un indicador de días de fondo oscuro y los equipos local y visitante a cada lado de la red. En escritorio, junto a «Pendiente», el bloque es una pista de pádel de proporción 2:1 (nunca se deforma).
 - **Pendiente**: panel propio con su contador y el botón «+ Nuevo»; las filas son una lista plana.
