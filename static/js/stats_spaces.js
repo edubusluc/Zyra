@@ -4,7 +4,7 @@
   const source = document.getElementById('spaces-chart-data');
   if (!source || typeof Chart === 'undefined') return;
   const data = JSON.parse(source.textContent);
-  const COLORS = { snp: '#B4F100', lapi: '#3D8BE0' };
+  const COLORS = { snp: '#DBA400', lapi: '#61E2C9' };
   const color = (code) => COLORS[code] || '#A3A3A3';
   const comps = data.comps;
 
