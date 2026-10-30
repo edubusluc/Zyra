@@ -111,15 +111,13 @@ def list_players(request):
 
 def _copy_offer(request):
     """
-    Primer equipo de otra competición con jugadores que aún no tienen ficha en el club activo
-    (SNP → LAPI o LAPI → SNP): ``{"club", "pending"}``, o None si no hay nada que copiar.
+    Equipo de otra competición desde el que ofrecer copiar jugadores (SNP → LAPI o LAPI → SNP), o None
+    si ya se copió alguno al club activo (el aviso desaparece) o no hay de dónde copiar.
     """
-    for source in player_copy.managed_pairs(request):
-        pending = sum(row["status"] in (player_copy.MEMBER, player_copy.INVITE, player_copy.COPY)
-                      for row in player_copy.candidates(source, request.club))
-        if pending:
-            return {"club": source, "pending": pending}
-    return None
+    if Player.objects.filter(club=request.club, copied_from__isnull=False).exists():
+        return None
+    sources = player_copy.managed_pairs(request)
+    return {"club": sources[0]} if sources else None
 
 
 def _complete_team_context(club):

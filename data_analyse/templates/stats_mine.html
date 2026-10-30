@@ -56,8 +56,8 @@
             <section class="z-comp-frame z-comp-frame--{{ panel.code }} z-comp-panel" aria-label="{{ panel.name }}">
               <header>{% include 'includes/competition_badge.html' with code=panel.code name=panel.name %} <span>{{ panel.club }}</span></header>
               {% for item in panel.rows %}
-              <div class="z-comp-meter" title="{{ item.hint }}">
-                <span class="z-comp-meter-name">{{ item.label }}</span>
+              <div class="z-comp-meter">
+                <span class="z-comp-meter-name">{{ item.label }}<small>{{ item.hint }}</small></span>
                 <div class="st-meter"><span style="width: {{ item.r.pct|default:0 }}%"></span></div>
                 <b>{% if item.r.pct is None %}—{% else %}{{ item.r.pct }}%{% endif %}</b>
               </div>
@@ -65,10 +65,6 @@
             </section>
             {% endfor %}
           </div>
-          {# Qué mide cada barra: las mismas situaciones en todas las competiciones. #}
-          <dl class="z-glossary" aria-label="{% translate 'Qué significa cada dato' %}">
-            {% for item in set_panels.0.rows %}<div><dt>{{ item.label }}</dt><dd>{{ item.hint }}</dd></div>{% endfor %}
-          </dl>
           {% else %}
           <p class="st-muted st-nodata">{% translate "Todavía no hay resultados set a set." %}</p>
           {% endif %}

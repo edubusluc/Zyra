@@ -179,13 +179,10 @@ class CopyPlayersTests(TestCase):
         self.assertEqual(luis_lapi.snp_score, 80)
         self.assertEqual(Player.objects.filter(club=self.lapi).count(), 1)
 
-    def test_offer_stays_until_everyone_is_copied(self):
+    def test_offer_disappears_after_a_copy(self):
         page = self.client.get(reverse("list_players"))
         self.assertContains(page, "¿Tus jugadores de SNP también juegan aquí?")
         player_copy.copy_players(self.snp, self.lapi, [self.luis.pk], self.edu)
-        # Aunque ya haya una copia, Ana sigue sin ficha: el aviso no desaparece.
-        self.assertContains(self.client.get(reverse("list_players")), "¿Tus jugadores de SNP también juegan aquí?")
-        player_copy.copy_players(self.snp, self.lapi, [p.pk for p in Player.objects.filter(club=self.snp)], self.edu)
         self.assertNotContains(self.client.get(reverse("list_players")), "también juegan aquí?")
 
     def test_offer_from_lapi_to_snp(self):
