@@ -80,10 +80,12 @@ entero sigue siendo la clave de los FK. Excepciones sin `public_id`: `backoffice
   ese lado queda `NULL`), `report_scope` (`todos`/`competitivos`: partidos que alimentan el informe PDF). Usar `local_name`, `visiting_name`, `rival_label`, `own_is_local`, nunca `match.local.name` a pelo.
 - **Game**: `match`, `n_game` 1..5 (único por match + `CheckConstraint`), `player_1/2_local`,
   `player_1/2_visiting` (`SET_NULL`), `removed_player_names` (JSON), `score` (3 en partidos 1–2,
-  2 en 3–5, `match.lineup.game_points`), `winner` (`Local`/`Visitante`), `draft_mode`.
+  2 en 3–5, `match.lineup.game_points`; con parejas no presentadas los fija `match/pair_no_show.py` al cerrar),
+  `winner` (`Local`/`Visitante`), `draft_mode`, `no_show` (`own`/`rival`/`both`: pareja no presentada, SNP;
+  sin resultado ni jugadores).
   Solo se rellenan los jugadores del lado del equipo propio. `save()` llama a `clean()`.
 - **Result**: uno por `Game` (`unique_result_per_game`; el FK se llama `results` pese a ello),
-  sets `set1..3_local/visiting` (sets 2 y 3 nullable) y `retired` (finalizado por lesión, admite resultado incompleto) con `injured_side` (pareja lesionada en LAPI, donde se completa para la sana). `save()` valida con `match/scoring.py` y normaliza el set 3 no jugado.
+  sets `set1..3_local/visiting` (sets 2 y 3 nullable) y `retired` (finalizado por lesión, admite resultado incompleto) con `injured_side` (pareja lesionada; en SNP y LAPI se completa para la sana). `save()` valida con `match/scoring.py` y normaliza el set 3 no jugado.
 
 ### call, callLog, penalty
 

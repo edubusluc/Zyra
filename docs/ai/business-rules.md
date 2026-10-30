@@ -133,10 +133,10 @@ Orden obligatorio del ciclo (`match/views.py`) [V], cubierto por `match/tests_fl
    ganar 3-0 = 4, 2-1 = 3, perder = 1; total de la temporada en Estadísticas › Equipo, `match/league.py`). En
    Playoffs y Fase final (`final_types`), convocar a quien no ha jugado `finals_min_regular` (2) enfrentamientos de
    liga esa temporada pide marcar «Convocarlos igualmente» (`force_finals`, reglamento LAPI 8.2). Tests: `match/tests_league.py`.
-   **No presentado** (competiciones con `no_show`, LAPI; no en amistosos): con el acta abierta, en cualquier
+   **No presentado** (competiciones con `no_show`: SNP y LAPI; no en amistosos): con el acta abierta, en cualquier
    fase, «Más» › «No se presentó el rival» / «No nos presentamos» (`mark_no_show`, capitán o gestor) borra
    parejas y resultados, guarda `Match.no_show` (`own`/`rival`) y cierra el acta con todos los puntos para el
-   que sí se presentó (3-0). Cuenta en el balance del equipo, sus rachas y Rivales (no como mayor victoria o peor
+   que sí se presentó (SNP 12-0, normativa 20.3; LAPI 3-0). Cuenta en el balance del equipo, sus rachas y Rivales (no como mayor victoria o peor
    derrota), no en jugadores, parejas ni asistencia (las consultas de convocatorias filtran `match__no_show=""`); no envía el correo de resultado.
    Puntos de liga: 4 si no se presentó el rival, 0 si no nos presentamos (las sanciones del reglamento no se
    muestran nunca). «Quitar no presentado» (`undo_no_show`) reabre el acta; reabrirla también lo quita.
@@ -153,10 +153,17 @@ Orden obligatorio del ciclo (`match/views.py`) [V], cubierto por `match/tests_fl
    gana los dos primeros; con 1-1 el tercero es obligatorio (set normal o super tie-break a 10 con
    2 de diferencia). Con `Result.retired` (partido finalizado por lesión) vale un resultado incompleto
    (`validate_retired_result`, p. ej. 7-5 / 3-0): gana quien va ganando (más sets, luego más juegos).
-   En las competiciones con `injury_completes` (LAPI) se indica la pareja lesionada (`Result.injured_side`) y
+   En las competiciones con `injury_completes` (SNP 15.10 y LAPI) se indica la pareja lesionada (`Result.injured_side`) y
    gana siempre la sana: `complete_retired_result` le completa el set a medias a 6 (a 7 si la lesionada
    tenía 5 o 6) y los sets que falten 6-0 (3-2 queda 3-6 / 0-6). La casilla y la pareja están en el resultado de un partido y en «Poner resultados» (`match/templates/includes/injury_fields.html`, prefijo `gN_`); la etiqueta «Lesión» dice qué pareja se lesionó.
    Al guardar fija `Game.winner`.
+   **Pareja no presentada** (`pair_no_show`, solo SNP, normativa 20.2): en «Poner resultados», «¿Se jugó?»
+   por partido guarda `Game.no_show` (`own`/`rival`/`both`), borra su resultado y sus jugadores (no cuenta para
+   jugadores ni parejas). Al cerrar el acta `match/pair_no_show.py` (`apply`) deja los puntos en cada `Game.score`:
+   un equipo sin una pareja → 6 puntos al cumplidor y 2/2/1/1 en los jugados (2 a las dos mejores parejas, las
+   de número más bajo); 6-6 lo gana quien ganó los 4 jugados; dos o más parejas del mismo equipo → 0-12; la
+   misma pareja en los dos → ese partido se anula; parejas distintas → cada uno pierde la suya con sus puntos.
+   Tests: `match/tests_pair_no_show.py`.
 6. **Cerrar acta** (`close_match`, POST): acta abierta y 5 partidos con resultado. Suma puntos,
    fija `Match.result` (valores canónicos en `match/outcomes.py`; `EMPATE` posible, p. ej. 6/6, salvo en Reto y Play Off: ahí el 6-6 lo decide el ganador del partido 3, `determine_match_result`) y `result_points`,
    y cierra `Game.draft_mode`. Con fecha futura exige `confirm_future`. Los resultados se pueden

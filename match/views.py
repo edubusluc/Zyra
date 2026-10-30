@@ -13,7 +13,7 @@ from core.decorators import club_required, club_admin_required, not_while_syncin
 from django.contrib import messages
 from .forms import MatchForm, MatchDateForm
 from .models import Match, Game, Result
-from . import league, lineup, month_view, outcomes, phase as match_phase
+from . import league, lineup, month_view, outcomes, pair_no_show, phase as match_phase
 from .notifications import admin_emails, send_call_report, report_filename
 from .result_email import notify_match_closed
 from call.models import ReportDelivery
@@ -159,6 +159,8 @@ def share_text(match, games):
             if result.set3_local is not None:
                 pairs.append((result.set3_local, result.set3_visiting))
             sets = " ".join(f"{a}-{b}" if match.own_is_local else f"{b}-{a}" for a, b in pairs)
+        elif g.no_show:
+            sets = g.get_no_show_display()
         own_won = g.winner == (outcomes.WINNER_LOCAL if match.own_is_local else outcomes.WINNER_VISITING)
         lines.append(f"{'✅' if own_won else '❌'} *{_('Partido')} {g.n_game}* · {g.pair_label}" + (f" · {sets}" if sets else ""))
     lines += ["", _("Hecho con Zyra")]
@@ -889,16 +891,26 @@ def edit_result(request, game_id):
 RESULT_FIELDS = SET_FIELDS
 
 
+# Lo que devuelve ``_parse_game_results`` para un partido con pareja no presentada.
+NO_SHOW_MARK = object()
+
+
 def _parse_game_results(request, game):
     """
     Casillas de un partido en la pantalla de resultados: ``(valores, resultado o None, errores)``,
-    con la casilla de lesión y la pareja lesionada (``retired``, ``injured_side``). Si las seis
-    casillas de juegos están vacías, el partido no se toca (``resultado`` None y sin errores).
+    con la casilla de lesión y la pareja lesionada (``retired``, ``injured_side``) y la pareja no
+    presentada (``no_show``, SNP; entonces el resultado es ``NO_SHOW_MARK``). Si las seis casillas
+    de juegos están vacías y se jugó, el partido no se toca (``resultado`` None y sin errores).
     """
     prefix = f"g{game.n_game}_"
     values = {f: request.POST.get(prefix + f, '').strip() for f in RESULT_FIELDS}
     values["retired"] = request.POST.get(prefix + "retired") == "on"
     values["injured_side"] = request.POST.get(prefix + "injured_side", "")
+    values["no_show"] = request.POST.get(prefix + "no_show", "")
+    if values["no_show"] not in dict(Game.NO_SHOW_CHOICES) or not game.match.club.rules.pair_no_show:
+        values["no_show"] = ""
+    if values["no_show"]:
+        return values, NO_SHOW_MARK, []
     if not any(values[f] for f in RESULT_FIELDS):
         return values, None, []
     result = game.results.first() or Result(game=game)
@@ -911,6 +923,19 @@ def _parse_game_results(request, game):
     except ValidationError as e:
         return values, None, e.messages
     return values, result, []
+
+
+def _mark_pair_no_show(game, side):
+    """
+    Marca que la pareja ``side`` (``Game.NO_SHOW_*``) no se presentó a ``game``: se borra su
+    resultado y sus jugadores (no jugaron: no cuenta para jugadores ni parejas). El ganador y los
+    puntos los pone ``pair_no_show.apply`` al cerrar el acta.
+    """
+    game.results.all().delete()
+    game.no_show, game.winner = side, None
+    game.player_1_local = game.player_2_local = game.player_1_visiting = game.player_2_visiting = None
+    game.save(update_fields=['no_show', 'winner', 'player_1_local', 'player_2_local',
+                             'player_1_visiting', 'player_2_visiting'])
 
 
 @club_manager_required
@@ -943,20 +968,30 @@ def enter_results(request, match_id):
             failed = failed or bool(errors)
             if parsed is not None:
                 to_save.append((game, parsed))
+            elif game.no_show and f"g{game.n_game}_no_show" in request.POST:
+                to_save.append((game, None))  # «Sí, se jugó» sin sets: se quita la marca
         else:
             values = {f: '' if result is None or getattr(result, f) is None else getattr(result, f) for f in RESULT_FIELDS}
             values["retired"] = bool(result and result.retired)
             values["injured_side"] = result.injured_side if result else ""
+            values["no_show"] = game.no_show
             errors = []
-        rows.append({"game": game, "values": values, "errors": errors, "has_result": result is not None,
+        rows.append({"game": game, "values": values, "errors": errors, "has_result": result is not None or bool(game.no_show),
                      "prefix": f"g{game.n_game}_"})
 
     if request.method == "POST" and not failed:
         with transaction.atomic():
             for game, result in to_save:
+                if result is NO_SHOW_MARK:
+                    _mark_pair_no_show(game, request.POST.get(f"g{game.n_game}_no_show"))
+                    continue
+                if result is None:
+                    game.no_show = ""
+                    game.save(update_fields=['no_show'])
+                    continue
                 result.save()
-                game.winner = outcomes.winner_of(result.result)
-                game.save(update_fields=['winner'])
+                game.winner, game.no_show = outcomes.winner_of(result.result), ""
+                game.save(update_fields=['winner', 'no_show'])
         if request.POST.get("action") == "close":
             # Si el acta no se puede cerrar, se queda en los resultados para completarlos.
             if do_close_match(request, match):
@@ -969,6 +1004,7 @@ def enter_results(request, match_id):
 
     return render(request, "enter_results.html", {
         "match": match, "rows": rows, "is_future": match.start_date > timezone.localdate(),
+        "no_show_choices": Game.NO_SHOW_CHOICES,
         "min_close": len(games) == competition_for(match).games,
     })
 
@@ -980,9 +1016,9 @@ def calculate_points(games):
     
     for g in games:
         if g.winner == outcomes.WINNER_VISITING:
-            points_visiting = points_visiting + g.score
-        else:
-            points_local = points_local + g.score
+            points_visiting = points_visiting + (g.score or 0)
+        elif g.winner == outcomes.WINNER_LOCAL:
+            points_local = points_local + (g.score or 0)
     
     return points_local, points_visiting
 
@@ -1011,7 +1047,8 @@ def valid_close_match(games,match):
         return False, _("No se pueden cerrar actas, se requieren al menos %(n)s partidos.") % {"n": total}
     
     for g in games:
-        if g.results.first() is None:
+        # Un partido con pareja no presentada no lleva resultado (``match.pair_no_show``).
+        if not g.no_show and g.results.first() is None:
             return False, _("No se pueden cerrar actas, algunos partidos no tienen resultado.")
     
     return True, None     
@@ -1038,6 +1075,10 @@ def do_close_match(request, match):
                           "date": match.start_date.strftime("%d/%m/%Y")})
         return False
 
+    # Parejas no presentadas (SNP 20.2): reparto de puntos en cada partido antes de sumarlos.
+    games = list(games)
+    forced = pair_no_show.apply(match, games, competition_for(match)) if competition_for(match).pair_no_show else None
+
     # Calcular puntos y actualizar ganadores
     points_local, points_visiting = calculate_points(games)
 
@@ -1049,7 +1090,7 @@ def do_close_match(request, match):
             game.save()
 
         # Determinar el resultado del partido
-        match.result = determine_match_result(points_local, points_visiting, match, games)
+        match.result = forced or determine_match_result(points_local, points_visiting, match, games)
         match.result_points = f"{points_local}/{points_visiting}"
         match.draft_mode = False
         match.save()

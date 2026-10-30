@@ -56,7 +56,7 @@ document.querySelectorAll('[data-result]').forEach(function (form) {
     else line(true, interpolate(gettext('Ganador del partido: %(team)s'), { team: names[l > v ? 0 : 1] }, true));
   }
 
-  // Lesión en la LAPI: la pareja sana gana y se completan sus juegos (scoring.complete_retired_result).
+  // Lesión (SNP y LAPI): la pareja sana gana y se completan sus juegos (scoring.complete_retired_result).
   const injuredBox = form.querySelector('[data-injured]');
   function refreshInjured() {
     const side = form.querySelector('[data-injured-side]:checked');
@@ -87,8 +87,19 @@ document.querySelectorAll('[data-result]').forEach(function (form) {
     line(true, interpolate(gettext('Queda %(score)s. Ganador del partido: %(team)s'), { score: score, team: names[flip ? 0 : 1] }, true));
   }
 
+  // «Pareja no presentada» (SNP): sin sets que rellenar; Zyra reparte los puntos al cerrar el acta.
+  const noShow = form.querySelector('[data-pair-no-show]');
+  const playedBox = form.querySelector('[data-played]');
+
   function refresh() {
     checks.innerHTML = '';
+    if (noShow && playedBox) {
+      playedBox.hidden = noShow.value !== '';
+      if (noShow.value !== '') {
+        line(null, gettext('Sin resultado: Zyra reparte los puntos al cerrar el acta (normativa SNP 20.2).'));
+        return;
+      }
+    }
     if (injuredBox) injuredBox.hidden = !(retiredBox && retiredBox.checked);
     if (retiredBox && retiredBox.checked) {
       input(3, 'l').disabled = input(3, 'v').disabled = false;
@@ -146,6 +157,7 @@ document.querySelectorAll('[data-result]').forEach(function (form) {
     el.addEventListener('focus', () => el.select());
   });
   if (retiredBox) retiredBox.addEventListener('change', refresh);
+  if (noShow) noShow.addEventListener('change', refresh);
   form.querySelectorAll('[data-injured-side]').forEach((el) => el.addEventListener('change', refresh));
   refresh();
 });

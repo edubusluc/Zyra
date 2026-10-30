@@ -144,17 +144,22 @@ class LapiMatchTests(TestCase):
         self.assertEqual((match.result_points, match.result, match.league_points), ("0/3", "Victoria Visitante", 0))
         self.assertEqual(season_league_points(self.club, match.season)["total"], 0)
 
-    def test_no_show_only_in_competitions_that_have_it(self):
+    def test_snp_no_show_loses_twelve_nil(self):
         other = User.objects.create_user("snp", password=PASSWORD, email="snp@example.com")
         snp = create_club("SNP", "Sevilla", other)
         rival = Team.objects.create(club=snp, name="Rival", location="X", in_group=True)
         match = Match.objects.create(club=snp, local=snp.own_team, visiting=rival, start_date=self.day)
         self.client.login(username="snp", password=PASSWORD)
-        self.assertNotContains(self.client.get(reverse("call_for_match", args=[match.public_id])), "No nos presentamos")
-        self.client.post(reverse("mark_no_show", args=[match.public_id]), {"side": "rival"})
+        self.assertContains(self.client.get(reverse("call_for_match", args=[match.public_id])), "No nos presentamos")
+        self.client.post(reverse("mark_no_show", args=[match.public_id]), {"side": "own"})
         match.refresh_from_db()
-        self.assertEqual(match.no_show, "")
-        self.assertTrue(match.draft_mode)
+        self.assertEqual((match.no_show, match.result_points, match.draft_mode), ("own", "0/12", False))
+        # En un amistoso no se puede.
+        friendly = Match.objects.create(club=snp, local=snp.own_team, visiting=rival, start_date=self.day,
+                                        match_type=Match.AMISTOSO)
+        self.client.post(reverse("mark_no_show", args=[friendly.public_id]), {"side": "rival"})
+        friendly.refresh_from_db()
+        self.assertEqual(friendly.no_show, "")
 
     def test_injury_completes_games_for_healthy_pair(self):
         match = self._match()

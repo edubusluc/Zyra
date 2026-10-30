@@ -374,10 +374,14 @@ class LineupTests(TestCase):
         url = reverse("create_result", args=[game.public_id])
         data = {"set1_local": "7", "set1_visiting": "5", "set2_local": "3", "set2_visiting": "0"}
         self.assertIn("errors", self.client.post(url, data).context)   # sin el check no vale
-        self.client.post(url, {**data, "retired": "on"})
+        self.assertIn("errors", self.client.post(url, {**data, "retired": "on"}).context)  # falta la pareja lesionada
+        # Normativa SNP 15.10: se completan los juegos para la pareja sana.
+        self.client.post(url, {**data, "retired": "on", "injured_side": "visiting"})
         game.refresh_from_db()
         self.assertEqual(game.winner, "Local")
-        self.assertTrue(Result.objects.get(game=game).retired)
+        result = Result.objects.get(game=game)
+        self.assertTrue(result.retired)
+        self.assertEqual(result.sets()[:2], [(7, 5), (6, 0)])
         self.assertContains(self.client.get(reverse("call_for_match", args=[self.match.public_id])), "Lesión")
 
 

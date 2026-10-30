@@ -3,6 +3,13 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 29/10/2026 · Espacios por competición (informe mensual por equipo y normativa SNP)
+
+- El **informe mensual** llega en un solo correo con un PDF por cada equipo en el que jugaste ese mes (SNP y LAPI), cada uno con su competición en la cabecera. El de LAPI no lleva la gráfica de puntos SNP.
+- **No presentado** también en SNP: el equipo que no se presenta pierde 12-0 (normativa SNP 20.3).
+- **Lesión** en SNP como en LAPI: se elige la pareja lesionada y Zyra completa el partido para la sana (normativa 15.10).
+- **Pareja no presentada** en SNP: en «Poner resultados», «¿Se jugó?» marca qué pareja no vino. Al cerrar el acta Zyra reparte los puntos como dice la normativa 20.2 (6 puntos para el cumplidor y 2/2/1/1 en los partidos jugados; dos parejas, 0-12; la misma pareja en los dos equipos, partido anulado).
+
 ## 29/10/2026 · Espacios por competición (fase 2: copiar jugadores entre SNP y LAPI)
 
 - En Plantilla, **«Copiar de SNP»** (o de LAPI) trae jugadores de tu equipo de la otra competición si eres capitán o gestor en los dos. Se copian nombre, apellidos, foto y posición; las estadísticas, los puntos SNP y las convocatorias se quedan donde estaban.

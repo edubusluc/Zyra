@@ -37,7 +37,9 @@ class Competition:
     si se pasa, sin impedirlo. ``no_show`` permite marcar un enfrentamiento como «No presentado» (el que no se presenta
     pierde todos los partidos; no cuenta para jugadores, parejas ni asistencia) y
     ``injury_completes`` hace que un partido acabado por lesión lo gane siempre la pareja sana,
-    con sus juegos completados hasta ganar el set y los que falten 6-0 (LAPI: 3-2 queda 3-6, 0-6).
+    con sus juegos completados hasta ganar el set y los que falten 6-0 (3-2 queda 3-6, 0-6). Las
+    dos competiciones tienen ambas cosas (SNP 12-0, LAPI 3-0). ``pair_no_show`` deja marcar que
+    una pareja no se presentó a un partido (normativa SNP 20.2, ``match.pair_no_show``).
     """
     code: str
     name: str
@@ -55,6 +57,7 @@ class Competition:
     no_show: bool = False
     max_roster: int | None = None
     injury_completes: bool = False
+    pair_no_show: bool = False
 
     @property
     def games(self):
@@ -105,6 +108,11 @@ SNP = Competition(
         ("reto", _("Reto"), _("Retos")),
         ("playoff", _("Play Off"), _("Play offs")),
     ),
+    # Normativa SNP: el equipo que no se presenta pierde 12-0 (20.3) y un partido acabado por
+    # lesión se completa para la pareja rival (15.10).
+    no_show=True,
+    injury_completes=True,
+    pair_no_show=True,
 )
 
 # Liga LAPI: 3 partidos de 1 punto (al mejor de 3, sin empate posible). En liga, ganar 3-0 da 4
