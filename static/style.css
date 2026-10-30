@@ -2767,7 +2767,7 @@ a.z-hub-card:hover, a.z-hub-card:focus-visible { border-color: var(--z-lime); co
 
 /* Estadísticas del equipo en escritorio: panel lateral con las secciones, fijo al hacer scroll. */
 .st-side { display: none; }
-@media (min-width: 1200px) {
+@media (min-width: 1024px) {
   .st-index { display: none; }
   .st-layout { display: grid; grid-template-columns: minmax(0, 1fr) 190px; gap: 32px; align-items: start; }
   .st-side { display: block; position: sticky; top: 92px; padding: 16px 0 16px 18px; border-left: 1px solid var(--z-border); }
@@ -3071,3 +3071,27 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .z-filters > summary::-webkit-details-marker { display: none; }
 @media (min-width: 768px) { .z-filters > summary { display: none; } }
 .z-space-note { margin: -4px 0 12px; }
+
+/* Filtros en una fila de desplegables (Competición, Temporada, Tipo; el rival en el listado): cada uno dice su valor
+   y se marca en lima si no es «Todas». Los menús son <details> con enlaces (static/js/filter-menu.js los cierra). */
+.z-fsel-wrap { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 0 10px 10px 0; vertical-align: top; }
+.z-fsel { position: relative; }
+.z-fsel > summary { list-style: none; cursor: pointer; display: flex; flex-direction: column; gap: 1px; min-width: 128px; padding: 6px 14px; border: 1px solid var(--z-border); border-radius: 12px; background: var(--z-surface-2); color: var(--z-text); }
+.z-fsel > summary::-webkit-details-marker { display: none; }
+.z-fsel > summary small { font-size: .62rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--z-muted); }
+.z-fsel > summary span { font-size: .88rem; font-weight: 700; }
+.z-fsel > summary span::after { content: "\25BE"; margin-left: 8px; color: var(--z-muted); }
+.z-fsel > summary:hover, .z-fsel[open] > summary { border-color: var(--z-lime); }
+.z-fsel.is-active > summary { border-color: var(--z-lime); }
+.z-fsel.is-active > summary small { color: var(--z-lime); }
+.z-fsel-menu { position: absolute; z-index: 30; top: calc(100% + 6px); left: 0; min-width: 100%; width: max-content; max-width: 280px; margin: 0; padding: 6px; list-style: none; background: var(--z-surface); border: 1px solid var(--z-border); border-radius: 12px; box-shadow: 0 12px 30px rgba(0, 0, 0, .5); }
+.z-fsel-menu a { display: block; padding: 8px 12px; border-radius: 8px; color: var(--z-text); font-size: .88rem; font-weight: 600; text-decoration: none; }
+.z-fsel-menu a:hover, .z-fsel-menu a:focus-visible { background: var(--z-surface-2); }
+.z-fsel-menu a[aria-current="page"] { color: var(--z-lime); background: var(--z-surface-2); }
+.z-fsel-wrap .st-type-select, .z-fsel-wrap .st-season-search { margin: 0; }
+.z-fsel-row { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 0 10px; }
+.z-fsel-row > .z-fsel-wrap, .z-fsel-row > .z-match-filters { margin: 0 0 10px; }
+.z-fsel-row .z-match-filters { display: flex; align-items: center; gap: 8px; }
+.z-fsel-row .z-space-note { flex: 0 0 100%; order: 9; margin: 0 0 10px; }
+.z-fsel-row .z-match-filters { flex-wrap: nowrap; align-items: center; align-self: flex-start; min-height: 52px; }
+.z-fsel-row .z-match-filters .st-filter-label { margin: 0; }

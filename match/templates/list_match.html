@@ -16,10 +16,11 @@
 
 <script src="{% static 'js/player-picker.js' %}" defer></script>
 {% include 'includes/match_view_tabs.html' with current='list' %}
-{% include 'includes/space_filter.html' %}
-{# En móvil, temporada, tipo y rival van plegados en «Filtros» para que el primer enfrentamiento se vea sin desplazarse (H-24). #}
+{# Competición, temporada, tipo y rival: una fila de desplegables; en móvil van plegados en «Filtros» para que el primer enfrentamiento se vea sin desplazarse (H-24). #}
 <details class="z-filters" data-filters>
 <summary class="btn btn-secondary btn-sm"><i class="fa-solid fa-sliders me-1" aria-hidden="true"></i> {% translate "Filtros" %}{% if filtering %} <span class="z-badge z-badge--lime">{% translate "activos" %}</span>{% endif %}</summary>
+<div class="z-fsel-row">
+{% include 'includes/space_filter.html' %}
 {% include 'includes/season_filter.html' %}
 {# Tipo de partido: mismos chips que las estadísticas; se combinan con temporada, rival y buscador. #}
 {% include 'includes/match_type_filter.html' %}
@@ -43,6 +44,7 @@
     <a href="{{ request.path }}{% if request.GET.season or selected_match_type %}?{% if request.GET.season %}season={{ selected_season|urlencode }}{% endif %}{% if request.GET.season and selected_match_type %}&amp;{% endif %}{% if selected_match_type %}match_type={{ selected_match_type|urlencode }}{% endif %}{% endif %}" class="btn btn-outline-secondary btn-sm">{% translate "Quitar el rival" %}</a>
     {% endif %}
 </form>
+</div>
 </details>
 <script>
 (function () {

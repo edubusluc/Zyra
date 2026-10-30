@@ -11,6 +11,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 - **Reabrir acta**: también pueden el capitán y los gestores (queda anotado quién).
 - **Convocatoria**: una ficha copiada que aún no aceptó la invitación se puede convocar y sale «Pendiente de aceptar».
 - **Informes**: los datos de otras competiciones solo se incluyen si todos los que reciben el informe gestionan también ese otro equipo.
+- **Filtros**: Competición, Temporada y Tipo son desplegables en una sola fila (con el rival en el listado); cada uno dice su valor y se marca en lima si no es «Todas». El panel lateral de Estadísticas › Equipo aparece desde 1024 px.
 - **Mis estadísticas**: con dos equipos y sin ficha enlazada la pestaña explica cómo enlazarla.
 
 ## 30/10/2026 · Espacios por competición (selectores, datos y zonas grises)

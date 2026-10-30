@@ -226,6 +226,7 @@
 <script src="{% static 'js/custom-select.js' %}"></script>
 <script src="{% static 'js/form-errors.js' %}"></script>
 <script src="{% static 'js/page-transitions.js' %}"></script>
+<script src="{% static 'js/filter-menu.js' %}"></script>
 {# Precarga las secciones principales (solo lectura) al ir a pulsarlas: la página siguiente llega antes y el paso es más fluido. Navegadores sin soporte lo ignoran. #}
 <script type="speculationrules">
 {"prefetch": [{"where": {"or": [{"href_matches": "/"}, {"href_matches": "/data_analyse/*"}, {"href_matches": "/match/list_match"}, {"href_matches": "/players/list_players"}, {"href_matches": "/team/list_teams"}]}, "eagerness": "moderate"}]}

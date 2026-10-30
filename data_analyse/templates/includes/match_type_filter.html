@@ -1,12 +1,14 @@
 {% load i18n %}
-{# Filtro por tipo de partido. Recibe match_types y competitive_types de data_analyse.views.match_type_context. #}
-<nav aria-label="{% translate 'Tipo de enfrentamiento' %}" class="st-type-filter">
-  <ul class="st-seasons">
-    <li class="st-filter-label">{% translate "Tipo" %}</li>
-    {% for option in match_types %}
-      <li><a class="st-chip" href="{{ option.url }}" {% if option.active %}aria-current="page"{% endif %}>{{ option.label }}</a></li>
-    {% endfor %}
-  </ul>
+{# Filtro por tipo de partido (desplegable «Tipo»). Recibe match_types y competitive_types de data_analyse.views.match_type_context. #}
+<nav aria-label="{% translate 'Tipo de enfrentamiento' %}" class="z-fsel-wrap st-type-filter">
+  <details class="z-fsel{% if selected_match_type %} is-active{% endif %}" data-filter-menu>
+    <summary><small>{% translate "Tipo" %}</small><span>{% for option in match_types %}{% if option.active %}{{ option.label }}{% endif %}{% endfor %}</span></summary>
+    <ul class="z-fsel-menu">
+      {% for option in match_types %}
+      <li><a href="{{ option.url }}" {% if option.active %}aria-current="page"{% endif %}>{{ option.label }}</a></li>
+      {% endfor %}
+    </ul>
+  </details>
   {% if competitive_types %}
   <form method="get" class="st-type-select">
     {% for name, value in match_type_keep %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}
