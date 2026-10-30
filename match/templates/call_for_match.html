@@ -21,11 +21,10 @@
         <div class="z-versus-team"><small>{% translate "Visitante" %}</small>{{ match.visiting_name }}</div>
     </div>
     <aside class="z-ficha-side">
-        <div class="z-kind"><span class="z-kind-ic" aria-hidden="true">{% if kind.no_draw %}&#9733;{% else %}{{ kind.letter }}{% endif %}</span>
-            <div><b>{{ kind.title }}</b><small>{{ kind.subtitle }}</small></div></div>
+        <div class="z-kind"><b>{{ kind.title }}</b><small>{{ kind.subtitle }}</small></div>
         <p class="z-ficha-outcome {% if outcome == 'V' %}is-win{% elif outcome == 'D' %}is-loss{% endif %}">{% if outcome %}{{ outcome_label }}{% else %}{{ phase.label }}{% endif %}</p>
-        <p class="z-ficha-when">{{ match.start_date|date:"D j M Y" }}{% if can_manage and match.draft_mode %} <a href="{% url 'edit_match_date' match.public_id %}" class="z-edit-date" title="{% translate 'Cambiar fecha' %}"><i class="fa-solid fa-pen" aria-hidden="true"></i><span class="visually-hidden">{% translate "Cambiar fecha" %}</span></a>{% endif %}
-            {% if match.location %}· <a class="z-location" href="{{ match.maps_url }}" target="_blank" rel="noopener"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>{{ match.location }}</span></a>{% endif %}</p>
+        <p class="z-ficha-when">{{ match.start_date|date:"D j M Y" }}{% if can_manage and match.draft_mode %} <a href="{% url 'edit_match_date' match.public_id %}" class="z-edit-date" title="{% translate 'Cambiar fecha' %}"><i class="fa-solid fa-pen" aria-hidden="true"></i><span class="visually-hidden">{% translate "Cambiar fecha" %}</span></a>{% endif %}</p>
+        {% if match.location %}<p class="z-ficha-where"><a class="z-location" href="{{ match.maps_url }}" target="_blank" rel="noopener"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>{{ match.location }}</span></a></p>{% endif %}
         <p class="z-ficha-tags">
             {% if match.no_show %}<span class="z-tag">{% blocktranslate with team=match.no_show_team %}No presentado: {{ team }}{% endblocktranslate %}</span>{% endif %}
             {% if match.league_points is not None %}<span class="z-tag is-lime">{% blocktranslate count n=match.league_points %}{{ n }} punto de liga{% plural %}{{ n }} puntos de liga{% endblocktranslate %}</span>{% endif %}
@@ -188,19 +187,28 @@
         {% if call_for_match.draft_mode %}<span class="z-badge">{% translate "Abierta" %}</span>{% else %}<span class="z-badge z-badge--lime"><i class="fa-solid fa-lock" aria-hidden="true"></i> {% translate "Cerrada" %}</span>{% endif %}
     </div>
     <ul class="z-callist">
-        {% for p in convocados %}
-        <li class="z-pl{% if p.is_me %} is-me{% endif %}"{% if p.is_me %} aria-label="{{ p.full_name }} ({% translate 'tú' %})"{% endif %}>
-            {% if p.photo %}<img class="z-pl-av" src="{{ p.photo.url }}" alt="" loading="lazy">{% else %}<span class="z-pl-av" aria-hidden="true">{{ p.name|slice:":1" }}{{ p.last_name|slice:":1" }}</span>{% endif %}
-            <div class="z-pl-who"><b>{{ p.full_name }}</b>
-                <small>{% if p.pair_n %}<span class="z-pl-pair">P{{ p.pair_n }}</span>{% if p.partner %}{% blocktranslate with name=p.partner.full_name %}con {{ name }}{% endblocktranslate %}{% endif %}{% elif games_count %}{% translate "Sin pareja asignada" %}{% endif %}</small></div>
-            {% if call_for_match.draft_mode %}<span class="z-tag">{% translate "Apuntado" %}</span>
-            {% elif p.is_playing %}<span class="z-tag is-lime">{% translate "Convocado" %}</span>
-            {% elif games_count %}<span class="z-tag is-amber">{% translate "Suplente" %}</span>
-            {% else %}<span class="z-tag is-lime">{% translate "Convocado" %}</span>{% endif %}
-        </li>
-        {% endfor %}
+        {% for p in convocados %}{% if not p.is_sub %}{% include 'includes/call_player.html' %}{% endif %}{% endfor %}
     </ul>
+    {% if subs_count %}
+    <button type="button" class="z-call-more" aria-controls="call-subs" aria-expanded="false"
+        data-more="{% blocktranslate with n=subs_count %}Ver suplentes ({{ n }}){% endblocktranslate %}" data-less="{% translate 'Ocultar suplentes' %}">{% blocktranslate with n=subs_count %}Ver suplentes ({{ n }}){% endblocktranslate %}</button>
+    <ul class="z-callist" id="call-subs" hidden>
+        {% for p in convocados %}{% if p.is_sub %}{% include 'includes/call_player.html' %}{% endif %}{% endfor %}
+    </ul>
+    {% endif %}
 </div>
+<script>
+  // Suplentes de la convocatoria: ocultos hasta pulsar «Ver suplentes».
+  document.querySelectorAll('.z-call-more').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var list = document.getElementById(btn.getAttribute('aria-controls'));
+      var open = list.hidden;
+      list.hidden = !open;
+      btn.setAttribute('aria-expanded', String(open));
+      btn.textContent = open ? btn.dataset.less : btn.dataset.more;
+    });
+  });
+</script>
 {% else %}
 <div class="z-empty"><i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>{% if can_manage %}{% translate "Crea la convocatoria para elegir quién juega este enfrentamiento." %}{% else %}{% translate "Tu capitán aún no ha creado la convocatoria de este enfrentamiento." %}{% endif %}</div>
 {% endif %}

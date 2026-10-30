@@ -14631,3 +14631,9 @@ msgstr "Substitute"
 
 msgid "Sin pareja asignada"
 msgstr "No pair assigned"
+
+msgid "Ver suplentes (%(n)s)"
+msgstr "Show substitutes (%(n)s)"
+
+msgid "Ocultar suplentes"
+msgstr "Hide substitutes"

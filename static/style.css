@@ -1216,15 +1216,18 @@ a.z-card:hover, .z-card--link:hover {
 .z-versus-vs { font: 400 clamp(3.4rem, 17vw, 6rem)/.9 var(--z-display); color: var(--z-lime); white-space: nowrap; }
 .z-ficha-side { display: grid; align-content: start; gap: 8px; padding: 16px 18px; background: var(--z-surface); border: 1px solid var(--z-border); border-radius: 22px; }
 .z-ficha-side p { margin: 0; }
-.z-kind { display: flex; align-items: center; gap: 12px; }
-.z-kind-ic { display: grid; place-items: center; flex-shrink: 0; width: 42px; height: 42px; font: 400 1.2rem/1 var(--z-display); color: var(--z-ink); background: var(--z-lime); border-radius: 12px; }
+.z-kind { display: grid; gap: 2px; }
 .z-kind b { display: block; font: 400 1.5rem/1.05 var(--z-display); text-transform: uppercase; color: #FFFFFF; }
 .z-kind small { color: var(--z-muted); font-size: .78rem; }
 .z-ficha-outcome { font: 400 clamp(2.4rem, 9vw, 4rem)/1 var(--z-display); text-transform: uppercase; color: var(--z-text); }
 .z-ficha-outcome.is-win { color: var(--z-lime); }
 .z-ficha-outcome.is-loss { color: var(--z-danger); }
 .z-ficha-when { font-weight: 800; color: var(--z-text); }
-.z-ficha-when .z-location { font-weight: 600; }
+.z-ficha-where .z-location { font-weight: 600; }
+.z-call-more { margin: 10px 0; padding: 6px 0; font: inherit; font-size: .85rem; font-weight: 800; color: var(--z-lime); background: none; border: 0; cursor: pointer; }
+.z-call-more:hover { text-decoration: underline; }
+.z-callist[hidden] { display: none; }
+.z-callist + .z-callist { margin-top: 8px; }
 .z-ficha-tags { display: flex; flex-wrap: wrap; gap: 6px; }
 .z-tag { display: inline-block; padding: 4px 11px; font-size: .72rem; font-weight: 800; color: var(--z-text); background: var(--z-surface-3); border-radius: 999px; }
 .z-tag.is-lime { color: var(--z-ink); background: var(--z-lime); }
@@ -1412,7 +1415,8 @@ a.z-card:hover, .z-card--link:hover {
 .z-next-match-when { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .z-next-match-tags { display: flex; flex-wrap: wrap; gap: 6px; }
 .z-next-match .z-comp-badge { color: var(--z-lime); background: var(--z-ink); }
-.z-next-match .z-fixture-type { color: var(--z-ink); border-color: rgba(10, 10, 10, .45); }
+.z-next-match .z-fixture-type { color: var(--z-lime); background: var(--z-ink); }
+.z-next-match-kicker { flex-basis: 100%; font-size: .72rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--z-ink); }
 /* Indicador de días: fondo oscuro sobre el lima */
 .z-next-match-days { flex: none; padding: 7px 14px; font-size: .78rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--z-lime); background: var(--z-ink); border-radius: 999px; transform: rotate(4deg); }
 .z-next-match-day { margin: 0; font-family: var(--z-display); font-size: clamp(3.4rem, 22cqw, 7.5rem); line-height: .95; text-transform: uppercase; }
@@ -1912,28 +1916,21 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
     align-items: center;
     gap: 10px 14px;
     min-width: 0;
-    padding: 12px 14px 12px 18px;
+    padding: 12px 14px;
     background: var(--z-surface);
     border: 1px solid var(--z-border);
     border-radius: 22px;
     box-shadow: var(--z-edge);
     transition: border-color .2s var(--z-ease), background-color .2s var(--z-ease);
 }
-.z-fixture::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 6px; background: var(--z-snp); }
-.z-fixture[data-comp="lapi"]::before { background: var(--z-lapi); }
 .z-fixture:hover { background-color: var(--z-surface-2); border-color: var(--z-border-strong); }
 .z-fixture:focus-within { outline: 2px solid var(--z-lime); outline-offset: 2px; }
-.z-fixture-date { grid-area: date; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 58px; border-radius: 16px; background: var(--z-warning); color: var(--z-ink); }
+.z-fixture-date { grid-area: date; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 58px; border-radius: 16px; background: var(--z-surface-3); color: var(--z-text); }
 .z-fixture-date b { font: 400 1.7rem/1 var(--z-display); }
 .z-fixture-date small { font-size: .62rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
-.z-fixture.is-win .z-fixture-date { background: var(--z-lime); }
-.z-fixture.is-loss .z-fixture-date { background: #F5A3AA; }
-.z-fixture.is-draw .z-fixture-date { background: #C9CBC4; }
 .z-fixture-main { grid-area: main; display: grid; gap: 8px; min-width: 0; }
 .z-fixture-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; min-width: 0; }
-.z-fixture-type { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 4px; font-size: .74rem; font-weight: 800; color: var(--z-text); background: var(--z-surface-2); border-radius: 999px; white-space: nowrap; }
-.z-fixture-type i { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: var(--z-lime); color: var(--z-ink); font-size: .55rem; font-style: normal; }
-.z-fixture-type:not(:has(i)) { padding-left: 10px; }
+.z-fixture-type { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; font-size: .74rem; font-weight: 800; color: var(--z-text); background: var(--z-surface-2); border-radius: 999px; white-space: nowrap; }
 .z-fixture-result { grid-area: result; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
 .z-fixture-score { font: 400 1.9rem/1 var(--z-display); color: var(--z-text); white-space: nowrap; }
 .z-fixture.is-win .z-fixture-score { color: var(--z-lime); }
@@ -1947,6 +1944,16 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 .z-flow4 i { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; margin: 0 auto 4px; border-radius: 50%; background: var(--z-surface); border: 3px solid var(--z-border-strong); font-size: .65rem; font-style: normal; font-weight: 800; color: var(--z-ink); }
 .z-flow4 .is-done i { background: var(--z-lime); border-color: var(--z-lime); }
 .z-flow4 .is-cur i { background: var(--z-warning); border-color: var(--z-warning); }
+/* Jugadores sin permisos de gestión: sin recorrido de pasos, nombres y fecha más grandes. */
+.z-fixture.is-player { grid-template-columns: 64px minmax(0, 1fr); grid-template-areas: "date main" "result result"; }
+.z-fixture.is-player .z-fixture-date { height: 64px; }
+.z-fixture.is-player .z-fixture-date b { font-size: 1.9rem; }
+.z-fixture.is-player .z-fixture-team { font: 400 1.35rem/1.1 var(--z-display); }
+.z-fixture.is-player .z-fixture-team img { width: 38px; height: 38px; }
+@media (min-width: 992px) {
+    .z-fixture.is-player { grid-template-columns: 76px minmax(0, 1fr) 190px; grid-template-areas: "date main result"; }
+    .z-fixture.is-player .z-fixture-date { height: 76px; }
+}
 @media (min-width: 992px) {
     .z-fixture { grid-template-columns: 64px minmax(0, 1fr) 320px 190px; grid-template-areas: "date main flow result"; gap: 18px; padding-right: 22px; }
     .z-fixture-result { flex-direction: column; align-items: flex-end; }

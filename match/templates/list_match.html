@@ -72,14 +72,14 @@ lugar y convocados, recorrido de cuatro pasos (convocatoria, parejas, resultados
 o estado. Toda la tarjeta es pulsable.{% endcomment %}
 <ol class="z-fixtures">
     {% for m in matches %}
-    <li class="z-fixture {% if m.outcome == 'V' %}is-win{% elif m.outcome == 'D' %}is-loss{% elif m.outcome == 'E' %}is-draw{% else %}is-pending{% endif %}" data-comp="{{ m.club.competition }}">
+    <li class="z-fixture{% if not m.can_manage %} is-player{% endif %} {% if m.outcome == 'V' %}is-win{% elif m.outcome == 'D' %}is-loss{% elif m.outcome == 'E' %}is-draw{% else %}is-pending{% endif %}" data-comp="{{ m.club.competition }}">
         <time class="z-fixture-date" datetime="{{ m.start_date|date:'Y-m-d' }}" title="{% blocktranslate with season=m.season %}Temporada {{ season }}{% endblocktranslate %}">
             <b>{{ m.start_date|date:"d" }}</b><small>{{ m.start_date|date:"M" }}</small>
         </time>
         <div class="z-fixture-main">
             <div class="z-fixture-head">
                 {% include 'includes/competition_badge.html' with code=m.club.competition name=m.club.rules.name short=True %}
-                <span class="z-fixture-type"><i aria-hidden="true">{% if m.no_draw %}&#9733;{% else %}&#9679;{% endif %}</i>{% if m.round_number and m.is_league %}{% blocktranslate with n=m.round_number %}Jornada {{ n }}{% endblocktranslate %}{% else %}{{ m.type_label }}{% endif %}</span>
+                <span class="z-fixture-type">{% if m.round_number and m.is_league %}{% blocktranslate with n=m.round_number %}Jornada {{ n }}{% endblocktranslate %}{% else %}{{ m.type_label }}{% endif %}</span>
                 {% if m.no_show %}<span class="z-fixture-type">{% translate "No presentado" %}</span>{% endif %}
                 <span class="visually-hidden">{{ m.start_date|date:"D j M Y" }}</span>
             </div>
@@ -105,9 +105,11 @@ o estado. Toda la tarjeta es pulsable.{% endcomment %}
                 </span>
             </div>
         </div>
+        {% if m.can_manage %}
         <ol class="z-flow4" aria-label="{% translate 'Recorrido del enfrentamiento' %}">
             {% for step in m.phase.track %}<li class="{% if step.state == 'done' %}is-done{% elif step.state == 'cur' %}is-cur{% endif %}"><i aria-hidden="true">{% if step.state == 'done' %}&#10003;{% elif step.state == 'cur' %}!{% endif %}</i>{{ step.label }}</li>{% endfor %}
         </ol>
+        {% endif %}
         <div class="z-fixture-result">
             {% if m.outcome %}<b class="z-fixture-score">{{ m.local_points }} – {{ m.visiting_points }}</b>
             <span class="z-fixture-state {% if m.outcome == 'V' %}is-win{% elif m.outcome == 'D' %}is-loss{% else %}is-draw{% endif %}">{% if m.outcome == 'V' %}{% translate "Victoria" %}{% elif m.outcome == 'D' %}{% translate "Derrota" %}{% else %}{% translate "Empate" %}{% endif %}</span>

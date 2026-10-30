@@ -707,7 +707,8 @@ def call_roster(call, games):
     """
     Convocados de ``call`` para la lista de la ficha: primero quienes juegan, ordenados por partido,
     y después los suplentes por nombre. Cada jugador lleva ``pair_n`` (número de partido o ``None``),
-    ``partner`` (su pareja, si la tiene) e ``is_playing``.
+    ``partner`` (su pareja, si la tiene), ``is_playing`` e ``is_sub`` (suplente: convocatoria cerrada con
+    parejas ya alineadas y sin partido).
     """
     slots = []
     for g in games:
@@ -722,6 +723,7 @@ def call_roster(call, games):
             elif second and second.id == p.id:
                 p.pair_n, p.partner = n, first
         p.is_playing = p.pair_n is not None
+        p.is_sub = bool(games) and not p.is_playing
     players.sort(key=lambda p: (p.pair_n is None, p.pair_n or 0))
     return players
 
@@ -748,13 +750,12 @@ def status_cards(phase):
 
 
 def match_kind(match):
-    """Banner del tipo de enfrentamiento: letra, título («Liga · Jornada 2») y subtítulo con la competición."""
+    """Banner del tipo de enfrentamiento: título («Liga · Jornada 2») y subtítulo con la competición."""
     title = match.type_label
     if match.round_number and match.is_league:
         title = _("Jornada %(n)s") % {"n": match.round_number}
         title = f"{match.type_label} · {title}" if match.type_label else title
-    return {"letter": (match.type_label or "?")[:1].upper(), "title": title,
-            "subtitle": match.club.rules.name, "no_draw": match.no_draw}
+    return {"title": title, "subtitle": match.club.rules.name}
 
 
 @club_required
@@ -797,6 +798,7 @@ def call_for_match(request, match_id):
         "match": match,
         "convocados": convocados,
         "players_count": len(convocados),
+        "subs_count": sum(1 for p in convocados if p.is_sub),
         "status_cards": status_cards(phase),
         "kind": match_kind(match),
         "report_deliveries": list(call.report_deliveries.order_by("email")) if call else [],
