@@ -7,9 +7,9 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 - **Ficha del enfrentamiento**: marcador y nombres de los equipos en grande (en escritorio, sobre la pista 2:1 con la red entre local y visitante), banner del tipo («Liga · Jornada 2»), desenlace y lugar al lado, cuatro tarjetas de estado con cifra y barra (convocatoria, parejas, resultados, acta) y lista de convocados identificable: avatar, nombre en mayúsculas, pareja P1/P2/P3 con su compañero y etiqueta Convocado o Suplente.
 - **Menos colores**: el color solo significa estado. Lima = hecho o victoria, ámbar = pendiente o convocatoria abierta, rojo = derrota; la competición va solo en su etiqueta (SNP/LAPI) y la fecha es neutra. Se quita la «E» del banner de la ficha.
-- **Inicio**: la tarjeta lleva el texto «Próximo enfrentamiento» con competición y tipo (Liga, Jornada N, Playoffs) siempre visibles.
+- **Inicio**: la tarjeta abre con una línea de texto plano, «Próximo enfrentamiento · LAPI · Playoffs», sin etiquetas de color, y la pista 2:1 se ve también cuando no hay panel «Pendiente» (ancho máximo 820 px).
 - **Ficha**: los convocados se ven primero y los suplentes quedan tras «Ver suplentes».
-- **Listado para jugadores**: el recorrido de pasos solo lo ve el capitán o gestor; a los jugadores se les muestra una tarjeta con nombres de equipo, fecha y competición más grandes.
+- **Listado para jugadores**: el recorrido de pasos solo lo ve el capitán o gestor; a los jugadores se les muestra una tarjeta como la de Inicio: fecha en grande, local contra visitante, estado y borde con el color de la competición.
 - **Tarjeta del listado**: una fila por enfrentamiento con fecha en bloque neutro, competición, píldora de tipo («Liga», «Jornada N»…) y recorrido de cuatro pasos (Convoc. · Parejas · Result. · Acta) con ✓ hecho y «!» actual, calculado por `MatchPhase.track`. El marcador grande y el estado van a la derecha; en móvil, debajo.
 
 ## 30/10/2026 · Nuevo estilo visual (fase 1: base e Inicio)

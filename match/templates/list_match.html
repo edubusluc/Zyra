@@ -73,6 +73,26 @@ o estado. Toda la tarjeta es pulsable.{% endcomment %}
 <ol class="z-fixtures">
     {% for m in matches %}
     <li class="z-fixture{% if not m.can_manage %} is-player{% endif %} {% if m.outcome == 'V' %}is-win{% elif m.outcome == 'D' %}is-loss{% elif m.outcome == 'E' %}is-draw{% else %}is-pending{% endif %}" data-comp="{{ m.club.competition }}">
+        {% if not m.can_manage %}
+        <div class="z-pfx-head">
+            {% include 'includes/competition_badge.html' with code=m.club.competition name=m.club.rules.name short=True %}
+            <span class="z-fixture-type">{% if m.round_number and m.is_league %}{% blocktranslate with n=m.round_number %}Jornada {{ n }}{% endblocktranslate %}{% else %}{{ m.type_label }}{% endif %}</span>
+            {% if m.no_show %}<span class="z-fixture-type">{% translate "No presentado" %}</span>{% endif %}
+            {% if m.outcome == 'V' %}<span class="z-fixture-state is-win">{% translate "Victoria" %}</span>
+            {% elif m.outcome == 'D' %}<span class="z-fixture-state is-loss">{% translate "Derrota" %}</span>
+            {% elif m.outcome == 'E' %}<span class="z-fixture-state is-draw">{% translate "Empate" %}</span>
+            {% else %}<span class="z-fixture-state {% if m.upcoming %}is-upcoming{% else %}is-open{% endif %}">{{ m.phase.label }}</span>{% endif %}
+        </div>
+        <time class="z-pfx-date" datetime="{{ m.start_date|date:'Y-m-d' }}" title="{% blocktranslate with season=m.season %}Temporada {{ season }}{% endblocktranslate %}">{{ m.start_date|date:"D j M" }}<small>{{ m.start_date|date:"Y" }}</small></time>
+        <p class="z-pfx-meta">{% if m.start_time %}<strong>{{ m.start_time|time:"H:i" }}</strong>{% endif %}{% if m.location %}<span class="z-location"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>{{ m.location }}</span></span>{% endif %}</p>
+        <div class="z-pfx-teams">
+            <span class="z-pfx-team{% if m.local.is_own %} is-own{% endif %}">{{ m.local_name }}<small>{% translate "Local" %}</small></span>
+            <span class="z-pfx-vs">{% if m.outcome %}{{ m.local_points }}–{{ m.visiting_points }}{% else %}VS{% endif %}</span>
+            <span class="z-pfx-team{% if m.visiting.is_own %} is-own{% endif %}">{{ m.visiting_name }}<small>{% translate "Visitante" %}</small></span>
+        </div>
+        <div class="z-pfx-foot">{% if multi_space and create_spaces %}<span class="z-fixture-meta z-fixture-role">{% translate "Eres jugador aquí" %}</span>{% endif %}
+        <a href="{% url 'call_for_match' m.public_id %}" class="z-pfx-open stretched-link" aria-label="{% blocktranslate with local=m.local_name visiting=m.visiting_name %}Ver {{ local }} contra {{ visiting }}{% endblocktranslate %}">{% translate "Ver enfrentamiento" %}<i class="fa-solid fa-chevron-right" aria-hidden="true"></i></a></div>
+        {% else %}
         <time class="z-fixture-date" datetime="{{ m.start_date|date:'Y-m-d' }}" title="{% blocktranslate with season=m.season %}Temporada {{ season }}{% endblocktranslate %}">
             <b>{{ m.start_date|date:"d" }}</b><small>{{ m.start_date|date:"M" }}</small>
         </time>
@@ -117,6 +137,7 @@ o estado. Toda la tarjeta es pulsable.{% endcomment %}
             {% elif m.upcoming %}<span class="z-fixture-state is-upcoming">{{ m.phase.label }}</span>
             {% else %}<span class="z-fixture-state is-open" title="{% translate 'Fecha pasada' %}">{{ m.phase.label }}<span class="visually-hidden"> · {% translate "fecha pasada" %}</span></span>{% endif %}
         </div>
+        {% endif %}
     </li>
     {% endfor %}
 </ol>
