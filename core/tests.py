@@ -437,6 +437,10 @@ class HomeTests(TestCase):
         self.assertEqual(response.context["days_left"], 3)
         self.assertContains(response, soon.maps_url.replace("&", "&amp;"))
         self.assertNotEqual(response.context["next_match"], later)
+        # El enfrentamiento es el bloque protagonista: indicador de días y los dos equipos.
+        self.assertContains(response, 'class="z-next-match-days"')
+        self.assertContains(response, "En 3 días")
+        self.assertContains(response, "z-next-match-teams")
 
     def test_empty_home(self):
         response = self.client.get(reverse("home"))
