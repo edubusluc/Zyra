@@ -47,7 +47,7 @@ class UnifiedSpacesTests(TestCase):
         self.assertContains(page, "z-comp-badge--lapi\">LAPI")
         self.assertContains(page, "Eres jugador aquí", count=1)
         # Solo puede borrar el de SNP, y el botón de crear dice dónde.
-        self.assertContains(page, reverse("delete_match", args=[self.snp_match.public_id]))
+        self.assertNotContains(page, reverse("delete_match", args=[self.snp_match.public_id]))  # eliminar solo desde la ficha (H-36)
         self.assertNotContains(page, reverse("delete_match", args=[self.lapi_match.public_id]))
         self.assertContains(page, "Nuevo enfrentamiento SNP")
         lapi_only = self.client.get(reverse("list_match") + "?season=all&espacio=lapi")

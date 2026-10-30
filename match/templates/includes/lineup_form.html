@@ -23,7 +23,7 @@
             <fieldset data-slot data-game-id="{{ slot.gameId|default_if_none:'' }}">
                 <legend>{% blocktranslate with n=forloop.counter %}Pareja {{ n }}{% endblocktranslate %}</legend>
                 <button type="button" class="btn btn-outline-secondary btn-sm z-lineup-reset" data-slot-reset>
-                    <i class="fa-solid fa-rotate-left" aria-hidden="true"></i> {% translate "Resetear" %}
+                    <i class="fa-solid fa-rotate-left" aria-hidden="true"></i> {% translate "Vaciar pareja" %}
                 </button>
                 {% for key in "12" %}
                 <div>
@@ -31,9 +31,9 @@
                     <select id="slot{{ forloop.parentloop.counter }}-p{{ key }}" data-player data-picker data-picker-toggle data-picker-clearable data-placeholder="{% translate 'Buscar jugador...' %}">
                         <option value="">{% translate "Elegir jugador" %}</option>
                         {% for p in players %}
-                        {% if ordered %}{% blocktranslate asvar meta with points=p.snp_score|snp_points:"0" %}{{ points }} pts{% endblocktranslate %}{% endif %}
-                        <option value="{{ p.id }}" data-points="{{ p.snp_score|default:0|unlocalize }}"{% if ordered %} data-meta="{{ meta }}"{% endif %} data-short="{{ p.short_name }}"
-                            {% if key == "1" and p.id == slot.player1Id or key == "2" and p.id == slot.player2Id %}selected{% endif %}>{{ p.full_name }}</option>
+                        {% if ordered %}{% blocktranslate asvar meta with points=p.snp_score|snp_points:"0" position=p.get_position_display|default:"—" %}{{ position }} · {{ points }} pts{% endblocktranslate %}{% else %}{% firstof p.get_position_display "—" as meta %}{% endif %}
+                        <option value="{{ p.id }}" data-points="{{ p.snp_score|default:0|unlocalize }}"data-meta="{{ meta }}" title="{{ p.full_name }}" data-short="{{ p.short_name }}"
+                            {% if key == "1" and p.id == slot.player1Id or key == "2" and p.id == slot.player2Id %}selected{% endif %}>{{ p.short_name }}</option>
                         {% endfor %}
                     </select>
                 </div>

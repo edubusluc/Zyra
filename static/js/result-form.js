@@ -101,6 +101,7 @@ document.querySelectorAll('[data-result]').forEach(function (form) {
       }
     }
     if (injuredBox) injuredBox.hidden = !(retiredBox && retiredBox.checked);
+    form.querySelectorAll('[data-retired-help]').forEach((el) => { el.hidden = !(retiredBox && retiredBox.checked); });
     if (retiredBox && retiredBox.checked) {
       input(3, 'l').disabled = input(3, 'v').disabled = false;
       if (injuredBox) refreshInjured(); else refreshRetired();
@@ -161,3 +162,33 @@ document.querySelectorAll('[data-result]').forEach(function (form) {
   form.querySelectorAll('[data-injured-side]').forEach((el) => el.addEventListener('change', refresh));
   refresh();
 });
+
+// «Poner resultados»: «Guardar y cerrar acta» solo está activo cuando todos los partidos tienen resultado
+// (o pareja no presentada), y al lado dice cuántos faltan.
+(function () {
+  const closeBtn = document.querySelector('[data-close-match]');
+  if (!closeBtn) return;
+  const hint = document.querySelector('[data-close-hint]');
+  const cards = Array.from(document.querySelectorAll('[data-result]'));
+  const filled = (v) => v && v.value.trim() !== '';
+  const complete = (card) => {
+    const noShow = card.querySelector('[data-pair-no-show]');
+    if (noShow && noShow.value) return true;
+    return ['set1_local', 'set1_visiting', 'set2_local', 'set2_visiting'].every((n) => filled(card.querySelector(`[name$="${n}"]`)));
+  };
+  function refreshClose() {
+    const missing = cards.filter((c) => !complete(c));
+    closeBtn.disabled = missing.length > 0;
+    closeBtn.classList.toggle('disabled', missing.length > 0);
+    if (hint) {
+      hint.textContent = missing.length
+        ? interpolate(ngettext('Falta %(n)s resultado para cerrar el acta', 'Faltan %(n)s resultados para cerrar el acta', missing.length), { n: missing.length }, true)
+        : '';
+    }
+  }
+  cards.forEach((c) => {
+    c.addEventListener('input', refreshClose);
+    c.addEventListener('change', refreshClose);
+  });
+  refreshClose();
+})();

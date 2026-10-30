@@ -52,7 +52,7 @@
       if (!count) return;
       const n = picks.filter(checked).length;
       count.textContent = n;
-      hint.textContent = min && n < min ? interpolate(gettext('Mínimo %(min)s para cerrar la convocatoria'), {min: min}, true) : '';
+      hint.textContent = !min ? '' : (n < min ? interpolate(gettext('Mínimo %(min)s para cerrar la convocatoria'), {min: min}, true) : interpolate(gettext('Mínimo %(min)s cumplido'), {min: min}, true));
     }
 
     // Al cambiar la búsqueda o el filtro se vuelve a la primera página

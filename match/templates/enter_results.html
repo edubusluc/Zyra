@@ -76,7 +76,8 @@
     <div class="d-flex flex-wrap gap-2 mt-3">
         <button type="submit" class="btn btn-primary" name="action" value="save">{% translate "Guardar resultados" %}</button>
         {% if min_close %}
-        <button type="submit" class="btn btn-secondary" name="action" value="close">{% translate "Guardar y cerrar acta" %}</button>
+        <button type="submit" class="btn btn-secondary" name="action" value="close" data-close-match>{% translate "Guardar y cerrar acta" %}</button>
+        <span class="z-close-hint align-self-center small text-muted" data-close-hint role="status"></span>
         {% endif %}
         <a href="{% url 'call_for_match' match.public_id %}" class="btn btn-outline-secondary">{% translate "Cancelar" %}</a>
     </div>

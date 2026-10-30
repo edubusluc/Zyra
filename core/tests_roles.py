@@ -105,7 +105,7 @@ class ManagerScreensTests(ManagerBase):
         self.assertNotContains(page, reverse("reopen_match", args=[self.match.public_id]))
         listing = self.client.get(reverse("list_match") + "?season=all")
         self.assertContains(listing, reverse("create_match"))
-        self.assertContains(listing, reverse("delete_match", args=[self.match.public_id]))
+        self.assertNotContains(listing, reverse("delete_match", args=[self.match.public_id]))  # el listado no lleva papelera (H-36)
         self.assertContains(page, reverse("delete_match", args=[self.match.public_id]) + "?desde=ficha")
 
     def test_manager_club_page_has_no_members_or_snp(self):

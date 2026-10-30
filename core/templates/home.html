@@ -99,11 +99,11 @@
 <section class="z-notice" role="status" aria-label="{% translate 'Añade un gestor' %}">
     <i class="fa-solid fa-user-gear" aria-hidden="true"></i>
     <div class="z-notice-text">
-        <strong>{% translate "Añade un gestor" %}</strong>
-        <span>{% translate "Un gestor te ayuda con los enfrentamientos, las convocatorias, los resultados y los jugadores. Puedes nombrar hasta 2 entre los jugadores de tu equipo." %}</span>
+        <strong>{% blocktranslate with team=current_club.name %}{{ team }} no tiene gestor{% endblocktranslate %}</strong>
+        <span>{% translate "Un gestor te ayuda con los enfrentamientos, las convocatorias, los resultados y los jugadores. Puedes nombrar hasta 2 entre los jugadores de este equipo." %}</span>
     </div>
     <div class="z-notice-actions">
-        <a class="btn btn-primary btn-sm" href="{% url 'club_members' %}">{% translate "Gestionar miembros" %}</a>
+        <a class="btn btn-primary btn-sm" href="{% url 'club_members' %}">{% translate "Nombrar gestor" %}</a>
         <form method="post" action="{% url 'dismiss_manager_tip' %}" data-loading-text="{% translate 'Cerrando el aviso…' %}">
             {% csrf_token %}
             <button type="submit" class="btn-close btn-close-white" aria-label="{% translate 'Cerrar aviso' %}" title="{% translate 'Cerrar aviso' %}"></button>
@@ -228,6 +228,8 @@
         <span class="z-badge z-badge--lime">{% if days_left == 0 %}{% translate "Hoy" %}{% elif days_left == 1 %}{% translate "Mañana" %}{% else %}{% blocktranslate trimmed count n=days_left %}En {{ n }} día{% plural %}En {{ n }} días{% endblocktranslate %}{% endif %}</span>
         <span>{{ next_match.start_date|date:"D j M Y" }}{% if next_match.start_time %} · {{ next_match.start_time|time:"H:i" }}{% endif %}</span>
         {% include 'includes/competition_badge.html' with code=next_match.club.competition name=next_match.club.rules.name short=True %}
+        {% if next_match.match_type != next_match.club.rules.default_type %}<span class="z-fixture-type">{{ next_match.type_label }}</span>{% endif %}
+        {% if next_match.round_number and next_match.is_league %}<span class="z-fixture-type">{% blocktranslate with n=next_match.round_number %}Jornada {{ n }}{% endblocktranslate %}</span>{% endif %}
     </div>
     <div class="z-next-match-teams">
         <div class="z-next-match-team {% if next_match.local.is_own %}is-own{% endif %}">
@@ -246,6 +248,7 @@
     <p class="z-next-match-me{% if my_status.called %} is-in{% endif %}" role="status">
         <i class="fa-solid {% if my_status.called %}fa-circle-check{% else %}fa-circle-info{% endif %}" aria-hidden="true"></i>
         <span>{% if not my_status.has_call %}{% translate "Todavía no hay convocatoria" %}
+        {% elif my_status.called and not my_status.closed %}<strong>{% translate "Te has apuntado" %}</strong> · {% translate "la convocatoria sigue abierta" %}
         {% elif my_status.called %}<strong>{% translate "Estás convocado" %}</strong>{% if my_status.game %} · {% blocktranslate with n=my_status.game.n_game pts=my_status.game.score %}Partido {{ n }} · {{ pts }} pts{% endblocktranslate %}{% if my_status.partner %} · {% blocktranslate with name=my_status.partner.full_name %}con {{ name }}{% endblocktranslate %}{% endif %}{% elif my_status.closed %} · {% translate "las parejas aún no están decididas" %}{% endif %}
         {% else %}<strong>{% translate "No estás convocado" %}</strong>{% if not my_status.closed %} · {% translate "la convocatoria sigue abierta" %}{% endif %}{% endif %}</span>
     </p>
@@ -326,11 +329,11 @@
         </div>
         {% if my_form.called %}
         <div>
-            <dt>{% translate "Convocatorias en las que te has apuntado" %}</dt>
+            <dt>{% translate "Jugaste, de las convocatorias a las que te apuntaste" %}</dt>
             <dd class="z-myform-seg-wrap">
-                <span class="z-myform-big">{{ my_form.played }} <small>{% blocktranslate with total=my_form.called %}jugadas de {{ total }}{% endblocktranslate %}</small></span>
+                <span class="z-myform-big">{{ my_form.played }} <small>{% blocktranslate with total=my_form.called %}de las {{ total }} a las que te apuntaste{% endblocktranslate %}</small></span>
                 <span class="z-myform-seg" role="img" aria-label="{% blocktranslate with played=my_form.played total=my_form.called %}Has jugado en {{ played }} de las {{ total }} convocatorias en las que te apuntaste{% endblocktranslate %}">{% if my_form.by_competition %}{% for c in my_form.by_competition %}<i class="z-myform-seg-w z-myform-seg--{{ c.code }}" style="width: {{ c.played_pct|unlocalize }}%"></i>{% endfor %}{% else %}<i class="z-myform-seg-w" style="width: {{ my_form.played_pct|unlocalize }}%"></i>{% endif %}</span>
-                {% if my_form.by_competition %}<span class="z-myform-seg-detail">{% for c in my_form.by_competition %}{% blocktranslate with competition=c.name played=c.played total=c.called %}{{ competition }} {{ played }} de {{ total }}{% endblocktranslate %}{% if not forloop.last %} · {% endif %}{% endfor %}</span>{% endif %}
+                {% if my_form.by_competition %}<span class="z-myform-seg-detail">{% for c in my_form.by_competition %}{% blocktranslate with competition=c.name played=c.played total=c.called %}{{ competition }}: {{ played }} de {{ total }}{% endblocktranslate %}{% if not forloop.last %} · {% endif %}{% endfor %}</span>{% endif %}
             </dd>
         </div>
         {% endif %}

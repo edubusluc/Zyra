@@ -9,4 +9,6 @@
     {% endfor %}
   </ul>
 </nav>
+{% if space_separate %}<p class="z-space-note small text-muted"><i class="fa-solid fa-circle-info me-1" aria-hidden="true"></i>{% translate "Cada competición puntúa distinto: estas estadísticas son de una sola. Para verlas juntas, abre «Mis estadísticas»." %}</p>{% endif %}
+{% if space_only_name %}<p class="z-space-note small text-muted"><i class="fa-solid fa-filter me-1" aria-hidden="true"></i>{% blocktranslate with name=space_only_name %}Mostrando solo {{ name }}.{% endblocktranslate %} <a href="{{ space_all_url }}">{% translate "Ver todas" %}</a></p>{% endif %}
 {% endif %}

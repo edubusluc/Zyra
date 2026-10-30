@@ -89,8 +89,7 @@
                 {% if can_manage and not player.in_team %}
                 <span class="z-badge z-badge--danger">{% translate "Fuera del equipo" %}</span>
                 {% endif %}
-                {% if player.pk in pending_copies %}<span class="z-badge z-badge--warning">{% translate "Invitación pendiente" %}</span>
-                {% elif player.copied_from and can_manage %}<span class="z-badge z-badge--outline">{% blocktranslate with competition=player.copied_from.club.rules.name %}Copiado de {{ competition }}{% endblocktranslate %}</span>{% endif %}
+                {% if player.pk in pending_copies %}<span class="z-badge z-badge--warning">{% translate "Invitación pendiente" %}</span>{% endif %}
             </div>
         </div>
     </div>

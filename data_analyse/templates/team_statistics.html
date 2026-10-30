@@ -70,11 +70,13 @@
               <span class="st-score-cap">{% translate "Victorias" %}</span>
             </div>
             <span class="st-record-sep" aria-hidden="true">–</span>
+            {% if drawn_matches or current_club.rules.has_draws %}
             <div class="st-score">
               <span class="st-record-num">{{ drawn_matches }}</span>
               <span class="st-score-cap">{% translate "Empates" %}</span>
             </div>
             <span class="st-record-sep" aria-hidden="true">–</span>
+            {% endif %}
             <div class="st-score">
               <span class="st-record-num">{{ lost_matches }}</span>
               <span class="st-score-cap">{% translate "Derrotas" %}</span>
@@ -101,12 +103,12 @@
           </div>
           {% endif %}
           <div class="st-fact">
-            <dt>{% translate "Juegos como local" %}</dt>
-            <dd>{{ local_games_won }}–{{ local_games_lost }}</dd>
+            <dt>{% translate "Juegos en casa" %}</dt>
+            <dd>{% blocktranslate with won=local_games_won lost=local_games_lost %}{{ won }} ganados · {{ lost }} perdidos{% endblocktranslate %}</dd>
           </div>
           <div class="st-fact">
-            <dt>{% translate "Juegos como visitante" %}</dt>
-            <dd>{{ visiting_games_won }}–{{ visiting_games_lost }}</dd>
+            <dt>{% translate "Juegos fuera" %}</dt>
+            <dd>{% blocktranslate with won=visiting_games_won lost=visiting_games_lost %}{{ won }} ganados · {{ lost }} perdidos{% endblocktranslate %}</dd>
           </div>
         </dl>
       </section>

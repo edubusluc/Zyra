@@ -116,7 +116,11 @@ def space_filter_context(request, selected, allow_all=True):
         seen.add(club.competition)
         chips.append({"code": club.competition, "label": str(club.rules.name), "url": url(club.competition),
                       "active": selected == club.competition})
-    return {"space_chips": chips, "space_selected": selected, "multi_space": True}
+    ctx = {"space_chips": chips, "space_selected": selected, "multi_space": True, "space_separate": not allow_all}
+    if allow_all and selected != ALL_SPACES:
+        # Un filtro que se recuerda entre páginas tiene que verse como filtro y poder quitarse (H-25).
+        ctx.update(space_only_name=next((c["label"] for c in chips if c["active"]), ""), space_all_url=url(ALL_SPACES))
+    return ctx
 
 
 def managed_clubs(request, clubs=None):

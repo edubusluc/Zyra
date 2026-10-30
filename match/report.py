@@ -210,6 +210,8 @@ def suggested_lineups(call):
             "key": key,
             "title": _("Alineación %(letter)s · %(title)s") % {"letter": key, "title": lineup.title},
             "win": round(lineup.win * 100),
+            # Con poco historial la cifra es una estimación débil: el formulario la presenta con su base (H-21).
+            "history": len({g["match_id"] for g in log}),
             "expected": round(lineup.expected, 1),
             "explanation": advisor.explain(lineup, venue_label, compare_to=compare_to),
             "pairs": [[p.a.id, p.b.id] for p in lineup.pairs],

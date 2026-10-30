@@ -5,7 +5,7 @@
 {% block content %}
 <div class="z-page-head">
     <div>
-        <span class="z-eyebrow">{% if multi_space %}{% translate "Todos tus equipos" %}{% else %}{{ current_club.name }}{% endif %}</span>
+        <span class="z-eyebrow">{% if multi_space and space_only_name %}{% blocktranslate with name=space_only_name %}Equipos de {{ name }}{% endblocktranslate %}{% elif multi_space %}{% translate "Todos tus equipos" %}{% else %}{{ current_club.name }}{% endif %}</span>
         <h1>{% translate "Enfrentamientos" %}</h1>
     </div>
     <div class="z-actions">

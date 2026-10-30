@@ -44,7 +44,7 @@
             <tr>
               <th scope="col">{% translate "Rival" %}</th>
               <th scope="col" title="{% translate 'Enfrentamientos jugados' %}">{% translate "J" %}</th>
-              <th scope="col" title="{% translate 'Ganados – empatados – perdidos' %}">{% translate "G-E-P" %}</th>
+              {% if current_club.rules.has_draws %}<th scope="col" title="{% translate 'Ganados – empatados – perdidos' %}">{% translate "G-E-P" %}</th>{% else %}<th scope="col" title="{% translate 'Ganados – perdidos' %}">{% translate "G-P" %}</th>{% endif %}
               <th scope="col" title="{% translate 'Puntos a favor – en contra' %}">{% translate "Pts" %}</th>
               <th scope="col">{% translate "Último" %}</th>
             </tr>
@@ -58,7 +58,7 @@
                 {% if r.team and r.team.division %}<small class="st-muted d-block">{{ r.team.get_division_display }}</small>{% endif %}
               </th>
               <td class="st-nw">{{ r.played }}</td>
-              <td class="st-nw">{{ r.won }}-{{ r.drawn }}-{{ r.lost }}</td>
+              <td class="st-nw">{% if current_club.rules.has_draws %}{{ r.won }}-{{ r.drawn }}-{{ r.lost }}{% else %}{{ r.won }}-{{ r.lost }}{% endif %}</td>
               <td class="st-nw">{{ r.points_for }}-{{ r.points_against }}</td>
               <td class="st-last">{% include 'includes/rival_outcome.html' with e=r.last %}<small class="st-muted d-block">{{ r.last.date|date:"d/m/Y" }}</small></td>
             </tr>

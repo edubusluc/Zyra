@@ -125,7 +125,7 @@ class MatchesAndCallsTests(TestCase):
         self.assertTrue(cards[self.current.id].upcoming)
         self.assertContains(response, "Victoria")
         self.assertContains(response, "Convocatoria abierta")
-        self.assertContains(response, "2 convocados")
+        self.assertContains(response, "2 apuntados")
         self.assertContains(response, "Ver enfrentamiento")
 
     def test_match_list_search_for_older_seasons(self):

@@ -82,10 +82,6 @@ msgstr "Pair not complete"
 msgid "Completa todas las parejas para guardar"
 msgstr "Complete all pairs to save"
 
-#: static/js/lineup.js:96
-msgid "%(title)s: %(win)s de opciones de ganar. "
-msgstr "%(title)s: %(win)s chance of winning. "
-
 #: static/js/lineup.js:102
 msgid "Ver por qué"
 msgstr "See why"
@@ -134,7 +130,8 @@ msgstr "Adjust the photo"
 
 #: static/js/photo-crop.js:54
 msgid ""
-"Arrastra la foto y usa el zoom para elegir lo que se verá dentro del círculo."
+"Arrastra la foto y usa el zoom para elegir lo que se verá dentro del "
+"círculo."
 msgstr ""
 "Drag the photo and use the zoom to choose what will show inside the circle."
 
@@ -258,8 +255,12 @@ msgstr "2 points lost"
 msgid "Set %(n)s: falta el resultado."
 msgstr "Set %(n)s: result missing."
 
-msgid "Set 3: no se juega si la misma pareja ha ganado los dos primeros sets. Déjalo vacío."
-msgstr "Set 3: it is not played if the same pair won the first two sets. Leave it empty."
+msgid ""
+"Set 3: no se juega si la misma pareja ha ganado los dos primeros sets. "
+"Déjalo vacío."
+msgstr ""
+"Set 3: it is not played if the same pair won the first two sets. Leave it "
+"empty."
 
 msgid "No se puede saber quién iba ganando: el resultado está empatado."
 msgstr "Cannot tell who was ahead: the score is tied."
@@ -316,3 +317,28 @@ msgid ""
 msgstr ""
 "No result: Zyra shares out the points when the scoresheet is closed (SNP "
 "rules 20.2)."
+
+#: static/js/lineup.js:100
+msgid ""
+"%(title)s: %(win)s de opciones de ganar, con poca información (%(n)s "
+"enfrentamientos de historial). "
+msgstr ""
+"%(title)s: %(win)s chance of winning, with little information (%(n)s ties of"
+" history). "
+
+#: static/js/lineup.js:101
+msgid ""
+"%(title)s: %(win)s de opciones de ganar (según %(n)s enfrentamientos de "
+"historial). "
+msgstr ""
+"%(title)s: %(win)s chance of winning (based on %(n)s ties of history). "
+
+#: static/js/player-selector.js:55
+msgid "Mínimo %(min)s cumplido"
+msgstr "Minimum of %(min)s met"
+
+#: static/js/result-form.js:185
+msgid "Falta %(n)s resultado para cerrar el acta"
+msgid_plural "Faltan %(n)s resultados para cerrar el acta"
+msgstr[0] "%(n)s result missing to close the scoresheet"
+msgstr[1] "%(n)s results missing to close the scoresheet"

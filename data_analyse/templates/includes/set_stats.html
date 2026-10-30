@@ -15,7 +15,7 @@
       </div>
       <div class="st-fact">
         <dt>{% translate "Roscos (6-0)" %}</dt>
-        <dd title="{% translate 'Dados – recibidos' %}">{{ st.bagels_for }}–{{ st.bagels_against }}</dd>
+        <dd>{% blocktranslate with a=st.bagels_for b=st.bagels_against %}{{ a }} a favor · {{ b }} en contra{% endblocktranslate %}</dd>
       </div>
     </dl>
     <div class="st-sets-grid">

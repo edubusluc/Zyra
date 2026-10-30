@@ -11,10 +11,10 @@
             <button type="button" class="btn btn-sm" data-selector-filter="Derecha">{% translate "Derecha" %}</button>
             <button type="button" class="btn btn-sm" data-selector-filter="Revés">{% translate "Revés" %}</button>
             <button type="button" class="btn btn-sm" data-selector-filter="Mixto">{% translate "Mixto" %}</button>
-            <button type="button" class="btn btn-sm" data-selector-filter="selected">{% translate "Elegidos" %}</button>
         </div>
         <div class="d-flex gap-2">
-            <button type="button" class="btn btn-outline-secondary btn-sm" data-selector-all>{% translate "Marcar visibles" %}</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" data-selector-filter="selected">{% translate "Ver solo elegidos" %}</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" data-selector-all title="{% translate 'Marca todos los jugadores que se ven con el filtro y la búsqueda actuales' %}">{% translate "Marcar todos los de la lista" %}</button>
             <button type="button" class="btn btn-outline-secondary btn-sm" data-selector-none>{% translate "Quitar todos" %}</button>
         </div>
     </div>
@@ -30,8 +30,8 @@
                     {{ player.get_position_display|default:"—" }}{% if request.club.rules.has_snp %} · SNP {{ player.snp_score|snp_points }}{% endif %}{% if not player.in_team %} · {% translate "fuera del equipo" %}{% endif %}
                 </span>
                 {# Para decidir sin salir de la pantalla: partidos jugados esta temporada y advertencias a la vista #}
-                {% if player.season_total %}<span class="z-pick-meta">{% blocktranslate with n=player.played total=player.season_total %}Jugó {{ n }} de {{ total }}{% endblocktranslate %}</span>{% endif %}
-                {% if player.finals_short %}<span class="z-pick-meta z-pick-warn-text"><i class="fa-solid fa-flag" aria-hidden="true"></i> {% blocktranslate count n=player.finals_played %}{{ n }} de liga{% plural %}{{ n }} de liga{% endblocktranslate %} · {% blocktranslate with n=finals_minimum %}necesita {{ n }}{% endblocktranslate %}</span>{% endif %}
+                {% if player.season_total %}<span class="z-pick-meta" title="{% blocktranslate with n=player.played total=player.season_total %}Jugó {{ n }} de {{ total }} enfrentamientos esta temporada{% endblocktranslate %}">{% blocktranslate with n=player.played total=player.season_total %}Jugó {{ n }}/{{ total }} esta temporada{% endblocktranslate %}</span>{% endif %}
+                {% if player.finals_short %}<span class="z-pick-meta z-pick-warn-text"><i class="fa-solid fa-flag" aria-hidden="true"></i> {% blocktranslate with n=player.finals_played need=finals_minimum %}Liga: {{ n }} de {{ need }} necesarios{% endblocktranslate %}</span>{% endif %}
                 {% if player.penalty_reasons %}
                 <span class="z-pick-meta z-pick-warn-text" title="{{ player.penalty_reasons|join:'; ' }}"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> {% blocktranslate count n=player.penalty_reasons|length %}{{ n }} advertencia{% plural %}{{ n }} advertencias{% endblocktranslate %}</span>
                 {% endif %}

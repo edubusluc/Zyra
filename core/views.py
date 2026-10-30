@@ -178,7 +178,9 @@ def home(request):
         'onboarding': onboarding,
         'manager_welcome': request.membership.is_manager and request.membership.manager_welcome_pending,
         # Aviso al capitán sobre el rol de gestor, hasta que lo cierre.
-        'manager_tip': request.membership.is_admin and UserPreference.manager_tip_pending(request.user),
+        # Solo si el equipo no tiene ya un gestor, y el aviso dice de qué equipo habla.
+        'manager_tip': (request.membership.is_admin and UserPreference.manager_tip_pending(request.user)
+                        and not Membership.objects.filter(club=club, role=Membership.MANAGER).exists()),
         'onboarding_done': sum(step["done"] for step in onboarding) if onboarding else 0,
         'onboarding_percent': round(100 * sum(step["done"] for step in onboarding) / len(onboarding)) if onboarding else 0,
         'onboarding_next': next((step for step in onboarding if not step["done"]), None) if onboarding else None,
