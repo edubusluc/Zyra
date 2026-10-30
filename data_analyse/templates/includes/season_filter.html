@@ -2,6 +2,7 @@
 {# Selector de temporadas: Todas, las tres últimas y un buscador para el resto. Recibe el contexto de data_analyse.views.season_filter_context. #}
 <nav aria-label="{% translate 'Temporadas' %}" class="st-season-filter">
   <ul class="st-seasons">
+    <li class="st-filter-label">{% translate "Temporada" %}</li>
     <li><a class="st-chip" href="{{ season_all.url }}" {% if season_all.active %}aria-current="page"{% endif %}>{% translate "Todas" %}</a></li>
     {% for chip in season_chips %}
       <li><a class="st-chip" href="{{ chip.url }}" {% if chip.active %}aria-current="page"{% endif %}>{{ chip.label }}</a></li>

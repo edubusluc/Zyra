@@ -109,9 +109,9 @@
                     <li><span class="dropdown-header">{{ user.username }}</span></li>
                     {% if user_teams|length > 1 %}
                     {# Solo informa: no se cambia de equipo desde aquí (core.spaces lo hace al abrir cada página). #}
-                    <li><span class="dropdown-header">{% translate "Tus equipos" %}</span></li>
+                    <li><span class="dropdown-header">{% translate "Estás en:" %}</span></li>
                     {% for m in user_teams %}
-                    <li><span class="dropdown-item-text z-team-item">{% include 'includes/competition_badge.html' with code=m.club.competition name=m.club.rules.name short=True %}<span class="z-team-item-name">{{ m.club.name }}</span><small class="text-muted">{{ m.team_role_label }}</small></span></li>
+                    <li role="presentation"><span class="dropdown-item-text z-team-item">{% include 'includes/competition_badge.html' with code=m.club.competition name=m.club.rules.name short=True %}<span class="z-team-item-name">{{ m.club.name }}</span><small class="text-muted">{{ m.team_role_label }}</small></span></li>
                     {% endfor %}
                     {% endif %}
                     {% if current_club %}

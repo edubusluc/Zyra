@@ -5,7 +5,7 @@
 {% block content %}
 <div class="z-page-head">
     <div>
-        <span class="z-eyebrow">{% if multi_space %}{% translate "Todos tus equipos" %}{% else %}{{ current_club.name }}{% endif %}</span>
+        <span class="z-eyebrow">{% if multi_space and space_only_name %}{% blocktranslate with name=space_only_name %}Equipos de {{ name }}{% endblocktranslate %}{% elif multi_space %}{% translate "Todos tus equipos" %}{% else %}{{ current_club.name }}{% endif %}</span>
         <h1>{% translate "Enfrentamientos" %}</h1>
     </div>
     <div class="z-actions">
@@ -17,6 +17,9 @@
 <script src="{% static 'js/player-picker.js' %}" defer></script>
 {% include 'includes/match_view_tabs.html' with current='list' %}
 {% include 'includes/space_filter.html' %}
+{# En móvil, temporada, tipo y rival van plegados en «Filtros» para que el primer enfrentamiento se vea sin desplazarse (H-24). #}
+<details class="z-filters" data-filters>
+<summary class="btn btn-secondary btn-sm"><i class="fa-solid fa-sliders me-1" aria-hidden="true"></i> {% translate "Filtros" %}{% if filtering %} <span class="z-badge z-badge--lime">{% translate "activos" %}</span>{% endif %}</summary>
 {% include 'includes/season_filter.html' %}
 {# Tipo de partido: mismos chips que las estadísticas; se combinan con temporada, rival y buscador. #}
 {% include 'includes/match_type_filter.html' %}
@@ -38,6 +41,18 @@
     <a href="{{ request.path }}{% if request.GET.season %}?season={{ selected_season|urlencode }}{% endif %}" class="btn btn-outline-secondary btn-sm">{% translate "Limpiar" %}</a>
     {% endif %}
 </form>
+</details>
+<script>
+(function () {
+  // Escritorio: los filtros siempre a la vista; móvil: plegados tras «Filtros».
+  const box = document.querySelector('[data-filters]');
+  if (!box) return;
+  const wide = window.matchMedia('(min-width: 768px)');
+  const sync = () => { if (wide.matches) box.open = true; };
+  sync();
+  wide.addEventListener('change', sync);
+})();
+</script>
 
 <div class="z-summary" role="group" aria-label="{% translate 'Resumen' %}">
     <div><b>{{ summary.played }}</b><span>{% translate "Jugados" %}</span></div>

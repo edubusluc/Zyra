@@ -639,7 +639,9 @@ def copy_players(request):
                                         "Da de baja a los que no vayan a jugar.")
                              % {"competition": target.rules.name, "n": size, "max": limit})
         return redirect("list_players")
-    rows = player_copy.candidates(source, target)
+    # Primero los que se pueden copiar y, detrás, los que ya están o juegan en otro equipo (orden estable).
+    rows = sorted(player_copy.candidates(source, target),
+                  key=lambda r: r["status"] not in (player_copy.MEMBER, player_copy.INVITE, player_copy.COPY))
     return render(request, "copy_players.html", {
         "source": source, "target": target, "sources": sources, "rows": rows,
         "copyable": sum(r["status"] in (player_copy.MEMBER, player_copy.INVITE, player_copy.COPY) for r in rows),

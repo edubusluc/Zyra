@@ -3029,7 +3029,8 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .z-comp-meter b { text-align: right; font-size: .9rem; }
 .z-comp-meter--lapi span { background: #3D8BE0; }
 /* «Tus equipos» del menú de usuario: solo informa (competición, equipo y papel). */
-.z-team-item { display: flex; align-items: center; gap: 8px; min-width: 240px; color: var(--bs-body-color); }
+/* Solo informan (no se pueden pulsar): más pequeños y apagados que las opciones del menú (H-26). */
+.z-team-item { display: flex; align-items: center; gap: 8px; min-width: 240px; padding-top: 2px; padding-bottom: 2px; font-size: .82rem; color: var(--z-muted); cursor: default; user-select: none; }
 .z-team-item-name { flex: 1; min-width: 0; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .z-team-item small { white-space: nowrap; }
 .z-choice-help { margin: -8px 0 16px; }
@@ -3053,3 +3054,9 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .z-space-switcher { margin: 0 0 16px; }
 .z-space-switcher .btn { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
 .z-space-switcher .btn > span:not(.z-comp-badge) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Filtros del listado: en escritorio siempre abiertos y sin botón; en móvil, plegados tras «Filtros» (H-24). */
+.z-filters > summary { list-style: none; cursor: pointer; margin-bottom: 8px; }
+.z-filters > summary::-webkit-details-marker { display: none; }
+@media (min-width: 768px) { .z-filters > summary { display: none; } }
+.z-space-note { margin: -4px 0 12px; }
