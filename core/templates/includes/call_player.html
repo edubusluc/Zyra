@@ -1,9 +1,0 @@
-{# Una fila de la lista de convocados de la ficha: avatar, nombre, pareja y estado (p. ej. «P1 con ...»). #}{% load i18n %}
-<li class="z-pl{% if p.is_me %} is-me{% endif %}"{% if p.is_me %} aria-label="{{ p.full_name }} ({% translate 'tú' %})"{% endif %}>
-    {% if p.photo %}<img class="z-pl-av" src="{{ p.photo.url }}" alt="" loading="lazy">{% else %}<span class="z-pl-av" aria-hidden="true">{{ p.name|slice:":1" }}{{ p.last_name|slice:":1" }}</span>{% endif %}
-    <div class="z-pl-who"><b>{{ p.full_name }}</b>
-        <small>{% if p.pair_n %}<span class="z-pl-pair">P{{ p.pair_n }}</span>{% if p.partner %}{% blocktranslate with name=p.partner.full_name %}con {{ name }}{% endblocktranslate %}{% endif %}{% elif p.is_sub %}{% translate "Sin pareja asignada" %}{% endif %}</small></div>
-    {% if p.is_sub %}<span class="z-tag is-amber">{% translate "Suplente" %}</span>
-    {% elif call_for_match.draft_mode %}<span class="z-tag">{% translate "Apuntado" %}</span>
-    {% else %}<span class="z-tag is-lime">{% translate "Convocado" %}</span>{% endif %}
-</li>

@@ -799,6 +799,8 @@ def call_for_match(request, match_id):
         "convocados": convocados,
         "players_count": len(convocados),
         "subs_count": sum(1 for p in convocados if p.is_sub),
+        "rosters": [{"players": [p for p in convocados if not p.is_sub], "is_subs": False},
+                    {"players": [p for p in convocados if p.is_sub], "is_subs": True}],
         "status_cards": status_cards(phase),
         "kind": match_kind(match),
         "report_deliveries": list(call.report_deliveries.order_by("email")) if call else [],
