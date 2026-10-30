@@ -10,7 +10,7 @@
     {% if selected_player and not hide_roster_nav %}{% include 'includes/player_tabs.html' with current='stats' %}{% endif %}
     <header class="st-head">
       <div>
-        <h1 class="st-title">{% if selected_player %}{{ player.full_name }}{% else %}{% translate "Estadísticas de jugadores" %}{% endif %}</h1>
+        <h1 class="st-title">{% if selected_player %}{{ player.full_name }}{% if current_club %} <small class="text-muted">· {{ current_club.rules.name }}</small>{% endif %}{% else %}{% translate "Estadísticas de jugadores" %}{% endif %}</h1>
         {% if selected_player %}
           <p class="st-subtitle">{% if selected_season %}{% blocktranslate trimmed with played=s.played season=selected_season count n=s.played %}{{ n }} partido jugado en la temporada {{ season }}{% plural %}{{ n }} partidos jugados en la temporada {{ season }}{% endblocktranslate %}{% else %}{% blocktranslate trimmed with played=s.played count n=seasons_asc|length %}{{ played }} partidos jugados en {{ n }} temporada{% plural %}{{ played }} partidos jugados en {{ n }} temporadas{% endblocktranslate %}{% endif %}</p>
         {% endif %}

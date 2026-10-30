@@ -3,6 +3,12 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 30/10/2026 · Espacios por competición (selectores, datos y zonas grises)
+
+- **Inicio**: «Ver los N pendientes» indica cuántos tienen la fecha pasada; el capitán ve «Pon la categoría» (enlace a editar el equipo) cuando falta.
+- **Estadísticas**: la ficha de jugador muestra la competición en el título; «Ver pareja» solo se activa al elegir los dos jugadores.
+- **Avisos**: la preferencia del correo de resultado dice que vale para todos tus equipos; la página de advertencias dice de qué equipo son.
+
 ## 30/10/2026 · Espacios por competición (revisión de usabilidad, prioridades 2 y 3, PR #209)
 
 - **Convocatoria**: con la convocatoria abierta la web dice «apuntados» y «Te has apuntado»; «convocados» y «Estás convocado» solo cuando está cerrada. «Cerrar convocatoria» y «Reenviar informe» piden confirmación y dicen a qué correos se envía. En Playoffs y Fase final, la regla de los 2 enfrentamientos de liga se ve en la ficha, se vuelve a comprobar al cerrar y separa a los apuntados que no la cumplen del resto.

@@ -15,7 +15,7 @@
             <img class="z-home-team-logo" src="{% if t.team.photo %}{{ t.team.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="{% blocktranslate with club=t.club.name %}Escudo de {{ club }}{% endblocktranslate %}">
             <span class="z-home-team-text">
                 <strong>{{ t.club.name }}</strong>
-                <span>{% include 'includes/competition_badge.html' with code=t.club.competition name=t.club.rules.name %} {{ t.membership.team_role_label }}<span class="z-home-team-div">· {% if t.club.rules.has_snp %}{% if t.team.division %}{% blocktranslate with level=t.team.get_division_display %}Categoría {{ level }}{% endblocktranslate %}{% else %}{% translate "Sin categoría" %}{% endif %}{% elif t.team.division %}{{ t.team.get_division_display }}{% else %}{% translate "Sin división" %}{% endif %}</span></span>
+                <span>{% include 'includes/competition_badge.html' with code=t.club.competition name=t.club.rules.name %} {{ t.membership.team_role_label }}<span class="z-home-team-div">· {% if t.club.rules.has_snp %}{% if t.team.division %}{% blocktranslate with level=t.team.get_division_display %}Categoría {{ level }}{% endblocktranslate %}{% elif t.membership.is_admin %}<a href="{% url 'edit_team' t.team.public_id %}">{% translate "Pon la categoría" %}</a>{% else %}{% translate "Sin categoría" %}{% endif %}{% elif t.team.division %}{{ t.team.get_division_display }}{% else %}{% translate "Sin división" %}{% endif %}</span></span>
             </span>
         </li>
         {% endfor %}
@@ -212,7 +212,7 @@
     {% endfor %}
 </ul>
 {% if pending_total > pending|length %}
-<p><a href="{% url 'list_match' %}?season=all">{% blocktranslate with n=pending_total %}Ver los {{ n }} pendientes{% endblocktranslate %}</a></p>
+<p><a href="{% url 'list_match' %}?season=all">{% blocktranslate with n=pending_total %}Ver los {{ n }} pendientes{% endblocktranslate %}{% if pending_overdue %} {% blocktranslate trimmed count o=pending_overdue %}({{ o }} con fecha pasada){% plural %}({{ o }} con fecha pasada){% endblocktranslate %}{% endif %}</a></p>
 {% endif %}
 {% else %}
 <div class="z-empty"><i class="fa-solid fa-circle-check" aria-hidden="true"></i>{% translate "Todo al día" %}</div>
