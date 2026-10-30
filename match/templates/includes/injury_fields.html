@@ -4,9 +4,9 @@
             <input class="form-check-input" type="checkbox" name="{{ prefix }}retired" id="id_{{ prefix }}retired" data-retired{% if retired %} checked{% endif %}>
             <label class="form-check-label" for="id_{{ prefix }}retired">{% translate "Partido finalizado por lesión" %}</label>
             {% if request.club.rules.injury_completes %}
-            <div class="form-text">{% translate "Pon los juegos que se llegaron a jugar: Zyra completa el partido para la pareja sana (p. ej. 3-2 queda 3-6 / 0-6)." %}</div>
+            <div class="form-text" data-retired-help{% if not retired %} hidden{% endif %}>{% translate "Pon los juegos que se llegaron a jugar: Zyra completa el partido para la pareja sana (p. ej. 3-2 queda 3-6 / 0-6)." %}</div>
             {% else %}
-            <div class="form-text">{% translate "Permite guardar un resultado incompleto (p. ej. 7-5 / 3-0): gana quien iba ganando." %}</div>
+            <div class="form-text" data-retired-help{% if not retired %} hidden{% endif %}>{% translate "Permite guardar un resultado incompleto (p. ej. 7-5 / 3-0): gana quien iba ganando." %}</div>
             {% endif %}
         </div>
         {% if request.club.rules.injury_completes %}

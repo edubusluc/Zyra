@@ -5,7 +5,8 @@
     <h2 class="z-finals-rule-title" id="finals-rule-title"><i class="fa-solid fa-flag" aria-hidden="true"></i> {{ finals_label }}</h2>
     <p>{% blocktranslate with n=finals_minimum %}Según el reglamento, solo pueden jugar quienes han jugado al menos {{ n }} enfrentamientos de liga con el equipo esta temporada.{% endblocktranslate %}</p>
     {% if finals_short %}
-    <p>{% translate "No lo cumplen:" %} {% for player, played in finals_short %}<strong>{{ player.short_name }}</strong> ({{ played }}){% if not forloop.last %}, {% endif %}{% endfor %}.</p>
+    {% if finals_short_chosen %}<p>{% translate "Apuntados que no lo cumplen:" %} {% for player, played in finals_short_chosen %}<strong>{{ player.short_name }}</strong> ({{ played }}){% if not forloop.last %}, {% endif %}{% endfor %}.</p>{% endif %}
+    {% if finals_short_others %}<p class="text-muted small">{% translate "Resto de la plantilla que no lo cumple:" %} {% for player, played in finals_short_others %}{{ player.short_name }} ({{ played }}){% if not forloop.last %}, {% endif %}{% endfor %}.</p>{% endif %}
     <label class="form-check">
         <input class="form-check-input" type="checkbox" name="force_finals" value="1"{% if request.POST.force_finals %} checked{% endif %}>
         <span class="form-check-label">{% translate "Convocarlos igualmente (la organización lo ha autorizado)" %}</span>

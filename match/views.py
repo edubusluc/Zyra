@@ -488,11 +488,11 @@ def create_call(request, match_id):
         "selected_players": selected_ids,
         "match": match,
         "min_call_players": competition_for(match).min_call_players,
-        **_finals_context(match, players),
+        **_finals_context(match, players, selected_ids),
     })
 
 
-def _finals_context(match, players):
+def _finals_context(match, players, selected=()):
     """
     Regla de las fases finales (LAPI 8.2) para la plantilla de la convocatoria: el mínimo de
     enfrentamientos de liga y los jugadores de ``players`` que no lo cumplen (``includes/finals_rule.html``).
@@ -503,7 +503,11 @@ def _finals_context(match, players):
     # Marca en el selector a quien no llega (los jugadores son los mismos objetos que pinta).
     for player, played in short:
         player.finals_short, player.finals_played = True, played
-    return {"finals_minimum": match.club.rules.finals_min_regular, "finals_short": short, "finals_label": match.type_label}
+    chosen = set(selected or ())
+    return {"finals_minimum": match.club.rules.finals_min_regular, "finals_short": short, "finals_label": match.type_label,
+            # Los que no cumplen, separados de quienes aún no están apuntados (los primeros son los que importan).
+            "finals_short_chosen": [(p, n) for p, n in short if p.id in chosen],
+            "finals_short_others": [(p, n) for p, n in short if p.id not in chosen]}
 
 
 def _finals_rule_ok(request, match, chosen):
@@ -544,6 +548,10 @@ def close_call(request, match_id):
 
     if not is_valid:
         messages.error(request, error_message)
+        return redirect(call_for_match, match_id=match_id)
+
+    # Fases finales (LAPI 8.2): se vuelve a comprobar la regla al cerrar, con el mismo «Convocarlos igualmente».
+    if request.method == "POST" and not _finals_rule_ok(request, call.match, call.players.all()):
         return redirect(call_for_match, match_id=match_id)
 
     if request.method == "POST":
@@ -638,7 +646,7 @@ def edit_call(request, call_id):
                     messages.error(request, MIN_CALL_ERROR % {"n": min_call})
                 return render(request, 'edit_call.html', {
                     'call': call, 'all_players': all_players, 'selected_players': list(selected_set),
-                    'min_call_players': min_call, **_finals_context(call.match, all_players),
+                    'min_call_players': min_call, **_finals_context(call.match, all_players, list(selected_set)),
                 })
 
             added_players = selected_set - call_set
@@ -678,7 +686,7 @@ def edit_call(request, call_id):
         'all_players': all_players,
         'selected_players': selected_players,
         'min_call_players': competition_for(call.match).min_call_players,
-        **_finals_context(call.match, all_players),
+        **_finals_context(call.match, all_players, selected_players),
     }
     return render(request, 'edit_call.html', context)
 
@@ -766,6 +774,9 @@ def call_for_match(request, match_id):
         "report_emails": ", ".join(admin_emails(request.club)) if call else "",
         "share_text": share_text(match, games) if not match.draft_mode else "",
         "min_call_players": competition_for(match).min_call_players,
+        # Regla de fases finales (LAPI 8.2) a la vista donde se decide: apuntados que no la cumplen.
+        "finals_minimum": match.club.rules.finals_min_regular if league.applies_finals_rule(match) else 0,
+        "finals_call_short": league.finals_shortfall(match, call.players.all()) if call and match.draft_mode and request.membership.can_manage else [],
     })
 
 
@@ -1072,12 +1083,14 @@ def valid_close_match(games,match):
     if len(games) < total:
         return False, _("No se pueden cerrar actas, se requieren al menos %(n)s partidos.") % {"n": total}
     
-    for g in games:
-        # Un partido con pareja no presentada no lleva resultado (``match.pair_no_show``).
-        if not g.no_show and g.results.first() is None:
-            return False, _("No se pueden cerrar actas, algunos partidos no tienen resultado.")
-    
-    return True, None     
+    # Un partido con pareja no presentada no lleva resultado (``match.pair_no_show``).
+    missing = [g.n_game for g in games if not g.no_show and g.results.first() is None]
+    if missing:
+        names = [_("Partido %(n)s") % {"n": n} for n in sorted(missing)]
+        return False, _("No se puede cerrar el acta: falta el resultado de %(games)s.") % {
+            "games": (", ".join(names[:-1]) + _(" y ") + names[-1]) if len(names) > 1 else names[0]}
+
+    return True, None
 
 def do_close_match(request, match):
     """Intenta cerrar el acta de ``match`` y apunta en mensajes lo que ocurra; True si se ha cerrado.

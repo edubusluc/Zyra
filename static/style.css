@@ -2167,7 +2167,7 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 @media (max-width: 767.98px) {
     .z-call-group { grid-template-columns: 1fr; }
     .z-call-group h3 { margin: 0; }
-    .z-call-group ul { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .z-call-group ul { grid-template-columns: minmax(0, 1fr); }
     .z-call .z-chip { gap: 6px; font-size: .78rem; }
     .z-call .z-chip img { width: 22px; height: 22px; }
     .z-call-legend { margin-left: 0; }
@@ -2668,7 +2668,10 @@ a.z-hub-card:hover, a.z-hub-card:focus-visible { border-color: var(--z-lime); co
 .z-closed.is-win { border-left-color: var(--z-lime); }
 .z-closed.is-loss { border-left-color: var(--z-danger); }
 
-.z-results-all { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr)); gap: 14px; }
+/* Un partido por fila: así el nombre del equipo y de cada pareja se leen enteros y se ve a quién se apunta el resultado (H-14). */
+.z-results-all { display: grid; grid-template-columns: minmax(0, 1fr); max-width: 760px; gap: 14px; }
+.z-results-all .z-result-team { overflow: visible; text-overflow: clip; white-space: normal; overflow-wrap: anywhere; }
+.z-results-all .z-result-team small { overflow: visible; text-overflow: clip; white-space: normal; }
 .z-result-card { margin: 0; padding: 14px 16px; }
 .z-result-legend { float: none; width: auto; margin: 0 0 8px; padding: 0; font-size: .8rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 

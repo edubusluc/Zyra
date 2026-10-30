@@ -66,6 +66,15 @@
 </div>
 {% endif %}
 
+{% if finals_call_short %}
+<section class="z-finals-rule" aria-labelledby="finals-rule-title">
+    <h2 class="z-finals-rule-title" id="finals-rule-title"><i class="fa-solid fa-flag" aria-hidden="true"></i> {% translate "Reglamento" %}</h2>
+    <p>{% blocktranslate trimmed count n=finals_call_short|length with min=finals_minimum %}{{ n }} apuntado no ha jugado {{ min }} enfrentamientos de liga con el equipo esta temporada:{% plural %}{{ n }} apuntados no han jugado {{ min }} enfrentamientos de liga con el equipo esta temporada:{% endblocktranslate %}
+       {% for player, played in finals_call_short %}<strong>{{ player.short_name }}</strong> ({{ played }}){% if not forloop.last %}, {% endif %}{% endfor %}.
+       {% if phase.action == 'close_call' %}<a href="{% url 'edit_call' call_for_match.public_id %}">{% translate "Revisar convocatoria" %}</a>{% endif %}</p>
+</section>
+{% endif %}
+
 {% if can_manage and phase.action != 'nothing' %}
 {# Un único botón principal «Siguiente: …» siempre en el mismo sitio; lo demás, en «Más». #}
 <div class="z-next">
@@ -74,7 +83,7 @@
         <a href="{% url 'create_call' match_id %}" class="btn btn-primary"><i class="fa-solid fa-plus me-1" aria-hidden="true"></i> {% translate "Siguiente: Crear convocatoria" %}</a>
         {% elif phase.action == 'close_call' %}
         <form action="{% url 'close_call' match.public_id %}" method="post" data-loading-text="{% translate 'Cerrando la convocatoria…' %}"
-              data-confirm-title="{% translate 'Cerrar la convocatoria' %}" data-confirm-action="{% translate 'Cerrar y enviar' %}"
+              data-confirm-title="{% translate 'Cerrar la convocatoria' %}" data-confirm-action="{% translate 'Cerrar y enviar' %}"{% if finals_call_short %} data-confirm-check="{% translate 'Convocarlos igualmente (la organización lo ha autorizado)' %}" data-confirm-check-name="force_finals"{% endif %}
               data-confirm="{% blocktranslate count n=players_count %}Se cierra la convocatoria con {{ n }} convocado: ya no se podrá apuntar ni quitar a nadie.{% plural %}Se cierra la convocatoria con {{ n }} convocados: ya no se podrá apuntar ni quitar a nadie.{% endblocktranslate %} {% if report_emails %}{% blocktranslate with emails=report_emails %}Se enviará el informe PDF a: {{ emails }}{% endblocktranslate %}{% else %}{% translate 'Ningún capitán tiene email: no se enviará el informe.' %}{% endif %}">
             {% csrf_token %}
             <button type="submit" class="btn btn-primary"{% if phase.missing_players %} disabled aria-describedby="next-hint"{% endif %}><i class="fa-solid fa-lock me-1" aria-hidden="true"></i> {% translate "Siguiente: Cerrar convocatoria" %}</button>

@@ -95,9 +95,11 @@
       });
       selects.forEach((s) => s.dispatchEvent(new Event('change', { bubbles: true })));
       // Una línea con el dato clave; el porqué, plegado.
+      const thin = lineup.history < 5;
       info.textContent = interpolate(
-        gettext('%(title)s: %(win)s de opciones de ganar. '),
-        { title: lineup.title, win: lineup.win + ' %' }, true
+        thin ? gettext('%(title)s: %(win)s de opciones de ganar, con poca información (%(n)s enfrentamientos de historial). ')
+             : gettext('%(title)s: %(win)s de opciones de ganar (según %(n)s enfrentamientos de historial). '),
+        { title: lineup.title, win: lineup.win + ' %', n: lineup.history }, true
       );
       const why = document.createElement('details');
       why.className = 'z-suggest-why';
