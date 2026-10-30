@@ -3,7 +3,7 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
-## 30/10/2026 · Espacios por competición (revisión de usabilidad, prioridad 1)
+## 30/10/2026 · Espacios por competición (revisión de usabilidad, prioridad 1, PR #208)
 
 - Los enlaces de gestión (convocatoria, parejas, resultados, jugadores, advertencias…) abren siempre el **equipo correcto**, aunque en otra pestaña hayas cambiado de equipo. Si en ese equipo no tienes permiso, el aviso dice de qué equipo es y qué papel tienes.
 - **Advertencias** solo la ven el capitán y los gestores, y solo de los equipos que gestionan.
