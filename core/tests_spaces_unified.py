@@ -244,10 +244,10 @@ class UnifiedSpacesTests(TestCase):
         return players
 
     def test_my_statistics_needs_players_in_several_spaces(self):
-        # Sin jugador enlazado: a Equipo; con uno solo: a su ficha.
-        self.assertRedirects(self.client.get(reverse("my_statistics")), reverse("team_statistics"),
-                             fetch_redirect_response=False)
-        self.assertNotContains(self.client.get(reverse("team_statistics")), "Mis estadísticas")
+        # Con dos equipos y sin jugador enlazado explica cómo enlazarlo (la pestaña se ve); con uno solo: a su ficha.
+        page = self.client.get(reverse("my_statistics"))
+        self.assertTemplateUsed(page, "stats_mine_link.html")
+        self.assertContains(page, "Mis estadísticas")
         from players.models import Player
         me = Player.objects.create(club=self.lapi, user=self.user, name="Edu", last_name="B")
         self.assertRedirects(self.client.get(reverse("my_statistics")),
