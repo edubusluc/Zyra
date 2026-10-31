@@ -208,11 +208,7 @@
 <article class="z-next-match" aria-labelledby="next-match-title">
     <h2 id="next-match-title" class="visually-hidden">{% translate "Próximo enfrentamiento" %}</h2>
     <div class="z-next-match-when">
-        <span class="z-next-match-tags">
-            {% include 'includes/competition_badge.html' with code=next_match.club.competition name=next_match.club.rules.name short=True %}
-            {% if next_match.match_type != next_match.club.rules.default_type %}<span class="z-fixture-type">{{ next_match.type_label }}</span>{% endif %}
-            {% if next_match.round_number and next_match.is_league %}<span class="z-fixture-type">{% blocktranslate with n=next_match.round_number %}Jornada {{ n }}{% endblocktranslate %}</span>{% endif %}
-        </span>
+        <p class="z-next-match-kicker">{% translate "Próximo enfrentamiento" %} · {{ next_match.club.rules.name }} · {% if next_match.round_number and next_match.is_league %}{% blocktranslate with n=next_match.round_number %}Jornada {{ n }}{% endblocktranslate %}{% else %}{{ next_match.type_label }}{% endif %}</p>
         <span class="z-next-match-days">{% if days_left == 0 %}{% translate "Hoy" %}{% elif days_left == 1 %}{% translate "Mañana" %}{% else %}{% blocktranslate trimmed count n=days_left %}En {{ n }} día{% plural %}En {{ n }} días{% endblocktranslate %}{% endif %}</span>
     </div>
     <div class="z-next-match-date">
