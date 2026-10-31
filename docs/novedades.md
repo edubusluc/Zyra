@@ -6,6 +6,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 ## 31/10/2026 · Nuevo estilo visual (fase 3: estadísticas)
 
 - **Estadísticas del equipo**: el balance de enfrentamientos pasa a bloque lima con cifras gigantes (victorias, empates, derrotas), barra y datos en fichas oscuras. Títulos de sección y tarjetas en Anton, y los Top 5 llevan barra de porcentaje por fila.
+- **Crear enfrentamiento**: en escritorio, a la derecha del formulario aparece «Así se verá», una tarjeta lima que se rellena en vivo con el tipo, la fecha, la hora, el lugar y los equipos (`static/js/match-form.js`).
 
 ## 30/10/2026 · Nuevo estilo visual (fase 2: listado de enfrentamientos)
 

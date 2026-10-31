@@ -108,4 +108,33 @@
       time.value = digits.length > 2 ? digits.slice(0, 2) + ':' + digits.slice(2) : digits;
     });
   }
+
+  // «Así se verá»: tarjeta de vista previa que se rellena con lo que se va escribiendo.
+  const preview = document.querySelector('[data-match-preview]');
+  if (preview) {
+    const field = (name) => form.querySelector(`[name="${name}"]`);
+    const set = (attr, text) => { preview.querySelector(`[data-preview-${attr}]`).textContent = text; };
+    function syncPreview() {
+      const kind = kindSelect && !kindRow.hidden ? kindSelect.options[kindSelect.selectedIndex].textContent.trim() : '';
+      set('kind', kind);
+      const iso = field('start_date') && field('start_date').value;
+      const date = /^\d{4}-\d{2}-\d{2}$/.test(iso || '') ? new Date(iso + 'T12:00:00') : null;
+      if (date) set('date', date.toLocaleDateString(document.documentElement.lang || 'es', { weekday: 'short', day: 'numeric', month: 'short' }).replace(',', ''));
+      const time = field('start_time') ? field('start_time').value : '';
+      const where = place ? place.value : '';
+      set('meta', [time, where].filter(Boolean).join(' · '));
+      const manual = !manualRival.hidden;
+      const option = rivalSelect && rivalSelect.options[rivalSelect.selectedIndex];
+      const rival = manual ? (field('rival_name').value || '') : (option && option.value ? option.textContent.trim() : '');
+      const own = preview.dataset.ownName;
+      const home = checkedValue('own_side') !== 'visiting';
+      set('local', (home ? own : rival) || '—');
+      set('visiting', (home ? rival : own) || '—');
+    }
+    form.addEventListener('input', syncPreview);
+    form.addEventListener('change', syncPreview);
+    // La fecha la rellena un selector propio: se vuelve a leer cuando cambia su campo oculto.
+    setInterval(syncPreview, 600);
+    syncPreview();
+  }
 })();

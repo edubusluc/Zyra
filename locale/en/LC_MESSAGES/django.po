@@ -14637,3 +14637,9 @@ msgstr "Show substitutes (%(n)s)"
 
 msgid "Ocultar suplentes"
 msgstr "Hide substitutes"
+
+msgid "Así se verá"
+msgstr "How it will look"
+
+msgid "Elige la fecha"
+msgstr "Pick the date"

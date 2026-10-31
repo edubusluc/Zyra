@@ -3272,3 +3272,24 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 
 /* Explicación bajo cada dato de sets. */
 .z-comp-meter-name small { display: block; margin-top: 1px; font-size: .7rem; font-weight: 500; line-height: 1.3; color: var(--z-muted); }
+
+/* Crear enfrentamiento: formulario y, en escritorio, vista previa «Así se verá». */
+.z-create-layout { display: grid; gap: 22px; }
+.z-create-preview { display: none; }
+@media (min-width: 1100px) {
+    .z-create-layout { grid-template-columns: minmax(0, 1fr) 400px; align-items: start; }
+    .z-create-preview {
+        position: sticky; top: 96px; display: grid; align-content: start; gap: 10px; min-height: 360px; padding: 26px;
+        color: var(--z-ink); background: var(--z-lime); border-radius: 26px;
+    }
+    .z-create-preview p { margin: 0; }
+    .z-create-preview-tag { justify-self: start; padding: 5px 12px; font-size: .72rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--z-lime); background: var(--z-ink); border-radius: 999px; }
+    .z-create-preview-kicker { font-size: .78rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+    .z-create-preview-date { font: 400 3.6rem/.95 var(--z-display); text-transform: uppercase; }
+    .z-create-preview-meta { min-height: 1.3em; font-weight: 700; }
+    .z-create-preview-teams { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: end; gap: 10px; margin-top: auto; padding-top: 24px; border-top: 2px solid rgba(10, 10, 10, .2); }
+    .z-create-preview-teams b { display: block; font: 400 1.5rem/1.05 var(--z-display); text-transform: uppercase; overflow-wrap: anywhere; }
+    .z-create-preview-teams small { font-size: .66rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; opacity: .75; }
+    .z-create-preview-teams span:last-child { text-align: right; }
+    .z-create-preview-teams i { padding: 3px 12px; font: 400 1.1rem/1.2 var(--z-display); font-style: normal; color: var(--z-lime); background: var(--z-ink); border-radius: 999px; }
+}
