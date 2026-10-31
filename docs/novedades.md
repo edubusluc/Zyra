@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 31/10/2026 · Nuevo estilo visual (fase 3: estadísticas)
+
+- **Estadísticas del equipo**: el balance de enfrentamientos pasa a bloque lima con cifras gigantes (victorias, empates, derrotas), barra y datos en fichas oscuras. Títulos de sección y tarjetas en Anton, y los Top 5 llevan barra de porcentaje por fila.
+
 ## 30/10/2026 · Nuevo estilo visual (fase 2: listado de enfrentamientos)
 
 - **Ficha del enfrentamiento**: marcador y nombres de los equipos en grande (en escritorio, sobre la pista 2:1 con la red entre local y visitante), banner del tipo («Liga · Jornada 2»), desenlace y lugar al lado, cuatro tarjetas de estado con cifra y barra (convocatoria, parejas, resultados, acta) y lista de convocados identificable: avatar, nombre en mayúsculas, pareja P1/P2/P3 con su compañero y etiqueta Convocado o Suplente.

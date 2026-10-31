@@ -8,7 +8,7 @@
       {% for r in rows %}
         <li class="st-top-row">
           <span class="st-top-pos">{{ forloop.counter }}</span>
-          <span class="st-top-name">{{ r.name }}<small>{% blocktranslate trimmed with wins=r.wins losses=r.losses count n=r.played %}{{ wins }}V – {{ losses }}D · {{ n }} partido{% plural %}{{ wins }}V – {{ losses }}D · {{ n }} partidos{% endblocktranslate %}</small></span>
+          <span class="st-top-name">{{ r.name }}<small>{% blocktranslate trimmed with wins=r.wins losses=r.losses count n=r.played %}{{ wins }}V – {{ losses }}D · {{ n }} partido{% plural %}{{ wins }}V – {{ losses }}D · {{ n }} partidos{% endblocktranslate %}</small><span class="st-top-bar" aria-hidden="true"><i style="width: {{ r.pct|stringformat:'.0f' }}%"></i></span></span>
           <b class="st-top-pct">{{ r.pct|floatformat:0 }}%</b>
         </li>
       {% endfor %}
