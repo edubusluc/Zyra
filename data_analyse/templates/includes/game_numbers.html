@@ -1,5 +1,7 @@
 {% load i18n l10n %}
 {# Balance por número de partido (1 a 5). Recibe: rows (data_analyse.sets.by_game_number), title, note, best, worst (opcionales) #}
+{% with top=rows|dictsortreversed:"played"|first %}
+{% if top.played %}
 <article class="st-card">
   <h3 class="st-card-title">{{ title }}</h3>
   <p class="st-card-note">{{ note }}</p>
@@ -26,3 +28,10 @@
     {% endfor %}
   </ol>
 </article>
+{% else %}
+<article class="st-card st-card--empty">
+  <h3 class="st-card-title">{{ title }}</h3>
+  <p class="st-card-empty">{% translate "No hay datos para mostrar." %}</p>
+</article>
+{% endif %}
+{% endwith %}

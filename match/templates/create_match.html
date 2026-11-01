@@ -6,7 +6,6 @@
 <div class="z-create-layout">
 <div class="table-container">
     <h1>{% translate "Crear enfrentamiento" %}</h1>
-    {% include 'includes/target_team.html' %}
 
     {% for error in form.non_field_errors %}
     <div class="alert-message">{{ error }}</div>

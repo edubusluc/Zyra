@@ -167,6 +167,9 @@
     ds.data = rows.map((a) => a.affinity);
     // por encima del 50 % rinden mejor de lo esperado juntos; los antiguos, más apagados
     ds.backgroundColor = rows.map((a) => (a.affinity >= 50 ? C.win : C.loss) + (a.in_team ? '' : '80'));
+    // Altura proporcional a las barras (UX-014): 28 px por compañero + 40 px de eje, sin pasar del alto máximo
+    affinityBox.style.height = Math.min(rows.length * 28 + 40, affinityBox.dataset.maxHeight || 520) + 'px';
+    affinityChart.resize();
     affinityChart.update();
     affinityBox.hidden = rows.length === 0;
     document.getElementById('affinityEmpty').hidden = rows.length > 0;

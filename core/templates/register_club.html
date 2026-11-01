@@ -6,24 +6,28 @@
 
 {% block content %}
 <div class="z-auth">
-    <div class="z-auth-card z-auth-card--wide">
+    <div class="z-auth-card z-auth-card--wide z-auth-card--split">
+        <div class="z-auth-side">
         <img src="{% static 'zyra/logo.svg' %}" alt="Zyra" class="z-auth-logo">
         {% if new_space %}
         <h1>{% if new_competition %}{% blocktranslate with competition=new_competition.name %}Añadir equipo {{ competition }}{% endblocktranslate %}{% else %}{% translate "Añadir equipo de otra competición" %}{% endif %}</h1>
-        <p class="text-muted text-center">{% translate "Tu equipo en otra competición tiene su propia plantilla, sus rivales y sus enfrentamientos. Enfrentamientos, Calendario y Estadísticas te enseñan los de todas tus competiciones juntos." %}</p>
+        <p class="text-muted z-auth-lead">{% translate "Tu equipo en otra competición tiene su propia plantilla, sus rivales y sus enfrentamientos. Enfrentamientos, Calendario y Estadísticas te enseñan los de todas tus competiciones juntos." %}</p>
         {% else %}
         <h1>{% translate "Registrar mi equipo" %}</h1>
-        <p class="text-muted text-center">{% translate "Cada equipo gestiona sus propios jugadores, rivales, enfrentamientos y estadísticas. Nadie de fuera del equipo puede ver sus datos." %}</p>
+        <p class="text-muted z-auth-lead">{% translate "Cada equipo gestiona sus propios jugadores, rivales, enfrentamientos y estadísticas. Nadie de fuera del equipo puede ver sus datos." %}</p>
         {% endif %}
-        <div class="alert alert-info" role="note">
-            <strong>{% translate "Como capitán serás el encargado del equipo" %}</strong>
+        <details class="z-more-options z-captain-note mb-3">
+            <summary>{% translate "¿Qué implica ser capitán?" %}</summary>
+            <strong class="d-block mt-2">{% translate "Como capitán serás el encargado del equipo" %}</strong>
             <ul class="mb-1">
                 <li>{% translate "Invitas a tus jugadores por email o con un enlace." %}</li>
                 <li>{% translate "Creas los equipos, los enfrentamientos y las convocatorias." %}</li>
                 <li>{% translate "Apuntas los resultados. Puedes nombrar hasta 2 gestores que te ayuden; los demás jugadores consultan." %}</li>
             </ul>
             {% translate "Si más adelante quieres pasar la gestión a otra persona, podrás traspasar la capitanía a otro jugador desde Equipo › Miembros." %}
+        </details>
         </div>
+        <div class="z-auth-main">
         <form method="post" novalidate data-wizard data-loading-text="{% translate 'Creando tu equipo…' %}">
             {% csrf_token %}
             <nav class="z-wizard-progress" data-wizard-progress aria-label="{% translate 'Progreso del registro' %}" hidden></nav>
@@ -183,7 +187,9 @@
         <p class="z-auth-foot"><a href="{% url 'register' %}">{% translate "Volver a elegir cómo registrarme" %}</a></p>
         <p class="z-auth-foot">{% url 'login' as login_url %}{% blocktranslate trimmed %}¿Ya tienes cuenta? <a href="{{ login_url }}">Inicia sesión</a>{% endblocktranslate %}</p>
         {% endif %}
+        </div>
     </div>
 </div>
 <script src="{% static 'js/register-wizard.js' %}"></script>
+
 {% endblock %}

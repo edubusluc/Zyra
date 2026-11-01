@@ -228,10 +228,10 @@
         <article class="st-card">
           <h3 class="st-card-title">{% translate "Evolución de los puntos SNP" %}</h3>
           <p class="st-card-note">{% blocktranslate with season=snp_season %}Puntos SNP en cada actualización semanal de la temporada {{ season }}.{% endblocktranslate %}</p>
-          {% if chart_snp.scores %}
+          {% if chart_snp.scores|length > 1 %}
             <div class="st-chart"><canvas id="chartSnp" role="img" aria-label="{% translate "Evolución de los puntos SNP" %}"></canvas></div>
           {% else %}
-            <p class="st-muted">{% translate "Todavía no hay puntos SNP guardados en esta temporada." %}</p>
+            <p class="st-muted st-nodata">{% if chart_snp.scores %}{% translate "Se mostrará la evolución cuando haya al menos 2 actualizaciones de puntos SNP." %}{% else %}{% translate "Todavía no hay puntos SNP guardados en esta temporada." %}{% endif %}</p>
           {% endif %}
         </article>
         {% endif %}

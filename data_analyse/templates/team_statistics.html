@@ -139,6 +139,7 @@
       <section id="sec-top" aria-labelledby="top-title" class="st-section mt-4">
         <h2 class="st-section-title" id="top-title">{% translate "Top 5" %}{% if selected_season %} · {{ selected_season }}{% endif %}</h2>
         <p class="st-card-note mt-0 mb-3">{% translate "Solo jugadores que siguen en el equipo." %}</p>
+        {% if top_local_players or top_visiting_players or top_local_pairs or top_visiting_pairs %}
         <div class="st-top-grid">
           {% translate "Mejores jugadores como local" as t_title %}{% translate "% de victorias jugando en casa." as t_note %}{% translate "No hay ningún jugador con datos favorables que mostrar como local." as t_empty %}
           {% include 'includes/top_table.html' with title=t_title note=t_note rows=top_local_players min_games=min_games_player empty=t_empty %}
@@ -149,6 +150,9 @@
           {% translate "Mejores parejas como visitante" as t_title %}{% translate "% de victorias de la pareja fuera." as t_note %}{% translate "No hay ninguna pareja con datos favorables que mostrar como visitante." as t_empty %}
           {% include 'includes/top_table.html' with title=t_title note=t_note rows=top_visiting_pairs min_games=min_games_pair empty=t_empty %}
         </div>
+        {% else %}
+        <p class="st-muted st-nodata">{% blocktranslate trimmed with players=min_games_player pairs=min_games_pair %}Se mostrará cuando haya jugadores con {{ players }} partidos y parejas con {{ pairs }} partidos como mínimo.{% endblocktranslate %}</p>
+        {% endif %}
       </section>
 
       <section id="sec-numbers" aria-labelledby="numbers-title" class="st-section mt-4">
@@ -215,7 +219,7 @@
           <div class="st-tally">
             <span class="st-tally-item st-tally-item--win"><b>{{ attendance.average }} %</b> {% if attendance.mode == 'calls' %}{% translate "de media en la temporada" %}{% else %}{% translate "de media en total" %}{% endif %}</span>
           </div>
-          <div class="st-chart"><canvas id="attendanceChart" role="img" aria-label="{% translate "Asistencia a las convocatorias" %}"></canvas></div>
+          <div class="st-chart"{% if attendance.rows|length < 2 %} hidden{% endif %}><canvas id="attendanceChart" role="img" aria-label="{% translate "Asistencia a las convocatorias" %}"></canvas></div>
           {% endif %}
         </section>
 

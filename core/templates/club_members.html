@@ -4,9 +4,45 @@
 
 {% block content %}
 <div class="table-container my-4">
-    <h1>{% blocktranslate with club=current_club.name competition=current_club.rules.name %}Miembros de {{ club }} ({{ competition }}){% endblocktranslate %}</h1>
+    <h1>{% blocktranslate with club=current_club.name %}Miembros de {{ club }}{% endblocktranslate %}</h1>
     {% include 'includes/space_switcher.html' %}
 
+    <h2 class="h4 z-heading-plain mt-3" id="invitar">{% translate "Invitar jugadores" %}</h2>
+    {% include 'includes/target_team.html' with invite=True %}
+    <p class="text-muted mb-2">{% translate "Invita por email o comparte un enlace. Caduca a las 24 horas." %}</p>
+    <details class="z-more-options mb-3">
+        <summary>{% translate "Más información" %}</summary>
+        <p class="text-muted small mt-2">{% translate "Podrá registrarse con usuario, email y contraseña o con Google, o unirse con la cuenta que ya tenga, y entrará como miembro. La invitación por email sirve para una sola persona; el enlace lo pueden usar varias." %}</p>
+    </details>
+    <form method="post" action="{% url 'create_invitation' %}?en={{ request.club.competition }}" class="mb-3" novalidate data-loading-text="{% translate 'Enviando la invitación…' %}">
+        {% csrf_token %}
+        {{ invite_form.as_p }}
+        <button type="submit" class="btn btn-primary"><i class="fa-regular fa-envelope" aria-hidden="true"></i> {% translate "Enviar invitación" %}</button>
+    </form>
+    <form method="post" action="{% url 'create_invitation_link' %}?en={{ request.club.competition }}" class="mb-3" data-loading-text="{% translate 'Generando el enlace…' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-outline-primary"><i class="fa-solid fa-link" aria-hidden="true"></i> {% translate "Generar enlace de invitación" %}</button>
+    </form>
+    <details class="z-more-options mb-3">
+        <summary>{% translate "¿Qué puede hacer cada rol?" %}</summary>
+        <ul class="z-roles">
+            <li class="z-role is-captain">
+                <span class="z-badge z-badge--lime">{% translate "Capitán" %}</span>
+                <p><strong>{% translate "Gestiona todo el equipo." %}</strong> {% translate "Invita a los jugadores y puede pasar la gestión a otra persona. Solo hay uno por equipo." %}</p>
+            </li>
+            <li class="z-role is-manager">
+                <span class="z-badge">{% translate "Gestor" %}</span>
+                <p><strong>{% translate "Ayuda con el día a día." %}</strong> {% translate "Enfrentamientos, resultados, jugadores y rivales. Hasta dos por equipo." %}</p>
+            </li>
+            <li class="z-role is-player">
+                <span class="z-badge">{% translate "Jugador" %}</span>
+                <p><strong>{% translate "Solo consulta." %}</strong> {% translate "Ve la convocatoria, sus resultados y sus estadísticas; no edita nada." %}</p>
+            </li>
+        </ul>
+        <p class="text-muted small mt-2">{% translate "Los miembros son de este equipo: tus equipos de otras competiciones tienen los suyos. Para pasar la gestión a otra persona, pulsa «Hacer capitán» en su fila: tú pasarás a ser jugador (solo consulta). Para poder hacerlo, tiene que estar enlazado a un jugador de este equipo («Mi perfil»). Para eliminar el equipo, quita antes a todos los miembros y abandónalo desde Equipo." %}</p>
+    </details>
+
+    <h2 class="h4 z-heading-plain mt-4">{% translate "Miembros" %}</h2>
     <div class="z-table-wrap"><table class="table align-middle z-table-stack">
         <thead>
             <tr><th>{% translate "Usuario" %}</th><th>{% translate "Email y rol" %}</th><th><span class="visually-hidden">{% translate "Acciones" %}</span></th></tr>
@@ -54,26 +90,9 @@
         {% endfor %}
         </tbody>
     </table></div>
-    <p class="text-muted small">{% translate "Cada equipo tiene un solo capitán, que invita a los jugadores y gestiona el equipo, y hasta dos gestores, que le ayudan con los enfrentamientos, los resultados, los jugadores y los rivales. Los miembros son de este equipo: tus equipos de otras competiciones tienen los suyos. Para pasar la gestión a otra persona, pulsa «Hacer capitán» en su fila: tú pasarás a ser jugador (solo consulta). Para poder hacerlo, tiene que estar enlazado a un jugador de este equipo («Mi perfil»). Para eliminar el equipo, quita antes a todos los miembros y abandónalo desde Equipo." %}</p>
 
-    <h2 class="h4 z-heading-plain mt-4" id="invitaciones">{% translate "Invitar jugadores" %}</h2>
-    {% include 'includes/target_team.html' with invite=True %}
-    <p class="text-muted mb-2">{% translate "Invita por email o comparte un enlace. Caduca a las 24 horas." %}</p>
-    <details class="z-more-options mb-3">
-        <summary>{% translate "Más información" %}</summary>
-        <p class="text-muted small mt-2">{% translate "Podrá registrarse con usuario, email y contraseña o con Google, o unirse con la cuenta que ya tenga, y entrará como miembro. La invitación por email sirve para una sola persona; el enlace lo pueden usar varias." %}</p>
-    </details>
-    <form method="post" action="{% url 'create_invitation' %}?en={{ request.club.competition }}" class="mb-3" novalidate data-loading-text="{% translate 'Enviando la invitación…' %}">
-        {% csrf_token %}
-        {{ invite_form.as_p }}
-        <button type="submit" class="btn btn-primary"><i class="fa-regular fa-envelope" aria-hidden="true"></i> {% translate "Enviar invitación" %}</button>
-    </form>
-    <form method="post" action="{% url 'create_invitation_link' %}?en={{ request.club.competition }}" class="mb-3" data-loading-text="{% translate 'Generando el enlace…' %}">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-outline-primary"><i class="fa-solid fa-link" aria-hidden="true"></i> {% translate "Generar enlace de invitación" %}</button>
-    </form>
     {% if has_invitations %}
-    <h3 class="h5 z-heading-plain mt-3">{% translate "Invitaciones pendientes" %}</h3>
+    <h2 class="h4 z-heading-plain mt-4" id="invitaciones">{% translate "Invitaciones pendientes" %}</h2>
     <div class="z-toolbar">
         <div class="z-toolbar-group">
             <form method="get" action="#invitaciones" class="z-search" role="search">

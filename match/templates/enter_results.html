@@ -15,10 +15,12 @@
 
 <form method="POST" novalidate data-loading-text="{% translate 'Guardando los resultados…' %}">
     {% csrf_token %}
+    <div class="z-results-layout">
+    <div class="z-results-main">
     <div class="z-results-all">
     {% for row in rows %}
     {% with game=row.game values=row.values %}
-    <fieldset class="z-card z-result-card" data-result id="partido-{{ game.n_game }}">
+    <fieldset class="z-card z-result-card" data-result data-score="{{ game.score|snp_points:"" }}" id="partido-{{ game.n_game }}">
         <legend class="z-result-legend">
             {% blocktranslate with n=game.n_game %}Partido {{ n }}{% endblocktranslate %}
             <span class="text-muted fw-semibold">· {% blocktranslate with score=game.score|snp_points:"" %}{{ score }} pts{% endblocktranslate %}</span>
@@ -79,13 +81,23 @@
     </div>
     {% endif %}
 
-    <div class="d-flex flex-wrap gap-2 mt-3">
+    </div>
+    <aside class="z-results-side" aria-label="{% translate 'Marcador del enfrentamiento' %}">
+        <div class="z-live-score" data-live-score data-local="{{ match.local_name }}" data-visiting="{{ match.visiting_name }}" data-own-local="{% if own_is_local %}1{% else %}0{% endif %}">
+            <p class="z-live-score-title">{% translate "Marcador" %}</p>
+            <p class="z-live-score-teams"><span>{{ match.local_name }}</span><span>{{ match.visiting_name }}</span></p>
+            <p class="z-live-score-points" aria-live="polite"><b data-live-local>0</b><i>–</i><b data-live-visiting>0</b></p>
+            <p class="z-live-score-note" data-live-note></p>
+        </div>
+    <div class="z-results-actions">
         <button type="submit" class="btn btn-primary" name="action" value="save">{% translate "Guardar resultados" %}</button>
         {% if min_close %}
         <button type="submit" class="btn btn-secondary" name="action" value="close" data-close-match>{% translate "Guardar y cerrar acta" %}</button>
         <span class="z-close-hint align-self-center small text-muted" data-close-hint role="status"></span>
         {% endif %}
         <a href="{% url 'call_for_match' match.public_id %}" class="btn btn-outline-secondary">{% translate "Cancelar" %}</a>
+    </div>
+    </aside>
     </div>
 </form>
 <script src="{% static 'js/result-form.js' %}" defer></script>

@@ -76,12 +76,16 @@
     // «Marcar visibles» marca todos los que cumplen la búsqueda y el filtro, también los de otras páginas
     const all = root.querySelector('[data-selector-all]');
     const none = root.querySelector('[data-selector-none]');
+    const menu = root.querySelector('.z-selector-more');
+    const closeMenu = () => { if (menu) menu.open = false; };
     if (all) all.addEventListener('click', function () {
       matching.forEach((p) => { box(p).checked = true; });
+      closeMenu();
       refresh();
     });
     if (none) none.addEventListener('click', function () {
       picks.forEach((p) => { box(p).checked = false; });
+      closeMenu();
       refresh();
     });
     picks.forEach((p) => { if (box(p)) box(p).addEventListener('change', refresh); });

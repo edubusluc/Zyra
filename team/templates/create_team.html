@@ -9,6 +9,7 @@
         <h1>{% translate "Crear rival" %}</h1>
     </div>
 </div>
+<div class="z-create-layout">
 <div class="table-container z-form-narrow">
     {% include 'includes/target_team.html' %}
     <form method="POST" class="mt-4" enctype="multipart/form-data" data-similar-check data-loading-text="{% translate 'Creando el equipo…' %}">
@@ -70,6 +71,17 @@
         </div>
     </form>
 </div>
+
+{# «Así se verá»: tarjeta del rival que se rellena sola mientras se escribe (solo escritorio; static/js/team-preview.js). #}
+<aside class="z-team-preview" aria-label="{% translate 'Así se verá' %}" data-team-preview data-competition="{{ request.club.rules.name }}" data-group-label="{% translate 'En tu grupo' %}">
+    <span class="z-create-preview-tag">{% translate "Así se verá" %}</span>
+    <p class="z-create-preview-kicker" data-tp-kicker></p>
+    <p class="z-team-preview-name" data-tp-name data-empty="{% translate 'Nombre del rival' %}">{% translate "Nombre del rival" %}</p>
+    <p class="z-create-preview-meta" data-tp-meta></p>
+    <p class="z-team-preview-foot" data-tp-foot hidden></p>
+</aside>
+</div>
+<script src="{% static 'js/team-preview.js' %}" defer></script>
 <script>
     // Equipo del grupo: categoría, nacionalidad y división se copian del equipo propio.
     (function () {

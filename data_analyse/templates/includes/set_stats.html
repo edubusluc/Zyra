@@ -1,9 +1,9 @@
 {% load i18n l10n %}
 {# Sets: decisivo, tie-breaks, remontadas... Recibe: st (data_analyse.sets.set_stats), title, note #}
-<article class="st-card">
+<article class="st-card{% if not st.played %} st-card--empty{% endif %}">
   <h3 class="st-card-title">{{ title }}</h3>
-  <p class="st-card-note">{{ note }}</p>
   {% if st.played %}
+  <p class="st-card-note">{{ note }}</p>
     <dl class="st-facts st-facts--sets">
       <div class="st-fact">
         <dt>{% translate "Sets" %}</dt>
@@ -35,6 +35,6 @@
       {% endif %}
     </div>
   {% else %}
-    <p class="st-muted mt-3 mb-0">{% translate "Todavía no hay resultados set a set." %}</p>
+    <p class="st-card-empty">{% translate "No hay datos para mostrar." %}</p>
   {% endif %}
 </article>
