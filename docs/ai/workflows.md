@@ -29,7 +29,7 @@ DJANGO_DEBUG=True python manage.py test match.tests_flow     # una app o módulo
 DJANGO_DEBUG=True python manage.py test --noinput --parallel   # local: ~1 min con 4 núcleos
 ```
 
-En `manage.py test` las contraseñas se hashean con MD5 (`TESTING` en `zyra/settings.py`): ahorra ~80 % del
+En `manage.py test` las contraseñas se hashean con MD5 (`zyra/settings_test.py`, que `manage.py test` selecciona): ahorra ~80 % del
 tiempo. `--parallel` oculta el traceback de un test que falla (falta `tblib`); si falla, repite sin él.
 
 Referencia: el 09/10/2026 la suite completa (519 tests) pasó en SQLite en unos 11 minutos;

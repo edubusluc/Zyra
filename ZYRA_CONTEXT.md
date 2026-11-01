@@ -32,7 +32,7 @@ estadísticas y back-office del dueño de la plataforma. Español con traducció
 
 ## Arquitectura en una línea por pieza
 
-- Configuración: `zyra/settings.py` (todo por entorno), URLs `zyra/urls.py`.
+- Configuración: `zyra/settings.py` (todo por entorno), URLs `zyra/urls.py`. Tests: `zyra/settings_test.py` (hash rápido, solo con `manage.py test`).
 - Cada petición: `core/middleware.py` (`CurrentClubMiddleware`) pone `request.club` / `request.membership`;
   las vistas usan `core/decorators.py` (`club_required`, `club_admin_required` = solo capitán, `club_manager_required` = capitán o gestor).
 - `core/context_processors.py` da a todas las plantillas `club`, `navigation`, `google_login`, `site`.
