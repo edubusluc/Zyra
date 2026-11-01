@@ -28,7 +28,7 @@ def _outcome(match):
     return None
 
 
-def _points(match):
+def match_points(match):
     """(puntos del club, puntos del rival) sumando el valor de los partidos ganados por cada lado."""
     own = rival = 0
     for g in match.games.all():
@@ -75,7 +75,7 @@ def team_records(club, season=None, match_type=None, log=None):
         outcome = _outcome(m)
         if outcome is None:
             continue
-        own, rival = _points(m)
+        own, rival = match_points(m)
         rows.append({'match': m, 'outcome': outcome, 'own': own, 'rival': rival})
 
     records = {}

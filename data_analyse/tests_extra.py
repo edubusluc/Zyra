@@ -159,9 +159,9 @@ class ClubSetsTests(ClubDataMixin, TestCase):
         response = self.client.get(reverse('team_statistics'))
         self.assertContains(response, "Por número de partido")
         self.assertNotContains(response, "Mejor en el partido")
-        self.assertContains(response, "Set decisivo")
-        self.assertContains(response, "Récords del equipo")
-        self.assertContains(response, "Ranking SNP del equipo")
+        self.assertContains(response, "Tie-breaks")
+        self.assertContains(response, "Roscos a favor")
+        self.assertContains(response, "Juegos como local")
         self.assertEqual(response.context['records']['biggest_win']['own'], 5)
 
     def test_player_page_clutch_and_lineup_rate(self):
@@ -191,7 +191,7 @@ class ClubSetsTests(ClubDataMixin, TestCase):
         self.assertEqual(att['average'], 67)
         self.assertEqual(signup_attendance(self.club, "2019-2020")['average'], None)
         response = self.client.get(reverse('team_statistics'))
-        self.assertContains(response, "Asistencia a las convocatorias")
+        self.assertContains(response, "media de plantilla")
         self.assertEqual(response.context['attendance']['rows'][0]['pct'], 67)
 
     def test_calls_before_joining_season_do_not_count(self):

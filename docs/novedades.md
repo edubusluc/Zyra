@@ -3,6 +3,13 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 01/11/2026 · Estadísticas rediseñadas (fase 3: Equipo · SNP y LAPI)
+
+- **Equipo** como en el diseño aprobado: tarjeta lima de «Balance de enfrentamientos» (con empates solo si la competición los admite y, en SNP, las eliminatorias 6-6 a favor y en contra), cifras de juegos en casa y fuera, puntos SNP y media por jugador (SNP).
+- **Puntos de liga**: barras con los puntos de cada jornada (LAPI: 4, 3, 1 o 0) o de cada enfrentamiento (SNP, de 12 posibles), solo las últimas 7. En LAPI, «Plantilla y fases finales» con elegibles según el reglamento 8.2 y quién aún no lo es.
+- **Partidos y sets**: «Por número de partido» (SNP) y «Sets» con Tie-breaks, Cerrar el partido, Remontadas y Roscos a favor, cada uno con su texto; en LAPI, «No presentados y lesiones». Récords, Top 5 de jugadores como local, juegos como local y visitante y puntos SNP por temporada.
+- Se quitan de esta pantalla lo que no está en el diseño: top de visitantes y parejas, enfrentamientos ganados por año, asistencia por convocatoria, balance de partidos por jugador y la tabla de ranking SNP. Los chips de tipo son los de la competición (en LAPI: Liga, Playoffs, Fase final) y desaparece el aviso «Cada competición puntúa distinto» de todas las pantallas de estadísticas.
+
 ## 01/11/2026 · Estadísticas rediseñadas (fase 2: ficha del jugador · SNP y LAPI)
 
 - **Jugador** (y «Mi ficha»): tarjeta lima con nombre, rol, pareja habitual, puntos SNP y puesto del equipo (o jornadas de liga en LAPI), anillo de % de victorias y balance; cifras de Jugados, Racha, Puntos ganados (de los posibles) y Convocados (en LAPI, Jornadas y «1 punto cada uno»).

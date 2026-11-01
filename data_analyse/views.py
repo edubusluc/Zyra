@@ -23,14 +23,13 @@ from django.utils.translation import gettext as _, gettext_lazy
 from core.decorators import club_required, club_manager_required
 from core import spaces
 from core.competitions import competition_for
-from match.league import season_league_points
 from penalty.models import Penalty
 from core.season_choice import ALL_SEASONS, choose_season
 from players.models import current_season, joined_by
 from . import pairs as pair_stats
 from . import rivals as rival_stats
 from . import records
-from . import player_card
+from . import player_card, team_card
 from .attendance import signup_attendance
 from .sets import best_and_worst_number, by_game_number, own_sets, set_stats
 
@@ -249,72 +248,13 @@ def calculate_visiting_game_statistics(season, team, match_type=None):
     return _games_totals(season, team, own_local=False, match_type=match_type)
 
 
-def calculate_matches_won_per_year(team, match_type=None):
-    """{temporada: {'won', 'drawn', 'lost'}} en orden, con una sola consulta."""
-    dicc_match = {}
-    rows = _by_type(Match.objects.filter(club=team.club, draft_mode=False), match_type).values_list('season', 'result', 'local_id', 'visiting_id')
-    for season, result, local_id, visiting_id in rows:
-        d = dicc_match.setdefault(season, {'won': 0, 'drawn': 0, 'lost': 0})
-        if (result == LOCAL_WIN and local_id == team.id) or (result == VISITING_WIN and visiting_id == team.id):
-            d['won'] += 1
-        elif result == DRAW:
-            d['drawn'] += 1
-        elif result in (LOCAL_WIN, VISITING_WIN):
-            d['lost'] += 1
-    return dict(sorted(dicc_match.items()))
-
-
-def column_chart(club, season, match_type=None):
-    """Partidos de 2 y 3 puntos ganados/perdidos por jugador actual (una sola consulta)."""
-    players = Player.objects.filter(club=club, in_team=True)
-    names = {p.id: p.full_name for p in players}
-    dicc = {
-        name: {
-            'Partidos de 2 puntos ganados': 0,
-            'Partidos de 2 puntos perdidos': 0,
-            'Partidos de 3 puntos ganados': 0,
-            'Partidos de 3 puntos perdidos': 0,
-        } for name in names.values()
-    }
-
-    games = Game.objects.filter(match__club=club, match__draft_mode=False, draft_mode=False,
-                                winner__in=outcomes.WINNERS, n_game__in=[1, 2, 3, 4, 5])
-    if season:
-        games = games.filter(match__season=season)
-    games = _by_type(games, match_type, "match__")
-    rows = games.values_list('n_game', 'winner', 'player_1_local', 'player_2_local', 'player_1_visiting', 'player_2_visiting')
-    for n_game, winner, l1, l2, v1, v2 in rows:
-        kind = '3' if n_game in (1, 2) else '2'
-        for pid, side in ((l1, "Local"), (l2, "Local"), (v1, "Visitante"), (v2, "Visitante")):
-            if pid in names:
-                outcome = 'ganados' if winner == side else 'perdidos'
-                dicc[names[pid]][f'Partidos de {kind} puntos {outcome}'] += 1
-
-    return dicc
-
-
-def format_for_chart(dic):
-    """Datos de ``column_chart`` como lista de {'player', 'data'} para el gráfico de columnas."""
-    players = []
-    for player_name, stats in dic.items():
-        players.append({
-            'player': player_name,
-            'data': [
-                stats['Partidos de 2 puntos ganados'],
-                stats['Partidos de 2 puntos perdidos'],
-                stats['Partidos de 3 puntos ganados'],
-                stats['Partidos de 3 puntos perdidos'],
-            ]
-        })
-    return players
-
 
 @club_required
 @require_GET
 def team_statistics(request):
     """
-    Estadísticas del equipo propio: balance de enfrentamientos y juegos, evolución por
-    temporada, partidos de 2 y 3 puntos por jugador y top 5 de jugadores y parejas.
+    Estadísticas del equipo propio: balance de enfrentamientos y juegos, puntos de liga o de cada
+    enfrentamiento, sets, récords y mejores jugadores como local, y puntos SNP del equipo.
     Requiere pertenecer al club y solo GET. Filtra por temporada (``?season=``) y tipo de partido.
 
     Con varios espacios lleva el filtro de competición SNP · LAPI (core.spaces), sin «Todas»: los
@@ -337,9 +277,6 @@ def team_statistics(request):
     if selected_season == ALL_SEASONS:
         selected_season = None
 
-    dicc = column_chart(request.club, selected_season, match_type)
-    column_chart_data = format_for_chart(dicc)
-
     if not team:
         return render(request, 'team_statistics.html', {"seasons": seasons, **match_type_context(request, match_type),
                                                         **season_filter_context(request, seasons, selected_season)})
@@ -349,7 +286,6 @@ def team_statistics(request):
     local_games_won, local_games_lost, percentage_local_games_won, percentage_local_games_lost = calculate_local_game_statistics(selected_season or None, team, match_type)
     visiting_games_won, visiting_games_lost, percentage_visiting_games_won, percentage_visiting_games_lost = calculate_visiting_game_statistics(selected_season or None, team, match_type)
 
-    dicc_line_chart = calculate_matches_won_per_year(team, match_type)
     tiebreaks = calculate_tiebreak_stats(selected_season or None, team, match_type)
 
     # Top 5 (jugadores actuales del equipo), respetando la temporada y el tipo de partido elegidos
@@ -357,7 +293,7 @@ def team_statistics(request):
     log = pair_stats.club_game_log(request.club, selected_season or None, match_type)
 
     context = {
-        **match_type_context(request, match_type),
+        **match_type_context(request, match_type, by_type=True),
         **season_filter_context(request, seasons, selected_season),
         **spaces.space_filter_context(request, space, allow_all=False),
         'team': team,
@@ -377,11 +313,9 @@ def team_statistics(request):
         'percentage_local_games_lost': percentage_local_games_lost,
         'percentage_visiting_games_won': percentage_visiting_games_won,
         'percentage_visiting_games_lost': percentage_visiting_games_lost,
-        'dicc_line_chart': dicc_line_chart,
         'current_season': current_season(),
         "seasons": seasons,
         "selected_season": selected_season,
-        "column_chart_data": column_chart_data,
         "top_local_players": pair_stats.top_players(log, squad, local=True),
         "top_visiting_players": pair_stats.top_players(log, squad, local=False),
         "top_local_pairs": pair_stats.top_pairs(log, squad, local=True, min_games=min_games_pair),
@@ -391,9 +325,7 @@ def team_statistics(request):
     }
     context.update(team_extra_context(request.club, selected_season, match_type, log))
     context['attendance'] = signup_attendance(request.club, selected_season, match_type)
-    # Puntos de liga (LAPI: 4, 3 o 1 por enfrentamiento de liga) de la temporada; sin amistosos ni fases finales.
-    if match_type in (None, COMPETITIVE, request.club.rules.league_type):
-        context['league'] = season_league_points(request.club, selected_season)
+    context.update(team_card_context(request.club, selected_season, match_type, context))
 
     return render(request, 'team_statistics.html', context)
 
@@ -556,6 +488,37 @@ def players_charts(players, logs, season, match_type):
             "currentSeason": current_season(),
         },
     }
+
+
+def team_card_context(club, season, match_type, context):
+    """
+    Datos de las tarjetas de «Equipo» del diseño: puntos de liga o de cada enfrentamiento, plantilla y
+    fases finales, no presentados y lesiones, filas de sets con su texto, y tarjetas y puntos SNP del equipo.
+    ``context`` es lo ya calculado (sets, ranking SNP).
+    """
+    rules = club.rules
+    sets = context['set_stats']
+    sets_total = sets['sets_won'] + sets['sets_lost']
+    bagels = {'pct': round(100 * sets['bagels_for'] / sets_total) if sets_total else None}
+    by_key = {key: (label, desc) for key, label, desc in SET_SITUATIONS}
+    set_rows = [(*by_key[key], sets[key]) for key in ('tiebreak', 'first_set', 'comeback')]
+    set_rows.append((_("Roscos a favor"), _("Sets ganados por 6-0."), bagels))
+    snp = context['snp']
+    extra = {
+        'points_card': team_card.points_series(club, season, match_type),
+        'finals': team_card.finals_roster(club, season or current_season()),
+        'walkovers': team_card.walkovers(club, season, match_type),
+        'set_rows': set_rows,
+    }
+    if rules.has_snp:
+        deltas = [r['delta'] for r in snp['rows'] if r['delta']]
+        extra['snp_total'] = {
+            'score': round(sum(r['score'] for r in snp['rows'])),
+            'delta': round(sum(deltas)) if deltas else None,
+            'average': snp['average'],
+        }
+        extra['snp_team_seasons'] = team_card.snp_by_season(club)
+    return extra
 
 
 def team_extra_context(club, season, match_type, log):

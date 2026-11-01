@@ -399,3 +399,6 @@ msgstr "won"
 
 msgid "perdidos"
 msgstr "lost"
+
+msgid "Puntos"
+msgstr "Points"

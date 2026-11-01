@@ -15018,3 +15018,158 @@ msgstr "Can they play the finals?"
 #, python-format
 msgid "Últimos %(n)s, el más reciente a la derecha."
 msgstr "Last %(n)s, most recent on the right."
+
+#, python-format
+msgid "%(a)s por ganar 3-0, %(b)s por ganar 2-1, %(c)s por perder 2-1 y 0 por perder 3-0 o no presentarse."
+msgstr "%(a)s for winning 3-0, %(b)s for winning 2-1, %(c)s for losing 2-1 and 0 for losing 3-0 or not showing up."
+
+#, python-format
+msgid "%(n)s desde la última vez"
+msgstr "%(n)s since last time"
+
+#, python-format
+msgid "%(w)s ganados y %(l)s perdidos en casa"
+msgstr "%(w)s won and %(l)s lost at home"
+
+#, python-format
+msgid "%(w)s ganados y %(l)s perdidos fuera"
+msgstr "%(w)s won and %(l)s lost away"
+
+#, python-format
+msgid "Al mejor de %(n)s partidos de 1 punto."
+msgstr "Best of %(n)s games worth 1 point each."
+
+msgid "Apuntados"
+msgstr "Signed up"
+
+msgid "Elegibles"
+msgstr "Eligible"
+
+#, python-format
+msgid "Eliminatorias 6-6 (Reto / Play Off) · %(a)s a favor · %(b)s en contra"
+msgstr "6-6 tie-breakers (Challenge / Play Off) · %(a)s for · %(b)s against"
+
+msgid "Ganados y perdidos en casa."
+msgstr "Won and lost at home."
+
+msgid "Ganados y perdidos fuera."
+msgstr "Won and lost away."
+
+#, python-format
+msgid "Ganados · %(won)s de %(total)s"
+msgstr "Won · %(won)s of %(total)s"
+
+msgid "Las estadísticas aparecerán cuando se cierre el primer enfrentamiento."
+msgstr "Statistics will appear once the first match is closed."
+
+msgid "Media por jugador"
+msgstr "Average per player"
+
+msgid "Máx. puntos jornada"
+msgstr "Max. round points"
+
+msgid "No nos tocó"
+msgstr "We didn't play"
+
+msgid "No presentados y lesiones"
+msgstr "No-shows and injuries"
+
+msgid "Partidos que no se juegan por completo."
+msgstr "Games that are not played in full."
+
+msgid "Plantilla y fases finales"
+msgstr "Squad and finals"
+
+msgid "Puntos de la plantilla al cierre de cada temporada."
+msgstr "Squad points at the end of each season."
+
+#, python-format
+msgid "Puntos ganados en cada enfrentamiento, de %(n)s posibles."
+msgstr "Points won in each match, out of %(n)s possible."
+
+#, python-format
+msgid "Reglamento 8.2: en Playoffs y Fase final solo juega quien ha jugado %(n)s enfrentamientos de liga."
+msgstr "Rule 8.2: in the Playoffs and Finals only those who have played %(n)s league matches can play."
+
+msgid "Sets y partidos"
+msgstr "Sets and games"
+
+#, python-format
+msgid "Sin elegibilidad: %(names)s"
+msgstr "Not eligible: %(names)s"
+
+#, python-format
+msgid "Solo %(name)s"
+msgstr "%(name)s only"
+
+msgid "Top 5 y récords"
+msgstr "Top 5 and records"
+
+msgid "Victorias en cada partido del enfrentamiento. Las parejas se alinean por puntos SNP."
+msgstr "Wins in each game of the match. Pairs are lined up by SNP points."
+
+msgid "completado 6-0"
+msgstr "completed 6-0"
+
+msgid "de"
+msgstr "of"
+
+msgid "en total"
+msgstr "in total"
+
+msgid "esta temporada"
+msgstr "this season"
+
+msgid "ganados · perdidos"
+msgstr "won · lost"
+
+msgid "media de plantilla"
+msgstr "squad average"
+
+#, python-format
+msgid "máximo LAPI %(n)s"
+msgstr "LAPI maximum %(n)s"
+
+msgid "nuestro equipo"
+msgstr "our team"
+
+msgid "puntos SNP del equipo"
+msgstr "team SNP points"
+
+msgid "rival · ganado 3-0"
+msgstr "rival · won 3-0"
+
+msgid "sin empates"
+msgstr "no draws"
+
+#, python-format
+msgid "vs %(rival)s"
+msgstr "vs %(rival)s"
+
+#, python-format
+msgid "≥ %(n)s jornadas jugadas"
+msgstr "≥ %(n)s rounds played"
+
+msgid "Roscos a favor"
+msgstr "Bagels for"
+
+msgid "Sets ganados por 6-0."
+msgstr "Sets won 6-0."
+
+#, python-format
+msgid "%(n)s enfrentamiento cerrado"
+msgid_plural "%(n)s enfrentamientos cerrados"
+msgstr[0] "%(n)s closed match"
+msgstr[1] "%(n)s closed matches"
+
+#, python-format
+msgid "en %(n)s jornada · media %(avg)s"
+msgid_plural "en %(n)s jornadas · media %(avg)s"
+msgstr[0] "in %(n)s round · average %(avg)s"
+msgstr[1] "in %(n)s rounds · average %(avg)s"
+
+#, python-format
+msgid "en %(n)s enfrentamiento · media %(avg)s"
+msgid_plural "en %(n)s enfrentamientos · media %(avg)s"
+msgstr[0] "in %(n)s match · average %(avg)s"
+msgstr[1] "in %(n)s matches · average %(avg)s"

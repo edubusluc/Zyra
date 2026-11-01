@@ -219,18 +219,16 @@ class PairStatisticsTests(TestCase):
 
     def test_team_statistics_chart_only_current_players(self):
         response = self.client.get(reverse("team_statistics"))
-        names = [row["player"] for row in response.context["column_chart_data"]]
+        names = [row["name"] for row in response.context["top_local_players"]]
         self.assertNotIn("C Cson", names)
         self.assertIn("A Ason", names)
         self.assertEqual(len(response.context["top_local_players"]), 2)
 
-    def test_team_statistics_chart_script_is_not_cut(self):
-        # Un </script> dentro del script de los datos lo cerraba antes de tiempo y no se pintaba ningún gráfico.
+    def test_team_statistics_chart_data_is_json_script(self):
+        # Los datos de los gráficos van en json_script: un </script> en ellos no puede cortar el script.
         html = self.client.get(reverse("team_statistics")).content.decode()
-        script = html[html.index("const teamData"):]
-        script = script[:script.index("</script>")]
-        self.assertIn("column_chart_data:", script)
-        self.assertTrue(script.rstrip().endswith("};"))
+        self.assertIn('id="points-card-data"', html)
+        self.assertNotIn("const teamData", html)
 
     def test_player_streak_follows_match_date(self):
         """Un partido anterior en fecha pero creado después no cuenta como el último (antes se ordenaba por id)."""
@@ -380,13 +378,19 @@ class MatchTypeFilterTests(TestCase):
                              match_type=Match.AMISTOSO, result="Victoria Local")
         response = self.client.get(reverse("team_statistics"), {"match_type": "competitivo"})
         self.assertEqual(response.context["total_matches"], 4)
+        # El equipo es de una sola competición: un chip por tipo y sin «Competitivos»
+        self.assertEqual([o["label"] for o in response.context["match_types"]],
+                         ["Todos", "Enfrentamientos", "Retos", "Play offs", "Amistosos"])
+
+        # Parejas sigue agrupando los tipos competitivos
+        response = self.client.get(reverse("pair_statistics"), {"match_type": "competitivo"})
         self.assertEqual([o["label"] for o in response.context["match_types"] if o["active"]], ["Competitivos"])
         self.assertEqual([o["label"] for o in response.context["competitive_types"]],
                          ["Todos los enfrentamientos", "Enfrentamientos", "Retos", "Play offs"])
         self.assertContains(response, "<small>Competitivo</small>", html=True)
 
         # Un tipo concreto sigue dentro de Competitivos, con el selector en ese tipo
-        response = self.client.get(reverse("team_statistics"), {"match_type": Match.RETO})
+        response = self.client.get(reverse("pair_statistics"), {"match_type": Match.RETO})
         self.assertEqual([o["label"] for o in response.context["match_types"] if o["active"]], ["Competitivos"])
         self.assertEqual([o["label"] for o in response.context["competitive_types"] if o["active"]], ["Retos"])
 
@@ -535,7 +539,6 @@ class DrawStatisticsTests(TestCase):
         self.assertEqual(response.context["drawn_matches"], 1)
         self.assertEqual(response.context["lost_matches"], 1)
         self.assertEqual(response.context["percentage_drawn"], 33.33)
-        self.assertEqual(response.context["dicc_line_chart"], {"2025-2026": {"won": 1, "drawn": 1, "lost": 1}})
         self.assertContains(response, "Empates")
 
 
