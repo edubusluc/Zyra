@@ -98,7 +98,7 @@ estadísticas y back-office del dueño de la plataforma. Español con traducció
 
 ```bash
 DJANGO_DEBUG=True python manage.py runserver
-DJANGO_DEBUG=True python manage.py test match.tests_flow        # solo el área tocada (la suite entera tarda ~11 min)
+DJANGO_DEBUG=True python manage.py test match.tests_flow        # solo el área tocada (suite entera: ~1,5 min; con --parallel ~1 min)
 DJANGO_DEBUG=True python manage.py makemigrations --check --dry-run
 python scripts/check_docstrings.py && python scripts/check_ai_docs.py && mkdocs build --strict
 ```

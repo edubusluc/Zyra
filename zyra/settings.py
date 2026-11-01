@@ -229,6 +229,11 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = config('DATA_UPLOAD_MAX_MEMORY_SIZE', default=2 * 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 2000
 RATE_LIMITS_ENABLED = config('RATE_LIMITS_ENABLED', default=not TESTING, cast=bool)
 
+# Solo al ejecutar los tests: hash de contraseñas rápido (MD5). Con PBKDF2 cada create_user y cada
+# login cuesta ~0,1-0,3 s y la suite pasaba de ~9 min a ~1,6 min. Nunca se usa fuera de `manage.py test`.
+if TESTING:
+    PASSWORD_HASHERS = ['django.contrib.auth.hashers.MD5PasswordHasher']
+
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
