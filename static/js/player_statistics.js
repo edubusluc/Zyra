@@ -31,8 +31,8 @@
     data: {
       labels: seasons.labels,
       datasets: [
-        { label: gettext('Ganados'), data: seasons.wins, backgroundColor: C.win, borderRadius: 4 },
-        { label: gettext('Perdidos'), data: seasons.losses, backgroundColor: C.loss, borderRadius: 4 },
+        { label: gettext('Ganados'), data: seasons.wins, backgroundColor: C.win, borderRadius: 10 },
+        { label: gettext('Perdidos'), data: seasons.losses, backgroundColor: C.loss, borderRadius: 10 },
       ],
     },
     options: {
@@ -132,7 +132,7 @@
 
   const affinityChart = new Chart(document.getElementById('chartAffinity'), {
     type: 'bar',
-    data: { labels: [], datasets: [{ label: gettext('Afinidad'), data: [], backgroundColor: [], borderRadius: 4, maxBarThickness: 56 }] },
+    data: { labels: [], datasets: [{ label: gettext('Afinidad'), data: [], backgroundColor: [], borderRadius: 10, maxBarThickness: 56 }] },
     options: {
       ...base,
       indexAxis: 'y',

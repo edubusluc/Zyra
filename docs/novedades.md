@@ -5,6 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 01/11/2026 · Más aire en Inicio y Enfrentamientos
 
+- **Gráficos de estadísticas**: estilo común en todas las vistas (`static/js/chart-style.js`): sin cuadrículas ni ejes, barras muy redondeadas con su cifra dentro, líneas lima con área suave, tooltips oscuros y barras de progreso más gruesas.
 - **Mis estadísticas, Advertencias y «Crear rival»** siguen el mockup: datos grandes en Anton, una tarjeta por competición con franja de color, advertencias como tarjetas con fecha, jugador, motivo y enfrentamiento, y formulario de rival con campos holgados y botón a todo el ancho.
 - **Estadísticas**: el primer dato de «Mis estadísticas» y la ficha de jugador va en lima, «Mejores parejas» es un panel lima y el recuento de advertencias se marca en ámbar.
 - **Rivales**: tarjetas con escudo, nombre grande y etiquetas separadas por una línea, tarjeta lima «Nuevo rival» al final y formulario de creación con cabecera y ancho propios.

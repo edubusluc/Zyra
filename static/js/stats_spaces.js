@@ -25,7 +25,7 @@
       data: {
         labels: [gettext('Ganados'), gettext('Perdidos')],
         datasets: comps.map((c, i) => ({
-          label: c.name, data: [rows[i].won, rows[i].lost], backgroundColor: color(c.code), borderRadius: 6, maxBarThickness: 48,
+          label: c.name, data: [rows[i].won, rows[i].lost], backgroundColor: color(c.code), borderRadius: 10, maxBarThickness: 48,
         })),
       },
       options: {

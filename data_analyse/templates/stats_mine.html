@@ -5,6 +5,7 @@
 {% block content %}
 {{ spaces_chart|json_script:"spaces-chart-data" }}
 <script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
+<script src="{% static 'js/chart-style.js' %}"></script>
 {# «Mis estadísticas · Todas» (data_analyse.views.my_statistics): tus partidos de todas tus competiciones y gráficos con cada una al lado de la otra (stats_spaces.js), sin sumar puntos. #}
 <div class="st-page">
     {% include 'includes/stats_tabs.html' %}
