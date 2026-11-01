@@ -5,7 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 01/11/2026 · Más aire en Inicio y Enfrentamientos
 
-- **Inicio y listado**: los botones de los avisos («Nombrar gestor», «Registrar cuenta») arrancan en el mismo borde y las tarjetas de enfrentamiento y las filas de «Pendiente» tienen más separación para reducir el ruido visual.
+- **Inicio y listado**: los botones de los avisos («Nombrar gestor», «Registrar cuenta») arrancan en el mismo borde y las tarjetas de enfrentamiento y las filas de «Pendiente» tienen más separación para reducir el ruido visual. En el bloque «Próximo enfrentamiento» el contenido sube, los nombres de los equipos son más grandes y el botón «Ver convocatoria» más pequeño.
 
 ## 31/10/2026 · Nuevo estilo visual (fase 3: estadísticas)
 
