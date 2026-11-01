@@ -14974,9 +14974,6 @@ msgstr "The evolution will show once there are SNP points from at least 2 season
 msgid "Sets y fases finales"
 msgstr "Sets and finals"
 
-msgid "Sin «Por número de partido» ni puntos SNP: en LAPI las parejas se cruzan por sorteo."
-msgstr "No “By game number” or SNP points: in LAPI pairs are drawn by lot."
-
 msgid "Solo LAPI"
 msgstr "LAPI only"
 

@@ -180,8 +180,7 @@ class LapiMatchTests(TestCase):
         self.assertNotContains(page, "Balance de partidos por jugador")
         page = self.client.get(reverse("player_statistics") + f"?player={self.players[0].public_id}&season=2026-2027")
         self.assertContains(page, "Sets clutch")
-        # La nota informativa de LAPI nombra el gráfico, pero el gráfico no se pinta
-        self.assertNotContains(page, '<h3 class="st-card-title">Por número de partido</h3>')
+        self.assertNotContains(page, "Por número de partido")
 
     def test_injury_from_all_results_screen(self):
         match = self._match()

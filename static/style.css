@@ -3729,7 +3729,6 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .st-eligible b.is-ok { color: var(--z-lime); }
 .st-eligible p { margin: 0; }
 .st-eligible small { display: block; font-size: var(--z-fs-xs); color: var(--st-muted); }
-.st-info-note--lapi { border-color: var(--z-lapi); margin: 12px 0; }
 .st-fold { margin-top: 24px; }
 .st-fold > summary { cursor: pointer; font-family: var(--z-display); font-size: var(--z-fs-xl); text-transform: uppercase; }
 @media (max-width: 767.98px) {
