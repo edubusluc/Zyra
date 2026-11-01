@@ -3590,8 +3590,7 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 /* Portada: la tilde de «Sáb» no choca con el texto de encima */
 .z-preview-date { margin-top: 14px; padding-top: .12em; line-height: 1.1; }
 .z-auth-lead { text-align: center; }
-/* Registro en escritorio: presentación a la izquierda y formulario a la derecha, para ver los campos sin hacer scroll;
-   con pantalla ancha, además, la tarjeta «Así se verá» del equipo (como al crear un enfrentamiento) */
+/* Registro en escritorio: presentación a la izquierda y formulario a la derecha, para ver los campos sin hacer scroll */
 @media (min-width: 992px) {
     .z-auth-card--split { display: grid; grid-template-columns: 300px minmax(0, 1fr); align-items: start; column-gap: 48px; max-width: 980px; padding: 40px 44px; }
     .z-auth-card--split .z-auth-logo { margin: 0 0 14px; }
@@ -3599,14 +3598,15 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
     .z-auth-card--split .z-auth-side h1 { font-size: var(--z-fs-2xl); }
     .z-auth-card--split .z-auth-main form .z-section-title:first-child { margin-top: 0; }
 }
+}
+}
+/* Crear rival: formulario y, en escritorio, la tarjeta «Así se verá» del equipo (como al crear un enfrentamiento) */
 .z-team-preview { display: none; }
-@media (min-width: 1240px) {
-    .z-auth-card--split { grid-template-columns: 260px minmax(0, 1fr) 340px; column-gap: 40px; max-width: 1240px; }
+@media (min-width: 1100px) {
     .z-team-preview { position: sticky; top: 96px; display: grid; align-content: start; gap: 10px; min-height: 320px; padding: 26px; color: var(--z-ink); background: var(--z-lime); border-radius: var(--z-radius-lg); }
     .z-team-preview p { margin: 0; }
     .z-team-preview-name { font: 400 2.6rem/1 var(--z-display); text-transform: uppercase; overflow-wrap: anywhere; }
     .z-team-preview-name[data-placeholder] { opacity: .45; }
     .z-team-preview-foot { margin-top: auto; padding-top: 18px; font-size: var(--z-fs-sm); font-weight: 700; border-top: 2px solid rgba(10, 10, 10, .2); }
-}
 }
 }

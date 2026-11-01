@@ -188,16 +188,8 @@
         <p class="z-auth-foot">{% url 'login' as login_url %}{% blocktranslate trimmed %}¿Ya tienes cuenta? <a href="{{ login_url }}">Inicia sesión</a>{% endblocktranslate %}</p>
         {% endif %}
         </div>
-        {# «Así se verá»: tarjeta del equipo que se rellena sola mientras se escribe (solo escritorio; static/js/team-preview.js). #}
-        <aside class="z-team-preview" aria-label="{% translate 'Así se verá' %}" data-team-preview>
-            <span class="z-create-preview-tag">{% translate "Así se verá" %}</span>
-            <p class="z-create-preview-kicker" data-tp-kicker></p>
-            <p class="z-team-preview-name" data-tp-name data-empty="{% translate 'Nombre del equipo' %}">{% translate "Nombre del equipo" %}</p>
-            <p class="z-create-preview-meta" data-tp-meta></p>
-            <p class="z-team-preview-foot" data-tp-foot hidden></p>
-        </aside>
     </div>
 </div>
 <script src="{% static 'js/register-wizard.js' %}"></script>
-<script src="{% static 'js/team-preview.js' %}" defer></script>
+
 {% endblock %}
