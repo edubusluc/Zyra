@@ -250,6 +250,7 @@ ni se editan parejas (`edit_game_match`).
 
 ## Estadísticas
 
+- Equipo › «Puntos de liga» (`data_analyse/match_points.py`): una barra por enfrentamiento cerrado, en SNP con los puntos del marcador (de `sum(game_points)` = 12) y en LAPI con los puntos de liga de cada jornada (`Match.league_points`, solo liga). Las eliminatorias 6-6 de Reto/Play Off van en una línea del balance, no en tarjeta propia. Solo LAPI: `league_extras` (plantilla/máximo, elegibles a fases finales, no presentados, lesiones).
 - Un jugador solo cuenta convocatorias (apuntado, alineado, no apuntado; informe mensual incluido) desde su `joined_season`: `players.models.joined_by`. Los partidos jugados son hechos y no se filtran. El selector de convocatoria solo muestra las advertencias de la temporada actual (`call__match__season`); las estadísticas de advertencias siguen el selector de temporada.
 - [V] Solo cuentan partidos con el acta cerrada (`pairs.club_game_log`, `calculate_match_statistics`). Las consultas de `Game`/`Call` filtran también `match__draft_mode=False`.
 - [V] Una pareja es la misma con independencia de quién juegue en cada lado (`pairs.pair_key`);

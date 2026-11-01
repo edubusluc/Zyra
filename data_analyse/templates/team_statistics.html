@@ -13,6 +13,7 @@
   {{ dicc_line_chart|json_script:"matches-won-per-year" }}
   {{ column_chart_data|json_script:"column-chart-data" }}
   {{ attendance|json_script:"attendance-data" }}
+  {{ points_chart|json_script:"points-data" }}
   <script>
     const teamData = {
       wonMatches: {{ won_matches|default:0|unlocalize }},
@@ -55,6 +56,7 @@
 
       <nav class="st-index" aria-label="{% translate 'Secciones de la página' %}">
         <a href="#sec-resumen">{% translate "Resumen" %}</a>
+        {% if points %}<a href="#sec-puntos">{% translate "Puntos de liga" %}</a>{% endif %}
         <a href="#sec-top">{% translate "Top 5" %}</a>
         <a href="#sec-numbers">{% translate "Partidos y sets" %}</a>
         <a href="#sec-records">{% translate "Récords" %}</a>
@@ -86,6 +88,10 @@
           <div class="st-bar" role="img" aria-label="{% blocktranslate with pct=percentage_won %}{{ pct }} % de enfrentamientos ganados{% endblocktranslate %}">
             <span class="st-bar-win" style="width: {% widthratio won_matches total_matches 100 %}%"></span><span class="st-bar-draw" style="width: {% widthratio drawn_matches total_matches 100 %}%"></span>
           </div>
+          {% if tiebreaks.total %}
+          {# Reto y Play Off que quedaron 6-6: no hay empate y decide el ganador del partido 3. #}
+          <p class="st-board-note">{% translate "Eliminatorias 6-6 (Reto / Play Off)" %} · <b>{% blocktranslate with n=tiebreaks.for %}{{ n }} a favor{% endblocktranslate %}</b> · <b>{% blocktranslate with n=tiebreaks.against %}{{ n }} en contra{% endblocktranslate %}</b></p>
+          {% endif %}
         </div>
 
         <dl class="st-facts">
@@ -97,12 +103,6 @@
             <dt>{% translate "Enfrentamientos jugados" %}</dt>
             <dd>{{ total_matches }}</dd>
           </div>
-          {% if league.played %}
-          <div class="st-fact">
-            <dt>{% translate "Puntos de liga" %}</dt>
-            <dd>{{ league.total }} <small>{% blocktranslate count n=league.played %}en {{ n }} jornada{% plural %}en {{ n }} jornadas{% endblocktranslate %}</small></dd>
-          </div>
-          {% endif %}
           <div class="st-fact">
             <dt>{% translate "Juegos en casa" %}</dt>
             <dd>{% blocktranslate with won=local_games_won lost=local_games_lost %}{{ won }} ganados · {{ lost }} perdidos{% endblocktranslate %}</dd>
@@ -114,24 +114,35 @@
         </dl>
       </section>
 
-      {% if tiebreaks.total %}
-      <section id="sec-tiebreak" aria-labelledby="tiebreak-title" class="st-section mt-4">
-        <h2 class="st-section-title" id="tiebreak-title">{% translate "Eliminatorias 6-6" %}</h2>
-        <p class="st-card-note mt-0 mb-3">{% translate "Reto y Play Off que quedaron 6-6: no hay empate y decide el ganador del partido 3." %}</p>
-        <div class="st-split">
-          <div class="st-split-side st-split-side--for">
-            <span class="st-split-label">{% translate "A favor" %}</span>
-            <b class="st-split-pct">{{ tiebreaks.for_pct }} %</b>
-            <span class="st-split-count">{% blocktranslate count n=tiebreaks.for %}{{ n }} eliminatoria{% plural %}{{ n }} eliminatorias{% endblocktranslate %}</span>
-          </div>
-          <div class="st-split-side st-split-side--against">
-            <span class="st-split-label">{% translate "En contra" %}</span>
-            <b class="st-split-pct">{{ tiebreaks.against_pct }} %</b>
-            <span class="st-split-count">{% blocktranslate count n=tiebreaks.against %}{{ n }} eliminatoria{% plural %}{{ n }} eliminatorias{% endblocktranslate %}</span>
-          </div>
-        </div>
-        <div class="st-split-bar" role="img" aria-label="{% blocktranslate with a=tiebreaks.for_pct b=tiebreaks.against_pct %}{{ a }} % a favor y {{ b }} % en contra{% endblocktranslate %}">
-          <span class="st-split-for" style="width: {{ tiebreaks.for_pct }}%"></span><span class="st-split-against" style="width: {{ tiebreaks.against_pct }}%"></span>
+      {% if points %}
+      <section id="sec-puntos" aria-labelledby="puntos-title" class="st-section mt-4">
+        <h2 class="st-section-title" id="puntos-title">{% translate "Puntos de liga" %}</h2>
+        <div class="st-grid st-grid--2">
+          <section class="st-card">
+            <h3 class="st-card-title">{% if points.kind == 'league' %}{% translate "Puntos por jornada" %}{% else %}{% translate "Puntos por enfrentamiento" %}{% endif %}</h3>
+            <p class="st-card-note">{% if points.kind == 'league' %}{% blocktranslate with win=request.club.rules.league_points.0 %}Puntos de liga de cada jornada, hasta {{ win }}.{% endblocktranslate %}{% else %}{% blocktranslate with max=points.max %}Puntos ganados en cada enfrentamiento, de {{ max }} posibles.{% endblocktranslate %}{% endif %}</p>
+            <p class="st-points-total"><b>{{ points.total }}</b> <span>{% blocktranslate with n=points.played avg=points.average %}en {{ n }} enfrentamientos · media {{ avg }}{% endblocktranslate %}</span></p>
+            <div class="st-chart st-chart--points"><canvas id="pointsChart" role="img" aria-label="{% translate 'Puntos por enfrentamiento' %}"></canvas></div>
+            <table class="visually-hidden">
+              <caption>{% translate "Puntos por enfrentamiento" %}</caption>
+              <thead><tr><th scope="col">{% translate "Enfrentamiento" %}</th><th scope="col">{% translate "Rival" %}</th><th scope="col">{% translate "Puntos" %}</th></tr></thead>
+              <tbody>{% for row in points.rows %}<tr><th scope="row">{{ row.label }}</th><td>{{ row.rival }}</td><td>{{ row.points }}</td></tr>{% endfor %}</tbody>
+            </table>
+          </section>
+          {% if league_extras %}
+          <section class="st-card">
+            <h3 class="st-card-title">{% translate "Plantilla y fases finales" %}</h3>
+            <p class="st-card-note">{% blocktranslate with n=league_extras.minimum %}En Playoffs y Fase final solo juega quien ha jugado {{ n }} enfrentamientos de liga con el equipo esa temporada.{% endblocktranslate %}</p>
+            <dl class="st-mini">
+              <div><dt>{% translate "Plantilla" %}</dt><dd>{{ league_extras.roster }}{% if league_extras.max_roster %} / {{ league_extras.max_roster }}{% endif %}</dd></div>
+              {% if league_extras.minimum %}<div><dt>{% translate "Elegibles" %}</dt><dd>{{ league_extras.eligible }} <small>{% blocktranslate with n=league_extras.roster %}de {{ n }}{% endblocktranslate %}</small></dd></div>{% endif %}
+              <div><dt>{% translate "No presentado (rival)" %}</dt><dd>{{ league_extras.no_show_rival }}</dd></div>
+              <div><dt>{% translate "No presentado (nosotros)" %}</dt><dd>{{ league_extras.no_show_own }}</dd></div>
+              <div><dt>{% translate "Partidos por lesión" %}</dt><dd>{{ league_extras.injuries }}</dd></div>
+            </dl>
+            {% if league_extras.ineligible %}<p class="st-card-note mt-3">{% translate "Sin elegibilidad:" %} <b>{{ league_extras.ineligible|join:", " }}</b></p>{% endif %}
+          </section>
+          {% endif %}
         </div>
       </section>
       {% endif %}
@@ -270,6 +281,7 @@
       <p class="st-side-title">{% translate "En esta página" %}</p>
       <ul class="st-side-list">
         <li><a href="#sec-resumen">{% translate "Resumen" %}</a></li>
+        {% if points %}<li><a href="#sec-puntos">{% translate "Puntos de liga" %}</a></li>{% endif %}
         <li><a href="#sec-top">{% translate "Top 5" %}</a></li>
         <li><a href="#sec-numbers">{% translate "Partidos y sets" %}</a></li>
         <li><a href="#sec-records">{% translate "Récords" %}</a></li>

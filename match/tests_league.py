@@ -11,6 +11,7 @@ from django.urls import reverse
 
 from core.services import create_club
 from match.forms import MatchForm
+from data_analyse import match_points
 from match.league import finals_shortfall, season_league_points
 from call.models import Call
 from data_analyse.attendance import signup_attendance
@@ -82,6 +83,42 @@ class LapiMatchTests(TestCase):
         self.assertEqual((league["total"], league["played"]), (8, 3))
         page = self.client.get(reverse("team_statistics") + "?season=2026-2027")
         self.assertContains(page, "Puntos de liga")
+
+    def test_points_per_match_and_league_extras(self):
+        """Gráfico «Puntos de liga» de Equipo: una barra por jornada y resumen de plantilla y elegibilidad."""
+        self._close(self._match(round_number=1), 3, 0)
+        self._close(self._match(days=7, round_number=2), 1, 2)
+        self._close(self._match(Match.PLAYOFF, days=14), 3, 0)  # el playoff no cuenta como jornada
+        series = match_points.points_per_match(self.club, "2026-2027")
+        self.assertEqual([(r["label"], r["points"]) for r in series["rows"]], [("J1", 4), ("J2", 1)])
+        self.assertEqual((series["kind"], series["max"], series["total"], series["average"]), ("league", 4, 5, 2.5))
+        self.assertIsNone(match_points.points_per_match(self.club, "2020-2021"))
+        extras = match_points.league_extras(self.club, "2026-2027")
+        self.assertEqual((extras["roster"], extras["max_roster"], extras["eligible"]), (7, 15, 6))
+        self.assertEqual(len(extras["ineligible"]), 1)
+        page = self.client.get(reverse("team_statistics") + "?season=2026-2027")
+        self.assertContains(page, 'id="pointsChart"')
+        self.assertContains(page, "Plantilla y fases finales")
+        self.assertEqual(page.context["points_chart"]["points"], [4, 1])
+
+    def test_snp_points_per_match_and_tiebreaks_in_balance(self):
+        """SNP: puntos del marcador de cada enfrentamiento (de 12); las 6-6 pasan al balance."""
+        snp = create_club("Gladiadores", "Sevilla", self.user)
+        rival = Team.objects.create(club=snp, name="Rival", location="X", in_group=True)
+        for days, local, visiting, mtype in ((0, 8, 4, "enfrentamiento"), (7, 5, 7, "enfrentamiento"), (14, 6, 6, "reto")):
+            Match.objects.create(club=snp, local=snp.own_team, visiting=rival, start_date=self.day + datetime.timedelta(days=days),
+                                 match_type=mtype, draft_mode=False, result_points=f"{local}/{visiting}",
+                                 result="Victoria Local" if local >= visiting else "Victoria Visitante")
+        series = match_points.points_per_match(snp)
+        self.assertEqual([r["points"] for r in series["rows"]], [8, 5, 6])
+        self.assertEqual((series["kind"], series["max"]), ("score", 12))
+        self.assertIsNone(match_points.league_extras(snp))
+        self.client.logout()
+        self.client.login(username="capi", password=PASSWORD)
+        page = self.client.get(reverse("team_statistics") + "?en=snp&season=2026-2027")
+        self.assertContains(page, 'id="pointsChart"')
+        self.assertContains(page, "Eliminatorias 6-6 (Reto / Play Off)")
+        self.assertNotContains(page, 'id="sec-tiebreak"')
 
     def test_type_label_and_round_in_list(self):
         self._match(Match.PLAYOFF)

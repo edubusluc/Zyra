@@ -151,6 +151,37 @@ window.addEventListener('resize', () => {
   seasonChart.update('none');
 });
 
+// Puntos por enfrentamiento (SNP, de 12) o por jornada (LAPI, 4/3/1/0): una barra lima por cada uno,
+// con la cifra dentro; las flojas (menos de la mitad de los puntos) van en lima oscuro y las de 0 no dibujan barra.
+(function () {
+  const canvas = document.getElementById('pointsChart');
+  if (!canvas) return;
+  const data = JSON.parse(document.getElementById('points-data').textContent);
+  if (!data.labels) return;
+  const colour = (p) => (p === 0 ? Z.coral : (p * 2 < data.max ? Z.limeDark : Z.lime));
+  new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: data.labels,
+      datasets: [{ data: data.points, backgroundColor: data.points.map(colour), maxBarThickness: 44 }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: (items) => `${data.labels[items[0].dataIndex]} · ${data.rivals[items[0].dataIndex]}`,
+            label: (c) => interpolate(gettext('%(p)s de %(m)s puntos'), { p: data.points[c.dataIndex], m: data.max }, true),
+          },
+        },
+      },
+      scales: { x: { ticks: { autoSkip: false } }, y: { display: false, min: 0, max: data.max } },
+    },
+  });
+})();
+
 // Asistencia a las convocatorias: % de la plantilla que se apunta. Con «Todas» es la media por temporada;
 // con una temporada, una barra por convocatoria (la etiqueta lleva fecha y rival).
 (function () {

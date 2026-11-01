@@ -1890,6 +1890,17 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 .st-fact dt { font-size: var(--z-fs-xs); font-weight: 700; letter-spacing: .01em; color: var(--st-muted); }
 .st-fact dd { margin: 2px 0 0; font-size: var(--z-fs-xl); font-weight: 800; color: #FFFFFF; font-variant-numeric: tabular-nums; }
 .st-fact--gold { border-color: var(--z-lime); }
+.st-board-note { margin: 12px 0 0; font-size: var(--z-fs-sm); font-weight: 700; color: var(--z-ink); }
+/* Puntos por enfrentamiento / jornada y resumen de liga (Estadísticas › Equipo) */
+.st-points-total { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin: 12px 0 0; }
+.st-points-total b { font-family: var(--z-display); font-size: 4rem; font-weight: 400; line-height: 1; color: var(--z-lime); font-variant-numeric: tabular-nums; }
+.st-points-total span { font-size: var(--z-fs-sm); color: var(--st-muted); }
+.st-chart--points { height: 180px; }
+.st-mini { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 14px 0 0; }
+.st-mini > div { padding: 10px 12px; background: var(--z-surface-2); border-radius: var(--z-radius-sm); }
+.st-mini dt { font-size: var(--z-fs-xs); font-weight: 700; color: var(--st-muted); }
+.st-mini dd { margin: 2px 0 0; font-family: var(--z-display); font-size: var(--z-fs-xl); font-weight: 400; color: #FFFFFF; font-variant-numeric: tabular-nums; }
+.st-mini dd small { font-family: var(--z-body, inherit); font-size: var(--z-fs-xs); color: var(--st-muted); }
 .st-fact--gold dd { color: var(--z-lime); }
 .st-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
 .st-grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }

@@ -30,6 +30,7 @@ from players.models import current_season, joined_by
 from . import pairs as pair_stats
 from . import rivals as rival_stats
 from . import records
+from . import match_points
 from .attendance import signup_attendance
 from .sets import best_and_worst_number, by_game_number, own_sets, set_stats
 
@@ -387,6 +388,11 @@ def team_statistics(request):
     # Puntos de liga (LAPI: 4, 3 o 1 por enfrentamiento de liga) de la temporada; sin amistosos ni fases finales.
     if match_type in (None, COMPETITIVE, request.club.rules.league_type):
         context['league'] = season_league_points(request.club, selected_season)
+    # Puntos ganados en cada enfrentamiento (SNP: del marcador, de 12; LAPI: puntos de liga por jornada).
+    points = match_points.points_per_match(request.club, selected_season, match_type)
+    context['points'] = points
+    context['points_chart'] = match_points.chart_data(points)
+    context['league_extras'] = match_points.league_extras(request.club, selected_season)
 
     return render(request, 'team_statistics.html', context)
 

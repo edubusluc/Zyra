@@ -3,6 +3,12 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 01/11/2026 · Estadísticas rediseñadas (fase 1: Equipo)
+
+- **Puntos de liga en Equipo, en SNP y en LAPI**: una barra por enfrentamiento con los puntos ganados. En SNP son los del marcador (de 12 posibles); en LAPI, los 4/3/1/0 de cada jornada. Sustituye a la tarjeta «Eliminatorias 6-6».
+- **Eliminatorias 6-6** (Reto y Play Off, a favor y en contra) pasan a una línea del balance de enfrentamientos.
+- **LAPI**: nueva tarjeta «Plantilla y fases finales» con plantilla y máximo, jugadores elegibles (mínimo de enfrentamientos de liga), no presentados y partidos acabados por lesión.
+
 ## 01/11/2026 · Flujos y densidad (auditoría UX/UI, fase 5)
 
 - **Estadísticas en móvil**: los filtros se recogen en una sola fila «Filtros · …» y cada sección se pliega bajo su título (solo la primera queda abierta; los enlaces del índice abren la suya). La página de equipo pasa de unos 7.700 px a unos 3.200. Los bloques con pocos datos muestran un único aviso compacto («Se mostrará cuando…») en lugar de un gráfico casi vacío, y el de afinidad ajusta su altura a las barras.

@@ -14825,3 +14825,58 @@ msgstr "View that tie"
 
 msgid "No hay datos para mostrar."
 msgstr "No data to show."
+
+msgid "Puntos por jornada"
+msgstr "Points per round"
+
+msgid "Puntos por enfrentamiento"
+msgstr "Points per match"
+
+#, python-format
+msgid "Puntos de liga de cada jornada, hasta %(win)s."
+msgstr "League points of each round, up to %(win)s."
+
+#, python-format
+msgid "Puntos ganados en cada enfrentamiento, de %(max)s posibles."
+msgstr "Points won in each match, out of %(max)s."
+
+#, python-format
+msgid "en %(n)s enfrentamientos · media %(avg)s"
+msgstr "in %(n)s matches · average %(avg)s"
+
+msgid "Plantilla y fases finales"
+msgstr "Squad and finals"
+
+#, python-format
+msgid "En Playoffs y Fase final solo juega quien ha jugado %(n)s enfrentamientos de liga con el equipo esa temporada."
+msgstr "In Playoffs and the Final stage only players who played %(n)s league matches with the team that season can play."
+
+msgid "Elegibles"
+msgstr "Eligible"
+
+#, python-format
+msgid "de %(n)s"
+msgstr "of %(n)s"
+
+msgid "No presentado (rival)"
+msgstr "No-show (opponent)"
+
+msgid "No presentado (nosotros)"
+msgstr "No-show (us)"
+
+msgid "Partidos por lesión"
+msgstr "Matches ended by injury"
+
+msgid "Sin elegibilidad:"
+msgstr "Not eligible:"
+
+msgid "Eliminatorias 6-6 (Reto / Play Off)"
+msgstr "6-6 ties (Reto / Play Off)"
+
+#, python-format
+msgid "%(n)s a favor"
+msgstr "%(n)s in favour"
+
+#, python-format
+msgid "%(n)s en contra"
+msgstr "%(n)s against"
