@@ -3,8 +3,13 @@
 {% block page_title %}{% translate "Crear Equipo" %} · {% endblock %}
 
 {% block content %}
-<div class="table-container">
-    <h1>{% translate "Crear Equipo" %}</h1>
+<div class="z-page-head">
+    <div>
+        <a href="{% url 'list_teams' %}" class="z-eyebrow"><i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i> {% translate "Rivales" %}</a>
+        <h1>{% translate "Crear Equipo" %}</h1>
+    </div>
+</div>
+<div class="table-container z-form-narrow">
     <form method="POST" class="mt-4" enctype="multipart/form-data" data-similar-check data-loading-text="{% translate 'Creando el equipo…' %}">
         {% csrf_token %}
         <input type="hidden" name="confirm_similar" value="">
@@ -20,15 +25,18 @@
             {{ form.location }}  <!-- Se agregó la clase en la vista -->
         </div>
 
-        <div class="mb-3 form-check">
-            <input type="checkbox" id="{{ form.in_group.id_for_label }}" name="in_group" class="form-check-input" {% if form.in_group.value %}checked{% endif %}>
-            <label for="{{ form.in_group.id_for_label }}" class="form-check-label">{% translate "¿Se encuentra en tu grupo?" %}</label>
-            <small class="form-text text-muted d-block">{% translate "Los equipos de tu grupo los ven todos los miembros y se pueden elegir al crear un enfrentamiento." %}</small>
+        <div class="mb-3">
+            <label class="z-toggle" for="{{ form.in_group.id_for_label }}">
+                <input type="checkbox" role="switch" id="{{ form.in_group.id_for_label }}" name="in_group" {% if form.in_group.value %}checked{% endif %}>
+                <span class="z-toggle-track" aria-hidden="true"></span>
+                <span class="z-toggle-label">{% translate "¿Se encuentra en tu grupo?" %}</span>
+            </label>
+            <small class="form-text text-muted d-block mt-1">{% translate "Los equipos de tu grupo los ven todos los miembros y se pueden elegir al crear un enfrentamiento." %}</small>
         </div>
 
         {% if own_team and form.group_fields %}
-        <p class="form-text text-muted" data-group-note>{% blocktranslate trimmed with team=own_team.name %}Al ser de tu grupo, juega en la misma categoría, nacionalidad y división que {{ team }}: se copian de tu equipo.{% endblocktranslate %}</p>
-        <p class="form-text text-muted" data-group-note-out hidden>{% blocktranslate trimmed with team=own_team.name %}Categoría, nacionalidad y división vienen rellenas con las de {{ team }}. Cámbialas si este equipo es distinto.{% endblocktranslate %}</p>
+        <p class="z-hint" data-group-note>{% blocktranslate trimmed with team=own_team.name %}Al ser de tu grupo, juega en la misma categoría, nacionalidad y división que {{ team }}: se copian de tu equipo.{% endblocktranslate %}</p>
+        <p class="z-hint" data-group-note-out hidden>{% blocktranslate trimmed with team=own_team.name %}Categoría, nacionalidad y división vienen rellenas con las de {{ team }}. Cámbialas si este equipo es distinto.{% endblocktranslate %}</p>
         {% endif %}
 
         <div class="mb-3"{% if "gender" in form.group_fields %} data-group-field{% endif %}>
@@ -56,8 +64,8 @@
             {{ form.photo }}  <!-- Se agregó la clase en la vista -->
         </div>
 
-        <div class="text-center">
-            <button type="submit" class="btn btn-primary">{% translate "Crear Equipo" %}</button>
+        <div>
+            <button type="submit" class="btn btn-primary btn-lg w-100">{% translate "Crear Equipo" %}</button>
         </div>
     </form>
 </div>

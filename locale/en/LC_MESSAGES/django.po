@@ -14643,3 +14643,36 @@ msgstr "How it will look"
 
 msgid "Elige la fecha"
 msgstr "Pick the date"
+
+msgid "Convoca."
+msgstr "Call up."
+
+msgid "Alinea."
+msgstr "Line up."
+
+msgid "Gana."
+msgstr "Win."
+
+msgid "Gratis"
+msgstr "Free"
+
+msgid "Competiciones disponibles"
+msgstr "Available competitions"
+
+msgid "Liga SNP"
+msgstr "SNP league"
+
+msgid "Liga LAPI"
+msgstr "LAPI league"
+
+msgid "Enfrentamientos por equipos con categoría (Future, 500, 1000, Grand Slam), puntos SNP por jugador y orden de parejas como en la liga."
+msgstr "Team matches with category (Future, 500, 1000, Grand Slam), SNP points per player and pair order as in the league."
+
+msgid "Liga, playoffs y fase final, clasificación por puntos (4 / 3 / 1) y estadísticas propias de la competición."
+msgstr "League, playoffs and final phase, points standings (4 / 3 / 1) and the competition's own statistics."
+
+msgid "Un mismo jugador puede estar en las dos. Cada competición tiene su espacio y sus estadísticas, sin mezclar."
+msgstr "The same player can be in both. Each competition has its own space and statistics, never mixed."
+
+msgid "Crea un equipo que aún no esté en la lista."
+msgstr "Create a team that isn't in the list yet."

@@ -223,6 +223,7 @@
 
       {{ chart_seasons|json_script:"data-seasons" }}
       <script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
+<script src="{% static 'js/chart-style.js' %}"></script>
       <script src="{% static 'js/pair_statistics.js' %}"></script>
       {% endif %}
     {% endif %}
@@ -234,7 +235,7 @@
         {% if best_pairs or worst_pairs %}
           <div class="st-row">
             {% translate "Mejores parejas" as t_title %}{% translate "Mayor % de victorias juntos." as t_note %}
-            {% include 'includes/pair_rank_table.html' with title=t_title rows=best_pairs note=t_note %}
+            {% include 'includes/pair_rank_table.html' with title=t_title rows=best_pairs note=t_note lime=True %}
             {% translate "Parejas por mejorar" as t_title %}{% translate "Menor % de victorias juntos." as t_note %}
             {% include 'includes/pair_rank_table.html' with title=t_title rows=worst_pairs note=t_note min_games_pair=worst_min_games %}
           </div>

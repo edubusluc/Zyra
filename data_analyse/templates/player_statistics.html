@@ -303,6 +303,7 @@
       {{ chart_affinity|json_script:"data-affinity" }}
       {{ chart_snp|json_script:"data-snp" }}
       <script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
+<script src="{% static 'js/chart-style.js' %}"></script>
       <script src="{% static 'js/player_statistics.js' %}"></script>
 
     {% endif %}

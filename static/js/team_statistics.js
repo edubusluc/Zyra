@@ -66,7 +66,7 @@ const gamesBar = (id, won, lost) => new Chart(document.getElementById(id), {
   type: 'bar',
   data: {
     labels: [gettext('Ganados'), gettext('Perdidos')],
-    datasets: [{ data: [won, lost], backgroundColor: [Z.lime, Z.coral], borderRadius: 8, maxBarThickness: 64 }],
+    datasets: [{ data: [won, lost], backgroundColor: [Z.lime, Z.coral], borderRadius: 10, maxBarThickness: 64 }],
   },
   options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: scales() },
 });
@@ -126,9 +126,9 @@ const seasonChart = new Chart(document.getElementById('myLineChart'), {
   data: {
     labels: years.map(seasonLabel),
     datasets: [
-      { label: gettext('Ganados'), data: years.map((y) => teamData.matchesWonPerYear[y].won), backgroundColor: Z.lime, borderRadius: 4 },
-      { label: gettext('Empatados'), data: years.map((y) => teamData.matchesWonPerYear[y].drawn || 0), backgroundColor: Z.draw, borderRadius: 4 },
-      { label: gettext('Perdidos'), data: years.map((y) => teamData.matchesWonPerYear[y].lost), backgroundColor: Z.coral, borderRadius: 4 },
+      { label: gettext('Ganados'), data: years.map((y) => teamData.matchesWonPerYear[y].won), backgroundColor: Z.lime, borderRadius: 10 },
+      { label: gettext('Empatados'), data: years.map((y) => teamData.matchesWonPerYear[y].drawn || 0), backgroundColor: Z.draw, borderRadius: 10 },
+      { label: gettext('Perdidos'), data: years.map((y) => teamData.matchesWonPerYear[y].lost), backgroundColor: Z.coral, borderRadius: 10 },
     ].filter((ds) => ds.label !== gettext('Empatados') || ds.data.some((n) => n > 0)),  // sin empates no se reserva hueco ni leyenda
   },
   options: {
@@ -162,7 +162,7 @@ window.addEventListener('resize', () => {
     type: 'bar',
     data: {
       labels: rows.map((r) => r.label),
-      datasets: [{ data: rows.map((r) => r.pct), backgroundColor: Z.lime, borderRadius: 6, maxBarThickness: 48 }],
+      datasets: [{ data: rows.map((r) => r.pct), backgroundColor: Z.lime, borderRadius: 10, maxBarThickness: 48 }],
     },
     options: {
       responsive: true,

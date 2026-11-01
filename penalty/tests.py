@@ -279,7 +279,7 @@ class EditPenaltyTests(PenaltyBase):
     def test_history_shows_actions_and_delete_returns_to_history(self):
         response = self.client.get(self.history)
         self.assertContains(response, self.url)
-        self.assertContains(response, "Acciones")
+        self.assertContains(response, "Editar la advertencia de")
         response = self.client.post(reverse("delete_penalty") + f"?ids={self.pen.public_id}", {"next": self.history})
         self.assertRedirects(response, self.history)
         self.assertFalse(Penalty.objects.exists())

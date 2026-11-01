@@ -3,6 +3,15 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 01/11/2026 · Más aire en Inicio y Enfrentamientos
+
+- **Gráficos de estadísticas**: estilo común en todas las vistas (`static/js/chart-style.js`): sin cuadrículas ni ejes, barras muy redondeadas con su cifra dentro, líneas lima con área suave, tooltips oscuros y barras de progreso más gruesas.
+- **Mis estadísticas, Advertencias y «Crear rival»** siguen el mockup: datos grandes en Anton, una tarjeta por competición con franja de color, advertencias como tarjetas con fecha, jugador, motivo y enfrentamiento, y formulario de rival con campos holgados y botón a todo el ancho.
+- **Estadísticas**: el primer dato de «Mis estadísticas» y la ficha de jugador va en lima, «Mejores parejas» es un panel lima y el recuento de advertencias se marca en ámbar.
+- **Rivales**: tarjetas con escudo, nombre grande y etiquetas separadas por una línea, tarjeta lima «Nuevo rival» al final y formulario de creación con cabecera y ancho propios.
+- **Portada pública**: nuevo diseño con bloque lima sobre la pista, «Convoca. Alinea. Gana.», tarjetas de las competiciones disponibles (SNP y LAPI), funciones, pasos numerados, guías y preguntas.
+- **Inicio y listado**: los botones de los avisos («Nombrar gestor», «Registrar cuenta») arrancan en el mismo borde y las tarjetas de enfrentamiento y las filas de «Pendiente» tienen más separación para reducir el ruido visual. En el bloque «Próximo enfrentamiento» el contenido sube, los nombres de los equipos son más grandes y el botón «Ver convocatoria» más pequeño.
+
 ## 31/10/2026 · Nuevo estilo visual (fase 3: estadísticas)
 
 - **Estadísticas del equipo**: el balance de enfrentamientos pasa a bloque lima con cifras gigantes (victorias, empates, derrotas), barra y datos en fichas oscuras. Títulos de sección y tarjetas en Anton, y los Top 5 llevan barra de porcentaje por fila.
