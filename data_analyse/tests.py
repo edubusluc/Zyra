@@ -567,8 +567,9 @@ class OnlyClosedMatchesTests(TestCase):
     def test_player_charts_hidden_with_a_season(self):
         url = reverse("player_statistics")
         all_page = self.client.get(url, {"player": self.a.public_id})
-        self.assertContains(all_page, 'id="data-seasons"')
-        # El gráfico por temporada de la ficha ya no depende del filtro de temporada
+        self.assertContains(all_page, 'id="data-snp-seasons"')
+        self.assertContains(all_page, "Puntos SNP por temporada")
+        # El gráfico por temporada solo se ve con «Todas»
         season_page = self.client.get(url, {"player": self.a.public_id, "season": "2024-2025"})
-        self.assertContains(season_page, 'id="data-seasons"')
+        self.assertNotContains(season_page, "Puntos SNP por temporada")
         self.assertNotContains(season_page, 'id="chartPct"')
