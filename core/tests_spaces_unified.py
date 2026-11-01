@@ -272,6 +272,11 @@ class UnifiedSpacesTests(TestCase):
         self.assertEqual(len(chart["attendance"]["series"]), 2)
         self.assertEqual([c["code"] for c in page.context["set_rows"][0]["comps"]], ["snp", "lapi"])
         self.assertContains(page, "js/stats_spaces.js")
+        # Diseño aprobado: tres situaciones de sets, ganados/perdidos por competición y fila de competición.
+        self.assertEqual([r["key"] for r in page.context["set_compare"]], ["tiebreak", "first_set", "comeback"])
+        self.assertEqual([(t["won"], t["lost"]) for t in chart["totals"]], [(1, 0), (1, 0)])
+        self.assertContains(page, 'id="spacesSidesChart"')
+        self.assertContains(page, "st-comp-row")
         # Con una temporada elegida no hay victorias por temporada, pero sí las convocatorias de esa temporada.
         chosen = self.client.get(reverse("my_statistics") + f"?season={season}")
         self.assertNotContains(chosen, "spacesYearsChart")

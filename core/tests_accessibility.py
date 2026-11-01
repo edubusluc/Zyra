@@ -76,7 +76,8 @@ class A11yParser(HTMLParser):
             if a.get("aria-hidden") != "true" and not a.get("aria-label"):
                 self.problems.append(f'icono <i class="{cls}"> sin aria-hidden="true" ni aria-label')
         elif tag == "canvas":
-            if a.get("role") != "img" or not (a.get("aria-label") or a.get("aria-labelledby")):
+            # Un canvas decorativo (aria-hidden) va dentro de un contenedor role="img" con su aria-label.
+            if a.get("aria-hidden") != "true" and (a.get("role") != "img" or not (a.get("aria-label") or a.get("aria-labelledby"))):
                 self.problems.append(f"<canvas id={a.get('id')!r}> sin role=\"img\" y aria-label")
         if tag in LABELLABLE:
             kind = a.get("type", "text") if tag == "input" else tag

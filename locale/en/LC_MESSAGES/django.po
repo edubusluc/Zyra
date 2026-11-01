@@ -14849,3 +14849,36 @@ msgstr "Back-office menu"
 
 msgid "Tablas y consultas"
 msgstr "Tables and queries"
+
+msgid "Tus partidos en <b>todas</b> tus competiciones"
+msgstr "Your matches in <b>all</b> your competitions"
+
+#, python-format
+msgid "Tu ficha en <b>%(name)s</b>"
+msgstr "Your sheet in <b>%(name)s</b>"
+
+#, python-format
+msgid "%(played)s jugados · %(wins)sV %(losses)sD"
+msgstr "%(played)s played · %(wins)sW %(losses)sL"
+
+#, python-format
+msgid "te apuntaste a %(signed)s de %(total)s"
+msgstr "you signed up for %(signed)s of %(total)s"
+
+msgid "% de victorias en cada situación, por competición."
+msgstr "% of wins in each situation, by competition."
+
+msgid "Ganados y perdidos por competición."
+msgstr "Won and lost by competition."
+
+msgid "Partidos ganados y perdidos por competición"
+msgstr "Matches won and lost by competition"
+
+msgid "Ganados por temporada"
+msgstr "Won per season"
+
+msgid "Cada competición con su color y el total encima."
+msgstr "Each competition in its colour with the total on top."
+
+msgid "% de las cerradas, por competición."
+msgstr "% of the closed ones, by competition."
