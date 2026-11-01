@@ -3,6 +3,7 @@
 {% block page_title %}{% translate "Crear enfrentamiento" %} · {% endblock %}
 
 {% block content %}
+<div class="z-create-layout">
 <div class="table-container">
     <h1>{% translate "Crear enfrentamiento" %}</h1>
 
@@ -125,6 +126,20 @@
             <a href="{% url 'list_match' %}" class="btn btn-outline-secondary">{% translate "Cancelar" %}</a>
         </div>
     </form>
+</div>
+
+{# «Así se verá»: vista previa en vivo de la tarjeta del enfrentamiento (solo escritorio; static/js/match-form.js). #}
+<aside class="z-create-preview" aria-label="{% translate 'Así se verá' %}" data-match-preview data-own-name="{{ current_club.name }}">
+    <span class="z-create-preview-tag">{% translate "Así se verá" %}</span>
+    <p class="z-create-preview-kicker"><span>{{ current_club.rules.name }}</span> · <span data-preview-kind></span></p>
+    <p class="z-create-preview-date" data-preview-date>{% translate "Elige la fecha" %}</p>
+    <p class="z-create-preview-meta" data-preview-meta></p>
+    <div class="z-create-preview-teams">
+        <span><b data-preview-local></b><small>{% translate "Local" %}</small></span>
+        <i aria-hidden="true">VS</i>
+        <span><b data-preview-visiting></b><small>{% translate "Visitante" %}</small></span>
+    </div>
+</aside>
 </div>
 
 <script src="{% static 'js/date-picker.js' %}" defer></script>
