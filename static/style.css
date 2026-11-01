@@ -608,7 +608,7 @@ textarea {
     width: 100%;
     padding: .7rem 1rem;
     font: inherit;
-    font-size: .95rem;
+    font-size: max(16px, 1rem); /* UX-056: por debajo de 16 px Safari en iOS amplía la página al enfocar */
     color: var(--z-text);
     background-color: var(--z-surface-2);
     border: 1px solid var(--z-border-control);
@@ -1260,14 +1260,14 @@ a.z-card:hover, .z-card--link:hover {
 .z-status4-bar { display: block; height: 6px; margin-top: 8px; overflow: hidden; background: var(--z-surface-3); border-radius: 999px; }
 .z-status4-bar i { display: block; height: 100%; background: var(--z-lime); border-radius: inherit; }
 .z-status4 .is-cur .z-status4-bar i { background: var(--z-warning); }
-@media (min-width: 768px) { .z-status4 { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 768px) { .z-status4 { grid-template-columns: repeat(4, minmax(0, 1fr)); } .z-status4--short { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .z-callist { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; }
 .z-pl { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 8px 12px 8px 8px; background: var(--z-surface-2); border: 1px solid var(--z-border); border-radius: 16px; }
 .z-pl.is-me { outline: 2px solid var(--z-lime); outline-offset: 1px; }
 .z-pl-av { display: grid; place-items: center; flex-shrink: 0; width: 40px; height: 40px; object-fit: cover; font: 400 1rem/1 var(--z-display); color: var(--z-ink); background: var(--z-lime); border-radius: 50%; }
 .z-pl-who { flex: 1; min-width: 0; }
-.z-pl-who b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .9rem; text-transform: uppercase; color: #FFFFFF; }
-.z-pl-who small { display: flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; white-space: nowrap; color: var(--z-muted); font-size: .76rem; }
+.z-pl-who b { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; line-height: 1.15; font-size: .9rem; text-transform: uppercase; color: #FFFFFF; }
+.z-pl-who small { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; min-width: 0; overflow-wrap: anywhere; color: var(--z-muted); font-size: .76rem; }
 .z-pl-pair { padding: 1px 7px; font-weight: 800; color: var(--z-ink); background: var(--z-lime); border-radius: 6px; }
 .z-edit-date { margin-left: .35rem; color: var(--z-muted); }
 .z-edit-date:hover, .z-edit-date:focus-visible { color: var(--z-text, inherit); }
@@ -1988,6 +1988,8 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 .z-fixture-state.is-upcoming { color: var(--z-ink); background: var(--z-warning); }
 .z-fixture-state.is-pending-close { color: var(--z-ink); background: var(--z-lime); }
 .z-fixture-state.is-open { color: var(--z-warning); border: 1px solid var(--z-warning); }
+/* Fecha pasada sin cerrar (UX-016): relleno rojo, igual que el aviso del Inicio */
+.z-fixture-state.is-overdue { color: var(--z-ink); background: var(--z-danger); }
 
 .z-fixture-teams { display: grid; gap: 10px; }
 .z-fixture-team { display: flex; align-items: center; gap: 10px; min-width: 0; font-size: .95rem; font-weight: 700; color: #D9DBD3; }
@@ -2082,7 +2084,7 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
     width: 100%;
     padding: .7rem 1rem;
     font: inherit;
-    font-size: .95rem;
+    font-size: max(16px, 1rem);
     font-weight: 600;
     text-align: left;
     color: var(--z-text);
@@ -2357,12 +2359,19 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
     .z-page-head .z-actions > form { flex: 1 1 150px; }
     .z-page-head .z-actions .btn { width: 100%; white-space: nowrap; }
 
-    .st-tabs.z-segmented { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(min-content, 1fr); border-radius: 20px; }
-    .st-tabs.z-segmented .btn {
-        display: flex; flex-direction: column; align-items: center; gap: 4px;
-        padding: .5rem .1rem; font-size: .56rem; letter-spacing: -.01em; border-radius: 16px !important;
+    /* Pestañas de estadísticas (UX-001): una fila que se desliza dentro de su propio contenedor,
+       nunca más ancha que la pantalla; la pestaña activa se centra al cargar (a11y.js). */
+    .st-tabs.z-segmented {
+        display: flex; flex-wrap: nowrap; justify-content: flex-start; width: 100%; max-width: 100%; min-width: 0;
+        overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity; scrollbar-width: none;
+        border-radius: 999px;
     }
-    .st-tabs.z-segmented .btn i { margin: 0 !important; font-size: .95rem; }
+    .st-tabs.z-segmented::-webkit-scrollbar { display: none; }
+    .st-tabs.z-segmented > .btn {
+        flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; min-height: 44px;
+        padding: .45rem .9rem; font-size: .78rem; white-space: nowrap; scroll-snap-align: start;
+    }
+    .st-tabs.z-segmented .btn i { margin: 0 !important; font-size: .9rem; }
 
     /* Temporadas y tipo de partido: sin scroll lateral, los chips reparten el ancho
        y si no caben pasan a la línea siguiente (nunca se salen de la pantalla). */
@@ -3351,3 +3360,59 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .z-form-narrow .form-label { margin-bottom: 8px; font-size: .75rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
 .z-form-narrow .form-control, .z-form-narrow .form-select { min-height: 50px; background-color: var(--z-surface); border-radius: 16px; }
 .z-hint { margin: 0 0 16px; padding: 12px 16px; font-size: .85rem; color: var(--z-text); background: rgba(var(--z-lime-rgb), .1); border: 1px solid var(--z-lime); border-radius: 16px; }
+
+/* ---------- Táctil (UX-027) ----------
+   En pantallas táctiles los botones, chips e iconos llegan a 44 px de alto (recomendación de iOS y
+   Android); el icono de 24 px conserva su tamaño visual y amplía solo el área de toque. */
+@media (pointer: coarse) {
+    .btn, .st-chip, .z-chip, .z-icon-btn { min-height: 44px; }
+    .btn, .st-chip { display: inline-flex; align-items: center; justify-content: center; }
+    .z-icon-btn { min-width: 44px; }
+    .form-select-sm, .form-control-sm { font-size: max(16px, 1rem); min-height: 44px; }
+    .st-tabs.z-segmented > .btn { min-height: 44px; }
+}
+
+/* ---------- Inicio en móvil (UX-003) ----------
+   La tarea diaria va primero: equipos → próximo enfrentamiento y «Pendiente» → avisos y primeros pasos
+   → «Mi forma». Solo cambia el orden visual; el orden de lectura y de foco sigue el del documento. */
+@media (max-width: 767.98px) {
+    .main-content:has(> .z-home-grid) { display: flex; flex-direction: column; }
+    .main-content:has(> .z-home-grid) > * { order: 2; min-width: 0; max-width: 100%; }
+    .main-content:has(> .z-home-grid) > .z-home-grid { grid-template-columns: minmax(0, 1fr); }
+    .main-content:has(> .z-home-grid) > .z-home-strip,
+    .main-content:has(> .z-home-grid) > .z-home-hero { order: 0; }
+    .main-content:has(> .z-home-grid) > .z-home-grid { order: 1; margin-top: 16px; }
+    .main-content:has(> .z-home-grid) > .z-home-grid ~ * { order: 3; }
+    .main-content:has(> .z-home-grid) > .z-onboarding { margin-top: 16px; }
+    /* «Primeros pasos» plegado a lo esencial: título, progreso y siguiente paso */
+    .z-onboarding-head p { display: none; }
+}
+
+/* ---------- Cabeceras con acción principal y «Más» (UX-017) ----------
+   En escritorio se ven los botones de siempre; en móvil la acción principal va primera y lo secundario
+   se recoge en un menú «Más» a su lado, para que la lista empiece antes. */
+.z-actions-more { display: none; }
+@media (max-width: 767.98px) {
+    .z-page-head .z-actions { flex-wrap: nowrap; align-items: stretch; }
+    .z-page-head .z-actions > .z-actions-secondary { display: none; }
+    .z-page-head .z-actions > .z-actions-more { display: block; flex: 0 0 auto; order: 2; }
+    .z-page-head .z-actions > :not(.z-actions-more) { order: 1; flex: 1 1 0; min-width: 0; }
+    .z-page-head .z-actions > :not(.z-actions-more) > .btn, .z-page-head .z-actions > .btn { overflow: hidden; text-overflow: ellipsis; }
+    .z-page-head .z-actions > .z-actions-more .btn { width: auto; }
+    .z-page-head .z-actions .btn { letter-spacing: 0; padding-inline: .8rem; }
+}
+
+/* ---------- Pista en el panel «Próximo enfrentamiento» por debajo de 1100 px ----------
+   En escritorio el panel es la pista (2:1). En tableta y móvil se dibuja la misma pista de fondo: tumbada si el
+   panel es ancho y de pie si es estrecho; las líneas se estiran con el panel (trazo fijo), el contenido no. */
+@media (max-width: 1099.98px) {
+    .z-home-grid .z-next-match::before {
+        content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 100' preserveAspectRatio='none' fill='none' stroke='%230A0A0A' stroke-opacity='.15' stroke-width='2'%3E%3Crect x='3' y='6' width='194' height='88' rx='1' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M100 6V94M30.5 6V94M169.5 6V94M30.5 50H169.5' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+    }
+}
+@media (max-width: 575.98px) {
+    .z-home-grid .z-next-match::before {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 200' preserveAspectRatio='none' fill='none' stroke='%230A0A0A' stroke-opacity='.15' stroke-width='2'%3E%3Crect x='6' y='3' width='88' height='194' rx='1' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M6 100H94M6 30.5H94M6 169.5H94M50 30.5V169.5' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+    }
+}

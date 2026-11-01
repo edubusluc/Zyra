@@ -233,6 +233,14 @@
           <div class="st-chart" id="balanceChart"{% if not column_chart_data %} hidden{% endif %}>
             <canvas id="myColumnChart" role="img" aria-label="{% translate "Balance de partidos por jugador" %}"></canvas>
           </div>
+          {% if column_chart_data %}
+          {# Alternativa accesible al gráfico (UX-040): los mismos datos en una tabla para lectores de pantalla. #}
+          <table class="visually-hidden">
+            <caption>{% translate "Balance de partidos por jugador" %}</caption>
+            <thead><tr><th scope="col">{% translate "Jugador" %}</th><th scope="col">{% translate "3 puntos ganados" %}</th><th scope="col">{% translate "2 puntos ganados" %}</th><th scope="col">{% translate "3 puntos perdidos" %}</th><th scope="col">{% translate "2 puntos perdidos" %}</th></tr></thead>
+            <tbody>{% for row in column_chart_data %}<tr><th scope="row">{{ row.player }}</th><td>{{ row.data.2 }}</td><td>{{ row.data.0 }}</td><td>{{ row.data.3 }}</td><td>{{ row.data.1 }}</td></tr>{% endfor %}</tbody>
+          </table>
+          {% endif %}
           <nav class="st-pager" id="balancePager" aria-label="{% translate 'Páginas de jugadores' %}" hidden>
             <button type="button" class="st-pager-btn" data-step="-1" aria-label="{% translate 'Anterior' %}"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
             <span class="st-pager-info" aria-live="polite"></span>

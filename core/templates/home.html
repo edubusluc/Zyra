@@ -270,7 +270,7 @@
         <a href="{% url 'call_for_match' row.match.public_id %}" class="z-pending-row{% if row.overdue %} is-overdue{% endif %}">
             <span class="z-pending-main">
                 <strong>{% include 'includes/competition_badge.html' with code=row.match.club.competition name=row.match.club.rules.name short=True %} {{ row.match.local_name }} – {{ row.match.visiting_name }}</strong>
-                <small>{{ row.match.start_date|date:"D j M Y" }} · {{ row.phase.label }}{% if row.overdue %} · {% translate "fecha pasada" %}{% endif %}</small>
+                <small>{{ row.match.start_date|date:"D j M Y" }} · {% if row.overdue %}{% translate "Vencido" %} · {% endif %}{{ row.phase.label }}</small>
             </span>
             <span class="z-pending-action">{{ row.phase.pending_label }} <i class="fa-solid fa-chevron-right" aria-hidden="true"></i></span>
         </a>

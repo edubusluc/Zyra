@@ -10,8 +10,14 @@
     </div>
     {% if can_manage %}
     <div class="z-actions">
-        <a href="{% url 'manage_teams' %}" class="btn btn-secondary"><i class="fa-solid fa-pen-to-square me-1" aria-hidden="true"></i> {% translate "Gestionar equipos" %}</a>
+        <a href="{% url 'manage_teams' %}" class="btn btn-secondary z-actions-secondary"><i class="fa-solid fa-pen-to-square me-1" aria-hidden="true"></i> {% translate "Gestionar equipos" %}</a>
         <a href="{% url 'create_team' %}" class="btn btn-primary"><i class="fa-solid fa-plus me-1" aria-hidden="true"></i> {% translate "Nuevo rival" %}</a>
+        <div class="dropdown z-actions-more">
+            <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{% translate 'Más acciones' %}"><i class="fa-solid fa-ellipsis" aria-hidden="true"></i> <span>{% translate "Más" %}</span></button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="{% url 'manage_teams' %}"><i class="fa-solid fa-pen-to-square me-2" aria-hidden="true"></i> {% translate "Gestionar equipos" %}</a></li>
+            </ul>
+        </div>
     </div>
     {% endif %}
 </div>

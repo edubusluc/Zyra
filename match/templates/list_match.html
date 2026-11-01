@@ -9,8 +9,16 @@
         <h1>{% translate "Enfrentamientos" %}</h1>
     </div>
     <div class="z-actions">
-        {% if create_spaces %}<a href="{% url 'list_teams' %}" class="btn btn-secondary text-nowrap"><i class="fa-solid fa-shield-halved me-1" aria-hidden="true"></i> {% translate "Rivales" %}</a>{% endif %}
+        {% if create_spaces %}<a href="{% url 'list_teams' %}" class="btn btn-secondary text-nowrap z-actions-secondary"><i class="fa-solid fa-shield-halved me-1" aria-hidden="true"></i> {% translate "Rivales" %}</a>{% endif %}
         {% include 'includes/create_match_button.html' %}
+        {# UX-017: en móvil lo secundario pasa a «Más» y la acción principal va primero. #}
+        {% if create_spaces %}<div class="dropdown z-actions-more">
+            <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{% translate 'Más acciones' %}"><i class="fa-solid fa-ellipsis" aria-hidden="true"></i> <span>{% translate "Más" %}</span></button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="{% url 'list_teams' %}"><i class="fa-solid fa-shield-halved me-2" aria-hidden="true"></i> {% translate "Rivales" %}</a></li>
+            </ul>
+        </div>
+        {% endif %}
     </div>
 </div>
 
@@ -135,7 +143,7 @@ o estado. Toda la tarjeta es pulsable.{% endcomment %}
             <span class="z-fixture-state {% if m.outcome == 'V' %}is-win{% elif m.outcome == 'D' %}is-loss{% else %}is-draw{% endif %}">{% if m.outcome == 'V' %}{% translate "Victoria" %}{% elif m.outcome == 'D' %}{% translate "Derrota" %}{% else %}{% translate "Empate" %}{% endif %}</span>
             {% elif m.pending_close %}<span class="z-fixture-state is-pending-close">{{ m.phase.label }}</span>
             {% elif m.upcoming %}<span class="z-fixture-state is-upcoming">{{ m.phase.label }}</span>
-            {% else %}<span class="z-fixture-state is-open" title="{% translate 'Fecha pasada' %}">{{ m.phase.label }}<span class="visually-hidden"> · {% translate "fecha pasada" %}</span></span>{% endif %}
+            {% else %}<span class="z-fixture-state is-overdue" title="{% translate 'Fecha pasada' %}">{% translate "Vencido" %} · {{ m.phase.label }}</span>{% endif %}
         </div>
         {% endif %}
     </li>

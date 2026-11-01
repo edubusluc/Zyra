@@ -51,14 +51,16 @@
     },
   });
 
-  // Cifra de cada barra dentro de ella, en Anton, solo si cabe (barras anchas y altas).
+  // Cifra de cada barra dentro de ella, en Anton, solo si cabe (barras anchas y altas; en las
+  // horizontales, tramos de al menos 16 px).
   Chart.register({
     id: 'zBarValues',
     afterDatasetsDraw(chart) {
-      if (chart.config.type !== 'bar' || chart.options.indexAxis === 'y') return;
+      if (chart.config.type !== 'bar') return;
+      const horizontal = chart.options.indexAxis === 'y';
       const ctx = chart.ctx;
       ctx.save();
-      ctx.font = "400 18px 'Anton', 'Archivo', sans-serif";
+      ctx.font = horizontal ? "400 13px 'Anton', 'Archivo', sans-serif" : "400 18px 'Anton', 'Archivo', sans-serif";
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillStyle = INK;
@@ -66,7 +68,14 @@
         if (chart.isDatasetVisible && !chart.isDatasetVisible(i)) return;
         chart.getDatasetMeta(i).data.forEach((bar, j) => {
           const v = ds.data[j];
-          if (typeof v !== 'number' || v <= 0 || bar.width < 26 || Math.abs(bar.base - bar.y) < 30) return;
+          if (typeof v !== 'number' || v <= 0) return;
+          // Barras horizontales (UX-040): la cifra va en el centro del tramo, si cabe.
+          if (horizontal) {
+            if (Math.abs(bar.x - bar.base) < 16 || bar.height < 14) return;
+            ctx.fillText(String(v), (bar.x + bar.base) / 2, bar.y);
+            return;
+          }
+          if (bar.width < 26 || Math.abs(bar.base - bar.y) < 30) return;
           ctx.fillText(String(v), bar.x, (bar.y + bar.base) / 2);
         });
       });
