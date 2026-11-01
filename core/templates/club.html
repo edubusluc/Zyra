@@ -17,10 +17,10 @@
 {% if can_manage %}
 {# Accesos rápidos: cualquier alta de uso frecuente queda a dos toques del inicio. #}
 <ul class="z-quick" aria-label="{% translate 'Accesos rápidos' %}">
-    {% if is_club_admin %}<li><a class="btn btn-secondary btn-sm" href="{% url 'club_members' %}#invitaciones"><i class="fa-regular fa-envelope me-1" aria-hidden="true"></i> {% translate "Invitar" %}</a></li>{% endif %}
-    <li><a class="btn btn-secondary btn-sm" href="{% url 'create_team' %}"><i class="fa-solid fa-plus me-1" aria-hidden="true"></i> {% translate "Crear rival" %}</a></li>
-    <li><a class="btn btn-secondary btn-sm" href="{% url 'create_player' %}"><i class="fa-solid fa-user-plus me-1" aria-hidden="true"></i> {% translate "Nuevo jugador" %}</a></li>
-    <li><a class="btn btn-secondary btn-sm" href="{% url 'create_match' %}"><i class="fa-solid fa-calendar-plus me-1" aria-hidden="true"></i> {% translate "Crear enfrentamiento" %}</a></li>
+    {% if is_club_admin %}<li><a class="btn btn-secondary btn-sm" href="{% url 'club_members' %}{% if request.user_memberships|length > 1 %}?en={{ request.club.competition }}{% endif %}#invitaciones"><i class="fa-regular fa-envelope me-1" aria-hidden="true"></i> {% translate "Invitar" %}</a></li>{% endif %}
+    <li><a class="btn btn-secondary btn-sm" href="{% url 'create_team' %}{% if request.user_memberships|length > 1 %}?en={{ request.club.competition }}{% endif %}"><i class="fa-solid fa-plus me-1" aria-hidden="true"></i> {% translate "Crear rival" %}</a></li>
+    <li><a class="btn btn-secondary btn-sm" href="{% url 'create_player' %}{% if request.user_memberships|length > 1 %}?en={{ request.club.competition }}{% endif %}"><i class="fa-solid fa-user-plus me-1" aria-hidden="true"></i> {% translate "Nuevo jugador" %}</a></li>
+    <li><a class="btn btn-secondary btn-sm" href="{% url 'create_match' %}{% if request.user_memberships|length > 1 %}?en={{ request.club.competition }}{% endif %}"><i class="fa-solid fa-calendar-plus me-1" aria-hidden="true"></i> {% translate "Crear enfrentamiento" %}</a></li>
 </ul>
 {% endif %}
 

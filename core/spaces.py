@@ -115,7 +115,7 @@ def space_filter_context(request, selected, allow_all=True):
             continue
         seen.add(club.competition)
         chips.append({"code": club.competition, "label": str(club.rules.name), "url": url(club.competition),
-                      "active": selected == club.competition})
+                      "club": club, "name": club.rules.name, "active": selected == club.competition})
     ctx = {"space_chips": chips, "space_selected": selected, "multi_space": True, "space_separate": not allow_all}
     if allow_all and selected != ALL_SPACES:
         # Un filtro que se recuerda entre páginas tiene que verse como filtro y poder quitarse (H-25).
@@ -266,12 +266,15 @@ def follow_player(view_func):
     return follow_object("players.Player", "player_id")(view_func)
 
 
-def choose_managed_space(choose_template):
+def choose_managed_space(choose_template, admin_only=False, title=None, question=None, back=None):
     """
-    Decorador de las altas que se hacen en un equipo (crear un enfrentamiento): con ``?en=`` cambia a
-    ese equipo (follow_space); sin él, si el usuario gestiona un solo equipo pasa a ese (aunque el
-    activo sea uno en el que solo juega) y si gestiona varios pinta ``choose_template`` con
-    ``clubs`` para que elija en cuál, sin dar por hecho el equipo activo. Va encima de los permisos.
+    Decorador de las altas que se hacen en un equipo (crear un enfrentamiento, un rival o un jugador,
+    invitar): con ``?en=`` cambia a ese equipo (follow_space); sin él, si el usuario puede hacerlo en un
+    solo equipo pasa a ese (aunque el activo sea uno en el que solo juega) y si puede en varios pinta
+    ``choose_template`` con ``clubs`` para que elija en cuál, sin dar por hecho el equipo activo (UX-002).
+    ``admin_only`` limita los equipos a los que capitanea (invitar es solo del capitán). ``title``,
+    ``question`` y ``back`` (nombre de la URL a la que vuelve «Cancelar») rellenan la plantilla genérica
+    ``choose_space.html``. Va encima de los permisos.
     """
     def decorator(view_func):
         """Envuelve la vista del alta."""
@@ -279,11 +282,15 @@ def choose_managed_space(choose_template):
         @wraps(view_func)
         def wrapper(request, *args, **kwargs):
             """Elige el equipo del alta o pregunta."""
-            if is_multi_space(request) and not request.GET.get(SWITCH_PARAM):
+            if is_multi_space(request) and not request.GET.get(SWITCH_PARAM) and request.method == "GET":
                 managed = managed_clubs(request)
+                if admin_only:
+                    managed = [c for c in managed if membership_for(request, c).is_admin]
                 if len(managed) > 1:
                     from django.shortcuts import render
-                    return render(request, choose_template, {"clubs": managed})
+                    return render(request, choose_template, {
+                        "clubs": managed, "choose_title": title, "choose_question": question,
+                        "choose_back": back, "choose_path": request.path})
                 if managed:
                     switch_to(request, managed[0])
             return view_func(request, *args, **kwargs)

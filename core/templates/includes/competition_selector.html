@@ -1,0 +1,11 @@
+{% load i18n %}
+{# Selector de competición único (UX-013): control segmentado con la insignia SNP/LAPI y el nombre del equipo, el mismo en todas las vistas. Recibe items: dicts con url (o code, para ?en=), code, label (o club) y active. #}
+<nav class="z-segmented z-space-switcher z-space-filter" aria-label="{% translate 'Competición' %}">
+    {% for item in items %}
+    <a class="btn btn-sm{% if item.code and item.code != 'todas' %} z-space-chip z-space-chip--{{ item.code }}{% endif %}{% if item.active %} active{% endif %}" href="{% if item.url %}{{ item.url }}{% else %}{{ request.path }}?en={{ item.code }}{% endif %}"{% if item.active %} aria-current="page"{% endif %}>
+        {% if item.club %}{% include 'includes/competition_badge.html' with code=item.code name=item.name %} <span>{{ item.club.name }}</span>
+        {% elif item.code == 'todas' %}<span>{{ item.label }}</span>
+        {% else %}{% include 'includes/competition_badge.html' with code=item.code name=item.label %}{% endif %}
+    </a>
+    {% endfor %}
+</nav>

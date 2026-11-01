@@ -6,6 +6,7 @@
 <div class="z-create-layout">
 <div class="table-container">
     <h1>{% translate "Crear enfrentamiento" %}</h1>
+    {% include 'includes/target_team.html' %}
 
     {% for error in form.non_field_errors %}
     <div class="alert-message">{{ error }}</div>
@@ -64,7 +65,7 @@
 
         <div class="z-team-cards" data-group-rival{% if form.manual_rival %} hidden{% endif %}>
             {% include "includes/match_team_card.html" with field=form.rival team=form.rival_team %}
-            <p class="z-rival-empty">{% if not form.rival.field.queryset.exists %}{% translate "Todavía no tienes rivales en tu grupo." %}{% else %}{% translate "¿No está el rival?" %}{% endif %} <a href="{% url 'create_team' %}?volver=enfrentamiento">{% translate "Añádelo" %}</a></p>
+            <p class="z-rival-empty">{% if not form.rival.field.queryset.exists %}{% translate "Todavía no tienes rivales en tu grupo." %}{% else %}{% translate "¿No está el rival?" %}{% endif %} <a href="{% url 'create_team' %}?volver=enfrentamiento&amp;en={{ request.club.competition }}">{% translate "Añádelo" %}</a></p>
             {% for error in form.local.errors %}<div class="alert-message">{{ error }}</div>{% endfor %}
         </div>
 

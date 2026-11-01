@@ -12,7 +12,7 @@
     <div class="z-actions">
         {% for c in copy_sources %}<a href="{% url 'copy_players' %}?desde={{ c.competition }}" class="btn btn-secondary z-actions-secondary"><i class="fa-solid fa-copy me-1" aria-hidden="true"></i> {% blocktranslate with competition=c.rules.name %}Copiar de {{ competition }}{% endblocktranslate %}</a>{% endfor %}
         <a href="{% url 'manage_roster' %}" class="btn btn-secondary z-actions-secondary"><i class="fa-solid fa-user-check me-1" aria-hidden="true"></i> {% translate "Gestionar plantilla" %}</a>
-        <a href="{% url 'create_player' %}" class="btn btn-primary"><i class="fa-solid fa-plus me-1" aria-hidden="true"></i> {% translate "Nuevo jugador" %}</a>
+        <a href="{% url 'create_player' %}{% if request.space_switcher %}?en={{ request.club.competition }}{% endif %}" class="btn btn-primary"><i class="fa-solid fa-plus me-1" aria-hidden="true"></i> {% translate "Nuevo jugador" %}</a>
         <div class="dropdown z-actions-more">
             <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{% translate 'Más acciones' %}"><i class="fa-solid fa-ellipsis" aria-hidden="true"></i> <span>{% translate "Más" %}</span></button>
             <ul class="dropdown-menu dropdown-menu-end">
@@ -104,7 +104,7 @@
     <div class="z-empty" style="grid-column: 1 / -1;">
         <i class="fa-solid fa-user-slash" aria-hidden="true"></i>
         {% translate "Añade a tu primer jugador para empezar a preparar convocatorias." %}
-        {% if can_manage %}<div class="mt-3"><a class="btn btn-primary btn-sm" href="{% url 'create_player' %}">{% translate "Nuevo jugador" %}</a></div>{% endif %}
+        {% if can_manage %}<div class="mt-3"><a class="btn btn-primary btn-sm" href="{% url 'create_player' %}{% if request.space_switcher %}?en={{ request.club.competition }}{% endif %}">{% translate "Nuevo jugador" %}</a></div>{% endif %}
     </div>
     {% endfor %}
     <p class="z-empty" data-selector-empty hidden style="grid-column: 1 / -1;"><i class="fa-solid fa-user-slash" aria-hidden="true"></i> {% translate "Ningún jugador coincide con la búsqueda." %}</p>

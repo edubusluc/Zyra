@@ -360,3 +360,59 @@ class OtherCompetitionsReportTests(TestCase):
         self.match.report_other_competitions = False
         self.match.save()
         self.assertEqual(build_report(self.call)["other_competitions"], [])
+
+
+class CreationInSpaceTests(TestCase):
+    """Capitán de SNP y de LAPI: cada alta pregunta o dice en qué equipo se hace (UX-002) y el listado se agrupa (UX-015)."""
+
+    def setUp(self):
+        self.user = User.objects.create_user("edu", password=PASSWORD, email="edu@example.com")
+        self.snp = create_club("Gladiadores", "Sevilla", self.user, division="500")
+        self.lapi = create_club("Gladiadores LAPI", "Sevilla", self.user, competition="lapi")
+        self.client.login(username="edu", password=PASSWORD)
+
+    def test_creating_a_rival_or_player_asks_for_the_team(self):
+        for name, text in (("create_team", "¿En qué equipo quieres crear el rival?"),
+                           ("create_player", "¿En qué equipo quieres crear el jugador?")):
+            page = self.client.get(reverse(name))
+            self.assertContains(page, text)
+            self.assertContains(page, f'href="{reverse(name)}?en=snp"')
+            self.assertContains(page, f'href="{reverse(name)}?en=lapi"')
+
+    def test_form_says_which_team_it_is_for_and_creates_there(self):
+        url = reverse("create_team") + "?en=snp"
+        page = self.client.get(url)
+        self.assertContains(page, "Se creará en")
+        self.assertContains(page, "Gladiadores")
+        data = {"name": "Rival Norte", "location": "Sevilla", "gender": "M", "country": "ES", "division": "500"}
+        self.assertEqual(self.client.post(url, data).status_code, 302)
+        self.assertTrue(Team.objects.filter(club=self.snp, name="Rival Norte").exists())
+        self.assertFalse(Team.objects.filter(club=self.lapi, name="Rival Norte").exists())
+
+    def test_members_page_says_who_is_invited_to(self):
+        page = self.client.get(reverse("club_members") + "?en=lapi")
+        self.assertContains(page, "Invitas a")
+        self.assertContains(page, f'action="{reverse("create_invitation")}?en=lapi"')
+
+    def test_single_team_users_see_no_chooser(self):
+        solo = User.objects.create_user("solo", password=PASSWORD, email="solo@example.com")
+        create_club("Solo", "Sevilla", solo, division="500")
+        self.client.login(username="solo", password=PASSWORD)
+        page = self.client.get(reverse("create_team"))
+        self.assertNotContains(page, "¿En qué equipo quieres crear el rival?")
+        self.assertNotContains(page, "Se creará en")
+
+    def test_match_list_groups_action_upcoming_and_played(self):
+        today = datetime.date.today()
+        rival = Team.objects.create(club=self.snp, name="Iconico", location="X", in_group=True)
+
+        def make(days, draft):
+            return Match.objects.create(club=self.snp, local=self.snp.own_team, visiting=rival, draft_mode=draft,
+                                        start_date=today + datetime.timedelta(days=days))
+        played, overdue, soon, later = make(-20, False), make(-5, True), make(2, True), make(9, True)
+        page = self.client.get(reverse("list_match") + "?season=all&espacio=snp")
+        order = [m.id for m in page.context["matches"]]
+        self.assertEqual(order, [overdue.id, soon.id, later.id, played.id])
+        self.assertEqual([m.group for m in page.context["matches"]], ["action", "upcoming", "upcoming", "played"])
+        for heading in ("Requieren acción", "Próximos", "Jugados"):
+            self.assertContains(page, heading)

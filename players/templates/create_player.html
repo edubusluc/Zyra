@@ -18,6 +18,7 @@
         {% endif %}
         
         <h1>{% translate "Crear Jugador" %}</h1>
+        {% include 'includes/target_team.html' %}
         <form method="POST" class="mt-4" enctype="multipart/form-data" data-similar-check data-loading-text="{% translate 'Creando el jugador…' %}">
             {% csrf_token %}
             <input type="hidden" name="confirm_similar" value="">

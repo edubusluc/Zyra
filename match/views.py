@@ -241,6 +241,14 @@ def list_match(request):
         'pending': outcomes.count(None),
     }
 
+    # Orden por lo que importa (UX-015): primero lo que requiere acción (acta abierta con la fecha pasada,
+    # el más antiguo primero), luego los próximos (el más cercano primero) y al final los jugados (el
+    # más reciente primero). Se pagina ya ordenado, así los grupos no se parten entre páginas distintas.
+    today = timezone.localdate()
+    open_matches = matches.filter(draft_mode=True)
+    matches = [*open_matches.filter(start_date__lt=today).order_by('start_date', 'id'),
+               *open_matches.filter(start_date__gte=today).order_by('start_date', 'id'),
+               *matches.filter(draft_mode=False).order_by('-start_date', '-id')]
     paginator = Paginator(matches, MATCHES_PER_PAGE)
     page = request.GET.get('page')
     try:
@@ -252,7 +260,6 @@ def list_match(request):
 
     called = dict(Call.objects.filter(match__in=list(matches))
                   .annotate(n=Count('players')).values_list('match_id', 'n'))
-    today = timezone.localdate()
     # Reto y Play Off cerrados 6-6: la pareja del partido de desempate decidió la eliminatoria (una sola consulta).
     tied = [m for m in matches if m.no_draw and m.club.rules.tiebreak_game and _tied_on_points(m)]
     tiebreak_pairs = {
@@ -280,6 +287,7 @@ def list_match(request):
         m.local_points, m.visiting_points = split_points(m.result_points) if m.outcome else (None, None)
         m.called = called.get(m.id)
         m.upcoming = m.outcome is None and not m.pending_close and m.start_date >= today
+        m.group = ('played' if not m.draft_mode else 'action' if m.start_date < today else 'upcoming')
 
     # Resto de filtros para la paginación y para los formularios de búsqueda.
     keep = {'season': season, 'q': search, 'rival': rival, 'match_type': match_type}

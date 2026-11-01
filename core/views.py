@@ -527,6 +527,7 @@ def club_home(request):
     })
 
 
+@spaces.management_view
 @club_admin_required
 def club_members(request, invite_form=None):
     """
@@ -561,6 +562,7 @@ def club_members(request, invite_form=None):
     })
 
 
+@spaces.follow_space
 @club_admin_required
 @require_POST
 def create_invitation(request):
@@ -586,6 +588,7 @@ def create_invitation(request):
     return redirect(reverse("club_members") + "#invitaciones")
 
 
+@spaces.follow_space
 @club_admin_required
 @require_POST
 def create_invitation_link(request):
