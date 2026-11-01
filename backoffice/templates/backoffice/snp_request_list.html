@@ -1,5 +1,5 @@
 {% extends 'backoffice/base.html' %}
-{% load i18n %}
+{% load i18n %}{% load zyra_format %}
 {% block title %}{% translate "Peticiones de SNP" %}{% endblock %}
 
 {% block content %}
@@ -21,7 +21,7 @@
     <tbody>
     {% for r in open_requests %}
         <tr>
-            <td class="text-nowrap">{{ r.created_at|date:"j M Y H:i" }}</td>
+            <td class="text-nowrap">{{ r.created_at|date_day_time }}</td>
             <td><a href="{% url 'backoffice:club_detail' r.club.public_id %}">{{ r.club.name }}</a></td>
             <td>{{ r.requested_by.username|default:"—" }}</td>
             <td>{{ r.note|default:"—" }}</td>
@@ -42,7 +42,7 @@
     <tbody>
     {% for r in done_requests %}
         <tr>
-            <td class="text-nowrap">{{ r.done_at|date:"j M Y H:i" }}</td>
+            <td class="text-nowrap">{{ r.done_at|date_day_time }}</td>
             <td><a href="{% url 'backoffice:club_detail' r.club.public_id %}">{{ r.club.name }}</a></td>
             <td>{{ r.done_by.username|default:"—" }}</td>
             <td>{{ r.note|default:"—" }}</td>

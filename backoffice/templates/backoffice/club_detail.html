@@ -1,11 +1,11 @@
 {% extends 'backoffice/base.html' %}
-{% load i18n static backoffice_tags %}
+{% load i18n static backoffice_tags %}{% load zyra_format %}
 {% block title %}{{ club.name }}{% endblock %}
 
 {% block content %}
 <div class="z-page-head">
     <div>
-        <span class="z-eyebrow"><a href="{% url 'backoffice:club_list' %}">{% translate "Clubes" %}</a> · {% with created=club.created_at|date:"j M Y" %}{% blocktranslate %}alta el {{ created }}{% endblocktranslate %}{% endwith %}{% with team=club.own_team %}{% if team %} · {% blocktranslate with team_id=team.public_id %}id del equipo: {{ team_id }}{% endblocktranslate %}{% endif %}{% endwith %}</span>
+        <span class="z-eyebrow"><a href="{% url 'backoffice:club_list' %}">{% translate "Clubes" %}</a> · {% with created=club.created_at|date_day %}{% blocktranslate %}alta el {{ created }}{% endblocktranslate %}{% endwith %}{% with team=club.own_team %}{% if team %} · {% blocktranslate with team_id=team.public_id %}id del equipo: {{ team_id }}{% endblocktranslate %}{% endif %}{% endwith %}</span>
         <h1>{{ club.name }}{% if club.is_suspended %} <span class="z-badge z-badge--danger">{% translate "Suspendido" %}</span>{% endif %}</h1>
     </div>
     <div class="z-actions">
@@ -25,7 +25,7 @@
 </div>
 {% if club.is_suspended %}
 <div class="z-panel">
-    <p class="mb-1"><i class="fa-solid fa-ban me-1" aria-hidden="true"></i> {% blocktranslate trimmed with date=club.suspended_at|date:"j M Y H:i" %}Suspendido el {{ date }}.{% endblocktranslate %}{% if club.suspension_reason %} {% translate "Motivo" %}: {{ club.suspension_reason }}{% endif %}</p>
+    <p class="mb-1"><i class="fa-solid fa-ban me-1" aria-hidden="true"></i> {% blocktranslate trimmed with date=club.suspended_at|date_day_time %}Suspendido el {{ date }}.{% endblocktranslate %}{% if club.suspension_reason %} {% translate "Motivo" %}: {{ club.suspension_reason }}{% endif %}</p>
     {% if blocked_emails %}
     <p class="mb-0">{% translate "Emails bloqueados (no pueden crear clubes ni unirse a ninguno):" %} {% for b in blocked_emails %}{{ b.original_email }}{% if not forloop.last %}, {% endif %}{% endfor %}. {% translate "Se desbloquean al reactivar el club." %}</p>
     {% endif %}
@@ -78,7 +78,7 @@
     <div class="bo-kpi"><span class="bo-kpi-label">{% translate "Miembros" %}</span><b>{{ club.n_members|default:0 }}</b><small>{% with admins=club.n_admins|default:0 %}{% blocktranslate trimmed count n=admins %}{{ n }} capitán{% plural %}{{ n }} capitanes{% endblocktranslate %}{% endwith %}</small></div>
     <div class="bo-kpi"><span class="bo-kpi-label">{% translate "Jugadores" %}</span><b>{{ players_active }}</b><small>{% blocktranslate with total=players_total %}{{ total }} en total, contando bajas{% endblocktranslate %}</small></div>
     <div class="bo-kpi"><span class="bo-kpi-label">{% translate "Partidos" %}</span><b>{{ club.n_matches|default:0 }}</b><small>{% blocktranslate trimmed count n=rivals %}{{ n }} equipo rival{% plural %}{{ n }} equipos rivales{% endblocktranslate %}</small></div>
-    <div class="bo-kpi"><span class="bo-kpi-label">{% translate "Último partido" %}</span><b class="bo-kpi-date">{{ club.last_match|date:"j M Y"|default:"—" }}</b><small>{% if club.last_match %}{{ club.last_match|ago }}{% else %}{% translate "sin partidos jugados" %}{% endif %}</small></div>
+    <div class="bo-kpi"><span class="bo-kpi-label">{% translate "Último partido" %}</span><b class="bo-kpi-date">{{ club.last_match|date_day|default:"—" }}</b><small>{% if club.last_match %}{{ club.last_match|ago }}{% else %}{% translate "sin partidos jugados" %}{% endif %}</small></div>
 </section>
 
 <section class="z-panel">
@@ -105,7 +105,7 @@
         <h2 class="h5">{% translate "Últimos partidos" %}</h2>
         <ul class="bo-list">
             {% for m in past_matches %}
-            <li><span>{{ m.local_name }} – {{ m.visiting_name }}</span><small class="text-muted ms-auto">{{ m.start_date|date:"j M Y" }}{% if m.result_points != "NONE" %} · {{ m.result_points }}{% endif %}</small></li>
+            <li><span>{{ m.local_name }} – {{ m.visiting_name }}</span><small class="text-muted ms-auto">{{ m.start_date|date_day }}{% if m.result_points != "NONE" %} · {{ m.result_points }}{% endif %}</small></li>
             {% empty %}
             <li class="text-muted">{% translate "Sin partidos jugados." %}</li>
             {% endfor %}
@@ -115,7 +115,7 @@
         <h2 class="h5">{% translate "Próximos partidos" %}</h2>
         <ul class="bo-list">
             {% for m in upcoming_matches %}
-            <li><span>{{ m.local_name }} – {{ m.visiting_name }}</span><small class="text-muted ms-auto">{{ m.start_date|date:"j M Y" }}</small></li>
+            <li><span>{{ m.local_name }} – {{ m.visiting_name }}</span><small class="text-muted ms-auto">{{ m.start_date|date_day }}</small></li>
             {% empty %}
             <li class="text-muted">{% translate "Nada programado." %}</li>
             {% endfor %}
@@ -130,7 +130,7 @@
         <tbody>
         {% for inv in invitations %}
             <tr>
-                <td>{{ inv.created_at|date:"j M Y H:i" }}</td>
+                <td>{{ inv.created_at|date_day_time }}</td>
                 <td>{{ inv.created_by.username|default:"—" }}</td>
                 <td>
                     {% if inv.reusable %}<span class="z-badge z-badge--lime">{% blocktranslate trimmed count n=inv.use_count %}Enlace compartido: {{ n }} uso{% plural %}Enlace compartido: {{ n }} usos{% endblocktranslate %}</span>
@@ -175,7 +175,7 @@
             {% for note in notes %}
             <li>
                 <span>{{ note.text|linebreaksbr }}</span>
-                <small class="text-muted ms-auto text-nowrap">{{ note.author_name|default:"—" }} · {{ note.created_at|date:"j M Y" }}</small>
+                <small class="text-muted ms-auto text-nowrap">{{ note.author_name|default:"—" }} · {{ note.created_at|date_day }}</small>
                 {% if note.author_id == user.pk or user.is_superuser %}<form method="post" action="{% url 'backoffice:club_note_delete' note.pk %}" class="d-inline" data-loading-text="{% translate 'Borrando la nota…' %}">{% csrf_token %}<button class="btn btn-link btn-sm text-danger p-0" aria-label="{% translate 'Borrar nota' %}"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></form>{% endif %}
             </li>
             {% empty %}
@@ -195,7 +195,7 @@
         </form>
         <ul class="bo-list">
             {% for t in tasks %}
-            <li><span>{{ t.title }}</span><small class="text-muted ms-auto">{{ t.due_date|date:"j M Y" }}</small>
+            <li><span>{{ t.title }}</span><small class="text-muted ms-auto">{{ t.due_date|date_day }}</small>
                 <form method="post" action="{% url 'backoffice:task_toggle' t.pk %}" class="d-inline" data-loading-text="{% translate 'Guardando la tarea…' %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn btn-outline-light btn-sm">{% translate "Hecha" %}</button></form></li>
             {% empty %}
             <li class="text-muted">{% translate "Sin tareas pendientes." %}</li>
@@ -213,7 +213,7 @@
         <div class="flex-grow-1">
             <label class="form-label" for="result-match">{% translate "Enfrentamiento" %}</label>
             <select class="form-select" id="result-match" name="match" required>
-                {% for m in closed_matches %}<option value="{{ m.public_id }}">{{ m.start_date|date:"d/m/Y" }} · {{ m.local_name }} {{ m.result_points }} {{ m.visiting_name }}</option>{% endfor %}
+                {% for m in closed_matches %}<option value="{{ m.public_id }}">{{ m.start_date|date_day }} · {{ m.local_name }} {{ m.result_points }} {{ m.visiting_name }}</option>{% endfor %}
             </select>
         </div>
         <button class="btn btn-primary" type="submit">{% translate "Enviar resultado" %}</button>

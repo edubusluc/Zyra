@@ -1,5 +1,5 @@
 {% extends 'backoffice/base.html' %}
-{% load i18n backoffice_tags tz %}
+{% load i18n backoffice_tags tz %}{% load zyra_format %}
 {% block title %}{% translate "Importar datos" %}{% endblock %}
 
 {% block content %}
@@ -60,7 +60,7 @@
     <tbody>
     {% for job in page %}
         <tr>
-            <td>{{ job.created_at|timezone:"Europe/Madrid"|date:"j M Y H:i" }}<div class="small text-muted">{{ job.user.username|default:"—" }}</div></td>
+            <td>{{ job.created_at|timezone:"Europe/Madrid"|date_day_time }}<div class="small text-muted">{{ job.user.username|default:"—" }}</div></td>
             <td class="bo-wrap">{{ job.filename }}</td>
             <td>{{ job.entity_spec.label|default:job.entity }}<div class="small text-muted">{{ job.mode_label }}</div></td>
             <td>{{ job.club.name }}</td>

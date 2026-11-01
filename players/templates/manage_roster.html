@@ -35,7 +35,7 @@
     <div class="z-selector-grid">
         {% for p in players %}
         <label class="z-roster" data-name="{{ p.full_name }}">
-            <img src="{% if p.photo %}{{ p.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="" class="z-avatar z-avatar--sm">
+            {% include 'includes/player_avatar.html' with player=p size="z-avatar--sm" alt="" %}
             <span class="z-pick-body">
                 <span class="z-pick-name" title="{{ p.full_name }}">{{ p.short_name }}</span>
                 <span class="z-pick-meta" data-roster-state></span>

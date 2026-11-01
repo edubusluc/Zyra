@@ -1,5 +1,5 @@
 {# Uso: {% include 'backoffice/includes/club_rows.html' with clubs=... empty="..." %} (clubes anotados con annotate_clubs) #}
-{% load i18n %}
+{% load i18n %}{% load zyra_format %}
 {% if clubs %}
 <div class="z-table-wrap"><table class="table align-middle">
     <thead><tr><th>{% translate "Club" %}</th><th class="text-end">{% translate "Miembros" %}</th><th class="text-end">{% translate "Jugadores" %}</th><th class="text-end">{% translate "Partidos" %}</th><th>{% translate "Último partido" %}</th><th>{% translate "Alta" %}</th></tr></thead>
@@ -10,8 +10,8 @@
             <td class="text-end">{{ c.n_members|default:0 }}</td>
             <td class="text-end">{{ c.n_players|default:0 }}</td>
             <td class="text-end">{{ c.n_matches|default:0 }}</td>
-            <td>{{ c.last_match|date:"j M Y"|default:"—" }}</td>
-            <td>{{ c.created_at|date:"j M Y" }}</td>
+            <td>{{ c.last_match|date_day|default:"—" }}</td>
+            <td>{{ c.created_at|date_day }}</td>
         </tr>
     {% endfor %}
     </tbody>

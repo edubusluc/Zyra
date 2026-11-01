@@ -35,7 +35,7 @@
     {% if p.linked %}<div class="z-claim is-taken" data-name="{{ p.full_name }}">
     {% else %}<form method="post" action="{% url 'link_player' p.public_id %}" class="z-claim is-free" data-name="{{ p.full_name }}" data-loading-text="{% translate 'Vinculando tu jugador…' %}">
         {% csrf_token %}{% endif %}
-        <img src="{% if p.photo %}{{ p.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="" class="z-avatar z-avatar--sm">
+        {% include 'includes/player_avatar.html' with player=p size="z-avatar--sm" alt="" %}
         <span class="z-pick-body">
             <span class="z-pick-name">{{ p.full_name }}</span>
             <span class="z-pick-meta">{% if p.linked %}{% translate "Ya enlazado" %}{% else %}{{ p.get_position_display }}{% endif %}</span>

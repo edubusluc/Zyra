@@ -1,0 +1,2 @@
+{# Avatar de un jugador (UX-035): su foto o, sin ella, sus iniciales sobre superficie neutra (el lima queda para acción y estado). Recibe player, size (clase extra) y alt (vacío = decorativo). #}
+{% if player.photo %}<img src="{{ player.photo.url }}" alt="{{ alt }}" class="z-avatar {{ size }}" loading="lazy">{% else %}<span class="z-avatar z-avatar--initials {{ size }}" {% if alt %}role="img" aria-label="{{ alt }}"{% else %}aria-hidden="true"{% endif %}>{{ player.name|slice:":1"|upper }}{{ player.last_name|slice:":1"|upper }}</span>{% endif %}

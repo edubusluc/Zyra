@@ -1,5 +1,5 @@
 {% extends 'backoffice/base.html' %}
-{% load i18n l10n backoffice_tags %}
+{% load i18n l10n backoffice_tags %}{% load zyra_format %}
 {% block title %}{% translate "Uso de la plataforma" %}{% endblock %}
 
 {% block content %}
@@ -85,7 +85,7 @@
                 <td>{{ c.recent }}</td>
                 <td>{{ c.n_members|default:0 }}</td>
                 <td>{{ c.n_players|default:0 }}</td>
-                <td>{{ c.last_match|date:"d/m/Y"|default:"—" }}</td>
+                <td>{{ c.last_match|date_day|default:"—" }}</td>
             </tr>
         {% empty %}
             <tr><td colspan="5" class="text-muted">{% translate "Ningún club ha jugado en los últimos 30 días." %}</td></tr>

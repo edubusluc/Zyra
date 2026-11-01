@@ -14,7 +14,7 @@
 
 <div class="z-panel">
     <div class="z-profile">
-        <img src="{% if player.photo %}{{ player.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="{% blocktranslate with name=player.full_name %}Foto de {{ name }}{% endblocktranslate %}" class="z-avatar z-avatar--xl">
+        {% blocktranslate asvar photo_alt with name=player.full_name %}Foto de {{ name }}{% endblocktranslate %}{% include 'includes/player_avatar.html' with player=player size="z-avatar--xl" alt=photo_alt %}
         <div>
             <span class="z-eyebrow">{% translate "Perfil del jugador" %}</span>
             <h1 class="z-profile-name">{{ player.short_name }}</h1>
@@ -49,7 +49,7 @@
         <li>
             <div class="min-w-0">
                 <strong>{% blocktranslate with local=game.match.local_name visiting=game.match.visiting_name %}{{ local }} vs {{ visiting }}{% endblocktranslate %}</strong>
-                <div class="z-result-date">{{ game.match.start_date|date:"D j M Y" }} · {% blocktranslate with n=game.n_game %}Partido {{ n }}{% endblocktranslate %}</div>
+                <div class="z-result-date">{{ game.match.start_date|date_long }} · {% blocktranslate with n=game.n_game %}Partido {{ n }}{% endblocktranslate %}</div>
             </div>
             <span class="st-pip st-pip--{{ res }}">{% if res == "w" %}{% translate "V" context "victoria" %}{% else %}{% translate "D" context "derrota" %}{% endif %}</span>
         </li>

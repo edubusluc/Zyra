@@ -5897,9 +5897,9 @@ msgid "Error 404"
 msgstr "Error 404"
 
 #: core/templates/404.html:11
-msgid "La página que buscas no existe o no pertenece a tu club."
+msgid "La página que buscas no existe o no pertenece a tu equipo."
 msgstr ""
-"The page you are looking for does not exist or does not belong to your club."
+"The page you are looking for does not exist or does not belong to your team."
 
 #: core/templates/429.html:4 core/templates/429.html:10
 msgid "Demasiadas solicitudes"
@@ -7985,8 +7985,8 @@ msgid ""
 msgstr "Fetch your players' SNP points to rank the pairs as the league does."
 
 #: core/templates/landing.html:50
-msgid "Tu club, en privado"
-msgstr "Your club, private"
+msgid "Tu equipo, en privado"
+msgstr "Your team, private"
 
 #: core/templates/landing.html:51
 msgid ""
@@ -8007,8 +8007,8 @@ msgstr ""
 " Spanish and English."
 
 #: core/templates/landing.html:64
-msgid "Registra tu club"
-msgstr "Register your club"
+msgid "Registra tu equipo"
+msgstr "Register your team"
 
 #: core/templates/landing.html:64
 msgid "Crea la cuenta del capitán y el equipo con el que compites."
@@ -14740,3 +14740,7 @@ msgstr "Need action"
 #: match/templates/list_match.html
 msgid "Próximos"
 msgstr "Upcoming"
+
+#: core/forms.py
+msgid "Nombre del equipo"
+msgstr "Team name"

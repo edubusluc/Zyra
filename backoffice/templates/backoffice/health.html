@@ -1,5 +1,5 @@
 {% extends 'backoffice/base.html' %}
-{% load i18n l10n backoffice_tags %}
+{% load i18n l10n backoffice_tags %}{% load zyra_format %}
 {% block title %}{% translate "Salud de los servicios" %}{% endblock %}
 
 {% block content %}
@@ -94,7 +94,7 @@
         {% for d in health.reports.problems %}
             <tr>
                 <td>{% if d.call.match.club %}<a href="{% url 'backoffice:club_detail' d.call.match.club.public_id %}">{{ d.call.match.club.name }}</a>{% else %}—{% endif %}</td>
-                <td>{{ d.call }} · {{ d.call.match.start_date|date:"d/m/Y" }}</td>
+                <td>{{ d.call }} · {{ d.call.match.start_date|date_day }}</td>
                 <td>{{ d.email }}</td>
                 <td>{{ d.get_status_display }}</td>
                 <td>{{ d.attempts }}</td>
@@ -115,7 +115,7 @@
         {% for d in health.results.problems %}
             <tr>
                 <td>{% if d.match.club %}<a href="{% url 'backoffice:club_detail' d.match.club.public_id %}">{{ d.match.club.name }}</a>{% else %}—{% endif %}</td>
-                <td>{{ d.match }} · {{ d.match.start_date|date:"d/m/Y" }}{% if d.correction %} <span class="z-badge">{% translate "Corrección" %}</span>{% endif %}</td>
+                <td>{{ d.match }} · {{ d.match.start_date|date_day }}{% if d.correction %} <span class="z-badge">{% translate "Corrección" %}</span>{% endif %}</td>
                 <td>{{ d.email }}</td>
                 <td>{{ d.get_status_display }}</td>
                 <td>{{ d.attempts }}</td>

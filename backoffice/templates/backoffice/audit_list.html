@@ -1,5 +1,5 @@
 {% extends 'backoffice/base.html' %}
-{% load i18n backoffice_tags %}
+{% load i18n backoffice_tags %}{% load zyra_format %}
 {% block title %}{% translate "Auditoría" %}{% endblock %}
 
 {% block content %}
@@ -26,7 +26,7 @@
     <tbody>
     {% for log in page %}
         <tr>
-            <td class="text-nowrap">{{ log.created_at|date:"j M Y H:i" }}</td>
+            <td class="text-nowrap">{{ log.created_at|date_day_time }}</td>
             <td>{{ log.username|default:"—" }}{% if log.ip %}<br><small class="text-muted">{{ log.ip }}</small>{% endif %}</td>
             <td>{% for key, label in labels.items %}{% if key == log.action %}{{ label }}{% endif %}{% endfor %}<br><small class="text-muted">{{ log.action }}</small></td>
             <td>{{ log.object_label|default:"—" }}{% if log.object_id %}<br><small class="text-muted">{{ log.object_id }}</small>{% endif %}</td>

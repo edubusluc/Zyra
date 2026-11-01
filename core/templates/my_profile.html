@@ -141,7 +141,7 @@
     {% if sheets|length > 1 %}<p class="z-account-sheet-team">{% include 'includes/competition_badge.html' with code=club.competition name=club.rules.name %} <strong>{{ club.name }}</strong></p>{% endif %}
     {% if player %}
     <a href="{% url 'my_player' %}{{ row.query }}" class="z-claim is-free z-account-player">
-        <img src="{% if player.photo %}{{ player.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="" class="z-avatar z-avatar--sm">
+        {% include 'includes/player_avatar.html' with player=player size="z-avatar--sm" alt="" %}
         <span class="z-pick-body">
             <span class="z-pick-name">{{ player.full_name }}</span>
             <span class="z-pick-meta"><i class="fa-solid fa-link me-1" aria-hidden="true"></i>{% blocktranslate with club=club.name %}Tu cuenta está enlazada a este jugador de {{ club }}{% endblocktranslate %}</span>
@@ -166,7 +166,7 @@
     <h2 class="z-section-title mt-0">{% translate "Tu ficha también está en otro equipo" %}</h2>
     <p class="form-text">{% blocktranslate with club=sheet.club.name competition=sheet.club.rules.name %}El capitán de {{ club }} ({{ competition }}) copió tu ficha antes de que tuvieras cuenta. Si es tuya, entrarás en ese equipo como jugador y verás también allí tus estadísticas.{% endblocktranslate %}</p>
     <div class="z-claim z-account-player">
-        <img src="{% if sheet.photo %}{{ sheet.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="" class="z-avatar z-avatar--sm">
+        {% include 'includes/player_avatar.html' with player=sheet size="z-avatar--sm" alt="" %}
         <span class="z-pick-body">
             <span class="z-pick-name">{{ sheet.full_name }}</span>
             <span class="z-pick-meta">{{ sheet.club.name }} · {{ sheet.club.rules.name }}</span>

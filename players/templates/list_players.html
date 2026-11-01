@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
 {% load static i18n zyra_format %}
-{% block page_title %}{% translate "Jugadores" %} · {% endblock %}
+{% block page_title %}{% translate "Plantilla" context "equipo" %} · {% endblock %}
 
 {% block content %}
 <div class="z-page-head">
     <div>
         <span class="z-eyebrow">{{ current_club.name }}</span>
-        <h1>{% translate "Jugadores" %}</h1>
+        <h1>{% translate "Plantilla" context "equipo" %}</h1>
     </div>
     {% if can_manage %}
     <div class="z-actions">
@@ -80,11 +80,7 @@
         {% if can_manage %}
         <a href="{% url 'edit_player' player.public_id %}" class="z-edit" aria-label="{% blocktranslate with name=player.name|upper %}Editar a {{ name }}{% endblocktranslate %}"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
         {% endif %}
-        {% if player.photo %}
-        <img src="{{ player.photo.url }}" alt="" class="z-avatar z-avatar--lg">
-        {% else %}
-        <img src="{% static 'zyra/avatar.svg' %}" alt="" class="z-avatar z-avatar--lg">
-        {% endif %}
+        {% include 'includes/player_avatar.html' with player=player size="z-avatar--lg" alt="" %}
         <div class="min-w-0">
             <h2 class="z-player-name"><a href="{% url 'show_player' player.public_id %}" class="stretched-link text-reset">{{ player.short_name }}</a></h2>
             <p class="z-player-meta">
@@ -128,11 +124,7 @@
             {% for player in players %}
             <tr class="z-row-link" data-selector-item data-key="{{ player.public_id }}" data-name="{{ player.full_name }}" data-href="{% url 'show_player' player.public_id %}">
                 <td>
-                    {% if player.photo %}
-                    <img src="{{ player.photo.url }}" alt="" class="table-avatar">
-                    {% else %}
-                    <img src="{% static 'zyra/avatar.svg' %}" alt="" class="table-avatar">
-                    {% endif %}
+                    {% include 'includes/player_avatar.html' with player=player size="table-avatar" alt="" %}
                 </td>
                 <td><a href="{% url 'show_player' player.public_id %}" class="text-reset"><strong>{{ player.short_name }}</strong></a></td>
                 <td>{{ player.get_position_display }}</td>

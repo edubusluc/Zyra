@@ -1,5 +1,5 @@
 {% extends 'backoffice/base.html' %}
-{% load i18n static %}
+{% load i18n static %}{% load zyra_format %}
 {% block title %}{% translate "Fotos" %}{% endblock %}
 
 {% block content %}
@@ -7,7 +7,7 @@
     <div>
         <span class="z-eyebrow">
             {% if rekognition_enabled %}
-            {% blocktranslate trimmed with n=calls_this_month limit=monthly_limit %}Rekognition este mes: {{ n }} de {{ limit }} fotos gratis{% endblocktranslate %}{% if free_until %} · {% blocktranslate with date=free_until|date:"j M Y" %}gratis hasta el {{ date }}{% endblocktranslate %}{% endif %}
+            {% blocktranslate trimmed with n=calls_this_month limit=monthly_limit %}Rekognition este mes: {{ n }} de {{ limit }} fotos gratis{% endblocktranslate %}{% if free_until %} · {% blocktranslate with date=free_until|date_day %}gratis hasta el {{ date }}{% endblocktranslate %}{% endif %}
             {% else %}
             {% translate "Revisión manual: las fotos nuevas llegan aquí pendientes de revisar" %}
             {% endif %}
@@ -41,7 +41,7 @@
             <td>{% if c.club %}<a href="{% url 'backoffice:club_detail' c.club.public_id %}">{{ c.club.name }}</a>{% else %}—{% endif %}</td>
             <td>{% if c.owner %}<a href="{% url 'backoffice:user_detail' c.owner.id %}">{{ c.owner.username }}</a>{% if not c.owner.email %} <span class="z-badge z-badge--danger">{% translate "sin email" %}</span>{% endif %}{% else %}—{% endif %}</td>
             <td>{% if c.strikes %}<span class="z-badge z-badge--danger">{{ c.strikes }}</span>{% else %}0{% endif %}</td>
-            <td>{{ c.created_at|date:"j M Y H:i" }}</td>
+            <td>{{ c.created_at|date_day_time }}</td>
             {% if status == 'rejected' %}<td class="text-muted">{{ c.reason|default:"—" }}</td>{% endif %}
             <td class="text-end">
                 {% if c.in_use %}
@@ -70,7 +70,7 @@
         <tbody>
         {% for r in recent_removals %}
             <tr>
-                <td>{{ r.created_at|date:"j M Y H:i" }}</td>
+                <td>{{ r.created_at|date_day_time }}</td>
                 <td>{{ r.subject }}{% if r.club %} · {{ r.club.name }}{% endif %}</td>
                 <td>{% if r.user %}<a href="{% url 'backoffice:user_detail' r.user.id %}">{{ r.user.username }}</a>{% else %}—{% endif %}</td>
                 <td class="text-muted">{{ r.reason|default:"—" }}</td>

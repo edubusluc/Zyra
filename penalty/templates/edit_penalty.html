@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n %}{% load zyra_format %}
 {% block page_title %}{% translate "Editar advertencia" %} · {% endblock %}
 
 {% block content %}
@@ -7,7 +7,7 @@
     <h1>{% translate "Editar advertencia" %}</h1>
     <p class="text-muted">
         <strong>{{ penalty.player.full_name }}</strong> ·
-        {{ penalty.call.match.local_name }} vs {{ penalty.call.match.visiting_name }} · {{ penalty.call.match.start_date|date:"j M Y" }}
+        {{ penalty.call.match.local_name }} vs {{ penalty.call.match.visiting_name }} · {{ penalty.call.match.start_date|date_day }}
     </p>
 
     {% if error %}<div class="alert alert-danger" role="alert">{{ error }}</div>{% endif %}

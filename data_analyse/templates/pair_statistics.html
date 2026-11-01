@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static i18n l10n %}
+{% load static i18n l10n %}{% load zyra_format %}
 {% block page_title %}{% if s %}{{ p1.short_name }} / {{ p2.short_name }}{% else %}{% translate "Estadísticas por parejas" %}{% endif %} · {% endblock %}
 
 {% block content %}
@@ -148,7 +148,7 @@
                 {% for g in last_games %}
                   <tr>
                     <th scope="row">
-                      <a href="{% url 'call_for_match' g.match_public_id %}#partido-{{ g.n_game }}">{{ g.date|date:"D j M Y" }}</a>
+                      <a href="{% url 'call_for_match' g.match_public_id %}#partido-{{ g.n_game }}">{{ g.date|date_long }}</a>
                     </th>
                     <td>{{ g.rival }} <span class="st-muted">({% if g.local %}{% translate "local" %}{% else %}{% translate "visitante" %}{% endif %})</span></td>
                     <td>{{ g.n_game }}</td>
