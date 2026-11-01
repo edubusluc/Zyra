@@ -1,0 +1,30 @@
+{% load static i18n %}{% get_current_language as LANGUAGE_CODE %}<!DOCTYPE html>
+{% comment %}
+Error 500 (UX-008). Página autónoma: no extiende base.html porque, si ha fallado el servidor,
+los context processors (equipo activo, navegación…) o la base de datos pueden ser la causa.
+Django la pinta sin contexto: solo usa {% static %}, {% url %} y traducciones.
+{% endcomment %}
+<html lang="{{ LANGUAGE_CODE|default:'es' }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex">
+    <title>{% translate "Algo ha fallado" %} · Zyra</title>
+    <link rel="icon" href="{% static 'zyra/favicon.svg' %}" type="image/svg+xml">
+    <link rel="stylesheet" href="{% static 'vendor/bootstrap/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+<body>
+<a class="z-skip-link" href="#contenido">{% translate "Saltar al contenido" %}</a>
+<main class="main-content" id="contenido">
+    <div class="z-auth">
+        <div class="z-auth-card text-center">
+            <img src="{% static 'zyra/logo.svg' %}" alt="Zyra" class="z-auth-logo">
+            <h1>{% translate "Algo ha fallado" %}</h1>
+            <p class="text-muted">{% translate "No es culpa tuya. Ya nos ha llegado el aviso: vuelve a intentarlo en un minuto." %}</p>
+            <a class="btn btn-primary btn-lg" href="{% url 'home' %}">{% translate "Volver al inicio" %}</a>
+        </div>
+    </div>
+</main>
+</body>
+</html>

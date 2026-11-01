@@ -38,6 +38,10 @@
     --z-surface-3: #252722;
     --z-border: #30322D;
     --z-border-strong: #474A42;
+    /* Borde de los controles (campos, casillas, interruptores): ≥3:1 sobre surface y surface-2
+       (WCAG 1.4.11, UX-007). --z-border queda para separadores decorativos. */
+    --z-border-control: #6B6F64;
+    --z-border-control-hover: #8A8E83;
     --z-text: #F4F5F1;
     --z-muted: #A4A79E;
     --z-danger: #FF5C63;
@@ -144,7 +148,9 @@ body {
 a { color: var(--z-lime); text-decoration: none; }
 a:hover { color: var(--z-lime-hover); }
 /* Enlaces dentro de un texto: subrayados, para no distinguirlos solo por el color (WCAG 1.4.1) */
-.z-auth-foot a, .z-legal p a, .z-legal li a, main p a:not([class]) { text-decoration: underline; text-underline-offset: .2em; }
+/* (UX-042) también los de ayudas, avisos y textos pequeños de formularios, con o sin clase propia */
+.z-auth-foot a, .z-legal p a, .z-legal li a, main p a:not([class]),
+main :is(p, li, small, .form-text, .alert, label) a:not(.btn, .stretched-link, .dropdown-item, .z-eyebrow, .z-location, [class*="z-chip"]) { text-decoration: underline; text-underline-offset: .2em; }
 /* btn-outline-danger de Bootstrap (#dc3545) no llega a 4.5:1 sobre el fondo oscuro */
 .btn-outline-danger { --bs-btn-color: var(--z-danger); --bs-btn-border-color: var(--z-danger); }
 
@@ -601,13 +607,13 @@ textarea {
     font-size: .95rem;
     color: var(--z-text);
     background-color: var(--z-surface-2);
-    border: 1px solid var(--z-border);
+    border: 1px solid var(--z-border-control);
     border-radius: 12px;
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, .25);
     transition: border-color .2s var(--z-ease), box-shadow .2s var(--z-ease), background-color .2s var(--z-ease);
 }
 .form-control:hover:not(:focus):not(:disabled), .form-select:hover:not(:focus):not(:disabled),
-input:hover:not(:focus):not(:disabled), select:hover:not(:focus):not(:disabled), .z-select-trigger:hover:not(:focus):not(:disabled), textarea:hover:not(:focus):not(:disabled) { border-color: var(--z-border-strong); }
+input:hover:not(:focus):not(:disabled), select:hover:not(:focus):not(:disabled), .z-select-trigger:hover:not(:focus):not(:disabled), textarea:hover:not(:focus):not(:disabled) { border-color: var(--z-border-control-hover); }
 .form-control::placeholder, input::placeholder, textarea::placeholder { color: #8C8C8C; }
 .form-control:focus, .form-select:focus, input:focus, select:focus, .z-select-trigger:focus-visible, textarea:focus {
     color: #FFFFFF;
@@ -647,7 +653,7 @@ input[type="checkbox"], .form-check-input {
     height: 1.15em;
     accent-color: var(--z-lime);
     background-color: var(--z-surface-2);
-    border-color: var(--z-border-strong);
+    border-color: var(--z-border-control);
     cursor: pointer;
 }
 .form-check-input:checked { background-color: var(--z-lime); border-color: var(--z-lime); }
@@ -1189,13 +1195,22 @@ a.z-card:hover, .z-card--link:hover {
     border: 1px solid var(--z-border);
     border-radius: 22px;
     overflow: hidden;
+    container-type: inline-size;
 }
+/* Móvil y tablet: dos columnas iguales para local y visitante (antes la del visitante era «auto»
+   y la del local se quedaba estrecha, partiendo «GLADIADORES» a mitad de palabra, UX-004). */
+@media (max-width: 991.98px) { .z-versus { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
 .z-versus > * { position: relative; }
-.z-versus-team { font: 400 clamp(1.05rem, 4.6vw, 2.6rem)/1 var(--z-display); text-transform: uppercase; color: #FFFFFF; overflow-wrap: break-word; hyphens: none; }
+/* Nombres del marcador: nunca se parten dentro de una palabra; el tamaño sigue al ancho del panel
+   y las líneas se equilibran. Solo una palabra más larga que la columna entera se corta. */
+.z-versus-team { font: 400 clamp(1rem, 6.5cqi, 2.6rem)/1.02 var(--z-display); text-transform: uppercase; color: #FFFFFF; overflow-wrap: break-word; word-break: normal; hyphens: manual; text-wrap: balance; }
 .z-versus-team small { display: block; margin-top: 6px; font: 700 .7rem var(--z-body); letter-spacing: .1em; color: var(--z-muted); }
 .z-versus-team:last-child { text-align: right; }
 .z-versus-mid { grid-column: 1 / -1; grid-row: 1; text-align: center; }
 .z-versus-vs { font: 400 clamp(3.4rem, 17vw, 6rem)/.9 var(--z-display); color: var(--z-lime); white-space: nowrap; }
+/* El marcador lleva el color del resultado del equipo propio: lima solo si gana (UX-005). */
+.z-versus-vs.is-loss { color: var(--z-danger); }
+.z-versus-vs.is-draw { color: var(--z-text); }
 .z-ficha-side { display: grid; align-content: start; gap: 8px; padding: 16px 18px; background: var(--z-surface); border: 1px solid var(--z-border); border-radius: 22px; }
 .z-ficha-side p { margin: 0; }
 .z-kind { display: grid; gap: 2px; }
@@ -1268,7 +1283,7 @@ a.z-card:hover, .z-card--link:hover {
 .z-game-row:last-child { border-bottom: 0; }
 .z-game-row .z-set { font-size: 1.05rem; font-weight: 800; text-align: center; font-variant-numeric: tabular-nums; color: var(--z-muted); }
 .z-game-row.is-winner .z-set, .z-game-row.is-winner .z-game-side { color: #FFFFFF; }
-.z-game-row.is-winner .z-set { color: var(--z-lime); }
+.z-game-row.is-winner.is-own .z-set { color: var(--z-lime); }
 .z-game-side { min-width: 0; font-size: .9rem; color: var(--z-muted); }
 .z-game-side strong { display: block; font-size: .78rem; letter-spacing: .05em; text-transform: uppercase; }
 .z-game-sets-head { display: grid; grid-template-columns: repeat(3, 44px); gap: 4px; font-size: .7rem; font-weight: 800; color: var(--z-muted); text-align: center; }
@@ -2068,14 +2083,14 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
     text-align: left;
     color: var(--z-text);
     background: var(--z-surface-2);
-    border: 1px solid var(--z-border);
+    border: 1px solid var(--z-border-control);
     border-radius: 12px;
     cursor: pointer;
     transition: border-color .15s, box-shadow .15s;
 }
 .z-datepicker-trigger i { color: var(--z-lime); }
 .z-datepicker-trigger.is-empty span { font-weight: 500; color: #8C8C8C; }
-.z-datepicker-trigger:hover { border-color: var(--z-border-strong); }
+.z-datepicker-trigger:hover { border-color: var(--z-border-control-hover); }
 .z-datepicker.is-open .z-datepicker-trigger,
 .z-datepicker-trigger:focus-visible {
     border-color: var(--z-lime);
@@ -2291,6 +2306,7 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 .z-result-checks { display: grid; gap: 4px; min-height: 1.5rem; margin: 0 0 12px; padding: 0; list-style: none; font-size: .9rem; }
 .z-result-checks li { color: var(--z-muted); }
 .z-result-checks .is-ok { color: var(--z-lime); }
+.z-result-checks .is-rival { color: var(--z-text); }
 .z-result-checks .is-bad { color: var(--z-danger); }
 .z-result-checks i { width: 18px; }
 @media (max-width: 575.98px) {

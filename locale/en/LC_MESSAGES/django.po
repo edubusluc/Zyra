@@ -14676,3 +14676,11 @@ msgstr "The same player can be in both. Each competition has its own space and s
 
 msgid "Crea un equipo que aún no esté en la lista."
 msgstr "Create a team that isn't in the list yet."
+
+#: core/templates/500.html:12 core/templates/500.html:23
+msgid "Algo ha fallado"
+msgstr "Something went wrong"
+
+#: core/templates/500.html:24
+msgid "No es culpa tuya. Ya nos ha llegado el aviso: vuelve a intentarlo en un minuto."
+msgstr "It's not your fault. We've already been notified: please try again in a minute."
