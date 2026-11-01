@@ -14880,3 +14880,11 @@ msgstr "%(n)s in favour"
 #, python-format
 msgid "%(n)s en contra"
 msgstr "%(n)s against"
+
+#, python-format
+msgid "%(sweep)s por ganar 3-0, %(win)s por ganar 2-1, %(loss)s por perder 2-1 y 0 por perder 3-0 o no presentarse."
+msgstr "%(sweep)s for winning 3-0, %(win)s for winning 2-1, %(loss)s for losing 2-1 and 0 for losing 3-0 or not showing up."
+
+#, python-format
+msgid "en %(n)s jornadas · media %(avg)s"
+msgstr "in %(n)s rounds · average %(avg)s"

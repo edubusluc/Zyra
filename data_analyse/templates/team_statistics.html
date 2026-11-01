@@ -116,12 +116,11 @@
 
       {% if points %}
       <section id="sec-puntos" aria-labelledby="puntos-title" class="st-section mt-4">
-        <h2 class="st-section-title" id="puntos-title">{% translate "Puntos de liga" %}</h2>
         <div class="st-grid st-grid--2">
           <section class="st-card">
-            <h3 class="st-card-title">{% if points.kind == 'league' %}{% translate "Puntos por jornada" %}{% else %}{% translate "Puntos por enfrentamiento" %}{% endif %}</h3>
-            <p class="st-card-note">{% if points.kind == 'league' %}{% blocktranslate with win=request.club.rules.league_points.0 %}Puntos de liga de cada jornada, hasta {{ win }}.{% endblocktranslate %}{% else %}{% blocktranslate with max=points.max %}Puntos ganados en cada enfrentamiento, de {{ max }} posibles.{% endblocktranslate %}{% endif %}</p>
-            <p class="st-points-total"><b>{{ points.total }}</b> <span>{% blocktranslate with n=points.played avg=points.average %}en {{ n }} enfrentamientos · media {{ avg }}{% endblocktranslate %}</span></p>
+            <h3 class="st-card-title" id="puntos-title">{% translate "Puntos de liga" %}</h3>
+            <p class="st-card-note">{% if points.kind == 'league' %}{% blocktranslate with sweep=request.club.rules.league_points.0 win=request.club.rules.league_points.1 loss=request.club.rules.league_points.2 %}{{ sweep }} por ganar 3-0, {{ win }} por ganar 2-1, {{ loss }} por perder 2-1 y 0 por perder 3-0 o no presentarse.{% endblocktranslate %}{% else %}{% blocktranslate with max=points.max %}Puntos ganados en cada enfrentamiento, de {{ max }} posibles.{% endblocktranslate %}{% endif %}</p>
+            <p class="st-points-total"><b>{{ points.total }}</b> <span>{% if points.kind == 'league' %}{% blocktranslate with n=points.played avg=points.average %}en {{ n }} jornadas · media {{ avg }}{% endblocktranslate %}{% else %}{% blocktranslate with n=points.played avg=points.average %}en {{ n }} enfrentamientos · media {{ avg }}{% endblocktranslate %}{% endif %}</span></p>
             <div class="st-chart st-chart--points"><canvas id="pointsChart" role="img" aria-label="{% translate 'Puntos por enfrentamiento' %}"></canvas></div>
             <table class="visually-hidden">
               <caption>{% translate "Puntos por enfrentamiento" %}</caption>

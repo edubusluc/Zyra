@@ -58,12 +58,16 @@ def points_per_match(club, season=None, match_type=None):
     }
 
 
+CHART_BARS = 7  # barras del gráfico (las últimas jornadas o enfrentamientos), como en el diseño
+
+
 def chart_data(series):
-    """Datos para el gráfico (``json_script``): etiquetas, puntos, rival, máximo y tipo; vacío sin series."""
+    """Datos para el gráfico (``json_script``) de las últimas ``CHART_BARS`` jornadas: etiquetas, puntos, rival, máximo y tipo; vacío sin series."""
     if not series:
         return {}
-    return {"labels": [r["label"] for r in series["rows"]], "points": [r["points"] for r in series["rows"]],
-            "rivals": [r["rival"] for r in series["rows"]], "max": series["max"], "kind": series["kind"]}
+    rows = series["rows"][-CHART_BARS:]
+    return {"labels": [r["label"] for r in rows], "points": [r["points"] for r in rows],
+            "rivals": [r["rival"] for r in rows], "max": series["max"], "kind": series["kind"]}
 
 
 def league_extras(club, season=None):
