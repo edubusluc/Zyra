@@ -3512,7 +3512,8 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 
 @layer screens {
 /* ---------- Estadísticas en móvil: filtros en una fila y secciones plegables (UX-009) ---------- */
-.st-section-toggle { display: none; }
+.st-section-toggle { display: inline; padding: 0; font: inherit; color: inherit; letter-spacing: inherit; text-align: inherit; text-transform: inherit; background: none; border: 0; cursor: default; pointer-events: none; }
+.st-section-toggle i { display: none; }
 .st-filters-sheet > summary { display: none; }
 @media (max-width: 767.98px) {
     .st-filters-sheet { margin: 0 0 12px; background: var(--z-surface-2); border: 1px solid var(--z-border); border-radius: var(--z-radius); }
@@ -3523,7 +3524,8 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
     .st-filters-sheet > summary small { min-width: 0; overflow: hidden; font-size: var(--z-fs-sm); font-weight: 500; color: var(--z-muted); text-overflow: ellipsis; white-space: nowrap; }
     .st-filters-body { display: grid; gap: 10px; padding: 0 12px 12px; }
     .st-section-toggle { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-height: 44px; padding: 0; font: inherit; color: inherit; text-align: left; letter-spacing: inherit; text-transform: inherit; background: none; border: 0; cursor: pointer; }
-    .st-section-toggle i { flex: none; font-size: var(--z-fs-sm); color: var(--z-lime); transition: transform .2s; }
+    .st-section-toggle { pointer-events: auto; cursor: pointer; }
+    .st-section-toggle i { display: inline; flex: none; font-size: var(--z-fs-sm); color: var(--z-lime); transition: transform .2s; }
     .st-section.is-open > .st-section-title .st-section-toggle i { transform: rotate(180deg); }
     section.st-section[data-collapsible] { margin-top: 12px; padding-bottom: 6px; border-bottom: 1px solid var(--z-border); }
 }

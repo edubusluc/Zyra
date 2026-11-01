@@ -249,6 +249,51 @@ def calculate_visiting_game_statistics(season, team, match_type=None):
 
 
 
+def column_chart(club, season, match_type=None):
+    """Partidos de 2 y 3 puntos ganados/perdidos por jugador actual (una sola consulta)."""
+    players = Player.objects.filter(club=club, in_team=True)
+    names = {p.id: p.full_name for p in players}
+    dicc = {
+        name: {
+            'Partidos de 2 puntos ganados': 0,
+            'Partidos de 2 puntos perdidos': 0,
+            'Partidos de 3 puntos ganados': 0,
+            'Partidos de 3 puntos perdidos': 0,
+        } for name in names.values()
+    }
+
+    games = Game.objects.filter(match__club=club, match__draft_mode=False, draft_mode=False,
+                                winner__in=outcomes.WINNERS, n_game__in=[1, 2, 3, 4, 5])
+    if season:
+        games = games.filter(match__season=season)
+    games = _by_type(games, match_type, "match__")
+    rows = games.values_list('n_game', 'winner', 'player_1_local', 'player_2_local', 'player_1_visiting', 'player_2_visiting')
+    for n_game, winner, l1, l2, v1, v2 in rows:
+        kind = '3' if n_game in (1, 2) else '2'
+        for pid, side in ((l1, "Local"), (l2, "Local"), (v1, "Visitante"), (v2, "Visitante")):
+            if pid in names:
+                outcome = 'ganados' if winner == side else 'perdidos'
+                dicc[names[pid]][f'Partidos de {kind} puntos {outcome}'] += 1
+
+    return dicc
+
+
+def format_for_chart(dic):
+    """Datos de ``column_chart`` como lista de {'player', 'data'} para el gráfico de columnas."""
+    players = []
+    for player_name, stats in dic.items():
+        players.append({
+            'player': player_name,
+            'data': [
+                stats['Partidos de 2 puntos ganados'],
+                stats['Partidos de 2 puntos perdidos'],
+                stats['Partidos de 3 puntos ganados'],
+                stats['Partidos de 3 puntos perdidos'],
+            ]
+        })
+    return players
+
+
 @club_required
 @require_GET
 def team_statistics(request):
@@ -276,6 +321,9 @@ def team_statistics(request):
     selected_season = choose_season(request, seasons)
     if selected_season == ALL_SEASONS:
         selected_season = None
+
+    dicc = column_chart(request.club, selected_season, match_type) if request.club.rules.ordered_pairs else {}
+    column_chart_data = format_for_chart(dicc)
 
     if not team:
         return render(request, 'team_statistics.html', {"seasons": seasons, **match_type_context(request, match_type),
@@ -320,6 +368,7 @@ def team_statistics(request):
         "top_visiting_players": pair_stats.top_players(log, squad, local=False),
         "top_local_pairs": pair_stats.top_pairs(log, squad, local=True, min_games=min_games_pair),
         "top_visiting_pairs": pair_stats.top_pairs(log, squad, local=False, min_games=min_games_pair),
+        "column_chart_data": column_chart_data,
         "min_games_player": pair_stats.MIN_GAMES_PLAYER,
         "min_games_pair": min_games_pair,
     }

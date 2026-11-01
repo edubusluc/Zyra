@@ -15173,3 +15173,6 @@ msgid "en %(n)s enfrentamiento · media %(avg)s"
 msgid_plural "en %(n)s enfrentamientos · media %(avg)s"
 msgstr[0] "in %(n)s match · average %(avg)s"
 msgstr[1] "in %(n)s matches · average %(avg)s"
+
+msgid "Cifras del equipo"
+msgstr "Team figures"
