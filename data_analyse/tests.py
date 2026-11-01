@@ -250,7 +250,7 @@ class PairStatisticsTests(TestCase):
 
     def test_player_season_games_table(self):
         response = self.client.get(reverse("player_statistics"), {"player": self.a.public_id, "season": "2024-2025"})
-        games = response.context["d"]["games"]
+        games = response.context["games"]
         # Del más reciente al más antiguo: visitante (1 nov) y luego los 2 partidos en casa (1 oct)
         self.assertEqual(
             [(g["date"], g["n_game"], g["local"], g["won"], g["points"]) for g in games],
@@ -273,17 +273,19 @@ class PairStatisticsTests(TestCase):
         game = m.games.get(n_game=1)  # A+B de visitantes, pierden
         Result.objects.create(game=game, set1_local=6, set1_visiting=3, set2_local=6, set2_visiting=4)
         response = self.client.get(reverse("player_statistics"), {"player": self.a.public_id, "season": "2024-2025"})
-        self.assertEqual(response.context["d"]["games"][0]["sets"], "3-6 4-6")
+        self.assertEqual(response.context["games"][0]["sets"], "3-6 4-6")
 
     def test_player_season_games_empty_and_only_selected_season(self):
         response = self.client.get(reverse("player_statistics"), {"player": self.d.public_id, "season": "2025-2026"})
-        self.assertEqual([g["n_game"] for g in response.context["d"]["games"]], [2])
-        self.assertIsNone(self.client.get(reverse("player_statistics"), {"player": self.d.public_id, "season": "all"}).context["d"])
+        self.assertEqual([g["n_game"] for g in response.context["games"]], [2])
+        everything = self.client.get(reverse("player_statistics"), {"player": self.d.public_id, "season": "all"}).context
+        self.assertIsNone(everything["d"])
+        self.assertTrue(everything["games"])
 
         e = Player.objects.create(club=self.club, name="E", last_name="Eson", joined_season="2020-2021")
         response = self.client.get(reverse("player_statistics"), {"player": e.public_id, "season": "2025-2026"})
-        self.assertEqual(response.context["d"]["games"], [])
-        self.assertContains(response, "No jugó ningún partido esta temporada.")
+        self.assertEqual(response.context["games"], [])
+        self.assertContains(response, "Todavía no hay partidos.")
 
 
 class MatchTypeFilterTests(TestCase):

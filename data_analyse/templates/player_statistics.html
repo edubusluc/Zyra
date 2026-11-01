@@ -196,100 +196,47 @@
         {% endif %}
       </section>
 
-      {# Detalle por temporada y partidos jugados: fuera del diseño principal, plegado. #}
-      <details class="st-fold" id="temporadas">
-        <summary>{% translate "Detalle por temporada" %}</summary>
-      <section aria-labelledby="seasons-title" class="st-section">
-        <h2 class="st-section-title visually-hidden" id="seasons-title">{% translate "Por temporadas" %}</h2>
-
-        {# ---- Detalle de la temporada elegida ---- #}
-        {% if selected_season %}
-            <article class="st-card">
-              <h3 class="st-card-title">{% translate "Partidos jugados" %}</h3>
-              {% if d.games %}
-                <p class="st-card-note">{% translate "Pulsa un partido para verlo en la sección de partidos." %}</p>
-                <div class="st-table-wrap">
-                  <table class="st-table st-table--links">
-                    <thead>
-                      <tr>
-                        <th scope="col">{% translate "Fecha" %}</th>
-                        <th scope="col">{% translate "Rival" %}</th>
-                        <th scope="col">{% translate "Partido" %}</th>
-                        <th scope="col">{% translate "Compañero" %}</th>
-                        <th scope="col">{% translate "Resultado" %}</th>
-                        <th scope="col">{% translate "Puntos" %}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {% for g in d.games %}
-                        <tr>
-                          <th scope="row">
-                            <a href="{% url 'call_for_match' g.match_public_id %}#partido-{{ g.n_game }}">{{ g.date|date_long }}</a>
-                          </th>
-                          <td>{{ g.rival }} <span class="st-muted">({% if g.local %}{% translate "local" %}{% else %}{% translate "visitante" %}{% endif %})</span></td>
-                          <td>{{ g.n_game }}</td>
-                          <td>{{ g.partner|default:"—" }}</td>
-                          <td>
-                            <span class="{% if g.won %}st-up{% else %}st-down{% endif %}">{% if g.won %}{% translate "V" context "abreviatura de victoria" %}{% else %}{% translate "D" context "abreviatura de derrota" %}{% endif %}</span>
-                            {% if g.sets %}<span class="st-muted">{{ g.sets }}</span>{% endif %}
-                          </td>
-                          <td>{{ g.points }}</td>
-                        </tr>
-                      {% endfor %}
-                    </tbody>
-                  </table>
-                </div>
-              {% else %}
-                <p class="st-card-note">{% translate "No jugó ningún partido esta temporada." %}</p>
-              {% endif %}
-            </article>
-        {% endif %}
-
+      <section aria-labelledby="games-title" class="st-section" id="temporadas">
         <article class="st-card">
-          <h3 class="st-card-title">{% translate "Detalle por temporada" %}</h3>
-          <div class="st-table-wrap">
-            <table class="st-table">
-              <thead>
+      <h2 class="st-card-title" id="games-title">{% translate "Partidos jugados" %}</h2>
+      {% if games %}
+        <p class="st-card-note">{% translate "Pulsa un partido para verlo en la sección de partidos." %}</p>
+        <div class="st-table-wrap">
+          <table class="st-table st-table--links">
+            <thead>
+              <tr>
+                <th scope="col">{% translate "Fecha" %}</th>
+                <th scope="col">{% translate "Rival" %}</th>
+                <th scope="col">{% translate "Partido" %}</th>
+                <th scope="col">{% translate "Compañero" %}</th>
+                <th scope="col">{% translate "Resultado" %}</th>
+                <th scope="col">{% translate "Puntos" %}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for g in games %}
                 <tr>
-                  <th scope="col">{% translate "Temporada" %}</th>
-                  <th scope="col">{% translate "Jugados" %}</th>
-                  <th scope="col">{% translate "Ganados" %}</th>
-                  <th scope="col">{% translate "Perdidos" %}</th>
-                  <th scope="col">{% translate "% victorias" %}</th>
-                  <th scope="col">{% translate "Cambio" %}</th>
-                  <th scope="col">{% translate "Puntos" %}</th>
-                  <th scope="col">{% translate "Convocatorias" %}</th>
-                  <th scope="col">{% translate "Alineado" %}</th>
+                  <th scope="row">
+                    <a href="{% url 'call_for_match' g.match_public_id %}#partido-{{ g.n_game }}">{{ g.date|date_long }}</a>
+                  </th>
+                  <td>{{ g.rival }} <span class="st-muted">({% if g.local %}{% translate "local" %}{% else %}{% translate "visitante" %}{% endif %})</span></td>
+                  <td>{{ g.n_game }}</td>
+                  <td>{{ g.partner|default:"—" }}</td>
+                  <td>
+                    <span class="{% if g.won %}st-up{% else %}st-down{% endif %}">{% if g.won %}{% translate "V" context "abreviatura de victoria" %}{% else %}{% translate "D" context "abreviatura de derrota" %}{% endif %}</span>
+                    {% if g.sets %}<span class="st-muted">{{ g.sets }}</span>{% endif %}
+                  </td>
+                  <td>{{ g.points }}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {% for r in seasons_desc %}
-                  <tr {% if r.season == selected_season %}class="st-current"{% endif %}>
-                    <th scope="row">
-                      <a href="{% url 'player_statistics' %}?player={{ selected_player }}&season={{ r.season|urlencode:'' }}{{ match_type_qs }}#temporadas">{{ r.season }}</a>
-                    </th>
-                    <td>{{ r.played }}</td>
-                    <td>{{ r.wins }}</td>
-                    <td>{{ r.losses }}</td>
-                    <td>{{ r.pct|floatformat:0 }}%</td>
-                    <td>
-                      {% if r.delta is None %}<span class="st-muted">—</span>
-                      {% elif r.delta > 0 %}<span class="st-up">▲ {{ r.delta|floatformat:0 }}</span>
-                      {% elif r.delta < 0 %}<span class="st-down">▼ {{ r.delta|floatformat:0 }}</span>
-                      {% else %}<span class="st-muted">=</span>{% endif %}
-                    </td>
-                    <td>{{ r.points }}</td>
-                    <td>{% blocktranslate with present=r.calls_present total=r.calls_total %}{{ present }} de {{ total }}{% endblocktranslate %}</td>
-                    <td>{% blocktranslate with aligned=r.aligned present=r.calls_present %}{{ aligned }} de {{ present }}{% endblocktranslate %}</td>
-                  </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-        </article>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p class="st-card-note">{% translate "Todavía no hay partidos." %}</p>
+      {% endif %}
+    </article>
       </section>
-
-      </details>
 
       {{ chart_seasons|json_script:"data-seasons" }}
       {{ snp_seasons|json_script:"data-snp-seasons" }}

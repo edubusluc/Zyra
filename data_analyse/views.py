@@ -721,7 +721,7 @@ def _sets_text(game, is_local):
 
 def season_games(player, season, match_type=None):
     """
-    Partidos (Game) cerrados del jugador en una temporada, del más reciente al más antiguo.
+    Partidos (Game) cerrados del jugador en una temporada (``season`` None = todas), del más reciente al más antiguo.
     Solo partidos de enfrentamientos de su club: los enlaces llevan a call_for_match,
     que también exige que el enfrentamiento sea del club activo.
     Cada elemento: {'match_id', 'match_public_id', 'n_game', 'date', 'rival', 'local', 'partner', 'sets', 'won', 'points'}
@@ -735,13 +735,14 @@ def season_games(player, season, match_type=None):
             match__draft_mode=False,
             winner__in=outcomes.WINNERS,
             match__club=player.club,
-            match__season=season,
         )
         .select_related('match__local', 'match__visiting',
                         'player_1_local', 'player_2_local', 'player_1_visiting', 'player_2_visiting')
         .prefetch_related('results')
         .order_by('-match__start_date', '-match_id', 'n_game')
     )
+    if season:
+        games = games.filter(match__season=season)
     games = _by_type(games, match_type, "match__")
 
     rows = []
@@ -996,7 +997,6 @@ def statistics_per_player(request):
             'calls_total': total,
             'calls_absent': total - present,
             'aligned': aligned.get(selected_season, 0),
-            'games': season_games(player, selected_season, match_type),
         })
 
     # Puntos SNP de la temporada elegida (o de la actual), uno por actualización semanal
@@ -1025,6 +1025,7 @@ def statistics_per_player(request):
         'selected_season': selected_season,
         's': summary,
         'd': detail,
+        'games': season_games(player, selected_season, match_type),
         'seasons_asc': rows,
         'seasons_desc': list(reversed(rows)),
         # enteros para anchos de barra (evita comas decimales en style="")
