@@ -149,8 +149,12 @@ a { color: var(--z-lime); text-decoration: none; }
 a:hover { color: var(--z-lime-hover); }
 /* Enlaces dentro de un texto: subrayados, para no distinguirlos solo por el color (WCAG 1.4.1) */
 /* (UX-042) también los de ayudas, avisos y textos pequeños de formularios, con o sin clase propia */
+/* Enlaces dentro de un texto corrido (WCAG 1.4.1, UX-042): subrayado lima para no depender solo del
+   color. Solo en párrafos, ayudas y avisos: tarjetas, filas de lista, menús y botones no lo llevan. */
 .z-auth-foot a, .z-legal p a, .z-legal li a, main p a:not([class]),
-main :is(p, li, small, .form-text, .alert, label) a:not(.btn, .stretched-link, .dropdown-item, .z-eyebrow, .z-location, [class*="z-chip"]) { text-decoration: underline; text-underline-offset: .2em; }
+main :is(p, .form-text, .alert) a:not(.btn, .stretched-link, .dropdown-item, .z-eyebrow, .z-location, [class*="z-chip"]) {
+    text-decoration: underline; text-decoration-color: var(--z-lime); text-decoration-thickness: 1px; text-underline-offset: .2em;
+}
 /* btn-outline-danger de Bootstrap (#dc3545) no llega a 4.5:1 sobre el fondo oscuro */
 .btn-outline-danger { --bs-btn-color: var(--z-danger); --bs-btn-border-color: var(--z-danger); }
 
