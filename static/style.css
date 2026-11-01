@@ -3377,7 +3377,8 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
    → «Mi forma». Solo cambia el orden visual; el orden de lectura y de foco sigue el del documento. */
 @media (max-width: 767.98px) {
     .main-content:has(> .z-home-grid) { display: flex; flex-direction: column; }
-    .main-content:has(> .z-home-grid) > * { order: 2; }
+    .main-content:has(> .z-home-grid) > * { order: 2; min-width: 0; max-width: 100%; }
+    .main-content:has(> .z-home-grid) > .z-home-grid { grid-template-columns: minmax(0, 1fr); }
     .main-content:has(> .z-home-grid) > .z-home-strip,
     .main-content:has(> .z-home-grid) > .z-home-hero { order: 0; }
     .main-content:has(> .z-home-grid) > .z-home-grid { order: 1; margin-top: 16px; }
@@ -3399,4 +3400,19 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
     .z-page-head .z-actions > :not(.z-actions-more) > .btn, .z-page-head .z-actions > .btn { overflow: hidden; text-overflow: ellipsis; }
     .z-page-head .z-actions > .z-actions-more .btn { width: auto; }
     .z-page-head .z-actions .btn { letter-spacing: 0; padding-inline: .8rem; }
+}
+
+/* ---------- Pista en el panel «Próximo enfrentamiento» por debajo de 1100 px ----------
+   En escritorio el panel es la pista (2:1). En tableta y móvil se dibuja la misma pista de fondo: tumbada si el
+   panel es ancho y de pie si es estrecho; las líneas se estiran con el panel (trazo fijo), el contenido no. */
+@media (max-width: 1099.98px) {
+    .z-home-grid .z-next-match::before {
+        content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 100' preserveAspectRatio='none' fill='none' stroke='%230A0A0A' stroke-opacity='.15' stroke-width='2'%3E%3Crect x='3' y='6' width='194' height='88' rx='1' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M100 6V94M30.5 6V94M169.5 6V94M30.5 50H169.5' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+    }
+}
+@media (max-width: 575.98px) {
+    .z-home-grid .z-next-match::before {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 200' preserveAspectRatio='none' fill='none' stroke='%230A0A0A' stroke-opacity='.15' stroke-width='2'%3E%3Crect x='6' y='3' width='88' height='194' rx='1' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M6 100H94M6 30.5H94M6 169.5H94M50 30.5V169.5' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+    }
 }

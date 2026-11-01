@@ -8,7 +8,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 - **Estadísticas**: las pestañas se deslizan en horizontal dentro de su fila (ya no ensanchan la página a 375 px) y «Mis estadísticas» pasa a «Mías» en móvil.
 - **Formularios**: los campos miden 16 px como mínimo, así Safari en iPhone ya no amplía la página al enfocarlos.
 - **Pantallas táctiles**: botones, chips e iconos llegan a 44 px de alto.
-- **Inicio en móvil**: primero los equipos, luego el próximo enfrentamiento y «Pendiente», y después los avisos y «Primeros pasos» (que se pliega a lo esencial).
+- **Inicio en móvil**: primero los equipos, luego el próximo enfrentamiento y «Pendiente», y después los avisos y «Primeros pasos» (que se pliega a lo esencial). El panel del próximo enfrentamiento queda centrado y, en móvil y tableta, también dibuja la pista de pádel de fondo (de pie en móvil, tumbada en tableta).
 - **Ficha del enfrentamiento**: los convocados se muestran como nombre y primer apellido, en hasta dos líneas y sin la pastilla «Convocado». El jugador ve solo las fases de convocatoria y acta, y si se había apuntado le dice que avise a su capitán si cambia su disponibilidad.
 - **Fecha pasada**: la lista y el Inicio usan el mismo estado rojo «Vencido · …».
 - **Enfrentamientos, Jugadores y Rivales**: en móvil, la acción principal va primero y lo secundario se recoge en un menú «Más».
