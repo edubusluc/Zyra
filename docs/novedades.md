@@ -3,6 +3,12 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 01/11/2026 · Estadísticas rediseñadas (fase 2: ficha del jugador · SNP y LAPI)
+
+- **Jugador** (y «Mi ficha»): tarjeta lima con nombre, rol, pareja habitual, puntos SNP y puesto del equipo (o jornadas de liga en LAPI), anillo de % de victorias y balance; cifras de Jugados, Racha, Puntos ganados (de los posibles) y Convocados (en LAPI, Jornadas y «1 punto cada uno»).
+- Forma reciente, Local y visitante con barras fijas, «Partidos y sets» (SNP: por número de partido; LAPI: sets y fases finales con la regla de elegibilidad), Asistencia y afinidad, y puntos SNP o partidos por temporada. La tabla de detalle por temporada queda plegada al final.
+- Los filtros de tipo pasan a chips por tipo de enfrentamiento, y los «i» explican cada medida (también al pulsar en móvil).
+
 ## 01/11/2026 · Pulido visual, textos y back-office (auditoría UX/UI, fase 6)
 
 - **Resultados**: el equipo propio lleva la etiqueta «Tu equipo» en lugar de una estrella, que se leía como «ganador».

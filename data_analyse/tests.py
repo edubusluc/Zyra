@@ -338,9 +338,8 @@ class MatchTypeFilterTests(TestCase):
         self.assertEqual((response.context["s"]["played"], response.context["s"]["wins"]), (1, 0))
         links = {o["label"]: o["url"] for o in response.context["match_types"]}
         self.assertEqual(links["Todos"], f"{reverse('player_statistics')}?player={self.a.public_id}")
-        types = {o["label"]: o["url"] for o in response.context["competitive_types"]}
-        self.assertIn(f"player={self.a.public_id}", types["Retos"])
-        self.assertIn("match_type=reto", types["Retos"])
+        self.assertIn(f"player={self.a.public_id}", links["Retos"])
+        self.assertIn("match_type=reto", links["Retos"])
 
     def test_pair_statistics_filter_by_type(self):
         response = self.client.get(reverse("pair_statistics"))
@@ -449,7 +448,7 @@ class SeasonFilterTests(TestCase):
                          [("player", self.a.public_id), ("match_type", Match.AMISTOSO)])
         # Cambiar el tipo de partido conserva la temporada
         links = {o["label"]: o["url"] for o in response.context["match_types"]}
-        self.assertIn("season=2021-2022", links["Competitivos"])
+        self.assertIn("season=2021-2022", links["Retos"])
 
     def test_player_summary_and_affinity_follow_season(self):
         url = reverse("player_statistics")
@@ -511,7 +510,7 @@ class AffinityScopeTests(TestCase):
         response = self.client.get(reverse("player_statistics"), {"player": self.a.public_id})
         rows = {r["name"]: r["in_team"] for r in response.context["chart_affinity"]}
         self.assertEqual(rows, {"B Bson": True, "C Cson": False, "D Dson": False})
-        self.assertContains(response, 'data-scope="team" aria-pressed="true"')
+        self.assertIn("affinity_top", response.context)
 
 
 class DrawStatisticsTests(TestCase):
@@ -566,8 +565,8 @@ class OnlyClosedMatchesTests(TestCase):
     def test_player_charts_hidden_with_a_season(self):
         url = reverse("player_statistics")
         all_page = self.client.get(url, {"player": self.a.public_id})
-        self.assertContains(all_page, 'id="chartPlayed"')
-        self.assertContains(all_page, 'id="chartPct"')
+        self.assertContains(all_page, 'id="data-seasons"')
+        # El gráfico por temporada de la ficha ya no depende del filtro de temporada
         season_page = self.client.get(url, {"player": self.a.public_id, "season": "2024-2025"})
-        self.assertNotContains(season_page, 'id="chartPlayed"')
+        self.assertContains(season_page, 'id="data-seasons"')
         self.assertNotContains(season_page, 'id="chartPct"')

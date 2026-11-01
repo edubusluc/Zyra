@@ -30,6 +30,7 @@ from players.models import current_season, joined_by
 from . import pairs as pair_stats
 from . import rivals as rival_stats
 from . import records
+from . import player_card
 from .attendance import signup_attendance
 from .sets import best_and_worst_number, by_game_number, own_sets, set_stats
 
@@ -116,12 +117,13 @@ def season_filter_context(request, seasons, selected_season, all_value=ALL_SEASO
     }
 
 
-def match_type_context(request, match_type):
+def match_type_context(request, match_type, by_type=False):
     """
     Filtro por tipo de partido: chips Todos / Competitivos / Amistosos (``match_types``) y, dentro
     de Competitivos, un selector con todos los partidos competitivos o un tipo (``competitive_types``).
     Cada enlace conserva el resto de la URL (jugador, pareja, temporada); ``match_type_qs`` sirve
-    para añadir el filtro a los enlaces que ya existían (temporadas).
+    para añadir el filtro a los enlaces que ya existían (temporadas). Con ``by_type`` (pantallas de una sola
+    competición) los chips son Todos, un chip por tipo de la competición y Amistosos, sin «Competitivos».
     """
     def url(value):
         """URL de la página actual con el tipo de partido ``value`` (sin él para «Todos»)."""
@@ -145,6 +147,11 @@ def match_type_context(request, match_type):
     competitive_labels = [(COMPETITIVE, _("Todos los enfrentamientos"))] + [
         (value, plural) for value, _label, plural in rules.match_types]
     labels = dict(competitive_labels, **{COMPETITIVE: _("Competitivos"), Match.AMISTOSO: _("Amistosos")})
+    if by_type:
+        options = ([options[0]]
+                   + [{'label': plural, 'url': url(value), 'active': value == match_type} for value, _label, plural in rules.match_types]
+                   + [options[2]])
+        competitive = False
     return {
         'match_types': options,
         'competitive_types': [{'label': label, 'value': value, 'url': url(value), 'active': value == match_type}
@@ -693,6 +700,7 @@ def build_game_log(player, match_type=None):
             'local': is_local,
             'won': won,
             'points': g.score if won else 0,
+            'possible': g.score,
             'sets_won': sets_won,
             'sets_lost': sets_lost,
             'sets': own_sets(next(iter(g.results.all()), None), is_local),
@@ -754,6 +762,7 @@ def season_games(player, season, match_type=None):
             'sets': _sets_text(g, is_local),
             'won': won,
             'points': g.score if won else 0,
+            'possible': g.score,
         })
     return rows
 
@@ -870,6 +879,7 @@ def summarize(log):
         'losses': total - wins,
         'pct': _pct(wins, total),
         'points': sum(g['points'] for g in log),
+        'points_possible': sum(g.get('possible', 0) for g in log),
 
         'local_played': len(local),
         'local_wins': sum(local),
@@ -945,7 +955,7 @@ def statistics_per_player(request):
     match_type = selected_match_type(request)
 
     if not player_id:
-        return render(request, 'player_statistics.html', {'players': players, **match_type_context(request, match_type)})
+        return render(request, 'player_statistics.html', {'players': players, **match_type_context(request, match_type, by_type=True)})
 
     # Solo jugadores del club activo: los de otros clubes dan 404
     player = get_object_or_404(Player, public_id=player_id, club=request.club)
@@ -993,8 +1003,20 @@ def statistics_per_player(request):
     snp_season = selected_season or current_season()
     snp_history = list(player.snp_history.filter(season=snp_season))
 
+    affinity = degree_of_affinity(player, match_type, selected_season)
+    is_me = bool(player.user_id and player.user_id == request.user.id)
     context = {
-        **match_type_context(request, match_type),
+        'hero': {
+            'role': player_card.role_label(player),
+            'partner': player_card.usual_partner(affinity),
+            'snp_score': player.snp_score,
+            'snp_rank': player_card.snp_rank(player),
+            'is_me': is_me,
+        },
+        'league': player_card.league_rounds(player, selected_season),
+        'snp_seasons': player_card.snp_by_season(player),
+        'affinity_top': [a for a in affinity if a['in_team']][:5],
+        **match_type_context(request, match_type, by_type=True),
         **season_filter_context(request, all_seasons, selected_season),
         'players': players,
         'selected_player': player.public_id,
@@ -1016,7 +1038,7 @@ def statistics_per_player(request):
             'losses': [r['losses'] for r in rows],
             'pct': [r['pct'] for r in rows],
         },
-        'chart_affinity': degree_of_affinity(player, match_type, selected_season),
+        'chart_affinity': affinity,
         'lineup_rate': lineup_rate,
         'signup_rate': signup_rate,
         'game_numbers': player_numbers,
@@ -1032,7 +1054,7 @@ def statistics_per_player(request):
         },
     }
     # Su propio jugador, con jugador en varias competiciones: es «Mis estadísticas» de esta competición.
-    if player.user_id and player.user_id == request.user.id:
+    if is_me:
         mine = spaces.linked_players(request)
         if len(mine) > 1:
             context.update(mine_chips(request, mine, request.club.competition))
