@@ -120,14 +120,10 @@
           {% endif %}
           <article class="st-card">
             <h3 class="st-card-title">{% translate "Sets clutch" %}</h3>
-            <p class="st-card-note">{% translate "Tercer set, tie-breaks y remontadas." %}</p>
-            <div class="st-bars">
-              {% translate "Tercer set" as l1 %}{% translate "Tercer set, a set normal o a super tie-break." as h1 %}
-              {% translate "Tie-breaks" as l2 %}{% translate "Sets que llegan a 6-6 y acaban 7-6." as h2 %}
-              {% translate "Remontadas" as l3 %}{% translate "Partidos ganados tras perder el primer set." as h3 %}
-              {% include 'includes/stat_bar_row.html' with label=l1 hint=h1 r=clutch.third %}
-              {% include 'includes/stat_bar_row.html' with label=l2 hint=h2 r=clutch.tiebreak %}
-              {% include 'includes/stat_bar_row.html' with label=l3 hint=h3 r=clutch.comeback %}
+            <div class="st-bars st-bars--desc">
+              {% for label, desc, r in clutch_rows %}
+              {% include 'includes/stat_bar_row.html' %}
+              {% endfor %}
             </div>
           </article>
           {% if league %}

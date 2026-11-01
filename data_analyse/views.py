@@ -1003,6 +1003,7 @@ def statistics_per_player(request):
     snp_season = selected_season or current_season()
     snp_history = list(player.snp_history.filter(season=snp_season))
 
+    clutch = set_stats(season_log)
     affinity = degree_of_affinity(player, match_type, selected_season)
     is_me = bool(player.user_id and player.user_id == request.user.id)
     context = {
@@ -1037,7 +1038,8 @@ def statistics_per_player(request):
         'game_numbers': player_numbers,
         'best_number': player_best_number,
         'worst_number': player_worst_number,
-        'clutch': set_stats(season_log),
+        'clutch': clutch,
+        'clutch_rows': [(label, desc, clutch[key]) for key, label, desc in SET_SITUATIONS],
         'snp_season': snp_season,
         'chart_snp': {
             'labels': [h.date.strftime('%d/%m') for h in snp_history],
