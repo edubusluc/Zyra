@@ -240,7 +240,7 @@ class EditPenaltyTests(PenaltyBase):
     def test_edit_form_prefilled(self):
         response = self.client.get(self.url)
         self.assertContains(response, "5 min")
-        self.assertContains(response, "ANA")
+        self.assertContains(response, "Ana")
 
     def test_edit_updates_kind_and_detail_and_returns_to_next(self):
         response = self.client.post(self.url, {"kind": "conduct", "reason": "Gritos", "next": self.history})

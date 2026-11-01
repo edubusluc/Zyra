@@ -1,5 +1,5 @@
 {% extends 'backoffice/base.html' %}
-{% load i18n %}
+{% load i18n %}{% load zyra_format %}
 {% block title %}{% translate "Servicios" %}{% endblock %}
 
 {% block content %}
@@ -22,8 +22,8 @@
     <ul class="mb-3">
         <li>{% blocktranslate with n=switch.failure_streak|default:0 max=alert_after %}Fallos seguidos de SNP: <strong>{{ n }}</strong> (se avisa al llegar a {{ max }}).{% endblocktranslate %}</li>
         <li>{% blocktranslate with n=queued %}Búsquedas de «Completar equipo» en cola: <strong>{{ n }}</strong>.{% endblocktranslate %}</li>
-        {% if switch.alerted_at %}<li>{% blocktranslate with date=switch.alerted_at|date:"j M Y H:i" %}Último aviso al personal: {{ date }}.{% endblocktranslate %}</li>{% endif %}
-        {% if switch.changed_at %}<li>{% blocktranslate with date=switch.changed_at|date:"j M Y H:i" user=switch.changed_by.username|default:"—" %}Último cambio: {{ date }} por {{ user }}.{% endblocktranslate %}{% if switch.reason %} {% translate "Motivo" %}: {{ switch.reason }}{% endif %}</li>{% endif %}
+        {% if switch.alerted_at %}<li>{% blocktranslate with date=switch.alerted_at|date_day_time %}Último aviso al personal: {{ date }}.{% endblocktranslate %}</li>{% endif %}
+        {% if switch.changed_at %}<li>{% blocktranslate with date=switch.changed_at|date_day_time user=switch.changed_by.username|default:"—" %}Último cambio: {{ date }} por {{ user }}.{% endblocktranslate %}{% if switch.reason %} {% translate "Motivo" %}: {{ switch.reason }}{% endif %}</li>{% endif %}
     </ul>
     <form method="post" action="{% url 'backoffice:service_snp_toggle' %}" class="bo-filters" data-loading-text="{% translate 'Guardando el servicio…' %}">
         {% csrf_token %}

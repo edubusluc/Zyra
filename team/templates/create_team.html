@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
 {% load static i18n %}
-{% block page_title %}{% translate "Crear Equipo" %} · {% endblock %}
+{% block page_title %}{% translate "Crear rival" %} · {% endblock %}
 
 {% block content %}
 <div class="z-page-head">
     <div>
         <a href="{% url 'list_teams' %}" class="z-eyebrow"><i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i> {% translate "Rivales" %}</a>
-        <h1>{% translate "Crear Equipo" %}</h1>
+        <h1>{% translate "Crear rival" %}</h1>
     </div>
 </div>
 <div class="table-container z-form-narrow">
@@ -66,7 +66,7 @@
         </div>
 
         <div>
-            <button type="submit" class="btn btn-primary btn-lg w-100">{% translate "Crear Equipo" %}</button>
+            <button type="submit" class="btn btn-primary btn-lg w-100">{% translate "Crear rival" %}</button>
         </div>
     </form>
 </div>

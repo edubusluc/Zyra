@@ -53,7 +53,7 @@ class OwnPlayerTests(MediaMixin, TestCase):
         self.assertContains(welcome, "Tu capitán")
         self.assertContains(welcome, "Elegir mi jugador")
         page = self.client.get(reverse("my_player"))
-        self.assertContains(page, "ANA RUIZ GÓMEZ")
+        self.assertContains(page, "Ana Ruiz Gómez")
         self.assertContains(page, "Soy yo")
 
     def test_link_to_existing_player(self):
@@ -77,8 +77,8 @@ class OwnPlayerTests(MediaMixin, TestCase):
         self.assertEqual(self.ana.user, intruder)
         # Aparece apagado y sin «Soy yo»; el libre, en lima con su botón.
         page = self.client.get(reverse("my_player")).content.decode()
-        self.assertRegex(page, r'class="z-claim is-taken" data-name="ANA RUIZ GÓMEZ"')
-        self.assertRegex(page, r'class="z-claim is-free" data-name="LUIS PÉREZ"')
+        self.assertRegex(page, r'class="z-claim is-taken" data-name="Ana Ruiz Gómez"')
+        self.assertRegex(page, r'class="z-claim is-free" data-name="Luis Pérez"')
         self.assertEqual(page.count("data-claim-pick"), 1)
 
     def test_choose_player_page_has_live_search_and_confirmation(self):
@@ -90,7 +90,7 @@ class OwnPlayerTests(MediaMixin, TestCase):
         intruder = User.objects.create_user("otro", password="pass-12345")
         Player.objects.create(club=self.club, name="Abel", last_name="Alonso", user=intruder)
         html = self.client.get(reverse("my_player")).content.decode()
-        self.assertLess(html.index("LUIS PÉREZ"), html.index("ABEL ALONSO"))
+        self.assertLess(html.index("Luis Pérez"), html.index("Abel Alonso"))
 
     def test_cannot_link_player_of_another_club(self):
         other_captain = User.objects.create_user("c2", password="pass-12345")
@@ -390,7 +390,7 @@ class BackofficePhotoTests(MediaMixin, TestCase):
         email = mail.outbox[0]
         self.assertEqual(email.to, ["ana@example.com"])
         self.assertIn("términos y condiciones", email.body)
-        self.assertIn("Foto de ANA RUIZ", email.body)
+        self.assertIn("Foto de Ana Ruiz", email.body)
         self.assertIn("Imagen ofensiva", email.body)
         self.assertIn("Si se repite, podemos suspender tu cuenta y eliminar el equipo", email.body)
 

@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static i18n l10n %}
+{% load static i18n l10n %}{% load zyra_format %}
 {% block page_title %}{% if selected_player %}{% blocktranslate with name=player.full_name %}Estadísticas de {{ name }}{% endblocktranslate %}{% else %}{% translate "Estadísticas de jugadores" %}{% endif %} · {% endblock %}
 
 {% block content %}
@@ -44,7 +44,7 @@
           {% for p in players %}
             <li>
               <a class="st-player-card" href="{% url 'player_statistics' %}?player={{ p.public_id }}{{ match_type_qs }}">
-                <img src="{% if p.photo %}{{ p.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="" class="z-avatar z-avatar--sm" loading="lazy">
+                {% include 'includes/player_avatar.html' with player=p size="z-avatar--sm" alt="" %}
                 <span>{{ p.full_name }}</span>
               </a>
             </li>
@@ -186,7 +186,7 @@
                       {% for g in d.games %}
                         <tr>
                           <th scope="row">
-                            <a href="{% url 'call_for_match' g.match_public_id %}#partido-{{ g.n_game }}">{{ g.date|date:"D j M Y" }}</a>
+                            <a href="{% url 'call_for_match' g.match_public_id %}#partido-{{ g.n_game }}">{{ g.date|date_long }}</a>
                           </th>
                           <td>{{ g.rival }} <span class="st-muted">({% if g.local %}{% translate "local" %}{% else %}{% translate "visitante" %}{% endif %})</span></td>
                           <td>{{ g.n_game }}</td>

@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static i18n l10n rivals %}
+{% load static i18n l10n rivals %}{% load zyra_format %}
 {% block page_title %}{{ match.local_name }} – {{ match.visiting_name }} · {% endblock %}
 
 {% block content %}
@@ -23,7 +23,7 @@
     <aside class="z-ficha-side">
         <div class="z-kind"><b>{{ kind.title }}</b><small>{{ kind.subtitle }}</small></div>
         <p class="z-ficha-outcome {% if outcome == 'V' %}is-win{% elif outcome == 'D' %}is-loss{% endif %}">{% if outcome %}{{ outcome_label }}{% else %}{{ phase.label }}{% endif %}</p>
-        <p class="z-ficha-when">{{ match.start_date|date:"D j M Y" }}{% if can_manage and match.draft_mode %} <a href="{% url 'edit_match_date' match.public_id %}" class="z-edit-date" title="{% translate 'Cambiar fecha' %}"><i class="fa-solid fa-pen" aria-hidden="true"></i><span class="visually-hidden">{% translate "Cambiar fecha" %}</span></a>{% endif %}</p>
+        <p class="z-ficha-when">{{ match.start_date|date_long }}{% if can_manage and match.draft_mode %} <a href="{% url 'edit_match_date' match.public_id %}" class="z-edit-date" title="{% translate 'Cambiar fecha' %}"><i class="fa-solid fa-pen" aria-hidden="true"></i><span class="visually-hidden">{% translate "Cambiar fecha" %}</span></a>{% endif %}</p>
         {% if match.location %}<p class="z-ficha-where"><a class="z-location" href="{{ match.maps_url }}" target="_blank" rel="noopener"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>{{ match.location }}</span></a></p>{% endif %}
         <p class="z-ficha-tags">
             {% if match.no_show %}<span class="z-tag">{% blocktranslate with team=match.no_show_team %}No presentado: {{ team }}{% endblocktranslate %}</span>{% endif %}
@@ -61,7 +61,7 @@
         <span>{% if can_manage %}{% translate "La convocatoria sigue abierta: puede cambiar." %}{% else %}{% translate "Si cambia tu disponibilidad, avisa a tu capitán." %}{% endif %}</span>
         {% elif my_status.called %}
         <strong>{% translate "Estás convocado" %}</strong>
-        {% if my_status.game %}<span>{% blocktranslate with n=my_status.game.n_game pts=my_status.game.score %}Partido {{ n }} · {{ pts }} pts{% endblocktranslate %}{% if my_status.partner %} · {% blocktranslate with name=my_status.partner.full_name %}con {{ name }}{% endblocktranslate %}{% endif %}</span>
+        {% if my_status.game %}<span>{% blocktranslate with n=my_status.game.n_game pts=my_status.game.score|snp_points:"" %}Partido {{ n }} · {{ pts }} pts{% endblocktranslate %}{% if my_status.partner %} · {% blocktranslate with name=my_status.partner.full_name %}con {{ name }}{% endblocktranslate %}{% endif %}</span>
         {% elif my_status.closed %}<span>{% translate "Las parejas aún no están decididas." %}</span>{% endif %}
         {% elif not my_status.closed %}
         <strong>{% translate "Todavía no te has apuntado" %}</strong>
@@ -232,7 +232,7 @@
     {% with r=g.result %}
     <div class="z-card z-game" id="partido-{{ g.n_game }}">
         <div class="z-game-head">
-            <h3>{% blocktranslate with n=g.n_game %}Partido {{ n }}{% endblocktranslate %} {% if match.club.rules.ordered_pairs %}<span class="text-muted fw-semibold">· {% blocktranslate with score=g.score %}{{ score }} pts{% endblocktranslate %}</span>{% endif %}{% if r.retired %} <span class="z-badge z-badge--outline" title="{% translate 'Partido finalizado por lesión' %}"><i class="fa-solid fa-bandage me-1" aria-hidden="true"></i>{% translate "Lesión" %}{% if r.injured_side == 'local' %} · {{ match.local_name }}{% elif r.injured_side == 'visiting' %} · {{ match.visiting_name }}{% endif %}</span>{% endif %}{% if g.no_show %} <span class="z-badge z-badge--outline"><i class="fa-solid fa-user-slash me-1" aria-hidden="true"></i>{{ g.get_no_show_display }}</span>{% endif %}</h3>
+            <h3>{% blocktranslate with n=g.n_game %}Partido {{ n }}{% endblocktranslate %} {% if match.club.rules.ordered_pairs %}<span class="text-muted fw-semibold">· {% blocktranslate with score=g.score|snp_points:"" %}{{ score }} pts{% endblocktranslate %}</span>{% endif %}{% if r.retired %} <span class="z-badge z-badge--outline" title="{% translate 'Partido finalizado por lesión' %}"><i class="fa-solid fa-bandage me-1" aria-hidden="true"></i>{% translate "Lesión" %}{% if r.injured_side == 'local' %} · {{ match.local_name }}{% elif r.injured_side == 'visiting' %} · {{ match.visiting_name }}{% endif %}</span>{% endif %}{% if g.no_show %} <span class="z-badge z-badge--outline"><i class="fa-solid fa-user-slash me-1" aria-hidden="true"></i>{{ g.get_no_show_display }}</span>{% endif %}</h3>
             <div class="d-flex align-items-center gap-3">
                 <div class="z-game-sets-head" aria-hidden="true"><span>S1</span><span>S2</span><span>S3</span></div>
                 {% if can_manage %}

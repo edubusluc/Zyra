@@ -325,7 +325,7 @@ def _player_label(player, width, font="Archivo-Bold", size=8):
     último recurso, se recorta con «…»: así cada jugador ocupa una fila y la
     tabla no crece con los nombres largos.
     """
-    full = player.short_name
+    full = player.short_name.upper()
     if pdfmetrics.stringWidth(full, font, size) <= width:
         return full
     initials = " ".join(f"{part[0]}." for part in player.name.split() if part)
@@ -334,8 +334,9 @@ def _player_label(player, width, font="Archivo-Bold", size=8):
 
 def _pair_label(pair, width, font="Archivo-Bold", size=8):
     """'JUGADOR A / JUGADOR B' en una línea de ``width`` puntos (cada nombre en su mitad si no cabe)."""
-    if pdfmetrics.stringWidth(pair.name, font, size) <= width:
-        return pair.name
+    name = pair.name.upper()
+    if pdfmetrics.stringWidth(name, font, size) <= width:
+        return name
     half = (width - pdfmetrics.stringWidth(" / ", font, size)) / 2
     return f"{_player_label(pair.a.player, half, font, size)} / {_player_label(pair.b.player, half, font, size)}"
 
@@ -530,7 +531,7 @@ def _story(report, layout):
                  Paragraph(esc(item["explanation"]), st["body"])]
         if lineup.bench:
             block.append(Spacer(1, layout.note_gap))
-            names = ", ".join(f.name for f in lineup.bench[:MAX_BENCH_NAMES])
+            names = ", ".join(f.name.upper() for f in lineup.bench[:MAX_BENCH_NAMES])
             if len(lineup.bench) > MAX_BENCH_NAMES:
                 names = _("%(names)s y %(n)s más") % {"names": names, "n": len(lineup.bench) - MAX_BENCH_NAMES}
             block.append(Paragraph(_("Descansan: %(names)s") % {"names": esc(names)}, st["muted"]))

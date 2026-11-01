@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load static i18n %}
-{% block page_title %}{% translate "Crear Jugador" %} · {% endblock %}
+{% block page_title %}{% translate "Nuevo jugador" %} · {% endblock %}
 
 {% block content %}
     <script src="{% static 'js/player-picker.js' %}" defer></script>
@@ -17,7 +17,7 @@
         </div>
         {% endif %}
         
-        <h1>{% translate "Crear Jugador" %}</h1>
+        <h1>{% translate "Nuevo jugador" %}</h1>
         {% include 'includes/target_team.html' %}
         <form method="POST" class="mt-4" enctype="multipart/form-data" data-similar-check data-loading-text="{% translate 'Creando el jugador…' %}">
             {% csrf_token %}
@@ -59,7 +59,7 @@
             {% endif %}
 
             <div class="text-center">
-                <button type="submit" class="btn btn-primary">{% translate "Crear Jugador" %}</button>
+                <button type="submit" class="btn btn-primary">{% translate "Nuevo jugador" %}</button>
             </div>
         </form>
     </div>

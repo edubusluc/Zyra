@@ -1,5 +1,5 @@
 {# Formulario de sets compartido por crear y editar resultado. Recibe: game, values, errors, title, submit #}
-{% load static i18n %}
+{% load static i18n %}{% load zyra_format %}
 <div class="z-page-head">
     <div>
         <a href="{% url 'call_for_match' game.match.public_id %}" class="z-eyebrow"><i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i> {{ game.match.local_name }} vs {{ game.match.visiting_name }}</a>
@@ -8,7 +8,7 @@
         <p class="z-result-pair">{% blocktranslate with n=game.n_game %}Pareja {{ n }}{% endblocktranslate %}: <strong>{{ game.pair_label }}</strong></p>
         {% endif %}
     </div>
-    <span class="z-badge z-badge--outline">{% blocktranslate with n=game.n_game %}Partido {{ n }}{% endblocktranslate %} · {% blocktranslate with score=game.score %}{{ score }} pts{% endblocktranslate %}</span>
+    <span class="z-badge z-badge--outline">{% blocktranslate with n=game.n_game %}Partido {{ n }}{% endblocktranslate %} · {% blocktranslate with score=game.score|snp_points:"" %}{{ score }} pts{% endblocktranslate %}</span>
 </div>
 
 <div class="z-panel z-result">

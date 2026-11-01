@@ -64,7 +64,7 @@ class ReportDataTests(MonthlyBase):
         self.assertEqual((report["played"], report["wins"], report["losses"]), (3, 2, 1))
         self.assertEqual(report["pct"], 67)
         self.assertEqual(report["points"], 6)
-        self.assertEqual(report["partners"][0]["name"], "BEA RUIZ")
+        self.assertEqual(report["partners"][0]["name"], "Bea Ruiz")
         self.assertEqual(report["matches"], 2)
         self.assertEqual(report["streak"], ("V", 1))
 
@@ -78,7 +78,7 @@ class ReportDataTests(MonthlyBase):
         self.bea.delete()
         report = build_monthly_report(self.ana, MONTH)
         self.assertEqual(report["played"], 4)
-        self.assertEqual({g["partner"] for g in report["games"]}, {"BEA RUIZ"})
+        self.assertEqual({g["partner"] for g in report["games"]}, {"Bea Ruiz"})
         self.assertEqual(report["partners"][0]["played"], 4)
 
     def test_no_games(self):

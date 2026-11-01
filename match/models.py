@@ -11,7 +11,7 @@ from django.conf import settings
 from django.db import models
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
-from players.models import Player, SEASON_START_MONTH
+from players.models import Player, SEASON_START_MONTH, proper_name
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext, gettext_lazy as _
 from . import outcomes, scoring
@@ -287,7 +287,7 @@ class Game(PublicIdModel):
     def player_name(self, slot):
         """Nombre del jugador de esa posición, también si ya se ha eliminado."""
         player = getattr(self, slot)
-        return str(player) if player else self.removed_player_names.get(slot, "").upper()
+        return str(player) if player else proper_name(self.removed_player_names.get(slot, ""))
 
     def _pair_label(self, first, second):
         """'Jugador 1 / Jugador 2' de esas dos posiciones; '' si falta alguno."""

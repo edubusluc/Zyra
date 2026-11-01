@@ -3,6 +3,16 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 01/11/2026 · Sistema de diseño (auditoría UX/UI, fase 4)
+
+- **Capas CSS**: `style.css` declara `@layer overrides, base, vendor, tokens, components, screens` e importa Bootstrap y Font Awesome en su capa. Las reglas propias ganan a Bootstrap sin subir especificidad; los `!important` que pisan utilidades de Bootstrap viven en la capa `overrides`. Se comprobó con capturas antes y después (sin diferencias visibles).
+- **Escalas con tokens**: ocho tamaños de letra (`--z-fs-xs` … `--z-fs-3xl`, mínimo 12 px) y cuatro radios (`--z-radius-xs/sm/-/lg`) sustituyen a unos 40 y 25 valores sueltos.
+- **Títulos de sección** con una sola voz (Anton, sin el override tardío), **insignia de división** neutra (el color queda para estados) y **mayúsculas** solo en títulos, kickers y nombres: botones, etiquetas, cabeceras de tabla e insignias van en caja de oración.
+- **Fechas** en el mismo formato en toda la web (`date_short`, `date_long`, `date_day`, `date_day_time` en `zyra_format`) y **sets** sin ceros inútiles.
+- **Iniciales** cuando un jugador no tiene foto (`includes/player_avatar.html`), con aro neutro.
+- **Nombres de jugador** en caja de título («Alberto Montaño»; `proper_name` en `players/models.py`): `full_name` y `short_name` ya no devuelven mayúsculas, que quedan solo en titulares (CSS) y en el PDF de convocatoria. Sustituye a la decisión de la PR #65.
+- **Textos**: «Plantilla» para los jugadores del equipo, «Crear rival», «Nuevo jugador» y «equipo» en lugar de «club» en los avisos.
+
 ## 01/11/2026 · Espacios (auditoría UX/UI, fase 3)
 
 - **Altas sin equipo por defecto**: quien gestiona equipos de SNP y de LAPI elige en cuál crea un rival o un jugador (pantalla «¿En qué equipo…?»), y los formularios dicen «Se creará en SNP · …». En Miembros, el selector de arriba y «Invitas a …» dejan claro a qué equipo se invita.

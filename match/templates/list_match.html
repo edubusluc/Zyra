@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static i18n %}
+{% load static i18n %}{% load zyra_format %}
 {% block page_title %}{% translate "Enfrentamientos" %} · {% endblock %}
 
 {% block content %}
@@ -92,7 +92,7 @@ o estado. Toda la tarjeta es pulsable.{% endcomment %}
             {% elif m.outcome == 'E' %}<span class="z-fixture-state is-draw">{% translate "Empate" %}</span>
             {% else %}<span class="z-fixture-state {% if m.upcoming %}is-upcoming{% else %}is-open{% endif %}">{{ m.phase.label }}</span>{% endif %}
         </div>
-        <time class="z-pfx-date" datetime="{{ m.start_date|date:'Y-m-d' }}" title="{% blocktranslate with season=m.season %}Temporada {{ season }}{% endblocktranslate %}">{{ m.start_date|date:"D j M" }}<small>{{ m.start_date|date:"Y" }}</small></time>
+        <time class="z-pfx-date" datetime="{{ m.start_date|date:'Y-m-d' }}" title="{% blocktranslate with season=m.season %}Temporada {{ season }}{% endblocktranslate %}">{{ m.start_date|date_short }}<small>{{ m.start_date|date:"Y" }}</small></time>
         <p class="z-pfx-meta">{% if m.start_time %}<strong>{{ m.start_time|time:"H:i" }}</strong>{% endif %}{% if m.location %}<span class="z-location"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>{{ m.location }}</span></span>{% endif %}</p>
         <div class="z-pfx-teams">
             <span class="z-pfx-team{% if m.local.is_own %} is-own{% endif %}">{{ m.local_name }}<small>{% translate "Local" %}</small></span>
@@ -110,7 +110,7 @@ o estado. Toda la tarjeta es pulsable.{% endcomment %}
                 {% include 'includes/competition_badge.html' with code=m.club.competition name=m.club.rules.name short=True %}
                 <span class="z-fixture-type">{% if m.round_number and m.is_league %}{% blocktranslate with n=m.round_number %}Jornada {{ n }}{% endblocktranslate %}{% else %}{{ m.type_label }}{% endif %}</span>
                 {% if m.no_show %}<span class="z-fixture-type">{% translate "No presentado" %}</span>{% endif %}
-                <span class="visually-hidden">{{ m.start_date|date:"D j M Y" }}</span>
+                <span class="visually-hidden">{{ m.start_date|date_long }}</span>
             </div>
         <div class="z-fixture-teams">
             {% with lp=m.local_points vp=m.visiting_points %}

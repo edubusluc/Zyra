@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n %}{% load zyra_format %}
 {% block page_title %}{{ rival_label }} · {% endblock %}
 
 {% block content %}
@@ -58,7 +58,7 @@
             <tbody>
               {% for e in history %}
               <tr>
-                <th scope="row"><a href="{% url 'call_for_match' e.match.public_id %}">{{ e.date|date:"d/m/Y" }}</a><small class="st-muted d-block">{{ e.season }}</small></th>
+                <th scope="row"><a href="{% url 'call_for_match' e.match.public_id %}">{{ e.date|date_day }}</a><small class="st-muted d-block">{{ e.season }}</small></th>
                 <td>{% if e.friendly %}<span class="z-badge">{{ e.type_label }}</span>{% else %}{{ e.type_label }}{% endif %}</td>
                 <td>{% if e.local %}{% translate "Local" %}{% else %}{% translate "Visitante" %}{% endif %}</td>
                 <td>{% include 'includes/rival_outcome.html' with e=e %}</td>

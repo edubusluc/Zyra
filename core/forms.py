@@ -48,7 +48,7 @@ class ClubForm(forms.Form):
                                     error_messages={"invalid_choice": _("Ya tienes equipo en esa competición: elige otra.")},
                                     help_text=_("Cada competición lleva su propio equipo, con sus jugadores, rivales y "
                                                 "enfrentamientos. Puedes tener un equipo en cada competición."))
-    name = forms.CharField(label=_("Nombre del club"), max_length=100)
+    name = forms.CharField(label=_("Nombre del equipo"), max_length=100)
     location = forms.CharField(label=_("Localización"), max_length=100)
     # Categoría y nacionalidad vienen rellenas con lo más habitual (Masculino, España); la división la elige el usuario.
     gender = forms.ChoiceField(label=_("Categoría"), choices=[("", _("Elige una opción"))] + Team.GENDERS,

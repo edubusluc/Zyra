@@ -60,6 +60,30 @@ def joined_by(joined_season, season):
     return joined is None or current is None or current >= joined
 
 
+
+# Partículas de apellido que van en minúscula: «de la Fuente».
+_PARTICLES = {"de", "del", "la", "las", "los", "y", "san", "van", "von", "da", "do", "dos", "di"}
+
+
+def proper_name(text):
+    """
+    Nombre propio en caja de título («Alberto Montaño»). Solo normaliza las palabras escritas
+    enteras en mayúsculas o en minúsculas; las mixtas («McGregor») se respetan. Los titulares
+    lo pasan a mayúsculas con CSS (UX-023).
+    """
+    out = []
+    tokens = str(text or "").split()
+    for i, token in enumerate(tokens):
+        # Una partícula solo va en minúscula entre otras palabras («de la»); al principio o al final es el apellido.
+        if token.lower() in _PARTICLES and 0 < i < len(tokens) - 1:
+            out.append(token.lower())
+        elif token.isupper() or token.islower():
+            out.append("-".join(part[:1].upper() + part[1:].lower() for part in token.split("-")))
+        else:
+            out.append(token)
+    return " ".join(out)
+
+
 class Player(PublicIdModel):
     """
     Jugador de un club. Pertenece siempre al equipo propio del club y hereda su categoría.
@@ -126,18 +150,19 @@ class Player(PublicIdModel):
     @property
     def full_name(self):
         """
-        Nombre y apellidos en mayúsculas. Lo guardado no se toca: los formularios de edición
-        siguen mostrando name/last_name tal cual.
+        Nombre y apellidos en caja de título (UX-023: las mayúsculas quedan para los titulares,
+        que las aplican con CSS). Lo guardado no se toca: los formularios de edición siguen
+        mostrando name/last_name tal cual.
         """
-        return f'{self.name} {self.last_name}'.strip().upper()
+        return proper_name(f'{self.name} {self.last_name}')
 
     @property
     def short_name(self):
-        """Nombre y primer apellido, en mayúsculas."""
-        return f'{self.name} {self.get_first_last_name()}'.strip().upper()
+        """Nombre y primer apellido, en caja de título."""
+        return proper_name(f'{self.name} {self.get_first_last_name()}')
 
     def __str__(self):
-        """Nombre completo en mayúsculas."""
+        """Nombre completo en caja de título."""
         return self.full_name
 
     def get_first_last_name(self):

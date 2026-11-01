@@ -16,7 +16,7 @@ from data_analyse.pairs import COMPETITIVE, _current_run, match_type_lookup
 from data_analyse.sets import own_sets, set_stats
 from call.models import Call
 from match.models import Game
-from players.models import SnpScoreHistory, joined_by
+from players.models import SnpScoreHistory, joined_by, proper_name
 
 CALL_PLAYED, CALL_BENCHED, CALL_ABSENT = "played", "benched", "absent"
 
@@ -46,7 +46,7 @@ def _partner_and_side(game, player):
         for mine, other in ((first, second), (second, first)):
             if getattr(game, mine + "_id") == player.pk:
                 partner = getattr(game, other)
-                name = partner.short_name if partner else game.removed_player_names.get(other, "").upper()
+                name = partner.short_name if partner else proper_name(game.removed_player_names.get(other, ""))
                 return name, partner, local
     return "", None, None
 

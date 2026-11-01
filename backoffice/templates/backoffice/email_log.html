@@ -1,5 +1,5 @@
 {% extends 'backoffice/base.html' %}
-{% load i18n backoffice_tags %}
+{% load i18n backoffice_tags %}{% load zyra_format %}
 {% block title %}{% translate "Correos enviados" %}{% endblock %}
 
 {% block content %}
@@ -26,7 +26,7 @@
     <tbody>
     {% for e in page %}
         <tr>
-            <td class="text-nowrap">{{ e.created_at|date:"j M Y H:i" }}</td>
+            <td class="text-nowrap">{{ e.created_at|date_day_time }}</td>
             <td>{{ e.to }}</td>
             <td>{{ e.subject }}</td>
             <td>{% if e.status == 'sent' %}<span class="z-badge z-badge--lime">{{ e.get_status_display }}</span>{% else %}<span class="z-badge z-badge--danger">{{ e.get_status_display }}</span><br><small class="text-muted">{{ e.error|truncatechars:120 }}</small>{% endif %}</td>

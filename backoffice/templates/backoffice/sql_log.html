@@ -1,5 +1,5 @@
 {% extends 'backoffice/base.html' %}
-{% load i18n tz %}
+{% load i18n tz %}{% load zyra_format %}
 {% block title %}{% translate "Registro de consultas" %}{% endblock %}
 
 {% block content %}
@@ -15,7 +15,7 @@
     <tbody>
     {% for q in page %}
         <tr>
-            <td>{{ q.created_at|timezone:"Europe/Madrid"|date:"j M Y H:i" }}</td>
+            <td>{{ q.created_at|timezone:"Europe/Madrid"|date_day_time }}</td>
             <td>{{ q.user.username|default:"—" }}</td>
             <td class="bo-wrap"><code class="bo-mono">{{ q.sql|truncatechars:160 }}</code></td>
             <td class="text-end">{{ q.row_count|default_if_none:"—" }}</td>
