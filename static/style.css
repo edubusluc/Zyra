@@ -3291,3 +3291,43 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .st-kpi--ring .st-kpi-label, .st-kpi--ring .st-kpi-sub { color: var(--z-ink); }
 .st-kpi--ring .st-ring { background: radial-gradient(closest-side, var(--z-lime) 80%, transparent 82%), conic-gradient(var(--z-ink) calc(var(--pct) * 1%), rgba(10, 10, 10, .2) 0); }
 .st-kpi--ring .st-ring span { color: var(--z-ink); }
+
+/* Mis estadísticas (mockup «Social club»): datos grandes en Anton, una tarjeta por competición con franja de color y gráficos con su color */
+.z-space-kpis { gap: 12px; margin-bottom: 14px; }
+.z-space-kpis > div { padding: 16px 20px; background: var(--z-surface); border-color: var(--z-border); border-radius: 22px; }
+.z-space-kpis b { font: 400 3rem/1 var(--z-display); }
+.z-space-kpis span { margin-top: 4px; }
+.z-space-rows li.z-comp-frame { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 16px; align-items: center; padding: 14px 20px; margin-bottom: 10px; background: var(--z-surface); border: 1px solid var(--z-border); border-left: 6px solid var(--z-snp); border-radius: 18px; }
+.z-space-rows li.z-comp-frame--lapi { border-left-color: var(--z-lapi); }
+.z-space-rows li.z-comp-frame .z-space-rows-name { grid-column: 1; flex: none; font-size: 1rem; }
+.z-space-rows li.z-comp-frame .z-space-rows-nums { grid-column: 1; font-size: .82rem; }
+.z-space-rows li.z-comp-frame > a { grid-column: 2; grid-row: 1 / span 2; }
+.z-comp-panel.z-comp-frame { background: var(--z-surface-2); border: 0; border-left: 6px solid var(--z-snp); border-radius: 20px; }
+.z-comp-panel.z-comp-frame--lapi { border-left-color: var(--z-lapi); }
+.z-comp-panel.z-comp-frame .st-meter span { background: var(--z-snp); }
+.z-comp-panel.z-comp-frame--lapi .st-meter span { background: var(--z-lapi); }
+.z-comp-panel.z-comp-frame .z-comp-meter b { color: var(--z-text); font: 400 1.3rem var(--z-display); }
+.z-section-title { font-size: 2.2rem; }
+
+/* Advertencias (mockup): cada una es una tarjeta con la fecha, el jugador y el motivo, y el enfrentamiento debajo */
+.st-warn-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.st-warn-item { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px 18px; padding: 14px 20px; background: var(--z-surface-2); border-left: 6px solid var(--z-warning); border-radius: 18px; }
+.st-warn-date { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 58px; height: 54px; border-radius: 14px; background: var(--z-surface-3); }
+.st-warn-date b { font: 400 1.5rem/1 var(--z-display); }
+.st-warn-date small { font-size: .62rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--z-muted); }
+.st-warn-body { display: grid; gap: 2px; min-width: 0; }
+.st-warn-body strong { font-weight: 800; }
+.st-warn-body a { font-size: .82rem; color: var(--z-muted); }
+.st-warn-item .st-warn-actions { display: flex; gap: 6px; }
+.st-warn-item .st-warn-actions form { margin: 0; }
+@media (max-width: 575.98px) { .st-warn-item { grid-template-columns: auto minmax(0, 1fr); } .st-warn-item .st-warn-actions { grid-column: 1 / -1; } }
+.st-warn-reason { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+.st-warn-chip { padding: 2px 10px; font-size: .72rem; font-weight: 800; color: var(--z-ink); background: var(--z-warning); border-radius: 999px; }
+.st-kpis .st-kpi-value { font-family: var(--z-display); font-weight: 400; font-size: 3.2rem; }
+.st-kpi--warn { border-left-width: 6px; }
+
+/* Formulario de crear rival: bloque oscuro con campos holgados, aviso lima y botón a todo el ancho */
+.z-form-narrow { margin-inline: 0; padding: 28px; background: var(--z-surface-2); border-radius: 26px; }
+.z-form-narrow .form-label { margin-bottom: 8px; font-size: .75rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.z-form-narrow .form-control, .z-form-narrow .form-select { min-height: 50px; background-color: var(--z-surface); border-radius: 16px; }
+.z-hint { margin: 0 0 16px; padding: 12px 16px; font-size: .85rem; color: var(--z-text); background: rgba(var(--z-lime-rgb), .1); border: 1px solid var(--z-lime); border-radius: 16px; }

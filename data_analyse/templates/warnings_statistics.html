@@ -60,36 +60,24 @@
         <article class="st-card">
           <h2 class="st-card-title">{% translate "Historial" %}</h2>
           <p class="st-card-note">{% translate "Todas las advertencias, la más reciente primero." %}</p>
-          <div class="st-table-wrap">
-            <table class="st-table st-table--wrap">
-              <thead>
-                <tr>
-                  <th scope="col">{% translate "Fecha" %}</th>
-                  <th scope="col">{% translate "Jugador" %}</th>
-                  <th scope="col">{% translate "Motivo" %}</th>
-                  <th scope="col">{% translate "Enfrentamiento" %}</th>
-                  <th scope="col">{% translate "Acciones" %}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for p in penalties %}
-                  <tr>
-                    <td>{{ p.call.match.start_date|date:"D j M Y" }}</td>
-                    <td>{{ p.player.full_name }}</td>
-                    <td>{{ p.display_reason }}</td>
-                    <td><a href="{% url 'call_for_match' p.call.match.public_id %}">{{ p.call.match.local_name }} vs {{ p.call.match.visiting_name }}</a></td>
-                    <td class="st-warn-actions">
-                      <a class="btn btn-sm btn-outline-secondary" href="{% url 'edit_penalty' p.public_id %}?next={{ request.get_full_path|urlencode }}" aria-label="{% blocktranslate with name=p.player.short_name %}Editar la advertencia de {{ name }}{% endblocktranslate %}">{% translate "Editar" %}</a>
-                      <form method="post" action="{% url 'delete_penalty' %}?ids={{ p.public_id }}" data-confirm="{% blocktranslate with name=p.player.short_name %}Se retirará la advertencia a {{ name }}.{% endblocktranslate %}" data-confirm-title="{% translate 'Quitar advertencia' %}" data-confirm-action="{% translate 'Eliminar' %}" data-confirm-danger data-loading-text="{% translate 'Quitando…' %}">
-                        {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
-                        <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="{% blocktranslate with name=p.player.short_name %}Eliminar la advertencia de {{ name }}{% endblocktranslate %}">{% translate "Eliminar" %}</button>
-                      </form>
-                    </td>
-                  </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
+          <ul class="st-warn-list">
+            {% for p in penalties %}
+              <li class="st-warn-item">
+                <span class="st-warn-date"><b>{{ p.call.match.start_date|date:"d" }}</b><small>{{ p.call.match.start_date|date:"M" }}</small></span>
+                <div class="st-warn-body">
+                  <strong>{{ p.player.full_name }}</strong>
+                  <span class="st-warn-reason"><span class="st-warn-chip">{{ p.display_reason }}</span> <a href="{% url 'call_for_match' p.call.match.public_id %}">{{ p.call.match.local_name }} vs {{ p.call.match.visiting_name }}</a></span>
+                </div>
+                <div class="st-warn-actions">
+                  <a class="btn btn-sm btn-outline-secondary" href="{% url 'edit_penalty' p.public_id %}?next={{ request.get_full_path|urlencode }}" aria-label="{% blocktranslate with name=p.player.short_name %}Editar la advertencia de {{ name }}{% endblocktranslate %}">{% translate "Editar" %}</a>
+                  <form method="post" action="{% url 'delete_penalty' %}?ids={{ p.public_id }}" data-confirm="{% blocktranslate with name=p.player.short_name %}Se retirará la advertencia a {{ name }}.{% endblocktranslate %}" data-confirm-title="{% translate 'Quitar advertencia' %}" data-confirm-action="{% translate 'Eliminar' %}" data-confirm-danger data-loading-text="{% translate 'Quitando…' %}">
+                    {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="{% blocktranslate with name=p.player.short_name %}Eliminar la advertencia de {{ name }}{% endblocktranslate %}">{% translate "Eliminar" %}</button>
+                  </form>
+                </div>
+              </li>
+            {% endfor %}
+          </ul>
         </article>
       </div>
     {% endif %}

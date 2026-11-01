@@ -5,6 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 01/11/2026 · Más aire en Inicio y Enfrentamientos
 
+- **Mis estadísticas, Advertencias y «Crear rival»** siguen el mockup: datos grandes en Anton, una tarjeta por competición con franja de color, advertencias como tarjetas con fecha, jugador, motivo y enfrentamiento, y formulario de rival con campos holgados y botón a todo el ancho.
 - **Estadísticas**: el primer dato de «Mis estadísticas» y la ficha de jugador va en lima, «Mejores parejas» es un panel lima y el recuento de advertencias se marca en ámbar.
 - **Rivales**: tarjetas con escudo, nombre grande y etiquetas separadas por una línea, tarjeta lima «Nuevo rival» al final y formulario de creación con cabecera y ancho propios.
 - **Portada pública**: nuevo diseño con bloque lima sobre la pista, «Convoca. Alinea. Gana.», tarjetas de las competiciones disponibles (SNP y LAPI), funciones, pasos numerados, guías y preguntas.
