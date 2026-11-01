@@ -3,6 +3,20 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 01/11/2026 · Pulido visual, textos y back-office (auditoría UX/UI, fase 6)
+
+- **Resultados**: el equipo propio lleva la etiqueta «Tu equipo» en lugar de una estrella, que se leía como «ganador».
+- **Alinear parejas** (escritorio): la barra de guardar va en la columna lateral, bajo «Orden de juego», y ya no tapa la última pareja.
+- **Rivales**: se quita la tarjeta lima «Nuevo rival» del final de la lista; queda el botón de la cabecera.
+- **Equipo**: los accesos rápidos son botones iguales de 44 px en una rejilla a todo el ancho.
+- **Navegación**: la barra inferior del móvil ya no se esconde al bajar (solo la cabecera), y el cambio de página usa un fundido de 0,2 s sin retardos.
+- **Portada**: las líneas de la pista se desvanecen bajo el texto del titular.
+- **Iniciar sesión**: el campo de usuario sugiere «ana@correo.com», la contraseña no repite su etiqueta y la cabecera ofrece «Registrarme».
+- **Formularios**: las etiquetas ya no llevan dos puntos y los títulos «Editar jugador» y «Editar equipo» van en minúscula. Un nombre o unos apellidos de jugador necesitan al menos una letra («GON ,» ya no se admite).
+- **Mi perfil**: en escritorio, en dos columnas (Cuenta y Mis fichas | Preferencias y Eliminar mi cuenta).
+- **Back-office**: ninguna tabla amplía la página en móvil (el texto oculto de las tablas con scroll propio la desbordaba) y el árbol de tablas de la consola SQL usa `<details>` sin botones dentro del resumen, con objetivos de al menos 24 px y los dos menús laterales con nombre propio.
+- **Sin cambios**: «Enfrentamientos» cabe en la barra inferior a 390 px con la letra a 12 px (se hizo en la fase 4), así que no hace falta el nombre corto «Partidos».
+
 ## 01/11/2026 · Flujos y densidad (auditoría UX/UI, fase 5)
 
 - **Estadísticas en móvil**: los filtros se recogen en una sola fila «Filtros · …» y cada sección se pliega bajo su título (solo la primera queda abierta; los enlaces del índice abren la suya). La página de equipo pasa de unos 7.700 px a unos 3.200. Los bloques con pocos datos muestran un único aviso compacto («Se mostrará cuando…») en lugar de un gráfico casi vacío, y el de afinidad ajusta su altura a las barras.

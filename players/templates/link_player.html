@@ -83,11 +83,11 @@
     <form method="post" enctype="multipart/form-data" class="mt-3" data-loading-text="{% translate 'Creando tu jugador…' %}">
         {% csrf_token %}
         <div class="row g-3">
-            <div class="col-sm-6"><label class="form-label" for="{{ new_form.name.id_for_label }}">{% translate "Nombre:" %}</label>{{ new_form.name }}</div>
-            <div class="col-sm-6"><label class="form-label" for="{{ new_form.last_name.id_for_label }}">{% translate "Apellidos:" %}</label>{{ new_form.last_name }}</div>
-            <div class="col-sm-6"><label class="form-label" for="{{ new_form.position.id_for_label }}">{% translate "Posición:" %}</label>{{ new_form.position }}</div>
-            <div class="col-sm-6"><label class="form-label" for="{{ new_form.skillfull_hand.id_for_label }}">{% translate "Mano hábil:" %}</label>{{ new_form.skillfull_hand }}</div>
-            <div class="col-12"><label class="form-label" for="{{ new_form.photo.id_for_label }}">{% translate "Foto:" %}</label>{{ new_form.photo }}</div>
+            <div class="col-sm-6"><label class="form-label" for="{{ new_form.name.id_for_label }}">{% translate "Nombre" %}</label>{{ new_form.name }}</div>
+            <div class="col-sm-6"><label class="form-label" for="{{ new_form.last_name.id_for_label }}">{% translate "Apellidos" %}</label>{{ new_form.last_name }}</div>
+            <div class="col-sm-6"><label class="form-label" for="{{ new_form.position.id_for_label }}">{% translate "Posición" %}</label>{{ new_form.position }}</div>
+            <div class="col-sm-6"><label class="form-label" for="{{ new_form.skillfull_hand.id_for_label }}">{% translate "Mano hábil" %}</label>{{ new_form.skillfull_hand }}</div>
+            <div class="col-12"><label class="form-label" for="{{ new_form.photo.id_for_label }}">{% translate "Foto" %}</label>{{ new_form.photo }}</div>
         </div>
         <div class="text-center mt-3">
             <button type="submit" class="btn btn-primary">{% translate "Crear mi jugador" %}</button>

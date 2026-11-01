@@ -71,7 +71,7 @@
         {% endif %}
     </div>
 
-    <aside class="bo-sql-side">
+    <aside class="bo-sql-side" aria-label="{% translate 'Tablas y consultas' %}">
         <section class="z-panel">
             <h2 class="h6">{% translate "Consultas guardadas" %}</h2>
             <ul class="bo-list">
@@ -94,7 +94,8 @@
             <div class="bo-schema">
                 {% for t in schema %}
                 <details>
-                    <summary><button type="button" class="bo-link" data-table="{{ t.name }}">{{ t.name }}</button></summary>
+                    <summary>{{ t.name }}</summary>
+                    <button type="button" class="bo-link bo-use-table" data-table="{{ t.name }}"><i class="fa-solid fa-table" aria-hidden="true"></i> {% blocktranslate with name=t.name %}Consultar {{ name }}{% endblocktranslate %}</button>
                     <ul>{% for c in t.columns %}<li><button type="button" class="bo-link" data-column="{{ c.name }}">{{ c.name }}</button>{% if c.target %} <span class="bo-fk" title="{% blocktranslate with name=c.name %}Clave ajena: usa {{ name }}.columna{% endblocktranslate %}">→ {{ c.target }}</span>{% endif %}</li>{% endfor %}</ul>
                 </details>
                 {% endfor %}
@@ -128,7 +129,6 @@
         b.addEventListener('click', function (e) {
             e.preventDefault();
             setSql('SELECT *\nFROM ' + b.dataset.table + '\nLIMIT 100');
-            b.closest('details').open = true;
         });
     });
     document.querySelectorAll('[data-column]').forEach(function (b) {

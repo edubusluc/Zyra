@@ -17,11 +17,11 @@
             <input type="hidden" name="next" value="{{ next }}">
             <p>
                 <label for="{{ form.username.id_for_label }}">{% translate "Usuario o email" %}</label>
-                <input type="text" name="username" id="{{ form.username.id_for_label }}" value="{{ form.username.value|default:'' }}" placeholder="{% translate 'Usuario o email' %}" autocomplete="username" autofocus required>
+                <input type="text" name="username" id="{{ form.username.id_for_label }}" value="{{ form.username.value|default:'' }}" placeholder="{% translate 'ana@correo.com' %}" autocomplete="username" autofocus required>
             </p>
             <p>
                 <label for="{{ form.password.id_for_label }}">{% translate "Contraseña" %}</label>
-                <input type="password" name="password" id="{{ form.password.id_for_label }}" placeholder="{% translate 'Contraseña' %}" autocomplete="current-password" required>
+                <input type="password" name="password" id="{{ form.password.id_for_label }}" autocomplete="current-password" required>
             </p>
             <p class="mb-0"><a href="{% url 'account_reset_password' %}">{% translate "¿Has olvidado tu contraseña?" %}</a></p>
             <button type="submit" class="btn btn-primary btn-lg mt-2">{% translate "Entrar" %}</button>

@@ -3,7 +3,7 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 from core.images import clean_photo_field
 from core.similarity import same_name
-from core.validators import plain_text
+from core.validators import player_name
 from .models import Player, current_season, season_choices
 
 def with_placeholder(choices):
@@ -43,7 +43,7 @@ class PlayerForm (forms.ModelForm):
         self.fields['position'].choices = with_placeholder(Player.POSITIONS)
         self.fields['skillfull_hand'].choices = with_placeholder(Player.HAND)
         season_field(self, club)
-        plain_text(self, 'name', 'last_name')
+        player_name(self, 'name', 'last_name')
 
     def clean_photo(self):
         """Valida, reduce y pasa a WebP la foto antes de guardarla (core/images.py)."""
@@ -68,7 +68,7 @@ class PlayerEditForm(forms.ModelForm):
         self.fields['skillfull_hand'].choices = with_placeholder(Player.HAND)
         self.fields['photo'].widget = forms.FileInput(attrs={"class": "form-control", "accept": "image/*"})
         season_field(self, self.instance.club, self.instance.joined_season)
-        plain_text(self, 'name', 'last_name')
+        player_name(self, 'name', 'last_name')
 
     def clean_photo(self):
         """Valida, reduce y pasa a WebP la foto antes de guardarla (core/images.py)."""
@@ -106,7 +106,7 @@ class NewOwnPlayerForm(OwnPlayerForm):
         super().__init__(*args, **kwargs)
         for name in ('name', 'last_name'):
             self.fields[name].widget.attrs["class"] = "form-control"
-        plain_text(self, 'name', 'last_name')
+        player_name(self, 'name', 'last_name')
 
     def clean(self):
         """

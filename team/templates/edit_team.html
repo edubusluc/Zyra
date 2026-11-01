@@ -1,23 +1,23 @@
 {% extends 'base.html' %}
 {% load static i18n %}
-{% block page_title %}{% translate "Editar Equipo" %} · {% endblock %}
+{% block page_title %}{% translate "Editar equipo" %} · {% endblock %}
 
 {% block content %}
     <div class="table-container mt-4">
-        <h1>{% translate "Editar Equipo" %}</h1>
+        <h1>{% translate "Editar equipo" %}</h1>
         
         <form method="POST" action="{% url 'edit_team' team.public_id %}" enctype="multipart/form-data" data-loading-text="{% translate 'Guardando el equipo…' %}">
             {% csrf_token %}
             
             <div class="mb-3">
-                <label for="name" class="form-label">{% translate "Nombre:" %}</label>
+                <label for="name" class="form-label">{% translate "Nombre" %}</label>
                 <input type="text" id="name" name="name" class="form-control" value="{{ team.name }}" required>
             </div>
 
             {% for error in form.name.errors %}<div class="text-danger small mb-3">{{ error }}</div>{% endfor %}
 
             <div class="mb-3">
-                <label for="gender" class="form-label">{% translate "Categoría:" %}</label>
+                <label for="gender" class="form-label">{% translate "Categoría" %}</label>
                 <select id="gender" name="gender" class="form-select" required>
                     <option value="">{% translate "Elige una opción" %}</option>
                     {% for value, label in genders %}
@@ -28,7 +28,7 @@
             </div>
 
             <div class="mb-3">
-                <label for="country" class="form-label">{% translate "Nacionalidad del equipo:" %}</label>
+                <label for="country" class="form-label">{% translate "Nacionalidad del equipo" %}</label>
                 <select id="country" name="country" class="form-select" required>
                     <option value="">{% translate "Elige una opción" %}</option>
                     {% for value, label in countries %}
@@ -38,7 +38,7 @@
             </div>
 
             <div class="mb-3">
-                <label for="division" class="form-label">{% translate "División:" %}</label>
+                <label for="division" class="form-label">{% translate "División" %}</label>
                 <select id="division" name="division" class="form-select" required>
                     <option value="">{% translate "Elige una opción" %}</option>
                     {% for value, label in divisions %}
@@ -48,12 +48,12 @@
             </div>
 
             <div class="mb-3">
-                <label for="location" class="form-label">{% translate "Ubicación:" %}</label>
+                <label for="location" class="form-label">{% translate "Ubicación" %}</label>
                 <input type="text" id="location" name="location" class="form-control" value="{{ team.location }}" required>
             </div>
 
             <div class="mb-3">
-                <label for="photo" class="form-label">{% translate "Foto:" %}</label>
+                <label for="photo" class="form-label">{% translate "Foto" %}</label>
                 <div class="d-flex align-items-center gap-3">
                     <img src="{% if team.photo %}{{ team.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="{% translate 'Escudo actual del equipo' %}" class="z-avatar z-avatar--sm" data-photo-preview>
                     <input type="file" id="photo" name="photo" class="form-control" accept="image/*">

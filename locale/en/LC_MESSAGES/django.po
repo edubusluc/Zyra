@@ -13476,7 +13476,7 @@ msgstr ""
 "one:"
 
 #: players/templates/edit_player.html:3 players/templates/edit_player.html:8
-msgid "Editar Jugador"
+msgid "Editar jugador"
 msgstr "Edit player"
 
 #: players/templates/edit_player.html:12
@@ -14377,7 +14377,7 @@ msgid "En tu club ya existe un equipo con este nombre o uno muy parecido:"
 msgstr "Your club already has a team with this name or a very similar one:"
 
 #: team/templates/edit_team.html:3 team/templates/edit_team.html:7
-msgid "Editar Equipo"
+msgid "Editar equipo"
 msgstr "Edit team"
 
 #: team/templates/edit_team.html:9
@@ -14825,3 +14825,27 @@ msgstr "View that tie"
 
 msgid "No hay datos para mostrar."
 msgstr "No data to show."
+
+msgid "Mano hábil"
+msgstr "Dominant hand"
+
+msgid "Nueva foto"
+msgstr "New photo"
+
+msgid "Temporada en la que se unió al equipo"
+msgstr "Season they joined the team"
+
+msgid "ana@correo.com"
+msgstr "ana@email.com"
+
+msgid "Escribe al menos una letra."
+msgstr "Enter at least one letter."
+
+msgid "Consultar %(name)s"
+msgstr "Query %(name)s"
+
+msgid "Menú del back-office"
+msgstr "Back-office menu"
+
+msgid "Tablas y consultas"
+msgstr "Tables and queries"

@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 {% load static i18n %}
-{% block page_title %}{% translate "Editar Jugador" %} · {% endblock %}
+{% block page_title %}{% translate "Editar jugador" %} · {% endblock %}
 
 {% block content %}
     <script src="{% static 'js/player-picker.js' %}" defer></script>
     <div class="table-container">
-    <h1>{% translate "Editar Jugador" %}</h1>
+    <h1>{% translate "Editar jugador" %}</h1>
 
     {% if form.errors %}
     <div class="alert alert-danger" role="alert">
@@ -21,17 +21,17 @@
         {% csrf_token %}
         
         <div>
-            <label for="name">{% translate "Nombre:" %}</label>
+            <label for="name">{% translate "Nombre" %}</label>
             <input type="text" id="name" name="name" value="{{ player.name }}" maxlength="100" required>
         </div>
 
         <div>
-            <label for="last_name">{% translate "Apellidos:" %}</label>
+            <label for="last_name">{% translate "Apellidos" %}</label>
             <input type="text" id="last_name" name="last_name" value="{{ player.last_name }}" maxlength="100" required>
         </div>
     
         <div>
-            <label for="position">{% translate "Posición:" %}</label>
+            <label for="position">{% translate "Posición" %}</label>
             <select id="position" name="position" required>
                 {% for value, display in positions %}
                     <option value="{{ value }}" {% if player.position == value %}selected{% endif %}>{{ display }}</option>
@@ -40,7 +40,7 @@
         </div>
     
         <div>
-            <label for="skillfull_hand">{% translate "Mano hábil:" %}</label>
+            <label for="skillfull_hand">{% translate "Mano hábil" %}</label>
             <select id="skillfull_hand" name="skillfull_hand" required>
                 {% for value, display in hands %}
                     <option value="{{ value }}" {% if player.skillfull_hand == value %}selected{% endif %}>{{ display }}</option>
@@ -49,13 +49,13 @@
         </div>
 
         <div>
-            <label for="{{ form.joined_season.id_for_label }}">{% translate "Temporada en la que se unió al equipo:" %}</label>
+            <label for="{{ form.joined_season.id_for_label }}">{% translate "Temporada en la que se unió al equipo" %}</label>
             {{ form.joined_season }}
             <small class="form-text">{% translate "Solo cuenta desde esa temporada en las estadísticas de convocatorias." %}</small>
         </div>
         
         <div>
-            <label for="{{ form.photo.id_for_label }}">{% translate "Foto:" %}</label>
+            <label for="{{ form.photo.id_for_label }}">{% translate "Foto" %}</label>
             <div class="d-flex align-items-center gap-3">
                 <img src="{% if player.photo %}{{ player.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="{% translate 'Foto actual del jugador' %}" class="z-avatar z-avatar--sm" data-photo-preview>
                 {{ form.photo }}

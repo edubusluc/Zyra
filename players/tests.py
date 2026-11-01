@@ -1345,3 +1345,20 @@ class ListPlayersTeamToggleTests(TestCase):
         self.assertFalse(page.context["only_team"])
         self.assertEqual([p.name for p in page.context["players"]], ["Ana", "Bea"])
         self.assertContains(page, "?order_by=name&amp;team=0")
+
+
+class PlayerNameLettersTests(TestCase):
+    """UX-051: los nombres de jugador necesitan al menos una letra."""
+
+    def test_punctuation_only_names_are_rejected(self):
+        from .forms import PlayerForm
+        form = PlayerForm(data={"name": "Gon", "last_name": ",", "position": "", "joined_season": ""})
+        self.assertFalse(form.is_valid())
+        self.assertIn("last_name", form.errors)
+        form = PlayerForm(data={"name": "123", "last_name": "Pérez"})
+        self.assertIn("name", form.errors)
+
+    def test_form_labels_have_no_colon(self):
+        """UX-050: las etiquetas de los formularios no llevan dos puntos."""
+        from .forms import PlayerForm
+        self.assertNotIn(":", str(PlayerForm()["name"].label_tag()).split("</label>")[0].rsplit(">", 1)[-1])
