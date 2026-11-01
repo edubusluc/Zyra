@@ -232,7 +232,7 @@ RATE_LIMITS_ENABLED = config('RATE_LIMITS_ENABLED', default=not TESTING, cast=bo
 # Solo al ejecutar los tests: hash de contraseñas rápido (MD5). Con PBKDF2 cada create_user y cada
 # login cuesta ~0,1-0,3 s y la suite pasaba de ~9 min a ~1,6 min. Nunca se usa fuera de `manage.py test`.
 if TESTING:
-    PASSWORD_HASHERS = ['django.contrib.auth.hashers.MD5PasswordHasher']
+    PASSWORD_HASHERS = ['django.contrib.auth.hashers.MD5PasswordHasher']  # NOSONAR: solo en manage.py test, nunca en producción
 
 
 # Database
