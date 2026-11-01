@@ -1,14 +1,9 @@
 {% load i18n %}
-{# Filtro por tipo de partido (desplegable «Tipo»). Recibe match_types y competitive_types de data_analyse.views.match_type_context. #}
+{# Filtro por tipo de partido (chips Todos / Competitivos / Amistosos). Recibe match_types y competitive_types de data_analyse.views.match_type_context. #}
 <nav aria-label="{% translate 'Tipo de enfrentamiento' %}" class="z-fsel-wrap st-type-filter">
-  <details class="z-fsel{% if selected_match_type %} is-active{% endif %}" data-filter-menu>
-    <summary><small>{% translate "Tipo" %}</small><span>{% for option in match_types %}{% if option.active %}{{ option.label }}{% endif %}{% endfor %}</span></summary>
-    <ul class="z-fsel-menu">
-      {% for option in match_types %}
-      <li><a href="{{ option.url }}" {% if option.active %}aria-current="page"{% endif %}>{{ option.label }}</a></li>
-      {% endfor %}
-    </ul>
-  </details>
+  <ul class="st-seasons st-type-chips">
+    {% for option in match_types %}<li><a class="st-chip" href="{{ option.url }}"{% if option.active %} aria-current="page"{% endif %}>{{ option.label }}</a></li>{% endfor %}
+  </ul>
   {% if competitive_types %}
   {# Dentro de Competitivos: todos los enfrentamientos o un solo tipo, con el mismo desplegable que Tipo. #}
   <details class="z-fsel{% for option in competitive_types %}{% if option.active and option.url != competitive_types.0.url %} is-active{% endif %}{% endfor %}" data-filter-menu>

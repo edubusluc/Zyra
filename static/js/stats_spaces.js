@@ -10,34 +10,41 @@
 
   Chart.defaults.font.family = "'Archivo', system-ui, sans-serif";
   Chart.defaults.color = '#A3A3A3';
-  Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.08)';
   Chart.defaults.plugins.legend.labels.usePointStyle = true;
   Chart.defaults.plugins.legend.labels.boxWidth = 8;
-  const grid = 'rgba(255, 255, 255, 0.08)';
-  const legend = { position: 'top', labels: { boxWidth: 8, boxHeight: 8, padding: 12, font: { size: 12 } } };
 
-  // Partidos ganados y perdidos como local / visitante: una barra por competición en cada grupo.
-  const sideChart = (id, rows) => {
-    const canvas = document.getElementById(id);
-    if (!canvas) return;
-    new Chart(canvas, {
+  // Ganados y perdidos de cada competición (local y visitante juntos; el detalle sale en el tooltip):
+  // barras redondeadas con su cifra dentro, sin ejes ni cuadrícula (la leyenda va sobre los gráficos).
+  const sidesCanvas = document.getElementById('spacesSidesChart');
+  if (sidesCanvas) {
+    new Chart(sidesCanvas, {
       type: 'bar',
       data: {
         labels: [gettext('Ganados'), gettext('Perdidos')],
         datasets: comps.map((c, i) => ({
-          label: c.name, data: [rows[i].won, rows[i].lost], backgroundColor: color(c.code), borderRadius: 10, maxBarThickness: 48,
+          label: c.name, data: [data.totals[i].won, data.totals[i].lost], backgroundColor: color(c.code), maxBarThickness: 56,
+          borderRadius: 14, minBarLength: 14,
         })),
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend },
-        scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: grid } } },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              afterLabel: (c) => {
+                const t = data.totals[c.datasetIndex];
+                const side = c.dataIndex === 0 ? ['won', gettext('ganados')] : ['lost', gettext('perdidos')];
+                return interpolate(gettext('%(l)s en casa · %(v)s fuera'), { l: t.local[side[0]], v: t.visiting[side[0]] }, true);
+              },
+            },
+          },
+        },
+        scales: { x: { grid: { display: false } }, y: { display: false, beginAtZero: true, grace: '8%' } },
       },
     });
-  };
-  sideChart('spacesLocalChart', data.local);
-  sideChart('spacesVisitingChart', data.visiting);
+  }
 
   // Partidos ganados por temporada: apilados por competición y el total encima de cada columna.
   const yearsCanvas = document.getElementById('spacesYearsChart');
@@ -70,7 +77,7 @@
       plugins: [totalOnTop],
       data: {
         labels: labels.map(seasonLabel),
-        datasets: comps.map((c, i) => ({ label: c.name, data: data.years.won[i], backgroundColor: color(c.code), maxBarThickness: 44 })),
+        datasets: comps.map((c, i) => ({ label: c.name, data: data.years.won[i], backgroundColor: color(c.code), maxBarThickness: 44, borderRadius: { topLeft: 12, topRight: 12, bottomLeft: 12, bottomRight: 12 }, borderSkipped: false, borderColor: '#151515', borderWidth: 2 })),
       },
       options: {
         responsive: true,
@@ -78,12 +85,12 @@
         layout: { padding: { top: 16 } },
         interaction: { mode: 'index', intersect: false },
         plugins: {
-          legend,
+          legend: { display: false },
           tooltip: { callbacks: { footer: (items) => `${gettext('Total')}: ${totals[items[0].dataIndex]}` } },
         },
         scales: {
           x: { stacked: true, grid: { display: false }, ticks: { autoSkip: false, maxRotation: 0, font: { size: 12 } } },
-          y: { stacked: true, beginAtZero: true, grace: '12%', ticks: { precision: 0 }, grid: { color: grid } },
+          y: { stacked: true, display: false, beginAtZero: true, grace: '12%' },
         },
       },
     });
@@ -98,8 +105,36 @@
   if (attCanvas) {
     // Con una sola temporada una línea no dibuja nada: barras, una por competición.
     const single = data.attendance.labels.length === 1;
+    // El último valor de cada línea, en Anton junto a su final (diseño aprobado: sin ejes).
+    const endLabels = {
+      id: 'endLabels',
+      afterDatasetsDraw(chart) {
+        if (single) return;
+        const { ctx, chartArea } = chart;
+        ctx.save();
+        ctx.font = "400 18px 'Anton', 'Archivo', sans-serif";
+        ctx.fillStyle = '#FFFFFF';
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'bottom';
+        const placed = [];
+        chart.data.datasets.forEach((ds, i) => {
+          const points = chart.getDatasetMeta(i).data;
+          for (let j = points.length - 1; j >= 0; j--) {
+            if (ds.data[j] === null || ds.data[j] === undefined) continue;
+            const key = `${Math.round(points[j].x)}-${ds.data[j]}`;
+            if (!placed.includes(key)) {
+              placed.push(key);
+              ctx.fillText(`${ds.data[j]}%`, Math.min(points[j].x, chartArea.right), points[j].y - 8);
+            }
+            break;
+          }
+        });
+        ctx.restore();
+      },
+    };
     new Chart(attCanvas, {
       type: single ? 'bar' : 'line',
+      plugins: [endLabels],
       data: {
         labels: data.attendance.labels,
         datasets: comps.map((c, i) => ({
@@ -109,21 +144,24 @@
           backgroundColor: color(c.code),
           spanGaps: true,
           tension: 0.3,
-          pointRadius: 4,
+          borderWidth: 4,
+          pointRadius: 0,
+          pointHoverRadius: 6,
           maxBarThickness: 48,
         })),
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        layout: { padding: { top: 26, right: 8 } },
         interaction: { mode: 'index', intersect: false },
         plugins: {
-          legend,
+          legend: { display: false },
           tooltip: { callbacks: { label: (c) => (c.parsed.y === null ? null : `${c.dataset.label}: ${c.parsed.y} %`) } },
         },
         scales: {
           x: { grid: { display: false }, ticks: { maxRotation: 45, font: { size: 11 } } },
-          y: { min: 0, max: 100, ticks: { stepSize: 25, callback: (v) => `${v} %` }, grid: { color: grid } },
+          y: { display: false, min: 0, max: 105 },
         },
       },
     });

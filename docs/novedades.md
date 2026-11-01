@@ -18,6 +18,11 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 - **Enfrentamientos**: «Requieren acción» es solo para quien gestiona ese equipo; los jugadores ven únicamente «Próximos» y «Jugados».
 - **Sin cambios**: «Enfrentamientos» cabe en la barra inferior a 390 px con la letra a 12 px (se hizo en la fase 4), así que no hace falta el nombre corto «Partidos».
 
+## 01/11/2026 · Estadísticas rediseñadas (fase 1: Mis estadísticas · Todas)
+
+- **Cabecera de Estadísticas** como en el diseño aprobado: pestañas en mayúsculas sin iconos, fila «Competición» (Todas · SNP · LAPI con su color) con el contexto a la derecha, temporada y chips de tipo (Todos · Competitivos · Amistosos).
+- **Mis estadísticas · Todas**: tarjetas de Jugados (lima), Ganados y Perdidos; una fila por competición con borde de su color y «N jugados · XV YD · te apuntaste a a de b»; nota informativa y gráficos en dos columnas: Sets (dos barras finas por situación), Local y visitante (ganados y perdidos por competición), Ganados por temporada (apilados con el total) y Convocatorias (líneas sin ejes con el último valor).
+
 ## 01/11/2026 · Flujos y densidad (auditoría UX/UI, fase 5)
 
 - **Estadísticas en móvil**: los filtros se recogen en una sola fila «Filtros · …» y cada sección se pliega bajo su título (solo la primera queda abierta; los enlaces del índice abren la suya). La página de equipo pasa de unos 7.700 px a unos 3.200. Los bloques con pocos datos muestran un único aviso compacto («Se mostrará cuando…») en lugar de un gráfico casi vacío, y el de afinidad ajusta su altura a las barras.

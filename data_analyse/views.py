@@ -478,6 +478,10 @@ SET_SITUATIONS = (
 )
 
 
+# Situaciones de sets que muestra «Mis estadísticas · Todas», en el orden del diseño.
+MINE_SET_KEYS = ('tiebreak', 'first_set', 'comeback')
+
+
 def players_charts(players, logs, season, match_type):
     """
     Gráficos de «Mis estadísticas · Todas» con cada competición al lado de la otra, nunca sumadas en
@@ -509,7 +513,7 @@ def players_charts(players, logs, season, match_type):
         attendance.append({s: round(present.get(s, 0) / n * 100) for s, n in total.items() if n})
 
     set_rows = [{
-        "label": label, "hint": hint,
+        "key": key, "label": label, "hint": hint,
         "comps": [{"code": c["code"], "name": c["name"], "r": st[key]} for c, st in zip(comps, sets_by_comp)],
     } for key, label, hint in SET_SITUATIONS]
 
@@ -519,12 +523,19 @@ def players_charts(players, logs, season, match_type):
         "rows": [{"label": label, "hint": hint, "r": st[key]} for key, label, hint in SET_SITUATIONS],
     } for c, st in zip(comps, sets_by_comp)]
 
+    # Tarjeta «Sets» de «Mis estadísticas»: solo las tres situaciones del diseño, con el % de cada competición.
+    set_compare = [row for key in MINE_SET_KEYS for row in set_rows if row["key"] == key]
+    # Partidos ganados y perdidos de cada competición (local + visitante), para «Local y visitante».
+    totals = [{"won": a["won"] + b["won"], "lost": a["lost"] + b["lost"], "local": a, "visiting": b}
+              for a, b in zip(local, visiting)]
+
     by_start = lambda s: int(s.split('-')[0])
     labels = sorted({y for per in years for y in per}, key=by_start)
     att_labels = sorted({s for per in attendance for s in per}, key=by_start)
     return {
         "set_rows": set_rows,
         "set_panels": set_panels,
+        "set_compare": set_compare,
         "sets_played": any(st["played"] for st in sets_by_comp),
         "has_local": any(r["won"] or r["lost"] for r in local),
         "has_visiting": any(r["won"] or r["lost"] for r in visiting),
@@ -532,6 +543,7 @@ def players_charts(players, logs, season, match_type):
             "comps": comps,
             "local": local,
             "visiting": visiting,
+            "totals": totals,
             "years": {"labels": labels, "won": [[per.get(y, 0) for y in labels] for per in years]},
             "attendance": {"labels": att_labels, "series": [[per.get(s) for s in att_labels] for per in attendance]},
             "currentSeason": current_season(),
