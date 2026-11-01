@@ -14882,3 +14882,139 @@ msgstr "Each competition in its colour with the total on top."
 
 msgid "% de las cerradas, por competición."
 msgstr "% of the closed ones, by competition."
+
+msgid "% de victorias según dónde juega."
+msgstr "% of wins by where they play."
+
+#, python-format
+msgid "%(n)s pts"
+msgstr "%(n)s pts"
+
+#, python-format
+msgid "%(pts)s pts SNP"
+msgstr "%(pts)s SNP pts"
+
+#, python-format
+msgid "%(w)s ganados y %(l)s perdidos como local"
+msgstr "%(w)s won and %(l)s lost at home"
+
+#, python-format
+msgid "%(w)s ganados y %(l)s perdidos como visitante"
+msgstr "%(w)s won and %(l)s lost away"
+
+#, python-format
+msgid "%(w)sV %(l)sD"
+msgstr "%(w)sW %(l)sL"
+
+msgid "1 punto cada uno"
+msgstr "1 point each"
+
+msgid "Asistencia y afinidad"
+msgstr "Attendance and affinity"
+
+msgid "Cifras del jugador"
+msgstr "Player figures"
+
+msgid "Con quién rinde mejor."
+msgstr "Who they play best with."
+
+msgid "De las convocatorias cerradas."
+msgstr "From closed call-ups."
+
+msgid "Elegible para Playoffs y Fase final"
+msgstr "Eligible for Playoffs and Finals"
+
+msgid "Evolución de sus puntos."
+msgstr "How their points evolve."
+
+msgid "Ganados y perdidos por temporada."
+msgstr "Won and lost per season."
+
+#, python-format
+msgid "Ha jugado %(n)s de %(total)s jornadas de liga."
+msgstr "Has played %(n)s of %(total)s league rounds."
+
+msgid "Jornadas"
+msgstr "Rounds"
+
+#, python-format
+msgid "LAPI · %(n)s jornadas de liga jugadas"
+msgstr "LAPI · %(n)s league rounds played"
+
+msgid "No hay partidos en pareja con compañeros del equipo."
+msgstr "No pair games with teammates yet."
+
+#, python-format
+msgid "Nº %(n)s del equipo"
+msgstr "No. %(n)s in the team"
+
+#, python-format
+msgid "Pareja habitual: %(name)s"
+msgstr "Usual partner: %(name)s"
+
+msgid "Partidos ganados"
+msgstr "Matches won"
+
+msgid "Partidos por temporada"
+msgstr "Matches per season"
+
+msgid "Puntos SNP por temporada"
+msgstr "SNP points per season"
+
+#, python-format
+msgid "Reglamento 8.2: mínimo %(n)s enfrentamientos de liga."
+msgstr "Rule 8.2: at least %(n)s league matches."
+
+msgid "Se apunta"
+msgstr "Signs up"
+
+msgid "Se mostrará la evolución cuando haya puntos SNP de al menos 2 temporadas."
+msgstr "The evolution will show once there are SNP points from at least 2 seasons."
+
+msgid "Sets y fases finales"
+msgstr "Sets and finals"
+
+msgid "Solo LAPI"
+msgstr "LAPI only"
+
+msgid "Solo SNP"
+msgstr "SNP only"
+
+msgid "Tercer set"
+msgstr "Third set"
+
+msgid "Tercer set, tie-breaks y remontadas."
+msgstr "Third set, tie-breaks and comebacks."
+
+msgid "Todavía no es elegible"
+msgstr "Not eligible yet"
+
+msgid "Todavía no hay partidos."
+msgstr "No matches yet."
+
+msgid "Tu ficha en esta competición"
+msgstr "Your sheet in this competition"
+
+msgid "Victorias en cada partido del enfrentamiento."
+msgstr "Wins in each game of the match."
+
+msgid "Yo"
+msgstr "Me"
+
+#, python-format
+msgid "de %(n)s posibles"
+msgstr "of %(n)s possible"
+
+msgid "liga jugada"
+msgstr "league played"
+
+#, python-format
+msgid "mejor: %(best)sV · peor: %(worst)sD"
+msgstr "best: %(best)sW · worst: %(worst)sL"
+
+msgid "¿Puede jugar fases finales?"
+msgstr "Can they play the finals?"
+
+#, python-format
+msgid "Últimos %(n)s, el más reciente a la derecha."
+msgstr "Last %(n)s, most recent on the right."

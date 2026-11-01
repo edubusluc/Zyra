@@ -131,7 +131,7 @@ class ClubIsolationTests(TestCase):
                             player_1_local=self.player_a, player_2_local=self.player_b)
 
         response = self.client.get(reverse("player_statistics"), {"player": self.player_a.public_id, "season": "2025-2026"})
-        self.assertEqual([g["match_id"] for g in response.context["d"]["games"]], [self.match_a.id])
+        self.assertEqual([g["match_id"] for g in response.context["games"]], [self.match_a.id])
         self.assertNotContains(response, reverse("call_for_match", args=[self.match_b.public_id]))
 
     def test_player_statistics_only_lists_own_players(self):

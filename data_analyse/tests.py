@@ -250,7 +250,7 @@ class PairStatisticsTests(TestCase):
 
     def test_player_season_games_table(self):
         response = self.client.get(reverse("player_statistics"), {"player": self.a.public_id, "season": "2024-2025"})
-        games = response.context["d"]["games"]
+        games = response.context["games"]
         # Del más reciente al más antiguo: visitante (1 nov) y luego los 2 partidos en casa (1 oct)
         self.assertEqual(
             [(g["date"], g["n_game"], g["local"], g["won"], g["points"]) for g in games],
@@ -273,17 +273,19 @@ class PairStatisticsTests(TestCase):
         game = m.games.get(n_game=1)  # A+B de visitantes, pierden
         Result.objects.create(game=game, set1_local=6, set1_visiting=3, set2_local=6, set2_visiting=4)
         response = self.client.get(reverse("player_statistics"), {"player": self.a.public_id, "season": "2024-2025"})
-        self.assertEqual(response.context["d"]["games"][0]["sets"], "3-6 4-6")
+        self.assertEqual(response.context["games"][0]["sets"], "3-6 4-6")
 
     def test_player_season_games_empty_and_only_selected_season(self):
         response = self.client.get(reverse("player_statistics"), {"player": self.d.public_id, "season": "2025-2026"})
-        self.assertEqual([g["n_game"] for g in response.context["d"]["games"]], [2])
-        self.assertIsNone(self.client.get(reverse("player_statistics"), {"player": self.d.public_id, "season": "all"}).context["d"])
+        self.assertEqual([g["n_game"] for g in response.context["games"]], [2])
+        everything = self.client.get(reverse("player_statistics"), {"player": self.d.public_id, "season": "all"}).context
+        self.assertIsNone(everything["d"])
+        self.assertTrue(everything["games"])
 
         e = Player.objects.create(club=self.club, name="E", last_name="Eson", joined_season="2020-2021")
         response = self.client.get(reverse("player_statistics"), {"player": e.public_id, "season": "2025-2026"})
-        self.assertEqual(response.context["d"]["games"], [])
-        self.assertContains(response, "No jugó ningún partido esta temporada.")
+        self.assertEqual(response.context["games"], [])
+        self.assertContains(response, "Todavía no hay partidos.")
 
 
 class MatchTypeFilterTests(TestCase):
@@ -338,9 +340,8 @@ class MatchTypeFilterTests(TestCase):
         self.assertEqual((response.context["s"]["played"], response.context["s"]["wins"]), (1, 0))
         links = {o["label"]: o["url"] for o in response.context["match_types"]}
         self.assertEqual(links["Todos"], f"{reverse('player_statistics')}?player={self.a.public_id}")
-        types = {o["label"]: o["url"] for o in response.context["competitive_types"]}
-        self.assertIn(f"player={self.a.public_id}", types["Retos"])
-        self.assertIn("match_type=reto", types["Retos"])
+        self.assertIn(f"player={self.a.public_id}", links["Retos"])
+        self.assertIn("match_type=reto", links["Retos"])
 
     def test_pair_statistics_filter_by_type(self):
         response = self.client.get(reverse("pair_statistics"))
@@ -449,7 +450,7 @@ class SeasonFilterTests(TestCase):
                          [("player", self.a.public_id), ("match_type", Match.AMISTOSO)])
         # Cambiar el tipo de partido conserva la temporada
         links = {o["label"]: o["url"] for o in response.context["match_types"]}
-        self.assertIn("season=2021-2022", links["Competitivos"])
+        self.assertIn("season=2021-2022", links["Retos"])
 
     def test_player_summary_and_affinity_follow_season(self):
         url = reverse("player_statistics")
@@ -511,7 +512,7 @@ class AffinityScopeTests(TestCase):
         response = self.client.get(reverse("player_statistics"), {"player": self.a.public_id})
         rows = {r["name"]: r["in_team"] for r in response.context["chart_affinity"]}
         self.assertEqual(rows, {"B Bson": True, "C Cson": False, "D Dson": False})
-        self.assertContains(response, 'data-scope="team" aria-pressed="true"')
+        self.assertIn("affinity_top", response.context)
 
 
 class DrawStatisticsTests(TestCase):
@@ -566,8 +567,9 @@ class OnlyClosedMatchesTests(TestCase):
     def test_player_charts_hidden_with_a_season(self):
         url = reverse("player_statistics")
         all_page = self.client.get(url, {"player": self.a.public_id})
-        self.assertContains(all_page, 'id="chartPlayed"')
-        self.assertContains(all_page, 'id="chartPct"')
+        self.assertContains(all_page, 'id="data-snp-seasons"')
+        self.assertContains(all_page, "Puntos SNP por temporada")
+        # El gráfico por temporada solo se ve con «Todas»
         season_page = self.client.get(url, {"player": self.a.public_id, "season": "2024-2025"})
-        self.assertNotContains(season_page, 'id="chartPlayed"')
+        self.assertNotContains(season_page, "Puntos SNP por temporada")
         self.assertNotContains(season_page, 'id="chartPct"')

@@ -252,7 +252,9 @@ class SnpAccountTests(TestCase):
         self.client.login(username="admin", password="pass-12345")
         response = self.client.get(reverse("player_statistics"), {"player": self.player.public_id})
         self.assertEqual(response.context["chart_snp"], {"labels": ["28/09", "05/10"], "scores": [100.0, 120.5], "changes": [None, 20.5]})
-        self.assertContains(response, 'id="chartSnp"')
+        # La ficha rediseñada muestra los puntos SNP al cierre de cada temporada
+        self.assertEqual(response.context["snp_seasons"], {"labels": ["2019-2020", current_season()], "scores": [1.0, 120.5]})
+        self.assertContains(response, 'id="data-snp-seasons"')
 
     def test_home_shows_snp_notice_to_admin_until_account_exists(self):
         viewer = User.objects.create_user("viewer", password="pass-12345")

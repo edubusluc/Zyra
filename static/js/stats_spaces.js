@@ -171,18 +171,4 @@
       },
     });
   }
-
-  // «i» de la tarjeta Sets: con el ratón o el foco sale la explicación; al pulsar (móvil) se abre y se cierra.
-  document.querySelectorAll('.z-tip').forEach((tip) => {
-    tip.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const open = !tip.classList.contains('is-open');
-      document.querySelectorAll('.z-tip.is-open').forEach((t) => { t.classList.remove('is-open'); t.setAttribute('aria-expanded', 'false'); });
-      tip.classList.toggle('is-open', open);
-      tip.setAttribute('aria-expanded', String(open));
-    });
-  });
-  document.addEventListener('click', () => {
-    document.querySelectorAll('.z-tip.is-open').forEach((t) => { t.classList.remove('is-open'); t.setAttribute('aria-expanded', 'false'); });
-  });
 })();
