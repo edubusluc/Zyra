@@ -64,7 +64,7 @@ class CopyPlayersTests(TestCase):
 
     def test_copy_creates_sheets_and_invites(self):
         page = self.client.get(reverse("copy_players"))
-        self.assertContains(page, "ANA RUIZ")
+        self.assertContains(page, "Ana Ruiz")
         with self.captureOnCommitCallbacks(execute=True):
             response = self.client.post(reverse("copy_players"), {"players": [self.ana.pk, self.luis.pk]}, follow=True)
         self.assertContains(response, "2 jugadores copiados.")

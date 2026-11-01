@@ -92,13 +92,13 @@ class PairStatisticsTests(TestCase):
         squad = list(Player.objects.filter(club=self.club, in_team=True))
         local = pair_stats.top_players(log, squad, local=True)
         # A y B: 3 de 3 en casa; D: 0 de 1 (no llega al mínimo); C no está en el equipo.
-        self.assertEqual([(r['name'], r['pct']) for r in local], [("A ASON", 100.0), ("B BSON", 100.0)])
+        self.assertEqual([(r['name'], r['pct']) for r in local], [("A Ason", 100.0), ("B Bson", 100.0)])
         away = pair_stats.top_players(log, squad, local=False)
         # Fuera solo A llega al mínimo de 2 partidos (1 de 2)
-        self.assertEqual([(r['name'], r['played'], r['pct']) for r in away], [("A ASON", 2, 50.0)])
+        self.assertEqual([(r['name'], r['played'], r['pct']) for r in away], [("A Ason", 2, 50.0)])
 
         pairs_local = pair_stats.top_pairs(log, squad, local=True)
-        self.assertEqual([(r['name'], r['played'], r['pct']) for r in pairs_local], [("A ASON / B BSON", 3, 100.0)])
+        self.assertEqual([(r['name'], r['played'], r['pct']) for r in pairs_local], [("A Ason / B Bson", 3, 100.0)])
         self.assertEqual(pair_stats.top_pairs(log, squad, local=False), [])  # A+B solo 1 fuera
 
     def test_top_tables_skip_zero_percent(self):
@@ -220,8 +220,8 @@ class PairStatisticsTests(TestCase):
     def test_team_statistics_chart_only_current_players(self):
         response = self.client.get(reverse("team_statistics"))
         names = [row["player"] for row in response.context["column_chart_data"]]
-        self.assertNotIn("C CSON", names)
-        self.assertIn("A ASON", names)
+        self.assertNotIn("C Cson", names)
+        self.assertIn("A Ason", names)
         self.assertEqual(len(response.context["top_local_players"]), 2)
 
     def test_team_statistics_chart_script_is_not_cut(self):
@@ -321,13 +321,13 @@ class MatchTypeFilterTests(TestCase):
         response = self.client.get(reverse("team_statistics"))
         self.assertEqual(response.context["total_matches"], 4)
         self.assertEqual(response.context["min_games_pair"], 2)
-        self.assertEqual([r["name"] for r in response.context["top_local_pairs"]], ["A ASON / B BSON"])
+        self.assertEqual([r["name"] for r in response.context["top_local_pairs"]], ["A Ason / B Bson"])
 
         response = self.client.get(reverse("team_statistics"), {"match_type": Match.RETO})
         self.assertEqual((response.context["total_matches"], response.context["won_matches"]), (1, 1))
         # En retos y play off no hay mínimo de partidos por pareja
         self.assertEqual(response.context["min_games_pair"], 1)
-        self.assertEqual([r["name"] for r in response.context["top_local_pairs"]], ["C CSON / D DSON"])
+        self.assertEqual([r["name"] for r in response.context["top_local_pairs"]], ["C Cson / D Dson"])
 
         response = self.client.get(reverse("team_statistics"), {"match_type": Match.ENFRENTAMIENTO})
         self.assertEqual(response.context["total_matches"], 2)
@@ -510,7 +510,7 @@ class AffinityScopeTests(TestCase):
     def test_affinity_marks_partners_not_in_team(self):
         response = self.client.get(reverse("player_statistics"), {"player": self.a.public_id})
         rows = {r["name"]: r["in_team"] for r in response.context["chart_affinity"]}
-        self.assertEqual(rows, {"B BSON": True, "C CSON": False, "D DSON": False})
+        self.assertEqual(rows, {"B Bson": True, "C Cson": False, "D Dson": False})
         self.assertContains(response, 'data-scope="team" aria-pressed="true"')
 
 

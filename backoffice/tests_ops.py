@@ -485,7 +485,7 @@ class SearchTests(StaffTestCase):
     def test_text_search_finds_clubs_users_and_players(self):
         page = self.client.get(reverse("backoffice:search"), {"q": "capi"})
         self.assertContains(page, "capi@example.com")
-        self.assertContains(page, "CAPI TAN")
+        self.assertContains(page, "Capi Tan")
         self.assertContains(self.client.get(reverse("backoffice:search"), {"q": "club a"}), "Club A")
         self.assertContains(self.client.get(reverse("backoffice:search"), {"q": "zzzz"}), "Sin resultados")
 

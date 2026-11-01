@@ -145,7 +145,7 @@ class BackofficeDataTests(TestCase):
         self.assertContains(response, "Sin enlazar")
         Player.objects.create(club=self.club_b, name="Bea", last_name="Dos", user=self.admin_b)
         response = self.client.get(reverse("backoffice:user_detail", args=[self.admin_b.id]))
-        self.assertContains(response, "BEA DOS")
+        self.assertContains(response, "Bea Dos")
         self.assertNotContains(response, "Sin enlazar")
         self.assertFalse(Membership.objects.filter(user=self.staff).exists())
 

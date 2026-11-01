@@ -54,7 +54,7 @@ entero sigue siendo la clave de los FK. Excepciones sin `public_id`: `backoffice
 - `user` (enlace a la cuenta, `SET_NULL`); única por (`club`, `user`) cuando no es nulo.
 - `in_team` (False = ya no está en la plantilla, se conserva para estadísticas), `snp_score`,
   `joined_season` (`AAAA-AAAA`, selector con las de `season_choices`; las convocatorias anteriores no cuentan en sus estadísticas, `joined_by`), `position`, `skillfull_hand` (sic).
-- Mostrar siempre `full_name` / `short_name` (mayúsculas); lo guardado no se toca.
+- Mostrar siempre `full_name` / `short_name` (caja de título; mayúsculas solo en titulares por CSS); lo guardado no se toca.
 - `copied_from` (FK a sí mismo, `SET_NULL`, `related_name="copies"`): ficha de la que se copió con
   «Copiar jugadores». Las fichas con la misma `user` comparten nombre, apellidos y foto (`SHARED_FIELDS`).
 - Temporada: de septiembre a agosto (`SEASON_START_MONTH = 9`, `current_season()`).

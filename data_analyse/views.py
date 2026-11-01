@@ -9,7 +9,7 @@ from django.shortcuts import render
 from match.models import Match, Game, Result
 from django.db.models import Sum
 from django.db.models.functions import Coalesce
-from players.models import Player
+from players.models import Player, proper_name
 from team.models import Team
 from call.models import Call
 from django.db.models import Q, Count
@@ -609,7 +609,7 @@ def degree_of_affinity(player, match_type=None, season=None):
             key, name, in_team = partner_id, partner.full_name, partner.in_team
         elif partner_id is None and g.removed_player_names.get(partner_slot):
             # Jugador eliminado: se agrupa por el nombre guardado en el partido
-            name = g.removed_player_names[partner_slot].upper()
+            name = proper_name(g.removed_player_names[partner_slot])
             key, in_team = ('removed', name), False
         else:
             continue

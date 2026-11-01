@@ -100,7 +100,7 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
   de lo que se pierde (`delete_player`, plantilla `players/templates/confirm_delete.html`).
 - [V] `in_team=False` saca al jugador de la plantilla sin borrarlo; los selectores de convocatoria
   muestran solo `in_team=True` más los ya convocados (`selectable_players`).
-- [V] Nombres en mayúsculas al mostrarse (`full_name`, `short_name`); texto plano sin HTML
+- [V] Nombres en caja de título al mostrarse (`full_name`, `short_name`, vía `proper_name`; los titulares los pasan a mayúsculas con CSS); texto plano sin HTML
   (`core/validators.py`). Nombres parecidos → aviso antes de guardar (`core/similarity.py`, cabecera `X-Similar-Check`).
 - [V] «Copiar jugadores» (`players/copy.py`, vista `copy_players`): del equipo de otra competición de
   la misma cuenta al activo; hay que ser capitán o gestor en los dos (`managed_pairs`). Se copian
