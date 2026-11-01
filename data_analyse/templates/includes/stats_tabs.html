@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n static %}
 {% with current=request.resolver_match.url_name %}
 <nav class="st-tabs z-segmented" aria-label="{% translate 'Tipo de estadística' %}">
   {# «Mis estadísticas»: lo tuyo en todas tus competiciones (y tu ficha en cada una, con mine_chips). #}
@@ -14,6 +14,7 @@
   {% endif %}
 </nav>
 {% endwith %}
+<script src="{% static 'js/stats-mobile.js' %}" defer></script>
 {# Competición: en «Mis estadísticas», Todas · SNP · LAPI (mine_chips); en Equipo, Jugador, Parejas y Rivales solo SNP o LAPI, sin mezclar (core.spaces). #}
 {% if mine_chips %}{% include 'includes/competition_selector.html' with items=mine_chips %}
 {% elif space_chips %}{% include 'includes/space_filter.html' %}{% elif request.space_switcher %}{% include 'includes/competition_selector.html' with items=request.space_switcher %}

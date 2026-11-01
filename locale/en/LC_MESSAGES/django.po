@@ -14744,3 +14744,57 @@ msgstr "Upcoming"
 #: core/forms.py
 msgid "Nombre del equipo"
 msgstr "Team name"
+
+msgid "¿Qué puede hacer cada rol?"
+msgstr "What can each role do?"
+
+msgid "¿Qué implica ser capitán?"
+msgstr "What does being captain involve?"
+
+msgid "Miembros de %(club)s"
+msgstr "Members of %(club)s"
+
+msgid "Marcador del enfrentamiento"
+msgstr "Match score"
+
+msgid "Marcador"
+msgstr "Score"
+
+msgid "Tus pendientes"
+msgstr "Your to-dos"
+
+msgid "Enlaza tu cuenta con tu ficha de jugador"
+msgstr "Link your account to your player sheet"
+
+msgid "Sube tu foto"
+msgstr "Upload your photo"
+
+msgid "Tu pareja el %(date)s: %(partner)s"
+msgstr "Your partner on %(date)s: %(partner)s"
+
+msgid "Jugó %(n)s/%(total)s"
+msgstr "Played %(n)s/%(total)s"
+
+msgid "Se mostrará cuando haya jugadores con %(players)s partidos y parejas con %(pairs)s partidos como mínimo."
+msgstr "Shown once there are players with at least %(players)s games and pairs with at least %(pairs)s games."
+
+msgid "Se mostrará la evolución cuando haya al menos 2 actualizaciones de puntos SNP."
+msgstr "The trend will show once there are at least 2 SNP points updates."
+
+msgid "Tu próximo enfrentamiento, de un vistazo"
+msgstr "Your next match at a glance"
+
+msgid "Fecha, rival, convocados y lo que falta por hacer, en la primera pantalla. El capitán convoca y alinea; los jugadores ven si están convocados y con quién juegan."
+msgstr "Date, opponent, call-up and what is left to do, on the first screen. The captain calls up and lines up; players see whether they are called up and who they play with."
+
+msgid "Ejemplo de la pantalla de inicio de Zyra"
+msgstr "Example of the Zyra home screen"
+
+msgid "Sáb 14"
+msgstr "Sat 14"
+
+msgid "Nov"
+msgstr "Nov"
+
+msgid "Ejemplo con datos de muestra"
+msgstr "Example with sample data"

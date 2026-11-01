@@ -15,15 +15,16 @@
         <h1>{% translate "Registrar mi equipo" %}</h1>
         <p class="text-muted text-center">{% translate "Cada equipo gestiona sus propios jugadores, rivales, enfrentamientos y estadísticas. Nadie de fuera del equipo puede ver sus datos." %}</p>
         {% endif %}
-        <div class="alert alert-info" role="note">
-            <strong>{% translate "Como capitán serás el encargado del equipo" %}</strong>
+        <details class="z-more-options z-captain-note mb-3">
+            <summary>{% translate "¿Qué implica ser capitán?" %}</summary>
+            <strong class="d-block mt-2">{% translate "Como capitán serás el encargado del equipo" %}</strong>
             <ul class="mb-1">
                 <li>{% translate "Invitas a tus jugadores por email o con un enlace." %}</li>
                 <li>{% translate "Creas los equipos, los enfrentamientos y las convocatorias." %}</li>
                 <li>{% translate "Apuntas los resultados. Puedes nombrar hasta 2 gestores que te ayuden; los demás jugadores consultan." %}</li>
             </ul>
             {% translate "Si más adelante quieres pasar la gestión a otra persona, podrás traspasar la capitanía a otro jugador desde Equipo › Miembros." %}
-        </div>
+        </details>
         <form method="post" novalidate data-wizard data-loading-text="{% translate 'Creando tu equipo…' %}">
             {% csrf_token %}
             <nav class="z-wizard-progress" data-wizard-progress aria-label="{% translate 'Progreso del registro' %}" hidden></nav>

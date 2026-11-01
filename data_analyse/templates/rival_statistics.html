@@ -38,7 +38,7 @@
         {% for link in sort_links %}<a class="st-chip" href="{{ link.url }}"{% if link.active %} aria-current="page"{% endif %}>{{ link.label }}</a>{% endfor %}
       </nav>
       <div class="st-table-fit">
-        <table class="st-table st-table--fit">
+        <table class="st-table st-table--fit st-table--cards">
           <caption class="visually-hidden">{% translate "Balance contra cada rival" %}</caption>
           <thead>
             <tr>
@@ -57,10 +57,10 @@
                 {% if r.friendly_only %}<span class="z-badge ms-1">{% translate "Amistoso" %}</span>{% endif %}
                 {% if r.team and r.team.division %}<small class="st-muted d-block">{{ r.team.get_division_display }}</small>{% endif %}
               </th>
-              <td class="st-nw">{{ r.played }}</td>
-              <td class="st-nw">{% if current_club.rules.has_draws %}{{ r.won }}-{{ r.drawn }}-{{ r.lost }}{% else %}{{ r.won }}-{{ r.lost }}{% endif %}</td>
-              <td class="st-nw">{{ r.points_for }}-{{ r.points_against }}</td>
-              <td class="st-last">{% include 'includes/rival_outcome.html' with e=r.last %}<small class="st-muted d-block">{{ r.last.date|date_day }}</small></td>
+              <td class="st-nw st-c-played" data-label="{% translate 'Jugados' %}">{{ r.played }}</td>
+              <td class="st-nw st-c-record" data-label="{% if current_club.rules.has_draws %}{% translate 'G-E-P' %}{% else %}{% translate 'G-P' %}{% endif %}">{% if current_club.rules.has_draws %}{{ r.won }}-{{ r.drawn }}-{{ r.lost }}{% else %}{{ r.won }}-{{ r.lost }}{% endif %}</td>
+              <td class="st-nw st-c-points" data-label="{% translate 'Pts' %}">{{ r.points_for }}-{{ r.points_against }}</td>
+              <td class="st-last st-c-last">{% include 'includes/rival_outcome.html' with e=r.last %}<small class="st-muted d-block">{{ r.last.date|date_day }}</small></td>
             </tr>
             {% endfor %}
           </tbody>

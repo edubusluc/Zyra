@@ -269,10 +269,12 @@
     <li>
         <a href="{% url 'call_for_match' row.match.public_id %}" class="z-pending-row{% if row.overdue %} is-overdue{% endif %}">
             <span class="z-pending-main">
-                <strong>{% include 'includes/competition_badge.html' with code=row.match.club.competition name=row.match.club.rules.name short=True %} {{ row.match.local_name }} – {{ row.match.visiting_name }}</strong>
-                <small>{{ row.match.start_date|date_long }} · {% if row.overdue %}{% translate "Vencido" %} · {% endif %}{{ row.phase.label }}</small>
+                <strong>{% include 'includes/competition_badge.html' with code=row.match.club.competition name=row.match.club.rules.name short=True %} {{ row.match.rival_label }}</strong>
+                <span class="z-pending-line">
+                    <small>{{ row.match.start_date|date_long }} · {% if row.overdue %}{% translate "Vencido" %} · {% endif %}{{ row.phase.label }}</small>
+                    <span class="z-pending-action">{{ row.phase.pending_label }} <i class="fa-solid fa-chevron-right" aria-hidden="true"></i></span>
+                </span>
             </span>
-            <span class="z-pending-action">{{ row.phase.pending_label }} <i class="fa-solid fa-chevron-right" aria-hidden="true"></i></span>
         </a>
     </li>
     {% endfor %}
@@ -286,6 +288,18 @@
 </section>
 {% endif %}
 </div>
+
+{% if player_todos %}
+{# «Tus pendientes» del jugador (UX-055): lo que depende de él, con el dato que ya existe hoy. #}
+<section class="z-card z-player-todos" aria-labelledby="todos-title">
+    <h2 id="todos-title" class="z-panel-title">{% translate "Tus pendientes" %}</h2>
+    <ul class="z-pending">
+        {% for todo in player_todos %}
+        <li><a href="{{ todo.url }}" class="z-pending-row"><span class="z-pending-main"><strong><i class="fa-solid {{ todo.icon }} me-2" aria-hidden="true"></i>{{ todo.text }}</strong></span><span class="z-pending-action"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></span></a></li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
 
 {% if my_form %}
 {# «Mi forma» (data_analyse.my_form): solo para quien tiene su cuenta enlazada a un jugador; se puede ocultar y volver a mostrar. #}

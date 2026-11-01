@@ -98,7 +98,14 @@ document.querySelectorAll('[data-result]').forEach(function (form) {
   const noShow = form.querySelector('[data-pair-no-show]');
   const playedBox = form.querySelector('[data-played]');
 
+  // El marcador vivo (más abajo) lee el ganador de cada partido: data-winner = 0 local, 1 visitante
   function refresh() {
+    delete form.dataset.winner;
+    refreshCard();
+    form.dispatchEvent(new CustomEvent('resultchange', { bubbles: true }));
+  }
+
+  function refreshCard() {
     checks.innerHTML = '';
     if (noShow && playedBox) {
       playedBox.hidden = noShow.value !== '';
@@ -147,6 +154,7 @@ document.querySelectorAll('[data-result]').forEach(function (form) {
 
     if (ok && winners.length >= 2) {
       const w = winners.filter((x) => x === 0).length >= 2 ? 0 : 1;
+      form.dataset.winner = String(w);
       line(true, interpolate(gettext('Ganador del partido: %(team)s'), { team: names[w] }, true), rivalWon(w));
     }
   }
@@ -277,4 +285,35 @@ document.querySelectorAll('[data-result]').forEach(function (form) {
   }
   cards.forEach((c) => { c.addEventListener('input', refresh); c.addEventListener('change', refresh); });
   refresh();
+})();
+
+// Marcador global en vivo (UX-031): suma los puntos de cada partido ganado según lo que se va tecleando.
+(function () {
+  const box = document.querySelector('[data-live-score]');
+  if (!box) return;
+  const cards = Array.from(document.querySelectorAll('[data-result]'));
+  const localEl = box.querySelector('[data-live-local]');
+  const visitingEl = box.querySelector('[data-live-visiting]');
+  const note = box.querySelector('[data-live-note]');
+  const fmt = (n) => String(Math.round(n * 10) / 10).replace('.', ',');
+  function refreshScore() {
+    let local = 0;
+    let visiting = 0;
+    let played = 0;
+    let special = 0;
+    cards.forEach((card) => {
+      const ns = card.querySelector('[data-pair-no-show]');
+      if (ns && ns.value) { special += 1; return; }
+      const pts = Number(String(card.dataset.score).replace(',', '.')) || 0;
+      if (card.dataset.winner === '0') { local += pts; played += 1; }
+      else if (card.dataset.winner === '1') { visiting += pts; played += 1; }
+    });
+    localEl.textContent = fmt(local);
+    visitingEl.textContent = fmt(visiting);
+    let text = interpolate(gettext('%(n)s de %(total)s partidos con resultado'), { n: played, total: cards.length }, true);
+    if (special) text += ' · ' + gettext('los no presentados se reparten al cerrar el acta');
+    note.textContent = text;
+  }
+  document.addEventListener('resultchange', refreshScore);
+  refreshScore();
 })();

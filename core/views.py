@@ -26,6 +26,8 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
+
+from core.templatetags.zyra_format import date_short
 from django.views.decorators.http import require_http_methods, require_POST, require_safe
 
 from data_analyse import my_form as my_form_stats
@@ -133,6 +135,22 @@ def home(request):
     my_form_data = (my_form_stats.my_form(form_player.club, form_player, others=form_players[1:])
                     if form_player and not my_form_hidden else None)
 
+    # «Tus pendientes» (UX-055): lo que depende del jugador y se puede hacer ya. Solo para quien no gestiona.
+    player_todos = []
+    if not request.membership.can_manage:
+        if form_player is None:
+            player_todos.append({"icon": "fa-link", "url": reverse('my_player'),
+                                 "text": _("Enlaza tu cuenta con tu ficha de jugador")})
+        else:
+            if not form_player.photo:
+                player_todos.append({"icon": "fa-camera", "url": reverse('edit_player', args=[form_player.public_id]),
+                                     "text": _("Sube tu foto")})
+        if my_status and my_status.get("game") and my_status.get("partner"):
+            player_todos.append({"icon": "fa-user-group", "url": reverse('call_for_match', args=[next_match.public_id]),
+                                 "text": _("Tu pareja el %(date)s: %(partner)s") % {
+                                     "date": date_short(next_match.start_date),
+                                     "partner": my_status["partner"].short_name}})
+
     onboarding = onboarding_for(request.membership)
     # «Prepara la temporada» (julio-octubre) lleva dentro el paso de SNP: no se repite la tarea suelta.
     prep = season_prep.season_prep_for(request.membership)
@@ -157,6 +175,7 @@ def home(request):
         'my_form': my_form_data,
         'my_form_hidden': my_form_hidden,
         'my_status': my_status,
+        'player_todos': player_todos,
         'days_left': (next_match.start_date - today).days if next_match else None,
         'home_teams': home_teams,
         # Aviso al capitán mientras no haya registrado la cuenta SNP del club (si se muestran los

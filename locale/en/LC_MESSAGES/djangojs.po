@@ -380,3 +380,12 @@ msgstr "6-6: %(team)s wins for having won all four games played."
 #: static/js/result-form.js:0
 msgid "Reparto previsto: %(local)s %(a)s – %(b)s %(visiting)s"
 msgstr "Expected split: %(local)s %(a)s – %(b)s %(visiting)s"
+
+msgid "Filtros"
+msgstr "Filters"
+
+msgid "%(n)s de %(total)s partidos con resultado"
+msgstr "%(n)s of %(total)s games with a result"
+
+msgid "los no presentados se reparten al cerrar el acta"
+msgstr "no-shows are settled when the record is closed"

@@ -108,7 +108,7 @@
             <button type="submit" class="btn btn-primary"><i class="fa-solid fa-flag-checkered me-1" aria-hidden="true"></i> {% translate "Siguiente: Cerrar acta" %}</button>
         </form>
         {% endif %}
-        <p class="z-next-hint" id="next-hint">
+        <p class="z-next-hint{% if phase.action == 'close_call' and phase.missing_players %} is-blocking{% endif %}" id="next-hint">
             {% if phase.action == 'create_call' %}{% translate "Primero crea la convocatoria." %}
             {% elif phase.action == 'close_call' %}
                 {% if phase.missing_players %}{% blocktranslate trimmed with called=phase.called total=phase.min_call count n=phase.missing_players %}Falta {{ n }} apuntado para cerrar la convocatoria ({{ called }} de {{ total }}).{% plural %}Faltan {{ n }} apuntados para cerrar la convocatoria ({{ called }} de {{ total }}).{% endblocktranslate %} <a href="{% url 'edit_call' call_for_match.public_id %}">{% translate "Editar convocatoria" %}</a>
@@ -153,9 +153,8 @@
 {% endif %}
 
 {% if can_manage and not match.draft_mode %}
-{# Acta cerrada: se queda aquí con el marcador y dos acciones (H-40). #}
+{# Acta cerrada: el estado ya está en la cabecera y en las fases (UX-019); aquí solo las acciones. #}
 <div class="z-closed {% if outcome == 'V' %}is-win{% elif outcome == 'D' %}is-loss{% else %}is-draw{% endif %}">
-    <strong>{% blocktranslate with outcome=outcome_label own=own_points rival=rival_points %}Acta cerrada: {{ outcome }} {{ own }}-{{ rival }}{% endblocktranslate %}{% if match.no_show %} · {% blocktranslate with team=match.no_show_team %}No presentado: {{ team }}{% endblocktranslate %}{% endif %}</strong>
     <div class="d-flex flex-wrap gap-2">
         <a class="btn btn-primary btn-sm" href="https://wa.me/?text={{ share_text|urlencode }}" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp me-1" aria-hidden="true"></i> {% translate "Compartir resultado" %}</a>
         <a class="btn btn-secondary btn-sm" href="{% url 'team_statistics' %}?season={{ match.season|urlencode }}"><i class="fa-solid fa-chart-simple me-1" aria-hidden="true"></i> {% translate "Ver estadísticas" %}</a>

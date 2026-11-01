@@ -3,6 +3,17 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 01/11/2026 · Flujos y densidad (auditoría UX/UI, fase 5)
+
+- **Estadísticas en móvil**: los filtros se recogen en una sola fila «Filtros · …» y cada sección se pliega bajo su título (solo la primera queda abierta; los enlaces del índice abren la suya). La página de equipo pasa de unos 7.700 px a unos 3.200. Los bloques con pocos datos muestran un único aviso compacto («Se mostrará cuando…») en lugar de un gráfico casi vacío, y el de afinidad ajusta su altura a las barras.
+- **Rivales en móvil**: cada rival es una tarjeta con nombre, último resultado y balance.
+- **Ficha del enfrentamiento**: el estado «Acta cerrada» ya no se repite en el aviso final (que queda solo con las acciones) y la barra «Siguiente» es de una línea en móvil, con la ayuda solo si bloquea el paso.
+- **Convocatoria**: una sola línea de datos por jugador (posición · puntos · jugó), buscador y filtros fijos al recorrer la lista y las acciones masivas en un menú «⋯».
+- **Resultados en escritorio**: panel lateral fijo con el marcador global en vivo y las acciones de guardado.
+- **Miembros**: invitar va arriba, las reglas de los roles en un plegable «¿Qué puede hacer cada rol?» y el título ya no repite la competición. **Registro de equipo**: la explicación del capitán va en un plegable.
+- **Inicio**: «Pendiente» muestra solo el rival y la acción en la línea de la fecha; los jugadores ven «Tus pendientes» (enlazar la ficha, subir la foto, quién es su pareja).
+- **Portada**: ejemplo del «Próximo enfrentamiento» con datos de muestra y funciones en carrusel en móvil. La elección de equipo al crear (rival, jugador, enfrentamiento) usa tarjetas grandes lado a lado.
+
 ## 01/11/2026 · Sistema de diseño (auditoría UX/UI, fase 4)
 
 - **Capas CSS**: `style.css` declara `@layer overrides, base, vendor, tokens, components, screens` e importa Bootstrap y Font Awesome en su capa. Las reglas propias ganan a Bootstrap sin subir especificidad; los `!important` que pisan utilidades de Bootstrap viven en la capa `overrides`. Se comprobó con capturas antes y después (sin diferencias visibles).
