@@ -5,6 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 01/11/2026 · Más aire en Inicio y Enfrentamientos
 
+- **Estadísticas**: el primer dato de «Mis estadísticas» y la ficha de jugador va en lima, «Mejores parejas» es un panel lima y el recuento de advertencias se marca en ámbar.
 - **Rivales**: tarjetas con escudo, nombre grande y etiquetas separadas por una línea, tarjeta lima «Nuevo rival» al final y formulario de creación con cabecera y ancho propios.
 - **Portada pública**: nuevo diseño con bloque lima sobre la pista, «Convoca. Alinea. Gana.», tarjetas de las competiciones disponibles (SNP y LAPI), funciones, pasos numerados, guías y preguntas.
 - **Inicio y listado**: los botones de los avisos («Nombrar gestor», «Registrar cuenta») arrancan en el mismo borde y las tarjetas de enfrentamiento y las filas de «Pendiente» tienen más separación para reducir el ruido visual. En el bloque «Próximo enfrentamiento» el contenido sube, los nombres de los equipos son más grandes y el botón «Ver convocatoria» más pequeño.

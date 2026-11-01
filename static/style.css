@@ -3276,3 +3276,18 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
     .z-create-preview-teams span:last-child { text-align: right; }
     .z-create-preview-teams i { padding: 3px 12px; font: 400 1.1rem/1.2 var(--z-display); font-style: normal; color: var(--z-lime); background: var(--z-ink); border-radius: 999px; }
 }
+
+/* Estadísticas (estilo «Social club»): primer dato en lima, panel de mejores parejas en lima y advertencias en ámbar */
+.z-space-kpis > div:first-child { color: var(--z-ink); background: var(--z-lime); border-color: var(--z-lime); }
+.z-space-kpis > div:first-child span { color: var(--z-ink); }
+.st-card--lime { color: var(--z-ink); background: var(--z-lime); border-color: var(--z-lime); }
+.st-card--lime .st-card-title, .st-card--lime .st-card-note, .st-card--lime .st-top-name, .st-card--lime .st-top-name a, .st-card--lime .st-top-name small, .st-card--lime .st-top-pct { color: var(--z-ink); }
+.st-card--lime .st-top-row { border-color: rgba(10, 10, 10, .2); }
+.st-card--lime .st-top-pos { color: var(--z-lime); background: var(--z-ink); }
+.st-card--lime .st-top-row:first-child .st-top-pos { color: var(--z-lime); background: var(--z-ink); }
+.st-kpi--warn { border-left-color: var(--z-warning); }
+.st-kpi--warn .st-kpi-value { color: var(--z-warning); }
+.st-kpi--ring { background: var(--z-lime); border-color: var(--z-lime); color: var(--z-ink); }
+.st-kpi--ring .st-kpi-label, .st-kpi--ring .st-kpi-sub { color: var(--z-ink); }
+.st-kpi--ring .st-ring { background: radial-gradient(closest-side, var(--z-lime) 80%, transparent 82%), conic-gradient(var(--z-ink) calc(var(--pct) * 1%), rgba(10, 10, 10, .2) 0); }
+.st-kpi--ring .st-ring span { color: var(--z-ink); }

@@ -1,6 +1,6 @@
 {% load i18n %}
 {# Mejores o peores parejas. Recibe: title, note, rows (de all_pairs), min_games_pair #}
-<article class="st-card">
+<article class="st-card{% if lime %} st-card--lime{% endif %}">
   <h3 class="st-card-title">{{ title }}</h3>
   <p class="st-card-note">{{ note }} {% blocktranslate trimmed count n=min_games_pair %}Mínimo {{ n }} partido. Pulsa una para ver su detalle.{% plural %}Mínimo {{ n }} partidos. Pulsa una para ver su detalle.{% endblocktranslate %}</p>
   {% if rows %}
