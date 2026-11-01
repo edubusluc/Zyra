@@ -7,6 +7,7 @@
 {% block content %}
 <div class="z-auth">
     <div class="z-auth-card z-auth-card--wide z-auth-card--split">
+        <div class="z-auth-side">
         <img src="{% static 'zyra/logo.svg' %}" alt="Zyra" class="z-auth-logo">
         {% if new_space %}
         <h1>{% if new_competition %}{% blocktranslate with competition=new_competition.name %}Añadir equipo {{ competition }}{% endblocktranslate %}{% else %}{% translate "Añadir equipo de otra competición" %}{% endif %}</h1>
@@ -25,6 +26,8 @@
             </ul>
             {% translate "Si más adelante quieres pasar la gestión a otra persona, podrás traspasar la capitanía a otro jugador desde Equipo › Miembros." %}
         </details>
+        </div>
+        <div class="z-auth-main">
         <form method="post" novalidate data-wizard data-loading-text="{% translate 'Creando tu equipo…' %}">
             {% csrf_token %}
             <nav class="z-wizard-progress" data-wizard-progress aria-label="{% translate 'Progreso del registro' %}" hidden></nav>
@@ -184,7 +187,17 @@
         <p class="z-auth-foot"><a href="{% url 'register' %}">{% translate "Volver a elegir cómo registrarme" %}</a></p>
         <p class="z-auth-foot">{% url 'login' as login_url %}{% blocktranslate trimmed %}¿Ya tienes cuenta? <a href="{{ login_url }}">Inicia sesión</a>{% endblocktranslate %}</p>
         {% endif %}
+        </div>
+        {# «Así se verá»: tarjeta del equipo que se rellena sola mientras se escribe (solo escritorio; static/js/team-preview.js). #}
+        <aside class="z-team-preview" aria-label="{% translate 'Así se verá' %}" data-team-preview>
+            <span class="z-create-preview-tag">{% translate "Así se verá" %}</span>
+            <p class="z-create-preview-kicker" data-tp-kicker></p>
+            <p class="z-team-preview-name" data-tp-name data-empty="{% translate 'Nombre del equipo' %}">{% translate "Nombre del equipo" %}</p>
+            <p class="z-create-preview-meta" data-tp-meta></p>
+            <p class="z-team-preview-foot" data-tp-foot hidden></p>
+        </aside>
     </div>
 </div>
 <script src="{% static 'js/register-wizard.js' %}"></script>
+<script src="{% static 'js/team-preview.js' %}" defer></script>
 {% endblock %}

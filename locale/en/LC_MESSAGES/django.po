@@ -14822,3 +14822,6 @@ msgstr "Members belong to this team: your teams in other competitions have their
 
 msgid "Ver ese enfrentamiento"
 msgstr "View that tie"
+
+msgid "No hay datos para mostrar."
+msgstr "No data to show."
