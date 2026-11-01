@@ -137,8 +137,12 @@
                 </ul>
             </div>
             {% else %}
+            {% if request.resolver_match.url_name == 'login' %}
+            <a href="{% url 'register' %}" class="btn btn-primary btn-sm">{% translate "Registrarme" %}</a>
+            {% else %}
             <a href="{% url 'register' %}" class="btn btn-outline-light btn-sm z-desktop-only">{% translate "Registrarme" %}</a>
             <a href="{% url 'login' %}" class="btn btn-primary btn-sm">{% translate "Iniciar sesión" %}</a>
+            {% endif %}
             {% endif %}
         </div>
     </div>

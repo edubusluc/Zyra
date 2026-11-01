@@ -416,3 +416,21 @@ class CreationInSpaceTests(TestCase):
         self.assertEqual([m.group for m in page.context["matches"]], ["action", "upcoming", "upcoming", "played"])
         for heading in ("Requieren acción", "Próximos", "Jugados"):
             self.assertContains(page, heading)
+
+    def test_players_do_not_see_the_action_group(self):
+        """Quien solo es jugador en un equipo ve sus enfrentamientos pasados sin cerrar como «Próximos»."""
+        today = datetime.date.today()
+        boss = User.objects.create_user("jefe", password=PASSWORD, email="jefe@example.com")
+        other = create_club("Otro club", "Cádiz", boss, competition="lapi", division="")
+        Membership.objects.create(user=self.user, club=other, role=Membership.MEMBER)
+        rival = Team.objects.create(club=other, name="Rival LAPI", location="X", in_group=True)
+        theirs = Match.objects.create(club=other, local=other.own_team, visiting=rival,
+                                      start_date=today - datetime.timedelta(days=4))
+        mine = Match.objects.create(club=self.snp, local=self.snp.own_team, visiting=Team.objects.create(club=self.snp, name='Iconico 2', location='X', in_group=True),
+                                    start_date=today - datetime.timedelta(days=6))
+        page = self.client.get(reverse("list_match") + "?season=all")
+        groups = {m.id: m.group for m in page.context["matches"]}
+        self.assertEqual(groups[mine.id], "action")      # capitán: sí
+        self.assertEqual(groups[theirs.id], "upcoming")  # jugador: no
+        order = [m.group for m in page.context["matches"]]
+        self.assertEqual(order, sorted(order, key=("action", "upcoming", "played").index))

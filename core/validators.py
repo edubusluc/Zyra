@@ -16,7 +16,20 @@ def validate_plain_text(value):
         raise ValidationError(_("No se admiten los signos < > ni saltos de línea."), code="forbidden_characters")
 
 
+def validate_has_letter(value):
+    """Nombres de jugadores: tienen que llevar al menos una letra (no solo signos o números)."""
+    if value and not any(c.isalpha() for c in value):
+        raise ValidationError(_("Escribe al menos una letra."), code="no_letters")
+
+
 def plain_text(form, *names):
     """Añade validate_plain_text a los campos ``names`` del formulario."""
     for name in names:
         form.fields[name].validators.append(validate_plain_text)
+
+
+def player_name(form, *names):
+    """Nombres y apellidos de jugadores: texto normal (``plain_text``) y con al menos una letra."""
+    plain_text(form, *names)
+    for name in names:
+        form.fields[name].validators.append(validate_has_letter)

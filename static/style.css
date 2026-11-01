@@ -460,11 +460,11 @@ main:focus { outline: none; }
 .z-bn-label { max-width: 100%; overflow: hidden; font-size: var(--z-fs-xs); font-weight: 700; line-height: 1; letter-spacing: 0; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 359.98px) { .z-bn-label { font-size: var(--z-fs-xs); } }
 
-/* Cabecera y barra inferior se esconden al bajar y vuelven al subir (static/js/nav.js) */
+/* La cabecera se esconde al bajar y vuelve al subir (static/js/nav.js); la barra inferior se queda (UX-054) */
 .z-header { transition: transform .35s var(--z-ease); }
 .z-bottom-nav { transition: transform .35s var(--z-ease); }
 .z-nav-hidden .z-header { transform: translateY(-100%); }
-.z-nav-hidden .z-bottom-nav, .z-typing .z-bottom-nav { transform: translate(-50%, calc(100% + 24px + env(safe-area-inset-bottom))); }
+.z-typing .z-bottom-nav { transform: translate(-50%, calc(100% + 24px + env(safe-area-inset-bottom))); }
 
 @media (max-width: 991.98px) {
     .z-header-inner { gap: 12px; height: 60px; padding: 0 16px; justify-content: space-between; }
@@ -2316,7 +2316,6 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 .z-selector-bar small { display: block; color: var(--z-muted); }
 @media (max-width: 991.98px) {
     .z-selector-bar { bottom: calc(var(--z-nav-h) + 26px); transition: bottom .25s ease; }
-    .z-nav-hidden .z-selector-bar { bottom: 16px; }
     /* Con una barra de acción fija, la de navegación se esconde: a 320 px las dos tapaban ~40 % de la pantalla (H-30) */
     body:has(.z-selector-bar) .z-bottom-nav { display: none; }
     body:has(.z-selector-bar) .z-selector-bar { bottom: calc(16px + env(safe-area-inset-bottom)); }
@@ -2908,7 +2907,6 @@ a.z-hub-card:hover, a.z-hub-card:focus-visible { border-color: var(--z-lime); co
 /* En móvil el botón «Siguiente» se queda al alcance, justo encima de la barra inferior */
 @media (max-width: 991.98px) {
     .z-next { position: sticky; bottom: calc(var(--z-nav-h) + 8px); z-index: 25; transition: bottom .25s ease; background: var(--z-surface-3); }
-    .z-nav-hidden .z-next { bottom: 16px; }
     /* UX-018: una sola línea (botón principal + «Más»); la ayuda solo si bloquea el paso */
     .z-next { flex-wrap: nowrap; align-items: center; gap: 8px; margin-bottom: 14px; padding: 6px 8px; }
     .z-next-main { flex: 1 1 0; }
@@ -3609,4 +3607,34 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
     .z-team-preview-name[data-placeholder] { opacity: .45; }
     .z-team-preview-foot { margin-top: auto; padding-top: 18px; font-size: var(--z-fs-sm); font-weight: 700; border-top: 2px solid rgba(10, 10, 10, .2); }
 }
+
+/* Fase 6: pulido */
+/* UX-032: «Tu equipo» en texto, no una estrella que se lea como «ganador» */
+.z-own-tag { display: inline-block; margin-left: 6px; padding: 1px 8px; font-size: var(--z-fs-xs); font-style: normal; font-weight: 700; letter-spacing: .02em; text-transform: none; color: var(--z-muted); vertical-align: middle; border: 1px solid var(--z-border-strong); border-radius: 999px; }
+/* UX-033: en escritorio, la barra de guardar parejas va en la columna lateral y no tapa la pareja 5 */
+@media (min-width: 992px) {
+    .z-lineup:not(.z-lineup--unordered) .z-lineup-main { grid-column: 1; grid-row: 1 / span 2; }
+    .z-lineup:not(.z-lineup--unordered) .z-lineup-side { grid-column: 2; grid-row: 1; }
+    .z-lineup:not(.z-lineup--unordered) > .z-selector-bar { grid-column: 2; grid-row: 2; align-self: end; bottom: 16px; border-radius: var(--z-radius-lg); }
+    .z-lineup--unordered { padding-bottom: 80px; }
+}
+/* UX-038: «Equipo» aprovecha el ancho: accesos rápidos como botones iguales en una rejilla */
+.z-quick { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+.z-quick .btn { width: 100%; min-height: 44px; font-size: var(--z-fs-md); }
+/* UX-047: el cambio de página no hace esperar: fundido corto y sin retardos */
+@media (prefers-reduced-motion: no-preference) {
+    .main-content > :not(script, style, link, div:only-of-type),
+    .main-content > div:only-of-type > :not(script, style, link) { animation-duration: .2s; }
+    :is(.main-content, .main-content > div:only-of-type) > :nth-child(n of :not(script, style, link)) { --z-in-delay: 0s; }
+}
+/* UX-048: las líneas de la pista se desvanecen bajo el texto del hero */
+.z-hero-main::before { -webkit-mask-image: linear-gradient(180deg, #000 0, #000 38%, rgba(0, 0, 0, .12) 62%); mask-image: linear-gradient(180deg, #000 0, #000 38%, rgba(0, 0, 0, .12) 62%); }
+/* UX-053: Mi perfil en dos columnas en escritorio */
+.z-profile-col { display: grid; gap: 0; align-content: start; }
+@media (min-width: 992px) {
+    .z-profile-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 24px; align-items: start; }
+}
+/* UX-044: el texto oculto (posición absoluta) dentro de una tabla con scroll propio no amplía la página */
+.z-table-wrap { position: relative; }
+/* UX-054: la barra inferior no se esconde al bajar (solo la cabecera; con el teclado abierto sí) */
 }

@@ -11,7 +11,7 @@ from team.models import Team
 from .blocklist import is_blocked
 from .competitions import CHOICES as COMPETITION_CHOICES, COMPETITIONS, get_competition
 from .models import Membership
-from .validators import plain_text
+from .validators import plain_text, player_name
 
 User = get_user_model()
 
@@ -107,7 +107,7 @@ class CaptainPlayerForm(forms.Form):
     def __init__(self, *args, **kwargs):
         """Los nombres solo admiten texto plano (core.validators)."""
         super().__init__(*args, **kwargs)
-        plain_text(self, "name", "last_name")
+        player_name(self, "name", "last_name")
 
 
 class CaptainSnpForm(forms.Form):

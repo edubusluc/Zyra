@@ -85,12 +85,6 @@
         {% endif %}
     </div>
     {% endfor %}
-    {% if can_manage and teams %}
-    <a class="z-team-new" href="{% url 'create_team' %}{% if request.space_switcher %}?en={{ request.club.competition }}{% endif %}">
-        <span class="z-team-new-plus" aria-hidden="true"><i class="fa-solid fa-plus" aria-hidden="true"></i></span>
-        <span><strong>{% translate "Nuevo rival" %}</strong><small>{% translate "Crea un equipo que aún no esté en la lista." %}</small></span>
-    </a>
-    {% endif %}
 </div>
 
 <!-- ============ VISTA TABLA ============ -->

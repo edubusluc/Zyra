@@ -249,6 +249,9 @@ def list_match(request):
     matches = [*open_matches.filter(start_date__lt=today).order_by('start_date', 'id'),
                *open_matches.filter(start_date__gte=today).order_by('start_date', 'id'),
                *matches.filter(draft_mode=False).order_by('-start_date', '-id')]
+    # Los enfrentamientos abiertos con fecha pasada («Requieren acción») solo van aparte para quien gestiona
+    # su equipo; para los jugadores son «Próximos». Orden estable: los grupos no se repiten con varios equipos.
+    matches.sort(key=lambda m: 2 if not m.draft_mode else 0 if m.start_date < today and m.club in managed else 1)
     paginator = Paginator(matches, MATCHES_PER_PAGE)
     page = request.GET.get('page')
     try:
@@ -287,7 +290,8 @@ def list_match(request):
         m.local_points, m.visiting_points = split_points(m.result_points) if m.outcome else (None, None)
         m.called = called.get(m.id)
         m.upcoming = m.outcome is None and not m.pending_close and m.start_date >= today
-        m.group = ('played' if not m.draft_mode else 'action' if m.start_date < today else 'upcoming')
+        # «Requieren acción» es solo para quien gestiona ese equipo; los jugadores ven Próximos y Jugados.
+        m.group = ('played' if not m.draft_mode else 'action' if m.start_date < today and m.can_manage else 'upcoming')
 
     # Resto de filtros para la paginación y para los formularios de búsqueda.
     keep = {'season': season, 'q': search, 'rival': rival, 'match_type': match_type}

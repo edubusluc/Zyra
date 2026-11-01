@@ -12,6 +12,8 @@
     </div>
 </div>
 
+<div class="z-profile-grid">
+<div class="z-profile-col">
 <div class="z-panel z-account">
     <h2 class="z-section-title mt-0">{% translate "Cuenta" %}</h2>
     {% if email_form %}
@@ -84,6 +86,38 @@
     {% endif %}
 </div>
 
+{% if sheets %}
+{# Una ficha por equipo de la cuenta (core.views._profile_sheets): no depende del equipo que se abrió por última vez. #}
+<div class="z-panel z-account">
+    <h2 class="z-section-title mt-0">{% if sheets|length > 1 %}{% translate "Mis fichas" %}{% else %}{% translate "Mi jugador" %}{% endif %}</h2>
+    {% for row in sheets %}
+    {% with player=row.player club=row.club %}
+    <div class="z-account-sheet{% if not forloop.first %} mt-4{% endif %}">
+    {% if sheets|length > 1 %}<p class="z-account-sheet-team">{% include 'includes/competition_badge.html' with code=club.competition name=club.rules.name %} <strong>{{ club.name }}</strong></p>{% endif %}
+    {% if player %}
+    <a href="{% url 'my_player' %}{{ row.query }}" class="z-claim is-free z-account-player">
+        {% include 'includes/player_avatar.html' with player=player size="z-avatar--sm" alt="" %}
+        <span class="z-pick-body">
+            <span class="z-pick-name">{{ player.full_name }}</span>
+            <span class="z-pick-meta"><i class="fa-solid fa-link me-1" aria-hidden="true"></i>{% blocktranslate with club=club.name %}Tu cuenta está enlazada a este jugador de {{ club }}{% endblocktranslate %}</span>
+        </span>
+        <span class="btn btn-primary btn-sm"><i class="fa-solid fa-pen" aria-hidden="true"></i><span class="z-account-btn-text"> {% translate "Editar" %}</span></span>
+    </a>
+    <p class="form-text mb-0 mt-2">{% translate "Pulsa sobre tu jugador para cambiar tu foto, tu posición y tu mano hábil." %} <a href="{% url 'show_player' player.public_id %}">{% translate "Ver su ficha" %}</a></p>
+    {% else %}
+    <div class="z-callout z-callout--info">
+        <i class="fa-solid fa-link-slash" aria-hidden="true"></i>
+        <p class="mb-0">{% blocktranslate with club=club.name %}Tu cuenta no está enlazada a ningún jugador de {{ club }}. Enlázala para cambiar tu foto, tu posición y tu mano hábil.{% endblocktranslate %}</p>
+    </div>
+    <a href="{% url 'my_player' %}{{ row.query }}" class="btn btn-primary mt-3"><i class="fa-solid fa-link me-1" aria-hidden="true"></i> {% translate "Enlazarme a un jugador" %}</a>
+    {% endif %}
+    </div>
+    {% endwith %}
+    {% endfor %}
+</div>
+{% endif %}
+</div>
+<div class="z-profile-col">
 <div class="z-panel z-account" id="preferencias">
     <h2 class="z-section-title mt-0">{% translate "Preferencias" %}</h2>
     <form method="post" action="{% url 'my_profile' %}" data-loading-text="{% translate 'Guardando los cambios…' %}">
@@ -131,36 +165,6 @@
     </form>
 </div>
 
-{% if sheets %}
-{# Una ficha por equipo de la cuenta (core.views._profile_sheets): no depende del equipo que se abrió por última vez. #}
-<div class="z-panel z-account">
-    <h2 class="z-section-title mt-0">{% if sheets|length > 1 %}{% translate "Mis fichas" %}{% else %}{% translate "Mi jugador" %}{% endif %}</h2>
-    {% for row in sheets %}
-    {% with player=row.player club=row.club %}
-    <div class="z-account-sheet{% if not forloop.first %} mt-4{% endif %}">
-    {% if sheets|length > 1 %}<p class="z-account-sheet-team">{% include 'includes/competition_badge.html' with code=club.competition name=club.rules.name %} <strong>{{ club.name }}</strong></p>{% endif %}
-    {% if player %}
-    <a href="{% url 'my_player' %}{{ row.query }}" class="z-claim is-free z-account-player">
-        {% include 'includes/player_avatar.html' with player=player size="z-avatar--sm" alt="" %}
-        <span class="z-pick-body">
-            <span class="z-pick-name">{{ player.full_name }}</span>
-            <span class="z-pick-meta"><i class="fa-solid fa-link me-1" aria-hidden="true"></i>{% blocktranslate with club=club.name %}Tu cuenta está enlazada a este jugador de {{ club }}{% endblocktranslate %}</span>
-        </span>
-        <span class="btn btn-primary btn-sm"><i class="fa-solid fa-pen" aria-hidden="true"></i><span class="z-account-btn-text"> {% translate "Editar" %}</span></span>
-    </a>
-    <p class="form-text mb-0 mt-2">{% translate "Pulsa sobre tu jugador para cambiar tu foto, tu posición y tu mano hábil." %} <a href="{% url 'show_player' player.public_id %}">{% translate "Ver su ficha" %}</a></p>
-    {% else %}
-    <div class="z-callout z-callout--info">
-        <i class="fa-solid fa-link-slash" aria-hidden="true"></i>
-        <p class="mb-0">{% blocktranslate with club=club.name %}Tu cuenta no está enlazada a ningún jugador de {{ club }}. Enlázala para cambiar tu foto, tu posición y tu mano hábil.{% endblocktranslate %}</p>
-    </div>
-    <a href="{% url 'my_player' %}{{ row.query }}" class="btn btn-primary mt-3"><i class="fa-solid fa-link me-1" aria-hidden="true"></i> {% translate "Enlazarme a un jugador" %}</a>
-    {% endif %}
-    </div>
-    {% endwith %}
-    {% endfor %}
-</div>
-{% endif %}
 {% for sheet in related_sheets %}
 <div class="z-panel z-account z-copy-invite">
     <h2 class="z-section-title mt-0">{% translate "Tu ficha también está en otro equipo" %}</h2>
@@ -186,5 +190,7 @@
     <h2 class="z-section-title mt-0">{% translate "Eliminar mi cuenta" %}</h2>
     <p class="form-text">{% translate "Borra tu cuenta y tus preferencias. Si eres capitán, antes tienes que traspasar la capitanía a otro jugador del equipo." %}</p>
     <a href="{% url 'delete_account' %}" class="btn btn-outline-danger"><i class="fa-solid fa-user-slash me-1" aria-hidden="true"></i> {% translate "Eliminar mi cuenta" %}</a>
+</div>
+</div>
 </div>
 {% endblock %}

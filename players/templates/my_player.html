@@ -28,9 +28,9 @@
     <form method="post" enctype="multipart/form-data" data-loading-text="{% translate 'Guardando tus datos…' %}">
         {% csrf_token %}
         <div class="row g-3">
-            <div class="col-sm-6"><label class="form-label" for="{{ form.position.id_for_label }}">{% translate "Posición:" %}</label>{{ form.position }}</div>
-            <div class="col-sm-6"><label class="form-label" for="{{ form.skillfull_hand.id_for_label }}">{% translate "Mano hábil:" %}</label>{{ form.skillfull_hand }}</div>
-            <div class="col-12"><label class="form-label" for="{{ form.photo.id_for_label }}">{% translate "Nueva foto:" %}</label>{{ form.photo }}</div>
+            <div class="col-sm-6"><label class="form-label" for="{{ form.position.id_for_label }}">{% translate "Posición" %}</label>{{ form.position }}</div>
+            <div class="col-sm-6"><label class="form-label" for="{{ form.skillfull_hand.id_for_label }}">{% translate "Mano hábil" %}</label>{{ form.skillfull_hand }}</div>
+            <div class="col-12"><label class="form-label" for="{{ form.photo.id_for_label }}">{% translate "Nueva foto" %}</label>{{ form.photo }}</div>
         </div>
         <div class="text-center mt-3">
             <button type="submit" class="btn btn-primary">{% translate "Guardar" %}</button>
