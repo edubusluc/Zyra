@@ -37,15 +37,16 @@
 {% include 'includes/rival_preview.html' %}
 
 {# Estado de cada fase: cifra y barra (match/phase.py). #}
-<ol class="z-status4" aria-label="{% translate 'Fases del enfrentamiento' %}">
-    {% for c in status_cards %}
+<ol class="z-status4{% if not can_manage %} z-status4--short{% endif %}" aria-label="{% translate 'Fases del enfrentamiento' %}">
+    {# UX-020: quien no gestiona solo ve la convocatoria y el acta; las fases de gestión (parejas, resultados) no le sirven. #}
+    {% for c in status_cards %}{% if can_manage or forloop.first or forloop.last %}
     <li class="{% if c.state == 'done' %}is-done{% elif c.state == 'cur' %}is-cur{% endif %}"{% if c.state == 'cur' %} aria-current="step"{% endif %}>
-        <span class="z-status4-ic" aria-hidden="true">{% if c.state == 'done' %}&#10003;{% elif c.state == 'cur' %}!{% else %}{{ forloop.counter }}{% endif %}</span>
+        <span class="z-status4-ic" aria-hidden="true">{% if c.state == 'done' %}&#10003;{% elif c.state == 'cur' %}!{% elif can_manage or forloop.first %}{{ forloop.counter }}{% else %}2{% endif %}</span>
         <b>{{ c.figure }}</b>
         <span class="z-status4-label">{{ c.label }}{% if c.state == 'done' %}<span class="visually-hidden"> ({% translate "hecho" %})</span>{% endif %}</span>
         <span class="z-status4-bar" aria-hidden="true"><i style="width: {{ c.pct|unlocalize }}%"></i></span>
     </li>
-    {% endfor %}
+    {% endif %}{% endfor %}
 </ol>
 
 {% if my_status and not match.no_show %}
@@ -57,14 +58,14 @@
         <strong>{% translate "Todavía no hay convocatoria" %}</strong>
         {% elif my_status.called and not my_status.closed %}
         <strong>{% translate "Te has apuntado" %}</strong>
-        <span>{% translate "La convocatoria sigue abierta: puede cambiar." %}</span>
+        <span>{% if can_manage %}{% translate "La convocatoria sigue abierta: puede cambiar." %}{% else %}{% translate "Si cambia tu disponibilidad, avisa a tu capitán." %}{% endif %}</span>
         {% elif my_status.called %}
         <strong>{% translate "Estás convocado" %}</strong>
         {% if my_status.game %}<span>{% blocktranslate with n=my_status.game.n_game pts=my_status.game.score %}Partido {{ n }} · {{ pts }} pts{% endblocktranslate %}{% if my_status.partner %} · {% blocktranslate with name=my_status.partner.full_name %}con {{ name }}{% endblocktranslate %}{% endif %}</span>
         {% elif my_status.closed %}<span>{% translate "Las parejas aún no están decididas." %}</span>{% endif %}
         {% elif not my_status.closed %}
         <strong>{% translate "Todavía no te has apuntado" %}</strong>
-        <span>{% translate "La convocatoria sigue abierta: puede cambiar." %}</span>
+        <span>{% if can_manage %}{% translate "La convocatoria sigue abierta: puede cambiar." %}{% else %}{% translate "Si cambia tu disponibilidad, avisa a tu capitán." %}{% endif %}</span>
         {% else %}
         <strong>{% translate "No estás convocado" %}</strong>
         {% endif %}
@@ -193,11 +194,11 @@
         {% for p in roster.players %}
         <li class="z-pl{% if p.is_me %} is-me{% endif %}"{% if p.is_me %} aria-label="{{ p.full_name }} ({% translate 'tú' %})"{% endif %}>
             {% if p.photo %}<img class="z-pl-av" src="{{ p.photo.url }}" alt="" loading="lazy">{% else %}<span class="z-pl-av" aria-hidden="true">{{ p.name|slice:":1" }}{{ p.last_name|slice:":1" }}</span>{% endif %}
-            <div class="z-pl-who"><b>{{ p.full_name }}</b>
-                <small>{% if p.pair_n %}<span class="z-pl-pair">P{{ p.pair_n }}</span>{% if p.partner %}{% blocktranslate with name=p.partner.full_name %}con {{ name }}{% endblocktranslate %}{% endif %}{% elif p.is_sub %}{% translate "Sin pareja asignada" %}{% endif %}</small></div>
+            <div class="z-pl-who"><b>{{ p.short_name }}</b>
+                <small>{% if p.pair_n %}<span class="z-pl-pair">P{{ p.pair_n }}</span>{% if p.partner %}{% blocktranslate with name=p.partner.short_name %}con {{ name }}{% endblocktranslate %}{% endif %}{% elif p.is_sub %}{% translate "Sin pareja asignada" %}{% endif %}</small></div>
             {% if p.is_sub %}<span class="z-tag is-amber">{% translate "Suplente" %}</span>
             {% elif call_for_match.draft_mode %}<span class="z-tag">{% translate "Apuntado" %}</span>
-            {% else %}<span class="z-tag is-lime">{% translate "Convocado" %}</span>{% endif %}
+            {% endif %}{# UX-012: sin pastilla «Convocado»: ya está bajo el título «Convocados» y el ancho es para el nombre. #}
         </li>
         {% endfor %}
     </ul>

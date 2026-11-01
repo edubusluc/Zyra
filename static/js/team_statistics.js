@@ -194,11 +194,26 @@ window.addEventListener('resize', () => {
   // recorre con el paginador, así el gráfico mide lo mismo con 8 jugadores que con 60.
   const PAGE_SIZE = 10;
   const ROW_HEIGHT = 30;
+  // Las series perdidas llevan rayas además del rojo (WCAG 1.4.1: no depender solo del color).
+  const striped = (color) => {
+    const tile = document.createElement('canvas');
+    tile.width = tile.height = 10;
+    const t = tile.getContext('2d');
+    t.fillStyle = color;
+    t.fillRect(0, 0, 10, 10);
+    t.strokeStyle = 'rgba(10, 10, 10, 0.55)';
+    t.lineWidth = 2.5;
+    t.beginPath();
+    t.moveTo(-2, 12);
+    t.lineTo(12, -2);
+    t.stroke();
+    return t.createPattern(tile, 'repeat') || color;
+  };
   const SERIES = [
     { label: gettext('3 puntos ganados'), index: 2, color: Z.lime },
     { label: gettext('2 puntos ganados'), index: 0, color: Z.limeDark },
-    { label: gettext('3 puntos perdidos'), index: 3, color: Z.coral },
-    { label: gettext('2 puntos perdidos'), index: 1, color: Z.coralDark },
+    { label: gettext('3 puntos perdidos'), index: 3, color: striped(Z.coral) },
+    { label: gettext('2 puntos perdidos'), index: 1, color: striped(Z.coralDark) },
   ];
   const players = teamData.column_chart_data.map((r) => ({
     name: r.player,

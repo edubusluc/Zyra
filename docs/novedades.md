@@ -3,6 +3,17 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 01/11/2026 · Móvil primero (auditoría UX/UI, fase 2)
+
+- **Estadísticas**: las pestañas se deslizan en horizontal dentro de su fila (ya no ensanchan la página a 375 px) y «Mis estadísticas» pasa a «Mías» en móvil.
+- **Formularios**: los campos miden 16 px como mínimo, así Safari en iPhone ya no amplía la página al enfocarlos.
+- **Pantallas táctiles**: botones, chips e iconos llegan a 44 px de alto.
+- **Inicio en móvil**: primero los equipos, luego el próximo enfrentamiento y «Pendiente», y después los avisos y «Primeros pasos» (que se pliega a lo esencial).
+- **Ficha del enfrentamiento**: los convocados se muestran como nombre y primer apellido, en hasta dos líneas y sin la pastilla «Convocado». El jugador ve solo las fases de convocatoria y acta, y si se había apuntado le dice que avise a su capitán si cambia su disponibilidad.
+- **Fecha pasada**: la lista y el Inicio usan el mismo estado rojo «Vencido · …».
+- **Enfrentamientos, Jugadores y Rivales**: en móvil, la acción principal va primero y lo secundario se recoge en un menú «Más».
+- **Balance por jugador**: cada tramo de barra lleva su cifra, las series perdidas llevan rayas además del rojo y hay una tabla equivalente para lectores de pantalla.
+
 ## 01/11/2026 · Accesibilidad y lectura del resultado (auditoría UX/UI, fase 1)
 
 - **Marcador de la ficha**: los nombres de los equipos ya no se parten a mitad de palabra; el tamaño se ajusta al ancho del marcador y en móvil y tableta los dos equipos van debajo del resultado.

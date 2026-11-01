@@ -65,3 +65,13 @@ document.querySelectorAll('[data-scroll-top]').forEach((link) => {
     if (link) link.click();
   });
 })();
+
+// Pestañas de estadísticas en móvil (UX-001): la fila se desliza en horizontal; al cargar se
+// lleva la pestaña activa a la vista sin mover la página en vertical.
+(function () {
+  const tabs = document.querySelector('.st-tabs');
+  const active = tabs && tabs.querySelector('[aria-current="page"]');
+  if (!active || tabs.scrollWidth <= tabs.clientWidth) return;
+  const left = active.getBoundingClientRect().left - tabs.getBoundingClientRect().left + tabs.scrollLeft;
+  tabs.scrollLeft = left - (tabs.clientWidth - active.offsetWidth) / 2;
+})();

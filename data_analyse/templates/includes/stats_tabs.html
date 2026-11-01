@@ -3,7 +3,7 @@
 <nav class="st-tabs z-segmented" aria-label="{% translate 'Tipo de estadística' %}">
   {# «Mis estadísticas»: lo tuyo en todas tus competiciones (y tu ficha en cada una, con mine_chips). #}
   {% if my_stats_tab %}
-  <a class="btn btn-sm{% if current == 'my_statistics' or mine_chips %} active{% endif %}" href="{% url 'my_statistics' %}"{% if current == 'my_statistics' or mine_chips %} aria-current="page"{% endif %}><i class="fa-solid fa-id-badge me-1" aria-hidden="true"></i> {% translate "Mis estadísticas" %}</a>
+  <a class="btn btn-sm{% if current == 'my_statistics' or mine_chips %} active{% endif %}" href="{% url 'my_statistics' %}"{% if current == 'my_statistics' or mine_chips %} aria-current="page"{% endif %}><i class="fa-solid fa-id-badge me-1" aria-hidden="true"></i> <span class="d-none d-md-inline">{% translate "Mis estadísticas" %}</span><span class="d-md-none">{% translate "Mías" %}</span></a>
   {% endif %}
   <a class="btn btn-sm{% if current == 'team_statistics' %} active{% endif %}" href="{% url 'team_statistics' %}"{% if current == 'team_statistics' %} aria-current="page"{% endif %}><i class="fa-solid fa-users me-1" aria-hidden="true"></i> {% translate "Equipo" %}</a>
   <a class="btn btn-sm{% if current == 'player_statistics' and not mine_chips %} active{% endif %}" href="{% url 'player_statistics' %}"{% if current == 'player_statistics' and not mine_chips %} aria-current="page"{% endif %}><i class="fa-solid fa-user me-1" aria-hidden="true"></i> {% translate "Jugador" %}</a>

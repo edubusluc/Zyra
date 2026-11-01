@@ -14684,3 +14684,35 @@ msgstr "Something went wrong"
 #: core/templates/500.html:24
 msgid "No es culpa tuya. Ya nos ha llegado el aviso: vuelve a intentarlo en un minuto."
 msgstr "It's not your fault. We've already been notified: please try again in a minute."
+
+#: data_analyse/templates/team_statistics.html
+msgid "3 puntos ganados"
+msgstr "3 points won"
+
+#: data_analyse/templates/team_statistics.html
+msgid "2 puntos ganados"
+msgstr "2 points won"
+
+#: data_analyse/templates/team_statistics.html
+msgid "3 puntos perdidos"
+msgstr "3 points lost"
+
+#: data_analyse/templates/team_statistics.html
+msgid "2 puntos perdidos"
+msgstr "2 points lost"
+
+#: match/templates/list_match.html core/templates/home.html
+msgid "Vencido"
+msgstr "Overdue"
+
+#: players/templates/list_players.html team/templates/list_teams.html match/templates/list_match.html
+msgid "Más acciones"
+msgstr "More actions"
+
+#: data_analyse/templates/includes/stats_tabs.html
+msgid "Mías"
+msgstr "Mine"
+
+#: match/templates/call_for_match.html
+msgid "Si cambia tu disponibilidad, avisa a tu capitán."
+msgstr "If your availability changes, let your captain know."
