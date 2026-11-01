@@ -15,6 +15,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 - **Formularios**: las etiquetas ya no llevan dos puntos y los títulos «Editar jugador» y «Editar equipo» van en minúscula. Un nombre o unos apellidos de jugador necesitan al menos una letra («GON ,» ya no se admite).
 - **Mi perfil**: en escritorio, en dos columnas (Cuenta y Mis fichas | Preferencias y Eliminar mi cuenta).
 - **Back-office**: ninguna tabla amplía la página en móvil (el texto oculto de las tablas con scroll propio la desbordaba) y el árbol de tablas de la consola SQL usa `<details>` sin botones dentro del resumen, con objetivos de al menos 24 px y los dos menús laterales con nombre propio.
+- **Enfrentamientos**: «Requieren acción» es solo para quien gestiona ese equipo; los jugadores ven únicamente «Próximos» y «Jugados».
 - **Sin cambios**: «Enfrentamientos» cabe en la barra inferior a 390 px con la letra a 12 px (se hizo en la fase 4), así que no hace falta el nombre corto «Partidos».
 
 ## 01/11/2026 · Flujos y densidad (auditoría UX/UI, fase 5)
