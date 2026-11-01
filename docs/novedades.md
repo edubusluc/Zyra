@@ -21,7 +21,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 ## 01/11/2026 · Estadísticas rediseñadas (fase 1: Mis estadísticas · Todas)
 
 - **Cabecera de Estadísticas** como en el diseño aprobado: pestañas en mayúsculas sin iconos, fila «Competición» (Todas · SNP · LAPI con su color) con el contexto a la derecha, temporada y chips de tipo (Todos · Competitivos · Amistosos).
-- **Mis estadísticas · Todas**: tarjetas de Jugados (lima), Ganados y Perdidos; una fila por competición con borde de su color y «N jugados · XV YD · te apuntaste a a de b»; nota informativa y gráficos en dos columnas: Sets (dos barras finas por situación), Local y visitante (ganados y perdidos por competición), Ganados por temporada (apilados con el total) y Convocatorias (líneas sin ejes con el último valor).
+- **Mis estadísticas · Todas**: tarjetas de Jugados (lima), Ganados y Perdidos; una fila por competición con borde de su color y «N jugados · XV YD · te apuntaste a a de b» y gráficos en dos columnas: Sets (dos barras finas por situación, con un «i» que explica cada una), Local y visitante (ganados y perdidos por competición), Ganados por temporada (apilados con el total) y Convocatorias (líneas sin ejes con el último valor).
 
 ## 01/11/2026 · Flujos y densidad (auditoría UX/UI, fase 5)
 

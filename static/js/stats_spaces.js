@@ -23,12 +23,14 @@
         labels: [gettext('Ganados'), gettext('Perdidos')],
         datasets: comps.map((c, i) => ({
           label: c.name, data: [data.totals[i].won, data.totals[i].lost], backgroundColor: color(c.code), maxBarThickness: 56,
-          borderRadius: 14, minBarLength: 14,
+          borderRadius: 14, minBarLength: 14, borderColor: '#151515', borderWidth: 2,
         })),
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        // Las barras de cada grupo van pegadas (como en el diseño); el hueco lo da el borde del fondo.
+        datasets: { bar: { barPercentage: 1, categoryPercentage: 0.34 } },
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -148,12 +150,16 @@
           pointRadius: 0,
           pointHoverRadius: 6,
           maxBarThickness: 48,
+          borderRadius: 12,
+          borderColor: '#151515',
+          borderWidth: 2,
         })),
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         layout: { padding: { top: 26, right: 8 } },
+        datasets: { bar: { barPercentage: 1, categoryPercentage: 0.34 } },
         interaction: { mode: 'index', intersect: false },
         plugins: {
           legend: { display: false },
@@ -166,4 +172,18 @@
       },
     });
   }
+
+  // «i» de la tarjeta Sets: con el ratón o el foco sale la explicación; al pulsar (móvil) se abre y se cierra.
+  document.querySelectorAll('.z-tip').forEach((tip) => {
+    tip.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = !tip.classList.contains('is-open');
+      document.querySelectorAll('.z-tip.is-open').forEach((t) => { t.classList.remove('is-open'); t.setAttribute('aria-expanded', 'false'); });
+      tip.classList.toggle('is-open', open);
+      tip.setAttribute('aria-expanded', String(open));
+    });
+  });
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.z-tip.is-open').forEach((t) => { t.classList.remove('is-open'); t.setAttribute('aria-expanded', 'false'); });
+  });
 })();
