@@ -5,10 +5,10 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 01/11/2026 · Estadísticas rediseñadas (fase 3: Equipo · SNP y LAPI)
 
-- **Equipo** como en el diseño aprobado: tarjeta lima de «Balance de enfrentamientos» (con empates solo si la competición los admite y, en SNP, las eliminatorias 6-6 a favor y en contra), cifras de juegos en casa y fuera, puntos SNP y media por jugador (SNP).
-- **Puntos de liga** (LAPI): barras pegadas con los puntos de cada jornada (4, 3, 1 o 0), solo las últimas 7, y «Plantilla y fases finales» con elegibles según el reglamento 8.2. SNP no lleva esta tarjeta; «Eliminatorias 6-6» pasa al balance.
+- **Equipo** como en el diseño aprobado: tarjeta lima de «Balance de enfrentamientos» (con empates solo si la competición los admite y, en SNP, las eliminatorias 6-6 a favor y en contra), cifras de juegos en casa y fuera y media de puntos SNP por jugador (SNP).
+- **Puntos de liga**: barras pegadas con los puntos de cada jornada (LAPI: 4, 3, 1 o 0) o de cada enfrentamiento (SNP, de 12 posibles), solo las últimas 7; en LAPI, «Plantilla y fases finales» con elegibles según el reglamento 8.2. «Eliminatorias 6-6» pasa al balance.
 - **Top 5**: mejores jugadores como local y como visitante. **Partidos y sets**: «Por número de partido» (SNP), «Sets» con Tie-breaks, Cerrar el partido, Remontadas y Roscos a favor, cada uno con su texto, y en LAPI «No presentados y lesiones». **Récords** con las ocho tarjetas, **Balance de partidos por jugador** (SNP) y puntos SNP por temporada.
-- Los títulos de sección vuelven a verse en escritorio (el botón de plegar los ocultaba), los chips de tipo son los de la competición (en LAPI: Liga, Playoffs, Fase final) y desaparece el aviso «Cada competición puntúa distinto» de las pantallas de estadísticas. Se quitan de Equipo los gráficos de juegos como local y visitante (están en la tarjeta del balance), asistencia, ganados por año y la tabla de ranking SNP.
+- Los títulos de sección vuelven a verse en escritorio (el botón de plegar los ocultaba), los chips de tipo son los de la competición (en LAPI: Liga, Playoffs, Fase final) y desaparece el aviso «Cada competición puntúa distinto» de las pantallas de estadísticas. Se quitan de Equipo los gráficos de juegos como local y visitante (están en la tarjeta del balance), ganados por año y la tabla de ranking SNP; la asistencia por temporada sigue en Gráficos.
 
 ## 01/11/2026 · Estadísticas rediseñadas (fase 2: ficha del jugador · SNP y LAPI)
 

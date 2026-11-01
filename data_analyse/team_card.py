@@ -1,5 +1,6 @@
 """
-Piezas de «Estadísticas · Equipo» que no salen del log de partidos: puntos de cada jornada de liga, elegibilidad para las fases finales, no presentados y lesiones, y puntos SNP del equipo por temporada.
+Piezas de «Estadísticas · Equipo» que no salen del log de partidos: puntos de cada enfrentamiento o
+jornada, elegibilidad para las fases finales, no presentados y lesiones, y puntos SNP del equipo por temporada.
 
 Todas devuelven datos simples para la plantilla y respetan los mismos filtros de temporada y tipo que el
 resto de la página.
@@ -18,27 +19,43 @@ LAST_BARS = 7
 
 def points_series(club, season=None, match_type=None, last=LAST_BARS):
     """
-    Puntos de liga de cada jornada cerrada (LAPI: 4, 3, 1 o 0 por enfrentamiento de liga).
+    Puntos ganados en cada enfrentamiento cerrado (los que dan puntos de liga si la competición tiene liga).
 
-    Devuelve ``{'labels', 'values', 'total', 'played', 'average', 'best'}``: ``labels`` («J1»…) y ``values``
-    son solo las ``last`` últimas jornadas; ``total``, ``average`` y ``best`` (mejor valor y su etiqueta)
-    usan todas. None si la competición no tiene liga o aún no hay ninguna jornada.
+    Devuelve ``{'league', 'labels', 'values', 'total', 'played', 'average', 'possible', 'best'}``: con liga
+    (LAPI) son los puntos de liga de cada jornada («J1»…); sin ella (SNP), los puntos de cada enfrentamiento
+    («E1»…) de los ``possible`` en juego. ``labels`` y ``values`` son solo los ``last`` últimos; ``total``,
+    ``average`` y ``best`` (mejor valor y su etiqueta) usan todos. None si no hay ninguno.
     """
-    if not club.rules.league_type:
-        return None
-    rows = [(m, m.league_points) for m in rivals.closed_matches(club, season, match_type)
-            if m.league_points is not None]
+    rules = club.rules
+    league = bool(rules.league_type)
+    matches = rivals.closed_matches(club, season, match_type)
+    rows = []
+    for m in matches:
+        if league:
+            points = m.league_points
+            if points is None:
+                continue
+        else:
+            points = rivals.own_points(m)[0]
+            if points is None:
+                continue
+        rows.append((m, points))
     if not rows:
         return None
-    labels = [f"J{m.round_number or i}" for i, (m, _points) in enumerate(rows, start=1)]
-    values = [points for _m, points in rows]
+    labels, values = [], []
+    for i, (m, points) in enumerate(rows, start=1):
+        number = (m.round_number if league and m.round_number else i)
+        labels.append(f"{'J' if league else 'E'}{number}")
+        values.append(points)
     best = max(range(len(values)), key=lambda i: values[i])
     return {
+        'league': league,
         'labels': labels[-last:],
         'values': values[-last:],
         'total': sum(values),
         'played': len(values),
         'average': round(sum(values) / len(values), 1),
+        'possible': None if league else rules.total_points,
         'best': {'value': values[best], 'label': labels[best]},
     }
 

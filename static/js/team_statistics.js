@@ -31,6 +31,37 @@
     });
   }
 
+  // Asistencia a las convocatorias: % de la plantilla que se apunta. Con «Todas» es la media por temporada;
+  // con una temporada, una barra por convocatoria (la etiqueta lleva fecha y rival).
+  const attCanvas = document.getElementById('attendanceChart');
+  const att = read('attendance-data');
+  if (attCanvas && att && att.rows.length > 1) {
+    const rows = att.rows;
+    new Chart(attCanvas, {
+      type: 'bar',
+      data: {
+        labels: rows.map((r) => r.label),
+        datasets: [{ label: gettext('Asistencia'), data: rows.map((r) => r.pct), backgroundColor: LIME, borderRadius: 14, minBarLength: 32, borderSkipped: false, maxBarThickness: 64 }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (c) => ` ${rows[c.dataIndex].pct} % · ${rows[c.dataIndex].signed}/${rows[c.dataIndex].eligible}`,
+              afterLabel: (c) => (rows[c.dataIndex].calls
+                ? interpolate(ngettext('%s convocatoria', '%s convocatorias', rows[c.dataIndex].calls), [rows[c.dataIndex].calls])
+                : ''),
+            },
+          },
+        },
+        scales: { x: { grid: { display: false }, ticks: { autoSkip: false, maxRotation: 45, font: { size: 11 } } }, y: { display: false, beginAtZero: true, max: 100 } },
+      },
+    });
+  }
+
   const snpCanvas = document.getElementById('chartSnpTeamSeasons');
   const snp = read('snp-team-seasons');
   if (snpCanvas && snp && snp.scores.length > 1) {

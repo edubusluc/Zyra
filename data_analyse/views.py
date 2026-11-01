@@ -560,12 +560,7 @@ def team_card_context(club, season, match_type, context):
         'set_rows': set_rows,
     }
     if rules.has_snp:
-        deltas = [r['delta'] for r in snp['rows'] if r['delta']]
-        extra['snp_total'] = {
-            'score': round(sum(r['score'] for r in snp['rows'])),
-            'delta': round(sum(deltas)) if deltas else None,
-            'average': snp['average'],
-        }
+        extra['snp_total'] = {'average': snp['average']}
         extra['snp_team_seasons'] = team_card.snp_by_season(club)
     return extra
 
