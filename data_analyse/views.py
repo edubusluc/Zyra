@@ -462,7 +462,7 @@ def mine_chips(request, players, active):
     """
     base = reverse('my_statistics')
     chips = [{"code": spaces.ALL_SPACES, "label": _("Todas"), "url": base, "active": active is None}]
-    chips += [{"code": p.club.competition, "label": str(p.club.rules.name),
+    chips += [{"code": p.club.competition, "label": str(p.club.rules.name), "club": p.club, "name": p.club.rules.name,
                "url": f"{base}?{spaces.SPACE_PARAM}={p.club.competition}", "active": active == p.club.competition}
               for p in players]
     return {"mine_chips": chips}

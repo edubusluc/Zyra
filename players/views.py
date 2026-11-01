@@ -23,6 +23,8 @@ from core import similarity
 # Create your views here.
 
 
+@spaces.choose_managed_space("choose_space.html", title=gettext_lazy("Nuevo jugador"),
+                            question=gettext_lazy("¿En qué equipo quieres crear el jugador?"), back="list_players")
 @club_manager_required
 @not_while_syncing
 def create_player(request):

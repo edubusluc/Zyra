@@ -3,6 +3,12 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 01/11/2026 · Espacios (auditoría UX/UI, fase 3)
+
+- **Altas sin equipo por defecto**: quien gestiona equipos de SNP y de LAPI elige en cuál crea un rival o un jugador (pantalla «¿En qué equipo…?»), y los formularios dicen «Se creará en SNP · …». En Miembros, el selector de arriba y «Invitas a …» dejan claro a qué equipo se invita.
+- **Selector de competición único**: en Estadísticas, Enfrentamientos, Calendario, Jugadores, Rivales, Club y Miembros es el mismo control segmentado, con la insignia SNP/LAPI y el nombre del equipo.
+- **Enfrentamientos agrupados**: el listado va en «Requieren acción» (acta abierta con la fecha pasada), «Próximos» (el más cercano primero) y «Jugados».
+
 ## 01/11/2026 · Móvil primero (auditoría UX/UI, fase 2)
 
 - **Estadísticas**: las pestañas se deslizan en horizontal dentro de su fila (ya no ensanchan la página a 375 px) y «Mis estadísticas» pasa a «Mías» en móvil.

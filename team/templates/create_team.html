@@ -10,6 +10,7 @@
     </div>
 </div>
 <div class="table-container z-form-narrow">
+    {% include 'includes/target_team.html' %}
     <form method="POST" class="mt-4" enctype="multipart/form-data" data-similar-check data-loading-text="{% translate 'Creando el equipo…' %}">
         {% csrf_token %}
         <input type="hidden" name="confirm_similar" value="">

@@ -14716,3 +14716,27 @@ msgstr "Mine"
 #: match/templates/call_for_match.html
 msgid "Si cambia tu disponibilidad, avisa a tu capitán."
 msgstr "If your availability changes, let your captain know."
+
+#: core/templates/includes/target_team.html
+msgid "Invitas a"
+msgstr "You are inviting to"
+
+#: core/templates/includes/target_team.html
+msgid "Se creará en"
+msgstr "It will be created in"
+
+#: team/views.py
+msgid "¿En qué equipo quieres crear el rival?"
+msgstr "Which team do you want to create the rival in?"
+
+#: players/views.py
+msgid "¿En qué equipo quieres crear el jugador?"
+msgstr "Which team do you want to create the player in?"
+
+#: match/templates/list_match.html
+msgid "Requieren acción"
+msgstr "Need action"
+
+#: match/templates/list_match.html
+msgid "Próximos"
+msgstr "Upcoming"

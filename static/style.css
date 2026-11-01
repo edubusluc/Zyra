@@ -3416,3 +3416,14 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 200' preserveAspectRatio='none' fill='none' stroke='%230A0A0A' stroke-opacity='.15' stroke-width='2'%3E%3Crect x='6' y='3' width='88' height='194' rx='1' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M6 100H94M6 30.5H94M6 169.5H94M50 30.5V169.5' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
     }
 }
+
+/* Aviso de en qué equipo se hace un alta (UX-002) */
+.z-target-team { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; padding: 10px 14px; font-size: .92rem; background: var(--z-surface-2); border: 1px solid var(--z-border); border-radius: 14px; }
+.z-target-team > i { color: var(--z-lime); }
+.z-target-team > span { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+
+/* Grupos del listado de enfrentamientos (UX-015): requieren acción · próximos · jugados */
+.z-fixtures-head { margin: 8px 0 -4px; }
+.z-fixtures-head:first-child { margin-top: 0; }
+.z-fixtures-head h2 { margin: 0; font: 400 1.25rem/1.1 var(--z-display); letter-spacing: .02em; text-transform: uppercase; color: var(--z-text); }
+.z-fixtures-head--action h2 { color: var(--z-danger); }

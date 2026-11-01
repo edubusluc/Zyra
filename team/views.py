@@ -4,7 +4,7 @@ from .forms import Teamform
 from .models import Team, divisions_for
 from django.contrib import messages
 from django.db import transaction
-from django.utils.translation import gettext as _, ngettext
+from django.utils.translation import gettext as _, gettext_lazy, ngettext
 from django.urls import reverse
 from django.views.decorators.http import require_GET, require_POST, require_http_methods
 from core.decorators import club_required, not_while_syncing, club_manager_required
@@ -58,6 +58,8 @@ def list_team(request):
     return render(request, "list_teams.html",
                   {"teams": teams, "search": search, "only_group": only_group})
 
+@spaces.choose_managed_space("choose_space.html", title=gettext_lazy("Crear rival"),
+                            question=gettext_lazy("¿En qué equipo quieres crear el rival?"), back="list_teams")
 @club_manager_required
 @not_while_syncing
 @require_http_methods(["GET", "POST"])
@@ -86,7 +88,8 @@ def create_team(request):
                 team.save()
                 if request.GET.get("volver") == BACK_TO_MATCH:
                     messages.success(request, _("Rival %(team)s creado. Ya puedes elegirlo.") % {"team": team.name})
-                    return redirect("create_match")
+                    return redirect(reverse("create_match") + (f"?{spaces.SWITCH_PARAM}={request.club.competition}"
+                                                               if spaces.is_multi_space(request) else ""))
                 return redirect("list_teams")
         else:
             if similarity.is_check_request(request):

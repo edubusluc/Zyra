@@ -15,22 +15,6 @@
 </nav>
 {% endwith %}
 {# Competición: en «Mis estadísticas», Todas · SNP · LAPI (mine_chips); en Equipo, Jugador, Parejas y Rivales solo SNP o LAPI, sin mezclar (core.spaces). #}
-{% if mine_chips %}
-<nav aria-label="{% translate 'Competición' %}" class="st-type-filter z-space-filter">
-  <ul class="st-seasons">
-    <li class="st-filter-label">{% translate "Competición" %}</li>
-    {% for chip in mine_chips %}
-    <li><a class="st-chip{% if chip.code != 'todas' %} z-space-chip z-space-chip--{{ chip.code }}{% endif %}" href="{{ chip.url }}" {% if chip.active %}aria-current="page"{% endif %}>{{ chip.label }}</a></li>
-    {% endfor %}
-  </ul>
-</nav>
-{% elif space_chips %}{% include 'includes/space_filter.html' %}{% elif request.space_switcher %}
-<nav aria-label="{% translate 'Competición' %}" class="st-type-filter z-space-filter">
-  <ul class="st-seasons">
-    <li class="st-filter-label">{% translate "Competición" %}</li>
-    {% for item in request.space_switcher %}
-    <li><a class="st-chip z-space-chip z-space-chip--{{ item.code }}" href="{{ request.path }}?en={{ item.code }}" {% if item.active %}aria-current="page"{% endif %}>{{ item.name }}</a></li>
-    {% endfor %}
-  </ul>
-</nav>
+{% if mine_chips %}{% include 'includes/competition_selector.html' with items=mine_chips %}
+{% elif space_chips %}{% include 'includes/space_filter.html' %}{% elif request.space_switcher %}{% include 'includes/competition_selector.html' with items=request.space_switcher %}
 {% endif %}
