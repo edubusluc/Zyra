@@ -1136,10 +1136,18 @@ a.z-card:hover, .z-card--link:hover {
 /* Nivel de rendimiento (0-10) */
 
 /* Tarjeta de equipo */
-.z-team { display: flex; align-items: center; gap: 16px; padding: 16px; }
-.z-team img { width: 72px; height: 72px; flex-shrink: 0; object-fit: cover; border-radius: 14px; background: var(--z-surface-2); }
-.z-team h2 { margin: 0 0 2px; font-size: 1rem; font-weight: 800; text-transform: uppercase; letter-spacing: normal; }
-.z-team p { margin: 0 0 8px; font-size: .85rem; color: var(--z-muted); }
+.z-team { display: grid; gap: 14px; padding: 18px 20px; border-radius: 24px; }
+.z-team-head { display: flex; align-items: center; gap: 14px; padding-right: 40px; }
+.z-team img { width: 60px; height: 60px; flex-shrink: 0; object-fit: cover; border-radius: 18px; background: var(--z-surface-3); }
+.z-team h2 { margin: 0 0 2px; font-family: var(--z-display); font-size: 1.45rem; font-weight: 400; line-height: 1.05; text-transform: uppercase; letter-spacing: normal; overflow-wrap: anywhere; }
+.z-team p { margin: 0; font-size: .85rem; color: var(--z-muted); }
+.z-team-foot { display: flex; flex-wrap: wrap; gap: 6px; padding-top: 14px; border-top: 1px solid var(--z-border); }
+.z-form-narrow { max-width: 640px; }
+.z-team-new { display: flex; align-items: center; gap: 14px; min-height: 120px; padding: 18px 20px; color: var(--z-ink); background: var(--z-lime); border-radius: 24px; text-decoration: none; }
+.z-team-new:hover { color: var(--z-ink); filter: brightness(1.05); }
+.z-team-new-plus { display: grid; place-items: center; flex: none; width: 56px; height: 56px; font-size: 1.4rem; color: var(--z-lime); background: var(--z-ink); border-radius: 50%; }
+.z-team-new strong { display: block; font: 400 1.5rem/1 var(--z-display); text-transform: uppercase; }
+.z-team-new small { display: block; margin-top: 4px; font-size: .8rem; font-weight: 700; }
 
 /* Tarjeta de enfrentamiento */
 .z-match {

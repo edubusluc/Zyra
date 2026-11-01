@@ -50,19 +50,21 @@
         {% if can_manage %}
         <a href="{% url 'edit_team' team.public_id %}" class="z-edit" aria-label="{% blocktranslate with name=team.name %}Editar {{ name }}{% endblocktranslate %}"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
         {% endif %}
-        <img src="{% if team.photo %}{{ team.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="">
-        <div class="min-w-0">
-            <h2>{{ team.name }}</h2>
-            <p><i class="fa-solid fa-location-dot text-lime me-1" aria-hidden="true"></i>{% if team.location %}{{ team.location }}{% else %}{% translate "Sin ubicación" %}{% endif %}</p>
-            <div class="d-flex flex-wrap gap-2">
-                {% if team.is_own %}<span class="z-badge z-badge--lime">{% translate "Tu equipo" %}</span>{% endif %}
-                {% if team.gender %}<span class="z-badge z-badge--outline">{{ team.get_gender_display }}</span>{% endif %}
-                {% if team.country %}<span class="z-badge z-badge--outline">{{ team.get_country_display }}</span>{% endif %}
-                {% if team.division %}<span class="z-badge z-badge--outline">{{ team.get_division_display }}</span>{% endif %}
-                {% if can_manage %}
-                {% if team.in_group %}<span class="z-badge z-badge--outline">{% translate "En tu grupo" %}</span>{% else %}<span class="z-badge">{% translate "Fuera de grupo" %}</span>{% endif %}
-                {% endif %}
+        <div class="z-team-head">
+            <img src="{% if team.photo %}{{ team.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="">
+            <div class="min-w-0">
+                <h2>{{ team.name }}</h2>
+                <p><i class="fa-solid fa-location-dot text-lime me-1" aria-hidden="true"></i>{% if team.location %}{{ team.location }}{% else %}{% translate "Sin ubicación" %}{% endif %}</p>
             </div>
+        </div>
+        <div class="z-team-foot">
+            {% if team.is_own %}<span class="z-badge z-badge--lime">{% translate "Tu equipo" %}</span>{% endif %}
+            {% if team.gender %}<span class="z-badge z-badge--outline">{{ team.get_gender_display }}</span>{% endif %}
+            {% if team.country %}<span class="z-badge z-badge--outline">{{ team.get_country_display }}</span>{% endif %}
+            {% if team.division %}<span class="z-badge z-badge--outline">{{ team.get_division_display }}</span>{% endif %}
+            {% if can_manage %}
+            {% if team.in_group %}<span class="z-badge z-badge--lime">{% translate "En tu grupo" %}</span>{% else %}<span class="z-badge">{% translate "Fuera de grupo" %}</span>{% endif %}
+            {% endif %}
         </div>
     </div>
     {% empty %}
@@ -77,6 +79,12 @@
         {% endif %}
     </div>
     {% endfor %}
+    {% if can_manage and teams %}
+    <a class="z-team-new" href="{% url 'create_team' %}">
+        <span class="z-team-new-plus" aria-hidden="true"><i class="fa-solid fa-plus"></i></span>
+        <span><strong>{% translate "Nuevo rival" %}</strong><small>{% translate "Crea un equipo que aún no esté en la lista." %}</small></span>
+    </a>
+    {% endif %}
 </div>
 
 <!-- ============ VISTA TABLA ============ -->

@@ -14673,3 +14673,6 @@ msgstr "League, playoffs and final phase, points standings (4 / 3 / 1) and the c
 
 msgid "Un mismo jugador puede estar en las dos. Cada competición tiene su espacio y sus estadísticas, sin mezclar."
 msgstr "The same player can be in both. Each competition has its own space and statistics, never mixed."
+
+msgid "Crea un equipo que aún no esté en la lista."
+msgstr "Create a team that isn't in the list yet."

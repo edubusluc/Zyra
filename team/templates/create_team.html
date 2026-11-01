@@ -3,8 +3,13 @@
 {% block page_title %}{% translate "Crear Equipo" %} · {% endblock %}
 
 {% block content %}
-<div class="table-container">
-    <h1>{% translate "Crear Equipo" %}</h1>
+<div class="z-page-head">
+    <div>
+        <a href="{% url 'list_teams' %}" class="z-eyebrow"><i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i> {% translate "Rivales" %}</a>
+        <h1>{% translate "Crear Equipo" %}</h1>
+    </div>
+</div>
+<div class="table-container z-form-narrow">
     <form method="POST" class="mt-4" enctype="multipart/form-data" data-similar-check data-loading-text="{% translate 'Creando el equipo…' %}">
         {% csrf_token %}
         <input type="hidden" name="confirm_similar" value="">
