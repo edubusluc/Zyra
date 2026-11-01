@@ -192,6 +192,15 @@ class AccessibilityTests(TestCase):
             unsubscribe_path(self.user),
         ])
 
+    def test_error_500_page(self):
+        """La página de error 500 es autónoma: se pinta sin contexto y es accesible (UX-008)."""
+        from django.template.loader import render_to_string
+        html = render_to_string("500.html")
+        problems, title = audit(html)
+        self.assertEqual(problems, [])
+        self.assertIn("Algo ha fallado", title)
+        self.assertIn(reverse("home"), html)
+
     def test_club_pages(self):
         self.client.login(username="capi", password="pass-12345")
         p, q = self.players[0].public_id, self.players[1].public_id

@@ -16,7 +16,7 @@
     <div class="z-versus">
         <div class="z-versus-team"><small>{% translate "Local" %}</small>{{ match.local_name }}</div>
         <div class="z-versus-mid">
-            <div class="z-versus-vs">{% if score_local %}{{ score_local }}–{{ score_visiting }}{% else %}VS{% endif %}</div>
+            <div class="z-versus-vs{% if outcome == 'D' %} is-loss{% elif outcome == 'E' %} is-draw{% endif %}">{% if score_local %}{{ score_local }}–{{ score_visiting }}{% else %}VS{% endif %}</div>
         </div>
         <div class="z-versus-team"><small>{% translate "Visitante" %}</small>{{ match.visiting_name }}</div>
     </div>
@@ -245,7 +245,7 @@
                 {% endif %}
             </div>
         </div>
-        <div class="z-game-row {% if g.winner == 'Local' %}is-winner{% endif %}">
+        <div class="z-game-row {% if g.winner == 'Local' %}is-winner{% endif %}{% if match.local.is_own %} is-own{% endif %}">
             <div class="z-game-side">
                 <strong>{{ match.local_name }}</strong>
                 {{ g.local_pair_label }}
@@ -254,7 +254,7 @@
             <span class="z-set">{{ r.set2_local|default_if_none:"–" }}</span>
             <span class="z-set">{{ r.set3_local|default_if_none:"–" }}</span>
         </div>
-        <div class="z-game-row {% if g.winner == 'Visitante' %}is-winner{% endif %}">
+        <div class="z-game-row {% if g.winner == 'Visitante' %}is-winner{% endif %}{% if match.visiting.is_own %} is-own{% endif %}">
             <div class="z-game-side">
                 <strong>{{ match.visiting_name }}</strong>
                 {{ g.visiting_pair_label }}

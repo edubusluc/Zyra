@@ -4,6 +4,8 @@
 {% block content %}
 {% if home_teams %}
 {# Con equipos en varias competiciones el banner los enseña todos y no cambia con el último enfrentamiento abierto. #}
+{# Sin el banner de un solo equipo no hay H1 visible: se deja uno para lectores de pantalla (UX-011). #}
+<h1 class="visually-hidden">{% translate "Inicio" %}</h1>
 <section class="z-home-strip" aria-label="{% translate 'Tus equipos' %}">
     <ul class="z-home-teams">
         {% for t in home_teams %}

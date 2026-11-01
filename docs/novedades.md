@@ -3,6 +3,14 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 01/11/2026 · Accesibilidad y lectura del resultado (auditoría UX/UI, fase 1)
+
+- **Marcador de la ficha**: los nombres de los equipos ya no se parten a mitad de palabra; el tamaño se ajusta al ancho del marcador y en móvil y tableta los dos equipos van debajo del resultado.
+- **Lima solo para lo tuyo**: el resultado se pinta en lima si gana tu equipo, en rojo si pierde y en blanco si empata; en los partidos y en «Meter resultados» el lima solo marca los sets de tu equipo, y cuando gana el rival se indica en neutro.
+- **Campos de formulario**: bordes con contraste suficiente (3:1, WCAG 1.4.11) en campos, desplegables, calendario y casillas.
+- **Error del servidor**: nueva página 500 propia, con el estilo de Zyra y un botón para volver al inicio.
+- **Enlaces dentro de texto** siempre subrayados (no solo por color), un título principal oculto para lectores de pantalla en el Inicio del club y encabezados sin saltos en las estadísticas de jugador.
+
 ## 01/11/2026 · Más aire en Inicio y Enfrentamientos
 
 - **Gráficos de estadísticas**: estilo común en todas las vistas (`static/js/chart-style.js`): sin cuadrículas ni ejes, barras muy redondeadas con su cifra dentro, líneas lima con área suave, tooltips oscuros y barras de progreso más gruesas.

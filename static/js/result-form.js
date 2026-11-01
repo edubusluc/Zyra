@@ -8,20 +8,27 @@ document.querySelectorAll('[data-result]').forEach(function (form) {
   const validSet = (a, b) => VALID.includes(`${Math.max(a, b)}-${Math.min(a, b)}`);
   const validTB = (a, b) => { const h = Math.max(a, b), l = Math.min(a, b); return h >= 10 && (h === 10 ? h - l >= 2 : h - l === 2); };
   const checks = form.querySelector('[data-result-checks]');
-  const names = Array.from(form.querySelectorAll('.z-result-team')).map((e) => e.textContent.trim());
+  const teams = Array.from(form.querySelectorAll('.z-result-team'));
+  const names = teams.map((e) => e.textContent.trim());
+  // Lado del equipo propio (0 local, 1 visitante; -1 si no se sabe): el ganador solo va en lima
+  // cuando gana el equipo propio; si gana el rival, en neutro (UX-005).
+  const ownSide = teams.findIndex((e) => e.hasAttribute('data-own'));
 
   const setInvalid = (n, a, b) =>
     interpolate(gettext('Set %(n)s: %(score)s no es un resultado válido'), { n: n, score: `${a}-${b}` }, true);
 
-  function line(ok, text) {
+  function line(ok, text, rivalWins) {
     const li = document.createElement('li');
-    li.className = ok === null ? '' : ok ? 'is-ok' : 'is-bad';
+    li.className = ok === null ? '' : !ok ? 'is-bad' : rivalWins ? 'is-rival' : 'is-ok';
     const icon = document.createElement('i');
-    icon.className = `fa-solid ${ok === null ? 'fa-circle-info' : ok ? 'fa-check' : 'fa-xmark'}`;
+    icon.className = `fa-solid ${ok === null ? 'fa-circle-info' : !ok ? 'fa-xmark' : rivalWins ? 'fa-trophy' : 'fa-check'}`;
     icon.setAttribute('aria-hidden', 'true');
     li.append(icon, document.createTextNode(' ' + text));
     checks.appendChild(li);
   }
+
+  // True si el ganador (0 local, 1 visitante) no es el equipo propio.
+  const rivalWon = (side) => ownSide !== -1 && side !== ownSide;
 
   const retiredBox = form.querySelector('[data-retired]');
   // Sets de un partido acabado por lesión: 0-0 o vacío es un set sin jugar; un 0 con juegos del
@@ -53,7 +60,7 @@ document.querySelectorAll('[data-result]').forEach(function (form) {
     let v = entered.filter((x) => x[1] > x[0]).length;
     if (l === v) { l = entered.reduce((t, x) => t + x[0], 0); v = entered.reduce((t, x) => t + x[1], 0); }
     if (l === v) line(false, gettext('No se puede saber quién iba ganando: el resultado está empatado.'));
-    else line(true, interpolate(gettext('Ganador del partido: %(team)s'), { team: names[l > v ? 0 : 1] }, true));
+    else line(true, interpolate(gettext('Ganador del partido: %(team)s'), { team: names[l > v ? 0 : 1] }, true), rivalWon(l > v ? 0 : 1));
   }
 
   // Lesión (SNP y LAPI): la pareja sana gana y se completan sus juegos (scoring.complete_retired_result).
@@ -84,7 +91,7 @@ document.querySelectorAll('[data-result]').forEach(function (form) {
     }
     while (own.filter(([hurt, healthy]) => healthy > hurt).length < 2) own.push([0, 6]);
     const score = own.map(([a, b]) => (flip ? `${b}-${a}` : `${a}-${b}`)).join(' / ');
-    line(true, interpolate(gettext('Queda %(score)s. Ganador del partido: %(team)s'), { score: score, team: names[flip ? 0 : 1] }, true));
+    line(true, interpolate(gettext('Queda %(score)s. Ganador del partido: %(team)s'), { score: score, team: names[flip ? 0 : 1] }, true), rivalWon(flip ? 0 : 1));
   }
 
   // «Pareja no presentada» (SNP): sin sets que rellenar; Zyra reparte los puntos al cerrar el acta.
@@ -140,7 +147,7 @@ document.querySelectorAll('[data-result]').forEach(function (form) {
 
     if (ok && winners.length >= 2) {
       const w = winners.filter((x) => x === 0).length >= 2 ? 0 : 1;
-      line(true, interpolate(gettext('Ganador del partido: %(team)s'), { team: names[w] }, true));
+      line(true, interpolate(gettext('Ganador del partido: %(team)s'), { team: names[w] }, true), rivalWon(w));
     }
   }
 
