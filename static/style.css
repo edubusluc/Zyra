@@ -3565,4 +3565,38 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
     .z-features::-webkit-scrollbar { display: none; }
     .z-features > .z-feature { flex: 0 0 78%; scroll-snap-align: start; }
 }
+
+/* Ajustes tras revisar la fase 5 */
+/* Tarjetas del selector de convocatoria: todas del mismo ancho aunque el texto sea largo */
+.z-selector-grid > *, .z-pick { min-width: 0; }
+/* Estadísticas sin datos: el mensaje ocupa toda la tarjeta */
+.st-card--empty { display: flex; flex-direction: column; }
+.st-card--empty .st-card-empty { display: grid; flex: 1; place-items: center; min-height: 160px; margin: 12px 0 0; padding: 16px; text-align: center; color: var(--z-muted); border: 1px dashed var(--z-border); border-radius: var(--z-radius-sm); }
+/* «Previa»: el último enfrentamiento es un enlace */
+.z-preview-last { color: inherit; text-decoration: underline; text-decoration-color: var(--z-lime); text-underline-offset: 3px; }
+.z-preview-last:hover, .z-preview-last:focus-visible { color: var(--z-lime); }
+.z-preview-last i { font-size: .7em; color: var(--z-lime); }
+/* Roles del equipo: cada uno con su insignia */
+.z-roles { display: grid; gap: 8px; margin: 10px 0 0; padding: 0; list-style: none; }
+.z-role { display: grid; grid-template-columns: 5.5rem minmax(0, 1fr); gap: 12px; align-items: start; padding: 10px 12px; background: var(--z-surface); border: 1px solid var(--z-border); border-left-width: 4px; border-radius: var(--z-radius-sm); }
+.z-role.is-captain { border-left-color: var(--z-lime); }
+.z-role.is-manager { border-left-color: var(--z-border-strong); }
+.z-role p { margin: 0; font-size: var(--z-fs-md); color: var(--z-muted); }
+.z-role strong { color: var(--z-text); }
+.z-role .z-badge { justify-self: start; }
+@media (max-width: 480px) { .z-role { grid-template-columns: 1fr; gap: 6px; } }
+/* «Tus pendientes» no va pegada a la tarjeta de enfrentamientos */
+.z-player-todos { margin-top: 24px; }
+/* Portada: la tilde de «Sáb» no choca con el texto de encima */
+.z-preview-date { margin-top: 14px; padding-top: .12em; line-height: 1.1; }
+.z-auth-lead { text-align: center; }
+/* Registro en escritorio: presentación a la izquierda y formulario a la derecha, para ver los campos sin hacer scroll */
+@media (min-width: 992px) {
+    .z-auth-card--split { display: grid; grid-template-columns: 300px minmax(0, 1fr); grid-template-rows: repeat(4, auto) 1fr; column-gap: 48px; max-width: 980px; padding: 40px 44px; }
+    .z-auth-card--split > .z-auth-logo { grid-column: 1; margin: 0 0 14px; }
+    .z-auth-card--split > h1, .z-auth-card--split > p, .z-auth-card--split > details { grid-column: 1; text-align: left; }
+    .z-auth-card--split > h1 { font-size: var(--z-fs-2xl); }
+    .z-auth-card--split > form { grid-column: 2; grid-row: 1 / -1; }
+    .z-auth-card--split > form .z-section-title:first-child { margin-top: 0; }
+}
 }

@@ -13,6 +13,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 - **Miembros**: invitar va arriba, las reglas de los roles en un plegable «¿Qué puede hacer cada rol?» y el título ya no repite la competición. **Registro de equipo**: la explicación del capitán va en un plegable.
 - **Inicio**: «Pendiente» muestra solo el rival y la acción en la línea de la fecha; los jugadores ven «Tus pendientes» (enlazar la ficha, subir la foto, quién es su pareja).
 - **Portada**: ejemplo del «Próximo enfrentamiento» con datos de muestra y funciones en carrusel en móvil. La elección de equipo al crear (rival, jugador, enfrentamiento) usa tarjetas grandes lado a lado.
+- **Ajustes tras revisar la fase 5**: en una temporada sin partidos, «Por número de partido» muestra todos los partidos al 0 % y «Sets clutch» ocupa toda la tarjeta con su aviso. La «Previa» enlaza con el último enfrentamiento contra ese rival. Las tarjetas del selector de convocatoria miden lo mismo. «¿Qué puede hacer cada rol?» pasa a una lista con la insignia de cada rol. En escritorio, el registro de equipo pone la presentación a la izquierda y el formulario a la derecha, para ver los campos sin hacer scroll. «Tus pendientes» se separa de la tarjeta de enfrentamientos, la tilde de «Sáb» de la portada ya no choca con el texto de arriba y crear un enfrentamiento ya no repite el equipo donde se creará.
 
 ## 01/11/2026 · Sistema de diseño (auditoría UX/UI, fase 4)
 

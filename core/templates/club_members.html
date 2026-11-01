@@ -25,7 +25,21 @@
     </form>
     <details class="z-more-options mb-3">
         <summary>{% translate "¿Qué puede hacer cada rol?" %}</summary>
-        <p class="text-muted small mt-2">{% translate "Cada equipo tiene un solo capitán, que invita a los jugadores y gestiona el equipo, y hasta dos gestores, que le ayudan con los enfrentamientos, los resultados, los jugadores y los rivales. Los miembros son de este equipo: tus equipos de otras competiciones tienen los suyos. Para pasar la gestión a otra persona, pulsa «Hacer capitán» en su fila: tú pasarás a ser jugador (solo consulta). Para poder hacerlo, tiene que estar enlazado a un jugador de este equipo («Mi perfil»). Para eliminar el equipo, quita antes a todos los miembros y abandónalo desde Equipo." %}</p>
+        <ul class="z-roles">
+            <li class="z-role is-captain">
+                <span class="z-badge z-badge--lime">{% translate "Capitán" %}</span>
+                <p><strong>{% translate "Gestiona todo el equipo." %}</strong> {% translate "Invita a los jugadores y puede pasar la gestión a otra persona. Solo hay uno por equipo." %}</p>
+            </li>
+            <li class="z-role is-manager">
+                <span class="z-badge">{% translate "Gestor" %}</span>
+                <p><strong>{% translate "Ayuda con el día a día." %}</strong> {% translate "Enfrentamientos, resultados, jugadores y rivales. Hasta dos por equipo." %}</p>
+            </li>
+            <li class="z-role is-player">
+                <span class="z-badge">{% translate "Jugador" %}</span>
+                <p><strong>{% translate "Solo consulta." %}</strong> {% translate "Ve la convocatoria, sus resultados y sus estadísticas; no edita nada." %}</p>
+            </li>
+        </ul>
+        <p class="text-muted small mt-2">{% translate "Los miembros son de este equipo: tus equipos de otras competiciones tienen los suyos. Para pasar la gestión a otra persona, pulsa «Hacer capitán» en su fila: tú pasarás a ser jugador (solo consulta). Para poder hacerlo, tiene que estar enlazado a un jugador de este equipo («Mi perfil»). Para eliminar el equipo, quita antes a todos los miembros y abandónalo desde Equipo." %}</p>
     </details>
 
     <h2 class="h4 z-heading-plain mt-4">{% translate "Miembros" %}</h2>

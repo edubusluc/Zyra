@@ -14798,3 +14798,27 @@ msgstr "Nov"
 
 msgid "Ejemplo con datos de muestra"
 msgstr "Example with sample data"
+
+msgid "Gestiona todo el equipo."
+msgstr "Runs the whole team."
+
+msgid "Invita a los jugadores y puede pasar la gestión a otra persona. Solo hay uno por equipo."
+msgstr "Invites the players and can hand the management to someone else. Only one per team."
+
+msgid "Ayuda con el día a día."
+msgstr "Helps with the day-to-day."
+
+msgid "Enfrentamientos, resultados, jugadores y rivales. Hasta dos por equipo."
+msgstr "Ties, results, players and rivals. Up to two per team."
+
+msgid "Solo consulta."
+msgstr "View only."
+
+msgid "Ve la convocatoria, sus resultados y sus estadísticas; no edita nada."
+msgstr "Sees the call-up, their results and their statistics; edits nothing."
+
+msgid "Los miembros son de este equipo: tus equipos de otras competiciones tienen los suyos. Para pasar la gestión a otra persona, pulsa «Hacer capitán» en su fila: tú pasarás a ser jugador (solo consulta). Para poder hacerlo, tiene que estar enlazado a un jugador de este equipo («Mi perfil»). Para eliminar el equipo, quita antes a todos los miembros y abandónalo desde Equipo."
+msgstr "Members belong to this team: your teams in other competitions have their own. To hand the management over to someone else, press “Make captain” on their row: you will become a player (view only). To do so, they must be linked to a player of this team (“My profile”). To delete the team, first remove all members and then leave it from Team."
+
+msgid "Ver ese enfrentamiento"
+msgstr "View that tie"
