@@ -1474,7 +1474,7 @@ a.z-card:hover, .z-card--link:hover {
 }
 
 /* Panel «Pendiente» */
-.z-home-pending { display: grid; align-content: start; gap: 6px; padding: 22px 24px; border-radius: 26px; }
+.z-home-pending { display: grid; align-content: start; gap: 6px; padding: 22px 26px; border-radius: 26px; }
 .z-home-pending-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
 .z-panel-title { margin: 0; font-family: var(--z-display); font-size: 1.9rem; font-weight: 400; line-height: 1; letter-spacing: .01em; }
 .z-panel-title span { color: var(--z-muted); }
@@ -1915,7 +1915,7 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
    (SNP ámbar, LAPI turquesa), fecha en bloque (lima victoria, rojo derrota, gris empate, ámbar
    pendiente), tipo en píldora, recorrido de cuatro pasos y resultado o estado a la derecha.
    En móvil el recorrido pasa a una segunda línea. Toda la tarjeta es pulsable. */
-.z-fixtures { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.z-fixtures { display: grid; gap: 16px; margin: 0; padding: 0; list-style: none; }
 .z-fixture {
     position: relative;
     overflow: hidden;
@@ -1923,9 +1923,9 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
     grid-template-columns: 58px minmax(0, 1fr);
     grid-template-areas: "date main" "result result" "flow flow";
     align-items: center;
-    gap: 10px 14px;
+    gap: 14px 18px;
     min-width: 0;
-    padding: 12px 14px;
+    padding: 18px 20px;
     background: var(--z-surface);
     border: 1px solid var(--z-border);
     border-radius: 22px;
@@ -1937,7 +1937,7 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 .z-fixture-date { grid-area: date; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 58px; border-radius: 16px; background: var(--z-surface-3); color: var(--z-text); }
 .z-fixture-date b { font: 400 1.7rem/1 var(--z-display); }
 .z-fixture-date small { font-size: .62rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
-.z-fixture-main { grid-area: main; display: grid; gap: 8px; min-width: 0; }
+.z-fixture-main { grid-area: main; display: grid; gap: 12px; min-width: 0; }
 .z-fixture-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; min-width: 0; }
 .z-fixture-type { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; font-size: .74rem; font-weight: 800; color: var(--z-text); background: var(--z-surface-2); border-radius: 999px; white-space: nowrap; }
 .z-fixture-result { grid-area: result; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
@@ -1987,7 +1987,7 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 .z-fixture-state.is-pending-close { color: var(--z-ink); background: var(--z-lime); }
 .z-fixture-state.is-open { color: var(--z-warning); border: 1px solid var(--z-warning); }
 
-.z-fixture-teams { display: grid; gap: 6px; }
+.z-fixture-teams { display: grid; gap: 10px; }
 .z-fixture-team { display: flex; align-items: center; gap: 10px; min-width: 0; font-size: .95rem; font-weight: 700; color: #D9DBD3; }
 .z-fixture-team img { width: 28px; height: 28px; flex-shrink: 0; object-fit: cover; border-radius: 50%; background: var(--z-surface-2); border: 1px solid var(--z-border-strong); }
 .z-fixture-name { text-transform: uppercase; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -1995,7 +1995,7 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 .z-fixture-team.is-own img { border-color: var(--z-lime); }
 .z-fixture-team.is-loser { color: var(--z-muted); }
 
-.z-fixture-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; font-size: .8rem; color: var(--z-muted); }
+.z-fixture-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 18px; font-size: .8rem; color: var(--z-muted); }
 .z-fixture-meta { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
 .z-fixture-meta i { font-size: .9em; }
 .z-fixture-place { display: block; flex: 0 1 auto; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -2861,12 +2861,12 @@ a.z-hub-card:hover, a.z-hub-card:focus-visible { border-color: var(--z-lime); co
 .z-next-match-me.is-in { color: #FFFFFF; }
 /* En el panel «Pendiente» las filas son listas planas, no tarjetas */
 .z-home-pending .z-pending { margin: 0; gap: 0; }
-.z-home-pending .z-pending-row { flex-wrap: nowrap; padding: 10px 0; background: transparent; border: 0; border-top: 1px solid var(--z-border); border-radius: 0; }
+.z-home-pending .z-pending-row { flex-wrap: nowrap; padding: 13px 0; background: transparent; border: 0; border-top: 1px solid var(--z-border); border-radius: 0; }
 .z-home-pending .z-pending-row.is-overdue { border-left: 0; }
 .z-home-pending .z-pending-main { flex: 1; }
 .z-home-pending .z-pending-main strong, .z-home-pending .z-pending-main small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .z-home-pending .z-pending-action { flex: none; white-space: nowrap; }
-.z-home-pending > p { margin: 8px 0 0; font-size: .88rem; }
+.z-home-pending > p { margin: 6px 0 0; font-size: .88rem; }
 @media (max-width: 575.98px) {
     .z-home-pending .z-pending-row { flex-wrap: wrap; }
     .z-home-pending .z-pending-main { flex-basis: 100%; }
@@ -2962,7 +2962,7 @@ a.z-hub-card:hover, a.z-hub-card:focus-visible { border-color: var(--z-lime); co
 .z-onboarding-alt { justify-self: center; font-size: .9rem; }
 @media (min-width: 576px) {
     .z-notice { grid-template-columns: auto 1fr auto; align-items: center; }
-    .z-notice-actions { grid-column: auto; }
+    .z-notice-actions { grid-column: auto; flex-wrap: nowrap; justify-content: flex-start; min-width: 230px; }
     .z-onboarding-next { grid-template-columns: 1fr auto; align-items: center; }
     .z-onboarding-next .btn { width: auto; }
     .z-onboarding-alt { grid-column: 1 / -1; justify-self: start; }

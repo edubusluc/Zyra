@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 01/11/2026 · Más aire en Inicio y Enfrentamientos
+
+- **Inicio y listado**: los botones de los avisos («Nombrar gestor», «Registrar cuenta») arrancan en el mismo borde y las tarjetas de enfrentamiento y las filas de «Pendiente» tienen más separación para reducir el ruido visual.
+
 ## 31/10/2026 · Nuevo estilo visual (fase 3: estadísticas)
 
 - **Estadísticas del equipo**: el balance de enfrentamientos pasa a bloque lima con cifras gigantes (victorias, empates, derrotas), barra y datos en fichas oscuras. Títulos de sección y tarjetas en Anton, y los Top 5 llevan barra de porcentaje por fila.
