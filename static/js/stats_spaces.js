@@ -142,17 +142,16 @@
         datasets: comps.map((c, i) => ({
           label: c.name,
           data: data.attendance.series[i],
-          borderColor: color(c.code),
+          // Líneas: su color y 4 px; barras (una sola temporada): borde del fondo como hueco entre ellas.
+          borderColor: single ? '#151515' : color(c.code),
           backgroundColor: color(c.code),
           spanGaps: true,
           tension: 0.3,
-          borderWidth: 4,
+          borderWidth: single ? 2 : 4,
           pointRadius: 0,
           pointHoverRadius: 6,
           maxBarThickness: 48,
           borderRadius: 12,
-          borderColor: '#151515',
-          borderWidth: 2,
         })),
       },
       options: {

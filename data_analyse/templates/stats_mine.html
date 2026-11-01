@@ -67,14 +67,14 @@
           <h3 class="st-card-title">{% translate "Local y visitante" %}</h3>
           <p class="st-card-note">{% translate "Ganados y perdidos por competición." %}</p>
           {% if not has_local and not has_visiting %}<p class="st-muted st-nodata">{% translate "No hay datos todavía." %}</p>{% endif %}
-          <div class="st-chart st-chart--mine"{% if not has_local and not has_visiting %} hidden{% endif %}><canvas id="spacesSidesChart" role="img" aria-label="{% translate 'Partidos ganados y perdidos por competición' %}"></canvas></div>
+          <div class="st-chart st-chart--mine" role="img" aria-label="{% translate 'Partidos ganados y perdidos por competición' %}"{% if not has_local and not has_visiting %} hidden{% endif %}><canvas id="spacesSidesChart" aria-hidden="true"></canvas></div>
         </section>
 
         <section class="st-card">
           <h3 class="st-card-title">{% translate "Ganados por temporada" %}</h3>
           <p class="st-card-note">{% translate "Cada competición con su color y el total encima." %}</p>
           {% if spaces_chart.years.labels %}
-          <div class="st-chart st-chart--mine"><canvas id="spacesYearsChart" role="img" aria-label="{% translate 'Partidos ganados por temporada' %}"></canvas></div>
+          <div class="st-chart st-chart--mine" role="img" aria-label="{% translate 'Partidos ganados por temporada' %}"><canvas id="spacesYearsChart" aria-hidden="true"></canvas></div>
           {% else %}<p class="st-muted st-nodata">{% translate "No hay datos todavía." %}</p>{% endif %}
         </section>
 
@@ -82,7 +82,7 @@
           <h3 class="st-card-title">{% translate "Convocatorias en las que te apuntas" %}</h3>
           <p class="st-card-note">{% translate "% de las cerradas, por competición." %}</p>
           {% if spaces_chart.attendance.labels %}
-          <div class="st-chart st-chart--mine"><canvas id="spacesAttendanceChart" role="img" aria-label="{% translate 'Convocatorias en las que te apuntas' %}"></canvas></div>
+          <div class="st-chart st-chart--mine" role="img" aria-label="{% translate 'Convocatorias en las que te apuntas' %}"><canvas id="spacesAttendanceChart" aria-hidden="true"></canvas></div>
           {% else %}<p class="st-muted st-nodata">{% translate "No hay datos todavía." %}</p>{% endif %}
         </section>
       </div>
