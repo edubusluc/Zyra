@@ -6,9 +6,7 @@
     const el = document.getElementById(id);
     return el ? JSON.parse(el.textContent) : null;
   };
-  const lang = document.documentElement.lang || 'es';
   const LIME = '#B4F100';
-  const shortSeason = (y) => y.replace(/^\d{2}(\d{2})-\d{2}(\d{2})$/, '$1-$2');
   const FONT = "400 22px 'Anton', 'Archivo', sans-serif";
 
   const pointsCanvas = document.getElementById('chartPoints');
@@ -64,55 +62,13 @@
 
   const snpCanvas = document.getElementById('chartSnpTeamSeasons');
   const snp = read('snp-team-seasons');
-  if (snpCanvas && snp && snp.scores.length > 1) {
-    const lastValue = {
-      id: 'lastValue',
-      afterDatasetsDraw(chart) {
-        const meta = chart.getDatasetMeta(0).data;
-        const point = meta[meta.length - 1];
-        if (!point) return;
-        const { ctx, chartArea } = chart;
-        ctx.save();
-        ctx.font = FONT;
-        ctx.fillStyle = '#FFFFFF';
-        ctx.textAlign = 'right';
-        ctx.textBaseline = 'bottom';
-        ctx.fillText(snp.scores[snp.scores.length - 1].toLocaleString(lang), Math.min(point.x + 8, chartArea.right + 8), point.y - 10);
-        ctx.restore();
-      },
-    };
-    new Chart(snpCanvas, {
-      type: 'line',
-      plugins: [lastValue],
-      data: {
-        labels: snp.labels.map(shortSeason),
-        datasets: [{ label: gettext('Puntos SNP'), data: snp.scores, borderColor: LIME, fill: true, borderWidth: 3, pointRadius: 0, pointHoverRadius: 6 }],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        layout: { padding: { top: 34, right: 16 } },
-        plugins: {
-          legend: { display: false },
-          tooltip: { callbacks: { label: (c) => ' ' + interpolate(gettext('%(n)s puntos'), { n: c.parsed.y.toLocaleString(lang) }, true) } },
-        },
-        scales: { x: { grid: { display: false } }, y: { display: false, grace: '12%' } },
-      },
-    });
-  }
-})();
-
-// Balance por jugador: partidos de 2 y 3 puntos, ganados y perdidos.
-(function () {
-  const read = (id) => {
-    const el = document.getElementById(id);
-    return el ? JSON.parse(el.textContent) : null;
-  };
-  const LIME = '#B4F100';
+  if (snpCanvas && snp && snp.scores.length > 1) zSeasonLine(snpCanvas, snp);
+  // Balance por jugador: partidos de 2 y 3 puntos, ganados y perdidos.
   const LIME_DARK = '#6E9400';
   const CORAL = '#FF5C63';
   const CORAL_DARK = '#9E3A3F';
   const GRID = 'rgba(255, 255, 255, 0.08)';
+  const balanceSetup = () => {
   const balanceBox = document.getElementById('balanceChart');
   if (!balanceBox) return; // no sale en competiciones con parejas sorteadas (LAPI)
   // Barras horizontales de tamaño fijo: se ven PAGE_SIZE jugadores y el resto se
@@ -250,5 +206,6 @@
     });
   });
   renderBalance();
+  };
+  balanceSetup();
 })();
-

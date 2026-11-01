@@ -82,4 +82,44 @@
       ctx.restore();
     },
   });
+
+  // Línea lima sin ejes con el último valor en grande (puntos SNP por temporada de la ficha del jugador y del equipo).
+  window.zSeasonLine = function (canvas, series) {
+    const lang = document.documentElement.lang || 'es';
+    const short = (y) => y.replace(/^\d{2}(\d{2})-\d{2}(\d{2})$/, '$1-$2');
+    const lastValue = {
+      id: 'lastValue',
+      afterDatasetsDraw(chart) {
+        const meta = chart.getDatasetMeta(0).data;
+        const point = meta[meta.length - 1];
+        if (!point) return;
+        const { ctx, chartArea } = chart;
+        ctx.save();
+        ctx.font = "400 22px 'Anton', 'Archivo', sans-serif";
+        ctx.fillStyle = '#FFFFFF';
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'bottom';
+        ctx.fillText(series.scores[series.scores.length - 1].toLocaleString(lang), Math.min(point.x + 8, chartArea.right + 8), point.y - 10);
+        ctx.restore();
+      },
+    };
+    return new Chart(canvas, {
+      type: 'line',
+      plugins: [lastValue],
+      data: {
+        labels: series.labels.map(short),
+        datasets: [{ label: gettext('Puntos SNP'), data: series.scores, borderColor: '#B4F100', fill: true, borderWidth: 3, pointRadius: 0, pointHoverRadius: 6 }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: { top: 34, right: 16 } },
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: (c) => ' ' + interpolate(gettext('%(n)s puntos'), { n: c.parsed.y.toLocaleString(lang) }, true) } },
+        },
+        scales: { x: { grid: { display: false } }, y: { display: false, grace: '12%' } },
+      },
+    });
+  };
 })();
