@@ -854,7 +854,7 @@ class CompleteTeamTests(TestCase):
         self.ana.save()
         self.assertEqual((self.ana.full_name, self.ana.short_name), ("Ana María Álvarez Ruiz", "Ana María Álvarez"))
         self.assertContains(self.client.get(reverse("list_players")), "Ana María Álvarez")
-        self.assertContains(self.client.get(reverse("show_player", args=[self.ana.public_id])), "Ana María Álvarez")
+        self.assertContains(self.client.get(reverse("show_player", args=[self.ana.public_id]), follow=True), "Ana María Álvarez")
         # El formulario de edición muestra lo guardado, sin cambiarlo.
         self.assertContains(self.client.get(reverse("edit_player", args=[self.ana.public_id])), 'value="álvarez ruiz"')
 
@@ -1072,7 +1072,7 @@ class DeletePlayerTests(TestCase):
         page = self.client.get(reverse("call_for_match", args=[self.match.public_id])).content.decode()
         self.assertIn("Ana López / Bea Ruiz", page)
         # El compañero conserva sus estadísticas.
-        self.assertEqual(self.client.get(reverse("show_player", args=[self.bea.public_id])).status_code, 200)
+        self.assertEqual(self.client.get(reverse("show_player", args=[self.bea.public_id]), follow=True).status_code, 200)
 
     def test_members_cannot_delete(self):
         viewer = User.objects.create_user("viewer", password="pass-12345")

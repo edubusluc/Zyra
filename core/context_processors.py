@@ -38,14 +38,13 @@ def club(request):
         # «Ya tienes equipo en SNP y LAPI» cuando ya no le queda competición libre.
         "team_competitions": lambda: get_text_list([str(m.club.rules.name) for m in teams], _("y")),
         "can_manage": bool(membership and membership.can_manage),
-        # Capitán o gestor en alguno de sus equipos (pestaña Advertencias de Estadísticas).
-        "manages_any": any(m.can_manage for m in memberships) or bool(membership and membership.can_manage),
         # Jugador en todos sus equipos (y tiene varios): Plantilla y el listado de jugadores de
         # Estadísticas no le aportan nada y salen del menú.
         "hide_roster_nav": plays_only(request),
         # «Mis estadísticas» (y Estadísticas abre en ella) con jugador enlazado en dos o más equipos.
-        # La pestaña «Mis estadísticas» se ve con dos o más equipos; sin ficha enlazada explica cómo enlazarla (Z-05).
-        "my_stats_tab": lambda: len(memberships) > 1,
+        # La pestaña «Yo» se ve con jugador enlazado en algún equipo o con dos o más equipos (sin ficha enlazada
+        # explica cómo enlazarla, Z-05).
+        "my_stats_tab": lambda: len(memberships) > 1 or bool(linked_players(request)),
         "my_stats_available": lambda: len(memberships) > 1 and len(linked_players(request)) > 1,
         "leaving_deletes_club": lambda: bool(membership and is_last_admin(membership) and is_only_member(membership)),
     }
@@ -89,6 +88,8 @@ def navigation(request):
     match = getattr(request, "resolver_match", None)
     if match and match.url_name == "home":
         return {"nav_section": "home"}
+    if match and match.url_name == "warnings_statistics":  # las advertencias se gestionan desde Plantilla
+        return {"nav_section": "players"}
     if match and match.url_name in CLUB_URL_NAMES:
         return {"nav_section": "club"}
     app = match.func.__module__.split(".")[0] if match else ""

@@ -96,7 +96,7 @@ class UnifiedSpacesTests(TestCase):
         session = self.client.session
         session[SESSION_KEY] = self.snp.id
         session.save()
-        self.assertEqual(self.client.get(reverse("show_player", args=[player.public_id])).status_code, 200)
+        self.assertEqual(self.client.get(reverse("show_player", args=[player.public_id]), follow=True).status_code, 200)
 
     def test_create_match_asks_the_team_when_managing_several(self):
         Membership.objects.filter(user=self.user, club=self.lapi).update(role=Membership.MANAGER)
@@ -128,8 +128,6 @@ class UnifiedSpacesTests(TestCase):
         self.assertEqual(page.status_code, 200)
         self.assertEqual(self.client.session[SESSION_KEY], self.snp.id)
         self.assertNotContains(page, "z-space-chip--lapi")
-        # Desde una página de LAPI la pestaña sigue a la vista: la tiene quien gestiona algún equipo.
-        self.assertTrue(self.client.get(reverse("rival_statistics") + "?en=lapi").context["manages_any"])
 
     def test_profile_lists_every_team_sheet(self):
         self.snp.own_team.team_players.create(club=self.snp, name="Edu", last_name="B", user=self.user)
@@ -329,6 +327,19 @@ class UnifiedSpacesTests(TestCase):
             page = self.client.get(reverse(name))
             self.assertEqual(page.context["current_club"], self.lapi, name)
         self.assertNotIn("stats_team_space", self.client.session)
+
+    def test_tabs_are_yo_team_players_pairs_rivals(self):
+        """EST-050/012: cinco pestañas; «Yo» abre mi ficha (también marcada cuando la veo desde Jugadores)."""
+        self._close(self.snp_match)
+        me_snp, _me_lapi = self._me()
+        page = self.client.get(reverse("player_statistics") + f"?en=snp&player={me_snp.public_id}")
+        html = page.content.decode()
+        self.assertIn(">Yo<", html.replace("</i> ", "").replace("\n", "").replace("  ", ""))
+        self.assertNotIn("Advertencias</a>\n</nav>", html)
+        self.assertTrue(page.context["hero"]["is_me"])
+        other = self.snp.players.exclude(pk=me_snp.pk).first()
+        if other:
+            self.assertFalse(self.client.get(reverse("player_statistics") + f"?en=snp&player={other.public_id}").context["hero"]["is_me"])
 
     def test_competition_selector_shows_which_competition_is_open(self):
         """El desplegable cerrado indica SNP o LAPI junto al nombre (dos equipos pueden llamarse igual)."""

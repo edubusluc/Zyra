@@ -6,7 +6,7 @@ from core.models import Club, Invitation
 from .forms import NewOwnPlayerForm, OwnPlayerForm, PlayerEditForm, PlayerForm, SnpAccountForm, with_placeholder
 from django.contrib import messages
 from match.models import Game
-from players.models import Player, SnpAccount, SnpTeamImport, current_season
+from players.models import Player, SnpAccount, SnpTeamImport
 from core.crypto import DecryptionError
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET, require_POST
@@ -195,31 +195,16 @@ def delete_player(request, player_id):
 @club_required
 def show_player(request, player_id):
     """
-    Ficha de un jugador del club con sus últimos 5 partidos cerrados de la temporada actual, del más antiguo
-    al más reciente. Requiere pertenecer al club. Quien es jugador en todos sus equipos no tiene
-    Plantilla ni esta ficha: va a las estadísticas del jugador.
+    Enlace histórico de la ficha de un jugador: la ficha es una sola, la de Estadísticas › Jugador
+    (perfil arriba y estadísticas debajo), así que redirige a ella. Requiere pertenecer al club.
     """
     player = get_object_or_404(Player, public_id=player_id, club=request.club)
-    if spaces.plays_only(request):
-        return redirect(f"{reverse('player_statistics')}?player={player.public_id}")
-    games = Game.objects.filter(
-        (Q(player_1_local=player) | Q(player_2_local=player) |
-        Q(player_1_visiting=player) | Q(player_2_visiting=player)) &
-        Q(draft_mode=False) & Q(match__season=current_season())
-    ).select_related(
-        'match__local', 'match__visiting',
-        'player_1_local', 'player_2_local', 'player_1_visiting', 'player_2_visiting',
-    ).order_by('-match__start_date', '-n_game')[:5]
-    games = list(reversed(games))
-    form = ["w" if player_won(game, player) else "l" for game in games]
-    return render(request, "player_detail.html", {"player": player, "games": games, "form": form})
+    return redirect(player_sheet_url(player))
 
 
-def player_won(game, player):
-    """True si ``player`` ganó el juego ``game`` (jugó en la pareja ganadora)."""
-    if game.winner == 'Local':
-        return player in (game.player_1_local, game.player_2_local)
-    return player in (game.player_1_visiting, game.player_2_visiting)
+def player_sheet_url(player):
+    """URL de la ficha única del jugador (Estadísticas › Jugador)."""
+    return f"{reverse('player_statistics')}?player={player.public_id}"
 
 
 def _warn_if_roster_empty(request):
@@ -549,7 +534,7 @@ def my_player(request):
         if request.method == "POST" and form.is_valid():
             form.save()
             messages.success(request, _("Perfil actualizado."))
-            return redirect("show_player", player_id=player.public_id)
+            return redirect(player_sheet_url(player))
         return render(request, "my_player.html", {"player": player, "form": form})
 
     new_form = NewOwnPlayerForm(request.POST or None, request.FILES or None, club=request.club)
@@ -564,7 +549,7 @@ def my_player(request):
             player.user = request.user
             player.save()
         messages.success(request, _("Jugador creado y enlazado a tu cuenta."))
-        return redirect("show_player", player_id=player.public_id)
+        return redirect(player_sheet_url(player))
 
     # Todos los jugadores del club: primero los que se pueden elegir (sin cuenta, se ven en
     # lima) y después los ya enlazados (apagados). El buscador filtra la lista mientras se

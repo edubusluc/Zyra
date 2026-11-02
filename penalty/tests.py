@@ -205,6 +205,36 @@ class CallLogPageTests(PenaltyBase):
         self.assertContains(page, "Por motivo")
 
 
+class WarningsLiveInRosterTests(PenaltyBase):
+    """EST-011: Advertencias se gestiona desde Plantilla, no es una pestaña de Estadísticas."""
+
+    def test_statistics_tabs_no_longer_include_warnings(self):
+        page = self.client.get(reverse("team_statistics"))
+        self.assertNotContains(page, reverse("warnings_statistics"))
+
+    def test_roster_links_to_warnings_for_managers_and_highlights_roster(self):
+        roster = self.client.get(reverse("list_players"))
+        self.assertContains(roster, reverse("warnings_statistics"))
+        page = self.client.get(reverse("warnings_statistics"))
+        self.assertEqual(page.context["nav_section"], "players")
+        self.assertContains(page, reverse("list_players"))
+        self.client.logout()
+        self.client.login(username="member", password=PASSWORD)
+        self.assertNotContains(self.client.get(reverse("list_players")), reverse("warnings_statistics"))
+
+    def test_player_sheet_shows_the_warning_count_to_managers_only(self):
+        Penalty.objects.create(player=self.ana, call=self.call, kind="late")
+        url = reverse("player_statistics") + f"?player={self.ana.public_id}"
+        sheet = self.client.get(url)
+        self.assertEqual(sheet.context["hero"]["warnings"], 1)
+        self.assertContains(sheet, "1 advertencia")
+        self.client.logout()
+        self.client.login(username="member", password=PASSWORD)
+        other = self.client.get(url)
+        self.assertEqual(other.context["hero"]["warnings"], 0)
+        self.assertNotContains(other, "advertencia")
+
+
 class LegacyMigrationTests(TestCase):
     def test_automatic_texts_are_cleared_and_free_text_is_kept(self):
         """La limpieza de la migración 0003 vacía el texto automático y conserva el escrito a mano."""

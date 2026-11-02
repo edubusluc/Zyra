@@ -1,17 +1,14 @@
 {% load i18n static %}
 {% with current=request.resolver_match.url_name %}
 <nav class="st-tabs z-segmented" aria-label="{% translate 'Tipo de estadística' %}">
-  {# «Mis estadísticas»: lo tuyo en todas tus competiciones (y tu ficha en cada una, con mine_chips). #}
+  {# «Yo»: lo tuyo en todas tus competiciones (y tu ficha en cada una, con mine_chips). #}
   {% if my_stats_tab %}
-  <a class="btn btn-sm{% if current == 'my_statistics' or mine_chips %} active{% endif %}" href="{% url 'my_statistics' %}"{% if current == 'my_statistics' or mine_chips %} aria-current="page"{% endif %}><i class="fa-solid fa-id-badge me-1" aria-hidden="true"></i> <span class="d-none d-md-inline">{% translate "Mis estadísticas" %}</span><span class="d-md-none">{% translate "Mías" %}</span></a>
+  <a class="btn btn-sm{% if current == 'my_statistics' or mine_chips or hero.is_me %} active{% endif %}" href="{% url 'my_statistics' %}"{% if current == 'my_statistics' or mine_chips or hero.is_me %} aria-current="page"{% endif %}><i class="fa-solid fa-id-badge me-1" aria-hidden="true"></i> {% translate "Yo" %}</a>
   {% endif %}
   <a class="btn btn-sm{% if current == 'team_statistics' %} active{% endif %}" href="{% url 'team_statistics' %}"{% if current == 'team_statistics' %} aria-current="page"{% endif %}><i class="fa-solid fa-users me-1" aria-hidden="true"></i> {% translate "Equipo" %}</a>
-  <a class="btn btn-sm{% if current == 'player_statistics' and not mine_chips %} active{% endif %}" href="{% url 'player_statistics' %}"{% if current == 'player_statistics' and not mine_chips %} aria-current="page"{% endif %}><i class="fa-solid fa-user me-1" aria-hidden="true"></i> {% translate "Jugador" %}</a>
+  <a class="btn btn-sm{% if current == 'player_statistics' and not mine_chips and not hero.is_me %} active{% endif %}" href="{% url 'player_statistics' %}"{% if current == 'player_statistics' and not mine_chips and not hero.is_me %} aria-current="page"{% endif %}><i class="fa-solid fa-user me-1" aria-hidden="true"></i> {% translate "Jugadores" %}</a>
   <a class="btn btn-sm{% if current == 'pair_statistics' %} active{% endif %}" href="{% url 'pair_statistics' %}"{% if current == 'pair_statistics' %} aria-current="page"{% endif %}><i class="fa-solid fa-user-group me-1" aria-hidden="true"></i> {% translate "Parejas" %}</a>
   <a class="btn btn-sm{% if current == 'rival_statistics' or current == 'rival_detail' %} active{% endif %}" href="{% url 'rival_statistics' %}"{% if current == 'rival_statistics' or current == 'rival_detail' %} aria-current="page"{% endif %}><i class="fa-solid fa-shield-halved me-1" aria-hidden="true"></i> {% translate "Rivales" %}</a>
-  {% if manages_any %}
-  <a class="btn btn-sm{% if current == 'warnings_statistics' %} active{% endif %}" href="{% url 'warnings_statistics' %}"{% if current == 'warnings_statistics' %} aria-current="page"{% endif %}><i class="fa-solid fa-triangle-exclamation me-1" aria-hidden="true"></i> {% translate "Advertencias" %}</a>
-  {% endif %}
 </nav>
 {% endwith %}
 <script src="{% static 'js/stats-mobile.js' %}" defer></script>

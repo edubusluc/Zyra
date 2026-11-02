@@ -104,7 +104,7 @@ class OwnPlayerTests(MediaMixin, TestCase):
             "name": "Marta", "last_name": "López", "position": "Revés", "skillfull_hand": "Zurdo", "photo": upload(),
         })
         player = Player.objects.get(name="Marta")
-        self.assertRedirects(response, reverse("show_player", args=[player.public_id]), fetch_redirect_response=False)
+        self.assertRedirects(response, f"{reverse('player_statistics')}?player={player.public_id}", fetch_redirect_response=False)
         self.assertEqual((player.user, player.club, player.team, player.in_team), (self.user, self.club, self.club.own_team, True))
         self.assertTrue(player.photo.name.startswith("players/"))
 
@@ -123,7 +123,7 @@ class OwnPlayerTests(MediaMixin, TestCase):
             "position": "Derecha", "skillfull_hand": "Zurdo", "photo": upload(),
             "name": "Otro", "last_name": "Nombre", "joined_season": "2020-2021",
         })
-        self.assertRedirects(response, reverse("show_player", args=[self.ana.public_id]), fetch_redirect_response=False)
+        self.assertRedirects(response, f"{reverse('player_statistics')}?player={self.ana.public_id}", fetch_redirect_response=False)
         self.ana.refresh_from_db()
         self.assertEqual((self.ana.position, self.ana.skillfull_hand), ("Derecha", "Zurdo"))
         self.assertEqual((self.ana.name, self.ana.last_name, self.ana.joined_season), ("Ana", "Ruiz Gómez", "2024-2025"))

@@ -167,7 +167,8 @@ def match_type_context(request, match_type, by_type=False, stats=False):
         (value, plural) for value, _label, plural in rules.match_types]
     labels = dict(competitive_labels, **{COMPETITIVE: _("Competitivos"), Match.AMISTOSO: _("Amistosos")})
     if by_type:
-        options = ([options[0]]
+        # Con el defecto de Estadísticas (Competitivos) el desplegable tiene que poder mostrarlo como elegido.
+        options = ([options[0]] + ([options[1]] if stats else [])
                    + [{'label': plural, 'url': url(value), 'active': value == match_type} for value, _label, plural in rules.match_types]
                    + [options[2]])
         competitive = False
@@ -983,6 +984,8 @@ def statistics_per_player(request):
             'snp_score': player.snp_score,
             'snp_rank': player_card.snp_rank(player),
             'is_me': is_me,
+            # Advertencias: solo las ve quien gestiona el equipo.
+            'warnings': player.penalties.count() if request.membership.can_manage else 0,
         },
         'league': player_card.league_rounds(player, selected_season),
         'snp_seasons': player_card.snp_by_season(player),
