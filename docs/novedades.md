@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 02/11/2026 · Ficha del jugador: evolución por temporadas
+
+- Con **«Todas»** vuelven «Partidos jugados» (ganados y perdidos por temporada), «Evolución del % de victorias» y la tabla «Detalle por temporada», con el estilo de gráficos de Zyra. Con **una temporada concreta** se ve solo la tabla de «Partidos jugados» de esa temporada.
+
 ## 02/11/2026 · Equipo: ajustes de la fase 3
 
 - **Puntos de liga**: con una temporada elegida, una barra por jornada (o enfrentamiento en SNP); con «Todas», una barra por temporada.

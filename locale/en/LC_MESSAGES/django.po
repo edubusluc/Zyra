@@ -15200,3 +15200,6 @@ msgstr "%(n)s %% won"
 #, python-format
 msgid "%(n)s %% perdidos"
 msgstr "%(n)s %% lost"
+
+msgid "Se mostrará la evolución cuando haya al menos 2 temporadas."
+msgstr "The trend will show once there are at least 2 seasons."
