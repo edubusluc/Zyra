@@ -3,6 +3,14 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 02/11/2026 · Estadísticas: fase 3 (navegación y fichas)
+
+- **Pestañas**: cinco (Yo, Equipo, Jugadores, Parejas, Rivales), que caben en 390 px sin deslizar. «Yo» sustituye a «Mis estadísticas» y a «Jugador · Yo» y aparece en cuanto tienes jugador enlazado; con un solo equipo abre directamente tu ficha.
+- **Ficha única de jugador**: Plantilla y Estadísticas enlazan a la misma ficha (foto, posición, mano, desde, puntos SNP, «Editar» y, para capitán y gestores, el número de advertencias). Desaparece la pestaña «Resumen» y la ficha duplicada de Plantilla; la antigua URL redirige.
+- **Advertencias**: salen de Estadísticas y se abren desde Plantilla (solo capitán y gestores).
+- **Equipos rivales**: el catálogo de Enfrentamientos y de Equipo se llama «Equipos rivales», para no confundirlo con la pestaña Rivales de Estadísticas.
+- **Tipo**: en Equipo y Jugador el desplegable «Tipo» muestra «Competitivos» cuando es el filtro por defecto (antes salía en blanco).
+
 ## 02/11/2026 · Estadísticas: fase 2 (contexto único)
 
 - **Competición**: Equipo sigue al equipo activo como el resto de pantallas (Jugador, Parejas, Rivales). Si eliges LAPI en una pestaña, todas abren LAPI; se elimina la clave de sesión propia de Equipo.

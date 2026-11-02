@@ -11,12 +11,14 @@
     {% if can_manage %}
     <div class="z-actions">
         {% for c in copy_sources %}<a href="{% url 'copy_players' %}?desde={{ c.competition }}" class="btn btn-secondary z-actions-secondary"><i class="fa-solid fa-copy me-1" aria-hidden="true"></i> {% blocktranslate with competition=c.rules.name %}Copiar de {{ competition }}{% endblocktranslate %}</a>{% endfor %}
+        <a href="{% url 'warnings_statistics' %}" class="btn btn-secondary z-actions-secondary"><i class="fa-solid fa-triangle-exclamation me-1" aria-hidden="true"></i> {% translate "Advertencias" %}</a>
         <a href="{% url 'manage_roster' %}" class="btn btn-secondary z-actions-secondary"><i class="fa-solid fa-user-check me-1" aria-hidden="true"></i> {% translate "Gestionar plantilla" %}</a>
         <a href="{% url 'create_player' %}{% if request.space_switcher %}?en={{ request.club.competition }}{% endif %}" class="btn btn-primary"><i class="fa-solid fa-plus me-1" aria-hidden="true"></i> {% translate "Nuevo jugador" %}</a>
         <div class="dropdown z-actions-more">
             <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{% translate 'Más acciones' %}"><i class="fa-solid fa-ellipsis" aria-hidden="true"></i> <span>{% translate "Más" %}</span></button>
             <ul class="dropdown-menu dropdown-menu-end">
                 {% for c in copy_sources %}<li><a class="dropdown-item" href="{% url 'copy_players' %}?desde={{ c.competition }}"><i class="fa-solid fa-copy me-2" aria-hidden="true"></i> {% blocktranslate with competition=c.rules.name %}Copiar de {{ competition }}{% endblocktranslate %}</a></li>{% endfor %}
+                <li><a class="dropdown-item" href="{% url 'warnings_statistics' %}"><i class="fa-solid fa-triangle-exclamation me-2" aria-hidden="true"></i> {% translate "Advertencias" %}</a></li>
                 <li><a class="dropdown-item" href="{% url 'manage_roster' %}"><i class="fa-solid fa-user-check me-2" aria-hidden="true"></i> {% translate "Gestionar plantilla" %}</a></li>
             </ul>
         </div>

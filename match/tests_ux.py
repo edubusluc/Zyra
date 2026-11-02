@@ -336,11 +336,14 @@ class ClubAndSharedPiecesTests(UxBase):
         self.client.get(url, {"season": "all"})
         self.assertIsNone(self.client.get(url).context["selected_season"])
 
-    def test_player_card_has_tabs_and_form(self):
-        response = self.client.get(reverse("show_player", args=[self.players[0].public_id]))
-        self.assertContains(response, reverse("player_statistics") + f"?player={self.players[0].public_id}")
-        self.assertContains(response, 'aria-current="page"')
-        self.assertEqual(response.context["form"], [])
+    def test_player_sheet_is_the_statistics_sheet(self):
+        """EST-013: Plantilla y Estadísticas enlazan a una única ficha de jugador."""
+        sheet = reverse("player_statistics") + f"?player={self.players[0].public_id}"
+        self.assertRedirects(self.client.get(reverse("show_player", args=[self.players[0].public_id])), sheet,
+                             fetch_redirect_response=False)
+        response = self.client.get(sheet)
+        self.assertContains(response, "st-hero")
+        self.assertContains(response, reverse("edit_player", args=[self.players[0].public_id]))
 
     def test_team_statistics_without_pie_has_index(self):
         match = self.match()

@@ -353,6 +353,13 @@ class MatchTypeFilterTests(TestCase):
         self.assertEqual(response.context["s"]["played"], 2)
         self.assertEqual(len(response.context["last_games"]), 2)
 
+    def test_by_type_selector_shows_competitive_as_the_default(self):
+        """El desplegable Tipo de Equipo y Jugador marca «Competitivos» cuando es el filtro por defecto."""
+        response = self.client.get(reverse("team_statistics"))
+        self.assertEqual([o["label"] for o in response.context["match_types"] if o["active"]], ["Competitivos"])
+        todos = self.client.get(reverse("team_statistics"), {"match_type": "todos"})
+        self.assertEqual([o["label"] for o in todos.context["match_types"] if o["active"]], ["Todos"])
+
     def test_unknown_type_falls_back_to_competitive(self):
         """EST-006: sin tipo (o con uno desconocido) Estadísticas cuenta solo lo competitivo; «todos» es explícito."""
         response = self.client.get(reverse("team_statistics"), {"match_type": "otro"})
@@ -380,9 +387,9 @@ class MatchTypeFilterTests(TestCase):
                              match_type=Match.AMISTOSO, result="Victoria Local")
         response = self.client.get(reverse("team_statistics"), {"match_type": "competitivo"})
         self.assertEqual(response.context["total_matches"], 4)
-        # El equipo es de una sola competición: un chip por tipo y sin «Competitivos»
+        # El equipo es de una sola competición: Competitivos (el defecto) y un chip por tipo
         self.assertEqual([o["label"] for o in response.context["match_types"]],
-                         ["Todos", "Enfrentamientos", "Retos", "Play offs", "Amistosos"])
+                         ["Todos", "Competitivos", "Enfrentamientos", "Retos", "Play offs", "Amistosos"])
 
         # Parejas sigue agrupando los tipos competitivos
         response = self.client.get(reverse("pair_statistics"), {"match_type": "competitivo"})

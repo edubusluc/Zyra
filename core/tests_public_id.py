@@ -41,7 +41,7 @@ class PublicIdTests(TestCase):
 
     def test_urls_use_public_id_and_numbers_give_404(self):
         player = Player.objects.create(club=self.club, name="Ana", last_name="Alpha")
-        self.assertEqual(self.client.get(f"/players/player_details/{player.public_id}/").status_code, 200)
+        self.assertEqual(self.client.get(f"/players/player_details/{player.public_id}/", follow=True).status_code, 200)
         self.assertEqual(self.client.get(f"/players/player_details/{player.pk}/").status_code, 404)
 
     def test_assign_public_ids_fills_existing_rows(self):

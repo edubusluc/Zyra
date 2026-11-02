@@ -120,8 +120,8 @@ class CalculationTests(MyFormBase):
         self.play(True, days_ago=3)
         self.play(False, days_ago=1)
         self.client.login(username="captain", password=PASSWORD)
-        response = self.client.get(reverse("show_player", args=[self.me.public_id]))
-        self.assertEqual(response.context["form"], ["w", "l"])
+        response = self.client.get(reverse("player_statistics"), {"player": self.me.public_id})
+        self.assertEqual(response.context["s"]["form"], [True, False])
 
     def test_snp_delta_and_line(self):
         for days, score in ((20, 412), (10, 420), (1, 436)):

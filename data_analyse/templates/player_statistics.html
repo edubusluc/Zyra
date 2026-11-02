@@ -8,11 +8,9 @@
     {% include 'includes/stats_tabs.html' %}
 
     {% include 'includes/filters_row.html' with season=selected_player type=True %}
-    {% if selected_player and not hide_roster_nav %}{% include 'includes/player_tabs.html' with current='stats' %}{% endif %}
     <header class="st-head">
       <div>
-        <h1 class="st-title">{% translate "Jugador" %}{% if selected_player and hero.is_me %} · {% translate "Yo" %}{% endif %}</h1>
-        {% if selected_player and hero.is_me and mine_chips %}<p class="st-pill-note">{% translate "Tu ficha en esta competición" %}</p>{% endif %}
+        <h1 class="st-title">{% if selected_player and hero.is_me %}{% translate "Yo" %}{% else %}{% translate "Jugadores" %}{% endif %}</h1>
       </div>
     </header>
     <form class="st-picker st-picker--bar" method="GET" action="{% url 'player_statistics' %}">
@@ -54,13 +52,21 @@
 
       {# Ficha del jugador como en el diseño aprobado: cabecera lima, KPI, forma, local/visitante, partidos y sets, asistencia y afinidad, evolución. #}
       <section class="st-hero" aria-label="{% translate 'Resumen del jugador' %}">
-        <div class="st-hero-main">
+        <div class="st-hero-main st-hero-id">
+          {% blocktranslate asvar photo_alt with name=player.full_name %}Foto de {{ name }}{% endblocktranslate %}{% include 'includes/player_avatar.html' with player=player size="z-avatar--xl" alt=photo_alt %}
+          <div>
           <p class="st-hero-kicker">{{ hero.role }}{% if hero.partner %} · {% blocktranslate with name=hero.partner %}Pareja habitual: {{ name }}{% endblocktranslate %}{% endif %}</p>
           <h2 class="st-hero-name">{{ player.full_name }}</h2>
           <p class="st-hero-sub">
             {% if league %}{% blocktranslate trimmed with n=league.played %}LAPI · {{ n }} jornadas de liga jugadas{% endblocktranslate %}
             {% elif hero.snp_score is not None %}{% blocktranslate trimmed with pts=hero.snp_score|floatformat:"0g" %}{{ pts }} pts SNP{% endblocktranslate %}{% if hero.snp_rank %} · {% blocktranslate with n=hero.snp_rank %}Nº {{ n }} del equipo{% endblocktranslate %}{% endif %}{% endif %}
           </p>
+          <p class="st-hero-meta">
+            <span>{{ player.get_position_display }}</span><span>{{ player.get_skillfull_hand_display }}</span><span>{% blocktranslate with season=player.joined_season %}Desde {{ season }}{% endblocktranslate %}</span>
+            {% if can_manage %}<a href="{% url 'edit_player' player.public_id %}"><i class="fa-solid fa-pen me-1" aria-hidden="true"></i>{% translate "Editar" %}</a><a href="{% url 'warnings_statistics' %}"><i class="fa-solid fa-triangle-exclamation me-1" aria-hidden="true"></i>{% blocktranslate count n=hero.warnings %}{{ n }} advertencia{% plural %}{{ n }} advertencias{% endblocktranslate %}</a>
+            {% elif hero.is_me %}<a href="{% url 'my_player' %}"><i class="fa-solid fa-pen me-1" aria-hidden="true"></i>{% translate "Editar mi jugador" %}</a>{% endif %}
+          </p>
+          </div>
         </div>
         <div class="st-hero-ring" style="--pct: {{ pct_w|unlocalize }}" role="img" aria-label="{% blocktranslate with pct=s.pct %}{{ pct }}% de victorias{% endblocktranslate %}"><span>{{ s.pct|floatformat:0 }}%</span></div>
         <div class="st-hero-balance"><b>{{ s.wins }}-{{ s.losses }}</b><span>{% translate "Balance" %}</span></div>

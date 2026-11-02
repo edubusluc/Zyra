@@ -2430,6 +2430,8 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
         padding: .45rem .9rem; font-size: var(--z-fs-sm); white-space: nowrap; scroll-snap-align: start;
     }
     .st-tabs.z-segmented .btn i { font-size: var(--z-fs-md); }
+    /* Cinco pestañas (Yo, Equipo, Jugadores, Parejas, Rivales) caben en 390 px sin deslizar. */
+    .st-tabs.z-segmented > .btn { padding: .45rem .6rem; gap: 4px; }
 
     /* Temporadas y tipo de partido: sin scroll lateral, los chips reparten el ancho
        y si no caben pasan a la línea siguiente (nunca se salen de la pantalla). */
@@ -3679,6 +3681,15 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .st-hero-kicker { margin: 0; font-size: var(--z-fs-xs); font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
 .st-hero-name { margin: 2px 0; font-family: var(--z-display); font-size: clamp(2rem, 6vw, 3.6rem); font-weight: 400; line-height: 1; text-transform: uppercase; color: var(--z-ink); overflow-wrap: anywhere; }
 .st-hero-sub { margin: 0; font-size: var(--z-fs-xs); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.st-hero-id { display: flex; align-items: center; gap: 16px; min-width: 0; }
+.st-hero-id > div { min-width: 0; }
+.st-hero-id .z-avatar { flex: 0 0 auto; }
+@media (max-width: 575.98px) {
+  .st-hero-id { gap: 12px; align-items: flex-start; }
+  .st-hero-id .z-avatar { width: 64px; height: 64px; font-size: var(--z-fs-xl); }
+}
+.st-hero-meta { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 8px 0 0; font-size: var(--z-fs-xs); font-weight: 700; }
+.st-hero-meta a { color: inherit; font-weight: 800; text-decoration: underline; text-underline-offset: 3px; }
 .st-hero-ring { display: flex; align-items: center; justify-content: center; width: 84px; height: 84px; background: conic-gradient(var(--z-ink) calc(var(--pct) * 1%), rgba(10, 10, 10, .2) 0); border-radius: 50%; }
 .st-hero-ring span { display: flex; align-items: center; justify-content: center; width: 64px; height: 64px; font-family: var(--z-display); font-size: 1.4rem; background: var(--z-lime); border-radius: 50%; }
 .st-hero-balance { display: flex; flex-direction: column; align-items: flex-end; }
