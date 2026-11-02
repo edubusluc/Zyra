@@ -215,6 +215,30 @@ class LapiMatchTests(TestCase):
         self.assertContains(page, "Todavía no hay resultados set a set.")
         self.assertNotContains(page, "Por número de partido")
 
+    def test_lapi_pair_page_shows_games_together_without_points_or_empty_type(self):
+        """EST-033: en LAPI el kicker cuenta partidos juntos, sin columna Puntos y con el tipo y la jornada rellenos."""
+        for day in range(5):
+            self._close(self._match(round_number=day + 1, days=day), 2, 1)
+        a, b = self.players[0], self.players[1]
+        page = self.client.get(reverse("pair_statistics"), {"p1": a.public_id, "p2": b.public_id, "season": "all"})
+        self.assertContains(page, "5 partidos juntos")
+        self.assertNotContains(page, "Pareja sorteada")
+        self.assertNotContains(page, "<th scope=\"col\">Puntos</th>")
+        self.assertContains(page, "J5")
+        self.assertFalse(page.context["compact"])
+
+    def test_pair_sheet_is_compact_with_a_single_game(self):
+        """Con un solo partido juntos la ficha es el resumen y el partido; con 2 ya salen las secciones."""
+        self._close(self._match(round_number=1), 2, 1)
+        params = {"p1": self.players[0].public_id, "p2": self.players[1].public_id, "season": "all"}
+        page = self.client.get(reverse("pair_statistics"), params)
+        self.assertTrue(page.context["compact"])
+        self.assertNotContains(page, "Sets de la pareja")
+        self._close(self._match(round_number=2, days=1), 2, 1)
+        page = self.client.get(reverse("pair_statistics"), params)
+        self.assertFalse(page.context["compact"])
+        self.assertContains(page, "Sets de la pareja")
+
     def test_injury_from_all_results_screen(self):
         match = self._match()
         Call.objects.create(match=match, draft_mode=False).players.set(self.players)

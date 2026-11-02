@@ -3,6 +3,15 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 02/11/2026 · Estadísticas: fase 7 (Parejas y Rivales)
+
+- **Parejas · todas las parejas**: sin pareja elegida, la entrada es la lista de todas las que han jugado juntas (partidos, V-D y %), con buscador por nombre y orden por más partidos, mejor %, peor % o nombre. Desaparecen «Mejores parejas» y «Parejas por mejorar» (con umbrales distintos); no hay selector de mínimo, la base va en cada fila.
+- **Ficha de pareja que escala con la muestra**: con un solo partido juntos solo se ven el resumen y el partido; la racha, la forma, Local y visitante, los sets y el rendimiento por temporada aparecen a partir de 2. El gráfico «Partidos jugados» solo con dos temporadas o más y la evolución del % con las mismas reglas que en Jugador (temporadas de 5 partidos o más); el «Cambio» solo entre temporadas con muestra.
+- **Pareja en LAPI**: el encabezado dice «N partidos juntos» (ya no «Pareja sorteada N veces»), la tabla por temporada no tiene la columna Puntos y la columna Tipo de «Últimos partidos juntos» se rellena con el tipo y la jornada («Liga · J5»).
+- **Rivales con %**: cada rival lleva su % de victorias; se ordena por mejor % o «Peor primero» (el rival contra el que peor nos va) en lugar de por balance. Las cabeceras de puntos son explícitas: «Puntos de liga» en LAPI y «Puntos a favor-en contra» en SNP.
+- **Ficha de rival**: el resumen son una línea (enfrentamientos, G-E-P con %, puntos y último resultado); «Racha contra ellos» pasa a «Últimos enfrentamientos» y «Mejores parejas contra ellos» a «Parejas contra ellos», con las mejores y las peores (mínimo de partidos).
+- **Sin tarjetas vacías**: la evolución de puntos SNP del jugador, el compañero, Local y visitante y las convocatorias de «Yo» no se dibujan cuando no hay datos.
+
 ## 02/11/2026 · Estadísticas: fase 6 (comparar)
 
 - **Sets iguales en todas partes**: Equipo, Jugador, Pareja, «Yo» y el informe mensual en PDF usan las mismas situaciones y nombres: Tras ganar el 1.er set, Tras perder el 1.er set, Tie-breaks, Set decisivo y Roscos a favor. Se dibujan con el estilo de barras del antiguo «Sets clutch» (título con su descripción, barra y %; los casos, en el tooltip) y las que no tienen ninguno no se muestran; en «Yo» cada situación lleva una barra por competición. «Sets ajustados» y «Super tie-break» salen de la web (el PDF conserva el super tie-break).

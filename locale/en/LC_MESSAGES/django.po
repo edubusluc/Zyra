@@ -15513,3 +15513,66 @@ msgstr "matches won / total at home"
 
 msgid "enfrentamientos ganados / total fuera"
 msgstr "matches won / total away"
+
+msgid "Más partidos"
+msgstr "Most games"
+
+msgid "Mejor %"
+msgstr "Best %"
+
+msgid "Peor %"
+msgstr "Worst %"
+
+msgid "Peor primero"
+msgstr "Worst first"
+
+msgid "Todas las parejas"
+msgstr "All pairs"
+
+msgid "Ver todas las parejas"
+msgstr "View all pairs"
+
+msgid "Todavía no hay parejas"
+msgstr "No pairs yet"
+
+msgid "Aparecerán cuando alguna pareja dispute un partido cerrado."
+msgstr "They will appear once a pair plays a closed game."
+
+msgid "Buscar pareja por nombre"
+msgstr "Search pair by name"
+
+msgid "Buscar pareja por nombre…"
+msgstr "Search pair by name…"
+
+msgid "Ordenar parejas"
+msgstr "Sort pairs"
+
+msgid "Ninguna pareja coincide con la búsqueda"
+msgstr "No pair matches the search"
+
+msgid "Parejas y su balance juntas"
+msgstr "Pairs and their record together"
+
+msgid "% de enfrentamientos ganados"
+msgstr "% of matches won"
+
+msgid "Puntos a favor-en contra"
+msgstr "Points for-against"
+
+msgid "Últimos enfrentamientos"
+msgstr "Latest matches"
+
+msgid "Parejas contra ellos"
+msgstr "Pairs against them"
+
+msgid "Mejores"
+msgstr "Best"
+
+msgid "Peores"
+msgstr "Worst"
+
+msgid "puntos %(a)s-%(b)s"
+msgstr "points %(a)s-%(b)s"
+
+msgid "%(n)s puntos de liga"
+msgstr "%(n)s league points"

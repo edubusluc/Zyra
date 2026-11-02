@@ -171,10 +171,9 @@ class ClubSetsTests(ClubDataMixin, TestCase):
         params = {'p1': self.a.public_id, 'p2': self.b.public_id}
         response = self.client.get(url, params)
         self.assertNotContains(response, "Mejores parejas")
-        self.assertContains(response, "Evolución del % de victorias")
+        self.assertNotContains(response, "Evolución del % de victorias")
         response = self.client.get(url, {**params, 'season': '2025-2026'})
         self.assertNotContains(response, "Evolución del % de victorias")
-        self.assertContains(response, "Partidos de la pareja en la temporada.")
         self.assertEqual(len(response.context['season_games']), 2)
 
     def test_points_series_by_round_or_by_season(self):
@@ -291,6 +290,8 @@ class ClubSetsTests(ClubDataMixin, TestCase):
 
     def test_pair_page_sets(self):
         response = self.client.get(reverse('pair_statistics'), {'p1': self.a.public_id, 'p2': self.b.public_id})
+        # Con 2 partidos juntos ya salen los sets, la forma y Local y visitante (comparison.MIN_PAIR_SHEET_GAMES).
+        self.assertFalse(response.context['compact'])
         self.assertContains(response, "Sets de la pareja")
         st = response.context['pair_sets']
         self.assertEqual((st['played'], st['comeback']['wins'], st['bagels_for']), (2, 1, 1))

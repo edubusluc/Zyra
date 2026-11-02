@@ -108,26 +108,33 @@ class PairStatisticsTests(TestCase):
         response = self.client.get(reverse("pair_statistics"), {"p1": self.a.public_id, "p2": self.b.public_id})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context["s"]["played"], 4)
-        # Con una pareja elegida ya no se muestra el listado de parejas destacadas
-        self.assertNotContains(response, "Parejas destacadas")
+        # Con una pareja elegida ya no se muestra la lista de todas las parejas
+        self.assertNotContains(response, "Todas las parejas")
 
         overview = self.client.get(reverse("pair_statistics"))
         self.assertEqual(overview.status_code, 200)
-        self.assertContains(overview, "Parejas destacadas")
+        self.assertContains(overview, "Todas las parejas")
         same = self.client.get(reverse("pair_statistics"), {"p1": self.a.public_id, "p2": self.a.public_id})
         self.assertIn("error", same.context)
 
-    def test_best_and_worst_pairs(self):
-        # A+B 3/4 y C+D 1/2; A+C solo 1 partido; «por mejorar» exige 4 partidos juntos
-        response = self.client.get(reverse("pair_statistics"))
+    def test_all_pairs_list_sorts_and_searches(self):
+        """Sin pareja elegida salen todas las parejas (sin mínimo), con su base, ordenables y con buscador."""
         key = lambda rows: [(r["p1"].name, r["p2"].name, r["played"], r["pct"]) for r in rows]
-        self.assertEqual(key(response.context["best_pairs"]), [("A", "B", 4, 75.0)])
-        self.assertEqual(key(response.context["worst_pairs"]), [])
+        response = self.client.get(reverse("pair_statistics"))
+        rows = key(response.context["pair_rows"])
+        self.assertEqual(rows[0], ("A", "B", 4, 75.0))  # A+B 3/4: la que más ha jugado va primero
+        self.assertGreater(len(rows), 1)  # también las de un solo partido
+        self.assertEqual(response.context["pair_total"], len(rows))
+        worst = self.client.get(reverse("pair_statistics"), {"orden": "peor"}).context["pair_rows"]
+        self.assertEqual([r["pct"] for r in worst], sorted(r["pct"] for r in worst))
+        found = self.client.get(reverse("pair_statistics"), {"q": "b bson"}).context["pair_rows"]
+        self.assertTrue(found and all("B" in (r["p1"].name, r["p2"].name) for r in found))
+        self.assertEqual(self.client.get(reverse("pair_statistics"), {"q": "zzz"}).context["pair_total"], 0)
 
     def test_ranking_links_open_the_pair(self):
         """Los enlaces de mejores/peores parejas llevan identificadores públicos (antes daban 404)."""
         response = self.client.get(reverse("pair_statistics"), {"match_type": "competitivo"})
-        link = f'?p1={self.a.public_id}&amp;p2={self.b.public_id}&amp;match_type=competitivo'
+        link = f'?p1={self.a.public_id}&p2={self.b.public_id}&match_type=competitivo'
         self.assertContains(response, link)
         followed = self.client.get(reverse("pair_statistics"),
                                    {"p1": self.a.public_id, "p2": self.b.public_id})
@@ -327,11 +334,11 @@ class MatchTypeFilterTests(TestCase):
 
     def test_pair_statistics_filter_by_type(self):
         response = self.client.get(reverse("pair_statistics"))
-        pairs = [(r["p1"].name, r["p2"].name) for r in response.context["best_pairs"] + response.context["worst_pairs"]]
-        self.assertEqual(pairs, [("A", "B")])  # C+D solo tiene 1 partido
+        pairs = [(r["p1"].name, r["p2"].name) for r in response.context["pair_rows"]]
+        self.assertIn(("A", "B"), pairs)
 
         response = self.client.get(reverse("pair_statistics"), {"match_type": Match.RETO})
-        pairs = [(r["p1"].name, r["p2"].name) for r in response.context["best_pairs"] + response.context["worst_pairs"]]
+        pairs = [(r["p1"].name, r["p2"].name) for r in response.context["pair_rows"]]
         self.assertEqual(pairs, [("C", "D")])
 
         response = self.client.get(reverse("pair_statistics"),
@@ -390,8 +397,8 @@ class MatchTypeFilterTests(TestCase):
         self.assertEqual([o["label"] for o in response.context["competitive_types"] if o["active"]], ["Retos"])
 
         response = self.client.get(reverse("pair_statistics"), {"match_type": "competitivo"})
-        pairs = [(r["p1"].name, r["p2"].name) for r in response.context["best_pairs"] + response.context["worst_pairs"]]
-        self.assertEqual(pairs, [("A", "B")])
+        pairs = [(r["p1"].name, r["p2"].name) for r in response.context["pair_rows"]]
+        self.assertEqual(pairs, [("A", "B"), ("C", "D")])  # sin mínimo: C+D entra con su único partido (un reto)
 
     def test_competitive_selector_keeps_other_parameters(self):
         response = self.client.get(reverse("player_statistics"), {"player": self.a.public_id, "match_type": "competitivo"})
@@ -571,7 +578,8 @@ class OnlyClosedMatchesTests(TestCase):
         url = reverse("player_statistics")
         all_page = self.client.get(url, {"player": self.a.public_id})
         self.assertContains(all_page, 'id="data-snp-seasons"')
-        self.assertContains(all_page, "Puntos SNP por temporada")
+        # Con una sola temporada con puntos no hay evolución que dibujar y la tarjeta no sale.
+        self.assertNotContains(all_page, "Puntos SNP por temporada")
         # El gráfico por temporada solo se ve con «Todas»
         season_page = self.client.get(url, {"player": self.a.public_id, "season": "2024-2025"})
         self.assertNotContains(season_page, "Puntos SNP por temporada")

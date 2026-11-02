@@ -138,6 +138,7 @@
               <p class="st-muted mt-3 mb-0">{% translate "Todavía no se ha apuntado a ninguna convocatoria cerrada." %}</p>
             {% endif %}
           </article>
+          {% if partners %}
           <article class="st-card">
             <h3 class="st-card-title">{% translate "Compañeros" %}</h3>
             <p class="st-card-note">{% translate "Con quién gana más. Pulsa un compañero para ver la pareja." %}</p>
@@ -162,18 +163,17 @@
                 </tbody>
               </table>
             </div>
-            {% else %}<p class="st-muted st-nodata">{% translate "No hay partidos en pareja con compañeros del equipo." %}</p>{% endif %}
+            {% endif %}
           </article>
+          {% endif %}
         </div>
 
-        {% if current_club.rules.has_snp and not selected_season %}
+        {% if current_club.rules.has_snp and not selected_season and snp_seasons.scores|length > 1 %}
         <article class="st-card">
           <span class="z-comp-badge z-comp-badge--snp st-only">{% translate "Solo SNP" %}</span>
           <h3 class="st-card-title">{% translate "Puntos SNP por temporada" %}</h3>
           <p class="st-card-note">{% translate "Evolución de sus puntos." %}</p>
-          {% if snp_seasons.scores|length > 1 %}
           <div class="st-chart st-chart--mine" role="img" aria-label="{% translate 'Puntos SNP por temporada' %}"><canvas id="chartSnpSeasons" aria-hidden="true"></canvas></div>
-          {% else %}<p class="st-muted st-nodata">{% translate "Se mostrará la evolución cuando haya puntos SNP de al menos 2 temporadas." %}</p>{% endif %}
         </article>
         {% endif %}
       </section>

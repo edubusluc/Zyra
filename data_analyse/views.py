@@ -1118,9 +1118,7 @@ def statistics_per_pair(request):
     selected_season = choose_season(request, seasons)
     if selected_season == ALL_SEASONS:
         selected_season = None
-    min_games_pair = pair_stats.min_games_pair(match_type)
     log = pair_stats.club_game_log(request.club, selected_season, match_type)
-    best_pairs, worst_pairs = pair_stats.best_and_worst_pairs(pair_stats.all_pairs(log, club_players), min_games=min_games_pair)
 
     p1_id, p2_id = request.GET.get('p1', ''), request.GET.get('p2', '')
     context = {
@@ -1128,10 +1126,6 @@ def statistics_per_pair(request):
         **season_filter_context(request, seasons, selected_season),
         'selected_season': selected_season,
         'players': club_players,
-        'best_pairs': best_pairs,
-        'worst_pairs': worst_pairs,
-        'min_games_pair': min_games_pair,
-        'worst_min_games': pair_stats.IMPROVE_MIN_GAMES_PAIR,
         'selected_p1': p1_id or None,
         'selected_p2': p2_id or None,
     }
@@ -1149,6 +1143,9 @@ def statistics_per_pair(request):
             pair_sets = set_stats(pair_log)
             numbers = Counter(g['n_game'] for g in pair_log)
             context.update({
+                # Con un solo partido juntos la ficha es solo el resumen y el partido (comparison.MIN_PAIR_SHEET_GAMES).
+                'compact': summary['played'] < comparison.MIN_PAIR_SHEET_GAMES,
+                'min_trend_games': comparison.MIN_TREND_GAMES,
                 'usual_number': numbers.most_common(1)[0][0] if numbers else None,
                 'set_rows': comparison.set_situation_rows(pair_sets),
                 'venue': comparison.venue_split(
@@ -1170,10 +1167,46 @@ def statistics_per_pair(request):
                     'wins': [r['wins'] for r in summary['seasons']],
                     'losses': [r['losses'] for r in summary['seasons']],
                     'pct': [r['pct'] for r in summary['seasons']],
+                    'played': [r['played'] for r in summary['seasons']],
+                    'trend': comparison.trend(summary['seasons']),
                 },
             })
+    else:
+        context.update(pair_list_context(request, pair_stats.all_pairs(log, club_players)))
 
     return render(request, 'pair_statistics.html', context)
+
+
+PAIRS_PER_PAGE = 15
+
+
+def pair_list_context(request, pairs):
+    """
+    Lista de todas las parejas que han jugado juntas (entrada de Parejas sin pareja elegida): se ordena con
+    ``?orden=`` (partidos, mejor %, peor % o nombre), se busca con ``?q=`` y se pagina de 15 en 15. Devuelve
+    ``pair_rows`` (página), ``pair_sort_links``, ``pair_search``, ``pair_total`` y ``pair_page_extra``.
+    """
+    sort = request.GET.get('orden')
+    sort = sort if sort in comparison.PAIR_SORTS else comparison.PAIR_SORT_PLAYED
+    search = (request.GET.get('q') or '').strip()
+    rows = comparison.sort_pairs(pairs, sort, search)
+    keep = request.GET.copy()
+    keep.pop(PAGE_PARAM, None)
+    links = []
+    for value, label in ((comparison.PAIR_SORT_PLAYED, _("Más partidos")), (comparison.PAIR_SORT_BEST, _("Mejor %")),
+                         (comparison.PAIR_SORT_WORST, _("Peor %")), (comparison.PAIR_SORT_NAME, _("Nombre"))):
+        params = keep.copy()
+        params['orden'] = value
+        links.append({'label': label, 'url': f"{request.path}?{params.urlencode()}", 'active': value == sort})
+    return {
+        'pair_rows': Paginator(rows, PAIRS_PER_PAGE).get_page(request.GET.get(PAGE_PARAM)),
+        'pair_sort_links': links,
+        'pair_search': search,
+        'pair_total': len(rows),
+        'pair_has_any': bool(pairs),
+        'pair_page_extra': ("&" + keep.urlencode()) if keep else "",
+        'pair_keep_fields': [(k, v) for k, v in keep.items() if k in ('season', 'orden', MATCH_TYPE_PARAM)],
+    }
 
 
 PAIR_LAST_GAMES = 5
@@ -1212,6 +1245,8 @@ def pair_last_games(club, p1, p2, n=PAIR_LAST_GAMES, match_type=None, season=Non
             'rival': g.match.visiting_name if is_local else g.match.local_name,
             'local': is_local,
             'sets': _sets_text(g, is_local),
+            'type_label': g.match.type_label,
+            'round': g.match.round_number,
             'won': won,
             'points': (g.score or 0) if won else 0,
         })
@@ -1307,7 +1342,7 @@ def rival_statistics(request):
     Balance contra cada rival (enfrentamientos jugados, ganados, empatados y perdidos, puntos y último
     resultado), con la temporada y el tipo por defecto del resto de Estadísticas (temporada común y
     Competitivos: los amistosos no se mezclan salvo ``?match_type=todos``). Se ordena con ``?sort=`` (rival,
-    balance o último), se busca por nombre con ``?q=`` y se pagina de 15 en 15. Requiere pertenecer al club y
+    % de victorias, peor primero o último), se busca por nombre con ``?q=`` y se pagina de 15 en 15. Requiere pertenecer al club y
     solo GET.
     """
     zero = _zero_state(request, _("Estadísticas por rival"))
@@ -1327,8 +1362,8 @@ def rival_statistics(request):
     keep = request.GET.copy()
     keep.pop(PAGE_PARAM, None)
     sort_links = []
-    for value, label in ((rival_stats.SORT_RIVAL, _("Rival")), (rival_stats.SORT_BALANCE, _("Balance")),
-                         (rival_stats.SORT_LAST, _("Último enfrentamiento"))):
+    for value, label in ((rival_stats.SORT_RIVAL, _("Rival")), (rival_stats.SORT_PCT, _("Mejor %")),
+                         (rival_stats.SORT_WORST, _("Peor primero")), (rival_stats.SORT_LAST, _("Último enfrentamiento"))):
         params = keep.copy()
         params["sort"] = value
         sort_links.append({"label": label, "url": f"{request.path}?{params.urlencode()}", "active": value == sort})
@@ -1350,8 +1385,8 @@ def rival_statistics(request):
 @require_GET
 def rival_detail(request):
     """
-    Ficha de un rival: balance, historial de enfrentamientos (con enlace a cada acta) y mejores parejas
-    contra él. El rival es un equipo (``?team=<id público>``) o, en un amistoso con rival escrito a
+    Ficha de un rival: resumen en una línea, últimos enfrentamientos, historial (con enlace a cada acta) y las
+    mejores y peores parejas contra él. El rival es un equipo (``?team=<id público>``) o, en un amistoso con rival escrito a
     mano, su nombre (``?name=``). Un equipo de otro club da 404. Filtra por temporada y por tipo de partido
     (por defecto la temporada común y Competitivos, como Rivales) y pagina el historial de 10 en 10.
     """
@@ -1374,6 +1409,7 @@ def rival_detail(request):
         "detail": detail,
         "history": history,
         "page_extra": ("&" + keep.urlencode()) if keep else "",
+        "pairs_groups": ([(_("Mejores"), detail["pairs_best"]), (_("Peores"), detail["pairs_worst"])] if detail else []),
         "rival_label": detail["label"] if detail else (team.name if team else name),
         "team": team,
         "min_games_pair": pair_stats.MIN_GAMES_PAIR,
