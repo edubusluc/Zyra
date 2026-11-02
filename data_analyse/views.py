@@ -300,6 +300,7 @@ def roster_context(request, players, log, season, match_type, snp_rows=None):
                                     side, min_games, sort, snp)
 
     def url(**changes):
+        """Enlace a esta misma página con ``changes`` sobre los parámetros actuales y el ancla de la tabla."""
         params = request.GET.copy()
         for key, value in changes.items():
             params[key] = value
