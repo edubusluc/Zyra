@@ -3,6 +3,12 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 02/11/2026 · Estadísticas rediseñadas (fases 5, 6 y 7: Parejas, Rivales y Advertencias)
+
+- **Parejas**: cabecera lima con la pareja, su balance y el % de victorias («Pareja habitual del partido N» en SNP, «Pareja sorteada N veces» en LAPI), racha, forma reciente, victorias como local y visitante con barras, sets, mejores parejas y «Últimos partidos juntos» (en LAPI con tipo y jornada en vez de número de partido y sin columna de puntos). Se mantienen el rendimiento y el detalle por temporada, con los gráficos al estilo de Zyra.
+- **Rivales**: la lista muestra «Pts liga» en LAPI; la ficha del rival estrena cifras (la primera en lima), «Racha contra ellos» y, en LAPI, los puntos de liga de cada cruce. Un rival que no se presentó aparece con la etiqueta «No presentado».
+- **Advertencias**: tres cifras con la de advertencias en ámbar, «Por jugador» y el nuevo gráfico «Por motivo», con el recuento de cada tipo.
+
 ## 02/11/2026 · Ficha del jugador: evolución por temporadas
 
 - Con **«Todas»** vuelven «Partidos jugados» (ganados y perdidos por temporada), «Evolución del % de victorias» y la tabla «Detalle por temporada», con el estilo de gráficos de Zyra. Con **una temporada concreta** se ve solo la tabla de «Partidos jugados» de esa temporada.

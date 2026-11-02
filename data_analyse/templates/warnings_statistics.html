@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static i18n %}
+{% load static i18n l10n %}
 {% block page_title %}{% translate "Advertencias" %} · {% endblock %}
 
 {% block content %}
@@ -9,7 +9,7 @@
 
     <header class="st-head">
       <div>
-        <h1 class="st-title">{% translate "Advertencias" %}</h1>
+        <h1 class="st-title">{% translate "Advertencias" %} <span class="z-comp-badge z-comp-badge--{{ current_club.competition }}">{{ current_club.rules.name }}</span></h1>
         <p class="st-subtitle">
           {% if selected_season == all_seasons %}{% translate "Todas las temporadas" %}{% else %}{% blocktranslate with season=selected_season %}Temporada {{ season }}{% endblocktranslate %}{% endif %}
           · {% translate "solo lo ven el capitán y los gestores" %}
@@ -25,22 +25,13 @@
         {% if selected_season != all_seasons %}{% blocktranslate with season=selected_season %}No se ha añadido ninguna advertencia en la temporada {{ season }}.{% endblocktranslate %}{% else %}{% translate "No se ha añadido ninguna advertencia." %}{% endif %}
       </div>
     {% else %}
-      <div class="st-kpis">
-        <article class="st-kpi st-kpi--accent st-kpi--warn">
-          <h2 class="st-kpi-label">{% translate "Advertencias" %}</h2>
-          <p class="st-kpi-value">{{ total }}</p>
-        </article>
-        <article class="st-kpi">
-          <h2 class="st-kpi-label">{% translate "Jugadores advertidos" %}</h2>
-          <p class="st-kpi-value">{{ players_warned }}</p>
-        </article>
-        <article class="st-kpi">
-          <h2 class="st-kpi-label">{% translate "Enfrentamientos con advertencias" %}</h2>
-          <p class="st-kpi-value">{{ matches_warned }}</p>
-        </article>
-      </div>
+      <section class="st-kpi-row st-kpi-row--three" aria-label="{% translate 'Cifras de las advertencias' %}">
+        <div class="st-kpi-tile st-kpi-tile--warn"><b>{{ total }}</b><span>{% translate "Advertencias" %}</span></div>
+        <div class="st-kpi-tile"><b>{{ players_warned }}</b><span>{% translate "Jugadores advertidos" %}</span></div>
+        <div class="st-kpi-tile"><b>{{ matches_warned }}</b><span>{% translate "Enfrentamientos" %}</span></div>
+      </section>
 
-      <div class="st-warn-layout">
+      <div class="st-row st-row--pair">
         <article class="st-card">
           <h2 class="st-card-title">{% translate "Por jugador" %}</h2>
           <p class="st-card-note">{% translate "De más a menos advertencias." %}</p>
@@ -58,7 +49,19 @@
         </article>
 
         <article class="st-card">
-          <h2 class="st-card-title">{% translate "Historial" %}</h2>
+          <h2 class="st-card-title">{% translate "Por motivo" %}</h2>
+          <p class="st-card-note">{% translate "Cuántas advertencias de cada tipo." %}</p>
+          <div class="st-bars st-bars--warn">
+            {% for k in by_kind %}
+            <div class="st-bar-row"><b>{{ k.label }}</b><div class="st-meter"><span style="width: {{ k.pct|unlocalize }}%"></span></div><em>{{ k.count }}</em></div>
+            {% endfor %}
+          </div>
+        </article>
+      </div>
+
+      <section aria-labelledby="warn-history-title" class="st-section">
+        <article class="st-card">
+          <h2 class="st-card-title" id="warn-history-title">{% translate "Historial" %}</h2>
           <p class="st-card-note">{% translate "Todas las advertencias, la más reciente primero." %}</p>
           <ul class="st-warn-list">
             {% for p in penalties %}
@@ -79,7 +82,7 @@
             {% endfor %}
           </ul>
         </article>
-      </div>
+      </section>
     {% endif %}
   </div>
 {% endblock %}

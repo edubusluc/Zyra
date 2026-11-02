@@ -202,6 +202,7 @@ class CallLogPageTests(PenaltyBase):
         Penalty.objects.create(player=self.ana, call=self.call, kind="late_drop")
         page = self.client.get(reverse("warnings_statistics"), {"season": "all"})
         self.assertContains(page, "Baja de última hora")
+        self.assertContains(page, "Por motivo")
 
 
 class LegacyMigrationTests(TestCase):
