@@ -117,11 +117,30 @@ class LapiMatchTests(TestCase):
         with patch("data_analyse.views.current_season", return_value=season):
             page = self.client.get(url, {"season": "all"})
             self.assertEqual(page.context["finals"]["season"], season)
-            self.assertContains(page, f"Plantilla y fases finales · {season}")
+            self.assertContains(page, f"Liga · {season}")
+            self.assertContains(page, "Elegibles")
         with patch("data_analyse.views.current_season", return_value="2030-2031"):
             page = self.client.get(url, {"season": season})
             self.assertIsNone(page.context["finals"])
-            self.assertNotContains(page, "Plantilla y fases finales")
+            self.assertNotContains(page, "Elegibles")
+
+    def test_league_block_summarises_the_last_round_and_who_is_missing(self):
+        """«Liga» junta la última jornada, las jornadas jugadas y quién no llega a las fases finales, con lo que le falta."""
+        match = self._close(self._match(round_number=4), 2, 1)
+        with patch("data_analyse.views.current_season", return_value=match.season):
+            page = self.client.get(reverse("team_statistics"))
+        league = page.context["league"]
+        self.assertEqual((league["played"], league["last"]["label"], league["last"]["points"]), (1, "J4", 3))
+        self.assertEqual(league["last"]["rival"], "Padel Norte")
+        self.assertContains(page, "Puntos última jornada")
+        missing = page.context["finals"]["missing"]
+        self.assertEqual({m["name"] for m in missing[:6]}, {p.short_name for p in self.players[:6]})
+        self.assertTrue(all(m["left"] == 1 for m in missing[:6]))
+        self.assertEqual(missing[-1], {"name": self.players[6].short_name, "left": 2})
+        self.assertContains(page, "le falta 1 jornada")
+        # Sin no presentados ni lesiones no sale la tarjeta de ceros.
+        self.assertFalse(page.context["walkovers"]["any"])
+        self.assertNotContains(page, "No presentados y lesiones")
 
     def test_existing_lapi_matches_become_league(self):
         from importlib import import_module

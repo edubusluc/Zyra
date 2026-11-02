@@ -3790,3 +3790,33 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .st-kpi-row--five { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 @media (max-width: 767.98px) { .st-kpi-row--five { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .st-card > .st-warn-list { margin-top: 14px; }
+
+/* Fase 4 · Comprender: balance de Equipo con forma y racha, bloque Liga, actualización SNP y «Mis estadísticas». */
+.st-balance-rate { display: flex; flex-direction: column; align-items: flex-end; }
+.st-balance-rate span { font-size: var(--z-fs-xs); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.st-balance-track { display: flex; }
+.st-balance-track span { flex: none; }
+.st-balance-track .st-balance-track-draw { background: rgba(10, 10, 10, .45); border-radius: 0; }
+.st-balance-form { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 0 0 8px; }
+.st-balance-form .st-form { margin: 0; gap: 6px; }
+.st-balance-form-label, .st-balance-streak { font-size: var(--z-fs-xs); font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.st-balance-streak { margin-left: auto; }
+.st-balance .st-pip { width: 30px; height: 30px; font-size: var(--z-fs-sm); }
+.st-balance .st-pip--w { color: var(--z-lime); background: var(--z-ink); }
+.st-balance .st-pip--l { color: var(--z-ink); background: rgba(10, 10, 10, .16); }
+.st-balance .st-pip--d { color: var(--z-ink); background: rgba(255, 255, 255, .55); }
+.st-missing { margin-top: 12px; font-size: var(--z-fs-sm); }
+.st-missing summary { cursor: pointer; font-weight: 700; }
+.st-missing ul { margin: 8px 0 0; padding: 0; list-style: none; }
+.st-missing li { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-top: 1px solid var(--st-line); }
+.st-missing small { color: var(--st-muted); }
+.st-snp-updated { margin: 8px 0 0; font-size: var(--z-fs-sm); color: var(--st-muted); }
+.st-snp-updated.is-stale { color: var(--z-warning); font-weight: 700; }
+.z-space-kpis--four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 575.98px) { .z-space-kpis--four { grid-template-columns: repeat(2, minmax(0, 1fr)); } .st-balance-streak { margin-left: 0; } }
+.z-space-rows li.z-comp-frame .z-space-rows-calls { grid-column: 1; display: flex; align-items: baseline; gap: 6px; font-size: var(--z-fs-sm); }
+.z-space-rows-calls small { color: var(--st-muted); }
+.st-hero-team { display: block; font-size: var(--z-fs-xs); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.st-hero-updated { font-weight: 700; }
+.st-hero-updated.is-stale { color: var(--z-ink); text-decoration: underline wavy; }
+.st-hero-caps { display: flex; flex-direction: column; gap: 2px; }

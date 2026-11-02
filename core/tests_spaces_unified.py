@@ -261,6 +261,12 @@ class UnifiedSpacesTests(TestCase):
         self.assertEqual(page.context["me"]["played"], 2)
         rows = {r["club"]: (r["played"], r["wins"]) for r in page.context["rows"]}
         self.assertEqual(rows, {self.snp: (1, 1), self.lapi: (1, 1)})
+        # El % de victorias sale global y por competición, con su base; «te apuntaste» es una cifra aparte.
+        self.assertEqual(page.context["me"]["pct"], 100)
+        self.assertContains(page, "100%")
+        self.assertContains(page, "100% de victorias en 1 partido jugado")
+        self.assertContains(page, "z-space-rows-calls")
+        self.assertNotContains(page, "te apuntaste a")
         self.assertEqual([c["code"] for c in page.context["mine_chips"]], ["todas", "snp", "lapi"])
         chart = page.context["spaces_chart"]
         self.assertEqual([c["code"] for c in chart["comps"]], ["snp", "lapi"])

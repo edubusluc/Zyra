@@ -59,7 +59,7 @@
           <h2 class="st-hero-name">{{ player.full_name }}</h2>
           <p class="st-hero-sub">
             {% if league %}{% blocktranslate trimmed with n=league.played %}LAPI · {{ n }} jornadas de liga jugadas{% endblocktranslate %}
-            {% elif hero.snp_score is not None %}{% blocktranslate trimmed with pts=hero.snp_score|floatformat:"0g" %}{{ pts }} pts SNP{% endblocktranslate %}{% if hero.snp_rank %} · {% blocktranslate with n=hero.snp_rank %}Nº {{ n }} del equipo{% endblocktranslate %}{% endif %}{% endif %}
+            {% elif hero.snp_score is not None %}{% blocktranslate trimmed with pts=hero.snp_score|floatformat:"0g" %}{{ pts }} pts SNP{% endblocktranslate %}{% if hero.snp_rank %} · {% blocktranslate with n=hero.snp_rank %}Nº {{ n }} del equipo{% endblocktranslate %}{% endif %}{% if hero.snp_updated %} · <span class="st-hero-updated{% if hero.snp_stale %} is-stale{% endif %}"{% if hero.snp_stale %} title="{% translate 'Hace más de 6 días de la última actualización' %}"{% endif %}>{% blocktranslate with date=hero.snp_updated|date:"d/m" %}actualizado el {{ date }}{% endblocktranslate %}</span>{% endif %}{% endif %}
           </p>
           <p class="st-hero-meta">
             <span>{{ player.get_position_display }}</span><span>{{ player.get_skillfull_hand_display }}</span><span>{% blocktranslate with season=player.joined_season %}Desde {{ season }}{% endblocktranslate %}</span>
@@ -72,7 +72,7 @@
           {% endif %}
           </div>
         </div>
-        <div class="st-hero-pct"><div class="st-hero-ring" style="--pct: {{ pct_w|unlocalize }}" role="img" aria-label="{% blocktranslate with pct=s.pct %}{{ pct }}% de victorias{% endblocktranslate %}"><span>{{ s.pct|floatformat:0 }}%</span></div><span class="st-hero-cap">{% translate "de victorias" %}</span></div>
+        <div class="st-hero-pct"><div class="st-hero-ring" style="--pct: {{ pct_w|unlocalize }}" role="img" aria-label="{% blocktranslate with pct=s.pct %}{{ pct }}% de victorias{% endblocktranslate %}"><span>{{ s.pct|floatformat:0 }}%</span></div><span class="st-hero-caps"><span class="st-hero-cap">{% translate "de victorias" %}</span>{% if hero.team_pct is not None %}<span class="st-hero-team">{% blocktranslate with pct=hero.team_pct %}Equipo: {{ pct }}%{% endblocktranslate %}</span>{% endif %}</span></div>
         <div class="st-hero-balance"><b>{{ s.wins }}-{{ s.losses }}</b><span>{% translate "Balance" %}</span></div>
       </section>
 

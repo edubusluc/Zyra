@@ -4,6 +4,7 @@
   <h3 class="st-card-title">{% translate "Ranking SNP del equipo" %}</h3>
   <p class="st-card-note">{% blocktranslate with season=snp_season %}Puntos SNP actuales de la plantilla y cuánto han cambiado desde la actualización anterior (temporada {{ season }}).{% endblocktranslate %}</p>
   {% if snp.rows %}
+    {% if snp.updated %}<p class="st-snp-updated{% if snp.stale %} is-stale{% endif %}">{% if snp.stale %}<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> {% endif %}{% blocktranslate with date=snp.updated|date:"d/m/Y" %}Actualizado el {{ date }}{% endblocktranslate %}{% if snp.stale %} · {% translate "hace más de 6 días" %}{% endif %}</p>{% endif %}
     <dl class="st-facts st-facts--sets">
       <div class="st-fact st-fact--gold">
         <dt>{% translate "Media del equipo" %}</dt>

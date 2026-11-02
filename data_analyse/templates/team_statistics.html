@@ -50,24 +50,29 @@
             {% if drawn_matches or current_club.rules.has_draws %}<div><b>{{ drawn_matches }}</b><span>{% translate "Empates" %}</span></div>{% endif %}
             <div><b>{{ lost_matches }}</b><span>{% translate "Derrotas" %}</span></div>
           </div>
-          <b class="st-balance-pct">{{ percentage_won|floatformat:0 }}%</b>
+          <div class="st-balance-rate"><b class="st-balance-pct">{{ percentage_won|floatformat:0 }}%</b><span>{% blocktranslate count n=total_matches %}de {{ n }} enfrentamiento{% plural %}de {{ n }} enfrentamientos{% endblocktranslate %}</span></div>
         </div>
-        <div class="st-balance-track" role="img" aria-label="{% blocktranslate with pct=percentage_won %}{{ pct }} % de enfrentamientos ganados{% endblocktranslate %}"><span style="width: {% widthratio won_matches total_matches 100 %}%"></span></div>
-        <p class="st-balance-foot">
-          <span>{% if tiebreaks.total %}{% blocktranslate with a=tiebreaks.for b=tiebreaks.against %}Eliminatorias 6-6 (Reto / Play Off) · {{ a }} a favor · {{ b }} en contra{% endblocktranslate %}{% endif %}</span>
-          <span>{% blocktranslate with won=won_matches total=total_matches %}Ganados · {{ won }} de {{ total }}{% endblocktranslate %}</span>
-        </p>
+        <div class="st-balance-track" role="img" aria-label="{% blocktranslate with pct=percentage_won %}{{ pct }} % de enfrentamientos ganados{% endblocktranslate %}"><span style="width: {% widthratio won_matches total_matches 100 %}%"></span>{% if drawn_matches %}<span class="st-balance-track-draw" style="width: {% widthratio drawn_matches total_matches 100 %}%"></span>{% endif %}</div>
+        {% if team_form %}
+        <div class="st-balance-form">
+          <span class="st-balance-form-label">{% translate "Forma" %}</span>
+          <ol class="st-form" aria-label="{% blocktranslate with n=team_form.form|length %}Últimos {{ n }} enfrentamientos, el más reciente a la derecha{% endblocktranslate %}">
+            {% for o in team_form.form %}<li class="st-pip {% if o == 'V' %}st-pip--w{% elif o == 'D' %}st-pip--l{% else %}st-pip--d{% endif %}" title="{% if o == 'V' %}{% translate 'Victoria' %}{% elif o == 'D' %}{% translate 'Derrota' %}{% else %}{% translate 'Empate' %}{% endif %}">{{ o }}</li>{% endfor %}
+          </ol>
+          <span class="st-balance-streak">{% blocktranslate with n=team_form.streak.length k=team_form.streak.kind %}Racha: {{ n }}{{ k }}{% endblocktranslate %}</span>
+        </div>
+        {% endif %}
+        {% if tiebreaks.total %}<p class="st-balance-foot"><span>{% blocktranslate with a=tiebreaks.for b=tiebreaks.against %}Eliminatorias 6-6 (Reto / Play Off) · {{ a }} a favor · {{ b }} en contra{% endblocktranslate %}</span></p>{% endif %}
       </section>
 
-      <section class="st-kpi-row{% if snp_total %} st-kpi-row--three{% else %} st-kpi-row--two{% endif %}" aria-label="{% translate 'Cifras del equipo' %}">
+      <section class="st-kpi-row st-kpi-row--two" aria-label="{% translate 'Cifras del equipo' %}">
         <div class="st-kpi-tile"><b>{{ venue.local.won }}/{{ venue.local.total }}</b><span>{% translate "Ganados como local" %}</span><small>{% translate "partidos ganados / total en casa" %}</small></div>
         <div class="st-kpi-tile"><b>{{ venue.visiting.won }}/{{ venue.visiting.total }}</b><span>{% translate "Ganados como visitante" %}</span><small>{% translate "partidos ganados / total fuera" %}</small></div>
-        {% if snp_total %}<div class="st-kpi-tile"><b>{% if snp_total.average %}{{ snp_total.average|floatformat:"0g" }}{% else %}—{% endif %}</b><span>{% translate "Media por jugador" %}</span><small>{% translate "puntos SNP del equipo" %}</small></div>{% endif %}
       </section>
 
-      {% if points_card or finals %}
+      {% if points_card or league or finals %}
       {% if points_card.league %}{% translate 'Puntos de liga' as points_title %}{% else %}{% translate 'Puntos por enfrentamiento' as points_title %}{% endif %}
-      <section class="st-section" aria-label="{% if points_card %}{{ points_title }}{% else %}{% translate "Plantilla y fases finales" %}{% endif %}">
+      <section class="st-section" aria-label="{% if points_card %}{{ points_title }}{% else %}{% translate "Liga" %}{% endif %}">
         <div class="st-row st-row--pair">
           {% if points_card %}
           <article class="st-card">
@@ -78,16 +83,25 @@
             <div class="st-chart st-chart--points" role="img" aria-label="{{ points_title }}"><canvas id="chartPoints" aria-hidden="true"></canvas></div>
           </article>
           {% endif %}
-          {% if finals %}
+          {% if league or finals %}
           <article class="st-card">
             <span class="z-comp-badge z-comp-badge--lapi st-only">{% translate "Solo LAPI" %}</span>
-            <h2 class="st-card-title">{% translate "Plantilla y fases finales" %} · {{ finals.season }}</h2>
-            <p class="st-card-note">{% blocktranslate with n=finals.minimum %}Reglamento 8.2: en Playoffs y Fase final solo juega quien ha jugado {{ n }} enfrentamientos de liga.{% endblocktranslate %}</p>
-            <div class="st-kpi-row st-kpi-row--two">
-              <div class="st-kpi-tile"><b>{{ finals.squad }}{% if finals.max %} / {{ finals.max }}{% endif %}</b><span>{% translate "Plantilla" %}</span>{% if finals.max %}<small>{% blocktranslate with n=finals.max %}máximo LAPI {{ n }}{% endblocktranslate %}</small>{% endif %}</div>
-              <div class="st-kpi-tile"><b>{{ finals.eligible }} {% translate "de" %} {{ finals.squad }}</b><span>{% translate "Elegibles" %}</span><small>{% blocktranslate with n=finals.minimum %}≥ {{ n }} jornadas jugadas{% endblocktranslate %}</small></div>
+            <h2 class="st-card-title">{% translate "Liga" %} · {{ league_season }}</h2>
+            <div class="st-kpi-row {% if finals %}st-kpi-row--three{% else %}st-kpi-row--two{% endif %}">
+              {% if league %}
+              <div class="st-kpi-tile"><b>{{ league.last.points }}</b><span>{% translate "Puntos última jornada" %}</span><small>{{ league.last.label }}{% if league.last.rival %} · {{ league.last.rival }}{% endif %}</small></div>
+              <div class="st-kpi-tile"><b>{{ league.played }}</b><span>{% translate "Jornadas jugadas" %}</span></div>
+              {% endif %}
+              {% if finals %}
+              <div class="st-kpi-tile"><b>{{ finals.eligible }} {% translate "de" %} {{ finals.squad }}</b><span>{% translate "Elegibles" %}<button type="button" class="z-tip" data-tip="{% blocktranslate with n=finals.minimum %}Reglamento 8.2: en Playoffs y Fase final solo juega quien ha jugado {{ n }} enfrentamientos de liga.{% endblocktranslate %}" aria-label="{% blocktranslate with n=finals.minimum %}Reglamento 8.2: en Playoffs y Fase final solo juega quien ha jugado {{ n }} enfrentamientos de liga.{% endblocktranslate %}" aria-expanded="false"><i class="fa-solid fa-circle-info" aria-hidden="true"></i></button></span>{% if finals.max %}<small>{% blocktranslate with squad=finals.squad n=finals.max %}plantilla {{ squad }} de {{ n }} (máximo LAPI){% endblocktranslate %}</small>{% endif %}</div>
+              {% endif %}
             </div>
-            {% if finals.missing %}<p class="st-card-note">{% blocktranslate with names=finals.missing|join:", " %}Sin elegibilidad: {{ names }}{% endblocktranslate %}</p>{% endif %}
+            {% if finals.missing %}
+            <details class="st-missing">
+              <summary>{% blocktranslate count n=finals.missing|length %}{{ n }} jugador sin elegibilidad todavía{% plural %}{{ n }} jugadores sin elegibilidad todavía{% endblocktranslate %}</summary>
+              <ul>{% for m in finals.missing %}<li><span>{{ m.name }}</span><small>{% blocktranslate count n=m.left %}le falta {{ n }} jornada{% plural %}le faltan {{ n }} jornadas{% endblocktranslate %}</small></li>{% endfor %}</ul>
+            </details>
+            {% endif %}
           </article>
           {% endif %}
         </div>
@@ -128,7 +142,7 @@
               {% endfor %}
             </div>
           </article>
-          {% if walkovers and not current_club.rules.ordered_pairs %}
+          {% if walkovers.any and not current_club.rules.ordered_pairs %}
           <article class="st-card">
             <span class="z-comp-badge z-comp-badge--lapi st-only">{% translate "Solo LAPI" %}</span>
             <h3 class="st-card-title">{% translate "No presentados y lesiones" %}</h3>
@@ -210,4 +224,5 @@
   </div>
 
   <script src="{% static 'js/team_statistics.js' %}"></script>
+  <script src="{% static 'js/stats-tips.js' %}"></script>
 {% endblock %}

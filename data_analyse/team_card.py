@@ -90,8 +90,8 @@ def finals_roster(club, season):
     Plantilla y elegibilidad para las fases finales (reglamento LAPI 8.2: haber jugado al menos
     ``finals_min_regular`` enfrentamientos de liga con el equipo esa temporada).
 
-    ``{'season', 'squad', 'max', 'eligible', 'minimum', 'missing'}``; ``missing`` son los nombres de quienes aún no
-    llegan. None si la competición no tiene esa regla.
+    ``{'season', 'squad', 'max', 'eligible', 'minimum', 'missing'}``; ``missing`` son quienes aún no llegan,
+    ``{'name', 'left'}`` con las jornadas que les faltan. None si la competición no tiene esa regla.
     """
     rules = club.rules
     if not (rules.finals_min_regular and rules.league_type):
@@ -106,20 +106,65 @@ def finals_roster(club, season):
             if row[f'{slot}_id']:
                 played.setdefault(row[f'{slot}_id'], set()).add(row['match_id'])
     short = [p for p in squad if len(played.get(p.id, ())) < rules.finals_min_regular]
+    short.sort(key=lambda p: (-len(played.get(p.id, ())), p.name, p.last_name))
     return {
         'season': season,
         'squad': len(squad),
         'max': rules.max_roster,
         'eligible': len(squad) - len(short),
         'minimum': rules.finals_min_regular,
-        'missing': [p.short_name for p in short],
+        'missing': [{'name': p.short_name, 'left': rules.finals_min_regular - len(played.get(p.id, ()))} for p in short],
     }
+
+
+def league_summary(club, season=None):
+    """
+    Resumen de la liga regular para el bloque «Liga» de Equipo (solo competiciones con liga): jornadas con
+    puntos de la temporada ``season`` (todas con None) y la última de ellas.
+
+    ``{'played', 'last'}``; ``last`` es ``{'label', 'points', 'outcome', 'rival'}`` de la última jornada
+    cerrada (``label`` «J5», o «E5» si no consta la jornada). None si no hay liga o no hay jornadas.
+    """
+    rules = club.rules
+    if not rules.league_type:
+        return None
+    rows = [m for m in rivals.closed_matches(club, season, rules.league_type) if m.league_points is not None]
+    if not rows:
+        return None
+    last = rows[-1]
+    rival = last.visiting if last.own_is_local else last.local
+    return {
+        'played': len(rows),
+        'last': {
+            'label': f"J{last.round_number}" if last.round_number else f"E{len(rows)}",
+            'points': last.league_points,
+            'outcome': rivals.outcome(last),
+            'rival': rival.name if rival else (last.rival_name or ''),
+        },
+    }
+
+
+def form_and_streak(club, season=None, match_type=None, size=5):
+    """
+    Forma del equipo: resultados ('V', 'E', 'D') de los últimos ``size`` enfrentamientos cerrados, del más
+    antiguo al más reciente, y la racha actual ``{'kind', 'length'}`` (los últimos resultados iguales).
+    None si no hay ninguno.
+    """
+    results = [rivals.outcome(m) for m in rivals.closed_matches(club, season, match_type)]
+    if not results:
+        return None
+    kind, length = results[-1], 0
+    for r in reversed(results):
+        if r != kind:
+            break
+        length += 1
+    return {'form': results[-size:], 'streak': {'kind': kind, 'length': length}}
 
 
 def walkovers(club, season=None, match_type=None):
     """
     No presentados y lesiones de los enfrentamientos cerrados: ``{'rival', 'own', 'injuries'}`` (rival o
-    nuestro equipo sin presentarse y partidos terminados por lesión). None si la competición no tiene ni
+    nuestro equipo sin presentarse y partidos terminados por lesión) y ``any``, si hay alguno. None si la competición no tiene ni
     «No presentado» ni lesiones que completar.
     """
     rules = club.rules
@@ -130,8 +175,6 @@ def walkovers(club, season=None, match_type=None):
         matches = matches.filter(season=season)
     injuries = Result.objects.filter(game__match__in=matches, game__draft_mode=False).exclude(
         Q(injured_side='') | Q(injured_side__isnull=True)).values('game_id').distinct().count()
-    return {
-        'rival': matches.filter(no_show=Match.NO_SHOW_RIVAL).count(),
-        'own': matches.filter(no_show=Match.NO_SHOW_OWN).count(),
-        'injuries': injuries,
-    }
+    rival = matches.filter(no_show=Match.NO_SHOW_RIVAL).count()
+    own = matches.filter(no_show=Match.NO_SHOW_OWN).count()
+    return {'rival': rival, 'own': own, 'injuries': injuries, 'any': bool(rival or own or injuries)}
