@@ -100,10 +100,10 @@
         </article>
       </div>
 
-      {# ============ 1b. SETS Y MEJORES PAREJAS ============ #}
+      {# ============ 1b. SETS ============ #}
       <section aria-labelledby="pair-sets-title" class="st-section">
         <h2 class="st-section-title" id="pair-sets-title">{% translate "Sets de la pareja" %}</h2>
-        <div class="st-row st-row--pair">
+        <div class="st-row">
           <article class="st-card">
             <h3 class="st-card-title">{% translate "Sets" %}</h3>
             <p class="st-card-note">{% translate "Tercer set, tie-breaks, remontadas y roscos de la pareja jugando junta." %}</p>
@@ -113,8 +113,6 @@
               {% endfor %}
             </div>
           </article>
-          {% translate "Mejores parejas" as t_title %}{% translate "Mayor % de victorias juntos." as t_note %}
-          {% include 'includes/pair_rank_table.html' with title=t_title rows=best_pairs note=t_note %}
         </div>
       </section>
 
@@ -123,56 +121,34 @@
         <h2 class="st-section-title" id="last-title">{% translate "Últimos partidos juntos" %}</h2>
         <article class="st-card">
           <p class="st-card-note mt-0">{% translate "Del más reciente al más antiguo. Pulsa un partido para verlo en la sección de partidos." %}</p>
-          <div class="st-table-wrap">
-            <table class="st-table st-table--links">
-              <thead>
-                <tr>
-                  <th scope="col">{% translate "Fecha" %}</th>
-                  <th scope="col">{% translate "Rival" %}</th>
-                  <th scope="col">{% if current_club.rules.ordered_pairs %}{% translate "Partido" %}{% else %}{% translate "Tipo" %}{% endif %}</th>
-                  <th scope="col">{% translate "Resultado" %}</th>
-                  {% if current_club.rules.ordered_pairs %}<th scope="col">{% translate "Puntos" %}</th>{% endif %}
-                </tr>
-              </thead>
-              <tbody>
-                {% for g in last_games %}
-                  <tr>
-                    <th scope="row">
-                      <a href="{% url 'call_for_match' g.match_public_id %}#partido-{{ g.n_game }}">{{ g.date|date_long }}</a>
-                    </th>
-                    <td>{{ g.rival }} <span class="st-muted">({% if g.local %}{% translate "local" %}{% else %}{% translate "visitante" %}{% endif %})</span></td>
-                    <td>{% if current_club.rules.ordered_pairs %}{{ g.n_game }}{% else %}{{ g.type_label }}{% if g.round %} · J{{ g.round }}{% endif %}{% endif %}</td>
-                    <td>
-                      <span class="{% if g.won %}st-up{% else %}st-down{% endif %}">{% if g.won %}{% translate "V" context "abreviatura de victoria" %}{% else %}{% translate "D" context "abreviatura de derrota" %}{% endif %}</span>
-                      {% if g.sets %}<span class="st-muted">{{ g.sets }}</span>{% endif %}
-                    </td>
-                    {% if current_club.rules.ordered_pairs %}<td>{{ g.points }}</td>{% endif %}
-                  </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
+          {% include 'includes/pair_games_table.html' with games=last_games %}
         </article>
       </section>
 
       {# ============ 3. POR TEMPORADAS ============ #}
       <section aria-labelledby="seasons-title" class="st-section">
         <h2 class="st-section-title" id="seasons-title">{% translate "Rendimiento por temporada" %}</h2>
-        <div class="st-row st-row--pair">
+        <div class="st-row{% if not selected_season %} st-row--pair{% endif %}">
           <article class="st-card">
             <h3 class="st-card-title">{% translate "Partidos jugados" %}</h3>
             <p class="st-card-note">{% translate "Ganados y perdidos en cada temporada." %}</p>
-            <div class="st-chart st-chart--mine" role="img" aria-label="{% translate 'Partidos jugados' %}"><canvas id="chartPlayed" aria-hidden="true"></canvas></div>
+            <div class="st-chart st-chart--mine" role="img" aria-label="{% translate 'Partidos jugados' %}"><canvas id="chartPlayed"></canvas></div>
           </article>
+          {% if not selected_season %}
           <article class="st-card">
             <h3 class="st-card-title">{% translate "Evolución del % de victorias" %}</h3>
             <p class="st-card-note">{% translate "Porcentaje de partidos ganados juntos por temporada." %}</p>
-            {% if chart_seasons.pct|length > 1 %}<div class="st-chart st-chart--mine" role="img" aria-label="{% translate 'Evolución del % de victorias' %}"><canvas id="chartPct" aria-hidden="true"></canvas></div>{% else %}<p class="st-muted st-nodata">{% translate "Se mostrará la evolución cuando haya al menos 2 temporadas." %}</p>{% endif %}
+            {% if chart_seasons.pct|length > 1 %}<div class="st-chart st-chart--mine" role="img" aria-label="{% translate 'Evolución del % de victorias' %}"><canvas id="chartPct"></canvas></div>{% else %}<p class="st-muted st-nodata">{% translate "Se mostrará la evolución cuando haya al menos 2 temporadas." %}</p>{% endif %}
           </article>
+          {% endif %}
         </div>
 
         <article class="st-card">
           <h3 class="st-card-title">{% translate "Detalle por temporada" %}</h3>
+          {% if selected_season %}
+          <p class="st-card-note mt-0">{% translate "Partidos de la pareja en la temporada." %}</p>
+          {% include 'includes/pair_games_table.html' with games=season_games %}
+          {% else %}
           <div class="st-table-wrap">
             <table class="st-table">
               <thead>
@@ -208,6 +184,7 @@
               </tbody>
             </table>
           </div>
+          {% endif %}
         </article>
       </section>
 

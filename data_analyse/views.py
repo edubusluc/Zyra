@@ -1136,6 +1136,9 @@ def statistics_per_pair(request):
                 'p2': p2,
                 's': summary,
                 'last_games': pair_last_games(request.club, p1, p2, match_type=match_type, season=selected_season),
+                # Con una temporada elegida, «Detalle por temporada» lista todos los partidos de la pareja en ella.
+                'season_games': (pair_last_games(request.club, p1, p2, n=None, match_type=match_type, season=selected_season)
+                                 if selected_season else None),
                 'pair_sets': pair_sets,
                 'pct_w': round(summary['pct']),
                 'local_pct_w': round(summary['local_pct']),
@@ -1173,7 +1176,7 @@ def pair_last_games(club, p1, p2, n=PAIR_LAST_GAMES, match_type=None, season=Non
     )
     if season:
         games = games.filter(match__season=season)
-    games = games[:n]
+    games = games[:n] if n else games
     rows = []
     for g in games:
         is_local = p1.id in (g.player_1_local_id, g.player_2_local_id)

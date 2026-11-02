@@ -15249,3 +15249,6 @@ msgstr "How many warnings of each type."
 
 msgid "Cifras de las advertencias"
 msgstr "Warning figures"
+
+msgid "Partidos de la pareja en la temporada."
+msgstr "The pair's matches in the season."
