@@ -13,41 +13,6 @@
   Chart.defaults.plugins.legend.labels.usePointStyle = true;
   Chart.defaults.plugins.legend.labels.boxWidth = 8;
 
-  // Ganados y perdidos de cada competición (local y visitante juntos; el detalle sale en el tooltip):
-  // barras redondeadas con su cifra dentro, sin ejes ni cuadrícula (la leyenda va sobre los gráficos).
-  const sidesCanvas = document.getElementById('spacesSidesChart');
-  if (sidesCanvas) {
-    new Chart(sidesCanvas, {
-      type: 'bar',
-      data: {
-        labels: [gettext('Ganados'), gettext('Perdidos')],
-        datasets: comps.map((c, i) => ({
-          label: c.name, data: [data.totals[i].won, data.totals[i].lost], backgroundColor: color(c.code), maxBarThickness: 56,
-          borderRadius: 14, minBarLength: 14, borderColor: '#151515', borderWidth: 2,
-        })),
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        // Las barras de cada grupo van pegadas (como en el diseño); el hueco lo da el borde del fondo.
-        datasets: { bar: { barPercentage: 1, categoryPercentage: 0.34 } },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              afterLabel: (c) => {
-                const t = data.totals[c.datasetIndex];
-                const side = c.dataIndex === 0 ? ['won', gettext('ganados')] : ['lost', gettext('perdidos')];
-                return interpolate(gettext('%(l)s en casa · %(v)s fuera'), { l: t.local[side[0]], v: t.visiting[side[0]] }, true);
-              },
-            },
-          },
-        },
-        scales: { x: { grid: { display: false } }, y: { display: false, beginAtZero: true, grace: '8%' } },
-      },
-    });
-  }
-
   // Partidos ganados por temporada: apilados por competición y el total encima de cada columna.
   const yearsCanvas = document.getElementById('spacesYearsChart');
   if (yearsCanvas) {

@@ -10292,6 +10292,9 @@ msgstr "Matches won"
 msgid "Puntos de liga"
 msgstr "League points"
 
+msgid "Puntos por enfrentamiento"
+msgstr "Points per match"
+
 #: data_analyse/templates/team_statistics.html:103
 #, python-format
 msgid "en %(n)s jornada"

@@ -196,11 +196,28 @@ class ClubSetsTests(ClubDataMixin, TestCase):
         self.assertEqual(venue['local'], {'won': 0, 'lost': 0, 'drawn': 1, 'total': 1})
         self.assertEqual(venue['visiting'], {'won': 1, 'lost': 0, 'drawn': 0, 'total': 1})
 
+    def test_snp_points_card_is_not_called_league(self):
+        """SNP no tiene liga: la tarjeta de puntos por enfrentamiento no usa el nombre de la liga LAPI."""
+        Match.objects.filter(pk=self.m1.pk).update(result_points="6/6")
+        response = self.client.get(reverse('team_statistics'))
+        self.assertContains(response, "Puntos por enfrentamiento")
+        self.assertNotContains(response, "Puntos de liga")
+
+    def test_streak_tile_colour_follows_the_result(self):
+        url = reverse('player_statistics')
+        for player in (self.a, self.b):
+            response = self.client.get(url, {'player': player.public_id, 'season': 'all'})
+            kind = response.context['s']['streak_type']
+            tile = {'V': 'st-kpi-tile--up', 'D': 'st-kpi-tile--down'}.get(kind)
+            if tile:
+                self.assertContains(response, f'class="st-kpi-tile {tile}"')
+            self.assertNotContains(response, 'st-kpi-tile st-kpi-tile--up' if kind != 'V' else 'st-kpi-tile--down')
+
     def test_team_page_has_side_menu_and_snp_ranking(self):
         response = self.client.get(reverse('team_statistics'))
         self.assertContains(response, 'class="st-side"')
         self.assertContains(response, 'id="sec-snp"')
-        self.assertContains(response, "Juegos como local")
+        self.assertNotContains(response, "Juegos como local")
         self.assertContains(response, "Ganados como visitante")
 
     def test_team_page_shows_new_sections(self):

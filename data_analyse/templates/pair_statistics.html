@@ -73,7 +73,7 @@
       </section>
 
       <section class="st-kpi-row st-kpi-row--two" aria-label="{% translate 'Cifras de la pareja' %}">
-        <div class="st-kpi-tile st-kpi-tile--up"><b>{% if s.streak_type == 'V' %}{{ s.streak_len }}V{% elif s.streak_type == 'D' %}{{ s.streak_len }}D{% else %}{{ s.streak_len }}{% endif %}</b><span>{% translate "Racha actual" %}</span></div>
+        <div class="st-kpi-tile{% if s.streak_type == 'V' %} st-kpi-tile--up{% elif s.streak_type == 'D' %} st-kpi-tile--down{% endif %}"><b>{% if s.streak_type == 'V' %}{{ s.streak_len }}V{% elif s.streak_type == 'D' %}{{ s.streak_len }}D{% else %}{{ s.streak_len }}{% endif %}</b><span>{% translate "Racha actual" %}</span></div>
         <div class="st-kpi-tile"><b>{{ s.best_win_streak }}V</b><span>{% translate "Mejor racha" %}</span><small>{% blocktranslate with n=s.worst_loss_streak %}peor racha: {{ n }}D{% endblocktranslate %}</small></div>
       </section>
 

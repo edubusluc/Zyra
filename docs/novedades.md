@@ -3,6 +3,15 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 02/11/2026 · Estadísticas: fase 1 (datos que no inducen a error)
+
+- **Mis estadísticas**: se quita el gráfico «Local y visitante». Mostraba ganados y perdidos por competición, que ya dicen las filas de arriba, y el reparto por sede solo salía en un tooltip. El detalle como local y visitante sigue en la ficha de cada competición.
+- **Equipo**: se quitan «Juegos como local» y «Juegos como visitante» (juegos de tenis sumados, que repetían «Ganados como local/visitante» con otra unidad).
+- **Equipo · Plantilla y fases finales (LAPI)**: indica su temporada y calcula siempre la temporada en curso; con una temporada pasada elegida no se muestra.
+- **Equipo · SNP**: «Puntos de liga» pasa a llamarse «Puntos por enfrentamiento», porque SNP no tiene liga (LAPI mantiene «Puntos de liga»).
+- **Móvil**: el % de victorias del jugador y de la pareja se ve también en el móvil (anillo bajo el nombre).
+- **Racha actual**: la cifra va en lima si es de victorias y en rojo si es de derrotas.
+
 ## 02/11/2026 · Selectores únicos
 
 - **Competición**: un solo control en toda la web, la fila «Competición» del rediseño con píldoras Todas · SNP · LAPI de su color (en Enfrentamientos, Calendario, Plantilla, Club, Miembros y Estadísticas). Se elimina la variante propia de Mis estadísticas.

@@ -4,6 +4,7 @@ puntos de liga (4, 3 o 1), la regla de las fases finales (mínimo de enfrentamie
 «No presentado», lesión completada para la pareja sana y las estadísticas que no aplican.
 """
 import datetime
+from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
@@ -108,6 +109,19 @@ class LapiMatchTests(TestCase):
         self.assertFalse(Call.objects.filter(match=final).exists())
         self.client.post(url, {"players": ids, "force_finals": "1"})
         self.assertTrue(Call.objects.filter(match=final).exists())
+
+    def test_team_page_finals_card_only_for_the_current_season(self):
+        """La elegibilidad es de la temporada en curso: lleva su temporada y no sale al mirar una pasada."""
+        season = self._close(self._match(), 2, 1).season
+        url = reverse("team_statistics")
+        with patch("data_analyse.views.current_season", return_value=season):
+            page = self.client.get(url, {"season": "all"})
+            self.assertEqual(page.context["finals"]["season"], season)
+            self.assertContains(page, f"Plantilla y fases finales · {season}")
+        with patch("data_analyse.views.current_season", return_value="2030-2031"):
+            page = self.client.get(url, {"season": season})
+            self.assertIsNone(page.context["finals"])
+            self.assertNotContains(page, "Plantilla y fases finales")
 
     def test_existing_lapi_matches_become_league(self):
         from importlib import import_module

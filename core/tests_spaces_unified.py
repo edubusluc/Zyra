@@ -274,8 +274,9 @@ class UnifiedSpacesTests(TestCase):
         self.assertContains(page, "js/stats_spaces.js")
         # Diseño aprobado: tres situaciones de sets, ganados/perdidos por competición y fila de competición.
         self.assertEqual([r["key"] for r in page.context["set_compare"]], ["tiebreak", "first_set", "comeback"])
-        self.assertEqual([(t["won"], t["lost"]) for t in chart["totals"]], [(1, 0), (1, 0)])
-        self.assertContains(page, 'id="spacesSidesChart"')
+        # «Local y visitante» ya no está en Mis estadísticas: el reparto por sede vive en cada ficha.
+        self.assertNotContains(page, "spacesSidesChart")
+        self.assertNotIn("totals", chart)
         self.assertContains(page, "st-comp-row")
         # Con una temporada elegida no hay victorias por temporada, pero sí las convocatorias de esa temporada.
         chosen = self.client.get(reverse("my_statistics") + f"?season={season}")

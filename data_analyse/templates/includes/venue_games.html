@@ -1,9 +1,0 @@
-{% load i18n l10n %}
-{# Juegos ganados y perdidos en un campo. Recibe: title, won, lost, wpct, lpct #}
-<article class="st-card">
-  <h3 class="st-card-title">{{ title }}</h3>
-  {% if won or lost %}
-  <div class="st-venue-bar" role="img" aria-label="{% blocktranslate with w=won l=lost %}{{ w }} ganados y {{ l }} perdidos{% endblocktranslate %}"><span class="st-venue-win" style="flex: {{ won|unlocalize }}">{{ won }}</span><span class="st-venue-loss" style="flex: {{ lost|unlocalize }}">{{ lost }}</span></div>
-  <p class="st-venue-label">{% blocktranslate with n=wpct %}{{ n }} % ganados{% endblocktranslate %} · <span>{% blocktranslate with n=lpct %}{{ n }} % perdidos{% endblocktranslate %}</span></p>
-  {% else %}<p class="st-muted st-nodata">{% translate "No hay datos todavía." %}</p>{% endif %}
-</article>
