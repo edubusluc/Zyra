@@ -7,8 +7,7 @@
   <div class="st-page">
     {% include 'includes/stats_tabs.html' %}
 
-    {% if selected_player %}{% include 'includes/season_filter.html' %}{% endif %}
-    {% include 'includes/match_type_filter.html' %}
+    {% include 'includes/filters_row.html' with season=selected_player type=True %}
     {% if selected_player and not hide_roster_nav %}{% include 'includes/player_tabs.html' with current='stats' %}{% endif %}
     <header class="st-head">
       <div>

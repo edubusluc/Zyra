@@ -9,8 +9,7 @@
 {# «Mis estadísticas · Todas» (data_analyse.views.my_statistics): tus partidos de todas tus competiciones y gráficos con cada una al lado de la otra (stats_spaces.js), sin sumar puntos. #}
 <div class="st-page st-page--mine">
     {% include 'includes/stats_tabs.html' %}
-    {% include 'includes/season_filter.html' %}
-    {% include 'includes/match_type_filter.html' %}
+    {% include 'includes/filters_row.html' with season=True type=True %}
     <header class="st-head">
       <div>
         <h1 class="st-title">{% translate "Mis estadísticas" %}</h1>

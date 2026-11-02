@@ -277,7 +277,7 @@ class UnifiedSpacesTests(TestCase):
         # «Local y visitante» ya no está en Mis estadísticas: el reparto por sede vive en cada ficha.
         self.assertNotContains(page, "spacesSidesChart")
         self.assertNotIn("totals", chart)
-        self.assertContains(page, "st-comp-row")
+        self.assertContains(page, "z-fsel-row")
         # Con una temporada elegida no hay victorias por temporada, pero sí las convocatorias de esa temporada.
         chosen = self.client.get(reverse("my_statistics") + f"?season={season}")
         self.assertNotContains(chosen, "spacesYearsChart")
@@ -325,7 +325,7 @@ class UnifiedSpacesTests(TestCase):
     def test_player_statistics_has_competition_chips(self):
         self._close(self.snp_match)
         page = self.client.get(reverse("player_statistics"))
-        self.assertContains(page, "z-space-chip--lapi")
+        self.assertContains(page, "z-fsel-row")
         # Jugador, Parejas y Rivales no mezclan competiciones: sin «Todas».
         for name in ("player_statistics", "pair_statistics", "rival_statistics"):
             self.assertNotContains(self.client.get(reverse(name)), "espacio=todas")
@@ -449,11 +449,12 @@ class UniqueSelectorsTests(TestCase):
         import pathlib
         return [p for p in pathlib.Path(__file__).resolve().parent.parent.rglob("templates/**/*.html")]
 
-    def test_competition_chips_only_in_shared_include(self):
+    def test_filters_use_the_single_row_of_dropdowns(self):
         for path in self._templates():
-            if path.name == "competition_selector.html":
+            if path.name in ("competition_selector.html", "space_filter.html"):
                 continue
             self.assertNotIn("st-comp-chip", path.read_text(encoding="utf-8"), path)
+            self.assertNotIn("st-type-chips", path.read_text(encoding="utf-8"), path)
 
     def test_no_template_opts_out_of_custom_select(self):
         for path in self._templates():
