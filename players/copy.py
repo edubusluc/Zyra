@@ -19,7 +19,7 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from core.emails import build_email, logger as email_logger
-from core.models import Invitation, Membership
+from core.models import Club, Invitation, Membership
 from core.blocklist import is_user_blocked
 from core.services import club_of
 from core.similarity import same_name
@@ -124,6 +124,8 @@ def copy_players(source, target, ids, by_user, site_url=""):
     wanted = {int(i) for i in ids if str(i).isdigit()}
     copied, invited, skipped = [], [], []
     with transaction.atomic():
+        # Bloquea el equipo de destino: un doble envío no copia dos veces a los mismos jugadores.
+        Club.objects.select_for_update().get(pk=target.pk)
         for row in candidates(source, target):
             player = row["player"]
             if player.pk not in wanted:

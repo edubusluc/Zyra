@@ -23,7 +23,7 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
   espacio (no suspendido) por competición: `core.services.club_of(user, competition)`; lo comprueban `register_club`
   (solo ofrece las competiciones libres, `free_competitions`) y `accept_invitation`/`invitation` (`one_space_message`).
   En espacios sin SNP no hay cuenta SNP, sincronización ni paso de SNP en «Primeros pasos» o «Prepara la temporada».
-  Tests: `core/tests_spaces.py`, `core/tests_onboarding.py`, `core/tests_invitations.py`.
+  Tests: `core/tests_spaces.py`, `core/tests_onboarding.py`, `core/tests_invitations.py`, `core/tests_space_invitations.py`.
 - [V] Vistas unidas (`core/spaces.py`): con más de un espacio, Enfrentamientos, Calendario, Inicio (Pendiente y próximo
   enfrentamiento) juntan los espacios con el filtro «Todas · SNP · LAPI» (`?espacio=`, se recuerda en sesión, por defecto
   «Todas»). Cada tarjeta lleva la etiqueta de su competición y sus acciones según el rol en ese espacio.

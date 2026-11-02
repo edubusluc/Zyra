@@ -43,19 +43,21 @@ from .emails import send_invitation_email, send_welcome_email
 from . import guides, season_prep, spaces
 from .forms import CaptainPlayerForm, CaptainSnpForm, ClubForm, EmailChangeForm, InviteMemberForm, SignUpForm
 from .middleware import SESSION_KEY
-from .models import REPORT_SCOPES, Invitation, Membership, UserPreference
+from .models import REPORT_SCOPES, Club, Invitation, Membership, UserPreference
 from .onboarding import onboarding_for
 from . import email_verification, ratelimit, seo
 from players import copy as player_copy, snp_service
 from .unsubscribe import user_from_result_token, user_from_token
 from .services import (
     CaptaincyError, InvitationError, accept_invitation, account_delete_blocker, club_name_matches, club_of,
-    free_competitions, one_space_message,
+    ensure_space_free, free_competitions, one_space_message, SpaceTaken,
     create_club, delete_account, delete_club, eligible_successors, is_last_admin, is_only_member,
     ManagerError, remove_membership, set_manager, transfer_captaincy,
 )
 
 INVITATIONS_PER_PAGE = 10
+# Un segundo envío igual dentro de este margen se toma por doble clic y no crea otra invitación.
+DOUBLE_SUBMIT_WINDOW = datetime.timedelta(seconds=30)
 # Filas del bloque «Pendiente» del inicio: el resto se ve en el listado de enfrentamientos.
 HOME_PENDING_ROWS = 3
 
@@ -391,6 +393,8 @@ def register_club(request):
                 with transaction.atomic():
                     user = user_form.save() if anonymous else request.user
                     data = club_form.cleaned_data
+                    if not anonymous:
+                        ensure_space_free(user, data["competition"])
                     player = {} if use_snp else player_form.cleaned_data
                     club = create_club(data["name"], data["location"], user, gender=data["gender"], country=data["country"],
                                        division=data["division"], player_name=player.get("name", ""),
@@ -404,6 +408,10 @@ def register_club(request):
                         account.username = snp_form.cleaned_data["username"].strip()
                         account.password = snp_form.cleaned_data["password"]
                         account.save()
+            except SpaceTaken:
+                # Doble envío: el primero ya creó el equipo de esta competición.
+                messages.info(request, _("Tu equipo ya está creado."))
+                return redirect("home")
             except IntegrityError:
                 # Doble envío o dos registros a la vez: otro proceso creó ese usuario o email entre la validación y el guardado.
                 if not anonymous or not user_form.report_taken():
@@ -596,8 +604,17 @@ def create_invitation(request):
         return club_members(request, invite_form=form)
 
     email = form.cleaned_data["email"]
-    club.invitations.filter(email__iexact=email, used_at__isnull=True).delete()
-    invitation = Invitation.objects.create(club=club, created_by=request.user, email=email)
+    with transaction.atomic():
+        # Bloquea el club: dos envíos a la vez (doble clic) no crean dos invitaciones al mismo email.
+        Club.objects.select_for_update().get(pk=club.pk)
+        recent = timezone.now() - DOUBLE_SUBMIT_WINDOW
+        if club.invitations.filter(email__iexact=email, used_at__isnull=True, player__isnull=True,
+                                   created_at__gte=recent).exists():
+            messages.info(request, _("Esa invitación ya está enviada a %(email)s.") % {"email": email})
+            return redirect(reverse("club_members") + "#invitaciones")
+        # Las invitaciones de ficha copiada (``player``) son de otro flujo y no se sustituyen.
+        club.invitations.filter(email__iexact=email, used_at__isnull=True, player__isnull=True).delete()
+        invitation = Invitation.objects.create(club=club, created_by=request.user, email=email)
     url = request.build_absolute_uri(reverse("invitation", args=[invitation.token]))
     if send_invitation_email(invitation, url):
         messages.success(request, _("Invitación enviada a %(email)s. El enlace caduca en 24 horas.") % {"email": email})
@@ -618,6 +635,11 @@ def create_invitation_link(request):
     marca como caducado, así se conserva quién se unió con él).
     """
     with transaction.atomic():
+        # Bloquea el club: un doble clic no genera dos enlaces y deja muerto el primero.
+        Club.objects.select_for_update().get(pk=request.club.pk)
+        recent = timezone.now() - DOUBLE_SUBMIT_WINDOW
+        if request.club.invitations.pending().filter(reusable=True, created_at__gte=recent).exists():
+            return redirect(reverse("club_members") + "#invitaciones")
         replaced = request.club.invitations.pending().filter(reusable=True).update(expires_at=timezone.now())
         Invitation.objects.create(club=request.club, created_by=request.user, reusable=True)
     if replaced:

@@ -161,6 +161,7 @@ class SharedLinkTests(TestCase):
     def test_new_link_invalidates_the_previous_one(self):
         self.client.post(reverse("create_invitation_link"))
         first = Invitation.objects.get()
+        Invitation.objects.filter(pk=first.pk).update(created_at=timezone.now() - datetime.timedelta(minutes=5))
         self.client.post(reverse("create_invitation_link"))
         first.refresh_from_db()
         self.assertFalse(first.is_valid)

@@ -7,6 +7,7 @@ mucho un espacio por competición: quien ya es miembro (o capitán) de un club S
 registrar ni unirse a otro club SNP, pero sí a uno LAPI (``club_of``). Los clubes suspendidos
 no cuentan, porque ya no se pueden usar.
 """
+from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -16,6 +17,8 @@ from team.models import Team
 from .blocklist import is_user_blocked
 from .competitions import COMPETITIONS
 from .models import Club, Invitation, Membership
+
+User = get_user_model()
 
 
 def club_of(user, competition=None):
@@ -40,6 +43,22 @@ def one_space_message(club):
     return _("Ya tienes el equipo %(club)s en %(competition)s y solo se puede tener un equipo por "
              "competición. Abandónalo antes de unirte o crear otro de %(competition)s.") % {
         "club": club.name, "competition": club.rules.name}
+
+
+class SpaceTaken(Exception):
+    """La cuenta ya tiene un equipo en esa competición (un espacio por competición)."""
+    pass
+
+
+def ensure_space_free(user, competition):
+    """
+    Dentro de una transacción: bloquea la cuenta ``user`` y comprueba que no tiene equipo en
+    ``competition``; si no, lanza ``SpaceTaken``. El bloqueo hace que dos envíos a la vez del
+    formulario de alta (doble clic, dos pestañas) no creen dos equipos en la misma competición.
+    """
+    User.objects.select_for_update().get(pk=user.pk)
+    if club_of(user, competition) is not None:
+        raise SpaceTaken(competition)
 
 
 @transaction.atomic
