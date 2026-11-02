@@ -425,14 +425,19 @@ def players_charts(players, logs, season, match_type):
 
     Devuelve ``set_rows`` (cada situación de sets con el % de cada competición), ``set_panels`` (lo mismo
     agrupado por competición, para los paneles de stats_mine.html) y ``spaces_chart``
-    para stats_spaces.js: competiciones, partidos ganados por temporada (sin temporada elegida) y % de convocatorias en las que se apuntó
+    para stats_spaces.js: competiciones, partidos ganados y perdidos como local y como visitante,
+    partidos ganados por temporada (sin temporada elegida) y % de convocatorias en las que se apuntó
     por temporada (con una temporada elegida, solo esa: se dibuja con barras).
     """
-    comps, sets_by_comp, years, attendance = [], [], [], []
+    comps, sets_by_comp, local, visiting, years, attendance = [], [], [], [], [], []
     for player, log in zip(players, logs):
         club = player.club
         comps.append({"code": club.competition, "name": str(club.rules.name), "club": club.name})
         sets_by_comp.append(set_stats(log))
+        local.append({"won": sum(g["won"] for g in log if g["local"]),
+                      "lost": sum(not g["won"] for g in log if g["local"])})
+        visiting.append({"won": sum(g["won"] for g in log if not g["local"]),
+                         "lost": sum(not g["won"] for g in log if not g["local"])})
         per_year = {}
         for g in log:
             per_year[g["season"]] = per_year.get(g["season"], 0) + g["won"]
@@ -456,6 +461,10 @@ def players_charts(players, logs, season, match_type):
     # Tarjeta «Sets» de «Mis estadísticas»: solo las tres situaciones del diseño, con el % de cada competición.
     set_compare = [row for key in MINE_SET_KEYS for row in set_rows if row["key"] == key]
 
+    # Partidos ganados y perdidos de cada competición (local + visitante), para «Local y visitante».
+    totals = [{"won": a["won"] + b["won"], "lost": a["lost"] + b["lost"], "local": a, "visiting": b}
+              for a, b in zip(local, visiting)]
+
     by_start = lambda s: int(s.split('-')[0])
     labels = sorted({y for per in years for y in per}, key=by_start)
     att_labels = sorted({s for per in attendance for s in per}, key=by_start)
@@ -464,8 +473,13 @@ def players_charts(players, logs, season, match_type):
         "set_panels": set_panels,
         "set_compare": set_compare,
         "sets_played": any(st["played"] for st in sets_by_comp),
+        "has_local": any(r["won"] or r["lost"] for r in local),
+        "has_visiting": any(r["won"] or r["lost"] for r in visiting),
         "spaces_chart": {
             "comps": comps,
+            "local": local,
+            "visiting": visiting,
+            "totals": totals,
             "years": {"labels": labels, "won": [[per.get(y, 0) for y in labels] for per in years]},
             "attendance": {"labels": att_labels, "series": [[per.get(s) for s in att_labels] for per in attendance]},
             "currentSeason": current_season(),
