@@ -125,4 +125,42 @@
       },
     });
   };
+
+  // «Partidos jugados» (ganados y perdidos, tramos pegados) y «Evolución del % de victorias» por temporada:
+  // los usan la ficha del jugador y la de la pareja. ``seasons``: {labels, wins, losses, pct}.
+  window.zSeasonCharts = function (seasons, playedCanvas, pctCanvas) {
+    const charts = [];
+    const short = (y) => y.replace(/^\d{2}(\d{2})-\d{2}(\d{2})$/, '$1-$2');
+    if (playedCanvas && seasons) {
+      // Solo se redondean la base del primer tramo y la cima del último.
+      const edge = (ctx) => {
+        const filled = ctx.chart.data.datasets.map((d, i) => (Number(d.data[ctx.dataIndex]) > 0 ? i : -1)).filter((i) => i >= 0);
+        const bottom = ctx.datasetIndex === filled[0] ? 10 : 0;
+        const top = ctx.datasetIndex === filled[filled.length - 1] ? 10 : 0;
+        return { topLeft: top, topRight: top, bottomLeft: bottom, bottomRight: bottom };
+      };
+      const bar = (label, data, color) => ({ label, data, backgroundColor: color, borderRadius: edge, borderSkipped: false, borderWidth: 0, maxBarThickness: 64 });
+      charts.push(new Chart(playedCanvas, {
+        type: 'bar',
+        data: {
+          labels: seasons.labels.map(short),
+          datasets: [bar(gettext('Ganados'), seasons.wins, '#B4F100'), bar(gettext('Perdidos'), seasons.losses, '#FF5C63')],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, pointStyle: 'rectRounded', boxWidth: 10 } } },
+          scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, display: false, beginAtZero: true } },
+        },
+      }));
+    }
+    if (pctCanvas && seasons && seasons.pct.length > 1) {
+      charts.push(window.zSeasonLine(pctCanvas, { labels: seasons.labels, scores: seasons.pct }, {
+        label: gettext('% victorias'),
+        format: (v) => `${Math.round(v)}%`,
+        y: { min: 0, max: 100, grace: 0 },
+      }));
+    }
+    return charts;
+  };
 })();

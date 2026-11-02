@@ -71,6 +71,12 @@ class RivalsTests(RivalsBase):
         by_last = [r["label"] for r in rivals.rival_summary(self.club, sort=rivals.SORT_LAST)]
         self.assertEqual(by_last[0], "Amigos de Pedro")
 
+    def test_summary_has_form_and_no_league_points_in_snp(self):
+        self.seed()
+        row = next(r for r in rivals.rival_summary(self.club) if r['label'] == 'Norte')
+        self.assertEqual(row['form'], list(row['streak']))
+        self.assertEqual(row['league_points'], 0)  # SNP no tiene puntos de liga
+
     def test_filters_by_season_and_type(self):
         self.seed()
         labels = lambda **kw: {r["label"] for r in rivals.rival_summary(self.club, **kw)}  # noqa: E731

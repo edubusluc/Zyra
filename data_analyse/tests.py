@@ -175,7 +175,7 @@ class PairStatisticsTests(TestCase):
         games = response.context["last_games"]
         self.assertEqual([g["date"] for g in games], [datetime.date(2026, 1, d) for d in (5, 4, 3, 2, 1)])
         self.assertTrue(all(g["local"] and not g["won"] and g["rival"] == rival.name for g in games))
-        self.assertContains(response, "Últimos 5 partidos")
+        self.assertContains(response, "Últimos partidos juntos")
 
     def test_pair_last_games_sets_and_side(self):
         m = Match.objects.get(start_date=datetime.date(2024, 11, 1))

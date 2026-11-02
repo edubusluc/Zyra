@@ -3760,3 +3760,17 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .st-kpi-row--two { grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 12px 0 0; }
 .st-kpi-row--records { align-content: start; margin: 0; }
 @media (max-width: 640px) { .st-kpi-row--three { grid-template-columns: repeat(2, minmax(0, 1fr)); } .st-balance { padding: 18px; } .st-balance-main { align-items: center; } }
+
+/* Rivales y parejas (fases 5 y 6): tarjeta lima de cifras y empate en la racha. */
+.st-kpi-tile--lime { color: var(--z-ink); background: var(--z-lime); border-color: var(--z-lime); }
+.st-kpi-tile--lime span, .st-kpi-tile--lime small { color: var(--z-ink); }
+.st-pip--d { color: var(--z-ink); background: #C9CBC4; }
+
+/* Advertencias (fase 7): cifra ámbar y barras «Por motivo». */
+.st-kpi-tile--warn b { color: var(--z-warning); }
+.st-bars--warn .st-meter span { background: var(--z-warning); }
+.st-bars--warn .st-bar-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) 2ch; }
+.st-bars--warn .st-bar-row em { text-align: right; font-style: normal; font-weight: 800; }
+.st-kpi-row--five { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+@media (max-width: 767.98px) { .st-kpi-row--five { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.st-card > .st-warn-list { margin-top: 14px; }

@@ -166,6 +166,17 @@ class ClubSetsTests(ClubDataMixin, TestCase):
         self.assertNotContains(response, 'id="chartPlayed"')
         self.assertNotContains(response, "Detalle por temporada")
 
+    def test_pair_page_without_best_pairs_and_season_detail(self):
+        url = reverse('pair_statistics')
+        params = {'p1': self.a.public_id, 'p2': self.b.public_id}
+        response = self.client.get(url, params)
+        self.assertNotContains(response, "Mejores parejas")
+        self.assertContains(response, "Evolución del % de victorias")
+        response = self.client.get(url, {**params, 'season': '2025-2026'})
+        self.assertNotContains(response, "Evolución del % de victorias")
+        self.assertContains(response, "Partidos de la pareja en la temporada.")
+        self.assertEqual(len(response.context['season_games']), 2)
+
     def test_points_series_by_round_or_by_season(self):
         Match.objects.filter(pk=self.m1.pk).update(result_points="6/6")
         Match.objects.filter(pk=self.m2.pk).update(result_points="3/9")

@@ -15203,3 +15203,52 @@ msgstr "%(n)s %% lost"
 
 msgid "Se mostrará la evolución cuando haya al menos 2 temporadas."
 msgstr "The trend will show once there are at least 2 seasons."
+
+#, python-format
+msgid "Pareja habitual del partido %(n)s"
+msgstr "Usual pair in game %(n)s"
+
+#, python-format
+msgid "Pareja sorteada %(n)s vez"
+msgid_plural "Pareja sorteada %(n)s veces"
+msgstr[0] "Pair drawn %(n)s time"
+msgstr[1] "Pair drawn %(n)s times"
+
+msgid "Últimos partidos juntos"
+msgstr "Latest matches together"
+
+msgid "Últimos partidos juntos."
+msgstr "Latest matches together."
+
+msgid "Cifras de la pareja"
+msgstr "Pair figures"
+
+msgid "Pts liga"
+msgstr "League pts"
+
+msgid "Puntos de liga contra este rival"
+msgstr "League points against this rival"
+
+msgid "Balance contra el rival"
+msgstr "Record against the rival"
+
+msgid "Racha contra ellos"
+msgstr "Form against them"
+
+msgid "Del más antiguo al más reciente."
+msgstr "Oldest to most recent."
+
+msgid "a favor – en contra"
+msgstr "for – against"
+
+msgid "Por motivo"
+msgstr "By reason"
+
+msgid "Cuántas advertencias de cada tipo."
+msgstr "How many warnings of each type."
+
+msgid "Cifras de las advertencias"
+msgstr "Warning figures"
+
+msgid "Partidos de la pareja en la temporada."
+msgstr "The pair's matches in the season."

@@ -1,0 +1,31 @@
+{% load i18n %}{% load zyra_format %}
+{# Partidos de una pareja. Recibe: games (data_analyse.views.pair_last_games) #}
+<div class="st-table-wrap">
+  <table class="st-table st-table--links">
+    <thead>
+      <tr>
+        <th scope="col">{% translate "Fecha" %}</th>
+        <th scope="col">{% translate "Rival" %}</th>
+        <th scope="col">{% if current_club.rules.ordered_pairs %}{% translate "Partido" %}{% else %}{% translate "Tipo" %}{% endif %}</th>
+        <th scope="col">{% translate "Resultado" %}</th>
+        {% if current_club.rules.ordered_pairs %}<th scope="col">{% translate "Puntos" %}</th>{% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for g in games %}
+        <tr>
+          <th scope="row">
+            <a href="{% url 'call_for_match' g.match_public_id %}#partido-{{ g.n_game }}">{{ g.date|date_long }}</a>
+          </th>
+          <td>{{ g.rival }} <span class="st-muted">({% if g.local %}{% translate "local" %}{% else %}{% translate "visitante" %}{% endif %})</span></td>
+          <td>{% if current_club.rules.ordered_pairs %}{{ g.n_game }}{% else %}{{ g.type_label }}{% if g.round %} · J{{ g.round }}{% endif %}{% endif %}</td>
+          <td>
+            <span class="{% if g.won %}st-up{% else %}st-down{% endif %}">{% if g.won %}{% translate "V" context "abreviatura de victoria" %}{% else %}{% translate "D" context "abreviatura de derrota" %}{% endif %}</span>
+            {% if g.sets %}<span class="st-muted">{{ g.sets }}</span>{% endif %}
+          </td>
+          {% if current_club.rules.ordered_pairs %}<td>{{ g.points }}</td>{% endif %}
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

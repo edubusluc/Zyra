@@ -67,6 +67,9 @@ def _entry(match):
         "local": match.own_is_local,
         "friendly": match.is_friendly,
         "type_label": match.type_label,
+        "round": match.round_number,
+        "league_points": match.league_points,
+        "rival_no_show": match.no_show == Match.NO_SHOW_RIVAL,
     }
 
 
@@ -81,15 +84,18 @@ def _tally(entries):
         "lost": len(entries) - won - drawn,
         "points_for": sum(e["own"] or 0 for e in entries),
         "points_against": sum(e["other"] or 0 for e in entries),
+        "league_points": sum(e["league_points"] or 0 for e in entries),
         "last": entries[-1] if entries else None,
         "streak": "".join(e["outcome"] for e in entries[-3:]),
+        "form": [e["outcome"] for e in entries[-5:]],
     }
 
 
 def rival_summary(club, season=None, match_type=None, sort=SORT_RIVAL):
     """
     Una fila por rival con su balance: ``{'key', 'label', 'team', 'friendly_only', 'played', 'won',
-    'drawn', 'lost', 'points_for', 'points_against', 'last', 'streak'}``. ``sort``: por nombre,
+    'drawn', 'lost', 'points_for', 'points_against', 'league_points', 'last', 'streak', 'form'}``
+    (``league_points``: puntos de liga contra él, solo con liga). ``sort``: por nombre,
     por balance (más victorias netas primero) o por el último enfrentamiento.
     """
     groups = {}

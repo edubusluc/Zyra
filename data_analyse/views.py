@@ -4,6 +4,8 @@ Estadísticas del club: del equipo, por jugador, por parejas y advertencias.
 Todas se calculan sobre los partidos cerrados del club y admiten filtro por temporada
 y por tipo de partido.
 """
+from collections import Counter
+
 from match import outcomes
 from django.shortcuts import render
 from match.models import Match, Game, Result
@@ -23,7 +25,7 @@ from django.utils.translation import gettext as _, gettext_lazy
 from core.decorators import club_required, club_manager_required
 from core import spaces
 from core.competitions import competition_for
-from penalty.models import Penalty
+from penalty.models import KINDS as PENALTY_KINDS, Penalty
 from core.season_choice import ALL_SEASONS, choose_season
 from players.models import current_season, joined_by
 from . import pairs as pair_stats
@@ -768,6 +770,8 @@ def season_games(player, season, match_type=None):
             'local': is_local,
             'partner': partner,
             'sets': _sets_text(g, is_local),
+            'type_label': g.match.type_label,
+            'round': g.match.round_number,
             'won': won,
             'points': g.score if won else 0,
             'possible': g.score,
@@ -1122,12 +1126,20 @@ def statistics_per_pair(request):
             context['error'] = _("Elige dos jugadores distintos.")
         else:
             summary = pair_stats.pair_summary(log, p1.id, p2.id)
+            pair_log = [g for g in log if g['pair'] == pair_stats.pair_key(p1.id, p2.id)]
+            pair_sets = set_stats(pair_log)
+            numbers = Counter(g['n_game'] for g in pair_log)
             context.update({
+                'usual_number': numbers.most_common(1)[0][0] if numbers else None,
+                'set_rows': [(label, desc, pair_sets[key]) for key, label, desc in SET_SITUATIONS],
                 'p1': p1,
                 'p2': p2,
                 's': summary,
                 'last_games': pair_last_games(request.club, p1, p2, match_type=match_type, season=selected_season),
-                'pair_sets': set_stats([g for g in log if g['pair'] == pair_stats.pair_key(p1.id, p2.id)]),
+                # Con una temporada elegida, «Detalle por temporada» lista todos los partidos de la pareja en ella.
+                'season_games': (pair_last_games(request.club, p1, p2, n=None, match_type=match_type, season=selected_season)
+                                 if selected_season else None),
+                'pair_sets': pair_sets,
                 'pct_w': round(summary['pct']),
                 'local_pct_w': round(summary['local_pct']),
                 'visiting_pct_w': round(summary['visiting_pct']),
@@ -1148,7 +1160,7 @@ PAIR_LAST_GAMES = 5
 def pair_last_games(club, p1, p2, n=PAIR_LAST_GAMES, match_type=None, season=None):
     """
     Últimos `n` partidos (Game) cerrados de la pareja en el club (de una temporada si se indica), del más reciente al más antiguo.
-    Cada elemento: {'match_id', 'match_public_id', 'n_game', 'date', 'season', 'rival', 'local', 'sets', 'won', 'points'}
+    Cada elemento: {'match_id', 'match_public_id', 'n_game', 'date', 'season', 'rival', 'local', 'sets', 'type_label', 'round', 'won', 'points'}
     """
     together = (
         Q(player_1_local=p1, player_2_local=p2) | Q(player_1_local=p2, player_2_local=p1) |
@@ -1158,13 +1170,13 @@ def pair_last_games(club, p1, p2, n=PAIR_LAST_GAMES, match_type=None, season=Non
         Game.objects
         .filter(together, draft_mode=False, match__draft_mode=False, winner__in=outcomes.WINNERS, match__club=club,
                 **pair_stats.match_type_lookup(match_type, prefix='match__'))
-        .select_related('match__local', 'match__visiting')
+        .select_related('match__local', 'match__visiting', 'match__club')
         .prefetch_related('results')
         .order_by('-match__start_date', '-match_id', '-n_game')
     )
     if season:
         games = games.filter(match__season=season)
-    games = games[:n]
+    games = games[:n] if n else games
     rows = []
     for g in games:
         is_local = p1.id in (g.player_1_local_id, g.player_2_local_id)
@@ -1220,8 +1232,14 @@ def warnings_statistics(request):
         row['count'] += 1
         row['items'].append(pen)
     ranking = sorted(by_player.values(), key=lambda r: (-r['count'], r['player'].name, r['player'].last_name))
+    kinds = Counter(pen.kind for pen in penalties)
+    top_kind = max(kinds.values(), default=0)
+    by_kind = [{'label': label, 'count': kinds.get(code, 0),
+                'pct': round(100 * kinds.get(code, 0) / top_kind) if top_kind else 0}
+               for code, label in PENALTY_KINDS]
 
     return render(request, 'warnings_statistics.html', {
+        'by_kind': by_kind,
         **season_filter_context(request, seasons, selected_season, all_value=ALL_SEASONS),
         'seasons': seasons,
         'selected_season': selected_season,
