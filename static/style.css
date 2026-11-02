@@ -1624,7 +1624,7 @@ a.z-location:hover span { text-decoration: underline; }
 }
 .st-title {
   margin: 0; font-family: var(--st-display); text-transform: uppercase;
-  font-size: clamp(2rem, 5.6vw, 3.2rem); font-weight: 400; line-height: 1; color: #FFFFFF;
+  font-size: clamp(2rem, 5.6vw, 3.2rem); font-weight: 400; line-height: 1.12; color: #FFFFFF;
 }
 .st-subtitle { margin: 6px 0 0; font-size: var(--z-fs-base); color: var(--st-muted); }
 
@@ -3679,7 +3679,7 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .st-picker--bar .st-label { margin: 0; color: var(--z-muted); }
 .st-hero { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 18px; margin: 0 0 12px; padding: 22px 28px; color: var(--z-ink); background: var(--z-lime); border-radius: var(--z-radius-lg); }
 .st-hero-kicker { margin: 0; font-size: var(--z-fs-xs); font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
-.st-hero-name { margin: 2px 0; font-family: var(--z-display); font-size: clamp(2rem, 6vw, 3.6rem); font-weight: 400; line-height: 1; text-transform: uppercase; color: var(--z-ink); overflow-wrap: anywhere; }
+.st-hero-name { margin: 8px 0 4px; font-family: var(--z-display); font-size: clamp(2rem, 6vw, 3.6rem); font-weight: 400; line-height: 1.15; text-transform: uppercase; color: var(--z-ink); overflow-wrap: anywhere; }
 .st-hero-sub { margin: 0; font-size: var(--z-fs-xs); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .st-hero-id { display: flex; align-items: center; gap: 16px; min-width: 0; }
 .st-hero-id > div { min-width: 0; }
