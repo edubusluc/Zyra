@@ -84,8 +84,11 @@
   });
 
   // Línea lima sin ejes con el último valor en grande (puntos SNP por temporada de la ficha del jugador y del equipo).
-  window.zSeasonLine = function (canvas, series) {
+  // ``opts``: ``label`` del dataset, ``format(valor)`` para la cifra y el tooltip e ``y`` (escala fija, p. ej. 0-100).
+  window.zSeasonLine = function (canvas, series, opts = {}) {
     const lang = document.documentElement.lang || 'es';
+    const label = opts.label || gettext('Puntos SNP');
+    const format = opts.format || ((v) => v.toLocaleString(lang));
     const short = (y) => y.replace(/^\d{2}(\d{2})-\d{2}(\d{2})$/, '$1-$2');
     const lastValue = {
       id: 'lastValue',
@@ -99,7 +102,7 @@
         ctx.fillStyle = '#FFFFFF';
         ctx.textAlign = 'right';
         ctx.textBaseline = 'bottom';
-        ctx.fillText(series.scores[series.scores.length - 1].toLocaleString(lang), Math.min(point.x + 8, chartArea.right + 8), point.y - 10);
+        ctx.fillText(format(series.scores[series.scores.length - 1]), Math.min(point.x + 8, chartArea.right + 8), point.y - 10);
         ctx.restore();
       },
     };
@@ -108,7 +111,7 @@
       plugins: [lastValue],
       data: {
         labels: series.labels.map(short),
-        datasets: [{ label: gettext('Puntos SNP'), data: series.scores, borderColor: '#B4F100', fill: true, borderWidth: 3, pointRadius: 0, pointHoverRadius: 6 }],
+        datasets: [{ label, data: series.scores, borderColor: '#B4F100', fill: true, borderWidth: 3, pointRadius: 0, pointHoverRadius: 6 }],
       },
       options: {
         responsive: true,
@@ -116,9 +119,9 @@
         layout: { padding: { top: 34, right: 16 } },
         plugins: {
           legend: { display: false },
-          tooltip: { callbacks: { label: (c) => ' ' + interpolate(gettext('%(n)s puntos'), { n: c.parsed.y.toLocaleString(lang) }, true) } },
+          tooltip: { callbacks: { label: (c) => ' ' + (opts.format ? format(c.parsed.y) : interpolate(gettext('%(n)s puntos'), { n: format(c.parsed.y) }, true)) } },
         },
-        scales: { x: { grid: { display: false } }, y: { display: false, grace: '12%' } },
+        scales: { x: { grid: { display: false } }, y: { display: false, grace: '12%', ...opts.y } },
       },
     });
   };

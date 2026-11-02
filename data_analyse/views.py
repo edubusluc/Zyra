@@ -1035,6 +1035,13 @@ def statistics_per_player(request):
         'd': detail,
         'games': season_games(player, selected_season, match_type),
         'seasons_asc': rows,
+        'seasons_desc': list(reversed(rows)),
+        'chart_seasons': {
+            'labels': [r['season'] for r in rows],
+            'wins': [r['wins'] for r in rows],
+            'losses': [r['losses'] for r in rows],
+            'pct': [r['pct'] for r in rows],
+        },
         # enteros para anchos de barra (evita comas decimales en style="")
         'pct_w': round(summary['pct']),
         'local_pct_w': round(summary['local_pct']),

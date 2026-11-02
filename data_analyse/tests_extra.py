@@ -155,6 +155,17 @@ class ClubSetsTests(ClubDataMixin, TestCase):
         self.assertEqual(snp['riser']['player'], self.a)
         self.assertEqual(snp['chart'], {'labels': ['01/10', '08/10'], 'average': [32.5, 40.0]})
 
+    def test_player_page_all_seasons_shows_charts_and_detail(self):
+        url = reverse('player_statistics')
+        response = self.client.get(url, {'player': self.a.public_id})
+        self.assertContains(response, 'id="chartPlayed"')
+        self.assertContains(response, "Detalle por temporada")
+        self.assertNotContains(response, 'st-table--links')
+        response = self.client.get(url, {'player': self.a.public_id, 'season': '2025-2026'})
+        self.assertContains(response, 'st-table--links')
+        self.assertNotContains(response, 'id="chartPlayed"')
+        self.assertNotContains(response, "Detalle por temporada")
+
     def test_points_series_by_round_or_by_season(self):
         Match.objects.filter(pk=self.m1.pk).update(result_points="6/6")
         Match.objects.filter(pk=self.m2.pk).update(result_points="3/9")
