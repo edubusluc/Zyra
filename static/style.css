@@ -3662,7 +3662,7 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .z-set-row { display: grid; grid-template-columns: minmax(9rem, 13rem) 1fr auto; align-items: center; gap: 12px; }
 .z-set-row b { font-size: var(--z-fs-sm); font-weight: 700; color: #FFFFFF; }
 .z-set-row b small { display: block; margin-top: 2px; font-size: var(--z-fs-xs); font-weight: 400; color: var(--st-muted); }
-.z-set-row em { min-width: 4.2rem; font-family: var(--z-display); font-style: normal; font-size: var(--z-fs-xl); text-align: right; color: #FFFFFF; font-variant-numeric: tabular-nums; }
+.z-set-row em { min-width: 4.2rem; white-space: nowrap; font-family: var(--z-display); font-style: normal; font-size: var(--z-fs-xl); text-align: right; color: #FFFFFF; font-variant-numeric: tabular-nums; }
 .z-set-bars { display: flex; flex-direction: column; gap: 3px; }
 .z-set-bar { height: 8px; overflow: hidden; background: var(--z-surface-3); border-radius: 999px; }
 .z-set-bar span { display: block; height: 100%; border-radius: 999px; }
@@ -3821,7 +3821,7 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .st-hero-updated { font-weight: 700; }
 .st-hero-updated.is-stale { color: var(--z-ink); text-decoration: underline wavy; }
 .st-hero-caps { display: flex; flex-direction: column; gap: 2px; }
-@media (max-width: 575.98px) { .z-set-row { grid-template-columns: minmax(7rem, 9rem) 1fr auto; gap: 8px; } .z-set-row em { min-width: 3.4rem; font-size: var(--z-fs-lg); } }
+@media (max-width: 575.98px) { .z-set-row { grid-template-columns: minmax(7rem, 9rem) 1fr auto; gap: 8px; } .z-set-row em { min-width: 3.4rem; font-size: var(--z-fs-md, 1rem); } }
 
 /* Fase 5 · Tabla de plantilla (Equipo y entrada de Jugadores) y secciones plegables de «Profundizar». */
 .st-roster-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; }

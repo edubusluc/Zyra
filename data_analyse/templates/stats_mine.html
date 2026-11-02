@@ -54,7 +54,7 @@
               <div class="z-set-bars">
                 {% for c in item.comps %}<div class="z-set-bar" title="{{ c.name }}: {% if c.r.total %}{% blocktranslate with w=c.r.wins t=c.r.total %}{{ w }} de {{ t }}{% endblocktranslate %}{% else %}—{% endif %}"><span class="z-set-bar--{{ c.code }}" style="width: {{ c.r.pct|default:0 }}%"></span></div>{% endfor %}
               </div>
-              <em>{% for c in item.comps %}{% if not forloop.first %}/{% endif %}{% if c.r.pct is None %}—{% else %}{{ c.r.pct }}{% endif %}{% endfor %}</em>
+              <em>{% for c in item.comps %}{% if not forloop.first %} / {% endif %}{% if c.r.pct is None %}—{% else %}{{ c.r.pct }}%{% endif %}{% endfor %}</em>
             </div>
             {% endfor %}
           </div>
