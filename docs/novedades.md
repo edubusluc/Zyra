@@ -5,7 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 02/11/2026 · Estadísticas: fase 9 (Enfrentamientos)
 
-- **Lista para gestionar**: el resumen de cinco cifras (Jugados, Ganados, Empatados, Perdidos, Pendientes) se sustituye por una línea con los «Pendientes» y el enlace «Ver balance» a Estadísticas › Equipo. Los títulos «Próximos» y «Jugados» ocupan todo el ancho también en la vista de jugador.
+- **Lista para gestionar**: el resumen de cinco cifras (Jugados, Ganados, Empatados, Perdidos, Pendientes) se sustituye por una línea con los «Pendientes» y el enlace «Ver balance» a Estadísticas › Equipo (solo capitán y gestores: el jugador no ve pendientes, lo que debe responder está en Inicio). Los títulos «Próximos» y «Jugados» ocupan todo el ancho también en la vista de jugador.
 - **Cerrados en una línea**: fecha, rival, competición, tipo o jornada y el resultado leído desde nuestro equipo («1–2» y D/V/E), igual para capitán y jugador. El recorrido de cuatro pasos queda solo en los pendientes del capitán o gestor; los jugadores siguen viendo la tarjeta de «Próximos».
 - **Un solo estado en el acta**: desaparecen la insignia de la cabecera y la etiqueta «Acta cerrada»; con el acta cerrada tampoco se muestran las cuatro fases. El estado está junto al marcador.
 - **«Previa» solo antes de jugar**: con el acta cerrada, en su lugar, el enlace «Historial contra [rival]» a su ficha en Estadísticas › Rivales (todas las temporadas).
