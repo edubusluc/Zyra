@@ -279,9 +279,9 @@ class UnifiedSpacesTests(TestCase):
         # Diseño aprobado: tres situaciones de sets, ganados/perdidos por competición y fila de competición.
         self.assertEqual([r["key"] for r in page.context["set_compare"]], ["tiebreak", "first_set", "comeback", "bagels"])
         self.assertEqual([(t["pct_local"], t["pct_visiting"]) for t in chart["totals"]], [(100, None), (100, None)])
-        # Cada situación lleva su descripción a la vista, como el «Sets clutch» de la ficha.
-        self.assertContains(page, "Sets que llegan a 6-6 y acaban 7-6.")
-        self.assertContains(page, "Sets ganados por 6-0.")
+        # Cada situación lleva su descripción (no un «i») y Roscos a favor se calcula sobre los sets jugados.
+        self.assertEqual(page.context["set_compare"][3]["hint"], "Sets ganados por 6-0.")
+        self.assertEqual([c["r"]["pct"] for c in page.context["set_compare"][3]["comps"]], [None, None])
         self.assertContains(page, 'id="spacesSidesChart"')
         self.assertContains(page, "z-fsel-row")
         # Con una temporada elegida no hay victorias por temporada, pero sí las convocatorias de esa temporada.
