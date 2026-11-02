@@ -3892,3 +3892,28 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
   .st-balance-pct { font-size: 2.2rem; }
   .st-balance-rate { align-items: flex-start; }
 }
+
+/* Fase 9 · Enfrentamientos: aviso de pendientes, cerrados en una línea y títulos de grupo a todo el ancho. */
+.z-fixtures-head { grid-column: 1 / -1; }
+.z-pending-line { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; padding: 12px 16px; background: var(--z-surface); border: 1px solid var(--z-border); border-radius: var(--z-radius-lg); }
+.z-pending-line p { display: flex; align-items: baseline; gap: 8px; margin: 0; }
+.z-pending-line b { font-size: var(--z-fs-xl); font-weight: 800; line-height: 1; color: #FFFFFF; font-variant-numeric: tabular-nums; }
+.z-pending-line span { font-size: var(--z-fs-sm); font-weight: 800; color: var(--z-muted); }
+.z-pending-line a { font-size: var(--z-fs-sm); font-weight: 800; color: var(--z-lime); text-decoration: none; white-space: nowrap; }
+.z-fixtures > .z-fixture.z-fixture--closed { grid-column: 1 / -1; grid-template-columns: 56px minmax(0, 1fr) auto 20px; grid-template-areas: none; align-items: center; gap: 12px; padding: 10px 14px; border: 1px solid var(--z-border); }
+.z-closed-date { display: flex; flex-direction: column; align-items: center; font: 400 1.15rem/1 var(--z-display); text-transform: uppercase; color: var(--z-text); }
+.z-closed-date small { margin-top: 2px; font: 800 .62rem var(--z-body); letter-spacing: .06em; color: var(--z-muted); }
+.z-closed-main { display: grid; gap: 4px; min-width: 0; }
+.z-closed-rival { overflow: hidden; font-size: var(--z-fs-md); font-weight: 800; color: #FFFFFF; text-overflow: ellipsis; white-space: nowrap; }
+.z-closed-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; }
+.z-closed-result { display: inline-flex; align-items: center; gap: 8px; }
+.z-closed-score { font: 400 1.5rem/1 var(--z-display); color: var(--z-text); white-space: nowrap; }
+.z-fixture--closed.is-win .z-closed-score { color: var(--z-lime); }
+.z-fixture--closed.is-loss .z-closed-score { color: var(--z-danger); }
+.z-closed-open { color: var(--z-muted); text-decoration: none; }
+@media (max-width: 575.98px) {
+  .z-fixtures > .z-fixture.z-fixture--closed { grid-template-columns: 44px minmax(0, 1fr) auto; gap: 8px; padding: 10px 12px; }
+  .z-closed-open { display: none; }
+}
+.z-rival-history { margin: 0 0 16px; }
+.z-rival-history a { display: inline-flex; align-items: center; gap: 8px; font-size: var(--z-fs-sm); font-weight: 800; color: var(--z-lime); text-decoration: none; }

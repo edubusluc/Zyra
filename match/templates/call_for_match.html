@@ -9,7 +9,6 @@
         <h1>{{ match.local_name }} – {{ match.visiting_name }}</h1>
         <p class="mb-0">{% include 'includes/competition_badge.html' with code=match.club.competition name=match.club.rules.name short=True %}</p>
     </div>
-    <span class="z-badge{% if not match.draft_mode %} z-badge--lime{% endif %}">{{ phase.label }}</span>
 </div>
 
 <div class="z-ficha-top">
@@ -28,15 +27,21 @@
         <p class="z-ficha-tags">
             {% if match.no_show %}<span class="z-tag">{% blocktranslate with team=match.no_show_team %}No presentado: {{ team }}{% endblocktranslate %}</span>{% endif %}
             {% if match.league_points is not None %}<span class="z-tag is-lime">{% blocktranslate count n=match.league_points %}{{ n }} punto de liga{% plural %}{{ n }} puntos de liga{% endblocktranslate %}</span>{% endif %}
-            {% if not match.draft_mode %}<span class="z-tag">{% translate "Acta cerrada" %}</span>{% endif %}
         </p>
     </aside>
 </div>
 
+{# EST-040: la «Previa» ayuda a decidir antes de jugar; con el acta cerrada solo queda el enlace al historial (capitán y jugador). #}
+{% if match.draft_mode %}
 {% rival_preview match as preview %}
 {% include 'includes/rival_preview.html' %}
+{% else %}
+{% rival_history_url match as history_url %}
+{% if history_url %}<p class="z-rival-history"><a href="{{ history_url }}"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> {% blocktranslate with rival=match.rival_label %}Historial contra {{ rival }}{% endblocktranslate %} <i class="fa-solid fa-chevron-right" aria-hidden="true"></i></a></p>{% endif %}
+{% endif %}
 
-{# Estado de cada fase: cifra y barra (match/phase.py). #}
+{# Estado de cada fase: cifra y barra (match/phase.py). EST-039: con el acta cerrada el estado ya está junto al marcador. #}
+{% if match.draft_mode %}
 <ol class="z-status4{% if not can_manage %} z-status4--short{% endif %}" aria-label="{% translate 'Fases del enfrentamiento' %}">
     {# UX-020: quien no gestiona solo ve la convocatoria y el acta; las fases de gestión (parejas, resultados) no le sirven. #}
     {% for c in status_cards %}{% if can_manage or forloop.first or forloop.last %}
@@ -48,6 +53,7 @@
     </li>
     {% endif %}{% endfor %}
 </ol>
+{% endif %}
 
 {% if my_status and not match.no_show %}
 {# El jugador enlazado a esta cuenta ve si juega y con quién (H-06). #}

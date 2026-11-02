@@ -94,7 +94,7 @@ class MatchesAndCallsTests(TestCase):
         self.assertTrue(response.context["season_all"]["active"])
         self.assertEqual(response.context["summary"]["drawn"], 1)
         self.assertNotIn("page=", response.context["season_chips"][0]["url"])
-        self.assertContains(response, 'class="z-fixture is-draw"')
+        self.assertContains(response, 'class="z-fixture z-fixture--closed is-draw"')
 
         # Una temporada que no existe se ignora y manda la última elegida en la sesión («Todas»)
         response = self.client.get(reverse("list_match"), {"season": "1999-2000"})

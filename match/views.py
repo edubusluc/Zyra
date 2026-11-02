@@ -288,6 +288,8 @@ def list_match(request):
         m.tiebreak = m.id in tiebreak_pairs and m.outcome in ("V", "D")
         m.tiebreak_pair = tiebreak_pairs.get(m.id, "")
         m.local_points, m.visiting_points = split_points(m.result_points) if m.outcome else (None, None)
+        # Marcador desde nuestro equipo («1-2») para la línea del enfrentamiento cerrado; el rival, con su nombre.
+        m.own_points, m.rival_points = club_score(m) if m.outcome else (None, None)
         m.called = called.get(m.id)
         m.upcoming = m.outcome is None and not m.pending_close and m.start_date >= today
         # «Requieren acción» es solo para quien gestiona ese equipo; los jugadores ven Próximos y Jugados.
