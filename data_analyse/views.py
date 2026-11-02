@@ -73,6 +73,21 @@ def selected_match_type(request):
     return value if value in pair_stats.FILTER_VALUES else None
 
 
+ALL_TYPES = "todos"
+
+
+def stats_match_type(request):
+    """
+    Filtro de tipo de las pantallas de Estadísticas: sin nada en la URL, ``competitivo`` (lo que cuenta
+    para la clasificación; los amistosos no se mezclan por defecto, igual que en «Mi forma»);
+    ``?match_type=todos`` los incluye (devuelve None) y cualquier otro valor válido filtra por él.
+    """
+    value = request.GET.get(MATCH_TYPE_PARAM)
+    if value == ALL_TYPES:
+        return None
+    return value if value in pair_stats.FILTER_VALUES else COMPETITIVE
+
+
 # ---------------------------------------------------------------
 # SELECTOR DE TEMPORADAS: Todas + las tres últimas + buscador para el resto
 # ---------------------------------------------------------------
@@ -116,18 +131,23 @@ def season_filter_context(request, seasons, selected_season, all_value=ALL_SEASO
     }
 
 
-def match_type_context(request, match_type, by_type=False):
+def match_type_context(request, match_type, by_type=False, stats=False):
     """
     Filtro por tipo de partido: chips Todos / Competitivos / Amistosos (``match_types``) y, dentro
     de Competitivos, un selector con todos los partidos competitivos o un tipo (``competitive_types``).
     Cada enlace conserva el resto de la URL (jugador, pareja, temporada); ``match_type_qs`` sirve
     para añadir el filtro a los enlaces que ya existían (temporadas). Con ``by_type`` (pantallas de una sola
     competición) los chips son Todos, un chip por tipo de la competición y Amistosos, sin «Competitivos».
+    Con ``stats`` (Estadísticas) el tipo por defecto es Competitivos y «Todos» va explícito
+    (``?match_type=todos``, ver ``stats_match_type``); ``match_type_param`` es el valor a conservar en los
+    enlaces y formularios y ``match_type_changed`` dice si el filtro se aparta del defecto (se marca en lima).
     """
     def url(value):
         """URL de la página actual con el tipo de partido ``value`` (sin él para «Todos»)."""
         params = request.GET.copy()
-        if value:
+        if stats:
+            params[MATCH_TYPE_PARAM] = value or ALL_TYPES
+        elif value:
             params[MATCH_TYPE_PARAM] = value
         else:
             params.pop(MATCH_TYPE_PARAM, None)
@@ -160,7 +180,9 @@ def match_type_context(request, match_type, by_type=False):
                             for value in values],
         'selected_match_type': match_type,
         'selected_match_type_label': labels.get(match_type),
-        'match_type_qs': f"&{MATCH_TYPE_PARAM}={match_type}" if match_type else "",
+        'match_type_param': (match_type or ALL_TYPES) if stats else (match_type or ""),
+        'match_type_changed': (match_type != COMPETITIVE) if stats else bool(match_type),
+        'match_type_qs': f"&{MATCH_TYPE_PARAM}={(match_type or ALL_TYPES) if stats else match_type}" if (stats or match_type) else "",
     }
 
 
@@ -259,6 +281,7 @@ def format_for_chart(dic):
     return players
 
 
+@spaces.consult_view
 @club_required
 @require_GET
 def team_statistics(request):
@@ -267,19 +290,16 @@ def team_statistics(request):
     enfrentamiento, sets, récords y mejores jugadores como local, y puntos SNP del equipo.
     Requiere pertenecer al club y solo GET. Filtra por temporada (``?season=``) y tipo de partido.
 
-    Con varios espacios lleva el filtro de competición SNP · LAPI (core.spaces), sin «Todas»: los
-    equipos de cada competición no se mezclan (lo global de la persona está en «Mis estadísticas»).
-    El equipo elegido pasa a ser el activo.
+    Como el resto de pantallas de Estadísticas, es del equipo activo (``?en=`` lo cambia, ``spaces.consult_view``)
+    y con varios espacios lleva el selector de competición: los equipos de cada competición no se mezclan
+    (lo global de la persona está en «Mis estadísticas»).
     """
-    space, clubs = spaces.selected_spaces(request, allow_all=False, session_key=TEAM_SPACE_KEY)
-    if space and clubs:
-        spaces.switch_to(request, clubs[0])
     zero = _zero_state(request, _("Estadísticas del equipo"))
     if zero:
         return zero
     seasons = get_total_season(Match.objects.filter(club=request.club))
     team = request.club.own_team
-    match_type = selected_match_type(request)
+    match_type = stats_match_type(request)
     seasons = sorted(seasons, key=lambda s: int(s.split('-')[0]), reverse=True)
     selected_season = choose_season(request, seasons)
     if selected_season == ALL_SEASONS:
@@ -289,7 +309,7 @@ def team_statistics(request):
     column_chart_data = format_for_chart(dicc)
 
     if not team:
-        return render(request, 'team_statistics.html', {"seasons": seasons, **match_type_context(request, match_type),
+        return render(request, 'team_statistics.html', {"seasons": seasons, **match_type_context(request, match_type, stats=True),
                                                         **season_filter_context(request, seasons, selected_season)})
 
     (total_matches, total_won, drawn_matches, lost_matches,
@@ -302,9 +322,8 @@ def team_statistics(request):
     log = pair_stats.club_game_log(request.club, selected_season or None, match_type)
 
     context = {
-        **match_type_context(request, match_type, by_type=True),
+        **match_type_context(request, match_type, stats=True, by_type=True),
         **season_filter_context(request, seasons, selected_season),
-        **spaces.space_filter_context(request, space, allow_all=False),
         'team': team,
         'total_matches': total_matches,
         'won_matches': total_won,
@@ -324,10 +343,6 @@ def team_statistics(request):
     context.update(team_card_context(request.club, selected_season, match_type, context))
 
     return render(request, 'team_statistics.html', context)
-
-
-# Clave de sesión de la competición elegida en Estadísticas › Equipo (aparte del filtro de Enfrentamientos).
-TEAM_SPACE_KEY = "stats_team_space"
 
 
 @club_required
@@ -357,7 +372,7 @@ def my_statistics(request):
         params['player'] = chosen.public_id
         return redirect(f"{reverse('player_statistics')}?{params.urlencode()}")
 
-    match_type = selected_match_type(request)
+    match_type = stats_match_type(request)
     clubs = [p.club for p in players]
     seasons = sorted(get_total_season(Match.objects.filter(club__in=clubs)),
                      key=lambda s: int(s.split('-')[0]), reverse=True)
@@ -380,7 +395,7 @@ def my_statistics(request):
     me = summarize(all_log)
 
     return render(request, 'stats_mine.html', {
-        **match_type_context(request, match_type),
+        **match_type_context(request, match_type, stats=True),
         **season_filter_context(request, seasons, selected_season),
         **mine_chips(request, players, None),
         **players_charts(players, logs, selected_season, match_type),
@@ -909,10 +924,10 @@ def statistics_per_player(request):
         return zero
     players = Player.objects.filter(club=request.club, in_team=True).order_by('name', 'last_name')
     player_id = request.GET.get('player')
-    match_type = selected_match_type(request)
+    match_type = stats_match_type(request)
 
     if not player_id:
-        return render(request, 'player_statistics.html', {'players': players, **match_type_context(request, match_type, by_type=True)})
+        return render(request, 'player_statistics.html', {'players': players, **match_type_context(request, match_type, stats=True, by_type=True)})
 
     # Solo jugadores del club activo: los de otros clubes dan 404
     player = get_object_or_404(Player, public_id=player_id, club=request.club)
@@ -972,7 +987,7 @@ def statistics_per_player(request):
         'league': player_card.league_rounds(player, selected_season),
         'snp_seasons': player_card.snp_by_season(player),
         'affinity_top': [a for a in affinity if a['in_team']][:5],
-        **match_type_context(request, match_type, by_type=True),
+        **match_type_context(request, match_type, stats=True, by_type=True),
         **season_filter_context(request, all_seasons, selected_season),
         'players': players,
         'selected_player': player.public_id,
@@ -1035,7 +1050,7 @@ def statistics_per_pair(request):
         return zero
     club_players = list(Player.objects.filter(club=request.club).order_by('name', 'last_name'))
     by_public_id = {p.public_id: p for p in club_players}
-    match_type = selected_match_type(request)
+    match_type = stats_match_type(request)
     seasons = sorted(get_total_season(Match.objects.filter(club=request.club)),
                      key=lambda s: int(s.split('-')[0]), reverse=True)
     selected_season = choose_season(request, seasons)
@@ -1047,7 +1062,7 @@ def statistics_per_pair(request):
 
     p1_id, p2_id = request.GET.get('p1', ''), request.GET.get('p2', '')
     context = {
-        **match_type_context(request, match_type),
+        **match_type_context(request, match_type, stats=True),
         **season_filter_context(request, seasons, selected_season),
         'selected_season': selected_season,
         'players': club_players,
@@ -1209,13 +1224,14 @@ def _rival_query(row):
 
 def _season_and_type(request, with_type):
     """
-    (temporadas, temporada elegida o None para «Todas», filtro de tipo de partido) de la URL. En Rivales
-    se muestran por defecto todas las temporadas; ``with_type`` False ignora el filtro de tipo.
+    (temporadas, temporada elegida o None para «Todas», filtro de tipo de partido) de la URL, con los
+    mismos valores por defecto que el resto de Estadísticas: la temporada común (``choose_season``) y
+    Competitivos; ``with_type`` False ignora el filtro de tipo.
     """
     seasons = sorted(get_total_season(Match.objects.filter(club=request.club)),
                      key=lambda s: int(s.split('-')[0]), reverse=True)
-    selected = choose_season(request, seasons, default_all=True)
-    return seasons, (None if selected == ALL_SEASONS else selected), (selected_match_type(request) if with_type else None)
+    selected = choose_season(request, seasons)
+    return seasons, (None if selected == ALL_SEASONS else selected), (stats_match_type(request) if with_type else None)
 
 
 @spaces.consult_view
@@ -1224,14 +1240,15 @@ def _season_and_type(request, with_type):
 def rival_statistics(request):
     """
     Balance contra cada rival (enfrentamientos jugados, ganados, empatados y perdidos, puntos y último
-    resultado) de todas las temporadas por defecto. Se ordena con ``?sort=`` (rival, balance o último), se
-    busca por nombre con ``?q=`` y se pagina de 15 en 15. Admite el filtro de temporada, no el de tipo de
-    partido. Requiere pertenecer al club y solo GET.
+    resultado), con la temporada y el tipo por defecto del resto de Estadísticas (temporada común y
+    Competitivos: los amistosos no se mezclan salvo ``?match_type=todos``). Se ordena con ``?sort=`` (rival,
+    balance o último), se busca por nombre con ``?q=`` y se pagina de 15 en 15. Requiere pertenecer al club y
+    solo GET.
     """
     zero = _zero_state(request, _("Estadísticas por rival"))
     if zero:
         return zero
-    seasons, selected_season, match_type = _season_and_type(request, with_type=False)
+    seasons, selected_season, match_type = _season_and_type(request, with_type=True)
     sort = request.GET.get("sort")
     sort = sort if sort in rival_stats.SORTS else rival_stats.SORT_RIVAL
     search = (request.GET.get("q") or "").strip()
@@ -1251,6 +1268,7 @@ def rival_statistics(request):
         params["sort"] = value
         sort_links.append({"label": label, "url": f"{request.path}?{params.urlencode()}", "active": value == sort})
     return render(request, "rival_statistics.html", {
+        **match_type_context(request, match_type, stats=True),
         **season_filter_context(request, seasons, selected_season),
         "selected_season": selected_season,
         "rivals": page,
@@ -1258,7 +1276,7 @@ def rival_statistics(request):
         "page_extra": ("&" + keep.urlencode()) if keep else "",
         "total_rivals": len(rows),
         "search": search,
-        "season_keep_fields": [(k, v) for k, v in keep.items() if k in ("season", "sort")],
+        "season_keep_fields": [(k, v) for k, v in keep.items() if k in ("season", "sort", MATCH_TYPE_PARAM)],
     })
 
 
@@ -1269,8 +1287,8 @@ def rival_detail(request):
     """
     Ficha de un rival: balance, historial de enfrentamientos (con enlace a cada acta) y mejores parejas
     contra él. El rival es un equipo (``?team=<id público>``) o, en un amistoso con rival escrito a
-    mano, su nombre (``?name=``). Un equipo de otro club da 404. Por defecto todas las temporadas; filtra por
-    temporada y por tipo de partido y pagina el historial de 10 en 10.
+    mano, su nombre (``?name=``). Un equipo de otro club da 404. Filtra por temporada y por tipo de partido
+    (por defecto la temporada común y Competitivos, como Rivales) y pagina el historial de 10 en 10.
     """
     team = None
     name = (request.GET.get("name") or "").strip()
@@ -1285,7 +1303,7 @@ def rival_detail(request):
     keep.pop(PAGE_PARAM, None)
     history = Paginator(detail["history"], HISTORY_PER_PAGE).get_page(request.GET.get(PAGE_PARAM)) if detail else None
     return render(request, "rival_detail.html", {
-        **match_type_context(request, match_type),
+        **match_type_context(request, match_type, stats=True),
         **season_filter_context(request, seasons, selected_season),
         "selected_season": selected_season,
         "detail": detail,

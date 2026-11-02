@@ -44,6 +44,21 @@ class MyFormBase(TestCase):
         return match
 
 
+class SameBalanceAsStatisticsTests(MyFormBase):
+    """EST-006: con los filtros por defecto, el balance de Inicio es el de Estadísticas › Jugador."""
+
+    def test_default_statistics_match_my_form(self):
+        self.play(True, days_ago=2)
+        self.play(False, days_ago=1)
+        self.play(True, match_type=Match.AMISTOSO, days_ago=3)  # los amistosos no cuentan en ninguno
+        self.play(True, days_ago=400, season="2020-2021")  # ni otras temporadas (el defecto es la actual)
+        form = my_form.my_form(self.club, self.me)
+        self.client.login(username="jugador", password=PASSWORD)
+        stats = self.client.get(reverse("player_statistics"), {"player": self.me.public_id}).context["s"]
+        self.assertEqual((form["wins"], form["losses"]), (stats["wins"], stats["losses"]))
+        self.assertEqual((form["wins"], form["losses"]), (1, 1))
+
+
 class CalculationTests(MyFormBase):
     def test_empty_without_games(self):
         data = my_form.my_form(self.club, self.me)

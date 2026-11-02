@@ -5,6 +5,7 @@
 {% block content %}
   <div class="st-page">
     {% include 'includes/stats_tabs.html' %}
+    {% include 'includes/filters_row.html' with season=True type=True %}
 
     <header class="st-head">
       <div>
@@ -13,13 +14,12 @@
       </div>
     </header>
 
-    {% include 'includes/filters_row.html' with season=True %}
     <form method="get" class="st-search" role="search" action="{% url 'rival_statistics' %}">
       {% for name, value in season_keep_fields %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}
       <label class="visually-hidden" for="rival-q">{% translate "Buscar rival por nombre" %}</label>
       <input class="st-input" type="search" id="rival-q" name="q" value="{{ search }}" placeholder="{% translate 'Buscar rival por nombre…' %}" autocomplete="off">
       <button class="st-btn" type="submit">{% translate "Buscar" %}</button>
-      {% if search %}<a class="st-chip" href="{% url 'rival_statistics' %}{% if selected_season %}?season={{ selected_season|urlencode:'' }}{% endif %}">{% translate "Quitar búsqueda" %}</a>{% endif %}
+      {% if search %}<a class="st-chip" href="{% url 'rival_statistics' %}?match_type={{ match_type_param }}{% if selected_season %}&amp;season={{ selected_season|urlencode:'' }}{% endif %}">{% translate "Quitar búsqueda" %}</a>{% endif %}
     </form>
 
     {% if not total_rivals %}
@@ -53,7 +53,7 @@
             {% for r in rivals %}
             <tr>
               <th scope="row">
-                <a href="{% url 'rival_detail' %}?{{ r.query }}{% if selected_season %}&amp;season={{ selected_season|urlencode:'' }}{% endif %}{% if selected_match_type %}&amp;match_type={{ selected_match_type }}{% endif %}">{{ r.label }}</a>
+                <a href="{% url 'rival_detail' %}?{{ r.query }}{% if selected_season %}&amp;season={{ selected_season|urlencode:'' }}{% endif %}&amp;match_type={{ match_type_param }}">{{ r.label }}</a>
                 {% if r.friendly_only %}<span class="z-badge ms-1">{% translate "Amistoso" %}</span>{% endif %}
                 {% if r.team and r.team.division %}<small class="st-muted d-block">{{ r.team.get_division_display }}</small>{% endif %}
               </th>

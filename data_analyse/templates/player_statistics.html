@@ -24,7 +24,7 @@
         {% endfor %}
       </select>
       {% if selected_season %}<input type="hidden" name="season" value="{{ selected_season }}">{% endif %}
-      {% if selected_match_type %}<input type="hidden" name="match_type" value="{{ selected_match_type }}">{% endif %}
+      <input type="hidden" name="match_type" value="{{ match_type_param }}">
       <noscript><button class="st-btn" type="submit">{% translate "Ver" %}</button></noscript>
     </form>
 
