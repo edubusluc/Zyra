@@ -55,7 +55,7 @@
         <div class="st-hero-main st-hero-id">
           {% blocktranslate asvar photo_alt with name=player.full_name %}Foto de {{ name }}{% endblocktranslate %}{% include 'includes/player_avatar.html' with player=player size="z-avatar--xl" alt=photo_alt %}
           <div>
-          <p class="st-hero-kicker">{{ hero.role }}{% if hero.partner %} · {% blocktranslate with name=hero.partner %}Pareja habitual: {{ name }}{% endblocktranslate %}{% endif %}</p>
+          <p class="st-hero-kicker">{{ hero.role }}{% if hero.partner %}<span class="st-hero-partner">{% blocktranslate with name=hero.partner %}Pareja habitual: {{ name }}{% endblocktranslate %}</span>{% endif %}</p>
           <h2 class="st-hero-name">{{ player.full_name }}</h2>
           <p class="st-hero-sub">
             {% if league %}{% blocktranslate trimmed with n=league.played %}LAPI · {{ n }} jornadas de liga jugadas{% endblocktranslate %}
@@ -72,7 +72,7 @@
           {% endif %}
           </div>
         </div>
-        <div class="st-hero-ring" style="--pct: {{ pct_w|unlocalize }}" role="img" aria-label="{% blocktranslate with pct=s.pct %}{{ pct }}% de victorias{% endblocktranslate %}"><span>{{ s.pct|floatformat:0 }}%</span></div>
+        <div class="st-hero-pct"><div class="st-hero-ring" style="--pct: {{ pct_w|unlocalize }}" role="img" aria-label="{% blocktranslate with pct=s.pct %}{{ pct }}% de victorias{% endblocktranslate %}"><span>{{ s.pct|floatformat:0 }}%</span></div><span class="st-hero-cap">{% translate "de victorias" %}</span></div>
         <div class="st-hero-balance"><b>{{ s.wins }}-{{ s.losses }}</b><span>{% translate "Balance" %}</span></div>
       </section>
 

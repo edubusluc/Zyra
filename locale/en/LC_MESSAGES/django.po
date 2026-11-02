@@ -15311,3 +15311,6 @@ msgstr "% of wins at home and away, by competition."
 
 msgid "Porcentaje de victorias en casa y fuera por competición"
 msgstr "Percentage of wins at home and away by competition"
+
+msgid "de victorias"
+msgstr "wins"

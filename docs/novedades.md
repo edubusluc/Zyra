@@ -6,6 +6,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 ## 02/11/2026 · Estadísticas: fase 3 (navegación y fichas)
 
 - **Pestañas**: cinco (Yo, Equipo, Jugadores, Parejas, Rivales), que caben en 390 px sin deslizar. «Yo» sustituye a «Mis estadísticas» y a «Jugador · Yo» y aparece en cuanto tienes jugador enlazado; con un solo equipo abre directamente tu ficha.
+- **Ficha del jugador en móvil**: foto y rol en una fila, nombre a ancho completo, datos en una línea, botones lado a lado y el anillo con su texto «de victorias».
 - **Ficha del jugador**: «Editar jugador» y las advertencias son botones visibles bajo el nombre (antes eran enlaces de texto pequeños).
 - **Ficha única de jugador**: Plantilla y Estadísticas enlazan a la misma ficha (foto, posición, mano, desde, puntos SNP, «Editar» y, para capitán y gestores, el número de advertencias). Desaparece la pestaña «Resumen» y la ficha duplicada de Plantilla; la antigua URL redirige.
 - **Advertencias**: salen de Estadísticas y se abren desde Plantilla (solo capitán y gestores).
