@@ -88,6 +88,7 @@ class InvitationTests(TestCase):
         self.client.login(username="capitan", password="pass-12345")
         self.client.post(reverse("create_invitation"), {"email": "j@example.com"})
         first = Invitation.objects.get()
+        Invitation.objects.filter(pk=first.pk).update(created_at=timezone.now() - datetime.timedelta(minutes=5))
         self.client.post(reverse("create_invitation"), {"email": "J@example.com"})
         self.assertFalse(Invitation.objects.filter(pk=first.pk).exists())
         self.assertEqual(Invitation.objects.filter(email="j@example.com").count(), 1)
