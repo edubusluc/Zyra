@@ -430,7 +430,7 @@ SET_SITUATIONS = (
 
 
 # Situaciones de sets que muestra «Mis estadísticas · Todas», en el orden del diseño.
-MINE_SET_KEYS = ('tiebreak', 'first_set', 'comeback')
+MINE_SET_KEYS = ('tiebreak', 'first_set', 'comeback', 'bagels')
 
 
 def players_charts(players, logs, season, match_type):
@@ -463,18 +463,23 @@ def players_charts(players, logs, season, match_type):
             present, total = {season: present.get(season, 0)}, {season: total.get(season, 0)}
         attendance.append({s: round(present.get(s, 0) / n * 100) for s, n in total.items() if n})
 
+    # «Roscos a favor» (sets ganados por 6-0) no es una situación de la tarjeta Sets: su % es sobre los sets jugados.
+    for st in sets_by_comp:
+        sets_total = st['sets_won'] + st['sets_lost']
+        st['bagels'] = {'pct': round(100 * st['bagels_for'] / sets_total) if sets_total else None}
+    situations = SET_SITUATIONS + (('bagels', gettext_lazy("Roscos a favor"), gettext_lazy("Sets ganados por 6-0.")),)
     set_rows = [{
         "key": key, "label": label, "hint": hint,
         "comps": [{"code": c["code"], "name": c["name"], "r": st[key]} for c, st in zip(comps, sets_by_comp)],
-    } for key, label, hint in SET_SITUATIONS]
+    } for key, label, hint in situations]
 
     # Lo mismo agrupado por competición: un panel por competición con todas sus situaciones (idea «marco y dato»).
     set_panels = [{
         "code": c["code"], "name": c["name"], "club": c["club"],
-        "rows": [{"label": label, "hint": hint, "r": st[key]} for key, label, hint in SET_SITUATIONS],
+        "rows": [{"label": label, "hint": hint, "r": st[key]} for key, label, hint in situations],
     } for c, st in zip(comps, sets_by_comp)]
 
-    # Tarjeta «Sets» de «Mis estadísticas»: solo las tres situaciones del diseño, con el % de cada competición.
+    # Tarjeta «Sets» de «Mis estadísticas»: las mismas cuatro situaciones que el «Sets clutch» de la ficha, con el % de cada competición.
     set_compare = [row for key in MINE_SET_KEYS for row in set_rows if row["key"] == key]
 
     # % de victorias en casa y fuera de cada competición (None sin partidos), para «Local y visitante».
