@@ -231,9 +231,13 @@ class RivalViewsTests(RivalsBase):
         self.assertIn('class="z-preview-last" href="%s"' % reverse("call_for_match", args=[last.public_id]), html)
 
     def test_query_count_does_not_grow_with_rivals(self):
+        from django.core.cache import cache
         from django.db import connection
         from django.test.utils import CaptureQueriesContext
         self.seed()
+        # El apunte de actividad del back-office se limita por caché (compartida entre pruebas): si la marca de
+        # otra prueba caduca a mitad de esta, la consulta extra no tiene que ver con los rivales.
+        cache.clear()
 
         def queries():
             with CaptureQueriesContext(connection) as ctx:
