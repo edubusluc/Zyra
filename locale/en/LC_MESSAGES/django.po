@@ -15579,3 +15579,15 @@ msgstr "%(n)s league points"
 
 msgid "a las que se apuntó"
 msgstr "signed up for"
+
+msgid "vs"
+msgstr "vs"
+
+msgid "Ver balance"
+msgstr "View balance"
+
+msgid "Historial contra %(rival)s"
+msgstr "History against %(rival)s"
+
+msgid "Desempate"
+msgstr "Tie-break"
