@@ -14668,14 +14668,26 @@ msgstr "SNP league"
 msgid "Liga LAPI"
 msgstr "LAPI league"
 
-msgid "Enfrentamientos por equipos con categoría (Future, 500, 1000, Grand Slam), puntos SNP por jugador y orden de parejas como en la liga."
-msgstr "Team matches with category (Future, 500, 1000, Grand Slam), SNP points per player and pair order as in the league."
+msgid ""
+"Enfrentamientos por equipos con categoría (Future, 500, 1000, Grand Slam), "
+"puntos SNP por jugador y orden de parejas como en la liga."
+msgstr ""
+"Team matches with category (Future, 500, 1000, Grand Slam), SNP points per "
+"player and pair order as in the league."
 
-msgid "Liga, playoffs y fase final, clasificación por puntos (4 / 3 / 1) y estadísticas propias de la competición."
-msgstr "League, playoffs and final phase, points standings (4 / 3 / 1) and the competition's own statistics."
+msgid ""
+"Liga, playoffs y fase final, clasificación por puntos (4 / 3 / 1) y "
+"estadísticas propias de la competición."
+msgstr ""
+"League, playoffs and final phase, points standings (4 / 3 / 1) and the "
+"competition's own statistics."
 
-msgid "Un mismo jugador puede estar en las dos. Cada competición tiene su espacio y sus estadísticas, sin mezclar."
-msgstr "The same player can be in both. Each competition has its own space and statistics, never mixed."
+msgid ""
+"Un mismo jugador puede estar en las dos. Cada competición tiene su espacio y"
+" sus estadísticas, sin mezclar."
+msgstr ""
+"The same player can be in both. Each competition has its own space and "
+"statistics, never mixed."
 
 msgid "Crea un equipo que aún no esté en la lista."
 msgstr "Create a team that isn't in the list yet."
@@ -14685,8 +14697,12 @@ msgid "Algo ha fallado"
 msgstr "Something went wrong"
 
 #: core/templates/500.html:24
-msgid "No es culpa tuya. Ya nos ha llegado el aviso: vuelve a intentarlo en un minuto."
-msgstr "It's not your fault. We've already been notified: please try again in a minute."
+msgid ""
+"No es culpa tuya. Ya nos ha llegado el aviso: vuelve a intentarlo en un "
+"minuto."
+msgstr ""
+"It's not your fault. We've already been notified: please try again in a "
+"minute."
 
 #: data_analyse/templates/team_statistics.html
 msgid "3 puntos ganados"
@@ -14708,7 +14724,8 @@ msgstr "2 points lost"
 msgid "Vencido"
 msgstr "Overdue"
 
-#: players/templates/list_players.html team/templates/list_teams.html match/templates/list_match.html
+#: players/templates/list_players.html team/templates/list_teams.html
+#: match/templates/list_match.html
 msgid "Más acciones"
 msgstr "More actions"
 
@@ -14778,17 +14795,29 @@ msgstr "Your partner on %(date)s: %(partner)s"
 msgid "Jugó %(n)s/%(total)s"
 msgstr "Played %(n)s/%(total)s"
 
-msgid "Se mostrará cuando haya jugadores con %(players)s partidos y parejas con %(pairs)s partidos como mínimo."
-msgstr "Shown once there are players with at least %(players)s games and pairs with at least %(pairs)s games."
+msgid ""
+"Se mostrará cuando haya jugadores con %(players)s partidos y parejas con "
+"%(pairs)s partidos como mínimo."
+msgstr ""
+"Shown once there are players with at least %(players)s games and pairs with "
+"at least %(pairs)s games."
 
-msgid "Se mostrará la evolución cuando haya al menos 2 actualizaciones de puntos SNP."
+msgid ""
+"Se mostrará la evolución cuando haya al menos 2 actualizaciones de puntos "
+"SNP."
 msgstr "The trend will show once there are at least 2 SNP points updates."
 
 msgid "Tu próximo enfrentamiento, de un vistazo"
 msgstr "Your next match at a glance"
 
-msgid "Fecha, rival, convocados y lo que falta por hacer, en la primera pantalla. El capitán convoca y alinea; los jugadores ven si están convocados y con quién juegan."
-msgstr "Date, opponent, call-up and what is left to do, on the first screen. The captain calls up and lines up; players see whether they are called up and who they play with."
+msgid ""
+"Fecha, rival, convocados y lo que falta por hacer, en la primera pantalla. "
+"El capitán convoca y alinea; los jugadores ven si están convocados y con "
+"quién juegan."
+msgstr ""
+"Date, opponent, call-up and what is left to do, on the first screen. The "
+"captain calls up and lines up; players see whether they are called up and "
+"who they play with."
 
 msgid "Ejemplo de la pantalla de inicio de Zyra"
 msgstr "Example of the Zyra home screen"
@@ -14805,13 +14834,18 @@ msgstr "Example with sample data"
 msgid "Gestiona todo el equipo."
 msgstr "Runs the whole team."
 
-msgid "Invita a los jugadores y puede pasar la gestión a otra persona. Solo hay uno por equipo."
-msgstr "Invites the players and can hand the management to someone else. Only one per team."
+msgid ""
+"Invita a los jugadores y puede pasar la gestión a otra persona. Solo hay uno"
+" por equipo."
+msgstr ""
+"Invites the players and can hand the management to someone else. Only one "
+"per team."
 
 msgid "Ayuda con el día a día."
 msgstr "Helps with the day-to-day."
 
-msgid "Enfrentamientos, resultados, jugadores y rivales. Hasta dos por equipo."
+msgid ""
+"Enfrentamientos, resultados, jugadores y rivales. Hasta dos por equipo."
 msgstr "Ties, results, players and rivals. Up to two per team."
 
 msgid "Solo consulta."
@@ -14820,8 +14854,18 @@ msgstr "View only."
 msgid "Ve la convocatoria, sus resultados y sus estadísticas; no edita nada."
 msgstr "Sees the call-up, their results and their statistics; edits nothing."
 
-msgid "Los miembros son de este equipo: tus equipos de otras competiciones tienen los suyos. Para pasar la gestión a otra persona, pulsa «Hacer capitán» en su fila: tú pasarás a ser jugador (solo consulta). Para poder hacerlo, tiene que estar enlazado a un jugador de este equipo («Mi perfil»). Para eliminar el equipo, quita antes a todos los miembros y abandónalo desde Equipo."
-msgstr "Members belong to this team: your teams in other competitions have their own. To hand the management over to someone else, press “Make captain” on their row: you will become a player (view only). To do so, they must be linked to a player of this team (“My profile”). To delete the team, first remove all members and then leave it from Team."
+msgid ""
+"Los miembros son de este equipo: tus equipos de otras competiciones tienen "
+"los suyos. Para pasar la gestión a otra persona, pulsa «Hacer capitán» en su"
+" fila: tú pasarás a ser jugador (solo consulta). Para poder hacerlo, tiene "
+"que estar enlazado a un jugador de este equipo («Mi perfil»). Para eliminar "
+"el equipo, quita antes a todos los miembros y abandónalo desde Equipo."
+msgstr ""
+"Members belong to this team: your teams in other competitions have their "
+"own. To hand the management over to someone else, press “Make captain” on "
+"their row: you will become a player (view only). To do so, they must be "
+"linked to a player of this team (“My profile”). To delete the team, first "
+"remove all members and then leave it from Team."
 
 msgid "Ver ese enfrentamiento"
 msgstr "View that tie"
@@ -14870,12 +14914,6 @@ msgstr "you signed up for %(signed)s of %(total)s"
 
 msgid "% de victorias en cada situación, por competición."
 msgstr "% of wins in each situation, by competition."
-
-msgid "Ganados y perdidos por competición."
-msgstr "Won and lost by competition."
-
-msgid "Partidos ganados y perdidos por competición"
-msgstr "Matches won and lost by competition"
 
 msgid "Ganados por temporada"
 msgstr "Won per season"
@@ -14971,8 +15009,10 @@ msgstr "Rule 8.2: at least %(n)s league matches."
 msgid "Se apunta"
 msgstr "Signs up"
 
-msgid "Se mostrará la evolución cuando haya puntos SNP de al menos 2 temporadas."
-msgstr "The evolution will show once there are SNP points from at least 2 seasons."
+msgid ""
+"Se mostrará la evolución cuando haya puntos SNP de al menos 2 temporadas."
+msgstr ""
+"The evolution will show once there are SNP points from at least 2 seasons."
 
 msgid "Sets y fases finales"
 msgstr "Sets and finals"
@@ -15023,8 +15063,12 @@ msgid "Últimos %(n)s, el más reciente a la derecha."
 msgstr "Last %(n)s, most recent on the right."
 
 #, python-format
-msgid "%(a)s por ganar 3-0, %(b)s por ganar 2-1, %(c)s por perder 2-1 y 0 por perder 3-0 o no presentarse."
-msgstr "%(a)s for winning 3-0, %(b)s for winning 2-1, %(c)s for losing 2-1 and 0 for losing 3-0 or not showing up."
+msgid ""
+"%(a)s por ganar 3-0, %(b)s por ganar 2-1, %(c)s por perder 2-1 y 0 por "
+"perder 3-0 o no presentarse."
+msgstr ""
+"%(a)s for winning 3-0, %(b)s for winning 2-1, %(c)s for losing 2-1 and 0 for"
+" losing 3-0 or not showing up."
 
 #, python-format
 msgid "%(n)s desde la última vez"
@@ -15091,8 +15135,12 @@ msgid "Puntos ganados en cada enfrentamiento, de %(n)s posibles."
 msgstr "Points won in each match, out of %(n)s possible."
 
 #, python-format
-msgid "Reglamento 8.2: en Playoffs y Fase final solo juega quien ha jugado %(n)s enfrentamientos de liga."
-msgstr "Rule 8.2: in the Playoffs and Finals only those who have played %(n)s league matches can play."
+msgid ""
+"Reglamento 8.2: en Playoffs y Fase final solo juega quien ha jugado %(n)s "
+"enfrentamientos de liga."
+msgstr ""
+"Rule 8.2: in the Playoffs and Finals only those who have played %(n)s league"
+" matches can play."
 
 msgid "Sets y partidos"
 msgstr "Sets and games"
@@ -15108,7 +15156,9 @@ msgstr "%(name)s only"
 msgid "Top 5 y récords"
 msgstr "Top 5 and records"
 
-msgid "Victorias en cada partido del enfrentamiento. Las parejas se alinean por puntos SNP."
+msgid ""
+"Victorias en cada partido del enfrentamiento. Las parejas se alinean por "
+"puntos SNP."
 msgstr "Wins in each game of the match. Pairs are lined up by SNP points."
 
 msgid "completado 6-0"
@@ -15255,3 +15305,9 @@ msgstr "Warning figures"
 
 msgid "Partidos de la pareja en la temporada."
 msgstr "The pair's matches in the season."
+
+msgid "% de victorias en casa y fuera, por competición."
+msgstr "% of wins at home and away, by competition."
+
+msgid "Porcentaje de victorias en casa y fuera por competición"
+msgstr "Percentage of wins at home and away by competition"

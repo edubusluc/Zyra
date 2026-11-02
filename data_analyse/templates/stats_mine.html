@@ -64,9 +64,9 @@
 
         <section class="st-card">
           <h3 class="st-card-title">{% translate "Local y visitante" %}</h3>
-          <p class="st-card-note">{% translate "Ganados y perdidos por competición." %}</p>
+          <p class="st-card-note">{% translate "% de victorias en casa y fuera, por competición." %}</p>
           {% if not has_local and not has_visiting %}<p class="st-muted st-nodata">{% translate "No hay datos todavía." %}</p>{% endif %}
-          <div class="st-chart st-chart--mine" role="img" aria-label="{% translate 'Partidos ganados y perdidos por competición' %}"{% if not has_local and not has_visiting %} hidden{% endif %}><canvas id="spacesSidesChart" aria-hidden="true"></canvas></div>
+          <div class="st-chart st-chart--mine" role="img" aria-label="{% translate 'Porcentaje de victorias en casa y fuera por competición' %}"{% if not has_local and not has_visiting %} hidden{% endif %}><canvas id="spacesSidesChart" aria-hidden="true"></canvas></div>
         </section>
 
         <section class="st-card">

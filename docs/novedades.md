@@ -5,7 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 02/11/2026 · Estadísticas: fase 1 (datos que no inducen a error)
 
-- **Mis estadísticas**: «Local y visitante» se mantiene (ganados y perdidos por competición, con el reparto en casa/fuera en el tooltip) y, igual que «Ganados por temporada», sus barras son más anchas, con la cifra dentro y sin huecos grandes, como en «Puntos de liga».
+- **Mis estadísticas**: «Local y visitante» pasa a mostrar el % de victorias en casa frente a fuera de cada competición (antes repetía ganados y perdidos, que ya dicen las filas de arriba). Sus barras y las de «Ganados por temporada» son más anchas, con la cifra dentro y sin huecos grandes, como en «Puntos de liga».
 - **Equipo**: se quitan «Juegos como local» y «Juegos como visitante» (juegos de tenis sumados, que repetían «Ganados como local/visitante» con otra unidad).
 - **Equipo · Plantilla y fases finales (LAPI)**: indica su temporada y calcula siempre la temporada en curso; con una temporada pasada elegida no se muestra.
 - **Equipo · SNP**: «Puntos de liga» pasa a llamarse «Puntos por enfrentamiento», porque SNP no tiene liga (LAPI mantiene «Puntos de liga»).

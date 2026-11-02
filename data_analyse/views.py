@@ -425,7 +425,7 @@ def players_charts(players, logs, season, match_type):
 
     Devuelve ``set_rows`` (cada situación de sets con el % de cada competición), ``set_panels`` (lo mismo
     agrupado por competición, para los paneles de stats_mine.html) y ``spaces_chart``
-    para stats_spaces.js: competiciones, partidos ganados y perdidos como local y como visitante,
+    para stats_spaces.js: competiciones, % de victorias como local y como visitante,
     partidos ganados por temporada (sin temporada elegida) y % de convocatorias en las que se apuntó
     por temporada (con una temporada elegida, solo esa: se dibuja con barras).
     """
@@ -461,8 +461,10 @@ def players_charts(players, logs, season, match_type):
     # Tarjeta «Sets» de «Mis estadísticas»: solo las tres situaciones del diseño, con el % de cada competición.
     set_compare = [row for key in MINE_SET_KEYS for row in set_rows if row["key"] == key]
 
-    # Partidos ganados y perdidos de cada competición (local + visitante), para «Local y visitante».
-    totals = [{"won": a["won"] + b["won"], "lost": a["lost"] + b["lost"], "local": a, "visiting": b}
+    # % de victorias en casa y fuera de cada competición (None sin partidos), para «Local y visitante».
+    pct = lambda r: round(100 * r["won"] / (r["won"] + r["lost"])) if r["won"] + r["lost"] else None
+    totals = [{"won": a["won"] + b["won"], "lost": a["lost"] + b["lost"], "local": a, "visiting": b,
+               "pct_local": pct(a), "pct_visiting": pct(b)}
               for a, b in zip(local, visiting)]
 
     by_start = lambda s: int(s.split('-')[0])

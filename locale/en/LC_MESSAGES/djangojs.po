@@ -402,5 +402,8 @@ msgstr "Points"
 msgid "Asistencia"
 msgstr "Attendance"
 
-msgid "%(l)s en casa · %(v)s fuera"
-msgstr "%(l)s at home · %(v)s away"
+msgid "En casa"
+msgstr "At home"
+
+msgid "Fuera"
+msgstr "Away"

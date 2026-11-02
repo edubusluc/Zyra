@@ -13,37 +13,28 @@
   Chart.defaults.plugins.legend.labels.usePointStyle = true;
   Chart.defaults.plugins.legend.labels.boxWidth = 8;
 
-  // Ganados y perdidos de cada competición (local y visitante juntos; el detalle sale en el tooltip):
-  // barras redondeadas con su cifra dentro, sin ejes ni cuadrícula (la leyenda va sobre los gráficos).
+  // % de victorias en casa y fuera de cada competición: barras redondeadas con su cifra dentro,
+  // sin ejes ni cuadrícula (la leyenda va sobre los gráficos).
   const sidesCanvas = document.getElementById('spacesSidesChart');
   if (sidesCanvas) {
     new Chart(sidesCanvas, {
       type: 'bar',
       data: {
-        labels: [gettext('Ganados'), gettext('Perdidos')],
+        labels: [gettext('En casa'), gettext('Fuera')],
         datasets: comps.map((c, i) => ({
-          label: c.name, data: [data.totals[i].won, data.totals[i].lost], backgroundColor: color(c.code), maxBarThickness: 96,
+          label: c.name, data: [data.totals[i].pct_local, data.totals[i].pct_visiting], backgroundColor: color(c.code), maxBarThickness: 96,
           borderRadius: 14, minBarLength: 32, borderColor: '#151515', borderWidth: 2,
         })),
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        // Las barras de cada grupo van pegadas (como en el diseño); el hueco lo da el borde del fondo.
         datasets: { bar: { barPercentage: 1, categoryPercentage: 0.8 } },
         plugins: {
           legend: { display: false },
-          tooltip: {
-            callbacks: {
-              afterLabel: (c) => {
-                const t = data.totals[c.datasetIndex];
-                const side = c.dataIndex === 0 ? ['won', gettext('ganados')] : ['lost', gettext('perdidos')];
-                return interpolate(gettext('%(l)s en casa · %(v)s fuera'), { l: t.local[side[0]], v: t.visiting[side[0]] }, true);
-              },
-            },
-          },
+          tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y} %` } },
         },
-        scales: { x: { grid: { display: false } }, y: { display: false, beginAtZero: true, grace: '8%' } },
+        scales: { x: { grid: { display: false } }, y: { display: false, beginAtZero: true, max: 100, grace: '8%' } },
       },
     });
   }
