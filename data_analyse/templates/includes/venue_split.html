@@ -2,7 +2,6 @@
 {# Local y visitante con su unidad explícita. Recibe venue (data_analyse.comparison.venue_split: unit 'matches' o 'games', rows con label, won, lost, drawn, total, pct). #}
 <article class="st-card">
   <h2 class="st-card-title">{% translate "Local y visitante" %}</h2>
-  <p class="st-card-note">{% if venue.unit == 'matches' %}{% translate "% de enfrentamientos ganados según dónde se juega." %}{% else %}{% translate "% de partidos ganados según dónde se juega." %}{% endif %}</p>
   <div class="st-venue-split">
     {% for row in venue.rows %}
     <div class="st-rate">

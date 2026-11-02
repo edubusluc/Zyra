@@ -80,7 +80,6 @@
       <div class="st-row st-row--pair">
         <article class="st-card">
           <h2 class="st-card-title">{% translate "Forma reciente" %}</h2>
-          <p class="st-card-note">{% translate "Últimos partidos juntos." %}</p>
           <ol class="st-form st-form--lg">
             {% for r in s.form %}
               <li class="st-pip {% if r %}st-pip--w{% else %}st-pip--l{% endif %}" title="{% if r %}{% translate 'Victoria' %}{% else %}{% translate 'Derrota' %}{% endif %}">{% if r %}{% translate "V" context "abreviatura de victoria" %}{% else %}{% translate "D" context "abreviatura de derrota" %}{% endif %}</li>
@@ -92,12 +91,11 @@
       </div>
 
       {# ============ 1b. SETS ============ #}
-      <section aria-labelledby="pair-sets-title" class="st-section">
+      <section aria-labelledby="pair-sets-title" class="st-section" data-level="compare">
         <h2 class="st-section-title" id="pair-sets-title">{% translate "Sets de la pareja" %}</h2>
         <div class="st-row">
           <article class="st-card">
             <h3 class="st-card-title">{% translate "Sets" %}</h3>
-            <p class="st-card-note">{% translate "Cómo se ganan y se pierden los partidos de la pareja, set a set." %}</p>
             {% include 'includes/set_situations.html' with rows=set_rows %}
           </article>
         </div>
@@ -106,32 +104,30 @@
       {% endif %}
 
       {# ============ 2. ÚLTIMOS PARTIDOS ============ #}
-      <section aria-labelledby="last-title" class="st-section">
+      <section aria-labelledby="last-title" class="st-section" data-level="understand">
         <h2 class="st-section-title" id="last-title">{% translate "Últimos partidos juntos" %}</h2>
         <article class="st-card">
-          <p class="st-card-note mt-0">{% translate "Del más reciente al más antiguo. Pulsa un partido para verlo en la sección de partidos." %}</p>
           {% include 'includes/pair_games_table.html' with games=last_games %}
         </article>
       </section>
 
       {# ============ 3. POR TEMPORADAS (solo con muestra suficiente) ============ #}
       {% if not compact %}
-      <section aria-labelledby="seasons-title" class="st-section">
+      <section aria-labelledby="seasons-title" class="st-section" data-level="compare">
         <h2 class="st-section-title" id="seasons-title">{% translate "Rendimiento por temporada" %}</h2>
         {% if chart_seasons.labels|length > 1 or chart_seasons.trend %}
         <div class="st-row{% if chart_seasons.labels|length > 1 and chart_seasons.trend %} st-row--pair{% endif %}">
           {% if chart_seasons.labels|length > 1 %}
           <article class="st-card">
             <h3 class="st-card-title">{% translate "Partidos jugados" %}</h3>
-            <p class="st-card-note">{% translate "Ganados y perdidos en cada temporada." %}</p>
-            <div class="st-chart st-chart--mine" role="img" aria-label="{% translate 'Partidos jugados' %}"><canvas id="chartPlayed"></canvas></div>
+            <div class="st-chart st-chart--mine" role="img" aria-label="{% translate 'Partidos jugados' %}"><canvas id="chartPlayed" aria-hidden="true"></canvas></div>
           </article>
           {% endif %}
           {% if chart_seasons.trend %}
           <article class="st-card">
-            <h3 class="st-card-title">{% translate "% de victorias por temporada" %}</h3>
-            <p class="st-card-note">{% blocktranslate with n=min_trend_games %}Solo temporadas con {{ n }} partidos o más; debajo de cada una, los partidos jugados.{% endblocktranslate %}</p>
-            <div class="st-chart st-chart--mine" role="img" aria-label="{% translate '% de victorias por temporada' %}"><canvas id="chartPct"></canvas></div>
+            {% blocktranslate asvar tip_text with n=min_trend_games %}Solo temporadas con {{ n }} partidos o más; debajo de cada una, los partidos jugados.{% endblocktranslate %}
+            <h3 class="st-card-title">{% translate "% de victorias por temporada" %}{% include 'includes/stat_tip.html' with tip=tip_text %}</h3>
+            <div class="st-chart st-chart--mine" role="img" aria-label="{% translate '% de victorias por temporada' %}"><canvas id="chartPct" aria-hidden="true"></canvas></div>
           </article>
           {% endif %}
         </div>
@@ -140,7 +136,6 @@
         {% if selected_season %}
         <article class="st-card">
           <h3 class="st-card-title">{% translate "Detalle por temporada" %}</h3>
-          <p class="st-card-note mt-0">{% translate "Partidos de la pareja en la temporada." %}</p>
           {% include 'includes/pair_games_table.html' with games=season_games %}
         </article>
         {% elif s.seasons|length > 1 %}
@@ -152,7 +147,7 @@
                 <tr>
                   <th scope="col">{% translate "Temporada" %}</th>
                   <th scope="col">{% translate "Enfrentamientos" %}</th>
-                  <th scope="col">{% translate "Jugados" %}</th>
+                  <th scope="col">{% translate "Partidos" %}</th>
                   <th scope="col">{% translate "V-D" %}</th>
                   <th scope="col">{% translate "% victorias" %}</th>
                   <th scope="col">{% translate "Cambio" %}</th>
@@ -193,7 +188,7 @@
 
     {# ============ TODAS LAS PAREJAS (solo sin pareja elegida) ============ #}
     {% if not s %}
-      <section aria-labelledby="pairs-title" class="st-section">
+      <section aria-labelledby="pairs-title" class="st-section" data-level="understand">
         <h2 class="st-section-title" id="pairs-title">{% translate "Todas las parejas" %}</h2>
         {% if not pair_has_any %}
           <div class="st-empty">

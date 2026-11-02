@@ -222,6 +222,7 @@ class LapiMatchTests(TestCase):
         a, b = self.players[0], self.players[1]
         page = self.client.get(reverse("pair_statistics"), {"p1": a.public_id, "p2": b.public_id, "season": "all"})
         self.assertContains(page, "5 partidos juntos")
+        self.assertNotContains(page, "st-card-note")
         self.assertNotContains(page, "Pareja sorteada")
         self.assertNotContains(page, "<th scope=\"col\">Puntos</th>")
         self.assertContains(page, "J5")

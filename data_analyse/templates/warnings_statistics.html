@@ -34,7 +34,6 @@
       <div class="st-row st-row--pair">
         <article class="st-card">
           <h2 class="st-card-title">{% translate "Por jugador" %}</h2>
-          <p class="st-card-note">{% translate "De más a menos advertencias." %}</p>
           <ol class="st-top">
             {% for r in ranking %}
               <li class="st-top-row">
@@ -50,7 +49,6 @@
 
         <article class="st-card">
           <h2 class="st-card-title">{% translate "Por motivo" %}</h2>
-          <p class="st-card-note">{% translate "Cuántas advertencias de cada tipo." %}</p>
           <div class="st-bars st-bars--warn">
             {% for k in by_kind %}
             <div class="st-bar-row"><b>{{ k.label }}</b><div class="st-meter"><span style="width: {{ k.pct|unlocalize }}%"></span></div><em>{{ k.count }}</em></div>
@@ -62,7 +60,6 @@
       <section aria-labelledby="warn-history-title" class="st-section">
         <article class="st-card">
           <h2 class="st-card-title" id="warn-history-title">{% translate "Historial" %}</h2>
-          <p class="st-card-note">{% translate "Todas las advertencias, la más reciente primero." %}</p>
           <ul class="st-warn-list">
             {% for p in penalties %}
               <li class="st-warn-item">

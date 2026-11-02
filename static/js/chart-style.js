@@ -27,6 +27,24 @@
   Chart.defaults.plugins.tooltip.padding = 10;
   Chart.defaults.plugins.tooltip.titleFont = { weight: 800 };
 
+  // Alternativa accesible (EST-046): el canvas va oculto a los lectores de pantalla y el contenedor con role="img"
+  // lleva en su aria-label el título y los valores de cada serie, que se actualizan con el gráfico.
+  const flat = (v) => (Array.isArray(v) ? v.join(' ') : String(v));
+  Chart.register({
+    id: 'zDescribe',
+    afterUpdate(chart) {
+      const box = chart.canvas.parentElement;
+      if (!box || box.getAttribute('role') !== 'img') return;
+      if (!box.dataset.zTitle) box.dataset.zTitle = box.getAttribute('aria-label') || '';
+      const labels = (chart.data.labels || []).map(flat);
+      const parts = chart.data.datasets.map((ds) => {
+        const values = (ds.data || []).map((v, i) => (v === null || v === undefined ? null : `${labels[i] || i + 1} ${v}`)).filter(Boolean);
+        return `${ds.label ? ds.label + ': ' : ''}${values.join(', ')}`;
+      }).filter(Boolean);
+      box.setAttribute('aria-label', [box.dataset.zTitle, parts.join('. ')].filter(Boolean).join('. '));
+    },
+  });
+
   const rgba = (hex, a) => {
     const m = /^#([0-9a-f]{6})$/i.exec(hex || '');
     if (!m) return hex;

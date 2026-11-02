@@ -1,8 +1,10 @@
 /*
  * Estadísticas en móvil (UX-009): menos longitud y menos niveles antes del primer dato.
  *  - Los filtros (temporada, tipo…) se recogen en un único desplegable «Filtros · …».
- *  - Cada sección (<section class="st-section">) se pliega bajo su título; solo la primera
- *    y la que se enlaza desde el índice quedan abiertas.
+ *  - Cada sección (<section class="st-section">) declara su nivel en ``data-level``: «understand»
+ *    (comprender) no se pliega nunca; «compare» y «deepen» (el nivel por defecto es «compare») se pliegan
+ *    bajo su título y solo se abren al pulsarlas o si se enlaza a ellas. ``data-summary`` pone un resumen
+ *    junto al título plegado.
  * En escritorio no hace nada: todo sigue abierto y sin controles extra.
  */
 (function () {
@@ -39,7 +41,7 @@
     sections.forEach((section, index) => {
       if (section.dataset.collapsible) return;
       const title = section.querySelector(':scope > .st-section-title');
-      if (!title) return;
+      if (!title || section.dataset.level === 'understand') return;
       section.dataset.collapsible = '1';
       const body = document.createElement('div');
       body.className = 'st-section-body';
@@ -51,6 +53,12 @@
       button.className = 'st-section-toggle';
       button.setAttribute('aria-controls', body.id);
       while (title.firstChild) button.append(title.firstChild);
+      if (section.dataset.summary) {
+        const summary = document.createElement('small');
+        summary.className = 'st-section-summary';
+        summary.textContent = section.dataset.summary;
+        button.append(summary);
+      }
       const chevron = document.createElement('i');
       chevron.className = 'fa-solid fa-chevron-down';
       chevron.setAttribute('aria-hidden', 'true');
@@ -59,7 +67,7 @@
       button.addEventListener('click', () => toggle(section, body.hidden));
       section._stBody = body;
       section._stButton = button;
-      section._stOpenByDefault = index === 0;
+      section._stOpenByDefault = false;
     });
     applyMode();
   }

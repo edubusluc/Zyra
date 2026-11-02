@@ -3868,3 +3868,26 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .st-rival-line b { font-family: var(--z-display); font-size: var(--z-fs-xl); font-weight: 400; color: #FFFFFF; }
 .st-subtitle-sm { margin: 14px 0 4px; font-size: var(--z-fs-sm); font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: var(--st-muted); }
 .st-rival-line .st-score { display: inline; margin-left: 6px; font-weight: 700; color: #FFFFFF; }
+
+/* Fase 8 · resumen junto al título de una sección plegada (solo móvil). */
+.st-section-summary { display: none; }
+@media (max-width: 767.98px) {
+    .st-section-summary { display: inline; margin: 0 auto 0 10px; font-family: var(--z-body, inherit); font-size: var(--z-fs-xs); font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--st-muted); }
+    .st-section.is-open .st-section-summary { display: none; }
+}
+
+/* Fase 8: el globo del tooltip «i» no ocupa sitio mientras está cerrado y la insignia «Solo SNP» no pisa el título. */
+.z-tip:not(:hover):not(:focus-visible):not(.is-open)::after { display: none; }
+.st-card:has(> .st-only) > .st-card-title { padding-right: 5.5rem; }
+@media (max-width: 640px) {
+  .z-tip::after { left: auto; right: -8px; transform: none; max-width: min(240px, 70vw); }
+  .st-chart--points { height: 150px; }
+  .st-balance { padding: 14px; }
+}
+@media (max-width: 640px) {
+  .st-balance-main { flex-wrap: wrap; gap: 8px 14px; }
+  .st-balance-nums { gap: 6px 18px; }
+  .st-balance-nums b { font-size: 2.4rem; }
+  .st-balance-pct { font-size: 2.2rem; }
+  .st-balance-rate { align-items: flex-start; }
+}
