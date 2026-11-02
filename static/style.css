@@ -3314,9 +3314,7 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .z-space-rows-nums { color: var(--st-muted); font-variant-numeric: tabular-nums; }
 .z-space-rows a { margin-left: auto; font-weight: 700; white-space: nowrap; }
 .z-space-switcher { margin: 0 0 16px; }
-.z-space-switcher .st-comp-chip { display: inline-flex; align-items: center; min-width: 0; max-width: 100%; }
-.st-comp-chip-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
+.z-space-switcher 
 /* Filtros del listado: en escritorio siempre abiertos y sin botón; en móvil, plegados tras «Filtros» (H-24). */
 .z-filters > summary { list-style: none; cursor: pointer; margin-bottom: 8px; }
 .z-filters > summary::-webkit-details-marker { display: none; }
@@ -3642,19 +3640,6 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 /* Mis estadísticas (diseño aprobado «Módulo estadísticas»): cabecera con filas de competición y tipo, tarjetas y gráficos */
 .st-tabs .btn { font-size: var(--z-fs-xs); font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
 .st-tabs .btn i { display: none; }
-.st-comp-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; margin: 0 0 10px; }
-.st-comp-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-.st-comp-label { margin-right: 6px; font-size: var(--z-fs-xs); font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--z-muted); }
-.st-comp-chip { padding: 6px 16px; font-size: var(--z-fs-sm); font-weight: 800; color: var(--z-text); background: var(--z-surface-2); border: 1px solid transparent; border-radius: 999px; }
-.st-comp-chip:hover { color: #FFFFFF; border-color: var(--z-border-strong); }
-.st-comp-chip[aria-current="page"] { color: var(--z-ink); }
-.st-comp-chip--all[aria-current="page"] { background: var(--z-lime); }
-.st-comp-chip--snp[aria-current="page"] { background: var(--z-snp); }
-.st-comp-chip--lapi[aria-current="page"] { background: var(--z-lapi); }
-.st-comp-ctx { margin: 0; font-size: var(--z-fs-sm); color: var(--z-muted); }
-.st-comp-ctx b { color: #FFFFFF; }
-.st-type-chips { margin: 0 0 12px; }
-.st-type-chips > li { display: inline-block; }
 .z-space-kpis > div { gap: 4px; padding: 18px 20px 14px; border-radius: var(--z-radius-lg); }
 .z-space-kpis b { font-family: var(--z-display); font-size: clamp(2.6rem, 6vw, 4rem); font-weight: 400; line-height: .95; }
 .z-space-kpis span { order: 2; font-size: var(--z-fs-xs); font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }

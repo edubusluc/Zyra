@@ -14,8 +14,7 @@
       </div>
     </header>
 
-    {% include 'includes/season_filter.html' %}
-    {% include 'includes/match_type_filter.html' %}
+    {% include 'includes/filters_row.html' with season=True type=True %}
 
     {% if not detail %}
       <div class="st-empty">

@@ -3,10 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
-## 02/11/2026 · Selectores únicos
+## 02/11/2026 · Fila única de filtros
 
-- **Competición**: un solo control en toda la web, la fila «Competición» del rediseño con píldoras Todas · SNP · LAPI de su color (en Enfrentamientos, Calendario, Plantilla, Club, Miembros y Estadísticas). Se elimina la variante propia de Mis estadísticas.
-- **Tipo**: los chips Todos · Competitivos · Amistosos y, dentro de Competitivos, los chips de cada tipo (antes un desplegable aparte).
+- **Un solo bloque de filtros**: Competición, Temporada y Tipo son desplegables en una sola fila, igual en Enfrentamientos, Calendario, Plantilla, Club, Miembros y todas las pestañas de Estadísticas (Mis estadísticas, Equipo, Jugador, Parejas, Rivales y Advertencias). Cada uno dice su valor y se marca en lima si no es «Todas».
+- Dentro de Competitivos, el tipo concreto se elige en un cuarto desplegable «Competitivo» de la misma fila. Se quitan las píldoras de competición y los chips de tipo.
 
 ## 02/11/2026 · Estadísticas rediseñadas (fases 5, 6 y 7: Parejas, Rivales y Advertencias)
 

@@ -28,10 +28,8 @@
 <details class="z-filters" data-filters>
 <summary class="btn btn-secondary btn-sm"><i class="fa-solid fa-sliders me-1" aria-hidden="true"></i> {% translate "Filtros" %}{% if filtering %} <span class="z-badge z-badge--lime">{% translate "activos" %}</span>{% endif %}</summary>
 <div class="z-fsel-row">
-{% include 'includes/space_filter.html' %}
-{% include 'includes/season_filter.html' %}
-{# Tipo de partido: mismos chips que las estadísticas; se combinan con temporada, rival y buscador. #}
-{% include 'includes/match_type_filter.html' %}
+{# Competición, temporada y tipo (fila única, se combinan con rival y buscador) #}
+{% include 'includes/filters_row.html' with season=True type=True bare=True %}
 
 {# Buscador por nombre y filtro por rival: sin temporada elegida, buscan en todas. #}
 <form method="get" class="z-match-filters" role="search">
