@@ -65,12 +65,22 @@
         ctx.restore();
       },
     };
+    // Columna apilada de una sola pieza: solo se redondean la base del primer tramo y la cima del último
+    // con valor; los tramos intermedios quedan rectos y pegados.
+    const stackRadius = (c) => {
+      const sets = c.chart.data.datasets, j = c.dataIndex, i = c.datasetIndex;
+      const has = (k) => (sets[k].data[j] || 0) > 0;
+      const bottom = !sets.slice(0, i).some((_, k) => has(k));
+      const top = !sets.slice(i + 1).some((_, k) => has(k + i + 1));
+      const r = 14;
+      return { topLeft: top ? r : 0, topRight: top ? r : 0, bottomLeft: bottom ? r : 0, bottomRight: bottom ? r : 0 };
+    };
     const chart = new Chart(yearsCanvas, {
       type: 'bar',
       plugins: [totalOnTop],
       data: {
         labels: labels.map(seasonLabel),
-        datasets: comps.map((c, i) => ({ label: c.name, data: data.years.won[i], backgroundColor: color(c.code), maxBarThickness: 72, barPercentage: 0.8, categoryPercentage: 0.9, minBarLength: 14, borderRadius: { topLeft: 12, topRight: 12, bottomLeft: 12, bottomRight: 12 }, borderSkipped: false, borderColor: '#151515', borderWidth: 2 })),
+        datasets: comps.map((c, i) => ({ label: c.name, data: data.years.won[i], backgroundColor: color(c.code), maxBarThickness: 72, barPercentage: 0.8, categoryPercentage: 0.9, borderRadius: stackRadius, borderSkipped: false, borderColor: '#151515', borderWidth: 2 })),
       },
       options: {
         responsive: true,
