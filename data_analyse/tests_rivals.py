@@ -112,6 +112,33 @@ class RivalsTests(RivalsBase):
         self.assertEqual((detail["best_pairs"][0]["wins"], detail["best_pairs"][0]["played"]), (3, 4))
         self.assertIsNone(rivals.rival_detail(self.club, players, name="Nadie"))
 
+    def test_summary_has_pct_and_sorts_best_or_worst_first(self):
+        """EST-035: el % de victorias va en cada fila y se ordena de mejor a peor y al revés."""
+        self.seed()
+        self.match(self.sur, datetime.date(2026, 3, 7), 9, 3, games=[(1, False), (2, False)])
+        by = lambda sort: [(r["label"], r["pct"]) for r in rivals.rival_summary(self.club, match_type="competitivo", sort=sort)]  # noqa: E731
+        self.assertEqual(by(rivals.SORT_PCT), [("Norte", 67), ("Sur", 50)])
+        self.assertEqual(by(rivals.SORT_WORST), [("Sur", 50), ("Norte", 67)])
+
+    def test_detail_pairs_against_best_and_worst(self):
+        """EST-036: parejas contra el rival, mejores y peores, con su % y mínimo de partidos."""
+        self.seed()
+        players = list(Player.objects.filter(club=self.club))
+        detail = rivals.rival_detail(self.club, players, team=self.norte)
+        self.assertEqual(detail["pct"], 67)
+        self.assertEqual([(r["pct"], r["played"]) for r in detail["pairs_best"]], [(75, 4)])
+        self.assertEqual(detail["pairs_worst"], [])  # una sola pareja: ya está en las mejores
+        # Con una pareja que pierde contra él, sale en «peores» y no en «mejores».
+        c = Player.objects.create(club=self.club, name="C", last_name="Cson", joined_season="2020-2021")
+        for day in (1, 2):
+            m = Match.objects.create(club=self.club, local=self.own, visiting=self.norte, start_date=datetime.date(2026, 2, day),
+                                     draft_mode=False, result="Victoria Visitante", result_points="2/10")
+            Game.objects.create(match=m, n_game=1, score=3, winner="Visitante", draft_mode=False,
+                                player_1_local=self.a, player_2_local=c)
+        detail = rivals.rival_detail(self.club, players + [c], team=self.norte)
+        self.assertEqual([(r["p1"].name, r["p2"].name) for r in detail["pairs_best"]], [("A", "B")])
+        self.assertEqual([(r["p1"].name, r["p2"].name, r["pct"]) for r in detail["pairs_worst"]], [("A", "C", 0)])
+
     def test_preview_only_with_history(self):
         self.seed()
         nxt = Match.objects.create(club=self.club, local=self.own, visiting=self.norte, start_date=datetime.date(2026, 5, 1))
@@ -154,6 +181,25 @@ class RivalViewsTests(RivalsBase):
         self.assertContains(todos, "Amigos de Pedro")
         self.assertContains(self.client.get(reverse("rival_statistics"), {"season": "all", "match_type": "amistoso"}),
                             "Amigos de Pedro")
+
+    def test_list_shows_pct_and_explicit_points_headers(self):
+        self.seed()
+        response = self.client.get(reverse("rival_statistics"), {"season": "all"})
+        self.assertContains(response, "% victorias")
+        self.assertContains(response, "Puntos a favor-en contra")
+        self.assertNotContains(response, "Pts liga")
+        for sort in ("pct", "worst"):
+            self.assertEqual(self.client.get(reverse("rival_statistics"), {"season": "all", "sort": sort}).status_code, 200)
+        self.assertContains(response, "Peor primero")
+
+    def test_detail_page_summary_line_and_renamed_blocks(self):
+        self.seed()
+        response = self.client.get(reverse("rival_detail"), {"team": self.norte.public_id, "season": "all"})
+        self.assertContains(response, "st-rival-line")
+        self.assertContains(response, "Últimos enfrentamientos")
+        self.assertContains(response, "Parejas contra ellos")
+        self.assertNotContains(response, "Racha contra ellos")
+        self.assertNotContains(response, "Mejores parejas contra ellos")
 
     def test_list_search_by_name(self):
         self.seed()

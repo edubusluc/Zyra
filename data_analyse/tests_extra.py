@@ -171,10 +171,9 @@ class ClubSetsTests(ClubDataMixin, TestCase):
         params = {'p1': self.a.public_id, 'p2': self.b.public_id}
         response = self.client.get(url, params)
         self.assertNotContains(response, "Mejores parejas")
-        self.assertContains(response, "Evolución del % de victorias")
+        self.assertNotContains(response, "Evolución del % de victorias")
         response = self.client.get(url, {**params, 'season': '2025-2026'})
         self.assertNotContains(response, "Evolución del % de victorias")
-        self.assertContains(response, "Partidos de la pareja en la temporada.")
         self.assertEqual(len(response.context['season_games']), 2)
 
     def test_points_series_by_round_or_by_season(self):
@@ -291,6 +290,17 @@ class ClubSetsTests(ClubDataMixin, TestCase):
 
     def test_pair_page_sets(self):
         response = self.client.get(reverse('pair_statistics'), {'p1': self.a.public_id, 'p2': self.b.public_id})
-        self.assertContains(response, "Sets de la pareja")
+        # Con 2 partidos juntos la ficha es solo el resumen y los partidos (comparison.MIN_TREND_GAMES).
+        self.assertTrue(response.context['compact'])
+        self.assertNotContains(response, "Sets de la pareja")
         st = response.context['pair_sets']
         self.assertEqual((st['played'], st['comeback']['wins'], st['bagels_for']), (2, 1, 1))
+        own, rival = self.club.own_team, Team.objects.get(club=self.club, name="Rival")
+        for day in range(1, 4):
+            m = Match.objects.create(club=self.club, local=own, visiting=rival,
+                                     start_date=datetime.date(2026, 2, day), draft_mode=False)
+            Game.objects.create(match=m, n_game=1, score=3, winner='Local', draft_mode=False,
+                                player_1_local=self.a, player_2_local=self.b)
+        response = self.client.get(reverse('pair_statistics'), {'p1': self.a.public_id, 'p2': self.b.public_id})
+        self.assertFalse(response.context['compact'])
+        self.assertContains(response, "Sets de la pareja")

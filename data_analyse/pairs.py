@@ -6,6 +6,7 @@ club. En cada Game solo figuran los jugadores del propio club, en el lado local
 o en el visitante, así que la pareja es siempre la del lado que tiene jugadores.
 """
 import datetime
+from .comparison import is_reliable
 from match import outcomes
 from django.db.models import Q
 
@@ -235,9 +236,10 @@ def pair_summary(log, p1_id, p2_id):
             'pct': pct,
             'points': sum(g['points'] for g in sg),
             'matches': len({g['match_id'] for g in sg}),
-            'delta': round(pct - previous, 1) if previous is not None else None,
+            # El cambio solo cuenta entre temporadas con muestra (comparison.MIN_TREND_GAMES).
+            'delta': (round(pct - previous[0], 1) if previous and is_reliable(previous[1]) and is_reliable(len(sg)) else None),
         })
-        previous = pct
+        previous = (pct, len(sg))
 
     return {
         'played': played,

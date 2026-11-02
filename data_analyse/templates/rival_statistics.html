@@ -45,7 +45,8 @@
               <th scope="col">{% translate "Rival" %}</th>
               <th scope="col" title="{% translate 'Enfrentamientos jugados' %}">{% translate "J" %}</th>
               {% if current_club.rules.has_draws %}<th scope="col" title="{% translate 'Ganados – empatados – perdidos' %}">{% translate "G-E-P" %}</th>{% else %}<th scope="col" title="{% translate 'Ganados – perdidos' %}">{% translate "G-P" %}</th>{% endif %}
-              {% if current_club.rules.league_type %}<th scope="col" title="{% translate 'Puntos de liga contra este rival' %}">{% translate "Pts liga" %}</th>{% else %}<th scope="col" title="{% translate 'Puntos a favor – en contra' %}">{% translate "Pts" %}</th>{% endif %}
+              <th scope="col" title="{% translate '% de enfrentamientos ganados' %}">{% translate "% victorias" %}</th>
+              {% if current_club.rules.league_type %}<th scope="col" title="{% translate 'Puntos de liga contra este rival' %}">{% translate "Puntos de liga" %}</th>{% else %}<th scope="col" title="{% translate 'Puntos a favor – en contra' %}">{% translate "Puntos a favor-en contra" %}</th>{% endif %}
               <th scope="col">{% translate "Último" %}</th>
             </tr>
           </thead>
@@ -59,7 +60,8 @@
               </th>
               <td class="st-nw st-c-played" data-label="{% translate 'Jugados' %}">{{ r.played }}</td>
               <td class="st-nw st-c-record" data-label="{% if current_club.rules.has_draws %}{% translate 'G-E-P' %}{% else %}{% translate 'G-P' %}{% endif %}">{% if current_club.rules.has_draws %}{{ r.won }}-{{ r.drawn }}-{{ r.lost }}{% else %}{{ r.won }}-{{ r.lost }}{% endif %}</td>
-              {% if current_club.rules.league_type %}<td class="st-nw st-c-points" data-label="{% translate 'Pts liga' %}">{{ r.league_points }}</td>{% else %}<td class="st-nw st-c-points" data-label="{% translate 'Pts' %}">{{ r.points_for }}-{{ r.points_against }}</td>{% endif %}
+              <td class="st-nw st-c-pct" data-label="{% translate '% victorias' %}">{{ r.pct }}%</td>
+              {% if current_club.rules.league_type %}<td class="st-nw st-c-points" data-label="{% translate 'Liga' %}">{{ r.league_points }}</td>{% else %}<td class="st-nw st-c-points" data-label="{% translate 'Puntos' %}">{{ r.points_for }}-{{ r.points_against }}</td>{% endif %}
               <td class="st-last st-c-last">{% include 'includes/rival_outcome.html' with e=r.last %}<small class="st-muted d-block">{{ r.last.date|date_day }}</small></td>
             </tr>
             {% endfor %}

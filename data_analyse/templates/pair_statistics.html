@@ -12,7 +12,7 @@
       <div>
         <h1 class="st-title">{% translate "Parejas" %} <span class="z-comp-badge z-comp-badge--{{ current_club.competition }}">{{ current_club.rules.name }}</span></h1>
         {% if s %}
-          <p class="st-subtitle">{% blocktranslate trimmed count n=s.played %}{{ n }} partido juntos{% plural %}{{ n }} partidos juntos{% endblocktranslate %} {% blocktranslate trimmed count n=s.matches %}en {{ n }} enfrentamiento{% plural %}en {{ n }} enfrentamientos{% endblocktranslate %} · <a href="{% url 'pair_statistics' %}?match_type={{ match_type_param }}{% if selected_season %}&amp;season={{ selected_season|urlencode:'' }}{% endif %}">{% translate "Ver mejores y peores parejas" %}</a></p>
+          <p class="st-subtitle">{% blocktranslate trimmed count n=s.played %}{{ n }} partido juntos{% plural %}{{ n }} partidos juntos{% endblocktranslate %} {% blocktranslate trimmed count n=s.matches %}en {{ n }} enfrentamiento{% plural %}en {{ n }} enfrentamientos{% endblocktranslate %} · <a href="{% url 'pair_statistics' %}?match_type={{ match_type_param }}{% if selected_season %}&amp;season={{ selected_season|urlencode:'' }}{% endif %}">{% translate "Ver todas las parejas" %}</a></p>
         {% else %}
           <p class="st-subtitle">{% translate "Busca dos jugadores para ver cómo rinden juntos." %}</p>
         {% endif %}
@@ -63,14 +63,15 @@
       {# ============ 1. RESUMEN ============ #}
       <section class="st-hero" aria-label="{% translate 'Resumen de la pareja' %}">
         <div class="st-hero-main">
-          <p class="st-hero-kicker">{% if current_club.rules.ordered_pairs and usual_number %}{% blocktranslate with n=usual_number %}Pareja habitual del partido {{ n }}{% endblocktranslate %}{% elif not current_club.rules.ordered_pairs %}{% blocktranslate count n=s.played %}Pareja sorteada {{ n }} vez{% plural %}Pareja sorteada {{ n }} veces{% endblocktranslate %}{% else %}{% translate "Pareja" %}{% endif %}</p>
+          <p class="st-hero-kicker">{% if current_club.rules.ordered_pairs and usual_number %}{% blocktranslate with n=usual_number %}Pareja habitual del partido {{ n }}{% endblocktranslate %}{% elif not current_club.rules.ordered_pairs %}{% blocktranslate count n=s.played %}{{ n }} partido juntos{% plural %}{{ n }} partidos juntos{% endblocktranslate %}{% else %}{% translate "Pareja" %}{% endif %}</p>
           <h2 class="st-hero-name">{{ p1.short_name }} / {{ p2.short_name }}</h2>
-          <p class="st-hero-sub">{% blocktranslate trimmed count n=s.played %}{{ n }} partido juntos{% plural %}{{ n }} partidos juntos{% endblocktranslate %} · {% blocktranslate trimmed count n=s.matches %}{{ n }} enfrentamiento{% plural %}{{ n }} enfrentamientos{% endblocktranslate %}{% if current_club.rules.ordered_pairs %} · {% blocktranslate with n=s.points %}{{ n }} puntos{% endblocktranslate %}{% endif %}</p>
+          <p class="st-hero-sub">{% if current_club.rules.ordered_pairs %}{% blocktranslate trimmed count n=s.played %}{{ n }} partido juntos{% plural %}{{ n }} partidos juntos{% endblocktranslate %} · {% endif %}{% blocktranslate trimmed count n=s.matches %}{{ n }} enfrentamiento{% plural %}{{ n }} enfrentamientos{% endblocktranslate %}{% if current_club.rules.ordered_pairs %} · {% blocktranslate with n=s.points %}{{ n }} puntos{% endblocktranslate %}{% endif %}</p>
         </div>
         <div class="st-hero-ring" style="--pct: {{ pct_w|unlocalize }}" role="img" aria-label="{% blocktranslate with pct=s.pct %}{{ pct }}% de victorias{% endblocktranslate %}"><span>{{ s.pct|floatformat:0 }}%</span></div>
         <div class="st-hero-balance"><b>{{ s.wins }}-{{ s.losses }}</b><span>{% translate "Balance" %}</span></div>
       </section>
 
+      {% if not compact %}
       <section class="st-kpi-row st-kpi-row--two" aria-label="{% translate 'Cifras de la pareja' %}">
         <div class="st-kpi-tile{% if s.streak_type == 'V' %} st-kpi-tile--up{% elif s.streak_type == 'D' %} st-kpi-tile--down{% endif %}"><b>{% if s.streak_type == 'V' %}{{ s.streak_len }}V{% elif s.streak_type == 'D' %}{{ s.streak_len }}D{% else %}{{ s.streak_len }}{% endif %}</b><span>{% translate "Racha actual" %}</span></div>
         <div class="st-kpi-tile"><b>{{ s.best_win_streak }}V</b><span>{% translate "Mejor racha" %}</span><small>{% blocktranslate with n=s.worst_loss_streak %}peor racha: {{ n }}D{% endblocktranslate %}</small></div>
@@ -102,6 +103,8 @@
         </div>
       </section>
 
+      {% endif %}
+
       {# ============ 2. ÚLTIMOS PARTIDOS ============ #}
       <section aria-labelledby="last-title" class="st-section">
         <h2 class="st-section-title" id="last-title">{% translate "Últimos partidos juntos" %}</h2>
@@ -111,30 +114,38 @@
         </article>
       </section>
 
-      {# ============ 3. POR TEMPORADAS ============ #}
+      {# ============ 3. POR TEMPORADAS (solo con muestra suficiente) ============ #}
+      {% if not compact %}
       <section aria-labelledby="seasons-title" class="st-section">
         <h2 class="st-section-title" id="seasons-title">{% translate "Rendimiento por temporada" %}</h2>
-        <div class="st-row{% if not selected_season %} st-row--pair{% endif %}">
+        {% if chart_seasons.labels|length > 1 or chart_seasons.trend %}
+        <div class="st-row{% if chart_seasons.labels|length > 1 and chart_seasons.trend %} st-row--pair{% endif %}">
+          {% if chart_seasons.labels|length > 1 %}
           <article class="st-card">
             <h3 class="st-card-title">{% translate "Partidos jugados" %}</h3>
             <p class="st-card-note">{% translate "Ganados y perdidos en cada temporada." %}</p>
             <div class="st-chart st-chart--mine" role="img" aria-label="{% translate 'Partidos jugados' %}"><canvas id="chartPlayed"></canvas></div>
           </article>
-          {% if not selected_season %}
+          {% endif %}
+          {% if chart_seasons.trend %}
           <article class="st-card">
-            <h3 class="st-card-title">{% translate "Evolución del % de victorias" %}</h3>
-            <p class="st-card-note">{% translate "Porcentaje de partidos ganados juntos por temporada." %}</p>
-            {% if chart_seasons.pct|length > 1 %}<div class="st-chart st-chart--mine" role="img" aria-label="{% translate 'Evolución del % de victorias' %}"><canvas id="chartPct"></canvas></div>{% else %}<p class="st-muted st-nodata">{% translate "Se mostrará la evolución cuando haya al menos 2 temporadas." %}</p>{% endif %}
+            <h3 class="st-card-title">{% translate "% de victorias por temporada" %}</h3>
+            <p class="st-card-note">{% blocktranslate with n=min_trend_games %}Solo temporadas con {{ n }} partidos o más; debajo de cada una, los partidos jugados.{% endblocktranslate %}</p>
+            <div class="st-chart st-chart--mine" role="img" aria-label="{% translate '% de victorias por temporada' %}"><canvas id="chartPct"></canvas></div>
           </article>
           {% endif %}
         </div>
+        {% endif %}
 
+        {% if selected_season %}
         <article class="st-card">
           <h3 class="st-card-title">{% translate "Detalle por temporada" %}</h3>
-          {% if selected_season %}
           <p class="st-card-note mt-0">{% translate "Partidos de la pareja en la temporada." %}</p>
           {% include 'includes/pair_games_table.html' with games=season_games %}
-          {% else %}
+        </article>
+        {% elif s.seasons|length > 1 %}
+        <article class="st-card">
+          <h3 class="st-card-title">{% translate "Detalle por temporada" %}</h3>
           <div class="st-table-wrap">
             <table class="st-table">
               <thead>
@@ -142,11 +153,10 @@
                   <th scope="col">{% translate "Temporada" %}</th>
                   <th scope="col">{% translate "Enfrentamientos" %}</th>
                   <th scope="col">{% translate "Jugados" %}</th>
-                  <th scope="col">{% translate "Ganados" %}</th>
-                  <th scope="col">{% translate "Perdidos" %}</th>
+                  <th scope="col">{% translate "V-D" %}</th>
                   <th scope="col">{% translate "% victorias" %}</th>
                   <th scope="col">{% translate "Cambio" %}</th>
-                  <th scope="col">{% translate "Puntos" %}</th>
+                  {% if current_club.rules.ordered_pairs %}<th scope="col">{% translate "Puntos" %}</th>{% endif %}
                 </tr>
               </thead>
               <tbody>
@@ -155,8 +165,7 @@
                     <th scope="row">{{ r.season }}</th>
                     <td>{{ r.matches }}</td>
                     <td>{{ r.played }}</td>
-                    <td>{{ r.wins }}</td>
-                    <td>{{ r.losses }}</td>
+                    <td>{{ r.wins }}-{{ r.losses }}</td>
                     <td>{{ r.pct|floatformat:0 }}%</td>
                     <td>
                       {% if r.delta is None %}<span class="st-muted">—</span>
@@ -164,40 +173,73 @@
                       {% elif r.delta < 0 %}<span class="st-down">▼ {{ r.delta|floatformat:0 }}</span>
                       {% else %}<span class="st-muted">=</span>{% endif %}
                     </td>
-                    <td>{{ r.points }}</td>
+                    {% if current_club.rules.ordered_pairs %}<td>{{ r.points }}</td>{% endif %}
                   </tr>
                 {% endfor %}
               </tbody>
             </table>
           </div>
-          {% endif %}
         </article>
+        {% endif %}
       </section>
+      {% endif %}
 
       {{ chart_seasons|json_script:"data-seasons" }}
       <script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
 <script src="{% static 'js/chart-style.js' %}"></script>
-      <script src="{% static 'js/pair_statistics.js' %}"></script>
+      {% if not compact %}<script src="{% static 'js/pair_statistics.js' %}"></script>{% endif %}
       {% endif %}
     {% endif %}
 
-    {# ============ PAREJAS DESTACADAS (solo sin pareja elegida) ============ #}
+    {# ============ TODAS LAS PAREJAS (solo sin pareja elegida) ============ #}
     {% if not s %}
       <section aria-labelledby="pairs-title" class="st-section">
-        <h2 class="st-section-title" id="pairs-title">{% translate "Parejas destacadas" %}</h2>
-        {% if best_pairs or worst_pairs %}
-          <div class="st-row">
-            {% translate "Mejores parejas" as t_title %}{% translate "Mayor % de victorias juntos." as t_note %}
-            {% include 'includes/pair_rank_table.html' with title=t_title rows=best_pairs note=t_note lime=True %}
-            {% translate "Parejas por mejorar" as t_title %}{% translate "Menor % de victorias juntos." as t_note %}
-            {% include 'includes/pair_rank_table.html' with title=t_title rows=worst_pairs note=t_note min_games_pair=worst_min_games %}
-          </div>
-          <p class="st-card-note">{% translate "Para ver cualquier otra pareja, búscala arriba." %}</p>
-        {% else %}
+        <h2 class="st-section-title" id="pairs-title">{% translate "Todas las parejas" %}</h2>
+        {% if not pair_has_any %}
           <div class="st-empty">
-            <strong>{% translate "Todavía no hay parejas destacadas" %}</strong>
-            {% blocktranslate trimmed count n=min_games_pair %}Aparecerán cuando alguna pareja juegue al menos {{ n }} partido juntos. Mientras tanto puedes buscar cualquier pareja arriba.{% plural %}Aparecerán cuando alguna pareja juegue al menos {{ n }} partidos juntos. Mientras tanto puedes buscar cualquier pareja arriba.{% endblocktranslate %}
+            <strong>{% translate "Todavía no hay parejas" %}</strong>
+            {% translate "Aparecerán cuando alguna pareja dispute un partido cerrado." %}
           </div>
+        {% else %}
+          <form method="get" class="st-search" role="search" action="{% url 'pair_statistics' %}">
+            {% for name, value in pair_keep_fields %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}
+            <label class="visually-hidden" for="pair-q">{% translate "Buscar pareja por nombre" %}</label>
+            <input class="st-input" type="search" id="pair-q" name="q" value="{{ pair_search }}" placeholder="{% translate 'Buscar pareja por nombre…' %}" autocomplete="off">
+            <button class="st-btn" type="submit">{% translate "Buscar" %}</button>
+            {% if pair_search %}<a class="st-chip" href="{% url 'pair_statistics' %}?match_type={{ match_type_param }}{% if selected_season %}&amp;season={{ selected_season|urlencode:'' }}{% endif %}">{% translate "Quitar búsqueda" %}</a>{% endif %}
+          </form>
+          <nav class="st-sort" aria-label="{% translate 'Ordenar parejas' %}">
+            <span class="st-filter-label">{% translate "Ordenar por" %}</span>
+            {% for link in pair_sort_links %}<a class="st-chip" href="{{ link.url }}"{% if link.active %} aria-current="page"{% endif %}>{{ link.label }}</a>{% endfor %}
+          </nav>
+          {% if not pair_total %}
+          <div class="st-empty"><strong>{% translate "Ninguna pareja coincide con la búsqueda" %}</strong></div>
+          {% else %}
+          <div class="st-table-fit">
+            <table class="st-table st-table--fit">
+              <caption class="visually-hidden">{% translate "Parejas y su balance juntas" %}</caption>
+              <thead>
+                <tr>
+                  <th scope="col">{% translate "Pareja" %}</th>
+                  <th scope="col">{% translate "Partidos" %}</th>
+                  <th scope="col">{% translate "V-D" %}</th>
+                  <th scope="col">{% translate "% victorias" %}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for r in pair_rows %}
+                <tr>
+                  <th scope="row"><a href="{% url 'pair_statistics' %}?p1={{ r.p1.public_id }}&p2={{ r.p2.public_id }}{% if selected_season %}&season={{ selected_season|urlencode:'' }}{% endif %}&match_type={{ match_type_param }}">{{ r.p1.short_name }} / {{ r.p2.short_name }}</a></th>
+                  <td class="st-nw">{{ r.played }}</td>
+                  <td class="st-nw">{{ r.wins }}-{{ r.losses }}</td>
+                  <td class="st-nw">{{ r.pct|floatformat:0 }}%</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% include 'includes/pagination.html' with page=pair_rows extra=pair_page_extra %}
+          {% endif %}
         {% endif %}
       </section>
     {% endif %}

@@ -98,3 +98,33 @@ def partner_rows(affinity, limit=None):
             ranked[0]['best'] = True
             ranked[-1]['worst'] = True
     return rows[:limit] if limit else rows
+
+
+# Orden de la lista de parejas (?orden=): más partidos, mejor %, peor % o nombre.
+PAIR_SORT_PLAYED, PAIR_SORT_BEST, PAIR_SORT_WORST, PAIR_SORT_NAME = 'jugados', 'mejor', 'peor', 'nombre'
+PAIR_SORTS = (PAIR_SORT_PLAYED, PAIR_SORT_BEST, PAIR_SORT_WORST, PAIR_SORT_NAME)
+
+
+def pair_name(row):
+    """Nombre de una pareja de ``pairs.all_pairs`` («Nombre Apellido / Nombre Apellido») para buscar y ordenar."""
+    return f"{row['p1'].short_name} / {row['p2'].short_name}"
+
+
+def sort_pairs(rows, sort, search=''):
+    """
+    Lista de parejas de ``pairs.all_pairs`` filtrada por ``search`` (texto en el nombre de cualquiera de los dos,
+    sin distinguir mayúsculas) y ordenada por ``sort`` (``PAIR_SORTS``; otro valor, el de partidos). Todas las
+    parejas que han jugado juntas, sin mínimo: la base va en cada fila y el % solo ordena.
+    """
+    if search:
+        needle = search.casefold()
+        rows = [r for r in rows if needle in pair_name(r).casefold()]
+    if sort == PAIR_SORT_BEST:
+        key = lambda r: (-r['pct'], -r['played'], pair_name(r).casefold())  # noqa: E731
+    elif sort == PAIR_SORT_WORST:
+        key = lambda r: (r['pct'], -r['played'], pair_name(r).casefold())  # noqa: E731
+    elif sort == PAIR_SORT_NAME:
+        key = lambda r: pair_name(r).casefold()  # noqa: E731
+    else:
+        key = lambda r: (-r['played'], -r['pct'], pair_name(r).casefold())  # noqa: E731
+    return sorted(rows, key=key)
