@@ -3688,6 +3688,7 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .st-kpi-tile { display: flex; flex-direction: column; gap: 2px; padding: 16px 18px; background: var(--st-card); border: 1px solid var(--st-line); border-radius: var(--z-radius-lg); }
 .st-kpi-tile b { font-family: var(--z-display); font-size: clamp(2rem, 5vw, 3rem); font-weight: 400; line-height: 1; font-variant-numeric: tabular-nums; }
 .st-kpi-tile--up b { color: var(--z-lime); }
+.st-kpi-tile--down b { color: var(--st-loss); }
 .st-kpi-tile span { font-size: var(--z-fs-xs); font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--st-muted); }
 .st-kpi-tile small { font-size: var(--z-fs-xs); color: var(--st-muted); }
 .st-form--lg .st-pip { width: 40px; height: 40px; font-size: var(--z-fs-md); }
@@ -3718,8 +3719,11 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .st-fold { margin-top: 24px; }
 .st-fold > summary { cursor: pointer; font-family: var(--z-display); font-size: var(--z-fs-xl); text-transform: uppercase; }
 @media (max-width: 767.98px) {
-  .st-hero { grid-template-columns: 1fr auto; padding: 18px; }
-  .st-hero-ring { display: none; }
+  /* El nombre ocupa la fila de arriba; debajo, el % (anillo) y el balance, para que el % se vea también en móvil. */
+  .st-hero { grid-template-columns: auto minmax(0, 1fr); padding: 18px; }
+  .st-hero-main { grid-column: 1 / -1; }
+  .st-hero-ring { width: 64px; height: 64px; }
+  .st-hero-ring span { width: 48px; height: 48px; font-size: 1.1rem; }
   .st-kpi-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .st-bar-row { grid-template-columns: minmax(5rem, 7rem) 1fr 3rem; gap: 8px; }
 }

@@ -68,7 +68,7 @@
 
       <section class="st-kpi-row" aria-label="{% translate 'Cifras del jugador' %}">
         <div class="st-kpi-tile"><b>{{ s.played }}</b><span>{% translate "Jugados" %}</span></div>
-        <div class="st-kpi-tile st-kpi-tile--up"><b>{% if s.streak_type == 'V' %}{{ s.streak_len }}V{% elif s.streak_type == 'D' %}{{ s.streak_len }}D{% else %}{{ s.streak_len }}{% endif %}</b><span>{% translate "Racha actual" %}</span><small>{% blocktranslate with best=s.best_win_streak worst=s.worst_loss_streak %}mejor: {{ best }}V · peor: {{ worst }}D{% endblocktranslate %}</small></div>
+        <div class="st-kpi-tile{% if s.streak_type == 'V' %} st-kpi-tile--up{% elif s.streak_type == 'D' %} st-kpi-tile--down{% endif %}"><b>{% if s.streak_type == 'V' %}{{ s.streak_len }}V{% elif s.streak_type == 'D' %}{{ s.streak_len }}D{% else %}{{ s.streak_len }}{% endif %}</b><span>{% translate "Racha actual" %}</span><small>{% blocktranslate with best=s.best_win_streak worst=s.worst_loss_streak %}mejor: {{ best }}V · peor: {{ worst }}D{% endblocktranslate %}</small></div>
         {% if league %}
         <div class="st-kpi-tile"><b>{{ s.wins }}</b><span>{% translate "Partidos ganados" %}</span><small>{% translate "1 punto cada uno" %}</small></div>
         <div class="st-kpi-tile"><b>{{ league.played }}/{{ league.total }}</b><span>{% translate "Jornadas" %}</span><small>{% translate "liga jugada" %}</small></div>

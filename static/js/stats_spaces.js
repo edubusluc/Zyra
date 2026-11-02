@@ -13,37 +13,28 @@
   Chart.defaults.plugins.legend.labels.usePointStyle = true;
   Chart.defaults.plugins.legend.labels.boxWidth = 8;
 
-  // Ganados y perdidos de cada competición (local y visitante juntos; el detalle sale en el tooltip):
-  // barras redondeadas con su cifra dentro, sin ejes ni cuadrícula (la leyenda va sobre los gráficos).
+  // % de victorias en casa y fuera de cada competición: barras redondeadas con su cifra dentro,
+  // sin ejes ni cuadrícula (la leyenda va sobre los gráficos).
   const sidesCanvas = document.getElementById('spacesSidesChart');
   if (sidesCanvas) {
     new Chart(sidesCanvas, {
       type: 'bar',
       data: {
-        labels: [gettext('Ganados'), gettext('Perdidos')],
+        labels: [gettext('En casa'), gettext('Fuera')],
         datasets: comps.map((c, i) => ({
-          label: c.name, data: [data.totals[i].won, data.totals[i].lost], backgroundColor: color(c.code), maxBarThickness: 56,
-          borderRadius: 14, minBarLength: 14, borderColor: '#151515', borderWidth: 2,
+          label: c.name, data: [data.totals[i].pct_local, data.totals[i].pct_visiting], backgroundColor: color(c.code), maxBarThickness: 96,
+          borderRadius: 14, minBarLength: 32, borderColor: '#151515', borderWidth: 2,
         })),
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        // Las barras de cada grupo van pegadas (como en el diseño); el hueco lo da el borde del fondo.
-        datasets: { bar: { barPercentage: 1, categoryPercentage: 0.34 } },
+        datasets: { bar: { barPercentage: 1, categoryPercentage: 0.8 } },
         plugins: {
           legend: { display: false },
-          tooltip: {
-            callbacks: {
-              afterLabel: (c) => {
-                const t = data.totals[c.datasetIndex];
-                const side = c.dataIndex === 0 ? ['won', gettext('ganados')] : ['lost', gettext('perdidos')];
-                return interpolate(gettext('%(l)s en casa · %(v)s fuera'), { l: t.local[side[0]], v: t.visiting[side[0]] }, true);
-              },
-            },
-          },
+          tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y} %` } },
         },
-        scales: { x: { grid: { display: false } }, y: { display: false, beginAtZero: true, grace: '8%' } },
+        scales: { x: { grid: { display: false } }, y: { display: false, beginAtZero: true, max: 100, grace: '8%' } },
       },
     });
   }
@@ -74,12 +65,22 @@
         ctx.restore();
       },
     };
+    // Columna apilada de una sola pieza: solo se redondean la base del primer tramo y la cima del último
+    // con valor; los tramos intermedios quedan rectos y pegados.
+    const stackRadius = (c) => {
+      const sets = c.chart.data.datasets, j = c.dataIndex, i = c.datasetIndex;
+      const has = (k) => (sets[k].data[j] || 0) > 0;
+      const bottom = !sets.slice(0, i).some((_, k) => has(k));
+      const top = !sets.slice(i + 1).some((_, k) => has(k + i + 1));
+      const r = 14;
+      return { topLeft: top ? r : 0, topRight: top ? r : 0, bottomLeft: bottom ? r : 0, bottomRight: bottom ? r : 0 };
+    };
     const chart = new Chart(yearsCanvas, {
       type: 'bar',
       plugins: [totalOnTop],
       data: {
         labels: labels.map(seasonLabel),
-        datasets: comps.map((c, i) => ({ label: c.name, data: data.years.won[i], backgroundColor: color(c.code), maxBarThickness: 44, borderRadius: { topLeft: 12, topRight: 12, bottomLeft: 12, bottomRight: 12 }, borderSkipped: false, borderColor: '#151515', borderWidth: 2 })),
+        datasets: comps.map((c, i) => ({ label: c.name, data: data.years.won[i], backgroundColor: color(c.code), maxBarThickness: 72, barPercentage: 0.8, categoryPercentage: 0.9, borderRadius: stackRadius, borderSkipped: false, borderColor: '#151515', borderWidth: 2 })),
       },
       options: {
         responsive: true,
@@ -158,7 +159,7 @@
         responsive: true,
         maintainAspectRatio: false,
         layout: { padding: { top: 26, right: 8 } },
-        datasets: { bar: { barPercentage: 1, categoryPercentage: 0.34 } },
+        datasets: { bar: { barPercentage: 1, categoryPercentage: 0.8 } },
         interaction: { mode: 'index', intersect: false },
         plugins: {
           legend: { display: false },

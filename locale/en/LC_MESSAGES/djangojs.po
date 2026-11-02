@@ -390,10 +390,6 @@ msgstr "%(n)s of %(total)s games with a result"
 msgid "los no presentados se reparten al cerrar el acta"
 msgstr "no-shows are settled when the record is closed"
 
-#, python-format
-msgid "%(l)s en casa · %(v)s fuera"
-msgstr "%(l)s at home · %(v)s away"
-
 msgid "ganados"
 msgstr "won"
 
@@ -405,3 +401,9 @@ msgstr "Points"
 
 msgid "Asistencia"
 msgstr "Attendance"
+
+msgid "En casa"
+msgstr "At home"
+
+msgid "Fuera"
+msgstr "Away"

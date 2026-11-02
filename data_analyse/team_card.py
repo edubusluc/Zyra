@@ -90,7 +90,7 @@ def finals_roster(club, season):
     Plantilla y elegibilidad para las fases finales (reglamento LAPI 8.2: haber jugado al menos
     ``finals_min_regular`` enfrentamientos de liga con el equipo esa temporada).
 
-    ``{'squad', 'max', 'eligible', 'minimum', 'missing'}``; ``missing`` son los nombres de quienes aún no
+    ``{'season', 'squad', 'max', 'eligible', 'minimum', 'missing'}``; ``missing`` son los nombres de quienes aún no
     llegan. None si la competición no tiene esa regla.
     """
     rules = club.rules
@@ -107,6 +107,7 @@ def finals_roster(club, season):
                 played.setdefault(row[f'{slot}_id'], set()).add(row['match_id'])
     short = [p for p in squad if len(played.get(p.id, ())) < rules.finals_min_regular]
     return {
+        'season': season,
         'squad': len(squad),
         'max': rules.max_roster,
         'eligible': len(squad) - len(short),

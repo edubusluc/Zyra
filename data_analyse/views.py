@@ -8,9 +8,7 @@ from collections import Counter
 
 from match import outcomes
 from django.shortcuts import render
-from match.models import Match, Game, Result
-from django.db.models import Sum
-from django.db.models.functions import Coalesce
+from match.models import Match, Game
 from players.models import Player, proper_name
 from team.models import Team
 from call.models import Call
@@ -33,7 +31,7 @@ from . import rivals as rival_stats
 from . import records
 from . import player_card, team_card
 from .attendance import signup_attendance
-from .sets import best_and_worst_number, by_game_number, own_sets, set_stats
+from .sets import by_game_number, own_sets, set_stats
 
 def _zero_state(request, title):
     """
@@ -216,41 +214,6 @@ def calculate_tiebreak_stats(season, team, match_type=None):
             'for_pct': for_pct, 'against_pct': 100 - for_pct if total else 0}
 
 
-def _games_totals(season, team, own_local, match_type=None):
-    """
-    Juegos ganados y perdidos por el equipo jugando en casa (own_local) o fuera,
-    sumados en la base de datos con una sola consulta.
-    """
-    results = _by_type(Result.objects.filter(game__match__draft_mode=False), match_type, "game__match__")
-    results = results.filter(game__match__local=team) if own_local else results.filter(game__match__visiting=team)
-    if season is not None:
-        results = results.filter(game__match__season=season)
-    sums = results.aggregate(**{
-        f"{side}{n}": Coalesce(Sum(f"set{n}_{side}"), 0)
-        for side in ("local", "visiting") for n in (1, 2, 3)
-    })
-    local = sums["local1"] + sums["local2"] + sums["local3"]
-    visiting = sums["visiting1"] + sums["visiting2"] + sums["visiting3"]
-    won, lost = (local, visiting) if own_local else (visiting, local)
-    total = won + lost
-    return (
-        won, lost,
-        round(won / total * 100, 2) if total else 0,
-        round(lost / total * 100, 2) if total else 0,
-    )
-
-
-def calculate_local_game_statistics(season, team, match_type=None):
-    """Juegos ganados y perdidos (y sus %) del equipo cuando juega en casa."""
-    return _games_totals(season, team, own_local=True, match_type=match_type)
-
-
-def calculate_visiting_game_statistics(season, team, match_type=None):
-    """Juegos ganados y perdidos (y sus %) del equipo cuando juega fuera."""
-    return _games_totals(season, team, own_local=False, match_type=match_type)
-
-
-
 def column_chart(club, season, match_type=None):
     """Partidos de 2 y 3 puntos ganados/perdidos por jugador actual (una sola consulta)."""
     players = Player.objects.filter(club=club, in_team=True)
@@ -317,8 +280,6 @@ def team_statistics(request):
     seasons = get_total_season(Match.objects.filter(club=request.club))
     team = request.club.own_team
     match_type = selected_match_type(request)
-    min_games_pair = pair_stats.min_games_pair(match_type)
-
     seasons = sorted(seasons, key=lambda s: int(s.split('-')[0]), reverse=True)
     selected_season = choose_season(request, seasons)
     if selected_season == ALL_SEASONS:
@@ -332,9 +293,7 @@ def team_statistics(request):
                                                         **season_filter_context(request, seasons, selected_season)})
 
     (total_matches, total_won, drawn_matches, lost_matches,
-     percentage_won, percentage_drawn, percentage_lost) = calculate_match_statistics(selected_season or None, team, match_type)
-    local_games_won, local_games_lost, percentage_local_games_won, percentage_local_games_lost = calculate_local_game_statistics(selected_season or None, team, match_type)
-    visiting_games_won, visiting_games_lost, percentage_visiting_games_won, percentage_visiting_games_lost = calculate_visiting_game_statistics(selected_season or None, team, match_type)
+     percentage_won, _percentage_drawn, _percentage_lost) = calculate_match_statistics(selected_season or None, team, match_type)
 
     tiebreaks = calculate_tiebreak_stats(selected_season or None, team, match_type)
 
@@ -352,27 +311,13 @@ def team_statistics(request):
         'drawn_matches': drawn_matches,
         'tiebreaks': tiebreaks,
         'lost_matches': lost_matches,
-        'local_games_won': local_games_won,
-        'local_games_lost': local_games_lost,
         'percentage_won': percentage_won,
-        'percentage_drawn': percentage_drawn,
-        'percentage_lost': percentage_lost,
-        'visiting_games_won': visiting_games_won,
-        'visiting_games_lost': visiting_games_lost,
-        'percentage_local_games_won': percentage_local_games_won,
-        'percentage_local_games_lost': percentage_local_games_lost,
-        'percentage_visiting_games_won': percentage_visiting_games_won,
-        'percentage_visiting_games_lost': percentage_visiting_games_lost,
-        'current_season': current_season(),
         "seasons": seasons,
         "selected_season": selected_season,
         "top_local_players": pair_stats.top_players(log, squad, local=True),
         "top_visiting_players": pair_stats.top_players(log, squad, local=False),
-        "top_local_pairs": pair_stats.top_pairs(log, squad, local=True, min_games=min_games_pair),
-        "top_visiting_pairs": pair_stats.top_pairs(log, squad, local=False, min_games=min_games_pair),
         "column_chart_data": column_chart_data,
         "min_games_player": pair_stats.MIN_GAMES_PLAYER,
-        "min_games_pair": min_games_pair,
     }
     context.update(team_extra_context(request.club, selected_season, match_type, log))
     context['attendance'] = signup_attendance(request.club, selected_season, match_type)
@@ -480,7 +425,7 @@ def players_charts(players, logs, season, match_type):
 
     Devuelve ``set_rows`` (cada situación de sets con el % de cada competición), ``set_panels`` (lo mismo
     agrupado por competición, para los paneles de stats_mine.html) y ``spaces_chart``
-    para stats_spaces.js: competiciones, partidos ganados y perdidos como local y como visitante,
+    para stats_spaces.js: competiciones, % de victorias como local y como visitante,
     partidos ganados por temporada (sin temporada elegida) y % de convocatorias en las que se apuntó
     por temporada (con una temporada elegida, solo esa: se dibuja con barras).
     """
@@ -515,8 +460,11 @@ def players_charts(players, logs, season, match_type):
 
     # Tarjeta «Sets» de «Mis estadísticas»: solo las tres situaciones del diseño, con el % de cada competición.
     set_compare = [row for key in MINE_SET_KEYS for row in set_rows if row["key"] == key]
-    # Partidos ganados y perdidos de cada competición (local + visitante), para «Local y visitante».
-    totals = [{"won": a["won"] + b["won"], "lost": a["lost"] + b["lost"], "local": a, "visiting": b}
+
+    # % de victorias en casa y fuera de cada competición (None sin partidos), para «Local y visitante».
+    pct = lambda r: round(100 * r["won"] / (r["won"] + r["lost"])) if r["won"] + r["lost"] else None
+    totals = [{"won": a["won"] + b["won"], "lost": a["lost"] + b["lost"], "local": a, "visiting": b,
+               "pct_local": pct(a), "pct_visiting": pct(b)}
               for a, b in zip(local, visiting)]
 
     by_start = lambda s: int(s.split('-')[0])
@@ -557,7 +505,7 @@ def team_card_context(club, season, match_type, context):
     snp = context['snp']
     extra = {
         'points_card': team_card.points_series(club, season, match_type),
-        'finals': team_card.finals_roster(club, season or current_season()),
+        'finals': team_card.finals_roster(club, current_season()) if season in (None, current_season()) else None,
         'walkovers': team_card.walkovers(club, season, match_type),
         'set_rows': set_rows,
         'venue': team_card.venue_matches(club, season, match_type),
@@ -573,13 +521,10 @@ def team_extra_context(club, season, match_type, log):
     partido, sets, récords y ranking SNP de la plantilla (de la temporada elegida o la actual).
     """
     numbers = by_game_number(log)
-    best_number, worst_number = best_and_worst_number(numbers, min_games=1)
     snp_season = season or current_season()
     snp = records.snp_ranking(club, snp_season)
     return {
         'game_numbers': numbers,
-        'best_number': best_number,
-        'worst_number': worst_number,
         'set_stats': set_stats(log),
         'records': records.team_records(club, season, match_type, log),
         'snp': snp,
@@ -987,7 +932,6 @@ def statistics_per_player(request):
     season_log = [g for g in log if g['season'] == selected_season] if selected_season else log
     summary = summarize(season_log)
     player_numbers = by_game_number(season_log)
-    player_best_number, player_worst_number = best_and_worst_number(player_numbers, min_games=1)
     calls_present, calls_total = calls_by_season(player, match_type)
     rows = summarize_by_season(log, calls_present, calls_total)
     aligned = aligned_by_season(player, match_type)
@@ -1054,8 +998,6 @@ def statistics_per_player(request):
         'lineup_rate': lineup_rate,
         'signup_rate': signup_rate,
         'game_numbers': player_numbers,
-        'best_number': player_best_number,
-        'worst_number': player_worst_number,
         'clutch': clutch,
         'clutch_rows': [(label, desc, clutch[key]) for key, label, desc in SET_SITUATIONS],
         'snp_season': snp_season,

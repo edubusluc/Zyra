@@ -66,21 +66,22 @@
       </section>
 
       {% if points_card or finals %}
-      <section class="st-section" aria-label="{% translate 'Puntos de liga' %}">
+      {% if points_card.league %}{% translate 'Puntos de liga' as points_title %}{% else %}{% translate 'Puntos por enfrentamiento' as points_title %}{% endif %}
+      <section class="st-section" aria-label="{% if points_card %}{{ points_title }}{% else %}{% translate "Plantilla y fases finales" %}{% endif %}">
         <div class="st-row st-row--pair">
           {% if points_card %}
           <article class="st-card">
             <span class="z-comp-badge z-comp-badge--{{ current_club.competition }} st-only">{% blocktranslate with name=current_club.rules.name %}Solo {{ name }}{% endblocktranslate %}</span>
-            <h2 class="st-card-title">{% translate "Puntos de liga" %}</h2>
+            <h2 class="st-card-title">{{ points_title }}</h2>
             <p class="st-card-note">{% if points_card.league %}{% blocktranslate with a=current_club.rules.league_points.0 b=current_club.rules.league_points.1 c=current_club.rules.league_points.2 %}{{ a }} por ganar 3-0, {{ b }} por ganar 2-1, {{ c }} por perder 2-1 y 0 por perder 3-0 o no presentarse.{% endblocktranslate %}{% else %}{% blocktranslate with n=points_card.possible %}Puntos ganados en cada enfrentamiento, de {{ n }} posibles.{% endblocktranslate %}{% endif %}</p>
             <p class="st-big">{{ points_card.total }} <small>{% if points_card.league %}{% blocktranslate with avg=points_card.average|floatformat:1 count n=points_card.played %}en {{ n }} jornada · media {{ avg }}{% plural %}en {{ n }} jornadas · media {{ avg }}{% endblocktranslate %}{% else %}{% blocktranslate with avg=points_card.average|floatformat:1 count n=points_card.played %}en {{ n }} enfrentamiento · media {{ avg }}{% plural %}en {{ n }} enfrentamientos · media {{ avg }}{% endblocktranslate %}{% endif %}</small></p>
-            <div class="st-chart st-chart--points" role="img" aria-label="{% translate 'Puntos de liga' %}"><canvas id="chartPoints" aria-hidden="true"></canvas></div>
+            <div class="st-chart st-chart--points" role="img" aria-label="{{ points_title }}"><canvas id="chartPoints" aria-hidden="true"></canvas></div>
           </article>
           {% endif %}
           {% if finals %}
           <article class="st-card">
             <span class="z-comp-badge z-comp-badge--lapi st-only">{% translate "Solo LAPI" %}</span>
-            <h2 class="st-card-title">{% translate "Plantilla y fases finales" %}</h2>
+            <h2 class="st-card-title">{% translate "Plantilla y fases finales" %} · {{ finals.season }}</h2>
             <p class="st-card-note">{% blocktranslate with n=finals.minimum %}Reglamento 8.2: en Playoffs y Fase final solo juega quien ha jugado {{ n }} enfrentamientos de liga.{% endblocktranslate %}</p>
             <div class="st-kpi-row st-kpi-row--two">
               <div class="st-kpi-tile"><b>{{ finals.squad }}{% if finals.max %} / {{ finals.max }}{% endif %}</b><span>{% translate "Plantilla" %}</span>{% if finals.max %}<small>{% blocktranslate with n=finals.max %}máximo LAPI {{ n }}{% endblocktranslate %}</small>{% endif %}</div>
@@ -149,12 +150,6 @@
 
       <section id="sec-charts" aria-labelledby="charts-title" class="st-section">
         <h2 class="st-section-title" id="charts-title">{% translate "Gráficos" %}</h2>
-        <div class="st-row st-row--pair">
-          {% translate "Juegos como local" as t_title %}
-          {% include 'includes/venue_games.html' with title=t_title won=local_games_won lost=local_games_lost wpct=percentage_local_games_won lpct=percentage_local_games_lost %}
-          {% translate "Juegos como visitante" as t_title %}
-          {% include 'includes/venue_games.html' with title=t_title won=visiting_games_won lost=visiting_games_lost wpct=percentage_visiting_games_won lpct=percentage_visiting_games_lost %}
-        </div>
         {% if attendance.average is not None %}
         <article class="st-card st-card--wide">
           <h3 class="st-card-title">{% translate "Asistencia a las convocatorias" %}{% if selected_season %} · {{ selected_season }}{% endif %}</h3>

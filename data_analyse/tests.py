@@ -320,18 +320,16 @@ class MatchTypeFilterTests(TestCase):
     def test_team_statistics_filter_by_type(self):
         response = self.client.get(reverse("team_statistics"))
         self.assertEqual(response.context["total_matches"], 4)
-        self.assertEqual(response.context["min_games_pair"], 2)
-        self.assertEqual([r["name"] for r in response.context["top_local_pairs"]], ["A Ason / B Bson"])
+        self.assertEqual(pair_stats.min_games_pair(None), 2)
 
         response = self.client.get(reverse("team_statistics"), {"match_type": Match.RETO})
         self.assertEqual((response.context["total_matches"], response.context["won_matches"]), (1, 1))
         # En retos y play off no hay mínimo de partidos por pareja
-        self.assertEqual(response.context["min_games_pair"], 1)
-        self.assertEqual([r["name"] for r in response.context["top_local_pairs"]], ["C Cson / D Dson"])
+        self.assertEqual(pair_stats.min_games_pair(Match.RETO), 1)
 
         response = self.client.get(reverse("team_statistics"), {"match_type": Match.ENFRENTAMIENTO})
         self.assertEqual(response.context["total_matches"], 2)
-        self.assertEqual(response.context["min_games_pair"], 2)
+        self.assertEqual(pair_stats.min_games_pair(Match.ENFRENTAMIENTO), 2)
 
     def test_filter_links_keep_other_parameters(self):
         response = self.client.get(reverse("player_statistics"), {"player": self.a.public_id, "match_type": Match.PLAYOFF})
@@ -538,7 +536,6 @@ class DrawStatisticsTests(TestCase):
         self.assertEqual(response.context["won_matches"], 1)
         self.assertEqual(response.context["drawn_matches"], 1)
         self.assertEqual(response.context["lost_matches"], 1)
-        self.assertEqual(response.context["percentage_drawn"], 33.33)
         self.assertContains(response, "Empates")
 
 

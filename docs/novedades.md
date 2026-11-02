@@ -3,6 +3,15 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 02/11/2026 · Estadísticas: fase 1 (datos que no inducen a error)
+
+- **Mis estadísticas**: «Local y visitante» pasa a mostrar el % de victorias en casa frente a fuera de cada competición (antes repetía ganados y perdidos, que ya dicen las filas de arriba). Sus barras y las de «Ganados por temporada» son más anchas, con la cifra dentro y sin huecos grandes, como en «Puntos de liga». «Ganados por temporada» solo aparece con «Todas»; con una temporada elegida no tiene sentido y se oculta.
+- **Equipo**: se quitan «Juegos como local» y «Juegos como visitante» (juegos de tenis sumados, que repetían «Ganados como local/visitante» con otra unidad).
+- **Equipo · Plantilla y fases finales (LAPI)**: indica su temporada y calcula siempre la temporada en curso; con una temporada pasada elegida no se muestra.
+- **Equipo · SNP**: «Puntos de liga» pasa a llamarse «Puntos por enfrentamiento», porque SNP no tiene liga (LAPI mantiene «Puntos de liga»).
+- **Móvil**: el % de victorias del jugador y de la pareja se ve también en el móvil (anillo bajo el nombre).
+- **Racha actual**: la cifra va en lima si es de victorias y en rojo si es de derrotas.
+
 ## 02/11/2026 · Fila única de filtros
 
 - **Un solo bloque de filtros**: Competición, Temporada y Tipo son desplegables en una sola fila, igual en Enfrentamientos, Calendario, Plantilla, Club, Miembros y todas las pestañas de Estadísticas (Mis estadísticas, Equipo, Jugador, Parejas, Rivales y Advertencias). Cada uno dice su valor y se marca en lima si no es «Todas».
