@@ -596,7 +596,8 @@ def create_invitation(request):
         return club_members(request, invite_form=form)
 
     email = form.cleaned_data["email"]
-    club.invitations.filter(email__iexact=email, used_at__isnull=True).delete()
+    # Las invitaciones de ficha copiada (``player``) son de otro flujo y no se sustituyen.
+    club.invitations.filter(email__iexact=email, used_at__isnull=True, player__isnull=True).delete()
     invitation = Invitation.objects.create(club=club, created_by=request.user, email=email)
     url = request.build_absolute_uri(reverse("invitation", args=[invitation.token]))
     if send_invitation_email(invitation, url):

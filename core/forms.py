@@ -11,6 +11,7 @@ from team.models import Team
 from .blocklist import is_blocked
 from .competitions import CHOICES as COMPETITION_CHOICES, COMPETITIONS, get_competition
 from .models import Membership
+from .services import club_of
 from .validators import plain_text, player_name
 
 User = get_user_model()
@@ -236,6 +237,14 @@ class InviteMemberForm(forms.Form):
             raise forms.ValidationError(gettext("Ese email ya pertenece a un miembro del club."))
         if is_blocked(email):
             raise forms.ValidationError(gettext("No se puede invitar a este email."))
+        # Un espacio por competición: quien ya tiene equipo en esta competición no podría aceptar.
+        competition = self.club.rules if self.club is not None else None
+        if competition is not None:
+            for user in User.objects.filter(email__iexact=email):
+                if club_of(user, competition.code) is not None:
+                    raise forms.ValidationError(
+                        gettext("Ese email ya tiene un equipo en %(competition)s y solo se puede tener uno por competición.")
+                        % {"competition": competition.name})
         return email
 
 
