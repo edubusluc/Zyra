@@ -28,21 +28,15 @@ class ListAndActaTests(UxBase):
         Membership.objects.create(user=member, club=self.club, role=Membership.MEMBER)
         self.client.force_login(member)
 
-    def test_list_keeps_only_pending_and_a_link_to_the_balance_for_the_captain(self):
+    def test_list_has_no_summary_or_pending_indicator_for_any_role(self):
         self.closed_match()
         self.match(date=PAST.replace(year=2027))
-        page = self.client.get(reverse("list_match") + "?season=all")
-        self.assertContains(page, 'class="z-pending-line"')
-        self.assertContains(page, "Ver balance")
-        self.assertNotContains(page, 'class="z-summary"')
-        self.assertEqual(page.context["summary"]["pending"], 1)
-
-    def test_player_does_not_see_the_pending_indicator(self):
-        self.match(date=PAST.replace(year=2027))
-        self.as_player()
-        page = self.client.get(reverse("list_match") + "?season=all")
-        self.assertNotContains(page, "z-pending-line")
-        self.assertNotContains(page, "Ver balance")
+        for login in (lambda: None, self.as_player):
+            login()
+            page = self.client.get(reverse("list_match") + "?season=all")
+            self.assertNotContains(page, 'class="z-summary"')
+            self.assertNotContains(page, "z-pending-line")
+            self.assertNotContains(page, "Ver balance")
 
     def test_closed_match_is_one_line_with_the_result_from_our_team(self):
         self.closed_match()

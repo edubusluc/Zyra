@@ -64,14 +64,6 @@
 })();
 </script>
 
-{# EST-037: la lista es para gestionar; el balance vive en Estadísticas › Equipo. El jugador sin gestión no ve pendientes: lo que debe responder está en Inicio. #}
-{% if create_spaces %}
-<div class="z-pending-line" role="group" aria-label="{% translate 'Resumen' %}">
-    <p><b>{{ summary.pending }}</b> <span>{% translate "Pendientes" %}</span></p>
-    <a href="{% url 'team_statistics' %}{% if not multi_space %}?en={{ current_club.competition }}{% endif %}">{% translate "Ver balance" %} <i class="fa-solid fa-chevron-right" aria-hidden="true"></i></a>
-</div>
-{% endif %}
-
 {% if matches %}
 {% comment %}Una fila por enfrentamiento: franja de la competición, fecha, competición y tipo, equipos,
 lugar y convocados, recorrido de cuatro pasos (convocatoria, parejas, resultados, acta) y resultado
