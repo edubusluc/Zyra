@@ -10,6 +10,9 @@ from django.utils.translation import gettext_lazy as _
 # Partidos que necesita una temporada para entrar en una tendencia (evolución o cambio de % entre temporadas).
 MIN_TREND_GAMES = 5
 
+# Partidos juntos que necesita una pareja para que su ficha enseñe más que el resumen y los últimos partidos.
+MIN_PAIR_SHEET_GAMES = 2
+
 # Situaciones de set que ve cada vista: (clave de set_stats, título literal, explicación). «bagels» no sale de
 # set_stats: su % es sobre los sets jugados (ver set_situation_rows).
 SET_ROWS = (

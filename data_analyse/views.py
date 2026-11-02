@@ -1143,8 +1143,8 @@ def statistics_per_pair(request):
             pair_sets = set_stats(pair_log)
             numbers = Counter(g['n_game'] for g in pair_log)
             context.update({
-                # Con pocos partidos juntos la ficha es solo el resumen y los partidos (comparison.MIN_TREND_GAMES).
-                'compact': not comparison.is_reliable(summary['played']),
+                # Con un solo partido juntos la ficha es solo el resumen y el partido (comparison.MIN_PAIR_SHEET_GAMES).
+                'compact': summary['played'] < comparison.MIN_PAIR_SHEET_GAMES,
                 'min_trend_games': comparison.MIN_TREND_GAMES,
                 'usual_number': numbers.most_common(1)[0][0] if numbers else None,
                 'set_rows': comparison.set_situation_rows(pair_sets),
