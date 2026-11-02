@@ -3512,7 +3512,8 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 
 @layer screens {
 /* ---------- Estadísticas en móvil: filtros en una fila y secciones plegables (UX-009) ---------- */
-.st-section-toggle { display: none; }
+.st-section-toggle { display: inline; padding: 0; font: inherit; color: inherit; letter-spacing: inherit; text-align: inherit; text-transform: inherit; background: none; border: 0; cursor: default; pointer-events: none; }
+.st-section-toggle i { display: none; }
 .st-filters-sheet > summary { display: none; }
 @media (max-width: 767.98px) {
     .st-filters-sheet { margin: 0 0 12px; background: var(--z-surface-2); border: 1px solid var(--z-border); border-radius: var(--z-radius); }
@@ -3523,7 +3524,8 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
     .st-filters-sheet > summary small { min-width: 0; overflow: hidden; font-size: var(--z-fs-sm); font-weight: 500; color: var(--z-muted); text-overflow: ellipsis; white-space: nowrap; }
     .st-filters-body { display: grid; gap: 10px; padding: 0 12px 12px; }
     .st-section-toggle { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-height: 44px; padding: 0; font: inherit; color: inherit; text-align: left; letter-spacing: inherit; text-transform: inherit; background: none; border: 0; cursor: pointer; }
-    .st-section-toggle i { flex: none; font-size: var(--z-fs-sm); color: var(--z-lime); transition: transform .2s; }
+    .st-section-toggle { pointer-events: auto; cursor: pointer; }
+    .st-section-toggle i { display: inline; flex: none; font-size: var(--z-fs-sm); color: var(--z-lime); transition: transform .2s; }
     .st-section.is-open > .st-section-title .st-section-toggle i { transform: rotate(180deg); }
     section.st-section[data-collapsible] { margin-top: 12px; padding-bottom: 6px; border-bottom: 1px solid var(--z-border); }
 }
@@ -3738,3 +3740,23 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
   .st-kpi-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .st-bar-row { grid-template-columns: minmax(5rem, 7rem) 1fr 3rem; gap: 8px; }
 }
+
+/* Estadísticas · Equipo (diseño aprobado): balance lima, puntos de liga y récords. */
+.st-balance { margin: 0 0 12px; padding: 22px 28px; color: var(--z-ink); background: var(--z-lime); border-radius: var(--z-radius-lg); }
+.st-balance-kicker { margin: 0 0 6px; font-size: var(--z-fs-xs); font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.st-balance-main { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; }
+.st-balance-nums { display: flex; flex-wrap: wrap; gap: 8px 36px; }
+.st-balance-nums div { display: flex; flex-direction: column; }
+.st-balance-nums b { font-family: var(--z-display); font-size: clamp(3rem, 9vw, 5.4rem); font-weight: 400; line-height: .95; }
+.st-balance-nums span { font-size: var(--z-fs-xs); font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.st-balance-pct { font-family: var(--z-display); font-size: clamp(2.6rem, 8vw, 4.6rem); font-weight: 400; line-height: 1; }
+.st-balance-track { height: 12px; margin: 14px 0 8px; overflow: hidden; background: rgba(10, 10, 10, .2); border-radius: 999px; }
+.st-balance-track span { display: block; height: 100%; background: var(--z-ink); border-radius: 999px; }
+.st-balance-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; margin: 0; font-size: var(--z-fs-xs); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.st-big { display: flex; align-items: baseline; gap: 10px; margin: 8px 0 0; font-family: var(--z-display); font-size: clamp(3rem, 8vw, 4.4rem); line-height: 1; color: var(--z-lime); }
+.st-big small { font-family: var(--z-body, inherit); font-size: var(--z-fs-sm); color: var(--st-muted); }
+.st-chart--points { height: 190px; margin-top: 10px; }
+.st-kpi-row--three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.st-kpi-row--two { grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 12px 0 0; }
+.st-kpi-row--records { align-content: start; margin: 0; }
+@media (max-width: 640px) { .st-kpi-row--three { grid-template-columns: repeat(2, minmax(0, 1fr)); } .st-balance { padding: 18px; } .st-balance-main { align-items: center; } }

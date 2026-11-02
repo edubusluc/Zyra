@@ -24,7 +24,7 @@ def rival_key(match):
     return ("name", (match.rival_name or "").strip().casefold())
 
 
-def _own_points(match):
+def own_points(match):
     """(puntos propios, puntos del rival) de un enfrentamiento cerrado, o (None, None) si no constan."""
     try:
         local, visiting = (int(n) for n in match.result_points.split("/"))
@@ -41,6 +41,10 @@ def _outcome(match):
     return WIN if own_won else LOSS
 
 
+# Nombre público para otros módulos (p. ej. team_card).
+outcome = _outcome
+
+
 def closed_matches(club, season=None, match_type=None):
     """Enfrentamientos cerrados del club en los que juega el equipo propio, con los equipos ya cargados."""
     qs = Match.objects.filter(club=club, draft_mode=False).select_related("local", "visiting", "club")
@@ -52,7 +56,7 @@ def closed_matches(club, season=None, match_type=None):
 
 def _entry(match):
     """Una línea del historial de un rival."""
-    own, other = _own_points(match)
+    own, other = own_points(match)
     return {
         "match": match,
         "date": match.start_date,

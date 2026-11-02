@@ -8,7 +8,7 @@ from django.urls import reverse
 from call.models import Call
 from core.services import create_club
 from data_analyse import pairs as pair_stats
-from data_analyse import records
+from data_analyse import records, team_card
 from data_analyse.attendance import signup_attendance
 from data_analyse.sets import best_and_worst_number, by_game_number, own_sets, set_stats
 from match.models import Game, Match, Result
@@ -155,13 +155,39 @@ class ClubSetsTests(ClubDataMixin, TestCase):
         self.assertEqual(snp['riser']['player'], self.a)
         self.assertEqual(snp['chart'], {'labels': ['01/10', '08/10'], 'average': [32.5, 40.0]})
 
+    def test_points_series_by_round_or_by_season(self):
+        Match.objects.filter(pk=self.m1.pk).update(result_points="6/6")
+        Match.objects.filter(pk=self.m2.pk).update(result_points="3/9")
+        by_round = team_card.points_series(self.club, "2025-2026")
+        self.assertFalse(by_round['by_season'])
+        self.assertEqual(by_round['labels'], ['E1', 'E2'])
+        self.assertEqual(by_round['values'], [6, 9])
+        self.assertEqual(by_round['total'], 15)
+        # Con «Todas» hay una barra por temporada, con la suma de sus puntos.
+        overall = team_card.points_series(self.club)
+        self.assertTrue(overall['by_season'])
+        self.assertEqual(overall['labels'], ['25-26'])
+        self.assertEqual(overall['values'], [by_round['total']])
+
+    def test_venue_matches(self):
+        venue = team_card.venue_matches(self.club)
+        self.assertEqual(venue['local'], {'won': 0, 'lost': 0, 'drawn': 1, 'total': 1})
+        self.assertEqual(venue['visiting'], {'won': 1, 'lost': 0, 'drawn': 0, 'total': 1})
+
+    def test_team_page_has_side_menu_and_snp_ranking(self):
+        response = self.client.get(reverse('team_statistics'))
+        self.assertContains(response, 'class="st-side"')
+        self.assertContains(response, 'id="sec-snp"')
+        self.assertContains(response, "Juegos como local")
+        self.assertContains(response, "Ganados como visitante")
+
     def test_team_page_shows_new_sections(self):
         response = self.client.get(reverse('team_statistics'))
         self.assertContains(response, "Por número de partido")
         self.assertNotContains(response, "Mejor en el partido")
-        self.assertContains(response, "Set decisivo")
-        self.assertContains(response, "Récords del equipo")
-        self.assertContains(response, "Ranking SNP del equipo")
+        self.assertContains(response, "Tie-breaks")
+        self.assertContains(response, "Roscos a favor")
+        self.assertContains(response, "Mejores jugadores como visitante")
         self.assertEqual(response.context['records']['biggest_win']['own'], 5)
 
     def test_player_page_clutch_and_lineup_rate(self):
@@ -191,7 +217,7 @@ class ClubSetsTests(ClubDataMixin, TestCase):
         self.assertEqual(att['average'], 67)
         self.assertEqual(signup_attendance(self.club, "2019-2020")['average'], None)
         response = self.client.get(reverse('team_statistics'))
-        self.assertContains(response, "Asistencia a las convocatorias")
+        self.assertContains(response, "Récords")
         self.assertEqual(response.context['attendance']['rows'][0]['pct'], 67)
 
     def test_calls_before_joining_season_do_not_count(self):

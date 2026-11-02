@@ -143,7 +143,7 @@ class ClubIsolationTests(TestCase):
         Match.objects.filter(pk=self.match_a.pk).update(draft_mode=False)
         response = self.client.get(reverse("team_statistics"))
         self.assertEqual(response.context["team"], self.club_a.own_team)
-        self.assertEqual([c["player"] for c in response.context["column_chart_data"]], ["Ana Alpha"])
+        self.assertEqual(response.context["total_matches"], 1)
 
     def test_created_objects_belong_to_active_club(self):
         self.client.post(reverse("create_player"), {

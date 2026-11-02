@@ -2,6 +2,5 @@
 {# Filtro de espacios «Todas · SNP · LAPI» de las vistas unidas. Recibe space_chips de core.spaces.space_filter_context; vacío con un solo espacio. #}
 {% if space_chips %}
 {% include 'includes/competition_selector.html' with items=space_chips %}
-{% if space_separate %}<p class="z-space-note small text-muted"><i class="fa-solid fa-circle-info me-1" aria-hidden="true"></i>{% translate "Cada competición puntúa distinto: estas estadísticas son de una sola. Para verlas juntas, abre «Mis estadísticas»." %}</p>{% endif %}
 {% if space_only_name %}<p class="z-space-note small text-muted"><i class="fa-solid fa-filter me-1" aria-hidden="true"></i>{% blocktranslate with name=space_only_name %}Mostrando solo {{ name }}.{% endblocktranslate %} <a href="{{ space_all_url }}">{% translate "Ver todas" %}</a></p>{% endif %}
 {% endif %}

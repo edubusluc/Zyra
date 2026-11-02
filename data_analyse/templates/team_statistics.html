@@ -4,52 +4,33 @@
 
 {% block content %}
   <script src="{% static 'js/player-picker.js' %}" defer></script>
-  {% comment %}
-    Datos de los gráficos con json_script y no con |safe: los nombres de los jugadores los
-    escribe el capitán y con |safe un nombre con una etiqueta de cierre de script ejecutaba
-    código en el navegador de todo el club. Este aviso va en un comentario de plantilla y no
-    dentro del <script>: escrita ahí, esa etiqueta cerraba el script y no se pintaba ningún gráfico.
-  {% endcomment %}
-  {{ dicc_line_chart|json_script:"matches-won-per-year" }}
+  {# Datos de los gráficos con json_script y no con |safe: los nombres los escribe el capitán. #}
+  {{ points_card|json_script:"points-card-data" }}
   {{ column_chart_data|json_script:"column-chart-data" }}
   {{ attendance|json_script:"attendance-data" }}
-  <script>
-    const teamData = {
-      wonMatches: {{ won_matches|default:0|unlocalize }},
-      drawnMatches: {{ drawn_matches|default:0|unlocalize }},
-      lostMatches: {{ lost_matches|default:0|unlocalize }},
-      localGamesWon: {{ local_games_won|default:0|unlocalize }},
-      localGamesLost: {{ local_games_lost|default:0|unlocalize }},
-      visitingGamesWon: {{ visiting_games_won|default:0|unlocalize }},
-      visitingGamesLost: {{ visiting_games_lost|default:0|unlocalize }},
-      currentSeason: '{{ current_season|escapejs }}',
-      matchesWonPerYear: JSON.parse(document.getElementById('matches-won-per-year').textContent) || {},
-      column_chart_data: JSON.parse(document.getElementById('column-chart-data').textContent) || []
-    };
-  </script>
+  {{ snp_chart|json_script:"snp-team-data" }}
   <script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
-<script src="{% static 'js/chart-style.js' %}"></script>
+  <script src="{% static 'js/chart-style.js' %}"></script>
 
   <div class="st-page">
     {% include 'includes/stats_tabs.html' %}
+    {% include 'includes/season_filter.html' %}
+    {% include 'includes/match_type_filter.html' %}
+    <div class="st-layout">
+    <div class="st-main">
     <header class="st-head">
       <div>
-        <h1 class="st-title">{% if team.name %}{{ team.name }}{% else %}{% translate "Estadísticas del equipo" %}{% endif %}</h1>
+        <h1 class="st-title">{% if team.name %}{{ team.name }}{% else %}{% translate "Estadísticas del equipo" %}{% endif %} <span class="z-comp-badge z-comp-badge--{{ current_club.competition }}">{{ current_club.rules.name }}</span></h1>
         <p class="st-subtitle">
-          {% if selected_season %}{% blocktranslate with season=selected_season %}Estadísticas de la temporada {{ season }}{% endblocktranslate %}{% else %}{% translate "Estadísticas de todas las temporadas" %}{% endif %}{% if selected_match_type_label %} · {{ selected_match_type_label }}{% endif %}
+          {% if selected_season %}{% blocktranslate with season=selected_season %}Estadísticas de la temporada {{ season }}{% endblocktranslate %}{% else %}{% translate "Estadísticas de todas las temporadas" %}{% endif %}{% if total_matches %} · {% blocktranslate count n=total_matches %}{{ n }} enfrentamiento cerrado{% plural %}{{ n }} enfrentamientos cerrados{% endblocktranslate %}{% endif %}
         </p>
       </div>
     </header>
 
-    {% include 'includes/season_filter.html' %}
-    {% include 'includes/match_type_filter.html' %}
-
-    <div class="st-layout">
-    <div class="st-main">
     {% if not total_matches %}
       <div class="st-empty">
         <strong>{% translate "Todavía no hay enfrentamientos cerrados" %}</strong>
-        {% if selected_season %}{% blocktranslate with season=selected_season %}Las estadísticas aparecerán cuando se cierre el primero de la temporada {{ season }}.{% endblocktranslate %}{% else %}{% translate "Las estadísticas aparecerán cuando se cierre el primero." %}{% endif %}
+        {% if selected_season %}{% blocktranslate with season=selected_season %}Las estadísticas aparecerán cuando se cierre el primero de la temporada {{ season }}.{% endblocktranslate %}{% else %}{% translate "Las estadísticas aparecerán cuando se cierre el primer enfrentamiento." %}{% endif %}
       </div>
     {% else %}
 
@@ -59,202 +40,155 @@
         <a href="#sec-numbers">{% translate "Partidos y sets" %}</a>
         <a href="#sec-records">{% translate "Récords" %}</a>
         <a href="#sec-charts">{% translate "Gráficos" %}</a>
-        {% if current_club.rules.has_snp %}<a href="#sec-snp">{% translate "Puntos SNP" %}</a>{% endif %}
+        {% if team and current_club.rules.has_snp %}<a href="#sec-snp">{% translate "Puntos SNP" %}</a>{% endif %}
       </nav>
 
-      <section id="sec-resumen" class="st-board" aria-label="{% translate 'Resumen de enfrentamientos' %}">
-        <div>
-          <p class="st-board-label">{% translate "Balance de enfrentamientos" %}</p>
-          <div class="st-record">
-            <div class="st-score">
-              <span class="st-record-num">{{ won_matches }}</span>
-              <span class="st-score-cap">{% translate "Victorias" %}</span>
-            </div>
-            <span class="st-record-sep" aria-hidden="true">–</span>
-            {% if drawn_matches or current_club.rules.has_draws %}
-            <div class="st-score">
-              <span class="st-record-num">{{ drawn_matches }}</span>
-              <span class="st-score-cap">{% translate "Empates" %}</span>
-            </div>
-            <span class="st-record-sep" aria-hidden="true">–</span>
-            {% endif %}
-            <div class="st-score">
-              <span class="st-record-num">{{ lost_matches }}</span>
-              <span class="st-score-cap">{% translate "Derrotas" %}</span>
-            </div>
+      <section id="sec-resumen" class="st-balance" aria-label="{% translate 'Resumen de enfrentamientos' %}">
+        <p class="st-balance-kicker">{% translate "Balance de enfrentamientos" %}{% if not current_club.rules.has_draws %} · {% translate "sin empates" %}{% endif %}</p>
+        <div class="st-balance-main">
+          <div class="st-balance-nums">
+            <div><b>{{ won_matches }}</b><span>{% translate "Victorias" %}</span></div>
+            {% if drawn_matches or current_club.rules.has_draws %}<div><b>{{ drawn_matches }}</b><span>{% translate "Empates" %}</span></div>{% endif %}
+            <div><b>{{ lost_matches }}</b><span>{% translate "Derrotas" %}</span></div>
           </div>
-          <div class="st-bar" role="img" aria-label="{% blocktranslate with pct=percentage_won %}{{ pct }} % de enfrentamientos ganados{% endblocktranslate %}">
-            <span class="st-bar-win" style="width: {% widthratio won_matches total_matches 100 %}%"></span><span class="st-bar-draw" style="width: {% widthratio drawn_matches total_matches 100 %}%"></span>
-          </div>
+          <b class="st-balance-pct">{{ percentage_won|floatformat:0 }}%</b>
         </div>
-
-        <dl class="st-facts">
-          <div class="st-fact st-fact--gold">
-            <dt>{% translate "Enfrentamientos ganados" %}</dt>
-            <dd>{{ percentage_won }} %</dd>
-          </div>
-          <div class="st-fact">
-            <dt>{% translate "Enfrentamientos jugados" %}</dt>
-            <dd>{{ total_matches }}</dd>
-          </div>
-          {% if league.played %}
-          <div class="st-fact">
-            <dt>{% translate "Puntos de liga" %}</dt>
-            <dd>{{ league.total }} <small>{% blocktranslate count n=league.played %}en {{ n }} jornada{% plural %}en {{ n }} jornadas{% endblocktranslate %}</small></dd>
-          </div>
-          {% endif %}
-          <div class="st-fact">
-            <dt>{% translate "Juegos en casa" %}</dt>
-            <dd>{% blocktranslate with won=local_games_won lost=local_games_lost %}{{ won }} ganados · {{ lost }} perdidos{% endblocktranslate %}</dd>
-          </div>
-          <div class="st-fact">
-            <dt>{% translate "Juegos fuera" %}</dt>
-            <dd>{% blocktranslate with won=visiting_games_won lost=visiting_games_lost %}{{ won }} ganados · {{ lost }} perdidos{% endblocktranslate %}</dd>
-          </div>
-        </dl>
+        <div class="st-balance-track" role="img" aria-label="{% blocktranslate with pct=percentage_won %}{{ pct }} % de enfrentamientos ganados{% endblocktranslate %}"><span style="width: {% widthratio won_matches total_matches 100 %}%"></span></div>
+        <p class="st-balance-foot">
+          <span>{% if tiebreaks.total %}{% blocktranslate with a=tiebreaks.for b=tiebreaks.against %}Eliminatorias 6-6 (Reto / Play Off) · {{ a }} a favor · {{ b }} en contra{% endblocktranslate %}{% endif %}</span>
+          <span>{% blocktranslate with won=won_matches total=total_matches %}Ganados · {{ won }} de {{ total }}{% endblocktranslate %}</span>
+        </p>
       </section>
 
-      {% if tiebreaks.total %}
-      <section id="sec-tiebreak" aria-labelledby="tiebreak-title" class="st-section mt-4">
-        <h2 class="st-section-title" id="tiebreak-title">{% translate "Eliminatorias 6-6" %}</h2>
-        <p class="st-card-note mt-0 mb-3">{% translate "Reto y Play Off que quedaron 6-6: no hay empate y decide el ganador del partido 3." %}</p>
-        <div class="st-split">
-          <div class="st-split-side st-split-side--for">
-            <span class="st-split-label">{% translate "A favor" %}</span>
-            <b class="st-split-pct">{{ tiebreaks.for_pct }} %</b>
-            <span class="st-split-count">{% blocktranslate count n=tiebreaks.for %}{{ n }} eliminatoria{% plural %}{{ n }} eliminatorias{% endblocktranslate %}</span>
-          </div>
-          <div class="st-split-side st-split-side--against">
-            <span class="st-split-label">{% translate "En contra" %}</span>
-            <b class="st-split-pct">{{ tiebreaks.against_pct }} %</b>
-            <span class="st-split-count">{% blocktranslate count n=tiebreaks.against %}{{ n }} eliminatoria{% plural %}{{ n }} eliminatorias{% endblocktranslate %}</span>
-          </div>
-        </div>
-        <div class="st-split-bar" role="img" aria-label="{% blocktranslate with a=tiebreaks.for_pct b=tiebreaks.against_pct %}{{ a }} % a favor y {{ b }} % en contra{% endblocktranslate %}">
-          <span class="st-split-for" style="width: {{ tiebreaks.for_pct }}%"></span><span class="st-split-against" style="width: {{ tiebreaks.against_pct }}%"></span>
+      <section class="st-kpi-row{% if snp_total %} st-kpi-row--three{% else %} st-kpi-row--two{% endif %}" aria-label="{% translate 'Cifras del equipo' %}">
+        <div class="st-kpi-tile"><b>{{ venue.local.won }}/{{ venue.local.total }}</b><span>{% translate "Ganados como local" %}</span><small>{% translate "partidos ganados / total en casa" %}</small></div>
+        <div class="st-kpi-tile"><b>{{ venue.visiting.won }}/{{ venue.visiting.total }}</b><span>{% translate "Ganados como visitante" %}</span><small>{% translate "partidos ganados / total fuera" %}</small></div>
+        {% if snp_total %}<div class="st-kpi-tile"><b>{% if snp_total.average %}{{ snp_total.average|floatformat:"0g" }}{% else %}—{% endif %}</b><span>{% translate "Media por jugador" %}</span><small>{% translate "puntos SNP del equipo" %}</small></div>{% endif %}
+      </section>
+
+      {% if points_card or finals %}
+      <section class="st-section" aria-label="{% translate 'Puntos de liga' %}">
+        <div class="st-row st-row--pair">
+          {% if points_card %}
+          <article class="st-card">
+            <span class="z-comp-badge z-comp-badge--{{ current_club.competition }} st-only">{% blocktranslate with name=current_club.rules.name %}Solo {{ name }}{% endblocktranslate %}</span>
+            <h2 class="st-card-title">{% translate "Puntos de liga" %}</h2>
+            <p class="st-card-note">{% if points_card.league %}{% blocktranslate with a=current_club.rules.league_points.0 b=current_club.rules.league_points.1 c=current_club.rules.league_points.2 %}{{ a }} por ganar 3-0, {{ b }} por ganar 2-1, {{ c }} por perder 2-1 y 0 por perder 3-0 o no presentarse.{% endblocktranslate %}{% else %}{% blocktranslate with n=points_card.possible %}Puntos ganados en cada enfrentamiento, de {{ n }} posibles.{% endblocktranslate %}{% endif %}</p>
+            <p class="st-big">{{ points_card.total }} <small>{% if points_card.league %}{% blocktranslate with avg=points_card.average|floatformat:1 count n=points_card.played %}en {{ n }} jornada · media {{ avg }}{% plural %}en {{ n }} jornadas · media {{ avg }}{% endblocktranslate %}{% else %}{% blocktranslate with avg=points_card.average|floatformat:1 count n=points_card.played %}en {{ n }} enfrentamiento · media {{ avg }}{% plural %}en {{ n }} enfrentamientos · media {{ avg }}{% endblocktranslate %}{% endif %}</small></p>
+            <div class="st-chart st-chart--points" role="img" aria-label="{% translate 'Puntos de liga' %}"><canvas id="chartPoints" aria-hidden="true"></canvas></div>
+          </article>
+          {% endif %}
+          {% if finals %}
+          <article class="st-card">
+            <span class="z-comp-badge z-comp-badge--lapi st-only">{% translate "Solo LAPI" %}</span>
+            <h2 class="st-card-title">{% translate "Plantilla y fases finales" %}</h2>
+            <p class="st-card-note">{% blocktranslate with n=finals.minimum %}Reglamento 8.2: en Playoffs y Fase final solo juega quien ha jugado {{ n }} enfrentamientos de liga.{% endblocktranslate %}</p>
+            <div class="st-kpi-row st-kpi-row--two">
+              <div class="st-kpi-tile"><b>{{ finals.squad }}{% if finals.max %} / {{ finals.max }}{% endif %}</b><span>{% translate "Plantilla" %}</span>{% if finals.max %}<small>{% blocktranslate with n=finals.max %}máximo LAPI {{ n }}{% endblocktranslate %}</small>{% endif %}</div>
+              <div class="st-kpi-tile"><b>{{ finals.eligible }} {% translate "de" %} {{ finals.squad }}</b><span>{% translate "Elegibles" %}</span><small>{% blocktranslate with n=finals.minimum %}≥ {{ n }} jornadas jugadas{% endblocktranslate %}</small></div>
+            </div>
+            {% if finals.missing %}<p class="st-card-note">{% blocktranslate with names=finals.missing|join:", " %}Sin elegibilidad: {{ names }}{% endblocktranslate %}</p>{% endif %}
+          </article>
+          {% endif %}
         </div>
       </section>
       {% endif %}
 
-      <section id="sec-top" aria-labelledby="top-title" class="st-section mt-4">
+      <section id="sec-top" aria-labelledby="top-title" class="st-section">
         <h2 class="st-section-title" id="top-title">{% translate "Top 5" %}{% if selected_season %} · {{ selected_season }}{% endif %}</h2>
-        <p class="st-card-note mt-0 mb-3">{% translate "Solo jugadores que siguen en el equipo." %}</p>
-        {% if top_local_players or top_visiting_players or top_local_pairs or top_visiting_pairs %}
-        <div class="st-top-grid">
+        <div class="st-row st-row--pair">
           {% translate "Mejores jugadores como local" as t_title %}{% translate "% de victorias jugando en casa." as t_note %}{% translate "No hay ningún jugador con datos favorables que mostrar como local." as t_empty %}
           {% include 'includes/top_table.html' with title=t_title note=t_note rows=top_local_players min_games=min_games_player empty=t_empty %}
           {% translate "Mejores jugadores como visitante" as t_title %}{% translate "% de victorias jugando fuera." as t_note %}{% translate "No hay ningún jugador con datos favorables que mostrar como visitante." as t_empty %}
           {% include 'includes/top_table.html' with title=t_title note=t_note rows=top_visiting_players min_games=min_games_player empty=t_empty %}
-          {% translate "Mejores parejas como local" as t_title %}{% translate "% de victorias de la pareja en casa." as t_note %}{% translate "No hay ninguna pareja con datos favorables que mostrar como local." as t_empty %}
-          {% include 'includes/top_table.html' with title=t_title note=t_note rows=top_local_pairs min_games=min_games_pair empty=t_empty %}
-          {% translate "Mejores parejas como visitante" as t_title %}{% translate "% de victorias de la pareja fuera." as t_note %}{% translate "No hay ninguna pareja con datos favorables que mostrar como visitante." as t_empty %}
-          {% include 'includes/top_table.html' with title=t_title note=t_note rows=top_visiting_pairs min_games=min_games_pair empty=t_empty %}
         </div>
-        {% else %}
-        <p class="st-muted st-nodata">{% blocktranslate trimmed with players=min_games_player pairs=min_games_pair %}Se mostrará cuando haya jugadores con {{ players }} partidos y parejas con {{ pairs }} partidos como mínimo.{% endblocktranslate %}</p>
-        {% endif %}
       </section>
 
-      <section id="sec-numbers" aria-labelledby="numbers-title" class="st-section mt-4">
-        <h2 class="st-section-title" id="numbers-title">{% translate "Partidos y sets" %}</h2>
-        <div class="st-row">
-          {% if request.club.rules.ordered_pairs %}
-          {% translate "Por número de partido" as t_title %}{% translate "% de victorias en cada partido del enfrentamiento. Las parejas se ordenan por puntos SNP." as t_note %}
-          {% include 'includes/game_numbers.html' with rows=game_numbers title=t_title note=t_note best=best_number worst=worst_number %}
+      <section id="sec-numbers" aria-labelledby="numbers-title" class="st-section">
+        <h2 class="st-section-title" id="numbers-title">{% if current_club.rules.ordered_pairs %}{% translate "Partidos y sets" %}{% else %}{% translate "Sets y partidos" %}{% endif %}</h2>
+        <div class="st-row st-row--pair">
+          {% if current_club.rules.ordered_pairs %}
+          <article class="st-card">
+            <span class="z-comp-badge z-comp-badge--snp st-only">{% translate "Solo SNP" %}</span>
+            <h3 class="st-card-title">{% translate "Por número de partido" %}</h3>
+            <p class="st-card-note">{% translate "Victorias en cada partido del enfrentamiento. Las parejas se alinean por puntos SNP." %}</p>
+            <div class="st-bars">
+              {% for r in game_numbers %}
+              <div class="st-bar-row"><b>{% blocktranslate with n=r.n %}Partido {{ n }}{% endblocktranslate %}<small>{% blocktranslate with n=r.value %}{{ n }} pts{% endblocktranslate %}</small></b><div class="st-meter"><span style="width: {{ r.pct|default:0|unlocalize }}%"></span></div><em>{% if r.played %}{{ r.pct|floatformat:0 }}%{% else %}—{% endif %}</em></div>
+              {% endfor %}
+            </div>
+          </article>
           {% endif %}
-          {% translate "Sets" as t_title %}{% translate "Cómo se ganan y se pierden los partidos, set a set." as t_note %}
-          {% include 'includes/set_stats.html' with st=set_stats title=t_title note=t_note %}
+          <article class="st-card">
+            <h3 class="st-card-title">{% translate "Sets" %}</h3>
+            <p class="st-card-note">{% if current_club.rules.ordered_pairs %}{% translate "Cómo se ganan y se pierden los partidos, set a set." %}{% else %}{% blocktranslate with n=current_club.rules.games %}Al mejor de {{ n }} partidos de 1 punto.{% endblocktranslate %}{% endif %}</p>
+            <div class="st-bars st-bars--desc">
+              {% for label, desc, r in set_rows %}
+              {% include 'includes/stat_bar_row.html' %}
+              {% endfor %}
+            </div>
+          </article>
+          {% if walkovers and not current_club.rules.ordered_pairs %}
+          <article class="st-card">
+            <span class="z-comp-badge z-comp-badge--lapi st-only">{% translate "Solo LAPI" %}</span>
+            <h3 class="st-card-title">{% translate "No presentados y lesiones" %}</h3>
+            <p class="st-card-note">{% translate "Partidos que no se juegan por completo." %}</p>
+            <div class="st-kpi-row st-kpi-row--two">
+              <div class="st-kpi-tile"><b>{{ walkovers.rival }}</b><span>{% translate "No presentado" %}</span><small>{% translate "rival · ganado 3-0" %}</small></div>
+              <div class="st-kpi-tile"><b>{{ walkovers.own }}</b><span>{% translate "No nos tocó" %}</span><small>{% translate "nuestro equipo" %}</small></div>
+              <div class="st-kpi-tile"><b>{{ walkovers.injuries }}</b><span>{% translate "Lesión" %}</span><small>{% translate "completado 6-0" %}</small></div>
+            </div>
+          </article>
+          {% endif %}
         </div>
       </section>
 
       <section id="sec-records" aria-labelledby="records-title" class="st-section">
-        <h2 class="st-section-title" id="records-title">{% translate "Récords del equipo" %}{% if selected_season %} · {{ selected_season }}{% endif %}</h2>
+        <h2 class="st-section-title" id="records-title">{% translate "Récords" %}{% if selected_season %} · {{ selected_season }}{% endif %}</h2>
         {% include 'includes/team_records.html' %}
       </section>
 
       <section id="sec-charts" aria-labelledby="charts-title" class="st-section">
-      <h2 class="st-section-title mt-4" id="charts-title">{% translate "Gráficos" %}</h2>
-      <div class="st-grid st-grid--2">
-        <section class="st-card">
-          <h3 class="st-card-title">{% translate "Juegos como local" %}</h3>
-          {% if not local_games_won and not local_games_lost %}<p class="st-muted st-nodata">{% translate "No hay datos todavía." %}</p>
-          {% endif %}
-          <div class="st-chart"{% if not local_games_won and not local_games_lost %} hidden{% endif %}>
-            <canvas id="myBarChart" role="img" aria-label="{% translate "Juegos como local" %}"></canvas>
-          </div>
-          <div class="st-tally"{% if not local_games_won and not local_games_lost %} hidden{% endif %}>
-            <span class="st-tally-item st-tally-item--win"><b>{{ percentage_local_games_won }} %</b> {% translate "ganados" %}</span>
-            <span class="st-tally-item st-tally-item--loss"><b>{{ percentage_local_games_lost }} %</b> {% translate "perdidos" %}</span>
-          </div>
-        </section>
-
-        <section class="st-card">
-          <h3 class="st-card-title">{% translate "Juegos como visitante" %}</h3>
-          {% if not visiting_games_won and not visiting_games_lost %}<p class="st-muted st-nodata">{% translate "No hay datos todavía." %}</p>
-          {% endif %}
-          <div class="st-chart"{% if not visiting_games_won and not visiting_games_lost %} hidden{% endif %}>
-            <canvas id="myVisitingBarChart" role="img" aria-label="{% translate "Juegos como visitante" %}"></canvas>
-          </div>
-          <div class="st-tally"{% if not visiting_games_won and not visiting_games_lost %} hidden{% endif %}>
-            <span class="st-tally-item st-tally-item--win"><b>{{ percentage_visiting_games_won }} %</b> {% translate "ganados" %}</span>
-            <span class="st-tally-item st-tally-item--loss"><b>{{ percentage_visiting_games_lost }} %</b> {% translate "perdidos" %}</span>
-          </div>
-        </section>
-
-        <section class="st-card st-card--wide">
-          <h3 class="st-card-title">{% translate "Enfrentamientos ganados por año" %}</h3>
-          <p class="st-card-note">{% translate "Evolución de victorias, empates y derrotas del equipo en cada temporada." %}</p>
-          {% if not dicc_line_chart %}<p class="st-muted st-nodata">{% translate "No hay datos todavía." %}</p>
-          {% endif %}
-          <div class="st-chart"{% if not dicc_line_chart %} hidden{% endif %}>
-            <canvas id="myLineChart" role="img" aria-label="{% translate "Enfrentamientos ganados por año" %}"></canvas>
-          </div>
-        </section>
-
-        <section class="st-card st-card--wide">
+        <h2 class="st-section-title" id="charts-title">{% translate "Gráficos" %}</h2>
+        <div class="st-row st-row--pair">
+          {% translate "Juegos como local" as t_title %}
+          {% include 'includes/venue_games.html' with title=t_title won=local_games_won lost=local_games_lost wpct=percentage_local_games_won lpct=percentage_local_games_lost %}
+          {% translate "Juegos como visitante" as t_title %}
+          {% include 'includes/venue_games.html' with title=t_title won=visiting_games_won lost=visiting_games_lost wpct=percentage_visiting_games_won lpct=percentage_visiting_games_lost %}
+        </div>
+        {% if attendance.average is not None %}
+        <article class="st-card st-card--wide">
           <h3 class="st-card-title">{% translate "Asistencia a las convocatorias" %}{% if selected_season %} · {{ selected_season }}{% endif %}</h3>
           <p class="st-card-note">{% if attendance.mode == 'calls' %}{% translate "% de la plantilla que se apuntó a cada convocatoria de la temporada." %}{% else %}{% translate "Media por temporada del % de la plantilla que se apunta a cada convocatoria." %}{% endif %}</p>
-          {% if attendance.average is None %}<p class="st-muted st-nodata">{% translate "No hay datos todavía." %}</p>
-          {% else %}
-          <div class="st-tally">
-            <span class="st-tally-item st-tally-item--win"><b>{{ attendance.average }} %</b> {% if attendance.mode == 'calls' %}{% translate "de media en la temporada" %}{% else %}{% translate "de media en total" %}{% endif %}</span>
-          </div>
-          <div class="st-chart"{% if attendance.rows|length < 2 %} hidden{% endif %}><canvas id="attendanceChart" role="img" aria-label="{% translate "Asistencia a las convocatorias" %}"></canvas></div>
-          {% endif %}
-        </section>
-
-        {% if request.club.rules.ordered_pairs %}
-        <section class="st-card st-card--wide">
+          <p class="st-big">{{ attendance.average|floatformat:0 }}% <small>{% if attendance.mode == 'calls' %}{% translate "de media en la temporada" %}{% else %}{% translate "de media en total" %}{% endif %}</small></p>
+          {% if attendance.rows|length > 1 %}<div class="st-chart st-chart--mine" role="img" aria-label="{% translate 'Asistencia a las convocatorias' %}"><canvas id="attendanceChart" aria-hidden="true"></canvas></div>{% endif %}
+        </article>
+        {% endif %}
+        {% if column_chart_data %}
+        <article class="st-card st-card--wide">
           <h3 class="st-card-title">{% translate "Balance de partidos por jugador" %}</h3>
           <p class="st-card-note">{% translate "Partidos de 3 y de 2 puntos, ganados y perdidos, de cada jugador actual del equipo." %}</p>
-          {% if not column_chart_data %}<p class="st-muted st-nodata">{% translate "No hay datos todavía." %}</p>{% endif %}
-          <div class="st-balance-sort"{% if not column_chart_data %} hidden{% endif %} role="group" aria-label="{% translate 'Ordenar por' %}">
+          <div class="st-balance-sort" role="group" aria-label="{% translate 'Ordenar por' %}">
             <span class="st-filter-label">{% translate "Ordenar por" %}</span>
             <button type="button" class="st-chip" data-sort="played" aria-pressed="true">{% translate "Partidos jugados" %}</button>
             <button type="button" class="st-chip" data-sort="won" aria-pressed="false">{% translate "Victorias" %}</button>
             <button type="button" class="st-chip" data-sort="name" aria-pressed="false">{% translate "Nombre" %}</button>
           </div>
-          <div class="st-chart" id="balanceChart"{% if not column_chart_data %} hidden{% endif %}>
-            <canvas id="myColumnChart" role="img" aria-label="{% translate "Balance de partidos por jugador" %}"></canvas>
-          </div>
-          {% if column_chart_data %}
-          {# Alternativa accesible al gráfico (UX-040): los mismos datos en una tabla para lectores de pantalla. #}
+          <div class="st-chart" id="balanceChart" role="img" aria-label="{% translate 'Balance de partidos por jugador' %}"><canvas id="myColumnChart" aria-hidden="true"></canvas></div>
+          {# Alternativa accesible al gráfico: los mismos datos en una tabla para lectores de pantalla. #}
           <table class="visually-hidden">
             <caption>{% translate "Balance de partidos por jugador" %}</caption>
             <thead><tr><th scope="col">{% translate "Jugador" %}</th><th scope="col">{% translate "3 puntos ganados" %}</th><th scope="col">{% translate "2 puntos ganados" %}</th><th scope="col">{% translate "3 puntos perdidos" %}</th><th scope="col">{% translate "2 puntos perdidos" %}</th></tr></thead>
             <tbody>{% for row in column_chart_data %}<tr><th scope="row">{{ row.player }}</th><td>{{ row.data.2 }}</td><td>{{ row.data.0 }}</td><td>{{ row.data.3 }}</td><td>{{ row.data.1 }}</td></tr>{% endfor %}</tbody>
           </table>
-          {% endif %}
           <nav class="st-pager" id="balancePager" aria-label="{% translate 'Páginas de jugadores' %}" hidden>
             <button type="button" class="st-pager-btn" data-step="-1" aria-label="{% translate 'Anterior' %}"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
             <span class="st-pager-info" aria-live="polite"></span>
             <button type="button" class="st-pager-btn" data-step="1" aria-label="{% translate 'Siguiente' %}"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
           </nav>
-        </section>
+        </article>
         {% endif %}
-      </div>
       </section>
-
     {% endif %}
 
     {% if team and current_club.rules.has_snp %}
@@ -265,7 +199,7 @@
     {% endif %}
     </div>
     {% if total_matches %}
-    {# Panel lateral (escritorio): salta de una sección a otra sin recorrer la página; la activa se marca al hacer scroll (team_statistics.js). #}
+    {# Panel lateral (escritorio): salta de una sección a otra; la activa se marca al hacer scroll (team_statistics.js). #}
     <aside class="st-side" aria-label="{% translate 'Secciones de la página' %}">
       <p class="st-side-title">{% translate "En esta página" %}</p>
       <ul class="st-side-list">
@@ -281,6 +215,5 @@
     </div>
   </div>
 
-  {{ snp_chart|json_script:"snp-team-data" }}
   <script src="{% static 'js/team_statistics.js' %}"></script>
 {% endblock %}
