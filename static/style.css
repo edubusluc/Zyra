@@ -3853,10 +3853,6 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 
 /* Fase 6 · comparar: Local y visitante común, tabla de sets de «Mis estadísticas», compañeros y convocatorias. */
 .st-venue-split { display: flex; flex-direction: column; gap: 14px; margin-top: 12px; }
-.st-bar-row em small { display: block; margin-top: 2px; font-family: var(--z-body, inherit); font-size: var(--z-fs-xs); font-weight: 400; color: var(--st-muted); }
-.z-set-table th small, .z-set-table td small { display: block; margin-top: 2px; font-size: var(--z-fs-xs); font-weight: 400; color: var(--st-muted); }
-.z-set-table td b { font-family: var(--z-display); font-size: var(--z-fs-xl); font-weight: 400; color: #FFFFFF; }
-.z-set-table thead th .z-dot { margin-right: 4px; }
 .st-partners td, .st-partners th { white-space: nowrap; }
 .st-partner-tag { margin-left: 6px; padding: 1px 8px; font-size: var(--z-fs-xs); font-weight: 800; border-radius: 999px; }
 .st-partner-tag--best { color: #151515; background: var(--z-lime); }

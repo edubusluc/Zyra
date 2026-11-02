@@ -63,8 +63,9 @@
         {% if tiebreaks.total %}<p class="st-balance-foot"><span>{% blocktranslate with a=tiebreaks.for b=tiebreaks.against %}Eliminatorias 6-6 (Reto / Play Off) · {{ a }} a favor · {{ b }} en contra{% endblocktranslate %}</span></p>{% endif %}
       </section>
 
-      <section class="st-section" aria-label="{% translate 'Local y visitante' %}">
-        {% include 'includes/venue_split.html' %}
+      <section class="st-kpi-row st-kpi-row--two" aria-label="{% translate 'Cifras del equipo' %}">
+        <div class="st-kpi-tile"><b>{{ venue.local.won }}/{{ venue.local.total }}</b><span>{% translate "Ganados como local" %}</span><small>{% translate "enfrentamientos ganados / total en casa" %}</small></div>
+        <div class="st-kpi-tile"><b>{{ venue.visiting.won }}/{{ venue.visiting.total }}</b><span>{% translate "Ganados como visitante" %}</span><small>{% translate "enfrentamientos ganados / total fuera" %}</small></div>
       </section>
 
       {% if points_card or league or finals %}

@@ -15507,3 +15507,9 @@ msgid "%(n)s caso"
 msgid_plural "%(n)s casos"
 msgstr[0] "%(n)s case"
 msgstr[1] "%(n)s cases"
+
+msgid "enfrentamientos ganados / total en casa"
+msgstr "matches won / total at home"
+
+msgid "enfrentamientos ganados / total fuera"
+msgstr "matches won / total away"

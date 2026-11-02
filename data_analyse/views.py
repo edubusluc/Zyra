@@ -550,7 +550,7 @@ def team_card_context(club, season, match_type, context):
         'finals': team_card.finals_roster(club, current_season()) if season in (None, current_season()) else None,
         'walkovers': team_card.walkovers(club, season, match_type),
         'set_rows': comparison.set_situation_rows(sets),
-        'venue': comparison.venue_split(*(lambda v: (v['local'], v['visiting']))(team_card.venue_matches(club, season, match_type)), 'matches'),
+        'venue': team_card.venue_matches(club, season, match_type),
     }
     return extra
 

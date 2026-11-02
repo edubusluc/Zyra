@@ -218,8 +218,8 @@ class ClubSetsTests(ClubDataMixin, TestCase):
         self.assertContains(response, 'class="st-side"')
         self.assertNotContains(response, 'id="sec-snp"')  # los puntos SNP viven en la tabla de plantilla
         self.assertNotContains(response, "Juegos como local")
-        self.assertContains(response, "Como visitante")
-        self.assertContains(response, "enfrentamientos ganados según dónde se juega")
+        self.assertContains(response, "Ganados como visitante")
+        self.assertContains(response, "enfrentamientos ganados / total fuera")
 
     def test_team_page_shows_new_sections(self):
         response = self.client.get(reverse('team_statistics'))
