@@ -415,7 +415,7 @@ def register_club(request):
                     email_verification.start_verification(request, user)
                 request.session[SESSION_KEY] = club.id
                 send_welcome_email(user, club, created=True, site_url=_site_url(request))
-                messages.success(request, _("Equipo %(club)s creado correctamente.") % {"club": club.name})
+                messages.success(request, _("Equipo %(club)s creado.") % {"club": club.name})
                 if use_snp and snp_service.is_enabled():
                     from players import snp_import
                     team_import = snp_import.start_search(club, user, auto_confirm=True)
@@ -1010,7 +1010,7 @@ def delete_account_view(request):
             logout(request)
             with transaction.atomic():
                 delete_account(user, delete_player=delete_player)
-            messages.success(request, _("Tu cuenta se ha eliminado. Gracias por haber usado Zyra."))
+            messages.success(request, _("Tu cuenta se ha eliminado. Gracias por usar Zyra."))
             return redirect("home")
     return render(request, "delete_account.html", {
         "blocker": blocker, "needs_password": needs_password, "player": player, "error": error,

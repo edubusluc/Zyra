@@ -94,7 +94,7 @@ def create_team(request):
         else:
             if similarity.is_check_request(request):
                 return JsonResponse({"valid": False, "similar": []})
-            messages.error(request, _("Error al crear el equipo. Por favor, verifica los datos."))
+            messages.error(request, _("No se ha podido crear el equipo. Revisa los datos."))
 
     else:
         form = Teamform(club=request.club)
@@ -159,7 +159,7 @@ def edit_team(request, team_id):
             form.save()
             return redirect('club_home' if team.is_own else 'list_teams')
         else:
-            messages.error(request, _("Error al editar el equipo. Por favor, verifica los datos."))
+            messages.error(request, _("No se ha podido editar el equipo. Revisa los datos."))
     else:
         form = Teamform(instance=team, club=request.club)
 

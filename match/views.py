@@ -540,9 +540,9 @@ def validate_call(call):
     """Comprueba si la convocatoria se puede cerrar: (True, None) o (False, mensaje de error)."""
     min_call = competition_for(call.match).min_call_players
     if call.players.all().count() < min_call:
-        return False, _("Para cerrar una convocatoria al menos debes contar con %(n)s jugadores") % {"n": min_call}
+        return False, _("Para cerrar la convocatoria hacen falta al menos %(n)s jugadores") % {"n": min_call}
     if call.draft_mode == False:
-        return False, _("Esta convocatoria ha sido cerrada")
+        return False, _("Esta convocatoria está cerrada")
     
     return True, None
 
@@ -840,12 +840,12 @@ def validate_game_for_match(call):
     los convocados mínimos de la competición. Devuelve (True, None) o (False, mensaje de error).
     """
     if not call:
-        return False, _("No se pueden alinear parejas, no existe ninguna convocatoria.")
+        return False, _("No hay convocatoria, así que no se pueden alinear parejas.")
     min_call = competition_for(call.match).min_call_players
     if call.players.all().count() < min_call:
-        return False, _("Para alinear las parejas debes contar al menos con %(n)s jugadores") % {"n": min_call}
+        return False, _("Para alinear las parejas hacen falta al menos %(n)s jugadores") % {"n": min_call}
     if call.draft_mode != False:
-        return False, _("Para alinear las parejas debes cerrar la convocatoria")
+        return False, _("Cierra la convocatoria para poder alinear las parejas")
 
     
     return True, None
@@ -1136,7 +1136,7 @@ def valid_close_match(games,match):
     partidos de su competición, todos con resultado. Devuelve (True, None) o (False, mensaje de error).
     """
     if match.draft_mode == False:
-        return False, _("No se pueden cerrar actas, el enfrentamiento ya ha sido cerrado")
+        return False, _("El acta de este enfrentamiento ya está cerrada.")
     total = competition_for(match).games
     if len(games) < total:
         return False, _("No se pueden cerrar actas, se requieren al menos %(n)s partidos.") % {"n": total}

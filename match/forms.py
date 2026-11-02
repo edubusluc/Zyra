@@ -125,7 +125,7 @@ class MatchForm(forms.ModelForm):
             field.queryset = teams
             field.required = True
             field.empty_label = _("Elige una opción")
-            field.error_messages.update(required=_("Por favor, completa todos los campos."), invalid_choice=missing_team)
+            field.error_messages.update(required=_("Completa todos los campos."), invalid_choice=missing_team)
         if not self.is_bound and self.own_team and not self.initial.get('local') and not self.initial.get('visiting'):
             self.initial['local'] = self.own_team.pk
         # El tipo solo se elige en un partido competitivo, entre los de la competición del espacio

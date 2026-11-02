@@ -54,7 +54,7 @@ def create_player(request):
         else:
             if similarity.is_check_request(request):
                 return JsonResponse({"valid": False, "similar": []})
-            messages.error(request, _("Error al crear el jugador. Por favor, verifica los datos."))
+            messages.error(request, _("No se ha podido crear el jugador. Revisa los datos."))
     else:
         form = PlayerForm(club=request.club)
 
@@ -318,9 +318,8 @@ def snp_account_delete(request):
 
 # Aviso tras traer jugadores de SNP: llegan sin posición en pista.
 POSITION_NOTICE = gettext_lazy(
-    "¡Ya tienes a tus jugadores! SNP no dice en qué lado juega cada uno, así que su posición en pista "
-    "ha quedado vacía. Cuando puedas, edita cada jugador y elige su posición: así las parejas y las "
-    "alineaciones te saldrán mucho mejor."
+    "Jugadores añadidos. SNP no indica en qué lado juega cada uno, así que su posición ha quedado vacía. "
+    "Cuando puedas, edítalos y elige la de cada uno: así las parejas y las alineaciones te saldrán mejor."
 )
 
 # Tras varios fallos seguidos de «Completar equipo»: la opción se oculta y el personal revisa el proceso.
