@@ -558,6 +558,7 @@ def team_card_context(club, season, match_type, context):
         'finals': team_card.finals_roster(club, season or current_season()),
         'walkovers': team_card.walkovers(club, season, match_type),
         'set_rows': set_rows,
+        'venue': team_card.venue_matches(club, season, match_type),
     }
     if rules.has_snp:
         extra['snp_total'] = {'average': snp['average']}

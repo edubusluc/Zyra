@@ -17,47 +17,72 @@ from .pairs import match_type_lookup
 LAST_BARS = 7
 
 
+def _short_season(season):
+    """«2025-2026» → «25-26» para las etiquetas de las barras."""
+    parts = str(season).split('-')
+    return '-'.join(p[-2:] for p in parts) if len(parts) == 2 else str(season)
+
+
 def points_series(club, season=None, match_type=None, last=LAST_BARS):
     """
     Puntos ganados en cada enfrentamiento cerrado (los que dan puntos de liga si la competición tiene liga).
 
-    Devuelve ``{'league', 'labels', 'values', 'total', 'played', 'average', 'possible', 'best'}``: con liga
-    (LAPI) son los puntos de liga de cada jornada («J1»…); sin ella (SNP), los puntos de cada enfrentamiento
-    («E1»…) de los ``possible`` en juego. ``labels`` y ``values`` son solo los ``last`` últimos; ``total``,
-    ``average`` y ``best`` (mejor valor y su etiqueta) usan todos. None si no hay ninguno.
+    Devuelve ``{'league', 'by_season', 'labels', 'values', 'total', 'played', 'average', 'possible',
+    'best'}``. Con una temporada elegida hay una barra por jornada o enfrentamiento («J1»…, «E1»…); con
+    «Todas», una barra por temporada (la suma de sus puntos, las ``last`` últimas). Con liga (LAPI) son
+    puntos de liga; sin ella (SNP), los de cada enfrentamiento de los ``possible`` en juego. ``total``,
+    ``played`` (jornadas o enfrentamientos), ``average`` (por jornada o enfrentamiento) y ``best``
+    (mejor barra y su etiqueta) usan todos. None si no hay ninguno.
     """
     rules = club.rules
     league = bool(rules.league_type)
-    matches = rivals.closed_matches(club, season, match_type)
     rows = []
-    for m in matches:
-        if league:
-            points = m.league_points
-            if points is None:
-                continue
-        else:
-            points = rivals.own_points(m)[0]
-            if points is None:
-                continue
-        rows.append((m, points))
+    for m in rivals.closed_matches(club, season, match_type):
+        points = m.league_points if league else rivals.own_points(m)[0]
+        if points is not None:
+            rows.append((m, points))
     if not rows:
         return None
-    labels, values = [], []
-    for i, (m, points) in enumerate(rows, start=1):
-        number = (m.round_number if league and m.round_number else i)
-        labels.append(f"{'J' if league else 'E'}{number}")
-        values.append(points)
+    by_season = not season
+    if by_season:
+        sums = {}
+        for m, points in rows:
+            sums[m.season] = sums.get(m.season, 0) + points
+        ordered = sorted(sums, key=lambda s: int(str(s).split('-')[0]))
+        labels = [_short_season(s) for s in ordered]
+        values = [sums[s] for s in ordered]
+    else:
+        labels = [f"{'J' if league else 'E'}{m.round_number if league and m.round_number else i}"
+                  for i, (m, _points) in enumerate(rows, start=1)]
+        values = [points for _m, points in rows]
     best = max(range(len(values)), key=lambda i: values[i])
+    total = sum(points for _m, points in rows)
     return {
         'league': league,
-        'labels': labels[-last:],
-        'values': values[-last:],
-        'total': sum(values),
-        'played': len(values),
-        'average': round(sum(values) / len(values), 1),
+        'by_season': by_season,
+        'labels': labels[-last:] if by_season else labels,
+        'values': values[-last:] if by_season else values,
+        'total': total,
+        'played': len(rows),
+        'average': round(total / len(rows), 1),
         'possible': None if league else rules.total_points,
         'best': {'value': values[best], 'label': labels[best]},
     }
+
+
+def venue_matches(club, season=None, match_type=None):
+    """
+    Enfrentamientos cerrados como local y como visitante: ``{'local', 'visiting'}``, cada uno con
+    ``{'won', 'lost', 'drawn', 'total'}`` desde el punto de vista del equipo propio.
+    """
+    out = {'local': dict.fromkeys(('won', 'lost', 'drawn', 'total'), 0),
+           'visiting': dict.fromkeys(('won', 'lost', 'drawn', 'total'), 0)}
+    for m in rivals.closed_matches(club, season, match_type):
+        row = out['local' if m.own_is_local else 'visiting']
+        row['total'] += 1
+        outcome = rivals.outcome(m)
+        row[{rivals.WIN: 'won', rivals.LOSS: 'lost', rivals.DRAW: 'drawn'}[outcome]] += 1
+    return out
 
 
 def finals_roster(club, season):

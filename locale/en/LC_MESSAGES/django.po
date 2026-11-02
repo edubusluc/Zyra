@@ -15176,3 +15176,27 @@ msgstr[1] "in %(n)s matches · average %(avg)s"
 
 msgid "Cifras del equipo"
 msgstr "Team figures"
+
+msgid "Ganados como local"
+msgstr "Won at home"
+
+msgid "Ganados como visitante"
+msgstr "Won away"
+
+msgid "partidos ganados / total en casa"
+msgstr "matches won / total at home"
+
+msgid "partidos ganados / total fuera"
+msgstr "matches won / total away"
+
+#, python-format
+msgid "%(w)s ganados y %(l)s perdidos"
+msgstr "%(w)s won and %(l)s lost"
+
+#, python-format
+msgid "%(n)s %% ganados"
+msgstr "%(n)s %% won"
+
+#, python-format
+msgid "%(n)s %% perdidos"
+msgstr "%(n)s %% lost"

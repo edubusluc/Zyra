@@ -41,6 +41,10 @@ def _outcome(match):
     return WIN if own_won else LOSS
 
 
+# Nombre público para otros módulos (p. ej. team_card).
+outcome = _outcome
+
+
 def closed_matches(club, season=None, match_type=None):
     """Enfrentamientos cerrados del club en los que juega el equipo propio, con los equipos ya cargados."""
     qs = Match.objects.filter(club=club, draft_mode=False).select_related("local", "visiting", "club")

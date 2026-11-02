@@ -3,6 +3,12 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 02/11/2026 · Equipo: ajustes de la fase 3
+
+- **Puntos de liga**: con una temporada elegida, una barra por jornada (o enfrentamiento en SNP); con «Todas», una barra por temporada.
+- **Balance de partidos por jugador**: barras finas y redondeadas, separadas y sin ejes. Vuelve la tabla de **Ranking SNP** (sección «Puntos SNP») y los gráficos de **Juegos como local** y **como visitante** en Gráficos.
+- Las cifras del inicio pasan a «Ganados como local» y «Ganados como visitante» (partidos ganados / total). Nuevo **menú lateral** «En esta página» en escritorio que marca la sección visible.
+
 ## 01/11/2026 · Estadísticas rediseñadas (fase 3: Equipo · SNP y LAPI)
 
 - **Equipo** como en el diseño aprobado: tarjeta lima de «Balance de enfrentamientos» (con empates solo si la competición los admite y, en SNP, las eliminatorias 6-6 a favor y en contra), cifras de juegos en casa y fuera y media de puntos SNP por jugador (SNP).
