@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 02/11/2026 · Selectores únicos
+
+- **Competición**: un solo control en toda la web, la fila «Competición» del rediseño con píldoras Todas · SNP · LAPI de su color (en Enfrentamientos, Calendario, Plantilla, Club, Miembros y Estadísticas). Se elimina la variante propia de Mis estadísticas.
+- **Tipo**: los chips Todos · Competitivos · Amistosos y, dentro de Competitivos, los chips de cada tipo (antes un desplegable aparte).
+
 ## 02/11/2026 · Estadísticas rediseñadas (fases 5, 6 y 7: Parejas, Rivales y Advertencias)
 
 - **Parejas**: cabecera lima con la pareja, su balance y el % de victorias («Pareja habitual del partido N» en SNP, «Pareja sorteada N veces» en LAPI), racha, forma reciente, victorias como local y visitante con barras, sets, mejores parejas y «Últimos partidos juntos» (en LAPI con tipo y jornada en vez de número de partido y sin columna de puntos). Con una pareja elegida ya no se repite «Mejores parejas». Con «Todas», «Detalle por temporada» resume cada temporada; con una temporada concreta no sale la evolución del % y el detalle lista los partidos de la pareja en ella. Los gráficos siguen el estilo de Zyra.

@@ -16,6 +16,6 @@
 {% endwith %}
 <script src="{% static 'js/stats-mobile.js' %}" defer></script>
 {# Competición: en «Mis estadísticas», Todas · SNP · LAPI (mine_chips); en Equipo, Jugador, Parejas y Rivales solo SNP o LAPI, sin mezclar (core.spaces). #}
-{% if mine_chips %}{% include 'includes/stats_comp_row.html' with items=mine_chips %}
+{% if mine_chips %}{% include 'includes/competition_selector.html' with items=mine_chips with_context=True %}
 {% elif space_chips %}{% include 'includes/space_filter.html' %}{% elif request.space_switcher %}{% include 'includes/competition_selector.html' with items=request.space_switcher %}
 {% endif %}

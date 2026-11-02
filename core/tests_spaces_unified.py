@@ -439,3 +439,21 @@ class CreationInSpaceTests(TestCase):
         self.assertEqual(groups[theirs.id], "upcoming")  # jugador: no
         order = [m.group for m in page.context["matches"]]
         self.assertEqual(order, sorted(order, key=("action", "upcoming", "played").index))
+
+
+class UniqueSelectorsTests(TestCase):
+    """Los selectores comunes no se duplican: un solo include para la competición y todos los <select> con el desplegable propio."""
+
+    def _templates(self):
+        import pathlib
+        return [p for p in pathlib.Path(__file__).resolve().parent.parent.rglob("templates/**/*.html")]
+
+    def test_competition_chips_only_in_shared_include(self):
+        for path in self._templates():
+            if path.name == "competition_selector.html":
+                continue
+            self.assertNotIn("st-comp-chip", path.read_text(encoding="utf-8"), path)
+
+    def test_no_template_opts_out_of_custom_select(self):
+        for path in self._templates():
+            self.assertNotIn("data-native", path.read_text(encoding="utf-8"), path)

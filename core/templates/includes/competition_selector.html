@@ -1,11 +1,15 @@
 {% load i18n %}
-{# Selector de competición único (UX-013): control segmentado con la insignia SNP/LAPI y el nombre del equipo, el mismo en todas las vistas. Recibe items: dicts con url (o code, para ?en=), code, label (o club) y active. #}
-<nav class="z-segmented z-space-switcher z-space-filter" aria-label="{% translate 'Competición' %}">
+{# Selector de competición único (UX-013) con el diseño aprobado de Estadísticas: fila «Competición» con píldoras Todas · SNP · LAPI de su color. Recibe items: dicts con url (o code, para ?en=), code, label (o club) y active; with_context=True añade a la derecha de qué son los datos (Mis estadísticas). #}
+<div class="st-comp-row z-space-switcher z-space-filter">
+  <nav class="st-comp-chips" aria-label="{% translate 'Competición' %}">
+    <span class="st-comp-label">{% translate "Competición" %}</span>
     {% for item in items %}
-    <a class="btn btn-sm{% if item.code and item.code != 'todas' %} z-space-chip z-space-chip--{{ item.code }}{% endif %}{% if item.active %} active{% endif %}" href="{% if item.url %}{{ item.url }}{% else %}{{ request.path }}?en={{ item.code }}{% endif %}"{% if item.active %} aria-current="page"{% endif %}>
-        {% if item.club %}{% include 'includes/competition_badge.html' with code=item.code name=item.name %} <span>{{ item.club.name }}</span>
-        {% elif item.code == 'todas' %}<span>{{ item.label }}</span>
-        {% else %}{% include 'includes/competition_badge.html' with code=item.code name=item.label %}{% endif %}
-    </a>
+    <a class="st-comp-chip st-comp-chip--{% if item.code == 'todas' %}all{% else %}{{ item.code }} z-space-chip--{{ item.code }}{% endif %}" href="{% if item.url %}{{ item.url }}{% else %}{{ request.path }}?en={{ item.code }}{% endif %}"{% if item.active %} aria-current="page"{% endif %}>{% if item.club %}<span class="st-comp-chip-name">{{ item.club.name }}</span>{% else %}{{ item.label }}{% endif %}</a>
     {% endfor %}
-</nav>
+  </nav>
+  {% if with_context %}
+  <p class="st-comp-ctx">
+    {% for item in items %}{% if item.active %}{% if item.club %}{% blocktranslate with name=item.club.name %}Tu ficha en <b>{{ name }}</b>{% endblocktranslate %}{% else %}{% blocktranslate %}Tus partidos en <b>todas</b> tus competiciones{% endblocktranslate %}{% endif %}{% endif %}{% endfor %}
+  </p>
+  {% endif %}
+</div>
