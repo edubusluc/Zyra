@@ -20,15 +20,17 @@
     </header>
 
     <section aria-label="{% translate 'Tus partidos' %}" class="st-section">
-      <div class="z-space-kpis">
-        <div class="is-lime"><b>{{ me.played }}</b><span>{% translate "Jugados" %}</span></div>
+      <div class="z-space-kpis z-space-kpis--four">
+        <div class="is-lime"><b>{% if me.played %}{{ me.pct|floatformat:0 }}%{% else %}—{% endif %}</b><span>{% translate "de victorias" %}</span></div>
+        <div><b>{{ me.played }}</b><span>{% translate "Jugados" %}</span></div>
         <div class="is-won"><b>{{ me.wins }}</b><span>{% translate "Ganados" %}</span></div>
         <div><b>{{ me.losses }}</b><span>{% translate "Perdidos" %}</span></div>
       </div>
       <ul class="z-space-rows" aria-label="{% translate 'Tus partidos por competición' %}">
         {% for row in rows %}
         <li class="z-comp-frame z-comp-frame--{{ row.club.competition }}">
-          <span class="z-space-rows-name">{% include 'includes/competition_badge.html' with code=row.club.competition name=row.club.rules.name %} <span class="z-space-rows-text"><b>{{ row.club.name }}</b><small>{% blocktranslate trimmed with played=row.played wins=row.wins losses=row.losses %}{{ played }} jugados · {{ wins }}V {{ losses }}D{% endblocktranslate %}{% if row.calls.total %} · {% blocktranslate trimmed with signed=row.calls.signed total=row.calls.total %}te apuntaste a {{ signed }} de {{ total }}{% endblocktranslate %}{% endif %}</small></span></span>
+          <span class="z-space-rows-name">{% include 'includes/competition_badge.html' with code=row.club.competition name=row.club.rules.name %} <span class="z-space-rows-text"><b>{{ row.club.name }}</b><small>{% if row.played %}{% blocktranslate trimmed with pct=row.pct wins=row.wins losses=row.losses count played=row.played %}{{ pct }}% de victorias en {{ played }} partido jugado · {{ wins }}V {{ losses }}D{% plural %}{{ pct }}% de victorias en {{ played }} partidos jugados · {{ wins }}V {{ losses }}D{% endblocktranslate %}{% else %}{% translate "Todavía sin partidos jugados" %}{% endif %}</small></span></span>
+          {% if row.calls.total %}<span class="z-space-rows-calls"><b>{{ row.calls.signed }}/{{ row.calls.total }}</b><small>{% translate "convocatorias a las que te apuntaste" %}</small></span>{% endif %}
           <a href="{% url 'my_statistics' %}?espacio={{ row.club.competition }}">{% blocktranslate with competition=row.club.rules.name %}Ver {{ competition }}{% endblocktranslate %} <i class="fa-solid fa-chevron-right" aria-hidden="true"></i></a>
         </li>
         {% endfor %}
@@ -49,7 +51,7 @@
           <div class="z-set-compare">
             {% for item in set_compare %}
             <div class="z-set-row">
-              <b>{{ item.label }}<button type="button" class="z-tip" data-tip="{{ item.hint }}" aria-label="{{ item.hint }}" aria-expanded="false"><i class="fa-solid fa-circle-info" aria-hidden="true"></i></button></b>
+              <b>{{ item.label }}<small>{{ item.hint }}</small></b>
               <div class="z-set-bars">
                 {% for c in item.comps %}<div class="z-set-bar"><span class="z-set-bar--{{ c.code }}" style="width: {{ c.r.pct|default:0 }}%"></span></div>{% endfor %}
               </div>

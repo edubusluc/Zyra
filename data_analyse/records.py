@@ -5,6 +5,8 @@ Los récords salen de los enfrentamientos cerrados del club y del log de partido
 (data_analyse.pairs.club_game_log), con los mismos filtros de temporada y tipo que el
 resto de la página de equipo.
 """
+from django.utils import timezone
+
 from match import outcomes
 from match.models import Match
 from players.models import Player, SnpScoreHistory
@@ -145,6 +147,16 @@ def team_records(club, season=None, match_type=None, log=None):
     return records
 
 
+# Días sin actualizar los puntos SNP a partir de los cuales el dato se marca como antiguo (el job corre lunes y
+# miércoles; el panel de salud del back-office avisa con el mismo plazo).
+SNP_STALE_DAYS = 6
+
+
+def snp_is_stale(updated):
+    """True si la fecha de la última actualización SNP (``updated``) es de hace más de ``SNP_STALE_DAYS`` días."""
+    return bool(updated) and (timezone.localdate() - updated).days > SNP_STALE_DAYS
+
+
 def snp_ranking(club, season):
     """
     Ranking de puntos SNP de la plantilla actual y media del equipo en la temporada ``season``.
@@ -152,7 +164,8 @@ def snp_ranking(club, season):
     Devuelve {'rows', 'chart', 'average', 'riser'}: cada fila es {'pos', 'player', 'score',
     'first', 'delta'} (``delta``: variación respecto a la actualización anterior, no a la
     primera de la temporada; None con menos de dos actualizaciones); ``chart`` es la media del equipo en cada actualización
-    ({'labels', 'average'}); ``riser``, la fila que más ha subido (o None).
+    ({'labels', 'average'}); ``riser``, la fila que más ha subido (o None); ``updated``, la fecha de la
+    última actualización de la temporada (None si no hay) y ``stale``, si ya pasó el plazo (``SNP_STALE_DAYS``).
     """
     squad = list(Player.objects.filter(club=club, in_team=True))
     history = (SnpScoreHistory.objects.filter(player__in=squad, season=season)
@@ -164,6 +177,7 @@ def snp_ranking(club, season):
             prev[pid] = last[pid]
         last[pid] = score
         by_date.setdefault(date, []).append(score)
+    updated = max(by_date) if by_date else None
 
     rows = []
     for p in squad:
@@ -183,6 +197,8 @@ def snp_ranking(club, season):
         'rows': rows,
         'average': round(sum(r['score'] for r in rows) / len(rows), 1) if rows else None,
         'riser': riser if riser and riser['delta'] > 0 else None,
+        'updated': updated,
+        'stale': snp_is_stale(updated),
         'chart': {
             'labels': [d.strftime('%d/%m') for d in dates],
             'average': [round(sum(by_date[d]) / len(by_date[d]), 1) for d in dates],

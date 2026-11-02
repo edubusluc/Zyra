@@ -261,6 +261,12 @@ class UnifiedSpacesTests(TestCase):
         self.assertEqual(page.context["me"]["played"], 2)
         rows = {r["club"]: (r["played"], r["wins"]) for r in page.context["rows"]}
         self.assertEqual(rows, {self.snp: (1, 1), self.lapi: (1, 1)})
+        # El % de victorias sale global y por competición, con su base; «te apuntaste» es una cifra aparte.
+        self.assertEqual(page.context["me"]["pct"], 100)
+        self.assertContains(page, "100%")
+        self.assertContains(page, "100% de victorias en 1 partido jugado")
+        self.assertContains(page, "z-space-rows-calls")
+        self.assertNotContains(page, "te apuntaste a")
         self.assertEqual([c["code"] for c in page.context["mine_chips"]], ["todas", "snp", "lapi"])
         chart = page.context["spaces_chart"]
         self.assertEqual([c["code"] for c in chart["comps"]], ["snp", "lapi"])
@@ -271,8 +277,11 @@ class UnifiedSpacesTests(TestCase):
         self.assertEqual([c["code"] for c in page.context["set_rows"][0]["comps"]], ["snp", "lapi"])
         self.assertContains(page, "js/stats_spaces.js")
         # Diseño aprobado: tres situaciones de sets, ganados/perdidos por competición y fila de competición.
-        self.assertEqual([r["key"] for r in page.context["set_compare"]], ["tiebreak", "first_set", "comeback"])
+        self.assertEqual([r["key"] for r in page.context["set_compare"]], ["tiebreak", "first_set", "comeback", "bagels"])
         self.assertEqual([(t["pct_local"], t["pct_visiting"]) for t in chart["totals"]], [(100, None), (100, None)])
+        # Cada situación lleva su descripción (no un «i») y Roscos a favor se calcula sobre los sets jugados.
+        self.assertEqual(page.context["set_compare"][3]["hint"], "Sets ganados por 6-0.")
+        self.assertEqual([c["r"]["pct"] for c in page.context["set_compare"][3]["comps"]], [None, None])
         self.assertContains(page, 'id="spacesSidesChart"')
         self.assertContains(page, "z-fsel-row")
         # Con una temporada elegida no hay victorias por temporada, pero sí las convocatorias de esa temporada.

@@ -15314,3 +15314,63 @@ msgstr "Percentage of wins at home and away by competition"
 
 msgid "de victorias"
 msgstr "wins"
+
+msgid "Jornadas jugadas"
+msgstr "Rounds played"
+
+msgid "Última jornada"
+msgstr "Last round"
+
+msgid "Puntos última jornada"
+msgstr "Last round points"
+
+msgid "Racha: %(n)s%(k)s"
+msgstr "Streak: %(n)s%(k)s"
+
+msgid "Equipo: %(pct)s%%"
+msgstr "Team: %(pct)s%%"
+
+msgid "Todavía sin partidos jugados"
+msgstr "No matches played yet"
+
+msgid "Últimos %(n)s enfrentamientos, el más reciente a la derecha"
+msgstr "Last %(n)s matchups, most recent on the right"
+
+msgid "de %(n)s enfrentamiento"
+msgid_plural "de %(n)s enfrentamientos"
+msgstr[0] "of %(n)s matchup"
+msgstr[1] "of %(n)s matchups"
+
+msgid "%(n)s jugador sin elegibilidad todavía"
+msgid_plural "%(n)s jugadores sin elegibilidad todavía"
+msgstr[0] "%(n)s player not eligible yet"
+msgstr[1] "%(n)s players not eligible yet"
+
+msgid "le falta %(n)s jornada"
+msgid_plural "le faltan %(n)s jornadas"
+msgstr[0] "%(n)s round to go"
+msgstr[1] "%(n)s rounds to go"
+
+msgid "plantilla %(squad)s de %(n)s (máximo LAPI)"
+msgstr "squad of %(squad)s out of %(n)s (LAPI maximum)"
+
+msgid "actualizado el %(date)s"
+msgstr "updated on %(date)s"
+
+msgid "hace más de 6 días"
+msgstr "more than 6 days ago"
+
+msgid "Hace más de 6 días de la última actualización"
+msgstr "More than 6 days since the last update"
+
+msgid "convocatorias a las que te apuntaste"
+msgstr "call-ups you signed up for"
+
+msgid ""
+"%(pct)s%% de victorias en %(played)s partido jugado · %(wins)sV %(losses)sD"
+msgid_plural ""
+"%(pct)s%% de victorias en %(played)s partidos jugados · %(wins)sV "
+"%(losses)sD"
+msgstr[0] "%(pct)s%% wins in %(played)s match played · %(wins)sW %(losses)sL"
+msgstr[1] ""
+"%(pct)s%% wins in %(played)s matches played · %(wins)sW %(losses)sL"

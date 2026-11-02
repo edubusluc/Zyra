@@ -3,6 +3,16 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 02/11/2026 · Estadísticas: fase 4 (comprender)
+
+- **Equipo · balance**: una sola lectura (victorias, empates y derrotas, el % con su base «de 14 enfrentamientos» y una barra segmentada si hay empates). Desaparece el pie «Ganados · 7 de 14».
+- **Equipo · forma y racha**: los últimos 5 enfrentamientos con los mismos círculos que Jugador, Pareja y Rival, y la racha actual.
+- **Equipo · media SNP**: se quita la tarjeta «Media por jugador», que repetía la «Media del equipo» del ranking SNP; el ranking indica «Actualizado el dd/mm/aaaa» y avisa si hace más de 6 días.
+- **Equipo · Liga (LAPI)**: un solo bloque con los puntos de la última jornada, las jornadas jugadas y los elegibles para las fases finales; quienes no lo son salen en un desplegable con las jornadas que les faltan. La cita del reglamento pasa a un «i». «No presentados y lesiones» solo aparece si hay alguno.
+- **Yo (Mis estadísticas)**: el % de victorias, global y por competición, con el número de partidos jugados; «te apuntaste a X de Y» pasa a una cifra propia.
+- **Yo · Sets**: la tarjeta muestra las mismas cuatro situaciones que el «Sets clutch» de la ficha (Tie-breaks, Cerrar el partido, Remontadas y Roscos a favor) con su descripción a la vista, no en un «i».
+- **Ficha del jugador**: junto a su % de victorias aparece «Equipo: X %» (los partidos de todo el club en el mismo periodo), y los puntos SNP indican cuándo se actualizaron, con aviso a los 6 días.
+
 ## 02/11/2026 · Estadísticas: fase 3 (navegación y fichas)
 
 - **Pestañas**: cinco (Yo, Equipo, Jugadores, Parejas, Rivales), que caben en 390 px sin deslizar. «Yo» sustituye a «Mis estadísticas» y a «Jugador · Yo» y aparece en cuanto tienes jugador enlazado; con un solo equipo abre directamente tu ficha.
