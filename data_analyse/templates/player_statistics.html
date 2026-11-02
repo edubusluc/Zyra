@@ -7,7 +7,7 @@
   <div class="st-page">
     {% include 'includes/stats_tabs.html' %}
 
-    {% include 'includes/filters_row.html' with season=selected_player type=True %}
+    {% include 'includes/filters_row.html' with season=True type=True %}
     <header class="st-head">
       <div>
         <h1 class="st-title">{% if selected_player and hero.is_me %}{% translate "Yo" %}{% else %}{% translate "Jugadores" %}{% endif %}</h1>
@@ -28,25 +28,11 @@
 
     {% if not selected_player %}
 
-      <div class="st-empty st-empty--inline">
-        <strong>{% translate "Elige un jugador" %}</strong>
-        {% translate "Pulsa en un jugador para ver su balance, sus rachas y cómo evoluciona temporada a temporada." %}
-      </div>
-
-      {% if players %}
-        <ul class="st-player-grid" aria-label="{% translate 'Jugadores' %}">
-          {% for p in players %}
-            <li>
-              <a class="st-player-card" href="{% url 'player_statistics' %}?player={{ p.public_id }}{{ match_type_qs }}">
-                {% include 'includes/player_avatar.html' with player=p size="z-avatar--sm" alt="" %}
-                <span>{{ p.full_name }}</span>
-              </a>
-            </li>
-          {% endfor %}
-        </ul>
-      {% else %}
-        <p class="text-muted">{% translate "Todavía no hay jugadores en el equipo." %}</p>
-      {% endif %}
+      <section id="sec-plantilla" aria-labelledby="roster-title" class="st-section">
+        <h2 class="st-section-title" id="roster-title">{% translate "Plantilla" %}{% if selected_season %} · {{ selected_season }}{% endif %}</h2>
+        {% include 'includes/roster_table.html' %}
+      </section>
+      <script src="{% static 'js/stats-tips.js' %}"></script>
 
     {% else %}
 

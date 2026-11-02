@@ -61,8 +61,8 @@ def team_records(club, season=None, match_type=None, log=None):
     Récords del equipo con los filtros dados. Devuelve un diccionario con las claves que
     tengan datos: 'win_streak' y 'unbeaten' ({'n', 'from', 'to'}), 'biggest_win' y
     'worst_defeat' ({'own', 'rival', 'name', 'date', 'public_id'}), 'best_season'
-    ({'season', 'pct', 'played', 'wins'}), 'game_streak' (partidos seguidos ganados),
-    'top_player' y 'top_pair' ({'name', 'n'}: más victorias) y 'most_games' ({'name', 'n'}).
+    ({'season', 'pct', 'played', 'wins'}) y 'top_pair' ({'name', 'n'}: pareja con más victorias). Son los
+    cinco récords de Equipo; «sin perder» acompaña a la racha de victorias.
     """
     matches = (
         Match.objects.filter(club=club, draft_mode=False, **pair_stats.match_type_lookup(match_type))
@@ -115,16 +115,9 @@ def team_records(club, season=None, match_type=None, log=None):
 
     if log is None:
         log = pair_stats.club_game_log(club, season, match_type)
-    game_streak = _longest(log, lambda g: g['won'])
-    if game_streak and game_streak[0] >= 2:
-        records['game_streak'] = {'n': game_streak[0], 'from': game_streak[1]['date'], 'to': game_streak[2]['date']}
-
     people = {p.id: p for p in Player.objects.filter(club=club)}
-    player_wins, player_games, pair_wins = {}, {}, {}
+    pair_wins = {}
     for g in log:
-        for pid in g['pair']:
-            player_games[pid] = player_games.get(pid, 0) + 1
-            player_wins[pid] = player_wins.get(pid, 0) + g['won']
         if g['won']:
             pair_wins[g['pair']] = pair_wins.get(g['pair'], 0) + 1
 
@@ -136,14 +129,11 @@ def team_records(club, season=None, match_type=None, log=None):
         n, label = min(named)
         return {'name': label, 'n': -n}
 
-    player_name = lambda pid: people[pid].full_name if pid in people else None  # noqa: E731
     pair_name = lambda key: (f"{pair_stats.pair_label(people[key[0]])} / {pair_stats.pair_label(people[key[1]])}"  # noqa: E731
                              if key[0] in people and key[1] in people else None)
-    for key, counts, name in (('top_player', player_wins, player_name), ('most_games', player_games, player_name),
-                              ('top_pair', pair_wins, pair_name)):
-        value = top(counts, name)
-        if value:
-            records[key] = value
+    value = top(pair_wins, pair_name)
+    if value:
+        records['top_pair'] = value
     return records
 
 

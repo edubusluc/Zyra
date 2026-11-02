@@ -15374,3 +15374,45 @@ msgid_plural ""
 msgstr[0] "%(pct)s%% wins in %(played)s match played · %(wins)sW %(losses)sL"
 msgstr[1] ""
 "%(pct)s%% wins in %(played)s matches played · %(wins)sW %(losses)sL"
+
+msgid "Partidos a contar"
+msgstr "Matches to count"
+
+msgid "Mínimo"
+msgstr "Minimum"
+
+msgid "Mínimo de partidos"
+msgstr "Minimum matches"
+
+msgid ""
+"Quien no llega al mínimo de partidos no entra en el orden por % de victorias"
+" y va al final de la tabla."
+msgstr ""
+"Players below the minimum number of matches are left out of the win % order "
+"and go to the bottom of the table."
+
+msgid "V-D"
+msgstr "W-L"
+
+msgid "Profundizar"
+msgstr "Dig deeper"
+
+msgid "3 y 2 puntos"
+msgstr "3 and 2 points"
+
+msgid "%(pct)s%% de media"
+msgstr "%(pct)s%% on average"
+
+msgid "Ver los puntos de cada jugador en la tabla de plantilla"
+msgstr "See each player's points in the squad table"
+
+msgid "Sin perder (contando empates): %(n)s enfrentamientos."
+msgstr "Unbeaten (counting draws): %(n)s matchups."
+
+msgid "Mínimo %(n)s partido"
+msgid_plural "Mínimo %(n)s partidos"
+msgstr[0] "Minimum %(n)s match"
+msgstr[1] "Minimum %(n)s matches"
+
+msgid "Jug."
+msgstr "Pl."

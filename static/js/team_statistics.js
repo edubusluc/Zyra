@@ -1,5 +1,5 @@
 // Estadísticas del equipo (team_statistics.html): puntos por jornada (o por temporada con «Todas»), asistencia,
-// balance por jugador y ranking SNP (gráficos lima sin ejes) y panel lateral de secciones.
+// balance por jugador y evolución de la media SNP (gráficos lima sin ejes) y panel lateral de secciones.
 (function () {
   const read = (id) => {
     const el = document.getElementById(id);
@@ -197,7 +197,7 @@
   };
   balanceSetup();
 
-  // Ranking SNP: media del equipo en cada actualización y botón para ver toda la plantilla.
+  // Puntos SNP: media del equipo en cada actualización.
   const rankCanvas = document.getElementById('chartSnpTeam');
   const rank = read('snp-team-data');
   if (rankCanvas && rank && rank.average.length > 1) {
@@ -223,16 +223,10 @@
       },
     });
   }
-  const more = document.querySelector('[data-snp-more]');
-  if (more) {
-    const label = more.textContent;
-    more.addEventListener('click', () => {
-      const rows = document.querySelectorAll('[data-snp-extra]');
-      const show = rows[0].hidden;
-      rows.forEach((r) => { r.hidden = !show; });
-      more.textContent = show ? more.dataset.less : label;
-    });
-  }
+  // Profundizar: los gráficos se dibujan con la sección cerrada; al abrirla se ajustan a su ancho.
+  document.querySelectorAll('.st-fold').forEach((fold) => {
+    fold.addEventListener('toggle', () => { if (fold.open) window.dispatchEvent(new Event('resize')); });
+  });
 
   // Panel lateral de secciones: marca la sección que se está viendo.
   const links = Array.from(document.querySelectorAll('.st-side-list a'));

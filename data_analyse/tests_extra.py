@@ -133,9 +133,9 @@ class ClubSetsTests(ClubDataMixin, TestCase):
         self.assertNotIn('worst_defeat', rec)
         self.assertNotIn('win_streak', rec)
         self.assertEqual(rec['unbeaten']['n'], 2)
-        self.assertEqual(rec['game_streak']['n'], 2)
-        self.assertEqual(rec['top_player']['n'], 2)  # A y B: 2 victorias; desempata el nombre
-        self.assertEqual(rec['top_player']['name'], self.a.full_name)
+        # Solo los cinco récords de Equipo: ni partidos seguidos ni «más victorias» o «más partidos» de jugador.
+        for gone in ('game_streak', 'top_player', 'most_games'):
+            self.assertNotIn(gone, rec)
         self.assertEqual(rec['top_pair']['n'], 2)
 
     def test_snp_ranking(self):
@@ -226,7 +226,8 @@ class ClubSetsTests(ClubDataMixin, TestCase):
         self.assertNotContains(response, "Mejor en el partido")
         self.assertContains(response, "Tie-breaks")
         self.assertContains(response, "Roscos a favor")
-        self.assertContains(response, "Mejores jugadores como visitante")
+        self.assertContains(response, 'id="sec-plantilla"')
+        self.assertNotContains(response, "Mejores jugadores como visitante")
         self.assertEqual(response.context['records']['biggest_win']['own'], 5)
 
     def test_player_page_clutch_and_lineup_rate(self):
