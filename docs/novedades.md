@@ -9,6 +9,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 - **Ficha única de jugador**: Plantilla y Estadísticas enlazan a la misma ficha (foto, posición, mano, desde, puntos SNP, «Editar» y, para capitán y gestores, el número de advertencias). Desaparece la pestaña «Resumen» y la ficha duplicada de Plantilla; la antigua URL redirige.
 - **Advertencias**: salen de Estadísticas y se abren desde Plantilla (solo capitán y gestores).
 - **Equipos rivales**: el catálogo de Enfrentamientos y de Equipo se llama «Equipos rivales», para no confundirlo con la pestaña Rivales de Estadísticas.
+- **Local y visitante (jugador y pareja)**: la barra solo pinta el tramo de ganados o de perdidos que tiene partidos; antes un 0 dibujaba un círculo suelto.
 - **Tipo**: en Equipo y Jugador el desplegable «Tipo» muestra «Competitivos» cuando es el filtro por defecto (antes salía en blanco).
 
 ## 02/11/2026 · Estadísticas: fase 2 (contexto único)
