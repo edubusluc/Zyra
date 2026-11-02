@@ -10,9 +10,12 @@
       e.stopPropagation();
       const open = !tip.classList.contains('is-open');
       closeAll();
+      // En móvil el globo es fijo y ancho: se coloca justo debajo del «i» pulsado.
+      tip.style.setProperty('--tip-y', `${Math.round(tip.getBoundingClientRect().bottom + 8)}px`);
       tip.classList.toggle('is-open', open);
       tip.setAttribute('aria-expanded', String(open));
     });
   });
   document.addEventListener('click', closeAll);
+  window.addEventListener('scroll', closeAll, { passive: true });
 })();

@@ -3880,7 +3880,8 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .z-tip:not(:hover):not(:focus-visible):not(.is-open)::after { display: none; }
 .st-card:has(> .st-only) > .st-card-title { padding-right: 5.5rem; }
 @media (max-width: 640px) {
-  .z-tip::after { left: auto; right: -8px; transform: none; max-width: min(240px, 70vw); }
+  /* El globo ocupa el ancho de la pantalla (con 16 px de margen) bajo el «i»; su posición vertical la fija stats-tips.js. */
+  .z-tip::after { position: fixed; left: 16px; right: 16px; bottom: auto; top: var(--tip-y, 50%); width: auto; max-width: none; transform: none; font-size: var(--z-fs-sm); }
   .st-chart--points { height: 150px; }
   .st-balance { padding: 14px; }
 }
