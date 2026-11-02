@@ -226,7 +226,7 @@ class CaptainPlayerTests(TestCase):
     def test_google_without_name_asks_for_it(self):
         self.google_user("Lucía", "")
         response = self.client.get(reverse("register_club"))
-        self.assertContains(response, "No ha sido posible obtener tu nombre y apellidos de tu cuenta de Google")
+        self.assertContains(response, "No hemos podido leer tu nombre y apellidos de tu cuenta de Google")
 
     def test_google_user_registers_club_with_player(self):
         user = self.google_user()

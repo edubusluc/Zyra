@@ -607,12 +607,7 @@ msgstr "News in Zyra"
 
 #: backoffice/mass_email.py:48
 #, python-brace-format
-msgid ""
-"Hola {nombre},\n"
-"\n"
-"Hemos añadido mejoras en Zyra que pueden venirte bien en {club}. Entra y échales un vistazo; si algo no te cuadra, respóndeme a este correo.\n"
-"\n"
-"Un saludo."
+msgid "Hola {nombre},\n\nHemos sacado mejoras nuevas en Zyra y creo que os vendrán bien en {club}. Échales un ojo y, si algo no te cuadra, respóndeme a este correo.\n\nUn saludo."
 msgstr ""
 "Hi {nombre},\n"
 "\n"
@@ -4717,7 +4712,7 @@ msgstr[0] "%(n)s photo deleted."
 msgstr[1] "%(n)s photos deleted."
 
 #: backoffice/views.py:862
-msgid "Se ha avisado por email al usuario."
+msgid "Usuario avisado por email."
 msgstr "The user has been notified by email."
 
 #: backoffice/views.py:864
@@ -5149,7 +5144,7 @@ msgid "Todavía no hay advertencias en esta convocatoria."
 msgstr "There are no warnings in this call-up yet."
 
 #: callLog/views.py:27
-msgid "No se encontró el registro de llamada con el ID especificado."
+msgid "No existe ese registro de llamada."
 msgstr "No call-up log was found with the given ID."
 
 #: core/adapters.py:39 core/forms.py:269
@@ -6241,9 +6236,7 @@ msgstr ""
 "Google."
 
 #: core/templates/base.html:8
-msgid ""
-"Zyra: gestión de equipos de pádel — jugadores, convocatorias, partidos y "
-"estadísticas."
+msgid "Zyra: gestión de equipos de pádel. Jugadores, convocatorias, partidos y estadísticas."
 msgstr ""
 "Zyra: padel team management — players, call-ups, matches and statistics."
 
@@ -6925,11 +6918,7 @@ msgstr "Welcome to Zyra, %(username)s!"
 
 #: core/templates/emails/welcome.html:3
 #, python-format
-msgid ""
-"Tu registro se ha completado y has creado el equipo "
-"<strong>%(club)s</strong>. Como capitán puedes gestionar jugadores, "
-"partidos, convocatorias y estadísticas, e invitar al resto del equipo desde "
-"<em>Miembros del club</em>."
+msgid "Ya estás dentro: has creado el equipo <strong>%(club)s</strong>. Como capitán puedes gestionar jugadores, partidos, convocatorias y estadísticas, e invitar al resto del equipo desde <em>Miembros del club</em>."
 msgstr ""
 "Your registration is complete and you have created the team "
 "<strong>%(club)s</strong>. As a captain you can manage players, matches, "
@@ -6938,10 +6927,7 @@ msgstr ""
 
 #: core/templates/emails/welcome.html:5
 #, python-format
-msgid ""
-"Tu registro se ha completado y ya formas parte de <strong>%(club)s</strong>."
-" Desde ahora puedes consultar los partidos, las convocatorias y las "
-"estadísticas del equipo."
+msgid "Ya estás dentro: formas parte de <strong>%(club)s</strong>. Desde ahora puedes consultar los partidos, las convocatorias y las estadísticas del equipo."
 msgstr ""
 "Your registration is complete and you are now part of "
 "<strong>%(club)s</strong>. From now on you can view the team's matches, "
@@ -6957,10 +6943,7 @@ msgstr "Captains"
 
 #: core/templates/emails/welcome.txt:3
 #, python-format
-msgid ""
-"Tu registro se ha completado y has creado el equipo %(club)s. Como capitán "
-"puedes gestionar jugadores, partidos, convocatorias y estadísticas, e "
-"invitar al resto del equipo desde \"Miembros del club\"."
+msgid "Ya estás dentro: has creado el equipo %(club)s. Como capitán puedes gestionar jugadores, partidos, convocatorias y estadísticas, e invitar al resto del equipo desde \"Miembros del club\"."
 msgstr ""
 "Your registration is complete and you have created the team %(club)s. As a "
 "captain you can manage players, matches, call-ups and statistics, and invite"
@@ -6968,10 +6951,7 @@ msgstr ""
 
 #: core/templates/emails/welcome.txt:3
 #, python-format
-msgid ""
-"Tu registro se ha completado y ya formas parte de %(club)s. Desde ahora "
-"puedes consultar los partidos, las convocatorias y las estadísticas del "
-"equipo."
+msgid "Ya estás dentro: formas parte de %(club)s. Desde ahora puedes consultar los partidos, las convocatorias y las estadísticas del equipo."
 msgstr ""
 "Your registration is complete and you are now part of %(club)s. From now on "
 "you can view the team's matches, call-ups and statistics."
@@ -7549,9 +7529,7 @@ msgid "Registra tu cuenta de SNP"
 msgstr "Register your SNP account"
 
 #: core/templates/home.html:385
-msgid ""
-"Mantén actualizados semanalmente los puntos SNP de tus jugadores y carga "
-"automáticamente sus datos para ahorrar tiempo y tenerlo todo siempre al día."
+msgid "Mantén al día los puntos SNP de tus jugadores sin hacer nada: se actualizan solos cada semana."
 msgstr ""
 "Keep your players' SNP points updated every week and load their data "
 "automatically to save time and keep everything up to date."
@@ -7948,7 +7926,7 @@ msgid "Ya tengo cuenta"
 msgstr "I already have an account"
 
 #: core/templates/landing.html:26
-msgid "Todo lo que necesita el capitán de un equipo de pádel"
+msgid "Herramientas para el capitán de un equipo de pádel"
 msgstr "Everything a padel team captain needs"
 
 #: core/templates/landing.html:30
@@ -8592,9 +8570,7 @@ msgstr ""
 " you."
 
 #: core/templates/register_club.html:118
-msgid ""
-"No ha sido posible obtener tu nombre y apellidos de tu cuenta de Google. "
-"Indícalos para crear tu jugador."
+msgid "No hemos podido leer tu nombre y apellidos de tu cuenta de Google. Escríbelos para crear tu jugador."
 msgstr ""
 "We couldn't get your first name and last name from your Google account. "
 "Please enter them to create your player."
@@ -8661,7 +8637,7 @@ msgid "Hasta pronto"
 msgstr "See you soon"
 
 #: core/templates/registration/logout.html:10
-msgid "Has cerrado sesión correctamente."
+msgid "Has cerrado sesión."
 msgstr "You have been logged out."
 
 #: core/templates/result_unsubscribe.html:4
@@ -8807,7 +8783,7 @@ msgstr "Your email is blocked on Zyra and cannot create clubs."
 
 #: core/views.py:410
 #, python-format
-msgid "Equipo %(club)s creado correctamente."
+msgid "Equipo %(club)s creado."
 msgstr "Team %(club)s created successfully."
 
 #: core/views.py:485
@@ -8934,7 +8910,7 @@ msgid "Escribe tu nombre de usuario tal cual para confirmar."
 msgstr "Type your username exactly to confirm."
 
 #: core/views.py:1002
-msgid "Tu cuenta se ha eliminado. Gracias por haber usado Zyra."
+msgid "Tu cuenta se ha eliminado. Gracias por usar Zyra."
 msgstr "Your account has been deleted. Thanks for using Zyra."
 
 #: core/views.py:1055
@@ -10741,7 +10717,7 @@ msgid "Hora no válida. Usa el formato HH:MM."
 msgstr "Invalid time. Use the HH:MM format."
 
 #: match/forms.py:128
-msgid "Por favor, completa todos los campos."
+msgid "Completa todos los campos."
 msgstr "Please fill in all the fields."
 
 #: match/forms.py:145
@@ -12796,11 +12772,11 @@ msgstr ""
 
 #: match/views.py:539
 #, python-format
-msgid "Para cerrar una convocatoria al menos debes contar con %(n)s jugadores"
+msgid "Para cerrar la convocatoria hacen falta al menos %(n)s jugadores"
 msgstr "You need at least %(n)s players to close a call-up"
 
 #: match/views.py:541
-msgid "Esta convocatoria ha sido cerrada"
+msgid "Esta convocatoria está cerrada"
 msgstr "This call-up has been closed"
 
 #: match/views.py:582
@@ -12857,16 +12833,16 @@ msgid "Mixtos"
 msgstr "Mixed"
 
 #: match/views.py:795
-msgid "No se pueden alinear parejas, no existe ninguna convocatoria."
+msgid "No hay convocatoria, así que no se pueden alinear parejas."
 msgstr "Pairs cannot be set: there is no call-up."
 
 #: match/views.py:798
 #, python-format
-msgid "Para alinear las parejas debes contar al menos con %(n)s jugadores"
+msgid "Para alinear las parejas hacen falta al menos %(n)s jugadores"
 msgstr "To set the pairs you need at least %(n)s players"
 
 #: match/views.py:800
-msgid "Para alinear las parejas debes cerrar la convocatoria"
+msgid "Cierra la convocatoria para poder alinear las parejas"
 msgstr "To set the pairs you must close the call-up"
 
 #: match/views.py:823
@@ -12903,7 +12879,7 @@ msgid "Revisa los resultados marcados: no se ha guardado nada."
 msgstr "Check the highlighted results: nothing was saved."
 
 #: match/views.py:1091
-msgid "No se pueden cerrar actas, el enfrentamiento ya ha sido cerrado"
+msgid "El acta de este enfrentamiento ya está cerrada."
 msgstr "The match sheet cannot be closed: the fixture is already closed"
 
 #: match/views.py:1094
@@ -13492,7 +13468,7 @@ msgid "Editar jugador"
 msgstr "Edit player"
 
 #: players/templates/edit_player.html:12
-msgid "Error al editar el jugador. Por favor, verifica los datos."
+msgid "No se ha podido editar el jugador. Revisa los datos."
 msgstr "Error editing the player. Please check the details."
 
 #: players/templates/edit_player.html:20
@@ -13673,7 +13649,7 @@ msgid "Vas a enlazar tu cuenta a:"
 msgstr "You are about to link your account to:"
 
 #: players/templates/link_player.html:64
-msgid "Asegúrate de que eres tú: solo tu capitán podrá deshacerlo."
+msgid "Comprueba que eres tú: solo tu capitán podrá deshacerlo."
 msgstr "Make sure it is you: only your captain can undo it."
 
 #: players/templates/link_player.html:68
@@ -13802,10 +13778,7 @@ msgstr ""
 "they will get the points."
 
 #: players/templates/list_players.html:203
-msgid ""
-"Un detalle: SNP no dice en qué lado de la pista juega cada uno, así que los "
-"jugadores nuevos llegarán sin posición. Después, edita cada uno y elige su "
-"posición: te ayudará a montar mejor las parejas y las alineaciones."
+msgid "SNP no indica en qué lado de la pista juega cada uno, así que los jugadores nuevos llegarán sin posición. Edítalos después y elige la de cada uno: te ayudará a montar mejor las parejas y las alineaciones."
 msgstr ""
 "One thing: SNP doesn't say which side of the court each player plays on, so "
 "new players will arrive without a position. Afterwards, edit each one and "
@@ -14040,7 +14013,7 @@ msgid "Guardando la cuenta SNP…"
 msgstr "Saving the SNP account…"
 
 #: players/views.py:55
-msgid "Error al crear el jugador. Por favor, verifica los datos."
+msgid "No se ha podido crear el jugador. Revisa los datos."
 msgstr "Error creating the player. Please check the details."
 
 #: players/views.py:166
@@ -14107,11 +14080,7 @@ msgid "Cuenta SNP borrada."
 msgstr "SNP account deleted."
 
 #: players/views.py:323
-msgid ""
-"¡Ya tienes a tus jugadores! SNP no dice en qué lado juega cada uno, así que "
-"su posición en pista ha quedado vacía. Cuando puedas, edita cada jugador y "
-"elige su posición: así las parejas y las alineaciones te saldrán mucho "
-"mejor."
+msgid "Jugadores añadidos. SNP no indica en qué lado juega cada uno, así que su posición ha quedado vacía. Cuando puedas, edítalos y elige la de cada uno: así las parejas y las alineaciones te saldrán mejor."
 msgstr ""
 "Your players are here! SNP doesn't say which side each one plays on, so "
 "their court position is empty. When you can, edit each player and choose "
@@ -14588,7 +14557,7 @@ msgid "Rival %(team)s creado. Ya puedes elegirlo."
 msgstr "Rival %(team)s created. You can now pick it."
 
 #: team/views.py:94
-msgid "Error al crear el equipo. Por favor, verifica los datos."
+msgid "No se ha podido crear el equipo. Revisa los datos."
 msgstr "Error creating the team. Please check the data."
 
 #: team/views.py:124
@@ -14601,7 +14570,7 @@ msgid "«%(name)s» vuelve a estar en tu grupo."
 msgstr "\"%(name)s\" is back in your group."
 
 #: team/views.py:159
-msgid "Error al editar el equipo. Por favor, verifica los datos."
+msgid "No se ha podido editar el equipo. Revisa los datos."
 msgstr "Error editing the team. Please check the data."
 
 #: team/views.py:214
@@ -14706,9 +14675,7 @@ msgid "Algo ha fallado"
 msgstr "Something went wrong"
 
 #: core/templates/500.html:24
-msgid ""
-"No es culpa tuya. Ya nos ha llegado el aviso: vuelve a intentarlo en un "
-"minuto."
+msgid "Ha fallado algo por nuestra parte. Ya nos ha llegado el aviso; prueba de nuevo en un minuto."
 msgstr ""
 "It's not your fault. We've already been notified: please try again in a "
 "minute."
@@ -14816,7 +14783,7 @@ msgid ""
 "SNP."
 msgstr "The trend will show once there are at least 2 SNP points updates."
 
-msgid "Tu próximo enfrentamiento, de un vistazo"
+msgid "Tu próximo enfrentamiento"
 msgstr "Your next match at a glance"
 
 msgid ""

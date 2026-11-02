@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>{% block title %}{% block page_title %}{% endblock %}{% if current_club %}{{ current_club.name }} · {% endif %}Zyra{% endblock %}</title>
-    <meta name="description" content="{% block description %}{% translate 'Zyra: gestión de equipos de pádel — jugadores, convocatorias, partidos y estadísticas.' %}{% endblock %}">
+    <meta name="description" content="{% block description %}{% translate 'Zyra: gestión de equipos de pádel. Jugadores, convocatorias, partidos y estadísticas.' %}{% endblock %}">
     {% block robots %}{% endblock %}
     <link rel="canonical" href="{% block canonical %}{{ canonical_url }}{% endblock %}">
     {# La misma página en cada idioma (?lang=en): los buscadores muestran la de su usuario #}

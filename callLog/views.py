@@ -24,7 +24,7 @@ def view_call_log(request, call_id):
     players = Player.objects.filter(club=request.club, in_team=True).order_by('name', 'last_name')
     if not Call.objects.filter(public_id=call_id, match__club=request.club).exists():
         return render(request, "view_call_log.html", {
-            "error_message": _("No se encontró el registro de llamada con el ID especificado."),
+            "error_message": _("No existe ese registro de llamada."),
             "log_lines": [],
             "players": players,
             "call_id": call_id,

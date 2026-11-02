@@ -290,7 +290,7 @@ class RolesAndClubSwitchTests(TestCase):
         self.assertFalse(Player.objects.filter(club=club, user__isnull=False).exists())
         page = self.client.get(response.url, follow=True)
         self.assertContains(page, "¿Quién eres en el equipo?")
-        self.assertContains(page, "su posición en pista ha quedado vacía")
+        self.assertContains(page, "su posición ha quedado vacía")
 
         ana = Player.objects.get(club=club, name="Ana")
         self.client.post(reverse("link_player", args=[ana.public_id]))

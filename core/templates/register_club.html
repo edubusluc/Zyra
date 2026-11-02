@@ -119,7 +119,7 @@
                 </div>
                 <div data-mode-panel="manual">
                 {% if google_missing_name %}
-                <div class="alert alert-warning" role="alert">{% translate "No ha sido posible obtener tu nombre y apellidos de tu cuenta de Google. Indícalos para crear tu jugador." %}</div>
+                <div class="alert alert-warning" role="alert">{% translate "No hemos podido leer tu nombre y apellidos de tu cuenta de Google. Escríbelos para crear tu jugador." %}</div>
                 {% endif %}
                 {% if linked_player %}
                 <div class="alert alert-info" role="note">{% blocktranslate with player=linked_player.full_name space=linked_player.club.name %}Tu cuenta ya tiene el jugador <strong>{{ player }}</strong> en {{ space }}. Crearemos tu jugador en este equipo con el mismo nombre.{% endblocktranslate %}</div>

@@ -866,7 +866,7 @@ def _report_removal(request, removed, notified, not_notified):
         return
     messages.success(request, ngettext("%(n)s foto eliminada.", "%(n)s fotos eliminadas.", removed) % {"n": removed})
     if notified:
-        messages.success(request, _("Se ha avisado por email al usuario."))
+        messages.success(request, _("Usuario avisado por email."))
     if not_notified:
         messages.warning(request, _("No se ha podido avisar por email (el usuario no tiene email o falló el envío)."))
 

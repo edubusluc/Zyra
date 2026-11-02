@@ -513,7 +513,7 @@ class CompleteTeamTests(TestCase):
         self.assertEqual(self.client.get(reverse("complete_team_status", args=[team_import.public_id])).json()["status"], "ready")
 
         response = self.client.post(reverse("complete_team_confirm", args=[team_import.public_id]), follow=True)
-        self.assertContains(response, "su posición en pista ha quedado vacía")
+        self.assertContains(response, "su posición ha quedado vacía")
         pedro = Player.objects.get(name="Pedro")
         self.assertEqual((pedro.last_name, pedro.snp_score, pedro.in_team, pedro.team), ("Raposo Bellerin", 120.0, True, self.club.own_team))
         self.assertTrue(SnpScoreHistory.objects.filter(player=pedro, score=120.0).exists())
