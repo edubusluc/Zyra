@@ -34,7 +34,6 @@
       <div class="st-row st-row--pair">
         <article class="st-card">
           <h3 class="st-card-title">{% translate "Últimos enfrentamientos" %}</h3>
-          <p class="st-card-note">{% translate "Del más antiguo al más reciente." %}</p>
           <ol class="st-form st-form--lg">
             {% for o in detail.form %}
               <li class="st-pip {% if o == 'V' %}st-pip--w{% elif o == 'D' %}st-pip--l{% else %}st-pip--d{% endif %}" title="{% if o == 'V' %}{% translate 'Victoria' %}{% elif o == 'D' %}{% translate 'Derrota' %}{% else %}{% translate 'Empate' %}{% endif %}">{{ o }}</li>
@@ -43,8 +42,8 @@
         </article>
 
         <article class="st-card">
-          <h3 class="st-card-title">{% translate "Parejas contra ellos" %}</h3>
-          <p class="st-card-note">{% blocktranslate trimmed count n=min_games_pair %}Mínimo {{ n }} partido.{% plural %}Mínimo {{ n }} partidos.{% endblocktranslate %}</p>
+          {% blocktranslate asvar tip_text count n=min_games_pair %}Mínimo {{ n }} partido.{% plural %}Mínimo {{ n }} partidos.{% endblocktranslate %}
+          <h3 class="st-card-title">{% translate "Parejas contra ellos" %}{% include 'includes/stat_tip.html' with tip=tip_text %}</h3>
           {% if detail.pairs_best or detail.pairs_worst %}
           {% for title, rows in pairs_groups %}{% if rows %}
           <h4 class="st-subtitle-sm">{{ title }}</h4>

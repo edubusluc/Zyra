@@ -522,7 +522,12 @@ class AffinityScopeTests(TestCase):
         # Compañeros con su % real y enlace a la pareja; Local y visitante con su unidad; sin jerga.
         self.assertContains(response, "Compañeros")
         self.assertContains(response, f"{reverse('pair_statistics')}?p1={self.a.public_id}&p2=")
-        self.assertContains(response, "% de partidos ganados según dónde se juega.")
+        self.assertContains(response, "Como local")
+        self.assertNotContains(response, "st-card-note")  # sin notas descriptivas: solo tooltips «i»
+        self.assertContains(response, 'data-level="compare"')
+        self.assertContains(response, "Partidos jugados")  # la unidad junto a la cifra
+        self.assertContains(response, "a las que se apuntó")
+        self.assertNotContains(response, "Convocados")
         self.assertNotContains(response, "Grado de afinidad")
         self.assertNotContains(response, "Sets clutch")
 

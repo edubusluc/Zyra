@@ -15576,3 +15576,6 @@ msgstr "points %(a)s-%(b)s"
 
 msgid "%(n)s puntos de liga"
 msgstr "%(n)s league points"
+
+msgid "a las que se apuntó"
+msgstr "signed up for"

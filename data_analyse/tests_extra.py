@@ -219,6 +219,8 @@ class ClubSetsTests(ClubDataMixin, TestCase):
         self.assertNotContains(response, "Juegos como local")
         self.assertContains(response, "Ganados como visitante")
         self.assertContains(response, "enfrentamientos ganados / total fuera")
+        self.assertNotContains(response, "st-card-note")
+        self.assertContains(response, 'data-level="deepen"')
 
     def test_team_page_shows_new_sections(self):
         response = self.client.get(reverse('team_statistics'))

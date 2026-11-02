@@ -3,6 +3,14 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 02/11/2026 · Estadísticas: fase 8 (densidad, móvil y accesibilidad)
+
+- **Sin notas descriptivas**: desaparecen los textos de una línea bajo los títulos de las tarjetas; lo que hace falta explicar (mínimos, reglas de puntos, cómo se alinean las parejas) va en un tooltip «i» junto al título, que se abre al pasar el ratón o al pulsar en móvil.
+- **Secciones por nivel**: cada sección declara su nivel (`data-level`: comprender, comparar o profundizar). En móvil solo las de «comprender» están siempre abiertas; el resto se pliega, con un resumen en la cabecera (p. ej. «23 jugadores»). Equipo en móvil llega plegado y sin desbordar horizontalmente, y el globo del tooltip ya no ensancha la página.
+- **Mismas palabras en todas partes**: enfrentamiento (jornada o cruce entre dos equipos) frente a partido (parejas dentro de él); «Partidos jugados» con su unidad al lado de la cifra, y «Convocatorias» con «a las que se apuntó» para distinguir apuntarse de ser convocado.
+- **Gráficos accesibles**: todos los lienzos van ocultos a los lectores de pantalla y el contenedor lleva en su etiqueta el título y los valores de cada serie (también en Parejas).
+- **Limpieza**: se eliminan cinco plantillas que ya no usaba ninguna vista.
+
 ## 02/11/2026 · Estadísticas: fase 7 (Parejas y Rivales)
 
 - **Parejas · todas las parejas**: sin pareja elegida, la entrada es la lista de todas las que han jugado juntas (partidos, V-D y %), con buscador por nombre y orden por más partidos, mejor %, peor % o nombre. Desaparecen «Mejores parejas» y «Parejas por mejorar» (con umbrales distintos); no hay selector de mínimo, la base va en cada fila.
