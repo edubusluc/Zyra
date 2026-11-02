@@ -90,13 +90,6 @@ class PairStatisticsTests(TestCase):
     def test_top_tables(self):
         log = pair_stats.club_game_log(self.club)
         squad = list(Player.objects.filter(club=self.club, in_team=True))
-        local = pair_stats.top_players(log, squad, local=True)
-        # A y B: 3 de 3 en casa; D: 0 de 1 (no llega al mínimo); C no está en el equipo.
-        self.assertEqual([(r['name'], r['pct']) for r in local], [("A Ason", 100.0), ("B Bson", 100.0)])
-        away = pair_stats.top_players(log, squad, local=False)
-        # Fuera solo A llega al mínimo de 2 partidos (1 de 2)
-        self.assertEqual([(r['name'], r['played'], r['pct']) for r in away], [("A Ason", 2, 50.0)])
-
         pairs_local = pair_stats.top_pairs(log, squad, local=True)
         self.assertEqual([(r['name'], r['played'], r['pct']) for r in pairs_local], [("A Ason / B Bson", 3, 100.0)])
         self.assertEqual(pair_stats.top_pairs(log, squad, local=False), [])  # A+B solo 1 fuera
@@ -109,13 +102,7 @@ class PairStatisticsTests(TestCase):
         losing = [{'pair': tuple(sorted((c_id, d_id))), 'local': True, 'won': False} for _ in range(2)]
         everyone = list(Player.objects.filter(club=self.club))
         self.assertEqual(pair_stats.top_pairs(losing, everyone, local=True), [])
-        self.assertEqual(pair_stats.top_players(losing, everyone, local=True), [])
         self.assertTrue(pair_stats.top_pairs(log, squad, local=True))
-
-    def test_top_tables_respect_season(self):
-        log = pair_stats.club_game_log(self.club, "2025-2026")
-        squad = list(Player.objects.filter(club=self.club, in_team=True))
-        self.assertEqual(pair_stats.top_players(log, squad, local=True), [])  # 1 partido por jugador
 
     def test_pair_view(self):
         response = self.client.get(reverse("pair_statistics"), {"p1": self.a.public_id, "p2": self.b.public_id})
@@ -217,12 +204,11 @@ class PairStatisticsTests(TestCase):
         response = self.client.get(reverse("pair_statistics"), {"p1": self.a.public_id, "p2": foreign.public_id})
         self.assertEqual(response.status_code, 404)
 
-    def test_team_statistics_chart_only_current_players(self):
+    def test_team_statistics_roster_only_current_players(self):
         response = self.client.get(reverse("team_statistics"))
-        names = [row["name"] for row in response.context["top_local_players"]]
+        names = [row["player"].short_name for row in response.context["roster"]["rows"]]
         self.assertNotIn("C Cson", names)
         self.assertIn("A Ason", names)
-        self.assertEqual(len(response.context["top_local_players"]), 2)
 
     def test_team_statistics_chart_data_is_json_script(self):
         # Los datos de los gráficos van en json_script: un </script> en ellos no puede cortar el script.

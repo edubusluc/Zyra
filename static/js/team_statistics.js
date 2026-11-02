@@ -1,5 +1,5 @@
 // Estadísticas del equipo (team_statistics.html): puntos por jornada (o por temporada con «Todas»), asistencia,
-// balance por jugador y ranking SNP (gráficos lima sin ejes) y panel lateral de secciones.
+// balance por jugador (gráficos lima sin ejes) y panel lateral de secciones.
 (function () {
   const read = (id) => {
     const el = document.getElementById(id);
@@ -197,42 +197,10 @@
   };
   balanceSetup();
 
-  // Ranking SNP: media del equipo en cada actualización y botón para ver toda la plantilla.
-  const rankCanvas = document.getElementById('chartSnpTeam');
-  const rank = read('snp-team-data');
-  if (rankCanvas && rank && rank.average.length > 1) {
-    new Chart(rankCanvas, {
-      type: 'line',
-      data: {
-        labels: rank.labels,
-        datasets: [{
-          label: gettext('Media del equipo'),
-          data: rank.average,
-          borderColor: LIME,
-          backgroundColor: 'rgba(180, 241, 0, 0.12)',
-          fill: true,
-          tension: 0.3,
-          pointRadius: 3,
-        }],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: { x: { grid: { display: false } }, y: { display: false } },
-      },
-    });
-  }
-  const more = document.querySelector('[data-snp-more]');
-  if (more) {
-    const label = more.textContent;
-    more.addEventListener('click', () => {
-      const rows = document.querySelectorAll('[data-snp-extra]');
-      const show = rows[0].hidden;
-      rows.forEach((r) => { r.hidden = !show; });
-      more.textContent = show ? more.dataset.less : label;
-    });
-  }
+  // Profundizar: los gráficos se dibujan con la sección cerrada; al abrirla se ajustan a su ancho.
+  document.querySelectorAll('.st-fold').forEach((fold) => {
+    fold.addEventListener('toggle', () => { if (fold.open) window.dispatchEvent(new Event('resize')); });
+  });
 
   // Panel lateral de secciones: marca la sección que se está viendo.
   const links = Array.from(document.querySelectorAll('.st-side-list a'));

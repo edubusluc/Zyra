@@ -1,0 +1,44 @@
+{% load i18n %}
+{# Tabla de plantilla (data_analyse.roster_table). Recibe: roster (views.roster_context) #}
+<article class="st-card st-card--wide st-roster">
+  {% if roster.snp %}
+  <p class="st-snp-updated{% if roster.snp.stale %} is-stale{% endif %}">{% if roster.snp.stale %}<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> {% endif %}{% blocktranslate with avg=roster.snp.average|floatformat:"0g" %}Media del equipo: {{ avg }} puntos SNP{% endblocktranslate %}{% if roster.snp.updated %} · {% blocktranslate with date=roster.snp.updated|date:"d/m/Y" %}Actualizado el {{ date }}{% endblocktranslate %}{% if roster.snp.stale %} · {% translate "hace más de 6 días" %}{% endif %}{% endif %}</p>
+  {% endif %}
+  <div class="st-roster-controls">
+    <div class="st-roster-group" role="group" aria-label="{% translate 'Partidos a contar' %}">
+      {% for value, label, url, active in roster.sides %}<a class="st-chip" href="{{ url }}"{% if active %} aria-current="page"{% endif %}>{{ label }}</a>{% endfor %}
+    </div>
+  </div>
+  {% if roster.rows %}
+  <div class="st-table-wrap">
+    <table class="st-table st-roster-table">
+      <thead>
+        <tr>
+          <th scope="col" aria-sort="{% if roster.sort == 'name' %}ascending{% else %}none{% endif %}"><a href="{{ roster.sort_urls.name }}">{% translate "Jugador" %}</a></th>
+          <th scope="col" aria-sort="{% if roster.sort == 'played' %}descending{% else %}none{% endif %}"><a href="{{ roster.sort_urls.played }}"><span class="d-none d-sm-inline">{% translate "Jugados" %}</span><span class="d-sm-none" title="{% translate "Jugados" %}">{% translate "Jug." %}</span></a></th>
+          <th scope="col" class="st-roster-vd">{% translate "V-D" %}</th>
+          <th scope="col" aria-sort="{% if roster.sort == 'pct' %}descending{% else %}none{% endif %}"><a href="{{ roster.sort_urls.pct }}">%</a></th>
+          <th scope="col" aria-sort="{% if roster.sort == 'signup' %}descending{% else %}none{% endif %}"><a href="{{ roster.sort_urls.signup }}">{% translate "Se apunta" %}</a></th>
+          {% if roster.has_snp %}<th scope="col" aria-sort="{% if roster.sort == 'snp' %}descending{% else %}none{% endif %}"><a href="{{ roster.sort_urls.snp }}"><span class="d-none d-sm-inline">{% translate "Puntos SNP" %}</span><span class="d-sm-none" title="{% translate "Puntos SNP" %}">{% translate "Pts" %}</span></a></th>
+          <th scope="col" class="st-roster-evo">{% translate "Evolución" %}</th>{% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in roster.rows %}
+        <tr{% if not r.enough and roster.sort == 'pct' %} class="st-roster-low"{% endif %}>
+          <th scope="row"><a href="{{ r.url }}" title="{{ r.player.full_name }}">{{ r.player.short_name }}</a></th>
+          <td>{{ r.played }}</td>
+          <td class="st-roster-vd">{% if r.played %}{{ r.wins }}-{{ r.losses }}{% else %}—{% endif %}</td>
+          <td>{% if r.pct is None %}—{% else %}<b>{{ r.pct }}%</b>{% endif %}</td>
+          <td>{% if r.signup is None %}—{% else %}{{ r.signup }}% <small>{{ r.signed }}/{{ r.calls }}</small>{% endif %}</td>
+          {% if roster.has_snp %}<td>{% if r.snp is None %}—{% else %}{{ r.snp|floatformat:"0g" }}{% if r.delta %} <small class="{% if r.delta > 0 %}st-up{% else %}st-down{% endif %}">{% if r.delta > 0 %}▲{% else %}▼{% endif %} {{ r.delta|floatformat:"0g" }}</small>{% endif %}{% endif %}</td>
+          <td class="st-roster-evo">{% if r.spark %}<svg class="st-spark" viewBox="0 0 {{ r.spark.width }} {{ r.spark.height }}" width="{{ r.spark.width }}" height="{{ r.spark.height }}" role="img" aria-label="{% blocktranslate with values=r.spark.values|join:', ' %}Puntos SNP en las últimas actualizaciones: {{ values }}{% endblocktranslate %}"><polyline points="{{ r.spark.points }}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>{% endif %}{% if r.rank_delta %} <span class="st-rankmove {% if r.rank_delta > 0 %}st-up{% else %}st-down{% endif %}" title="{% if r.rank_delta > 0 %}{% blocktranslate count n=r.rank_moved %}Sube {{ n }} puesto en el ranking{% plural %}Sube {{ n }} puestos en el ranking{% endblocktranslate %}{% else %}{% blocktranslate count n=r.rank_moved %}Baja {{ n }} puesto en el ranking{% plural %}Baja {{ n }} puestos en el ranking{% endblocktranslate %}{% endif %}">{% if r.rank_delta > 0 %}▲{% else %}▼{% endif %}{{ r.rank_moved }}</span>{% endif %}</td>{% endif %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <p class="st-muted mt-3 mb-0">{% translate "Todavía no hay jugadores en el equipo." %}</p>
+  {% endif %}
+</article>

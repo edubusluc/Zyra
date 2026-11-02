@@ -29,7 +29,7 @@ from players.models import current_season, joined_by
 from . import pairs as pair_stats
 from . import rivals as rival_stats
 from . import records
-from . import player_card, team_card
+from . import player_card, roster_table, team_card
 from .attendance import signup_attendance
 from .sets import by_game_number, own_sets, set_stats
 
@@ -282,6 +282,48 @@ def format_for_chart(dic):
     return players
 
 
+ROSTER_ANCHOR = "sec-plantilla"
+# Parámetros propios de la tabla de plantilla: no se arrastran al enlace de una ficha.
+ROSTER_PARAMS = ("lado", "orden")
+
+
+def roster_context(request, players, log, season, match_type, snp=None):
+    """
+    Datos de la tabla de plantilla (``includes/roster_table.html``) con las opciones de ``?lado=`` y
+    ``?orden=``: filas, enlaces de cada opción (siempre con el resto de filtros y con el ancla
+    de la tabla) y el enlace de la ficha de cada jugador.
+    """
+    has_snp = request.club.rules.has_snp
+    side, sort = roster_table.parse_options(request.GET, has_snp)
+    snp_rows = {r["player"].id: r for r in (snp or {}).get("rows", [])}
+    rows = roster_table.roster_rows(players, log, roster_table.signup_by_player(request.club, players, season, match_type, side),
+                                    side, sort, snp_rows)
+
+    def url(**changes):
+        """Enlace a esta misma página con ``changes`` sobre los parámetros actuales y el ancla de la tabla."""
+        params = request.GET.copy()
+        for key, value in changes.items():
+            params[key] = value
+        return f"{request.path}?{params.urlencode()}#{ROSTER_ANCHOR}"
+
+    sheet = request.GET.copy()
+    for key in ROSTER_PARAMS:
+        sheet.pop(key, None)
+    for row in rows:
+        sheet["player"] = row["player"].public_id
+        row["url"] = f"{reverse('player_statistics')}?{sheet.urlencode()}"
+    side_labels = {roster_table.SIDE_ALL: _("Todos"), roster_table.SIDE_LOCAL: _("Local"),
+                   roster_table.SIDE_VISITING: _("Visitante")}
+    return {"roster": {
+        "rows": rows, "side": side, "sort": sort, "has_snp": has_snp,
+        "sides": [(value, side_labels[value], url(lado=value), value == side) for value in roster_table.SIDES],
+        "sort_urls": {key: url(orden=key) for key in roster_table.SORTS},
+        "anchor": ROSTER_ANCHOR,
+        # Media del equipo y fecha de la última actualización de puntos SNP, sobre la tabla (None sin puntos).
+        "snp": {"average": snp["average"], "updated": snp["updated"], "stale": snp["stale"]} if snp and snp["rows"] else None,
+    }}
+
+
 @spaces.consult_view
 @club_required
 @require_GET
@@ -334,12 +376,10 @@ def team_statistics(request):
         'percentage_won': percentage_won,
         "seasons": seasons,
         "selected_season": selected_season,
-        "top_local_players": pair_stats.top_players(log, squad, local=True),
-        "top_visiting_players": pair_stats.top_players(log, squad, local=False),
         "column_chart_data": column_chart_data,
-        "min_games_player": pair_stats.MIN_GAMES_PLAYER,
     }
     context.update(team_extra_context(request.club, selected_season, match_type, log))
+    context.update(roster_context(request, squad, log, selected_season, match_type, context['snp']))
     context['attendance'] = signup_attendance(request.club, selected_season, match_type)
     context.update(team_card_context(request.club, selected_season, match_type, context))
 
@@ -543,15 +583,12 @@ def team_extra_context(club, season, match_type, log):
     partido, sets, récords y ranking SNP de la plantilla (de la temporada elegida o la actual).
     """
     numbers = by_game_number(log)
-    snp_season = season or current_season()
-    snp = records.snp_ranking(club, snp_season)
+    snp = records.snp_ranking(club, season or current_season())
     return {
         'game_numbers': numbers,
         'set_stats': set_stats(log),
         'records': records.team_records(club, season, match_type, log),
         'snp': snp,
-        'snp_season': snp_season,
-        'snp_chart': snp['chart'],
     }
 
 
@@ -943,7 +980,20 @@ def statistics_per_player(request):
     match_type = stats_match_type(request)
 
     if not player_id:
-        return render(request, 'player_statistics.html', {'players': players, **match_type_context(request, match_type, stats=True, by_type=True)})
+        # Sin jugador elegido, la entrada es la tabla de plantilla: cada fila lleva a su ficha.
+        seasons = sorted(get_total_season(Match.objects.filter(club=request.club)),
+                         key=lambda s: int(s.split('-')[0]), reverse=True)
+        selected_season = choose_season(request, seasons)
+        if selected_season == ALL_SEASONS:
+            selected_season = None
+        log = pair_stats.club_game_log(request.club, selected_season, match_type)
+        snp = records.snp_ranking(request.club, selected_season or current_season()) if request.club.rules.has_snp else None
+        return render(request, 'player_statistics.html', {
+            'players': players, 'selected_season': selected_season,
+            **match_type_context(request, match_type, stats=True, by_type=True),
+            **season_filter_context(request, seasons, selected_season),
+            **roster_context(request, list(players), log, selected_season, match_type, snp),
+        })
 
     # Solo jugadores del club activo: los de otros clubes dan 404
     player = get_object_or_404(Player, public_id=player_id, club=request.club)

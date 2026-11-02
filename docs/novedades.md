@@ -3,6 +3,17 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 02/11/2026 · Estadísticas: fase 5 (tabla de plantilla)
+
+- **Tabla de plantilla**: sustituye a los dos Top 5 y a las tarjetas «Más victorias» y «Más partidos jugados» de Equipo. Una fila por jugador con Jugados, V-D, % de victorias, «Se apunta» (% de convocatorias cerradas a las que se apuntó) y, en SNP, los puntos con su último cambio. Se ordena pulsando la columna y tiene el conmutador Todos · Local · Visitante.
+- **Sin mínimo de partidos**: cuenta el % de todo el que ha jugado; quien no ha jugado ninguno va apagado al final, y así se ve también a quien rinde peor.
+- **«Se apunta» sigue el filtro**: con Local o Visitante cuenta solo las convocatorias de los enfrentamientos en los que el equipo juega en ese lado.
+- **Evolución SNP en la tabla**: cada jugador lleva una mini línea con sus últimas actualizaciones y los puestos que sube o baja en el ranking desde la anterior, para ver el «pique» semanal sin un gráfico aparte.
+- **Jugadores**: sin jugador elegido, la entrada es esta misma tabla (con filtro de temporada y tipo) y cada fila abre su ficha; desaparecen la cuadrícula de avatares y el texto de ayuda.
+- **Puntos SNP**: desaparece el bloque aparte (y su gráfico de la media del equipo). Los puntos, el cambio y la evolución de cada jugador están en la tabla; la media del equipo y la fecha de la última actualización (con aviso a los 6 días) van en una línea sobre la tabla.
+- **Récords**: cinco (racha de victorias con «sin perder» en un «i», mayor victoria, peor derrota, mejor temporada y pareja con más victorias).
+- **Profundizar**: la asistencia a las convocatorias y el balance por jugador (partidos de 3 y 2 puntos) pasan a dos secciones plegadas; no se pierden.
+
 ## 02/11/2026 · Estadísticas: fase 4 (comprender)
 
 - **Equipo · balance**: una sola lectura (victorias, empates y derrotas, el % con su base «de 14 enfrentamientos» y una barra segmentada si hay empates). Desaparece el pie «Ganados · 7 de 14».

@@ -3822,3 +3822,31 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .st-hero-updated.is-stale { color: var(--z-ink); text-decoration: underline wavy; }
 .st-hero-caps { display: flex; flex-direction: column; gap: 2px; }
 @media (max-width: 575.98px) { .z-set-row { grid-template-columns: minmax(7rem, 9rem) 1fr auto; gap: 8px; } .z-set-row em { min-width: 3.4rem; font-size: var(--z-fs-lg); } }
+
+/* Fase 5 · Tabla de plantilla (Equipo y entrada de Jugadores) y secciones plegables de «Profundizar». */
+.st-roster-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; }
+.st-roster-group { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.st-roster-table small { margin-left: 4px; font-size: var(--z-fs-xs); color: var(--st-muted); }
+.st-roster-table b { font-family: var(--z-display); font-size: var(--z-fs-lg); font-weight: 400; color: var(--z-lime); }
+.st-roster-table thead a { color: inherit; text-decoration: none; }
+.st-roster-table thead th[aria-sort="descending"] a, .st-roster-table thead th[aria-sort="ascending"] a { color: var(--z-lime); }
+.st-roster-table thead th[aria-sort="descending"] a::after { content: " ▼"; font-size: .7em; }
+.st-roster-table thead th[aria-sort="ascending"] a::after { content: " ▲"; font-size: .7em; }
+.st-roster-low th, .st-roster-low td, .st-roster-low b { opacity: .55; }
+@media (max-width: 575.98px) {
+  .st-roster-table th, .st-roster-table td { padding: 10px 5px; font-size: var(--z-fs-sm); }
+  .st-roster-table small { display: none; }
+}
+.st-fold { margin-bottom: 10px; background: var(--st-card); border: 1px solid var(--st-line); border-radius: var(--z-radius-lg); }
+.st-fold > summary { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; padding: 14px 18px; font-weight: 700; cursor: pointer; }
+.st-fold > summary small { font-weight: 400; color: var(--st-muted); }
+.st-fold > .st-card { margin: 0; border: 0; border-top: 1px solid var(--st-line); border-radius: 0 0 var(--z-radius-lg) var(--z-radius-lg); }
+@media (max-width: 575.98px) {
+  /* En móvil cabe sin deslizar: el V-D se pierde (los jugados y el % ya lo dicen) y el nombre puede partirse. */
+  .st-roster-vd { display: none; }
+  .st-roster-table tbody th { max-width: 6.8rem; white-space: normal; line-height: 1.2; }
+}
+.st-roster-evo { white-space: nowrap; }
+.st-spark { display: inline-block; vertical-align: middle; color: var(--z-lime); }
+.st-rankmove { margin-left: 6px; font-size: var(--z-fs-xs); font-weight: 800; }
+@media (max-width: 575.98px) { .st-roster-evo { display: none; } }

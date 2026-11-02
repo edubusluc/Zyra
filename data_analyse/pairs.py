@@ -137,19 +137,6 @@ def _rank(counts, names, min_games):
     return rows[:TOP_N]
 
 
-def top_players(log, players, local):
-    """Top 5 jugadores por % de victorias como local (local=True) o visitante."""
-    names = {p.id: p.full_name for p in players}
-    counts = {}
-    for g in log:
-        if g['local'] != local:
-            continue
-        for pid in g['pair']:
-            wins, played = counts.get(pid, (0, 0))
-            counts[pid] = (wins + g['won'], played + 1)
-    return _rank(counts, names, MIN_GAMES_PLAYER)
-
-
 def top_pairs(log, players, local, min_games=MIN_GAMES_PAIR):
     """Top 5 parejas por % de victorias como local (local=True) o visitante."""
     by_id = {p.id: p for p in players}
