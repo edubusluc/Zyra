@@ -2279,6 +2279,15 @@ msgstr "active in the last 5 minutes"
 
 #: backoffice/templates/backoffice/dashboard.html:37
 #, python-format
+msgid "Clubes %(name)s"
+msgstr "%(name)s clubs"
+
+#: backoffice/templates/backoffice/club_list.html
+msgid "Todas las competiciones"
+msgstr "All competitions"
+
+#: backoffice/templates/backoffice/dashboard.html:37
+#, python-format
 msgid "%(active)s activos · +%(new)s en 30 días"
 msgstr "%(active)s active · +%(new)s in 30 days"
 
