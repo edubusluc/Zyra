@@ -3328,8 +3328,8 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .z-fsel > summary { list-style: none; cursor: pointer; display: flex; flex-direction: column; gap: 1px; min-width: 128px; padding: 6px 14px; border: 1px solid var(--z-border); border-radius: var(--z-radius-sm); background: var(--z-surface-2); color: var(--z-text); }
 .z-fsel > summary::-webkit-details-marker { display: none; }
 .z-fsel > summary small { font-size: var(--z-fs-xs); font-weight: 800; letter-spacing: .01em; color: var(--z-muted); }
-.z-fsel > summary span { font-size: var(--z-fs-sm); font-weight: 700; }
-.z-fsel > summary span::after { content: "\25BE"; margin-left: 8px; color: var(--z-muted); }
+.z-fsel > summary > span { font-size: var(--z-fs-sm); font-weight: 700; }
+.z-fsel > summary > span::after { content: "\25BE"; margin-left: 8px; color: var(--z-muted); }
 .z-fsel > summary:hover, .z-fsel[open] > summary { border-color: var(--z-lime); }
 .z-fsel.is-active > summary { border-color: var(--z-lime); }
 .z-fsel.is-active > summary small { color: var(--z-lime); }

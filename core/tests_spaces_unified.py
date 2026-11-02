@@ -330,6 +330,15 @@ class UnifiedSpacesTests(TestCase):
             self.assertEqual(page.context["current_club"], self.lapi, name)
         self.assertNotIn("stats_team_space", self.client.session)
 
+    def test_competition_selector_shows_which_competition_is_open(self):
+        """El desplegable cerrado indica SNP o LAPI junto al nombre (dos equipos pueden llamarse igual)."""
+        import re
+        self._close(self.lapi_match)
+        page = self.client.get(reverse("team_statistics") + "?en=lapi")
+        summary = re.search(r"<summary><small>Competición</small><span>(.*?)</span>\s*</summary>", page.content.decode(), re.S).group(1)
+        self.assertIn("z-comp-badge--lapi", summary)
+        self.assertIn(self.lapi.name, summary)
+
     def test_player_statistics_has_competition_chips(self):
         self._close(self.snp_match)
         page = self.client.get(reverse("player_statistics"))

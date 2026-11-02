@@ -9,6 +9,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 - **Tipo de enfrentamiento**: Estadísticas cuenta por defecto solo los competitivos (los amistosos no se mezclan, igual que «Mi forma» en Inicio). «Todos» sigue disponible en el filtro Tipo, y el balance de Inicio coincide con el de Jugador · Yo con los filtros por defecto.
 - **Rivales**: la lista y la ficha usan la temporada y el tipo por defecto del resto (antes sumaban todas las temporadas y los amistosos) y la lista incorpora el filtro de tipo.
 - **Filtros**: Competición · Temporada · Tipo van en la misma fila, justo bajo las pestañas, en todas las pantallas de Estadísticas.
+- **Selector de competición**: el desplegable cerrado muestra también SNP o LAPI junto al nombre del equipo, para distinguirlos cuando se llaman igual.
 
 ## 02/11/2026 · Estadísticas: fase 1 (datos que no inducen a error)
 
