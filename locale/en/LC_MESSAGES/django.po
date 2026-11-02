@@ -15416,3 +15416,19 @@ msgstr[1] "Minimum %(n)s matches"
 
 msgid "Jug."
 msgstr "Pl."
+
+msgid "Evolución"
+msgstr "Trend"
+
+msgid "Puntos SNP en las últimas actualizaciones: %(values)s"
+msgstr "SNP points in the latest updates: %(values)s"
+
+msgid "Sube %(n)s puesto en el ranking"
+msgid_plural "Sube %(n)s puestos en el ranking"
+msgstr[0] "Up %(n)s place in the ranking"
+msgstr[1] "Up %(n)s places in the ranking"
+
+msgid "Baja %(n)s puesto en el ranking"
+msgid_plural "Baja %(n)s puestos en el ranking"
+msgstr[0] "Down %(n)s place in the ranking"
+msgstr[1] "Down %(n)s places in the ranking"

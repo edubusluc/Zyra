@@ -3846,3 +3846,7 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
   .st-roster-vd { display: none; }
   .st-roster-table tbody th { max-width: 6.8rem; white-space: normal; line-height: 1.2; }
 }
+.st-roster-evo { white-space: nowrap; }
+.st-spark { display: inline-block; vertical-align: middle; color: var(--z-lime); }
+.st-rankmove { margin-left: 6px; font-size: var(--z-fs-xs); font-weight: 800; }
+@media (max-width: 575.98px) { .st-roster-evo { display: none; } }

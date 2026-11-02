@@ -296,7 +296,7 @@ def roster_context(request, players, log, season, match_type, snp_rows=None):
     has_snp = request.club.rules.has_snp
     side, min_games, sort = roster_table.parse_options(request.GET, has_snp)
     snp = {r["player"].id: r for r in snp_rows or []}
-    rows = roster_table.roster_rows(players, log, roster_table.signup_by_player(request.club, players, season, match_type),
+    rows = roster_table.roster_rows(players, log, roster_table.signup_by_player(request.club, players, season, match_type, side),
                                     side, min_games, sort, snp)
 
     def url(**changes):

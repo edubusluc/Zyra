@@ -1,22 +1,24 @@
 """Fase 5 de la auditoría de estadísticas: la tabla de plantilla de Equipo y de la entrada de Jugadores."""
+import datetime
+
 from django.http import QueryDict
 from django.test import SimpleTestCase, TestCase
 from django.urls import reverse
 
 from data_analyse import pairs as pair_stats
-from data_analyse import roster_table
+from data_analyse import records, roster_table
 from data_analyse.tests_extra import ClubDataMixin
-from players.models import Player
+from players.models import Player, SnpScoreHistory
 
 
 class RosterOptionsTests(SimpleTestCase):
     def test_defaults_and_invalid_values(self):
-        self.assertEqual(roster_table.parse_options(QueryDict(""), True), ("todos", 3, "pct"))
+        self.assertEqual(roster_table.parse_options(QueryDict(""), True), ("todos", 1, "pct"))
         bad = QueryDict("lado=raro&minimo=7&orden=zzz")
-        self.assertEqual(roster_table.parse_options(bad, True), ("todos", 3, "pct"))
+        self.assertEqual(roster_table.parse_options(bad, True), ("todos", 1, "pct"))
         self.assertEqual(roster_table.parse_options(QueryDict("lado=local&minimo=5&orden=signup"), True),
                          ("local", 5, "signup"))
-        self.assertEqual(roster_table.parse_options(QueryDict("minimo=x"), True)[1], 3)
+        self.assertEqual(roster_table.parse_options(QueryDict("minimo=x"), True)[1], 1)
 
     def test_points_sort_needs_snp(self):
         self.assertEqual(roster_table.parse_options(QueryDict("orden=snp"), True)[2], "snp")
@@ -75,7 +77,7 @@ class RosterPagesTests(ClubDataMixin, TestCase):
         self.assertNotContains(page, "Top 5")
         self.assertNotContains(page, "Mejores jugadores como local")
         roster = page.context["roster"]
-        self.assertEqual((roster["side"], roster["min_games"], roster["sort"]), ("todos", 3, "pct"))
+        self.assertEqual((roster["side"], roster["min_games"], roster["sort"]), ("todos", 1, "pct"))
         self.assertEqual([s[0] for s in roster["sides"]], ["todos", "local", "visitante"])
         # Cada opción conserva los demás filtros y vuelve a la tabla.
         local_url = roster["sides"][1][2]
@@ -124,3 +126,56 @@ class RosterPagesTests(ClubDataMixin, TestCase):
         self.assertNotContains(page, "st-player-grid")
         self.assertNotContains(page, "Pulsa en un jugador")
         self.assertEqual(len(page.context["roster"]["rows"]), Player.objects.filter(club=self.club, in_team=True).count())
+
+
+class RosterSideAndMinimumTests(ClubDataMixin, TestCase):
+    def test_default_minimum_is_one_game_so_everyone_who_played_counts(self):
+        page = self.client.get(reverse("team_statistics"), {"season": "all", "match_type": "todos"})
+        rows = page.context["roster"]["rows"]
+        self.assertTrue(all(r["enough"] for r in rows if r["played"]))
+        self.assertNotContains(page, "st-roster-low\"><th")  # solo quien no ha jugado ninguno se apaga
+
+    def test_signup_follows_the_side_filter(self):
+        squad = list(Player.objects.filter(club=self.club, in_team=True))
+        everything = roster_table.signup_by_player(self.club, squad)
+        local = roster_table.signup_by_player(self.club, squad, side="local")
+        away = roster_table.signup_by_player(self.club, squad, side="visitante")
+        # Hay una convocatoria como local (10/10) y otra como visitante (01/11).
+        self.assertEqual((everything[self.a.id]["total"], local[self.a.id]["total"], away[self.a.id]["total"]), (2, 1, 1))
+        self.assertEqual(local[self.a.id], {"signed": 1, "total": 1, "pct": 100})
+
+    def test_page_passes_the_side_to_the_signup_column(self):
+        page = self.client.get(reverse("team_statistics"), {"lado": "local", "season": "all", "match_type": "todos"})
+        row = next(r for r in page.context["roster"]["rows"] if r["player"] == self.a)
+        self.assertEqual(row["calls"], 1)
+
+
+class SnpEvolutionTests(ClubDataMixin, TestCase):
+    """«Evolución»: mini gráfico de cada jugador y puestos que sube o baja en el ranking SNP."""
+
+    def test_sparkline_needs_two_updates_and_is_flat_without_changes(self):
+        self.assertIsNone(records.sparkline([40]))
+        flat = records.sparkline([40, 40, 40])
+        self.assertEqual(flat["values"], [40, 40, 40])
+        self.assertEqual({p.split(",")[1] for p in flat["points"].split()}, {"10.0"})
+        rising = records.sparkline([10, 20])
+        ys = [float(p.split(",")[1]) for p in rising["points"].split()]
+        self.assertGreater(ys[0], ys[1])  # en SVG, más arriba es una y menor
+
+    def test_rank_movement_between_the_last_two_updates(self):
+        season = "2025-2026"
+        for pid, first, second in ((self.a, 40, 20), (self.b, 30, 35), (self.c, 20, 50)):
+            for day, score in ((1, first), (8, second)):
+                SnpScoreHistory.objects.create(player=pid, season=season, date=datetime.date(2025, 10, day), score=score)
+        rows = {r["player"]: r for r in records.snp_ranking(self.club, season)["rows"]}
+        # Antes: A, B, C. Ahora: C, B, A.
+        self.assertEqual((rows[self.c]["rank_delta"], rows[self.b]["rank_delta"], rows[self.a]["rank_delta"]), (2, 0, -2))
+        self.assertEqual(rows[self.a]["spark"]["values"], [40, 20])
+        self.assertIsNone(rows[self.e]["rank_delta"])  # sin histórico
+
+    def test_table_shows_the_trend_column_only_for_snp(self):
+        SnpScoreHistory.objects.create(player=self.a, season="2025-2026", date=datetime.date(2025, 10, 1), score=40)
+        SnpScoreHistory.objects.create(player=self.a, season="2025-2026", date=datetime.date(2025, 10, 8), score=45)
+        page = self.client.get(reverse("team_statistics"), {"season": "2025-2026", "match_type": "todos"})
+        self.assertContains(page, "st-roster-evo")
+        self.assertContains(page, "<polyline")

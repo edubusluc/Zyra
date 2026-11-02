@@ -147,12 +147,35 @@ def snp_is_stale(updated):
     return bool(updated) and (timezone.localdate() - updated).days > SNP_STALE_DAYS
 
 
+# Actualizaciones que dibuja la mini evolución de cada jugador (las más recientes de la temporada).
+SPARK_POINTS = 6
+
+
+def sparkline(values, width=64, height=20):
+    """
+    Mini gráfico de línea de ``values`` (puntos SNP en cada actualización) para una celda de la tabla:
+    ``{'points': "x,y x,y …", 'width', 'height', 'values'}`` listo para un ``<polyline>`` SVG, o None con menos
+    de dos valores. Sin cambios es una línea plana a media altura.
+    """
+    if len(values) < 2:
+        return None
+    low, high = min(values), max(values)
+    pad = 2
+    step = (width - 2 * pad) / (len(values) - 1)
+    span = (high - low) or 1
+    points = []
+    for i, v in enumerate(values):
+        y = height / 2 if high == low else height - pad - (v - low) / span * (height - 2 * pad)
+        points.append(f"{pad + i * step:.1f},{y:.1f}")
+    return {'points': " ".join(points), 'width': width, 'height': height, 'values': [round(v) for v in values]}
+
+
 def snp_ranking(club, season):
     """
     Ranking de puntos SNP de la plantilla actual y media del equipo en la temporada ``season``.
 
     Devuelve {'rows', 'chart', 'average', 'riser'}: cada fila es {'pos', 'player', 'score',
-    'first', 'delta'} (``delta``: variación respecto a la actualización anterior, no a la
+    'first', 'delta', 'rank_delta' (puestos que ha subido, negativo si baja), 'spark'} (``delta``: variación respecto a la actualización anterior, no a la
     primera de la temporada; None con menos de dos actualizaciones); ``chart`` es la media del equipo en cada actualización
     ({'labels', 'average'}); ``riser``, la fila que más ha subido (o None); ``updated``, la fecha de la
     última actualización de la temporada (None si no hay) y ``stale``, si ya pasó el plazo (``SNP_STALE_DAYS``).
@@ -160,13 +183,14 @@ def snp_ranking(club, season):
     squad = list(Player.objects.filter(club=club, in_team=True))
     history = (SnpScoreHistory.objects.filter(player__in=squad, season=season)
                .order_by('date').values_list('player_id', 'date', 'score'))
-    first, last, prev, by_date = {}, {}, {}, {}
+    first, last, prev, by_date, series = {}, {}, {}, {}, {}
     for pid, date, score in history:
         first.setdefault(pid, score)
         if pid in last:
             prev[pid] = last[pid]
         last[pid] = score
         by_date.setdefault(date, []).append(score)
+        series.setdefault(pid, []).append(score)
     updated = max(by_date) if by_date else None
 
     rows = []
@@ -175,10 +199,20 @@ def snp_ranking(club, season):
         if score is None:
             continue
         delta = round(last[p.id] - prev[p.id], 1) if p.id in prev and last[p.id] != prev[p.id] else (0 if p.id in prev else None)
-        rows.append({'player': p, 'score': round(score, 1), 'first': first.get(p.id), 'delta': delta})
+        rows.append({'player': p, 'score': round(score, 1), 'first': first.get(p.id), 'delta': delta,
+                     'spark': sparkline(series.get(p.id, [])[-SPARK_POINTS:])})
     rows.sort(key=lambda r: (-r['score'], r['player'].name, r['player'].last_name))
     for i, r in enumerate(rows, start=1):
         r['pos'] = i
+    # Puestos que ha subido (+) o bajado (-) desde la actualización anterior, entre quienes tienen las dos.
+    compared = [r for r in rows if r['player'].id in prev]
+    before = {r['player'].id: i for i, r in enumerate(
+        sorted(compared, key=lambda r: (-prev[r['player'].id], r['player'].name, r['player'].last_name)), start=1)}
+    now = {r['player'].id: i for i, r in enumerate(
+        sorted(compared, key=lambda r: (-last[r['player'].id], r['player'].name, r['player'].last_name)), start=1)}
+    for r in rows:
+        pid = r['player'].id
+        r['rank_delta'] = before[pid] - now[pid] if pid in before else None
 
     risers = [r for r in rows if r['delta']]
     riser = max(risers, key=lambda r: r['delta']) if risers else None

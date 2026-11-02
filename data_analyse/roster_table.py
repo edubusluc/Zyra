@@ -11,8 +11,9 @@ from players.models import joined_by
 
 from .pairs import match_type_lookup
 
-# Mínimo de partidos por defecto para que el % de un jugador cuente en el orden, y los que ofrece el filtro.
-DEFAULT_MIN_GAMES = 3
+# Mínimo de partidos por defecto para que el % de un jugador cuente en el orden (1: todos los que han jugado), y los
+# que ofrece el filtro.
+DEFAULT_MIN_GAMES = 1
 MIN_GAMES_CHOICES = (1, 2, 3, 5, 8)
 
 SIDE_ALL, SIDE_LOCAL, SIDE_VISITING = "todos", "local", "visitante"
@@ -40,17 +41,20 @@ def parse_options(params, has_snp):
     return side, min_games, sort
 
 
-def signup_by_player(club, players, season=None, match_type=None):
+def signup_by_player(club, players, season=None, match_type=None, side=SIDE_ALL):
     """
     Convocatorias cerradas a las que se apuntó cada jugador de ``players``: ``{id: {'signed', 'total',
     'pct'}}``. Como en la ficha del jugador, solo cuentan las de su temporada de incorporación en adelante
-    (``Player.joined_season``). Una sola consulta para toda la plantilla. ``pct`` es None sin convocatorias.
+    (``Player.joined_season``). Con ``side`` local o visitante, solo las de los enfrentamientos en los que el
+    equipo juega en ese lado. Una sola consulta para toda la plantilla. ``pct`` es None sin convocatorias.
     """
     calls = Call.objects.filter(match__club=club, match__draft_mode=False, draft_mode=False, match__no_show="",
                                 **match_type_lookup(match_type, "match__"))
     if season:
         calls = calls.filter(match__season=season)
-    calls = list(calls.select_related("match").prefetch_related("players"))
+    calls = list(calls.select_related("match", "match__local", "match__visiting").prefetch_related("players"))
+    if side != SIDE_ALL:
+        calls = [c for c in calls if (c.match.own_is_local if side == SIDE_LOCAL else c.match.own_is_visiting)]
     signed_ids = [(c.match.season, {p.id for p in c.players.all()}) for c in calls]
     out = {}
     for p in players:
@@ -69,7 +73,7 @@ def roster_rows(players, log, signup, side=SIDE_ALL, min_games=DEFAULT_MIN_GAMES
     sale de ``signup_by_player`` y ``snp`` es ``{id jugador: fila de records.snp_ranking}`` (None sin SNP).
 
     Cada fila: ``player``, ``played``, ``wins``, ``losses``, ``pct`` (None sin partidos), ``enough`` (llega
-    al mínimo), ``signed``, ``calls``, ``signup`` y, con SNP, ``snp`` y ``delta``. Los que no llegan al
+    al mínimo), ``signed``, ``calls``, ``signup`` y, con SNP, ``snp``, ``delta`` (puntos), ``rank_delta`` (puestos) y ``spark``. Los que no llegan al
     mínimo van siempre al final (su % se ve, pero no entra en el orden); el resto, por la columna elegida.
     """
     counts = {}
@@ -87,10 +91,12 @@ def roster_rows(players, log, signup, side=SIDE_ALL, min_games=DEFAULT_MIN_GAMES
             "player": p, "played": played, "wins": wins, "losses": played - wins,
             "pct": round(100 * wins / played) if played else None, "enough": played >= min_games,
             "signed": sign["signed"], "calls": sign["total"], "signup": sign["pct"],
-            "snp": None, "delta": None,
+            "snp": None, "delta": None, "rank_delta": None, "spark": None,
         }
         if snp and p.id in snp:
             row["snp"], row["delta"] = snp[p.id]["score"], snp[p.id]["delta"]
+            row["rank_delta"], row["spark"] = snp[p.id]["rank_delta"], snp[p.id]["spark"]
+            row["rank_moved"] = abs(row["rank_delta"] or 0)
         rows.append(row)
 
     def key(r):
