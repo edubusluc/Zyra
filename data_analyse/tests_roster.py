@@ -103,7 +103,7 @@ class RosterPagesTests(ClubDataMixin, TestCase):
         self.assertNotContains(page, "st-snp-table")
         self.assertContains(page, "Ver los puntos de cada jugador en la tabla de plantilla")
         self.assertTrue(page.context["roster"]["has_snp"])
-        self.assertContains(page, "Puntos SNP</a></th>")
+        self.assertContains(page, "orden=snp")
 
     def test_charts_live_under_profundizar_folded(self):
         page = self.client.get(reverse("team_statistics"))
