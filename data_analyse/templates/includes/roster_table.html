@@ -1,13 +1,12 @@
 {% load i18n %}
 {# Tabla de plantilla (data_analyse.roster_table). Recibe: roster (views.roster_context) #}
 <article class="st-card st-card--wide st-roster">
+  {% if roster.snp %}
+  <p class="st-snp-updated{% if roster.snp.stale %} is-stale{% endif %}">{% if roster.snp.stale %}<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> {% endif %}{% blocktranslate with avg=roster.snp.average|floatformat:"0g" %}Media del equipo: {{ avg }} puntos SNP{% endblocktranslate %}{% if roster.snp.updated %} · {% blocktranslate with date=roster.snp.updated|date:"d/m/Y" %}Actualizado el {{ date }}{% endblocktranslate %}{% if roster.snp.stale %} · {% translate "hace más de 6 días" %}{% endif %}{% endif %}</p>
+  {% endif %}
   <div class="st-roster-controls">
     <div class="st-roster-group" role="group" aria-label="{% translate 'Partidos a contar' %}">
       {% for value, label, url, active in roster.sides %}<a class="st-chip" href="{{ url }}"{% if active %} aria-current="page"{% endif %}>{{ label }}</a>{% endfor %}
-    </div>
-    <div class="st-roster-group" role="group" aria-label="{% translate 'Mínimo de partidos' %}">
-      <span class="st-filter-label">{% translate "Mínimo" %}<button type="button" class="z-tip" data-tip="{% translate 'Quien no llega al mínimo de partidos no entra en el orden por % de victorias y va al final de la tabla.' %}" aria-label="{% translate 'Quien no llega al mínimo de partidos no entra en el orden por % de victorias y va al final de la tabla.' %}" aria-expanded="false"><i class="fa-solid fa-circle-info" aria-hidden="true"></i></button></span>
-      {% for n, url, active in roster.minimums %}<a class="st-chip" href="{{ url }}"{% if active %} aria-current="page"{% endif %} aria-label="{% blocktranslate count n=n %}Mínimo {{ n }} partido{% plural %}Mínimo {{ n }} partidos{% endblocktranslate %}">{{ n }}</a>{% endfor %}
     </div>
   </div>
   {% if roster.rows %}

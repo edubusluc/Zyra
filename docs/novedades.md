@@ -6,11 +6,11 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 ## 02/11/2026 · Estadísticas: fase 5 (tabla de plantilla)
 
 - **Tabla de plantilla**: sustituye a los dos Top 5 y a las tarjetas «Más victorias» y «Más partidos jugados» de Equipo. Una fila por jugador con Jugados, V-D, % de victorias, «Se apunta» (% de convocatorias cerradas a las que se apuntó) y, en SNP, los puntos con su último cambio. Se ordena pulsando la columna y tiene el conmutador Todos · Local · Visitante.
-- **Mínimo de partidos visible**: 1 (por defecto, cuenta todo el que ha jugado), 2, 3, 5 u 8, con un «i» que lo explica. Quien no llega no entra en el orden por % y va al final, con su % a la vista, así se ve también a quien rinde peor.
+- **Sin mínimo de partidos**: cuenta el % de todo el que ha jugado; quien no ha jugado ninguno va apagado al final, y así se ve también a quien rinde peor.
 - **«Se apunta» sigue el filtro**: con Local o Visitante cuenta solo las convocatorias de los enfrentamientos en los que el equipo juega en ese lado.
 - **Evolución SNP en la tabla**: cada jugador lleva una mini línea con sus últimas actualizaciones y los puestos que sube o baja en el ranking desde la anterior, para ver el «pique» semanal sin un gráfico aparte.
 - **Jugadores**: sin jugador elegido, la entrada es esta misma tabla (con filtro de temporada y tipo) y cada fila abre su ficha; desaparecen la cuadrícula de avatares y el texto de ayuda.
-- **Puntos SNP**: queda como un bloque corto (media con su fecha, quien más sube y la evolución con dos o más actualizaciones); los puntos de cada jugador están en la tabla.
+- **Puntos SNP**: desaparece el bloque aparte (y su gráfico de la media del equipo). Los puntos, el cambio y la evolución de cada jugador están en la tabla; la media del equipo y la fecha de la última actualización (con aviso a los 6 días) van en una línea sobre la tabla.
 - **Récords**: cinco (racha de victorias con «sin perder» en un «i», mayor victoria, peor derrota, mejor temporada y pareja con más victorias).
 - **Profundizar**: la asistencia a las convocatorias y el balance por jugador (partidos de 3 y 2 puntos) pasan a dos secciones plegadas; no se pierden.
 

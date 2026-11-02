@@ -13,16 +13,14 @@ from players.models import Player, SnpScoreHistory
 
 class RosterOptionsTests(SimpleTestCase):
     def test_defaults_and_invalid_values(self):
-        self.assertEqual(roster_table.parse_options(QueryDict(""), True), ("todos", 1, "pct"))
-        bad = QueryDict("lado=raro&minimo=7&orden=zzz")
-        self.assertEqual(roster_table.parse_options(bad, True), ("todos", 1, "pct"))
-        self.assertEqual(roster_table.parse_options(QueryDict("lado=local&minimo=5&orden=signup"), True),
-                         ("local", 5, "signup"))
-        self.assertEqual(roster_table.parse_options(QueryDict("minimo=x"), True)[1], 1)
+        self.assertEqual(roster_table.parse_options(QueryDict(""), True), ("todos", "pct"))
+        bad = QueryDict("lado=raro&orden=zzz")
+        self.assertEqual(roster_table.parse_options(bad, True), ("todos", "pct"))
+        self.assertEqual(roster_table.parse_options(QueryDict("lado=local&orden=signup"), True), ("local", "signup"))
 
     def test_points_sort_needs_snp(self):
-        self.assertEqual(roster_table.parse_options(QueryDict("orden=snp"), True)[2], "snp")
-        self.assertEqual(roster_table.parse_options(QueryDict("orden=snp"), False)[2], "pct")
+        self.assertEqual(roster_table.parse_options(QueryDict("orden=snp"), True)[1], "snp")
+        self.assertEqual(roster_table.parse_options(QueryDict("orden=snp"), False)[1], "pct")
 
 
 class RosterRowsTests(ClubDataMixin, TestCase):
@@ -49,18 +47,17 @@ class RosterRowsTests(ClubDataMixin, TestCase):
         away = self._rows(side="visitante")
         self.assertEqual((away["C"]["played"], away["C"]["wins"]), (1, 1))
 
-    def test_minimum_sends_the_rest_to_the_end_and_keeps_their_percentage(self):
+    def test_no_minimum_everyone_who_played_counts_and_the_rest_go_last(self):
         squad = list(Player.objects.filter(club=self.club, in_team=True))
         log = pair_stats.club_game_log(self.club)
         signup = roster_table.signup_by_player(self.club, squad)
-        order = lambda **kw: [r["player"].name for r in roster_table.roster_rows(squad, log, signup, **kw)]  # noqa: E731
-        # Con mínimo 2 entran A, B, C y D; con 3 nadie y se queda el orden por % (los que no llegan, al final).
-        self.assertEqual(set(order(min_games=2)[:4]), {"A", "B", "C", "D"})
-        self.assertEqual(order(min_games=2)[-1], "E")
-        rows = roster_table.roster_rows(squad, log, signup, min_games=3)
-        self.assertFalse(any(r["enough"] for r in rows))
-        self.assertEqual(rows[0]["pct"], 100)  # su % se ve igualmente
-        self.assertEqual(order(sort="name"), sorted(order(sort="name")))
+        rows = roster_table.roster_rows(squad, log, signup)
+        self.assertEqual([r["player"].name for r in rows][-1], "E")  # no ha jugado
+        self.assertTrue(all(r["enough"] for r in rows if r["played"]))
+        self.assertFalse(rows[-1]["enough"])
+        self.assertEqual(rows[0]["pct"], 100)
+        names = [r["player"].name for r in roster_table.roster_rows(squad, log, signup, sort="name")]
+        self.assertEqual(names, sorted(names))
 
     def test_signup_ignores_calls_before_joining(self):
         late = Player.objects.get(club=self.club, name="E")
@@ -77,7 +74,7 @@ class RosterPagesTests(ClubDataMixin, TestCase):
         self.assertNotContains(page, "Top 5")
         self.assertNotContains(page, "Mejores jugadores como local")
         roster = page.context["roster"]
-        self.assertEqual((roster["side"], roster["min_games"], roster["sort"]), ("todos", 1, "pct"))
+        self.assertEqual((roster["side"], roster["sort"]), ("todos", "pct"))
         self.assertEqual([s[0] for s in roster["sides"]], ["todos", "local", "visitante"])
         # Cada opción conserva los demás filtros y vuelve a la tabla.
         local_url = roster["sides"][1][2]
@@ -87,10 +84,10 @@ class RosterPagesTests(ClubDataMixin, TestCase):
         self.assertContains(page, "Se apunta")
 
     def test_options_are_read_from_the_query(self):
-        page = self.client.get(reverse("team_statistics"), {"lado": "local", "minimo": "1", "orden": "played",
+        page = self.client.get(reverse("team_statistics"), {"lado": "local", "orden": "played",
                                                            "season": "all", "match_type": "todos"})
         roster = page.context["roster"]
-        self.assertEqual((roster["side"], roster["min_games"], roster["sort"]), ("local", 1, "played"))
+        self.assertEqual((roster["side"], roster["sort"]), ("local", "played"))
         self.assertTrue(all(r["enough"] for r in roster["rows"] if r["played"]))
 
     def test_rows_link_to_the_player_sheet_without_table_params(self):
@@ -100,12 +97,15 @@ class RosterPagesTests(ClubDataMixin, TestCase):
         self.assertIn("player=", url)
         self.assertNotIn("lado=", url)
 
-    def test_snp_block_has_no_second_player_table(self):
+    def test_snp_block_is_gone_and_its_summary_sits_over_the_table(self):
         page = self.client.get(reverse("team_statistics"))
-        self.assertNotContains(page, "st-snp-table")
-        self.assertContains(page, "Ver los puntos de cada jugador en la tabla de plantilla")
+        self.assertNotContains(page, "snp-title")
+        self.assertNotContains(page, "chartSnpTeam")
         self.assertTrue(page.context["roster"]["has_snp"])
         self.assertContains(page, "orden=snp")
+        # La media del equipo y la fecha de actualización (si hay puntos) van en una línea sobre la tabla.
+        self.assertContains(page, "Media del equipo:")
+        self.assertIsNotNone(page.context["roster"]["snp"]["average"])
 
     def test_charts_live_under_profundizar_folded(self):
         page = self.client.get(reverse("team_statistics"))
@@ -129,11 +129,12 @@ class RosterPagesTests(ClubDataMixin, TestCase):
 
 
 class RosterSideAndMinimumTests(ClubDataMixin, TestCase):
-    def test_default_minimum_is_one_game_so_everyone_who_played_counts(self):
+    def test_there_is_no_minimum_selector(self):
         page = self.client.get(reverse("team_statistics"), {"season": "all", "match_type": "todos"})
         rows = page.context["roster"]["rows"]
         self.assertTrue(all(r["enough"] for r in rows if r["played"]))
-        self.assertNotContains(page, "st-roster-low\"><th")  # solo quien no ha jugado ninguno se apaga
+        self.assertNotContains(page, "minimo=")
+        self.assertNotContains(page, "Mínimo")
 
     def test_signup_follows_the_side_filter(self):
         squad = list(Player.objects.filter(club=self.club, in_team=True))

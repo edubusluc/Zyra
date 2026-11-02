@@ -1,5 +1,5 @@
 // Estadísticas del equipo (team_statistics.html): puntos por jornada (o por temporada con «Todas»), asistencia,
-// balance por jugador y evolución de la media SNP (gráficos lima sin ejes) y panel lateral de secciones.
+// balance por jugador (gráficos lima sin ejes) y panel lateral de secciones.
 (function () {
   const read = (id) => {
     const el = document.getElementById(id);
@@ -197,32 +197,6 @@
   };
   balanceSetup();
 
-  // Puntos SNP: media del equipo en cada actualización.
-  const rankCanvas = document.getElementById('chartSnpTeam');
-  const rank = read('snp-team-data');
-  if (rankCanvas && rank && rank.average.length > 1) {
-    new Chart(rankCanvas, {
-      type: 'line',
-      data: {
-        labels: rank.labels,
-        datasets: [{
-          label: gettext('Media del equipo'),
-          data: rank.average,
-          borderColor: LIME,
-          backgroundColor: 'rgba(180, 241, 0, 0.12)',
-          fill: true,
-          tension: 0.3,
-          pointRadius: 3,
-        }],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: { x: { grid: { display: false } }, y: { display: false } },
-      },
-    });
-  }
   // Profundizar: los gráficos se dibujan con la sección cerrada; al abrirla se ajustan a su ancho.
   document.querySelectorAll('.st-fold').forEach((fold) => {
     fold.addEventListener('toggle', () => { if (fold.open) window.dispatchEvent(new Event('resize')); });

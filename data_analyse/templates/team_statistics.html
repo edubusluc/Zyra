@@ -8,7 +8,6 @@
   {{ points_card|json_script:"points-card-data" }}
   {{ column_chart_data|json_script:"column-chart-data" }}
   {{ attendance|json_script:"attendance-data" }}
-  {{ snp_chart|json_script:"snp-team-data" }}
   <script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
   <script src="{% static 'js/chart-style.js' %}"></script>
 
@@ -38,7 +37,6 @@
         <a href="#sec-plantilla">{% translate "Plantilla" %}</a>
         <a href="#sec-numbers">{% translate "Partidos y sets" %}</a>
         <a href="#sec-records">{% translate "Récords" %}</a>
-        {% if team and current_club.rules.has_snp %}<a href="#sec-snp">{% translate "Puntos SNP" %}</a>{% endif %}
         <a href="#sec-charts">{% translate "Profundizar" %}</a>
       </nav>
 
@@ -158,13 +156,6 @@
         {% include 'includes/team_records.html' %}
       </section>
 
-      {% if team and current_club.rules.has_snp %}
-      <section id="sec-snp" aria-labelledby="snp-title" class="st-section">
-        <h2 class="st-section-title" id="snp-title">{% translate "Puntos SNP" %}</h2>
-        {% include 'includes/snp_ranking.html' %}
-      </section>
-      {% endif %}
-
       <section id="sec-charts" aria-labelledby="charts-title" class="st-section">
         <h2 class="st-section-title" id="charts-title">{% translate "Profundizar" %}</h2>
         {% if attendance.average is not None %}
@@ -216,7 +207,6 @@
         <li><a href="#sec-plantilla">{% translate "Plantilla" %}</a></li>
         <li><a href="#sec-numbers">{% translate "Partidos y sets" %}</a></li>
         <li><a href="#sec-records">{% translate "Récords" %}</a></li>
-        {% if team and current_club.rules.has_snp %}<li><a href="#sec-snp">{% translate "Puntos SNP" %}</a></li>{% endif %}
         <li><a href="#sec-charts">{% translate "Profundizar" %}</a></li>
       </ul>
     </aside>

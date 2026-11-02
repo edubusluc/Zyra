@@ -3,18 +3,14 @@ Tabla de plantilla de «Estadísticas · Equipo» y de la entrada de «Jugadores
 equipo con sus partidos, balance, % de victorias, % de convocatorias a las que se apunta y, en SNP, sus puntos.
 
 Sustituye a los dos Top 5 (local y visitante) y a las tarjetas «Más victorias» y «Más partidos jugados», que
-eran el mismo ranking en listas distintas. Se ordena por columna, se filtra por local o visitante y el
-mínimo de partidos para entrar en el orden es un filtro visible. Solo lógica, sin vistas.
+eran el mismo ranking en listas distintas. Se ordena por columna y se filtra por local o visitante. Sin
+mínimo de partidos: cuenta el % de todo el que ha jugado. Solo lógica, sin vistas.
 """
 from call.models import Call
 from players.models import joined_by
 
 from .pairs import match_type_lookup
 
-# Mínimo de partidos por defecto para que el % de un jugador cuente en el orden (1: todos los que han jugado), y los
-# que ofrece el filtro.
-DEFAULT_MIN_GAMES = 1
-MIN_GAMES_CHOICES = (1, 2, 3, 5, 8)
 
 SIDE_ALL, SIDE_LOCAL, SIDE_VISITING = "todos", "local", "visitante"
 SIDES = (SIDE_ALL, SIDE_LOCAL, SIDE_VISITING)
@@ -25,20 +21,14 @@ DEFAULT_SORT = "pct"
 
 def parse_options(params, has_snp):
     """
-    Opciones de la tabla a partir de ``params`` (``request.GET``): ``(side, min_games, sort)``. Un valor
-    que no existe vuelve al de por defecto (todos, ``DEFAULT_MIN_GAMES``, por %); sin puntos SNP no se
-    ordena por puntos.
+    Opciones de la tabla a partir de ``params`` (``request.GET``): ``(side, sort)``. Un valor que no existe
+    vuelve al de por defecto (todos, por %); sin puntos SNP no se ordena por puntos.
     """
     side = params.get("lado")
     side = side if side in SIDES else SIDE_ALL
-    try:
-        min_games = int(params.get("minimo", DEFAULT_MIN_GAMES))
-    except (TypeError, ValueError):
-        min_games = DEFAULT_MIN_GAMES
-    min_games = min_games if min_games in MIN_GAMES_CHOICES else DEFAULT_MIN_GAMES
     sort = params.get("orden")
     sort = sort if sort in SORTS and (sort != "snp" or has_snp) else DEFAULT_SORT
-    return side, min_games, sort
+    return side, sort
 
 
 def signup_by_player(club, players, season=None, match_type=None, side=SIDE_ALL):
@@ -67,14 +57,15 @@ def signup_by_player(club, players, season=None, match_type=None, side=SIDE_ALL)
     return out
 
 
-def roster_rows(players, log, signup, side=SIDE_ALL, min_games=DEFAULT_MIN_GAMES, sort=DEFAULT_SORT, snp=None):
+def roster_rows(players, log, signup, side=SIDE_ALL, sort=DEFAULT_SORT, snp=None):
     """
     Filas de la tabla de plantilla. ``log`` es ``club_game_log`` (ya filtrado por temporada y tipo), ``signup``
     sale de ``signup_by_player`` y ``snp`` es ``{id jugador: fila de records.snp_ranking}`` (None sin SNP).
 
-    Cada fila: ``player``, ``played``, ``wins``, ``losses``, ``pct`` (None sin partidos), ``enough`` (llega
-    al mínimo), ``signed``, ``calls``, ``signup`` y, con SNP, ``snp``, ``delta`` (puntos), ``rank_delta`` (puestos) y ``spark``. Los que no llegan al
-    mínimo van siempre al final (su % se ve, pero no entra en el orden); el resto, por la columna elegida.
+    Cada fila: ``player``, ``played``, ``wins``, ``losses``, ``pct`` (None sin partidos), ``enough`` (ha
+    jugado alguno), ``signed``, ``calls``, ``signup`` y, con SNP, ``snp``, ``delta`` (puntos), ``rank_delta``
+    (puestos), ``rank_moved`` y ``spark``. No hay mínimo de partidos: cuenta el % de todo el que ha jugado. Quien
+    no ha jugado ninguno va al final del orden por %; el resto, por la columna elegida.
     """
     counts = {}
     for g in log:
@@ -89,7 +80,7 @@ def roster_rows(players, log, signup, side=SIDE_ALL, min_games=DEFAULT_MIN_GAMES
         sign = signup.get(p.id) or {"signed": 0, "total": 0, "pct": None}
         row = {
             "player": p, "played": played, "wins": wins, "losses": played - wins,
-            "pct": round(100 * wins / played) if played else None, "enough": played >= min_games,
+            "pct": round(100 * wins / played) if played else None, "enough": played > 0,
             "signed": sign["signed"], "calls": sign["total"], "signup": sign["pct"],
             "snp": None, "delta": None, "rank_delta": None, "spark": None,
         }
@@ -106,5 +97,5 @@ def roster_rows(players, log, signup, side=SIDE_ALL, min_games=DEFAULT_MIN_GAMES
 
     if sort == "name":
         return sorted(rows, key=lambda r: (r["player"].name.casefold(), r["player"].last_name.casefold()))
-    # Por %, quien no llega al mínimo no entra en el orden: va detrás, con su % a la vista.
+    # Por %, quien no ha jugado ninguno va detrás.
     return sorted(rows, key=lambda r: (sort == "pct" and not r["enough"], *key(r)))
