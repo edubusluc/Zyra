@@ -13,6 +13,7 @@ from django.utils.translation import gettext as _
 
 from call.models import Call, ReportDelivery
 from core import email_verification
+from core.competitions import CHOICES as COMPETITION_CHOICES
 from core.models import Club, Invitation, Membership, PhotoCheck
 from match.models import Game, Match, MatchResultDelivery, Result
 from players.models import Player, SnpAccount, SnpUpdateRequest
@@ -64,6 +65,28 @@ def google_user_ids():
     return SocialAccount.objects.filter(provider="google").values("user_id")
 
 
+def clubs_by_competition(clubs, active_from, today, new_from):
+    """
+    Espacios (clubes) de cada competición, con sus activos y altas recientes: una fila por
+    competición registrada, también las que no tienen ninguno. Cada club tiene una sola
+    competición y un solo equipo propio, así que cuenta una vez y la suma da el total.
+    """
+    active = clubs.filter(
+        matches__start_date__gte=active_from, matches__start_date__lte=today + datetime.timedelta(days=ACTIVE_CLUB_DAYS),
+    ).values("pk")
+    rows = []
+    for code, name in COMPETITION_CHOICES:
+        of_competition = clubs.filter(competition=code)
+        rows.append({
+            "code": code,
+            "name": name,
+            "total": of_competition.count(),
+            "active": of_competition.filter(pk__in=active).count(),
+            "new_30": of_competition.filter(created_at__gte=new_from).count(),
+        })
+    return rows
+
+
 def dashboard_kpis():
     """
     Cifras del dashboard: clubes, usuarios, actividad, invitaciones, altas por semana y
@@ -91,6 +114,9 @@ def dashboard_kpis():
             "total": clubs.count(),
             "new_30": clubs.filter(created_at__gte=now - datetime.timedelta(days=30)).count(),
             "active": active_clubs.count(),
+            "by_competition": clubs_by_competition(
+                clubs, active_from, today, now - datetime.timedelta(days=30),
+            ),
         },
         "users": {
             "total": users.count(),

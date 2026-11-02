@@ -99,6 +99,30 @@ class BackofficeDataTests(TestCase):
         self.assertEqual(kpis["activity"]["matches_30"], 1)
         self.assertEqual(kpis["activity"]["matches_upcoming"], 1)
 
+    def test_dashboard_splits_clubs_by_competition(self):
+        lapi = create_club("Club Lapi", "Cádiz", User.objects.create_user("lola", password="pass-12345"), competition="lapi")
+        Match.objects.create(
+            club=lapi, local=lapi.own_team, visiting=Team.objects.create(club=lapi, name="R", location="X"),
+            start_date=timezone.localdate() - datetime.timedelta(days=1),
+        )
+        kpis = dashboard_kpis()["clubs"]
+        by_code = {row["code"]: row for row in kpis["by_competition"]}
+        self.assertEqual(set(by_code), {"snp", "lapi"})
+        self.assertEqual((by_code["snp"]["total"], by_code["snp"]["active"]), (2, 1))
+        self.assertEqual((by_code["lapi"]["total"], by_code["lapi"]["active"], by_code["lapi"]["new_30"]), (1, 1, 1))
+        self.assertEqual(sum(row["total"] for row in kpis["by_competition"]), kpis["total"])
+        html = self.client.get(reverse("backoffice:dashboard")).content.decode()
+        self.assertIn("competition=lapi", html)
+        self.assertIn("competition=snp", html)
+
+    def test_club_list_filters_by_competition(self):
+        create_club("Club Lapi", "Cádiz", User.objects.create_user("lola", password="pass-12345"), competition="lapi")
+        url = reverse("backoffice:club_list")
+        names = lambda **p: sorted(c.name for c in self.client.get(url, p).context["page"])
+        self.assertEqual(names(competition="lapi"), ["Club Lapi"])
+        self.assertEqual(names(competition="snp"), ["Club Alfa", "Club Beta"])
+        self.assertEqual(len(names(competition="otra")), 3)
+
     def test_invitation_conversion(self):
         Invitation.objects.create(club=self.club_a, created_by=self.admin_a)
         Invitation.objects.create(club=self.club_a, created_by=self.admin_a, used_by=self.admin_b, used_at=timezone.now())
