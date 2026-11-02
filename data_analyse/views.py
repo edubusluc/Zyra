@@ -562,7 +562,6 @@ def team_card_context(club, season, match_type, context):
     }
     if rules.has_snp:
         extra['snp_total'] = {'average': snp['average']}
-        extra['snp_team_seasons'] = team_card.snp_by_season(club)
     return extra
 
 

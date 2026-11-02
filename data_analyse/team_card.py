@@ -1,6 +1,6 @@
 """
 Piezas de «Estadísticas · Equipo» que no salen del log de partidos: puntos de cada enfrentamiento o
-jornada, elegibilidad para las fases finales, no presentados y lesiones, y puntos SNP del equipo por temporada.
+jornada, elegibilidad para las fases finales, no presentados y lesiones.
 
 Todas devuelven datos simples para la plantilla y respetan los mismos filtros de temporada y tipo que el
 resto de la página.
@@ -8,7 +8,7 @@ resto de la página.
 from django.db.models import Q
 
 from match.models import Game, Match, Result
-from players.models import Player, SnpScoreHistory
+from players.models import Player
 
 from . import rivals
 from .pairs import match_type_lookup
@@ -134,16 +134,3 @@ def walkovers(club, season=None, match_type=None):
         'own': matches.filter(no_show=Match.NO_SHOW_OWN).count(),
         'injuries': injuries,
     }
-
-
-def snp_by_season(club):
-    """
-    Puntos SNP de la plantilla actual sumados al cierre de cada temporada (la última actualización de
-    cada jugador): ``{'labels', 'scores'}`` cronológico.
-    """
-    squad = Player.objects.filter(club=club, in_team=True)
-    last = {}
-    for row in SnpScoreHistory.objects.filter(player__in=squad).order_by('date'):
-        last.setdefault(row.season, {})[row.player_id] = row.score
-    seasons = sorted(last, key=lambda s: int(s.split('-')[0]))
-    return {'labels': seasons, 'scores': [round(sum(last[s].values())) for s in seasons]}

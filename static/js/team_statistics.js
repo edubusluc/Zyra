@@ -1,5 +1,5 @@
 // Estadísticas del equipo (team_statistics.html): puntos por jornada (o por temporada con «Todas»), asistencia,
-// balance por jugador, ranking SNP y puntos SNP por temporada (gráficos lima sin ejes) y panel lateral de secciones.
+// balance por jugador y ranking SNP (gráficos lima sin ejes) y panel lateral de secciones.
 (function () {
   const read = (id) => {
     const el = document.getElementById(id);
@@ -59,9 +59,6 @@
     });
   }
 
-  const snpCanvas = document.getElementById('chartSnpTeamSeasons');
-  const snp = read('snp-team-seasons');
-  if (snpCanvas && snp && snp.scores.length > 1) zSeasonLine(snpCanvas, snp);
   // Balance por jugador: partidos de 2 y 3 puntos, ganados y perdidos.
   const LIME_DARK = '#6E9400';
   const CORAL = '#FF5C63';
