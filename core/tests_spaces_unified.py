@@ -280,6 +280,7 @@ class UnifiedSpacesTests(TestCase):
         # Con una temporada elegida no hay victorias por temporada, pero sí las convocatorias de esa temporada.
         chosen = self.client.get(reverse("my_statistics") + f"?season={season}")
         self.assertNotContains(chosen, "spacesYearsChart")
+        self.assertNotContains(chosen, "Ganados por temporada")
         self.assertContains(chosen, "spacesAttendanceChart")
         self.assertEqual(chosen.context["spaces_chart"]["attendance"]["labels"], [season])
 
