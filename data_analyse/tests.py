@@ -335,7 +335,7 @@ class MatchTypeFilterTests(TestCase):
         response = self.client.get(reverse("player_statistics"), {"player": self.a.public_id, "match_type": Match.PLAYOFF})
         self.assertEqual((response.context["s"]["played"], response.context["s"]["wins"]), (1, 0))
         links = {o["label"]: o["url"] for o in response.context["match_types"]}
-        self.assertEqual(links["Todos"], f"{reverse('player_statistics')}?player={self.a.public_id}")
+        self.assertEqual(links["Todos"], f"{reverse('player_statistics')}?player={self.a.public_id}&match_type=todos")
         self.assertIn(f"player={self.a.public_id}", links["Retos"])
         self.assertIn("match_type=reto", links["Retos"])
 
@@ -353,16 +353,20 @@ class MatchTypeFilterTests(TestCase):
         self.assertEqual(response.context["s"]["played"], 2)
         self.assertEqual(len(response.context["last_games"]), 2)
 
-    def test_unknown_type_shows_everything(self):
+    def test_unknown_type_falls_back_to_competitive(self):
+        """EST-006: sin tipo (o con uno desconocido) Estadísticas cuenta solo lo competitivo; «todos» es explícito."""
         response = self.client.get(reverse("team_statistics"), {"match_type": "otro"})
         self.assertEqual(response.context["total_matches"], 4)
-        self.assertIsNone(response.context["selected_match_type"])
+        self.assertEqual(response.context["selected_match_type"], pair_stats.COMPETITIVE)
+        everything = self.client.get(reverse("team_statistics"), {"match_type": "todos"})
+        self.assertIsNone(everything.context["selected_match_type"])
 
     def test_friendly_matches_have_their_own_filter(self):
         Match.objects.create(club=self.club, local=self.club.own_team, visiting=Team.objects.get(name="Rival"),
                              start_date=datetime.date(2025, 11, 5), draft_mode=False,
                              match_type=Match.AMISTOSO, result="Victoria Local")
-        self.assertEqual(self.client.get(reverse("team_statistics")).context["total_matches"], 5)
+        self.assertEqual(self.client.get(reverse("team_statistics")).context["total_matches"], 4)  # sin amistosos
+        self.assertEqual(self.client.get(reverse("team_statistics"), {"match_type": "todos"}).context["total_matches"], 5)
         response = self.client.get(reverse("team_statistics"), {"match_type": Match.AMISTOSO})
         self.assertEqual(response.context["total_matches"], 1)
         self.assertEqual([o["label"] for o in response.context["match_types"] if o["active"]], ["Amistosos"])
@@ -435,7 +439,7 @@ class SeasonFilterTests(TestCase):
         self.assertContains(response, 'id="season-search"')
 
     def test_older_season_from_search_shows_as_active_chip(self):
-        response = self.client.get(reverse("team_statistics"), {"season": "2021-2022"})
+        response = self.client.get(reverse("team_statistics"), {"season": "2021-2022", "match_type": "todos"})
         self.assertEqual(response.context["total_matches"], 1)
         self.assertFalse(response.context["season_all"]["active"])
         self.assertEqual([(c["label"], c["active"]) for c in response.context["season_chips"]],
@@ -456,7 +460,7 @@ class SeasonFilterTests(TestCase):
 
     def test_player_summary_and_affinity_follow_season(self):
         url = reverse("player_statistics")
-        all_ctx = self.client.get(url, {"player": self.a.public_id}).context
+        all_ctx = self.client.get(url, {"player": self.a.public_id, "match_type": "todos"}).context
         self.assertEqual(all_ctx["s"]["played"], 5)
         response = self.client.get(url, {"player": self.a.public_id, "season": "2025-2026", "match_type": pair_stats.COMPETITIVE})
         self.assertEqual(response.context["s"]["played"], 1)
@@ -474,7 +478,7 @@ class SeasonFilterTests(TestCase):
         self.assertEqual(degree_of_affinity(self.a, season="2025-2026"), [])
 
     def test_unknown_season_shows_all(self):
-        response = self.client.get(reverse("team_statistics"), {"season": "1999-2000"})
+        response = self.client.get(reverse("team_statistics"), {"season": "1999-2000", "match_type": "todos"})
         self.assertIsNone(response.context["selected_season"])
         self.assertEqual(response.context["total_matches"], 5)
 

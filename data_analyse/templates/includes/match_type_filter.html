@@ -1,7 +1,7 @@
 {% load i18n %}
 {# Filtro por tipo de partido (desplegable «Tipo») y, dentro de Competitivos, el desplegable «Competitivo». Recibe match_types y competitive_types de data_analyse.views.match_type_context. #}
 <nav aria-label="{% translate 'Tipo de enfrentamiento' %}" class="z-fsel-wrap st-type-filter">
-  <details class="z-fsel{% if selected_match_type %} is-active{% endif %}" data-filter-menu>
+  <details class="z-fsel{% if match_type_changed %} is-active{% endif %}" data-filter-menu>
     <summary><small>{% translate "Tipo" %}</small><span>{% for option in match_types %}{% if option.active %}{{ option.label }}{% endif %}{% endfor %}</span></summary>
     <ul class="z-fsel-menu">
       {% for option in match_types %}

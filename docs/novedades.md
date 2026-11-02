@@ -3,6 +3,13 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 02/11/2026 · Estadísticas: fase 2 (contexto único)
+
+- **Competición**: Equipo sigue al equipo activo como el resto de pantallas (Jugador, Parejas, Rivales). Si eliges LAPI en una pestaña, todas abren LAPI; se elimina la clave de sesión propia de Equipo.
+- **Tipo de enfrentamiento**: Estadísticas cuenta por defecto solo los competitivos (los amistosos no se mezclan, igual que «Mi forma» en Inicio). «Todos» sigue disponible en el filtro Tipo, y el balance de Inicio coincide con el de Jugador · Yo con los filtros por defecto.
+- **Rivales**: la lista y la ficha usan la temporada y el tipo por defecto del resto (antes sumaban todas las temporadas y los amistosos) y la lista incorpora el filtro de tipo.
+- **Filtros**: Competición · Temporada · Tipo van en la misma fila, justo bajo las pestañas, en todas las pantallas de Estadísticas.
+
 ## 02/11/2026 · Estadísticas: fase 1 (datos que no inducen a error)
 
 - **Mis estadísticas**: «Local y visitante» pasa a mostrar el % de victorias en casa frente a fuera de cada competición (antes repetía ganados y perdidos, que ya dicen las filas de arriba). Sus barras y las de «Ganados por temporada» son más anchas, con la cifra dentro y sin huecos grandes, como en «Puntos de liga». «Ganados por temporada» solo aparece con «Todas»; con una temporada elegida no tiene sentido y se oculta.

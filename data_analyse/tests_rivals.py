@@ -141,14 +141,19 @@ class RivalViewsTests(RivalsBase):
         self.assertEqual(self.client.get(reverse("rival_statistics"), {"sort": "balance"}).status_code, 200)
         self.assertEqual(self.client.get(reverse("rival_statistics"), {"sort": "x"}).status_code, 200)
 
-    def test_list_defaults_to_all_seasons_without_type_filter(self):
+    def test_list_defaults_to_competitive_and_has_type_filter(self):
+        """EST-034: Rivales usa el mismo tipo por defecto que el resto (Competitivos) y lleva el filtro de tipo."""
         self.seed()  # cierres de 2025-2026 y anteriores a la temporada actual
-        response = self.client.get(reverse("rival_statistics"))
+        response = self.client.get(reverse("rival_statistics"), {"season": "all"})
         self.assertContains(response, "Norte")
         self.assertContains(response, "Sur")
-        self.assertNotContains(response, 'aria-label="Tipo de enfrentamiento"')
-        # El tipo de partido de la URL se ignora en la lista
-        self.assertContains(self.client.get(reverse("rival_statistics"), {"match_type": "amistoso"}), "Norte")
+        self.assertContains(response, 'aria-label="Tipo de enfrentamiento"')
+        self.assertEqual(response.context["selected_match_type"], "competitivo")
+        self.assertNotContains(response, "Amigos de Pedro")
+        todos = self.client.get(reverse("rival_statistics"), {"season": "all", "match_type": "todos"})
+        self.assertContains(todos, "Amigos de Pedro")
+        self.assertContains(self.client.get(reverse("rival_statistics"), {"season": "all", "match_type": "amistoso"}),
+                            "Amigos de Pedro")
 
     def test_list_search_by_name(self):
         self.seed()

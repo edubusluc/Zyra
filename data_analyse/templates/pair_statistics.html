@@ -6,12 +6,13 @@
   <script src="{% static 'js/player-picker.js' %}" defer></script>
   <div class="st-page">
     {% include 'includes/stats_tabs.html' %}
+    {% include 'includes/filters_row.html' with season=True type=True %}
 
     <header class="st-head">
       <div>
         <h1 class="st-title">{% translate "Parejas" %} <span class="z-comp-badge z-comp-badge--{{ current_club.competition }}">{{ current_club.rules.name }}</span></h1>
         {% if s %}
-          <p class="st-subtitle">{% blocktranslate trimmed count n=s.played %}{{ n }} partido juntos{% plural %}{{ n }} partidos juntos{% endblocktranslate %} {% blocktranslate trimmed count n=s.matches %}en {{ n }} enfrentamiento{% plural %}en {{ n }} enfrentamientos{% endblocktranslate %} · <a href="{% url 'pair_statistics' %}{% if selected_season or selected_match_type %}?{% if selected_season %}season={{ selected_season|urlencode:'' }}{% endif %}{% if selected_season and selected_match_type %}&amp;{% endif %}{% if selected_match_type %}match_type={{ selected_match_type }}{% endif %}{% endif %}">{% translate "Ver mejores y peores parejas" %}</a></p>
+          <p class="st-subtitle">{% blocktranslate trimmed count n=s.played %}{{ n }} partido juntos{% plural %}{{ n }} partidos juntos{% endblocktranslate %} {% blocktranslate trimmed count n=s.matches %}en {{ n }} enfrentamiento{% plural %}en {{ n }} enfrentamientos{% endblocktranslate %} · <a href="{% url 'pair_statistics' %}?match_type={{ match_type_param }}{% if selected_season %}&amp;season={{ selected_season|urlencode:'' }}{% endif %}">{% translate "Ver mejores y peores parejas" %}</a></p>
         {% else %}
           <p class="st-subtitle">{% translate "Busca dos jugadores para ver cómo rinden juntos." %}</p>
         {% endif %}
@@ -33,7 +34,7 @@
           {% endfor %}
         </select>
         {% if selected_season %}<input type="hidden" name="season" value="{{ selected_season }}">{% endif %}
-        {% if selected_match_type %}<input type="hidden" name="match_type" value="{{ selected_match_type }}">{% endif %}
+        <input type="hidden" name="match_type" value="{{ match_type_param }}">
         <button class="st-btn" type="submit" id="pair-go"{% if not selected_p1 or not selected_p2 %} disabled{% endif %}>{% translate "Ver pareja" %}</button>
       </form>
       <script>
@@ -46,7 +47,6 @@
         });
       </script>
     </header>
-    {% include 'includes/filters_row.html' with season=True type=True %}
 
     {% if error %}
       <div class="alert warning">{{ error }}</div>

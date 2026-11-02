@@ -6,6 +6,7 @@
   <script src="{% static 'js/player-picker.js' %}" defer></script>
   <div class="st-page">
     {% include 'includes/stats_tabs.html' %}
+    {% include 'includes/filters_row.html' with season=True %}
 
     <header class="st-head">
       <div>
@@ -17,7 +18,6 @@
       </div>
     </header>
 
-    {% include 'includes/filters_row.html' with season=True %}
 
     {% if not total %}
       <div class="st-empty">
