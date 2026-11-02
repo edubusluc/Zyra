@@ -66,14 +66,22 @@
   const LIME_DARK = '#6E9400';
   const CORAL = '#FF5C63';
   const CORAL_DARK = '#9E3A3F';
-  const CARD = getComputedStyle(document.querySelector('.st-page') || document.documentElement).getPropertyValue('--st-card').trim() || '#141414';
-  const balanceSetup = () => {
+    const balanceSetup = () => {
   const balanceBox = document.getElementById('balanceChart');
   if (!balanceBox) return; // no sale en competiciones con parejas sorteadas (LAPI)
   // Barras horizontales de tamaño fijo: se ven PAGE_SIZE jugadores y el resto se
   // recorre con el paginador, así el gráfico mide lo mismo con 8 jugadores que con 60.
   const PAGE_SIZE = 10;
-  const ROW_HEIGHT = 30;
+  const ROW_HEIGHT = 44;
+  // Los tramos de una misma barra van pegados: solo se redondean los dos extremos de la barra completa.
+  const RADIUS = 12;
+  const edgeRadius = (ctx) => {
+    const sets = ctx.chart.data.datasets;
+    const filled = sets.map((d, i) => (Number(d.data[ctx.dataIndex]) > 0 ? i : -1)).filter((i) => i >= 0);
+    const first = ctx.datasetIndex === filled[0];
+    const last = ctx.datasetIndex === filled[filled.length - 1];
+    return { topLeft: first ? RADIUS : 0, bottomLeft: first ? RADIUS : 0, topRight: last ? RADIUS : 0, bottomRight: last ? RADIUS : 0 };
+  };
   const SERIES = [
     { label: gettext('3 puntos ganados'), index: 2, color: LIME },
     { label: gettext('2 puntos ganados'), index: 0, color: LIME_DARK },
@@ -106,7 +114,7 @@
     const short = surname ? `${parts[0][0]}. ${surname}` : name;
     return short.length <= max ? short : `${short.slice(0, max - 1)}…`;
   };
-  const labelMax = () => (balanceBox.clientWidth < 520 ? 14 : 26);
+  const labelMax = () => (balanceBox.clientWidth < 520 ? 14 : 28);
 
   // La última página se rellena con filas vacías para que las barras no cambien de grosor.
   const pageRows = () => {
@@ -118,12 +126,12 @@
 
   const balanceChart = new Chart(document.getElementById('myColumnChart'), {
     type: 'bar',
-    data: { labels: [], datasets: SERIES.map((s) => ({ label: s.label, data: [], backgroundColor: s.color, borderRadius: 8, borderSkipped: false, borderColor: CARD, borderWidth: 2 })) },
+    data: { labels: [], datasets: SERIES.map((s) => ({ label: s.label, data: [], backgroundColor: s.color, borderRadius: edgeRadius, borderSkipped: false, borderWidth: 0 })) },
     options: {
       indexAxis: 'y',
       responsive: true,
       maintainAspectRatio: false,
-      datasets: { bar: { barPercentage: 0.7, categoryPercentage: 0.9, maxBarThickness: 16 } },
+      datasets: { bar: { barPercentage: 0.8, categoryPercentage: 0.9, maxBarThickness: 30 } },
       interaction: { mode: 'index', axis: 'y', intersect: false },
       plugins: {
         legend: { position: 'top', labels: { usePointStyle: true, pointStyle: 'rectRounded', boxWidth: 10 } },
@@ -147,6 +155,8 @@
           grid: { display: false },
           ticks: {
             autoSkip: false,
+            color: '#E8E8E8',
+            font: { size: 14, weight: '600' },
             callback(value) { return shortName(this.getLabelForValue(value), labelMax()); },
           },
         },

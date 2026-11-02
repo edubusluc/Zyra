@@ -60,7 +60,7 @@
       const horizontal = chart.options.indexAxis === 'y';
       const ctx = chart.ctx;
       ctx.save();
-      ctx.font = horizontal ? "400 13px 'Anton', 'Archivo', sans-serif" : "400 18px 'Anton', 'Archivo', sans-serif";
+      ctx.font = horizontal ? "400 15px 'Anton', 'Archivo', sans-serif" : "400 18px 'Anton', 'Archivo', sans-serif";
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillStyle = INK;
