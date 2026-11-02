@@ -511,7 +511,13 @@ class AffinityScopeTests(TestCase):
         response = self.client.get(reverse("player_statistics"), {"player": self.a.public_id})
         rows = {r["name"]: r["in_team"] for r in response.context["chart_affinity"]}
         self.assertEqual(rows, {"B Bson": True, "C Cson": False, "D Dson": False})
-        self.assertIn("affinity_top", response.context)
+        self.assertEqual([r["name"] for r in response.context["partners"]], ["B Bson"])
+        # Compañeros con su % real y enlace a la pareja; Local y visitante con su unidad; sin jerga.
+        self.assertContains(response, "Compañeros")
+        self.assertContains(response, f"{reverse('pair_statistics')}?p1={self.a.public_id}&p2=")
+        self.assertContains(response, "% de partidos ganados según dónde se juega.")
+        self.assertNotContains(response, "Grado de afinidad")
+        self.assertNotContains(response, "Sets clutch")
 
 
 class DrawStatisticsTests(TestCase):

@@ -407,3 +407,6 @@ msgstr "At home"
 
 msgid "Fuera"
 msgstr "Away"
+
+msgid "%(n)s partidos"
+msgstr "%(n)s games"

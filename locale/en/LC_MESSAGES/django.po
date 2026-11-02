@@ -15435,3 +15435,81 @@ msgstr[1] "Down %(n)s places in the ranking"
 
 msgid "Media del equipo: %(avg)s puntos SNP"
 msgstr "Team average: %(avg)s SNP points"
+
+msgid "Tras ganar el 1.er set"
+msgstr "After winning the 1st set"
+
+msgid "Tras perder el 1.er set"
+msgstr "After losing the 1st set"
+
+msgid "% de enfrentamientos ganados según dónde se juega."
+msgstr "% of matches won by where they are played."
+
+msgid "% de partidos ganados según dónde se juega."
+msgstr "% of games won by where they are played."
+
+msgid "%(label)s: %(pct)s%% de victorias"
+msgstr "%(label)s: %(pct)s%% wins"
+
+msgid "Sin enfrentamientos todavía"
+msgstr "No matches yet"
+
+msgid "Con quién gana más. Pulsa un compañero para ver la pareja."
+msgstr "Who they win most with. Tap a partner to see the pair."
+
+msgid "Mejor"
+msgstr "Best"
+
+msgid "Peor"
+msgstr "Worst"
+
+msgid "Asistencia y compañeros"
+msgstr "Attendance and partners"
+
+msgid "% de victorias por temporada"
+msgstr "% wins by season"
+
+msgid ""
+"Solo temporadas con %(n)s partidos o más; debajo de cada una, los partidos "
+"jugados."
+msgstr ""
+"Only seasons with %(n)s games or more; below each one, the games played."
+
+msgid "Puntos y asistencia por temporada"
+msgstr "Points and attendance by season"
+
+msgid ""
+"% de victorias en cada situación y casos que lo respaldan, por competición."
+msgstr "% of wins in each situation and the cases behind it, by competition."
+
+msgid "Situación"
+msgstr "Situation"
+
+msgid "% de partidos ganados en casa y fuera, por competición."
+msgstr "% of games won at home and away, by competition."
+
+msgid "Por competición, con los partidos jugados en cada temporada."
+msgstr "By competition, with the games played in each season."
+
+msgid "% de victorias por temporada y competición"
+msgstr "% wins by season and competition"
+
+msgid "% de las convocatorias cerradas, por competición."
+msgstr "% of closed call-ups, by competition."
+
+msgid "Cómo se ganan y se pierden los partidos de la pareja, set a set."
+msgstr "How the pair's games are won and lost, set by set."
+
+msgid "%(w)s de %(t)s"
+msgstr "%(w)s of %(t)s"
+
+msgid "%(n)s caso"
+msgid_plural "%(n)s casos"
+msgstr[0] "%(n)s case"
+msgstr[1] "%(n)s cases"
+
+msgid "enfrentamientos ganados / total en casa"
+msgstr "matches won / total at home"
+
+msgid "enfrentamientos ganados / total fuera"
+msgstr "matches won / total away"

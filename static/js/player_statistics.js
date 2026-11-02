@@ -10,4 +10,7 @@
 
   // Con «Todas»: partidos ganados y perdidos de cada temporada y evolución del % de victorias.
   zSeasonCharts(read('data-seasons'), document.getElementById('chartPlayed'), document.getElementById('chartPct'));
+
+  // Un gráfico dentro de «Profundizar» se dibuja con el panel cerrado: al abrirlo se recalcula su tamaño.
+  document.querySelectorAll('.st-fold').forEach((fold) => fold.addEventListener('toggle', () => window.dispatchEvent(new Event('resize'))));
 })();

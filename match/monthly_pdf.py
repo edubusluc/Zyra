@@ -12,6 +12,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 from reportlab.platypus import BaseDocTemplate, Frame, PageTemplate, KeepTogether, Paragraph, Spacer, Table, TableStyle
 
+from data_analyse.comparison import SET_ROWS
 from .monthly_report import CALL_ABSENT, CALL_BENCHED, CALL_PLAYED, MAX_CALL_ROWS, MAX_GAME_ROWS
 from .report_pdf import (
     draw_made_with, draw_page_header, BOTTOM_MARGIN, CONTENT_W, GUTTER, HEADING_GAP, MARGIN, PAGE_H, PAGE_W,
@@ -127,13 +128,12 @@ def _snp_section(report, st):
 
 
 def _clutch_section(report, st):
-    """Panel «Sets clutch» de las estadísticas del jugador: decisivo, tie-breaks, remontadas y más, con su V-D."""
+    """Panel «Sets» de las estadísticas del jugador, con las mismas situaciones y nombres que la web (comparison.SET_ROWS), con su V-D."""
     sets = report["sets"]
-    story = [Paragraph(esc(_("Sets clutch")), st["section"]),
+    story = [Paragraph(esc(_("Sets")), st["section"]),
              Paragraph(esc(_("Cómo respondes en los momentos decisivos: tercer set, tie-breaks y remontadas.")),
                        st["muted"]), Spacer(1, HEADING_GAP)]
-    situations = [(_("Set decisivo"), "third"), (_("Tie-breaks"), "tiebreak"), (_("Remontadas"), "comeback"),
-                  (_("Cerrar el partido"), "first_set"), (_("Sets ajustados"), "close")]
+    situations = [(str(label), key) for key, label, _hint in SET_ROWS if key != "bagels"]
     if sets["super_tb"]["total"]:
         situations.append((_("Super tie-break"), "super_tb"))
     cells = []

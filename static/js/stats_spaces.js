@@ -39,7 +39,8 @@
     });
   }
 
-  // Partidos ganados por temporada: apilados por competición y el total encima de cada columna.
+  // % de victorias por temporada: una barra por competición (agrupadas), con su cifra encima; el tooltip dice
+  // en cuántos partidos se apoya. Una competición sin partidos esa temporada no dibuja barra.
   const yearsCanvas = document.getElementById('spacesYearsChart');
   if (yearsCanvas) {
     const labels = data.years.labels;
@@ -48,52 +49,45 @@
       const text = narrow() ? y.replace(/^\d{2}(\d{2})-\d{2}(\d{2})$/, '$1-$2') : y;
       return y === data.currentSeason ? [text, gettext('en curso')] : text;
     };
-    const totals = labels.map((_, j) => data.years.won.reduce((sum, serie) => sum + (serie[j] || 0), 0));
-    const totalOnTop = {
-      id: 'totalOnTop',
+    const valueOnTop = {
+      id: 'valueOnTop',
       afterDatasetsDraw(chart) {
         const { ctx } = chart;
-        const last = chart.data.datasets.length - 1;
         ctx.save();
         ctx.font = `600 12px ${Chart.defaults.font.family}`;
         ctx.fillStyle = '#FFFFFF';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'bottom';
-        chart.getDatasetMeta(last).data.forEach((bar, j) => {
-          if (totals[j] > 0) ctx.fillText(totals[j], bar.x, chart.scales.y.getPixelForValue(totals[j]) - 3);
+        chart.data.datasets.forEach((ds, i) => {
+          chart.getDatasetMeta(i).data.forEach((bar, j) => {
+            if (ds.data[j] !== null && ds.data[j] !== undefined) ctx.fillText(`${ds.data[j]}%`, bar.x, bar.y - 3);
+          });
         });
         ctx.restore();
       },
     };
-    // Columna apilada de una sola pieza: solo se redondean la base del primer tramo y la cima del último
-    // con valor; los tramos intermedios quedan rectos y pegados.
-    const stackRadius = (c) => {
-      const sets = c.chart.data.datasets, j = c.dataIndex, i = c.datasetIndex;
-      const has = (k) => (sets[k].data[j] || 0) > 0;
-      const bottom = !sets.slice(0, i).some((_, k) => has(k));
-      const top = !sets.slice(i + 1).some((_, k) => has(k + i + 1));
-      const r = 14;
-      return { topLeft: top ? r : 0, topRight: top ? r : 0, bottomLeft: bottom ? r : 0, bottomRight: bottom ? r : 0 };
-    };
     const chart = new Chart(yearsCanvas, {
       type: 'bar',
-      plugins: [totalOnTop],
+      plugins: [valueOnTop],
       data: {
         labels: labels.map(seasonLabel),
-        datasets: comps.map((c, i) => ({ label: c.name, data: data.years.won[i], backgroundColor: color(c.code), maxBarThickness: 72, barPercentage: 0.8, categoryPercentage: 0.9, borderRadius: stackRadius, borderSkipped: false, borderColor: '#151515', borderWidth: 2 })),
+        datasets: comps.map((c, i) => ({ label: c.name, data: data.years.pct[i], backgroundColor: color(c.code), maxBarThickness: 48, borderRadius: 10, minBarLength: 6, borderColor: '#151515', borderWidth: 2 })),
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        layout: { padding: { top: 16 } },
-        interaction: { mode: 'index', intersect: false },
+        layout: { padding: { top: 18 } },
         plugins: {
           legend: { display: false },
-          tooltip: { callbacks: { footer: (items) => `${gettext('Total')}: ${totals[items[0].dataIndex]}` } },
+          tooltip: {
+            callbacks: {
+              label: (c) => `${c.dataset.label}: ${c.parsed.y} % (${interpolate(gettext('%(n)s partidos'), { n: data.years.played[c.datasetIndex][c.dataIndex] }, true)})`,
+            },
+          },
         },
         scales: {
-          x: { stacked: true, grid: { display: false }, ticks: { autoSkip: false, maxRotation: 0, font: { size: 12 } } },
-          y: { stacked: true, display: false, beginAtZero: true, grace: '12%' },
+          x: { grid: { display: false }, ticks: { autoSkip: false, maxRotation: 0, font: { size: 12 } } },
+          y: { display: false, beginAtZero: true, max: 100, grace: '12%' },
         },
       },
     });

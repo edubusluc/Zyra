@@ -272,23 +272,27 @@ class UnifiedSpacesTests(TestCase):
         self.assertEqual([c["code"] for c in chart["comps"]], ["snp", "lapi"])
         season = self.snp_match.season
         self.assertEqual(chart["years"]["labels"], [season])
-        self.assertEqual(chart["years"]["won"], [[1], [1]])
+        self.assertEqual(chart["years"]["pct"], [[100], [100]])
+        self.assertEqual(chart["years"]["played"], [[1], [1]])
         self.assertEqual(len(chart["attendance"]["series"]), 2)
         self.assertEqual([c["code"] for c in page.context["set_rows"][0]["comps"]], ["snp", "lapi"])
         self.assertContains(page, "js/stats_spaces.js")
         # Diseño aprobado: tres situaciones de sets, ganados/perdidos por competición y fila de competición.
-        self.assertEqual([r["key"] for r in page.context["set_compare"]], ["tiebreak", "first_set", "comeback", "bagels"])
+        # Las mismas situaciones que en Equipo y Jugador; las que no tienen casos en ninguna competición no salen.
+        self.assertEqual([r["key"] for r in page.context["set_rows"]], ["first_set", "comeback", "tiebreak", "third", "bagels"])
         self.assertEqual([(t["pct_local"], t["pct_visiting"]) for t in chart["totals"]], [(100, None), (100, None)])
         # Cada situación lleva su descripción (no un «i») y Roscos a favor se calcula sobre los sets jugados.
-        self.assertEqual(page.context["set_compare"][3]["hint"], "Sets ganados por 6-0.")
-        self.assertEqual([c["r"]["pct"] for c in page.context["set_compare"][3]["comps"]], [None, None])
+        self.assertEqual(page.context["set_rows"][4]["hint"], "Sets ganados por 6-0.")
+        self.assertEqual([c["r"]["pct"] for c in page.context["set_rows"][4]["comps"]], [None, None])
         self.assertContains(page, 'id="spacesSidesChart"')
         self.assertContains(page, "z-fsel-row")
         # Con una temporada elegida no hay victorias por temporada, pero sí las convocatorias de esa temporada.
         chosen = self.client.get(reverse("my_statistics") + f"?season={season}")
         self.assertNotContains(chosen, "spacesYearsChart")
-        self.assertNotContains(chosen, "Ganados por temporada")
-        self.assertContains(chosen, "spacesAttendanceChart")
+        self.assertNotContains(chosen, "% de victorias por temporada")
+        # Con una sola temporada no hay línea: la cifra de convocatorias por competición.
+        self.assertNotContains(chosen, "spacesAttendanceChart")
+        self.assertContains(chosen, "z-commit-list")
         self.assertEqual(chosen.context["spaces_chart"]["attendance"]["labels"], [season])
 
     def test_my_statistics_of_one_competition_opens_own_sheet(self):

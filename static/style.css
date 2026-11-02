@@ -3850,3 +3850,14 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .st-spark { display: inline-block; vertical-align: middle; color: var(--z-lime); }
 .st-rankmove { margin-left: 6px; font-size: var(--z-fs-xs); font-weight: 800; }
 @media (max-width: 575.98px) { .st-roster-evo { display: none; } }
+
+/* Fase 6 · comparar: Local y visitante común, tabla de sets de «Mis estadísticas», compañeros y convocatorias. */
+.st-venue-split { display: flex; flex-direction: column; gap: 14px; margin-top: 12px; }
+.st-partners td, .st-partners th { white-space: nowrap; }
+.st-partner-tag { margin-left: 6px; padding: 1px 8px; font-size: var(--z-fs-xs); font-weight: 800; border-radius: 999px; }
+.st-partner-tag--best { color: #151515; background: var(--z-lime); }
+.st-partner-tag--worst { color: #FFFFFF; background: var(--z-danger, #FF5C63); }
+.z-commit-list { display: flex; flex-direction: column; gap: 10px; margin: 12px 0 0; padding: 0; list-style: none; }
+.z-commit-list li { display: grid; grid-template-columns: 1fr auto auto; align-items: baseline; gap: 12px; }
+.z-commit-list b { font-family: var(--z-display); font-size: var(--z-fs-xl); font-weight: 400; color: #FFFFFF; }
+.z-commit-list small { min-width: 3.4rem; text-align: right; color: var(--st-muted); }

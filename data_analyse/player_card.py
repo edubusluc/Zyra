@@ -21,12 +21,11 @@ def role_label(player):
 def usual_partner(affinity):
     """
     Nombre del compañero con el que más partidos ha jugado entre los que siguen en el equipo
-    (``degree_of_affinity``); desempata la afinidad. None si no ha jugado en pareja.
+    (``degree_of_affinity``); desempata la afinidad y luego el nombre (el mismo orden que la lista «Compañeros»). None si no ha jugado en pareja.
     """
-    rows = [a for a in affinity if a.get("in_team")]
-    if not rows:
-        return None
-    return max(rows, key=lambda a: (a["games"], a["affinity"]))["name"]
+    from .comparison import partner_rows
+    rows = partner_rows(affinity)
+    return rows[0]["name"] if rows else None
 
 
 def snp_rank(player):

@@ -3,6 +3,15 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 02/11/2026 · Estadísticas: fase 6 (comparar)
+
+- **Sets iguales en todas partes**: Equipo, Jugador, Pareja, «Yo» y el informe mensual en PDF usan las mismas situaciones y nombres: Tras ganar el 1.er set, Tras perder el 1.er set, Tie-breaks, Set decisivo y Roscos a favor. Se dibujan con el estilo de barras del antiguo «Sets clutch» (título con su descripción, barra y %; los casos, en el tooltip) y las que no tienen ninguno no se muestran; en «Yo» cada situación lleva una barra por competición. «Sets ajustados» y «Super tie-break» salen de la web (el PDF conserva el super tie-break).
+- **Local y visitante**: Jugador y Pareja comparten un bloque con la unidad escrita (porcentaje, V-D y partidos). Equipo conserva sus dos tarjetas «Ganados como local / visitante», ahora con el texto «enfrentamientos ganados / total».
+- **Yo · gráficos**: «Ganados por temporada» (volumen) pasa a «% de victorias por temporada» por competición, con los partidos de cada barra en el tooltip. Las convocatorias a las que te apuntas se muestran como cifra por competición; la línea solo aparece con dos temporadas o más.
+- **Compañeros**: «Grado de afinidad» se sustituye por la lista de Compañeros, con partidos, V-D y % real, la pareja habitual primera (como en la cabecera), el mejor y el peor % entre quienes tienen 5 partidos o más, y enlace a la pareja. La afinidad suavizada solo desempata.
+- **Evolución sin falsas tendencias**: el gráfico «% de victorias por temporada» de la ficha del jugador solo usa temporadas con 5 partidos o más (y al menos dos), con los partidos bajo cada punto, y el «Cambio» de la tabla solo se calcula entre temporadas con muestra. «Partidos jugados» pasa a «Profundizar».
+- **Detalle por temporada**: la tabla baja de 9 a 5 columnas (Temporada, Jugados, V-D, %, Cambio) y los puntos, las convocatorias y el alineado están en «Profundizar».
+
 ## 02/11/2026 · Estadísticas: fase 5 (tabla de plantilla)
 
 - **Tabla de plantilla**: sustituye a los dos Top 5 y a las tarjetas «Más victorias» y «Más partidos jugados» de Equipo. Una fila por jugador con Jugados, V-D, % de victorias, «Se apunta» (% de convocatorias cerradas a las que se apuntó) y, en SNP, los puntos con su último cambio. Se ordena pulsando la columna y tiene el conmutador Todos · Local · Visitante.

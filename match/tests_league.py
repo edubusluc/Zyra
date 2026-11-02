@@ -212,7 +212,7 @@ class LapiMatchTests(TestCase):
         self.assertNotContains(page, "Por número de partido")
         self.assertNotContains(page, "Balance de partidos por jugador")
         page = self.client.get(reverse("player_statistics") + f"?player={self.players[0].public_id}&season=2026-2027")
-        self.assertContains(page, "Sets clutch")
+        self.assertContains(page, "Todavía no hay resultados set a set.")
         self.assertNotContains(page, "Por número de partido")
 
     def test_injury_from_all_results_screen(self):
