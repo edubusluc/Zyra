@@ -218,7 +218,8 @@ class ClubSetsTests(ClubDataMixin, TestCase):
         self.assertContains(response, 'class="st-side"')
         self.assertNotContains(response, 'id="sec-snp"')  # los puntos SNP viven en la tabla de plantilla
         self.assertNotContains(response, "Juegos como local")
-        self.assertContains(response, "Ganados como visitante")
+        self.assertContains(response, "Como visitante")
+        self.assertContains(response, "enfrentamientos ganados según dónde se juega")
 
     def test_team_page_shows_new_sections(self):
         response = self.client.get(reverse('team_statistics'))
@@ -232,7 +233,8 @@ class ClubSetsTests(ClubDataMixin, TestCase):
 
     def test_player_page_clutch_and_lineup_rate(self):
         response = self.client.get(reverse('player_statistics'), {'player': self.c.public_id})
-        self.assertContains(response, "Sets clutch")
+        self.assertContains(response, "Tras perder el 1.er set")
+        self.assertNotContains(response, "Sets clutch")
         self.assertEqual(response.context['clutch']['tiebreak']['total'], 1)
         self.assertEqual(response.context['lineup_rate'], {'signed': 2, 'aligned': 2, 'benched': 0, 'pct': 100})
         rows = response.context['game_numbers']

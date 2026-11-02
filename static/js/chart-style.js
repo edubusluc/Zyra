@@ -110,7 +110,7 @@
       type: 'line',
       plugins: [lastValue],
       data: {
-        labels: series.labels.map(short),
+        labels: series.labels.map((y, i) => (series.played ? [short(y), interpolate(gettext('%(n)s partidos'), { n: series.played[i] }, true)] : short(y))),
         datasets: [{ label, data: series.scores, borderColor: '#B4F100', fill: true, borderWidth: 3, pointRadius: 0, pointHoverRadius: 6 }],
       },
       options: {
@@ -154,8 +154,12 @@
         },
       }));
     }
-    if (pctCanvas && seasons && seasons.pct.length > 1) {
-      charts.push(window.zSeasonLine(pctCanvas, { labels: seasons.labels, scores: seasons.pct }, {
+    // Con ``seasons.trend`` (ficha del jugador) solo se dibujan las temporadas con muestra suficiente y cada
+    // punto lleva debajo sus partidos; sin él (pareja), todas las temporadas.
+    const trend = seasons && seasons.trend;
+    const pctSeries = trend ? { labels: trend.labels, scores: trend.pct, played: trend.played } : seasons && { labels: seasons.labels, scores: seasons.pct };
+    if (pctCanvas && pctSeries && pctSeries.scores.length > 1) {
+      charts.push(window.zSeasonLine(pctCanvas, pctSeries, {
         label: gettext('% victorias'),
         format: (v) => `${Math.round(v)}%`,
         y: { min: 0, max: 100, grace: 0 },

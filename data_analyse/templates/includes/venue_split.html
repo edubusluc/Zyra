@@ -1,0 +1,19 @@
+{% load i18n l10n %}
+{# Local y visitante con su unidad explícita. Recibe venue (data_analyse.comparison.venue_split: unit 'matches' o 'games', rows con label, won, lost, drawn, total, pct). #}
+<article class="st-card">
+  <h2 class="st-card-title">{% translate "Local y visitante" %}</h2>
+  <p class="st-card-note">{% if venue.unit == 'matches' %}{% translate "% de enfrentamientos ganados según dónde se juega." %}{% else %}{% translate "% de partidos ganados según dónde se juega." %}{% endif %}</p>
+  <div class="st-venue-split">
+    {% for row in venue.rows %}
+    <div class="st-rate">
+      <div class="st-split-head"><span>{{ row.label }}</span><b>{% if row.total %}{{ row.pct }}%{% else %}–{% endif %}</b></div>
+      {% if row.total %}
+      <div class="st-meter" role="img" aria-label="{% blocktranslate with pct=row.pct label=row.label %}{{ label }}: {{ pct }}% de victorias{% endblocktranslate %}"><span style="width: {{ row.pct|unlocalize }}%"></span></div>
+      <p class="st-split-foot">{{ row.won }}V{% if row.drawn %} – {{ row.drawn }}E{% endif %} – {{ row.lost }}D · {% if venue.unit == 'matches' %}{% blocktranslate count n=row.total %}{{ n }} enfrentamiento{% plural %}{{ n }} enfrentamientos{% endblocktranslate %}{% else %}{% blocktranslate count n=row.total %}{{ n }} partido{% plural %}{{ n }} partidos{% endblocktranslate %}{% endif %}</p>
+      {% else %}
+      <p class="st-split-foot">{% if venue.unit == 'matches' %}{% translate "Sin enfrentamientos todavía" %}{% else %}{% translate "Sin partidos todavía" %}{% endif %}</p>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</article>

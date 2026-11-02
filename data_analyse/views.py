@@ -29,7 +29,7 @@ from players.models import current_season, joined_by
 from . import pairs as pair_stats
 from . import rivals as rival_stats
 from . import records
-from . import player_card, roster_table, team_card
+from . import comparison, player_card, roster_table, team_card
 from .attendance import signup_attendance
 from .sets import by_game_number, own_sets, set_stats
 
@@ -459,28 +459,14 @@ def mine_chips(request, players, active):
     return {"mine_chips": chips}
 
 
-# Situaciones de la tarjeta «Sets» que se comparan entre competiciones: (clave de set_stats, título, explicación).
-SET_SITUATIONS = (
-    ('third', gettext_lazy("Set decisivo"), gettext_lazy("Tercer set, a set normal o a super tie-break.")),
-    ('tiebreak', gettext_lazy("Tie-breaks"), gettext_lazy("Sets que llegan a 6-6 y acaban 7-6.")),
-    ('comeback', gettext_lazy("Remontadas"), gettext_lazy("Partidos ganados tras perder el primer set.")),
-    ('first_set', gettext_lazy("Cerrar el partido"), gettext_lazy("Partidos ganados tras ganar el primer set.")),
-    ('close', gettext_lazy("Sets ajustados"), gettext_lazy("Sets que acaban 7-5 o 7-6.")),
-)
-
-
-# Situaciones de sets que muestra «Mis estadísticas · Todas», en el orden del diseño.
-MINE_SET_KEYS = ('tiebreak', 'first_set', 'comeback', 'bagels')
-
-
 def players_charts(players, logs, season, match_type):
     """
     Gráficos de «Mis estadísticas · Todas» con cada competición al lado de la otra, nunca sumadas en
     una cifra (los puntos de un partido no valen lo mismo en SNP que en LAPI). ``logs``: partidos de
     cada jugador de ``players`` (build_game_log, ya filtrados por temporada).
 
-    Devuelve ``set_rows`` (cada situación de sets con el % de cada competición), ``set_panels`` (lo mismo
-    agrupado por competición, para los paneles de stats_mine.html) y ``spaces_chart``
+    Devuelve ``set_rows`` (cada situación de sets con el % de cada competición), ``set_compare`` (las que tienen casos, para
+    la tabla de stats_mine.html) y ``spaces_chart``
     para stats_spaces.js: competiciones, % de victorias como local y como visitante,
     partidos ganados por temporada (sin temporada elegida) y % de convocatorias en las que se apuntó
     por temporada (con una temporada elegida, solo esa: se dibuja con barras).
@@ -496,31 +482,24 @@ def players_charts(players, logs, season, match_type):
                          "lost": sum(not g["won"] for g in log if not g["local"])})
         per_year = {}
         for g in log:
-            per_year[g["season"]] = per_year.get(g["season"], 0) + g["won"]
+            row = per_year.setdefault(g["season"], {"won": 0, "played": 0})
+            row["won"] += g["won"]
+            row["played"] += 1
         years.append(per_year if not season else {})
         present, total = calls_by_season(player, match_type)
         if season:
             present, total = {season: present.get(season, 0)}, {season: total.get(season, 0)}
         attendance.append({s: round(present.get(s, 0) / n * 100) for s, n in total.items() if n})
 
-    # «Roscos a favor» (sets ganados por 6-0) no es una situación de la tarjeta Sets: su % es sobre los sets jugados.
-    for st in sets_by_comp:
-        sets_total = st['sets_won'] + st['sets_lost']
-        st['bagels'] = {'pct': round(100 * st['bagels_for'] / sets_total) if sets_total else None}
-    situations = SET_SITUATIONS + (('bagels', gettext_lazy("Roscos a favor"), gettext_lazy("Sets ganados por 6-0.")),)
+    # Las mismas situaciones de set que en Equipo, Jugador y Pareja (data_analyse.comparison.SET_ROWS).
     set_rows = [{
         "key": key, "label": label, "hint": hint,
-        "comps": [{"code": c["code"], "name": c["name"], "r": st[key]} for c, st in zip(comps, sets_by_comp)],
-    } for key, label, hint in situations]
-
-    # Lo mismo agrupado por competición: un panel por competición con todas sus situaciones (idea «marco y dato»).
-    set_panels = [{
-        "code": c["code"], "name": c["name"], "club": c["club"],
-        "rows": [{"label": label, "hint": hint, "r": st[key]} for key, label, hint in situations],
-    } for c, st in zip(comps, sets_by_comp)]
-
-    # Tarjeta «Sets» de «Mis estadísticas»: las mismas cuatro situaciones que el «Sets clutch» de la ficha, con el % de cada competición.
-    set_compare = [row for key in MINE_SET_KEYS for row in set_rows if row["key"] == key]
+        "comps": [{"code": c["code"], "name": c["name"],
+                   "r": comparison.bagels_situation(st) if key == "bagels" else st[key]}
+                  for c, st in zip(comps, sets_by_comp)],
+    } for key, label, hint in comparison.SET_ROWS]
+    # Las filas sin ningún caso en ninguna competición no se enseñan.
+    set_compare = [row for row in set_rows if any(c["r"]["total"] for c in row["comps"])]
 
     # % de victorias en casa y fuera de cada competición (None sin partidos), para «Local y visitante».
     pct = lambda r: round(100 * r["won"] / (r["won"] + r["lost"])) if r["won"] + r["lost"] else None
@@ -533,7 +512,6 @@ def players_charts(players, logs, season, match_type):
     att_labels = sorted({s for per in attendance for s in per}, key=by_start)
     return {
         "set_rows": set_rows,
-        "set_panels": set_panels,
         "set_compare": set_compare,
         "sets_played": any(st["played"] for st in sets_by_comp),
         "has_local": any(r["won"] or r["lost"] for r in local),
@@ -543,7 +521,12 @@ def players_charts(players, logs, season, match_type):
             "local": local,
             "visiting": visiting,
             "totals": totals,
-            "years": {"labels": labels, "won": [[per.get(y, 0) for y in labels] for per in years]},
+            # % de victorias por temporada y competición (None si no jugó), con los partidos que lo respaldan.
+            "years": {
+                "labels": labels,
+                "pct": [[round(100 * per[y]["won"] / per[y]["played"]) if y in per else None for y in labels] for per in years],
+                "played": [[per[y]["played"] if y in per else 0 for y in labels] for per in years],
+            },
             "attendance": {"labels": att_labels, "series": [[per.get(s) for s in att_labels] for per in attendance]},
             "currentSeason": current_season(),
         },
@@ -558,11 +541,6 @@ def team_card_context(club, season, match_type, context):
     """
     rules = club.rules
     sets = context['set_stats']
-    sets_total = sets['sets_won'] + sets['sets_lost']
-    bagels = {'pct': round(100 * sets['bagels_for'] / sets_total) if sets_total else None}
-    by_key = {key: (label, desc) for key, label, desc in SET_SITUATIONS}
-    set_rows = [(*by_key[key], sets[key]) for key in ('tiebreak', 'first_set', 'comeback')]
-    set_rows.append((_("Roscos a favor"), _("Sets ganados por 6-0."), bagels))
     snp = context['snp']
     extra = {
         'team_form': team_card.form_and_streak(club, season, match_type),
@@ -571,8 +549,8 @@ def team_card_context(club, season, match_type, context):
         'points_card': team_card.points_series(club, season, match_type),
         'finals': team_card.finals_roster(club, current_season()) if season in (None, current_season()) else None,
         'walkovers': team_card.walkovers(club, season, match_type),
-        'set_rows': set_rows,
-        'venue': team_card.venue_matches(club, season, match_type),
+        'set_rows': comparison.set_situation_rows(sets),
+        'venue': comparison.venue_split(*(lambda v: (v['local'], v['visiting']))(team_card.venue_matches(club, season, match_type)), 'matches'),
     }
     return extra
 
@@ -612,7 +590,7 @@ def degree_of_affinity(player, match_type=None, season=None):
     Incluye a los compañeros que ya no están en el equipo (in_team=False) y a los
     eliminados (por el nombre guardado en el partido); 'in_team' los distingue.
     Con ``season`` solo cuenta los partidos de esa temporada.
-    Devuelve: [{'name', 'affinity', 'games', 'wins', 'losses', 'in_team'}, ...] de mayor a menor.
+    Devuelve: [{'name', 'public_id' (None si ya no existe), 'affinity', 'games', 'wins', 'losses', 'in_team'}, ...] de mayor a menor.
     """
     games = Game.objects.filter(
         Q(player_1_local=player) | Q(player_2_local=player) |
@@ -638,17 +616,17 @@ def degree_of_affinity(player, match_type=None, season=None):
         partner_id = getattr(g, partner_slot + '_id')
         if partner_id in people:
             partner = people[partner_id]
-            key, name, in_team = partner_id, partner.full_name, partner.in_team
+            key, name, in_team, public_id = partner_id, partner.full_name, partner.in_team, partner.public_id
         elif partner_id is None and g.removed_player_names.get(partner_slot):
             # Jugador eliminado: se agrupa por el nombre guardado en el partido
             name = proper_name(g.removed_player_names[partner_slot])
-            key, in_team = ('removed', name), False
+            key, in_team, public_id = ('removed', name), False, None
         else:
             continue
 
         won = g.winner == side
         weight = g.score or 1
-        a = acc.setdefault(key, {'name': name, 'in_team': in_team, 'games': 0, 'wins': 0, 'stake': 0, 'won_pts': 0})
+        a = acc.setdefault(key, {'name': name, 'public_id': public_id, 'in_team': in_team, 'games': 0, 'wins': 0, 'stake': 0, 'won_pts': 0})
         a['games'] += 1
         a['wins'] += won
         a['stake'] += weight
@@ -659,6 +637,7 @@ def degree_of_affinity(player, match_type=None, season=None):
         rate = (a['won_pts'] + PRIOR_POINTS * 0.5) / (a['stake'] + PRIOR_POINTS)
         results.append({
             'name': a['name'],
+            'public_id': a['public_id'],
             'affinity': round(rate * 100),
             'games': a['games'],
             'wins': a['wins'],
@@ -931,7 +910,7 @@ def summarize_by_season(log, calls_present, calls_total):
     for g in log:
         by_season.setdefault(g['season'], []).append(g)
 
-    rows, previous = [], None
+    rows, previous = [], None  # previous: (% , partidos) de la temporada anterior
     for season in sorted(by_season, key=lambda s: int(s.split('-')[0])):
         games = by_season[season]
         wins = sum(g['won'] for g in games)
@@ -945,9 +924,12 @@ def summarize_by_season(log, calls_present, calls_total):
             'points': sum(g['points'] for g in games),
             'calls_present': calls_present.get(season, 0),
             'calls_total': calls_total.get(season, 0),
-            'delta': round(pct - previous, 1) if previous is not None else None,
+            # El cambio de % solo cuenta si las dos temporadas tienen muestra (comparison.MIN_TREND_GAMES).
+            'delta': (round(pct - previous[0], 1) if previous and comparison.is_reliable(previous[1])
+                      and comparison.is_reliable(len(games)) else None),
+            'reliable': comparison.is_reliable(len(games)),
         })
-        previous = pct
+        previous = (pct, len(games))
     return rows
 
 
@@ -1059,7 +1041,6 @@ def statistics_per_player(request):
         },
         'league': player_card.league_rounds(player, selected_season),
         'snp_seasons': player_card.snp_by_season(player),
-        'affinity_top': [a for a in affinity if a['in_team']][:5],
         **match_type_context(request, match_type, stats=True, by_type=True),
         **season_filter_context(request, all_seasons, selected_season),
         'players': players,
@@ -1077,17 +1058,25 @@ def statistics_per_player(request):
             'wins': [r['wins'] for r in rows],
             'losses': [r['losses'] for r in rows],
             'pct': [r['pct'] for r in rows],
+            'played': [r['played'] for r in rows],
+            # Evolución del % solo con temporadas de muestra suficiente; None si no hay tendencia que dibujar.
+            'trend': comparison.trend(rows),
         },
         # enteros para anchos de barra (evita comas decimales en style="")
         'pct_w': round(summary['pct']),
         'local_pct_w': round(summary['local_pct']),
         'visiting_pct_w': round(summary['visiting_pct']),
         'chart_affinity': affinity,
+        'min_trend_games': comparison.MIN_TREND_GAMES,
         'lineup_rate': lineup_rate,
         'signup_rate': signup_rate,
         'game_numbers': player_numbers,
         'clutch': clutch,
-        'clutch_rows': [(label, desc, clutch[key]) for key, label, desc in SET_SITUATIONS],
+        'clutch_rows': comparison.set_situation_rows(clutch),
+        'venue': comparison.venue_split(
+            {'won': summary['local_wins'], 'lost': summary['local_losses']},
+            {'won': summary['visiting_wins'], 'lost': summary['visiting_losses']}, 'games'),
+        'partners': comparison.partner_rows(affinity),
         'snp_season': snp_season,
         'chart_snp': {
             'labels': [h.date.strftime('%d/%m') for h in snp_history],
@@ -1161,7 +1150,10 @@ def statistics_per_pair(request):
             numbers = Counter(g['n_game'] for g in pair_log)
             context.update({
                 'usual_number': numbers.most_common(1)[0][0] if numbers else None,
-                'set_rows': [(label, desc, pair_sets[key]) for key, label, desc in SET_SITUATIONS],
+                'set_rows': comparison.set_situation_rows(pair_sets),
+                'venue': comparison.venue_split(
+                    {'won': summary['local_wins'], 'lost': summary['local_losses']},
+                    {'won': summary['visiting_wins'], 'lost': summary['visiting_losses']}, 'games'),
                 'p1': p1,
                 'p2': p2,
                 's': summary,

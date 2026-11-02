@@ -1,0 +1,11 @@
+{% load i18n %}
+{# Situaciones de set iguales en todas las vistas. Recibe rows: (título, explicación, situación) de data_analyse.comparison.set_situation_rows (solo las que tienen casos). #}
+{% if rows %}
+<div class="st-bars st-bars--desc">
+  {% for label, desc, r in rows %}
+  {% include 'includes/stat_bar_row.html' %}
+  {% endfor %}
+</div>
+{% else %}
+<p class="st-muted st-nodata">{% translate "Todavía no hay resultados set a set." %}</p>
+{% endif %}

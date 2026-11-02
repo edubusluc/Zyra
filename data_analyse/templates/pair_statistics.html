@@ -87,16 +87,7 @@
           </ol>
         </article>
 
-        <article class="st-card">
-          <h2 class="st-card-title">{% translate "Local y visitante" %}</h2>
-          <p class="st-card-note">{% translate "Victorias de la pareja según dónde juega." %}</p>
-          <div class="st-venue">
-            <p class="st-venue-label">{% translate "Como local" %} · <span>{% blocktranslate with w=s.local_wins l=s.local_losses %}{{ w }}V {{ l }}D{% endblocktranslate %}</span></p>
-            {% if s.local_played %}<div class="st-venue-bar" role="img" aria-label="{% blocktranslate with w=s.local_wins l=s.local_losses %}{{ w }} ganados y {{ l }} perdidos como local{% endblocktranslate %}">{% if s.local_wins %}<span class="st-venue-win" style="flex: {{ s.local_wins|unlocalize }}">{{ s.local_wins }}</span>{% endif %}{% if s.local_losses %}<span class="st-venue-loss" style="flex: {{ s.local_losses|unlocalize }}">{{ s.local_losses }}</span>{% endif %}</div>{% else %}<p class="st-muted">—</p>{% endif %}
-            <p class="st-venue-label">{% translate "Como visitante" %} · <span>{% blocktranslate with w=s.visiting_wins l=s.visiting_losses %}{{ w }}V {{ l }}D{% endblocktranslate %}</span></p>
-            {% if s.visiting_played %}<div class="st-venue-bar" role="img" aria-label="{% blocktranslate with w=s.visiting_wins l=s.visiting_losses %}{{ w }} ganados y {{ l }} perdidos como visitante{% endblocktranslate %}">{% if s.visiting_wins %}<span class="st-venue-win" style="flex: {{ s.visiting_wins|unlocalize }}">{{ s.visiting_wins }}</span>{% endif %}{% if s.visiting_losses %}<span class="st-venue-loss" style="flex: {{ s.visiting_losses|unlocalize }}">{{ s.visiting_losses }}</span>{% endif %}</div>{% else %}<p class="st-muted">—</p>{% endif %}
-          </div>
-        </article>
+        {% include 'includes/venue_split.html' %}
       </div>
 
       {# ============ 1b. SETS ============ #}
@@ -105,12 +96,8 @@
         <div class="st-row">
           <article class="st-card">
             <h3 class="st-card-title">{% translate "Sets" %}</h3>
-            <p class="st-card-note">{% translate "Tercer set, tie-breaks, remontadas y roscos de la pareja jugando junta." %}</p>
-            <div class="st-bars st-bars--desc">
-              {% for label, desc, r in set_rows %}
-              {% include 'includes/stat_bar_row.html' %}
-              {% endfor %}
-            </div>
+            <p class="st-card-note">{% translate "Cómo se ganan y se pierden los partidos de la pareja, set a set." %}</p>
+            {% include 'includes/set_situations.html' with rows=set_rows %}
           </article>
         </div>
       </section>

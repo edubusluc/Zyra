@@ -63,9 +63,8 @@
         {% if tiebreaks.total %}<p class="st-balance-foot"><span>{% blocktranslate with a=tiebreaks.for b=tiebreaks.against %}Eliminatorias 6-6 (Reto / Play Off) · {{ a }} a favor · {{ b }} en contra{% endblocktranslate %}</span></p>{% endif %}
       </section>
 
-      <section class="st-kpi-row st-kpi-row--two" aria-label="{% translate 'Cifras del equipo' %}">
-        <div class="st-kpi-tile"><b>{{ venue.local.won }}/{{ venue.local.total }}</b><span>{% translate "Ganados como local" %}</span><small>{% translate "partidos ganados / total en casa" %}</small></div>
-        <div class="st-kpi-tile"><b>{{ venue.visiting.won }}/{{ venue.visiting.total }}</b><span>{% translate "Ganados como visitante" %}</span><small>{% translate "partidos ganados / total fuera" %}</small></div>
+      <section class="st-section" aria-label="{% translate 'Local y visitante' %}">
+        {% include 'includes/venue_split.html' %}
       </section>
 
       {% if points_card or league or finals %}
@@ -130,11 +129,7 @@
           <article class="st-card">
             <h3 class="st-card-title">{% translate "Sets" %}</h3>
             <p class="st-card-note">{% if current_club.rules.ordered_pairs %}{% translate "Cómo se ganan y se pierden los partidos, set a set." %}{% else %}{% blocktranslate with n=current_club.rules.games %}Al mejor de {{ n }} partidos de 1 punto.{% endblocktranslate %}{% endif %}</p>
-            <div class="st-bars st-bars--desc">
-              {% for label, desc, r in set_rows %}
-              {% include 'includes/stat_bar_row.html' %}
-              {% endfor %}
-            </div>
+            {% include 'includes/set_situations.html' with rows=set_rows %}
           </article>
           {% if walkovers.any and not current_club.rules.ordered_pairs %}
           <article class="st-card">

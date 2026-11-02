@@ -46,18 +46,27 @@
       <div class="st-grid st-grid--2">
         <article class="st-card">
           <h3 class="st-card-title">{% translate "Sets" %}</h3>
-          <p class="st-card-note">{% translate "% de victorias en cada situación, por competición." %}</p>
-          {% if sets_played %}
-          <div class="z-set-compare">
-            {% for item in set_compare %}
-            <div class="z-set-row">
-              <b>{{ item.label }}<small>{{ item.hint }}</small></b>
-              <div class="z-set-bars">
-                {% for c in item.comps %}<div class="z-set-bar"><span class="z-set-bar--{{ c.code }}" style="width: {{ c.r.pct|default:0 }}%"></span></div>{% endfor %}
-              </div>
-              <em>{% for c in item.comps %}{% if not forloop.first %}/{% endif %}{% if c.r.pct is None %}—{% else %}{{ c.r.pct }}{% endif %}{% endfor %}</em>
-            </div>
-            {% endfor %}
+          <p class="st-card-note">{% translate "% de victorias en cada situación y casos que lo respaldan, por competición." %}</p>
+          {% if set_compare %}
+          <div class="st-table-wrap">
+            <table class="st-table z-set-table">
+              <thead>
+                <tr>
+                  <th scope="col">{% translate "Situación" %}</th>
+                  {% for row in rows %}<th scope="col"><i class="z-dot z-dot--{{ row.club.competition }}" aria-hidden="true"></i> {{ row.club.rules.name }}</th>{% endfor %}
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in set_compare %}
+                <tr>
+                  <th scope="row">{{ item.label }}<small>{{ item.hint }}</small></th>
+                  {% for c in item.comps %}
+                  <td>{% if c.r.total %}<b>{{ c.r.pct }}%</b><small>{% blocktranslate with w=c.r.wins t=c.r.total %}{{ w }} de {{ t }}{% endblocktranslate %}</small>{% else %}<span class="st-muted">—</span>{% endif %}</td>
+                  {% endfor %}
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
           </div>
           {% else %}
           <p class="st-muted st-nodata">{% translate "Todavía no hay resultados set a set." %}</p>
@@ -66,25 +75,30 @@
 
         <section class="st-card">
           <h3 class="st-card-title">{% translate "Local y visitante" %}</h3>
-          <p class="st-card-note">{% translate "% de victorias en casa y fuera, por competición." %}</p>
+          <p class="st-card-note">{% translate "% de partidos ganados en casa y fuera, por competición." %}</p>
           {% if not has_local and not has_visiting %}<p class="st-muted st-nodata">{% translate "No hay datos todavía." %}</p>{% endif %}
           <div class="st-chart st-chart--mine" role="img" aria-label="{% translate 'Porcentaje de victorias en casa y fuera por competición' %}"{% if not has_local and not has_visiting %} hidden{% endif %}><canvas id="spacesSidesChart" aria-hidden="true"></canvas></div>
         </section>
 
         {% if spaces_chart.years.labels %}
         <section class="st-card">
-          <h3 class="st-card-title">{% translate "Ganados por temporada" %}</h3>
-          <p class="st-card-note">{% translate "Cada competición con su color y el total encima." %}</p>
-          <div class="st-chart st-chart--mine" role="img" aria-label="{% translate 'Partidos ganados por temporada' %}"><canvas id="spacesYearsChart" aria-hidden="true"></canvas></div>
+          <h3 class="st-card-title">{% translate "% de victorias por temporada" %}</h3>
+          <p class="st-card-note">{% translate "Por competición, con los partidos jugados en cada temporada." %}</p>
+          <div class="st-chart st-chart--mine" role="img" aria-label="{% translate '% de victorias por temporada y competición' %}"><canvas id="spacesYearsChart" aria-hidden="true"></canvas></div>
         </section>
         {% endif %}
 
         <section class="st-card">
           <h3 class="st-card-title">{% translate "Convocatorias en las que te apuntas" %}</h3>
-          <p class="st-card-note">{% translate "% de las cerradas, por competición." %}</p>
-          {% if spaces_chart.attendance.labels %}
+          <p class="st-card-note">{% translate "% de las convocatorias cerradas, por competición." %}</p>
+          <ul class="z-commit-list">
+            {% for row in rows %}{% if row.calls.total %}
+            <li><span><i class="z-dot z-dot--{{ row.club.competition }}" aria-hidden="true"></i> {{ row.club.rules.name }}</span><b>{% widthratio row.calls.signed row.calls.total 100 %}%</b><small>{{ row.calls.signed }}/{{ row.calls.total }}</small></li>
+            {% endif %}{% empty %}{% endfor %}
+          </ul>
+          {% if spaces_chart.attendance.labels|length > 1 %}
           <div class="st-chart st-chart--mine" role="img" aria-label="{% translate 'Convocatorias en las que te apuntas' %}"><canvas id="spacesAttendanceChart" aria-hidden="true"></canvas></div>
-          {% else %}<p class="st-muted st-nodata">{% translate "No hay datos todavía." %}</p>{% endif %}
+          {% elif not spaces_chart.attendance.labels %}<p class="st-muted st-nodata">{% translate "No hay datos todavía." %}</p>{% endif %}
         </section>
       </div>
     </section>
