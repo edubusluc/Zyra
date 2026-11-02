@@ -13,7 +13,7 @@
       </div>
     </header>
 
-    {% include 'includes/season_filter.html' %}
+    {% include 'includes/filters_row.html' with season=True %}
     <form method="get" class="st-search" role="search" action="{% url 'rival_statistics' %}">
       {% for name, value in season_keep_fields %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}
       <label class="visually-hidden" for="rival-q">{% translate "Buscar rival por nombre" %}</label>

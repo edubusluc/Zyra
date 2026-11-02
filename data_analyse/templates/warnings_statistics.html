@@ -17,7 +17,7 @@
       </div>
     </header>
 
-    {% include 'includes/season_filter.html' %}
+    {% include 'includes/filters_row.html' with season=True %}
 
     {% if not total %}
       <div class="st-empty">
