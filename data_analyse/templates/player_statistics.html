@@ -63,9 +63,13 @@
           </p>
           <p class="st-hero-meta">
             <span>{{ player.get_position_display }}</span><span>{{ player.get_skillfull_hand_display }}</span><span>{% blocktranslate with season=player.joined_season %}Desde {{ season }}{% endblocktranslate %}</span>
-            {% if can_manage %}<a href="{% url 'edit_player' player.public_id %}"><i class="fa-solid fa-pen me-1" aria-hidden="true"></i>{% translate "Editar" %}</a><a href="{% url 'warnings_statistics' %}"><i class="fa-solid fa-triangle-exclamation me-1" aria-hidden="true"></i>{% blocktranslate count n=hero.warnings %}{{ n }} advertencia{% plural %}{{ n }} advertencias{% endblocktranslate %}</a>
-            {% elif hero.is_me %}<a href="{% url 'my_player' %}"><i class="fa-solid fa-pen me-1" aria-hidden="true"></i>{% translate "Editar mi jugador" %}</a>{% endif %}
           </p>
+          {% if can_manage or hero.is_me %}
+          <p class="st-hero-actions">
+            {% if can_manage %}<a class="st-hero-btn" href="{% url 'edit_player' player.public_id %}"><i class="fa-solid fa-pen" aria-hidden="true"></i> {% translate "Editar jugador" %}</a><a class="st-hero-btn st-hero-btn--ghost" href="{% url 'warnings_statistics' %}"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> {% blocktranslate count n=hero.warnings %}{{ n }} advertencia{% plural %}{{ n }} advertencias{% endblocktranslate %}</a>
+            {% else %}<a class="st-hero-btn" href="{% url 'my_player' %}"><i class="fa-solid fa-pen" aria-hidden="true"></i> {% translate "Editar mi jugador" %}</a>{% endif %}
+          </p>
+          {% endif %}
           </div>
         </div>
         <div class="st-hero-ring" style="--pct: {{ pct_w|unlocalize }}" role="img" aria-label="{% blocktranslate with pct=s.pct %}{{ pct }}% de victorias{% endblocktranslate %}"><span>{{ s.pct|floatformat:0 }}%</span></div>
