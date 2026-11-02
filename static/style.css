@@ -3302,8 +3302,6 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 /* Vistas unidas de varios espacios: etiqueta de la competición en cada tarjeta y chips del filtro */
 .z-fixture-head .z-comp-badge { margin-left: 6px; }
 .z-fixture-role { font-size: var(--z-fs-xs); }
-.z-space-chip--snp[aria-current="page"] { color: var(--z-ink); background: var(--z-snp); border-color: var(--z-snp); }
-.z-space-chip--lapi[aria-current="page"] { color: var(--z-ink); background: var(--z-lapi); border-color: var(--z-lapi); }
 .z-create-choice .dropdown-menu { min-width: 260px; }
 .z-space-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
 .z-space-kpis > div { display: flex; flex-direction: column; padding: 14px 16px; background: var(--st-card); border: 1px solid var(--st-line); border-radius: var(--z-radius); }
@@ -3316,8 +3314,8 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .z-space-rows-nums { color: var(--st-muted); font-variant-numeric: tabular-nums; }
 .z-space-rows a { margin-left: auto; font-weight: 700; white-space: nowrap; }
 .z-space-switcher { margin: 0 0 16px; }
-.z-space-switcher .btn { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
-.z-space-switcher .btn > span:not(.z-comp-badge) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.z-space-switcher .st-comp-chip { display: inline-flex; align-items: center; min-width: 0; max-width: 100%; }
+.st-comp-chip-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* Filtros del listado: en escritorio siempre abiertos y sin botón; en móvil, plegados tras «Filtros» (H-24). */
 .z-filters > summary { list-style: none; cursor: pointer; margin-bottom: 8px; }

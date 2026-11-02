@@ -387,9 +387,9 @@ class MatchTypeFilterTests(TestCase):
         self.assertEqual([o["label"] for o in response.context["match_types"] if o["active"]], ["Competitivos"])
         self.assertEqual([o["label"] for o in response.context["competitive_types"]],
                          ["Todos los enfrentamientos", "Enfrentamientos", "Retos", "Play offs"])
-        self.assertContains(response, "<small>Competitivo</small>", html=True)
+        self.assertContains(response, "Todos los enfrentamientos")
 
-        # Un tipo concreto sigue dentro de Competitivos, con el selector en ese tipo
+        # Un tipo concreto sigue dentro de Competitivos, con su chip activo
         response = self.client.get(reverse("pair_statistics"), {"match_type": Match.RETO})
         self.assertEqual([o["label"] for o in response.context["match_types"] if o["active"]], ["Competitivos"])
         self.assertEqual([o["label"] for o in response.context["competitive_types"] if o["active"]], ["Retos"])
