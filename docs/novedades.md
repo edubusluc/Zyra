@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 03/11/2026 · Plantilla: subida o bajada de puntos SNP
+
+- **Evolución en puntos**: la columna «Evolución» de la tabla de plantilla muestra cuántos puntos SNP ha subido o bajado cada jugador (▲ +N / ▼ -N) en lugar de la mini línea. Si la última actualización no cambió ningún valor del equipo, se mantiene la subida o bajada de la última en la que sí hubo cambios, en vez de poner «=» a todos.
+
 ## 03/11/2026 · Estadísticas: equipo sin enfrentamientos cerrados
 
 - **Sin callejón**: si el equipo activo no tiene enfrentamientos cerrados y otro equipo de la cuenta sí, la tarjeta vacía lleva el selector de competición, dice qué equipo está vacío y ofrece un botón para ver el otro. Nunca cambia de equipo por sí sola.
