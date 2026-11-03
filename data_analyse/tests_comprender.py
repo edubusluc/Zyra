@@ -29,11 +29,10 @@ class TeamFormTests(ClubDataMixin, TestCase):
         self.assertNotContains(page, "Ganados · 1 de 2")
         self.assertNotContains(page, "Media por jugador")
 
-    def test_player_sheet_shows_the_team_percentage(self):
+    def test_player_sheet_has_no_team_percentage(self):
         page = self.client.get(reverse("player_statistics"), {"player": self.a.public_id, "season": "2025-2026"})
-        # El equipo ganó 3 de 4 partidos; A ganó los dos que jugó.
-        self.assertEqual(page.context["hero"]["team_pct"], 75)
-        self.assertContains(page, "Equipo: 75%")
+        self.assertNotIn("team_pct", page.context["hero"])
+        self.assertNotContains(page, "Equipo: 75%")
 
 
 class SnpUpdateDateTests(ClubDataMixin, TestCase):

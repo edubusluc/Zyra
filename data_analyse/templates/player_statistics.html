@@ -58,7 +58,7 @@
           {% endif %}
           </div>
         </div>
-        <div class="st-hero-pct"><div class="st-hero-ring" style="--pct: {{ pct_w|unlocalize }}" role="img" aria-label="{% blocktranslate with pct=s.pct %}{{ pct }}% de victorias{% endblocktranslate %}"><span>{{ s.pct|floatformat:0 }}%</span></div><span class="st-hero-caps"><span class="st-hero-cap">{% translate "de victorias" %}</span>{% if hero.team_pct is not None %}<span class="st-hero-team">{% blocktranslate with pct=hero.team_pct %}Equipo: {{ pct }}%{% endblocktranslate %}</span>{% endif %}</span></div>
+        <div class="st-hero-pct"><div class="st-hero-ring" style="--pct: {{ pct_w|unlocalize }}" role="img" aria-label="{% blocktranslate with pct=s.pct %}{{ pct }}% de victorias{% endblocktranslate %}"><span>{{ s.pct|floatformat:0 }}%</span></div><span class="st-hero-caps"><span class="st-hero-cap">{% translate "de victorias" %}</span></span></div>
         <div class="st-hero-balance"><b>{{ s.wins }}-{{ s.losses }}</b><span>{% translate "Balance" %}</span></div>
       </section>
 
