@@ -3858,7 +3858,6 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 @media (max-width: 575.98px) { .z-space-kpis--four { grid-template-columns: repeat(2, minmax(0, 1fr)); } .st-balance-streak { margin-left: 0; } }
 .z-space-rows li.z-comp-frame .z-space-rows-calls { grid-column: 1; display: flex; align-items: baseline; gap: 6px; font-size: var(--z-fs-sm); }
 .z-space-rows-calls small { color: var(--st-muted); }
-.st-hero-team { display: block; font-size: var(--z-fs-xs); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .st-hero-updated { font-weight: 700; }
 .st-hero-updated.is-stale { color: var(--z-ink); text-decoration: underline wavy; }
 .st-hero-caps { display: flex; flex-direction: column; gap: 2px; }
@@ -3888,6 +3887,9 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
   .st-roster-table tbody th { max-width: 6.8rem; white-space: normal; line-height: 1.2; }
 }
 .st-roster-evo { white-space: nowrap; }
+.st-roster-table .st-roster-evo b { font-family: inherit; font-size: inherit; font-weight: 800; }
+.st-roster-table .st-roster-evo b.st-up { color: var(--st-win); }
+.st-roster-table .st-roster-evo b.st-down { color: var(--st-loss); }
 
 /* Fase 6 · comparar: Local y visitante común, tabla de sets de «Mis estadísticas», compañeros y convocatorias. */
 .st-venue-split { display: flex; flex-direction: column; gap: 14px; margin-top: 12px; }

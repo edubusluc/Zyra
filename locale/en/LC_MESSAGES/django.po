@@ -15311,9 +15311,6 @@ msgstr "Last round points"
 msgid "Racha: %(n)s%(k)s"
 msgstr "Streak: %(n)s%(k)s"
 
-msgid "Equipo: %(pct)s%%"
-msgstr "Team: %(pct)s%%"
-
 msgid "Todavía sin partidos jugados"
 msgstr "No matches played yet"
 
