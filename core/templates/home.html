@@ -79,9 +79,13 @@
             <ul class="small mb-2">
                 <li>{% translate "Crear enfrentamientos y preparar convocatorias y alineaciones." %}</li>
                 <li>{% translate "Apuntar resultados, cerrar actas y poner advertencias." %}</li>
+                {% if current_club.rules.has_snp %}
                 <li>{% translate "Gestionar jugadores y equipos, y recibir el informe PDF de la convocatoria." %}</li>
+                {% else %}
+                <li>{% translate "Gestionar los jugadores del equipo y recibir el informe PDF de la convocatoria." %}</li>
+                {% endif %}
             </ul>
-            <p class="small mb-3">{% translate "Los miembros, las invitaciones y la cuenta SNP los sigue gestionando el capitán." %}</p>
+            <p class="small mb-3">{% if current_club.rules.has_snp %}{% translate "Los miembros, las invitaciones y la cuenta SNP los sigue gestionando el capitán." %}{% else %}{% translate "Los miembros y las invitaciones los sigue gestionando el capitán." %}{% endif %}</p>
             <a class="btn btn-primary btn-sm" href="{% url 'create_match' %}">{% translate "Crear un enfrentamiento" %}</a>
         </div>
         <form method="post" action="{% url 'dismiss_manager_welcome' %}" data-loading-text="{% translate 'Cerrando el aviso…' %}">
