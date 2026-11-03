@@ -7131,6 +7131,14 @@ msgid ""
 msgstr ""
 "Members, invitations and the SNP account are still managed by the captain."
 
+#: core/templates/home.html:90
+msgid "Gestionar los jugadores del equipo y recibir el informe PDF de la convocatoria."
+msgstr "Manage the team's players and receive the call-up PDF report."
+
+#: core/templates/home.html:94
+msgid "Los miembros y las invitaciones los sigue gestionando el capitán."
+msgstr "Members and invitations are still managed by the captain."
+
 #: core/templates/home.html:87
 msgid "Crear un enfrentamiento"
 msgstr "Create a fixture"
@@ -15564,3 +15572,12 @@ msgstr "History against %(rival)s"
 
 msgid "Desempate"
 msgstr "Tie-break"
+
+msgid "%(team)s aún no tiene enfrentamientos cerrados"
+msgstr "%(team)s has no closed matches yet"
+
+msgid "Tus otros equipos sí tienen estadísticas."
+msgstr "Your other teams do have statistics."
+
+msgid "Ver estadísticas de %(team)s"
+msgstr "See %(team)s statistics"
