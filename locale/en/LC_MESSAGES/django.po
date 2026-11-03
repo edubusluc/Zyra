@@ -15567,3 +15567,12 @@ msgstr "History against %(rival)s"
 
 msgid "Desempate"
 msgstr "Tie-break"
+
+msgid "%(team)s aún no tiene enfrentamientos cerrados"
+msgstr "%(team)s has no closed matches yet"
+
+msgid "Tus otros equipos sí tienen estadísticas."
+msgstr "Your other teams do have statistics."
+
+msgid "Ver estadísticas de %(team)s"
+msgstr "See %(team)s statistics"

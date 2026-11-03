@@ -500,3 +500,30 @@ class UniqueSelectorsTests(TestCase):
     def test_no_template_opts_out_of_custom_select(self):
         for path in self._templates():
             self.assertNotIn("data-native", path.read_text(encoding="utf-8"), path)
+
+
+class StatsEmptySpaceTests(TestCase):
+    """Estadísticas de un equipo sin enfrentamientos cerrados cuando el otro sí los tiene."""
+
+    def setUp(self):
+        UnifiedSpacesTests.setUp(self)
+        Match.objects.filter(pk=self.snp_match.pk).update(draft_mode=False)
+
+    def test_empty_space_offers_the_other_one_without_switching(self):
+        page = self.client.get(reverse("team_statistics") + "?en=lapi")
+        self.assertTemplateUsed(page, "stats_empty.html")
+        self.assertContains(page, "aún no tiene enfrentamientos cerrados")
+        self.assertContains(page, "z-space-switcher")
+        self.assertContains(page, "?en=snp")
+        self.assertEqual(self.client.session[SESSION_KEY], self.lapi.id)
+
+    def test_space_with_matches_is_never_replaced(self):
+        page = self.client.get(reverse("team_statistics") + "?en=snp")
+        self.assertTemplateNotUsed(page, "stats_empty.html")
+        self.assertEqual(self.client.session[SESSION_KEY], self.snp.id)
+
+    def test_nobody_with_matches_keeps_the_plain_empty_card(self):
+        Match.objects.filter(pk=self.snp_match.pk).update(draft_mode=True)
+        page = self.client.get(reverse("team_statistics") + "?en=lapi")
+        self.assertContains(page, "Cierra tu primer enfrentamiento y verás esto")
+        self.assertNotContains(page, "aún no tiene")

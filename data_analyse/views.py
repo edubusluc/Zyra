@@ -42,9 +42,15 @@ def _zero_state(request, title):
     club = request.club
     if Match.objects.filter(club=club, draft_mode=False).exists():
         return None
+    # Con varios espacios, si otro equipo del usuario sí tiene enfrentamientos cerrados la página lo dice
+    # y ofrece cambiar a él (sin cambiarlo sola): si no, parecería que no hay nada guardado.
+    others = [c for c in spaces.user_clubs(request) if c.id != club.id
+              and Match.objects.filter(club=c, draft_mode=False).exists()] if spaces.is_multi_space(request) else []
     return render(request, 'stats_empty.html', {
         'zero_title': title,
         'has_open_matches': Match.objects.filter(club=club, draft_mode=True).exists(),
+        'other_with_matches': [{"club": c, "url": f"{request.path}?{spaces.SWITCH_PARAM}={c.competition}"}
+                               for c in others],
     })
 
 
