@@ -154,15 +154,6 @@ class RosterSideAndMinimumTests(ClubDataMixin, TestCase):
 class SnpEvolutionTests(ClubDataMixin, TestCase):
     """«Evolución»: mini gráfico de cada jugador y puestos que sube o baja en el ranking SNP."""
 
-    def test_sparkline_needs_two_updates_and_is_flat_without_changes(self):
-        self.assertIsNone(records.sparkline([40]))
-        flat = records.sparkline([40, 40, 40])
-        self.assertEqual(flat["values"], [40, 40, 40])
-        self.assertEqual({p.split(",")[1] for p in flat["points"].split()}, {"10.0"})
-        rising = records.sparkline([10, 20])
-        ys = [float(p.split(",")[1]) for p in rising["points"].split()]
-        self.assertGreater(ys[0], ys[1])  # en SVG, más arriba es una y menor
-
     def test_rank_movement_between_the_last_two_updates(self):
         season = "2025-2026"
         for pid, first, second in ((self.a, 40, 20), (self.b, 30, 35), (self.c, 20, 50)):
@@ -171,7 +162,7 @@ class SnpEvolutionTests(ClubDataMixin, TestCase):
         rows = {r["player"]: r for r in records.snp_ranking(self.club, season)["rows"]}
         # Antes: A, B, C. Ahora: C, B, A.
         self.assertEqual((rows[self.c]["rank_delta"], rows[self.b]["rank_delta"], rows[self.a]["rank_delta"]), (2, 0, -2))
-        self.assertEqual(rows[self.a]["spark"]["values"], [40, 20])
+        self.assertEqual(rows[self.a]["delta"], -20)
         self.assertIsNone(rows[self.e]["rank_delta"])  # sin histórico
 
     def test_table_shows_the_trend_column_only_for_snp(self):
@@ -179,4 +170,23 @@ class SnpEvolutionTests(ClubDataMixin, TestCase):
         SnpScoreHistory.objects.create(player=self.a, season="2025-2026", date=datetime.date(2025, 10, 8), score=45)
         page = self.client.get(reverse("team_statistics"), {"season": "2025-2026", "match_type": "todos"})
         self.assertContains(page, "st-roster-evo")
-        self.assertContains(page, "<polyline")
+        self.assertNotContains(page, "<polyline")
+        self.assertContains(page, "▲ +5")
+
+    def test_unchanged_last_update_keeps_the_last_real_change(self):
+        season = "2025-2026"
+        for pid, scores in ((self.a, (40, 45, 45)), (self.b, (30, 30, 30))):
+            for day, score in zip((1, 8, 15), scores):
+                SnpScoreHistory.objects.create(player=pid, season=season, date=datetime.date(2025, 10, day), score=score)
+        rows = {r["player"]: r for r in records.snp_ranking(self.club, season)["rows"]}
+        self.assertEqual((rows[self.a]["delta"], rows[self.b]["delta"]), (5, 0))
+        self.assertIsNone(rows[self.e]["delta"])
+        page = self.client.get(reverse("team_statistics"), {"season": season, "match_type": "todos"})
+        self.assertContains(page, "▲ +5")
+
+    def test_nothing_ever_changed_shows_equal(self):
+        season = "2025-2026"
+        for day in (1, 8):
+            SnpScoreHistory.objects.create(player=self.a, season=season, date=datetime.date(2025, 10, day), score=40)
+        rows = {r["player"]: r for r in records.snp_ranking(self.club, season)["rows"]}
+        self.assertEqual(rows[self.a]["delta"], 0)

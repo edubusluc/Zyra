@@ -31,8 +31,8 @@
           <td class="st-roster-vd">{% if r.played %}{{ r.wins }}-{{ r.losses }}{% else %}—{% endif %}</td>
           <td>{% if r.pct is None %}—{% else %}<b>{{ r.pct }}%</b>{% endif %}</td>
           <td>{% if r.signup is None %}—{% else %}{{ r.signup }}% <small>{{ r.signed }}/{{ r.calls }}</small>{% endif %}</td>
-          {% if roster.has_snp %}<td>{% if r.snp is None %}—{% else %}{{ r.snp|floatformat:"0g" }}{% if r.delta %} <small class="{% if r.delta > 0 %}st-up{% else %}st-down{% endif %}">{% if r.delta > 0 %}▲{% else %}▼{% endif %} {{ r.delta|floatformat:"0g" }}</small>{% endif %}{% endif %}</td>
-          <td class="st-roster-evo">{% if r.spark %}<svg class="st-spark" viewBox="0 0 {{ r.spark.width }} {{ r.spark.height }}" width="{{ r.spark.width }}" height="{{ r.spark.height }}" role="img" aria-label="{% blocktranslate with values=r.spark.values|join:', ' %}Puntos SNP en las últimas actualizaciones: {{ values }}{% endblocktranslate %}"><polyline points="{{ r.spark.points }}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>{% endif %}{% if r.rank_delta %} <span class="st-rankmove {% if r.rank_delta > 0 %}st-up{% else %}st-down{% endif %}" title="{% if r.rank_delta > 0 %}{% blocktranslate count n=r.rank_moved %}Sube {{ n }} puesto en el ranking{% plural %}Sube {{ n }} puestos en el ranking{% endblocktranslate %}{% else %}{% blocktranslate count n=r.rank_moved %}Baja {{ n }} puesto en el ranking{% plural %}Baja {{ n }} puestos en el ranking{% endblocktranslate %}{% endif %}">{% if r.rank_delta > 0 %}▲{% else %}▼{% endif %}{{ r.rank_moved }}</span>{% endif %}</td>{% endif %}
+          {% if roster.has_snp %}<td>{% if r.snp is None %}—{% else %}{{ r.snp|floatformat:"0g" }}{% endif %}</td>
+          <td class="st-roster-evo">{% if r.delta is None %}—{% elif r.delta > 0 %}<b class="st-up">▲ +{{ r.delta|floatformat:"0g" }}</b>{% elif r.delta < 0 %}<b class="st-down">▼ {{ r.delta|floatformat:"0g" }}</b>{% else %}<span class="st-muted">=</span>{% endif %}</td>{% endif %}
         </tr>
         {% endfor %}
       </tbody>
