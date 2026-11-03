@@ -1,5 +1,5 @@
-// Cabecera y barra de navegación inferior: se esconden al hacer scroll hacia
-// abajo y vuelven a aparecer en cuanto se hace scroll hacia arriba.
+// Cabecera: se esconde al hacer scroll hacia abajo y vuelve a aparecer en cuanto se hace scroll
+// hacia arriba. La barra de navegación inferior se queda siempre visible (UX-054).
 (function () {
   const header = document.querySelector('.z-header');
   if (!header) return;

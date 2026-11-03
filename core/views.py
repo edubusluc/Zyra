@@ -7,7 +7,7 @@ from urllib.parse import urlencode
 
 from allauth.account.models import EmailAddress
 from allauth.socialaccount.models import SocialAccount
-from django.forms import Select
+from django.forms import RadioSelect, Select
 from django.forms.utils import ErrorDict
 from django.contrib import messages
 from django.contrib.auth import get_user_model, login, logout
@@ -26,9 +26,11 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
+
+from core.templatetags.zyra_format import date_short
 from django.views.decorators.http import require_http_methods, require_POST, require_safe
 
-from data_analyse import my_form as my_form_stats, pairs as pair_stats
+from data_analyse import my_form as my_form_stats
 from call.models import Call
 from match.models import Match
 from match.phase import phases_for, player_status
@@ -38,21 +40,24 @@ from .adapters import GOOGLE_NEW_ACCOUNT_KEY
 from .blocklist import is_user_blocked
 from .decorators import club_admin_required, club_manager_required, club_required
 from .emails import send_invitation_email, send_welcome_email
-from . import guides, season_prep
+from . import guides, season_prep, spaces
 from .forms import CaptainPlayerForm, CaptainSnpForm, ClubForm, EmailChangeForm, InviteMemberForm, SignUpForm
 from .middleware import SESSION_KEY
-from .models import REPORT_SCOPES, Invitation, Membership, UserPreference
+from .models import REPORT_SCOPES, Club, Invitation, Membership, UserPreference
 from .onboarding import onboarding_for
 from . import email_verification, ratelimit, seo
-from players import snp_service
+from players import copy as player_copy, snp_service
 from .unsubscribe import user_from_result_token, user_from_token
 from .services import (
     CaptaincyError, InvitationError, accept_invitation, account_delete_blocker, club_name_matches, club_of,
+    ensure_space_free, free_competitions, one_space_message, SpaceTaken,
     create_club, delete_account, delete_club, eligible_successors, is_last_admin, is_only_member,
     ManagerError, remove_membership, set_manager, transfer_captaincy,
 )
 
 INVITATIONS_PER_PAGE = 10
+# Un segundo envío igual dentro de este margen se toma por doble clic y no crea otra invitación.
+DOUBLE_SUBMIT_WINDOW = datetime.timedelta(seconds=30)
 # Filas del bloque «Pendiente» del inicio: el resto se ve en el listado de enfrentamientos.
 HOME_PENDING_ROWS = 3
 
@@ -99,49 +104,82 @@ def home(request):
 
     club = request.club
     today = datetime.date.today()
+    # Con varios espacios, el banner, lo pendiente, el próximo enfrentamiento, las rachas y «Mi forma»
+    # son de todos (core.spaces); los primeros pasos y la tarea de SNP, del espacio activo.
+    clubs = spaces.user_clubs(request) or [club]
     # Actas abiertas, las más antiguas primero: las pasadas son lo que se quedó a medias (H-02).
-    open_matches = list(Match.objects.filter(club=club, draft_mode=True).select_related('local', 'visiting')
-                        .order_by('start_date', 'id')[:30])
+    open_matches = list(Match.objects.filter(club__in=clubs, draft_mode=True)
+                        .select_related('local', 'visiting', 'club').order_by('start_date', 'id')[:30])
     phases = phases_for(open_matches)
     next_match = next((m for m in open_matches if m.start_date >= today), None)
-    pending = []
-    if request.membership.can_manage:
-        pending = [{"match": m, "phase": phases[m.id], "overdue": m.start_date < today} for m in open_matches]
+    managed = spaces.managed_clubs(request, clubs)
+    pending = [{"match": m, "phase": phases[m.id], "overdue": m.start_date < today}
+               for m in open_matches if m.club in managed]
     my_status = None
     my_player = Player.objects.filter(club=club, user=request.user).first()
-    if next_match and my_player:
+    next_player = my_player if next_match is None or next_match.club_id == club.id else (
+        Player.objects.filter(club=next_match.club, user=request.user).first())
+    if next_match and next_player:
         games = list(next_match.games.select_related('player_1_local', 'player_2_local',
                                                      'player_1_visiting', 'player_2_visiting'))
         call = Call.objects.filter(match=next_match).first()
-        my_status = player_status(my_player, call, games)
-    players = Player.objects.filter(club=club, in_team=True)
-    hot_player, hot_pair = pair_stats.hot_streaks(pair_stats.club_game_log(club), players)
+        my_status = player_status(next_player, call, games)
+    # Banner: con varios equipos, todos (en el orden de las competiciones), no el del espacio activo.
+    home_teams = [{"club": c, "team": c.own_team, "membership": spaces.membership_for(request, c)}
+                  for c in clubs] if len(clubs) > 1 else []
 
-    my_form_hidden = bool(my_player) and UserPreference.my_form_is_hidden(request.user)
-    my_form_data = my_form_stats.my_form(club, my_player) if my_player and not my_form_hidden else None
+    # «Mi forma» suma los jugadores de la cuenta en todas sus competiciones, en el orden de las
+    # competiciones (no cambia con el espacio activo).
+    form_players = sorted(Player.objects.filter(club__in=clubs, user=request.user).select_related('club'),
+                          key=lambda p: clubs.index(p.club) if p.club in clubs else len(clubs))
+    form_player = form_players[0] if form_players else None
+    my_form_hidden = bool(form_player) and UserPreference.my_form_is_hidden(request.user)
+    my_form_data = (my_form_stats.my_form(form_player.club, form_player, others=form_players[1:])
+                    if form_player and not my_form_hidden else None)
+
+    # «Tus pendientes» (UX-055): lo que depende del jugador y se puede hacer ya. Solo para quien no gestiona.
+    player_todos = []
+    if not request.membership.can_manage:
+        if form_player is None:
+            player_todos.append({"icon": "fa-link", "url": reverse('my_player'),
+                                 "text": _("Enlaza tu cuenta con tu ficha de jugador")})
+        else:
+            if not form_player.photo:
+                player_todos.append({"icon": "fa-camera", "url": reverse('edit_player', args=[form_player.public_id]),
+                                     "text": _("Sube tu foto")})
+        if my_status and my_status.get("game") and my_status.get("partner"):
+            player_todos.append({"icon": "fa-user-group", "url": reverse('call_for_match', args=[next_match.public_id]),
+                                 "text": _("Tu pareja el %(date)s: %(partner)s") % {
+                                     "date": date_short(next_match.start_date),
+                                     "partner": my_status["partner"].short_name}})
 
     onboarding = onboarding_for(request.membership)
     # «Prepara la temporada» (julio-octubre) lleva dentro el paso de SNP: no se repite la tarea suelta.
     prep = season_prep.season_prep_for(request.membership)
     snp_sync = None
-    if request.membership.is_admin and prep is None:
+    if request.membership.is_admin and prep is None and club.rules.has_snp:
         from players import snp_import
         snp_sync = snp_import.sync_task(club)
     return render(request, 'home.html', {
         'email_unverified': email_needs_confirmation(request.user),
+        # Invitaciones de fichas copiadas a otro equipo (players.copy): aceptar o rechazar aquí.
+        'copy_invitations': player_copy.pending_for(request.user),
         'snp_sync': snp_sync,
         'own_team': club.own_team,
         'season': current_season(),
         'next_match': next_match,
         'pending': pending[:HOME_PENDING_ROWS],
         'pending_total': len(pending),
+        'pending_overdue': sum(1 for p in pending if p['overdue']),
+        'multi_space': spaces.is_multi_space(request),
         'my_player': my_player,
+        'form_player': form_player,
         'my_form': my_form_data,
         'my_form_hidden': my_form_hidden,
         'my_status': my_status,
+        'player_todos': player_todos,
         'days_left': (next_match.start_date - today).days if next_match else None,
-        'hot_player': hot_player,
-        'hot_pair': hot_pair,
+        'home_teams': home_teams,
         # Aviso al capitán mientras no haya registrado la cuenta SNP del club (si se muestran los
         # primeros pasos, la tarea de SNP ya va dentro de la lista).
         'season_prep': prep,
@@ -151,7 +189,9 @@ def home(request):
         'onboarding': onboarding,
         'manager_welcome': request.membership.is_manager and request.membership.manager_welcome_pending,
         # Aviso al capitán sobre el rol de gestor, hasta que lo cierre.
-        'manager_tip': request.membership.is_admin and UserPreference.manager_tip_pending(request.user),
+        # Solo si el equipo no tiene ya un gestor, y el aviso dice de qué equipo habla.
+        'manager_tip': (request.membership.is_admin and UserPreference.manager_tip_pending(request.user)
+                        and not Membership.objects.filter(club=club, role=Membership.MANAGER).exists()),
         'onboarding_done': sum(step["done"] for step in onboarding) if onboarding else 0,
         'onboarding_percent': round(100 * sum(step["done"] for step in onboarding) / len(onboarding)) if onboarding else 0,
         'onboarding_next': next((step for step in onboarding if not step["done"]), None) if onboarding else None,
@@ -283,17 +323,21 @@ def _style(*forms):
     """Añade las clases de Bootstrap (form-control / form-select) a los campos de los formularios."""
     for form in filter(None, forms):
         for field in form:
+            if isinstance(field.field.widget, RadioSelect):
+                continue  # las opciones se pintan como tarjetas (.z-choice)
             css = 'form-select' if isinstance(field.field.widget, Select) else 'form-control'
             field.field.widget.attrs.update({'class': css})
 
 
 def register_club(request):
     """
-    Alta de un club nuevo. Si el visitante no tiene cuenta, se le crea una. Quien ya
-    pertenece a un club (como miembro o capitán) no puede registrar otro.
+    Alta de un club nuevo: el espacio de una competición (SNP o LAPI). Si el visitante no tiene
+    cuenta, se le crea una. Quien ya tiene sesión solo puede crear espacios de las competiciones
+    en las que aún no está («Añadir equipo de otra competición»; ``?competicion=lapi`` la deja elegida) y el
+    formulario viene relleno con los datos de su equipo.
 
-    El jugador del capitán se crea con su nombre y apellidos o, si elige conectar su cuenta
-    de SNP (CaptainSnpForm), se guarda la cuenta y se trae el equipo de SNP con sus puntos
+    El jugador del capitán se crea con su nombre y apellidos o, en la SNP, si elige conectar su
+    cuenta de SNP (CaptainSnpForm), se guarda la cuenta y se trae el equipo de SNP con sus puntos
     («Completar equipo» confirmado solo); al terminar elige cuál de esos jugadores es él.
     """
     anonymous = not request.user.is_authenticated
@@ -306,27 +350,35 @@ def register_club(request):
         messages.info(request, _("Ya tenías una cuenta con este email. Has iniciado sesión con ella."))
         return redirect("home")
 
-    # Una cuenta solo puede pertenecer a un club.
-    current = None if anonymous else club_of(request.user)
-    if current is not None:
-        messages.error(request, _("Ya perteneces a %(club)s y solo se puede pertenecer a un club. "
-                                  "Abandona ese club antes de registrar otro.") % {"club": current.name})
+    # Un espacio por competición y cuenta: solo se ofrecen las competiciones que le faltan.
+    free = free_competitions(request.user)
+    if not free:
+        messages.error(request, _("Ya tienes equipo en cada competición. Para crear otro, abandona antes "
+                                  "el de esa competición."))
         return redirect("home")
+    current = None if anonymous else club_of(request.user)
 
     # Nombre y apellidos para el jugador del capitán. Con Google vienen de su perfil si
     # los tiene; si falta alguno, se avisa de que hay que escribirlos.
     known = {} if anonymous else {"name": request.user.first_name.strip(), "last_name": request.user.last_name.strip()}
+    # Si la cuenta ya tiene jugador en otro espacio, el nuevo jugador se crea con su mismo nombre
+    # y no se vuelve a preguntar.
+    linked_player = None if anonymous else (
+        Player.objects.filter(user=request.user).select_related("club").order_by("pk").first())
+    linked_data = {"player-name": linked_player.name, "player-last_name": linked_player.last_name} if linked_player else None
     google_missing_name = (
-        not anonymous and not all(known.values())
+        not anonymous and not linked_player and not all(known.values())
         and SocialAccount.objects.filter(user=request.user, provider="google").exists()
     )
 
     if request.method == "POST":
         if ratelimit.too_many(request, "register", REGISTER_LIMIT, REGISTER_WINDOW):
             return render(request, "429.html", status=429)
-        club_form = ClubForm(request.POST)
-        player_form = CaptainPlayerForm(request.POST, prefix="player")
-        snp_form = CaptainSnpForm(request.POST, prefix="snp")
+        club_form = ClubForm(request.POST, competitions=free)
+        player_form = CaptainPlayerForm(linked_data or request.POST, prefix="player")
+        # Fuera de la SNP no hay cuenta SNP: el jugador del capitán se escribe a mano.
+        snp_form = CaptainSnpForm(request.POST if club_form.rules.has_snp else {"snp-mode": CaptainSnpForm.MANUAL},
+                                  prefix="snp")
         user_form = SignUpForm(request.POST) if anonymous else None
         # Con SNP no hace falta escribir el nombre: el jugador se elige después de entre los de SNP.
         valid = all([club_form.is_valid(), snp_form.is_valid(), snp_form.uses_snp or player_form.is_valid(),
@@ -341,10 +393,12 @@ def register_club(request):
                 with transaction.atomic():
                     user = user_form.save() if anonymous else request.user
                     data = club_form.cleaned_data
+                    if not anonymous:
+                        ensure_space_free(user, data["competition"])
                     player = {} if use_snp else player_form.cleaned_data
                     club = create_club(data["name"], data["location"], user, gender=data["gender"], country=data["country"],
                                        division=data["division"], player_name=player.get("name", ""),
-                                       player_last_name=player.get("last_name", ""))
+                                       player_last_name=player.get("last_name", ""), competition=data["competition"])
                     # La cuenta se queda con el nombre del jugador si no tenía uno.
                     if player and not (user.first_name or user.last_name):
                         user.first_name, user.last_name = player["name"], player["last_name"]
@@ -354,6 +408,10 @@ def register_club(request):
                         account.username = snp_form.cleaned_data["username"].strip()
                         account.password = snp_form.cleaned_data["password"]
                         account.save()
+            except SpaceTaken:
+                # Doble envío: el primero ya creó el equipo de esta competición.
+                messages.info(request, _("Tu equipo ya está creado."))
+                return redirect("home")
             except IntegrityError:
                 # Doble envío o dos registros a la vez: otro proceso creó ese usuario o email entre la validación y el guardado.
                 if not anonymous or not user_form.report_taken():
@@ -365,7 +423,7 @@ def register_club(request):
                     email_verification.start_verification(request, user)
                 request.session[SESSION_KEY] = club.id
                 send_welcome_email(user, club, created=True, site_url=_site_url(request))
-                messages.success(request, _("Club %(club)s creado correctamente.") % {"club": club.name})
+                messages.success(request, _("Equipo %(club)s creado.") % {"club": club.name})
                 if use_snp and snp_service.is_enabled():
                     from players import snp_import
                     team_import = snp_import.start_search(club, user, auto_confirm=True)
@@ -375,7 +433,13 @@ def register_club(request):
                     return redirect("my_player")
                 return redirect("home")
     else:
-        club_form = ClubForm()
+        # Otro espacio de la misma cuenta: el equipo suele ser el mismo, así que se propone su nombre y sus datos.
+        own = current.own_team if current else None
+        initial = {f: getattr(own, f) for f in ("name", "location", "gender", "country")} if own else {}
+        wanted = request.GET.get("competicion")
+        if wanted in {c.code for c in free}:
+            initial["competition"] = wanted
+        club_form = ClubForm(initial=initial, competitions=free)
         player_form = CaptainPlayerForm(initial=known, prefix="player")
         snp_form = CaptainSnpForm(prefix="snp")
         user_form = SignUpForm() if anonymous else None
@@ -386,6 +450,13 @@ def register_club(request):
     return render(request, "register_club.html", {
         "club_form": club_form, "user_form": user_form, "player_form": player_form, "snp_form": snp_form,
         "google_missing_name": google_missing_name, "snp_service_off": not snp_service.is_enabled(),
+        "new_space": current is not None, "linked_player": linked_player,
+        # Con una sola competición libre el título la nombra («Añadir equipo LAPI»).
+        "new_competition": free[0] if current is not None and len(free) == 1 else None,
+        # Competiciones en las que ya tiene equipo: se ven desactivadas («Ya tienes X en LAPI»).
+        "taken_teams": [] if anonymous else spaces.user_clubs(request),
+        # Para register-wizard: divisiones de cada competición y si tiene SNP.
+        "competition_rules": {c.code: {"divisions": list(c.divisions), "snp": c.has_snp} for c in free},
         "google_next": f"{reverse('register_club')}?{FROM_GOOGLE_PARAM}=1",
     })
 
@@ -427,7 +498,7 @@ def register_account(request):
         if user is not None:
             login(request, user, backend=LOGIN_BACKEND)
             email_verification.start_verification(request, user)
-            messages.success(request, _("Cuenta creada. Ya puedes unirte a un club cuando te inviten."))
+            messages.success(request, _("Cuenta creada. Ya puedes unirte a un equipo cuando te inviten."))
             return redirect("no_club")
     else:
         form = SignUpForm()
@@ -465,6 +536,7 @@ def switch_club(request):
     return redirect("home")
 
 
+@spaces.management_view
 @club_required
 @require_safe
 def club_home(request):
@@ -482,6 +554,7 @@ def club_home(request):
     })
 
 
+@spaces.management_view
 @club_admin_required
 def club_members(request, invite_form=None):
     """
@@ -516,6 +589,7 @@ def club_members(request, invite_form=None):
     })
 
 
+@spaces.follow_space
 @club_admin_required
 @require_POST
 def create_invitation(request):
@@ -530,8 +604,17 @@ def create_invitation(request):
         return club_members(request, invite_form=form)
 
     email = form.cleaned_data["email"]
-    club.invitations.filter(email__iexact=email, used_at__isnull=True).delete()
-    invitation = Invitation.objects.create(club=club, created_by=request.user, email=email)
+    with transaction.atomic():
+        # Bloquea el club: dos envíos a la vez (doble clic) no crean dos invitaciones al mismo email.
+        Club.objects.select_for_update().get(pk=club.pk)
+        recent = timezone.now() - DOUBLE_SUBMIT_WINDOW
+        if club.invitations.filter(email__iexact=email, used_at__isnull=True, player__isnull=True,
+                                   created_at__gte=recent).exists():
+            messages.info(request, _("Esa invitación ya está enviada a %(email)s.") % {"email": email})
+            return redirect(reverse("club_members") + "#invitaciones")
+        # Las invitaciones de ficha copiada (``player``) son de otro flujo y no se sustituyen.
+        club.invitations.filter(email__iexact=email, used_at__isnull=True, player__isnull=True).delete()
+        invitation = Invitation.objects.create(club=club, created_by=request.user, email=email)
     url = request.build_absolute_uri(reverse("invitation", args=[invitation.token]))
     if send_invitation_email(invitation, url):
         messages.success(request, _("Invitación enviada a %(email)s. El enlace caduca en 24 horas.") % {"email": email})
@@ -541,6 +624,7 @@ def create_invitation(request):
     return redirect(reverse("club_members") + "#invitaciones")
 
 
+@spaces.follow_space
 @club_admin_required
 @require_POST
 def create_invitation_link(request):
@@ -551,6 +635,11 @@ def create_invitation_link(request):
     marca como caducado, así se conserva quién se unió con él).
     """
     with transaction.atomic():
+        # Bloquea el club: un doble clic no genera dos enlaces y deja muerto el primero.
+        Club.objects.select_for_update().get(pk=request.club.pk)
+        recent = timezone.now() - DOUBLE_SUBMIT_WINDOW
+        if request.club.invitations.pending().filter(reusable=True, created_at__gte=recent).exists():
+            return redirect(reverse("club_members") + "#invitaciones")
         replaced = request.club.invitations.pending().filter(reusable=True).update(expires_at=timezone.now())
         Invitation.objects.create(club=request.club, created_by=request.user, reusable=True)
     if replaced:
@@ -608,6 +697,25 @@ def _join(request, invitation, user):
     return True
 
 
+@login_required
+@require_POST
+def respond_copy_invitation(request, token):
+    """
+    Aceptar o rechazar desde el Inicio la invitación de una ficha copiada a otro equipo
+    (``action=accept`` o ``decline``). Solo la cuenta con el email invitado. Al aceptar entra como
+    jugador y la ficha queda enlazada; al rechazar la ficha se queda sin cuenta.
+    """
+    invitation = next((i for i in player_copy.pending_for(request.user) if i.token == token), None)
+    if invitation is None:
+        messages.info(request, _("Esa invitación ya no está pendiente."))
+        return redirect("home")
+    if request.POST.get("action") == "decline":
+        player_copy.decline(invitation)
+        messages.success(request, _("Invitación rechazada: no entrarás en %(club)s.") % {"club": invitation.club.name})
+        return redirect("home")
+    return redirect("member_welcome" if _join(request, invitation, request.user) else "home")
+
+
 def invitation(request, token):
     """
     Enlace de invitación. Un visitante sin cuenta se registra con usuario, email y
@@ -625,11 +733,12 @@ def invitation(request, token):
             request.session[SESSION_KEY] = club.id
             messages.info(request, _("Ya eres miembro de %(club)s.") % {"club": club.name})
             return redirect("home")
-        # Solo se puede pertenecer a un club: explica por qué no puede unirse a este.
-        current = club_of(request.user)
+        # Un espacio por competición: explica por qué no puede unirse a este.
+        current = club_of(request.user, club.competition)
         if current is not None:
             request.session.pop(PENDING_INVITE_KEY, None)
-            return render(request, "invitation.html", {"invitation": invitation, "club": club, "current_club_name": current.name})
+            return render(request, "invitation.html", {"invitation": invitation, "club": club,
+                                                       "one_space_message": one_space_message(current)})
         # Vuelve de iniciar sesión con Google desde esta misma invitación: se une directamente.
         from_google = request.session.pop(PENDING_INVITE_KEY, None) == token
         if request.method == "POST" or from_google:
@@ -729,7 +838,7 @@ def set_manager_view(request, membership_id):
     except ManagerError as exc:
         messages.error(request, str(exc))
     else:
-        messages.success(request, (_("%(username)s es ahora gestor del club.") if enable
+        messages.success(request, (_("%(username)s es ahora gestor del equipo.") if enable
                                    else _("%(username)s vuelve a ser miembro.")) % {"username": target.user.username})
     return redirect("club_members")
 
@@ -747,7 +856,7 @@ def transfer_captaincy_view(request, membership_id):
     except CaptaincyError as exc:
         messages.error(request, str(exc))
         return redirect("club_members")
-    messages.success(request, _("%(username)s es ahora el capitán de %(club)s. Tú sigues en el club como miembro.")
+    messages.success(request, _("%(username)s es ahora el capitán de %(club)s. Tú sigues en el equipo como jugador.")
                      % {"username": target.user.username, "club": request.club.name})
     return redirect("home")
 
@@ -825,9 +934,56 @@ def my_profile(request):
         "monthly_report": UserPreference.monthly_for(user)[0],
         "monthly_scope": UserPreference.monthly_for(user)[1],
         "match_result_email": UserPreference.match_result_for(user),
-        "player": Player.objects.filter(club=request.club, user=user).first() if request.club else None,
+        # Una fila por equipo de la cuenta (Mi perfil es de la cuenta, no del equipo activo).
+        "sheets": _profile_sheets(request, user),
         "email_unverified": email_needs_confirmation(user),
+        "related_sheets": player_copy.related_unlinked(user),
     })
+
+
+def _profile_sheets(request, user):
+    """
+    Fichas de «Mi perfil»: una por equipo del usuario (en el orden de las competiciones), con su
+    jugador enlazado o None. Con varios equipos, ``query`` lleva ``?en=`` para abrir cada enlace en
+    su equipo.
+    """
+    clubs = spaces.user_clubs(request)
+    players = {p.club_id: p for p in Player.objects.filter(club__in=clubs, user=user)}
+    multi = len(clubs) > 1
+    return [{"club": c, "player": players.get(c.id),
+             "query": f"?{spaces.SWITCH_PARAM}={c.competition}" if multi else ""} for c in clubs]
+
+
+def _related_sheet(request, pk):
+    """La ficha de ``related_unlinked`` con ese id, o 404."""
+    sheet = next((s for s in player_copy.related_unlinked(request.user) if s.pk == pk), None)
+    if sheet is None:
+        raise Http404
+    return sheet
+
+
+@login_required
+@require_POST
+def link_related_sheet(request, pk):
+    """«Sí, enlazarla» en Mi perfil: entra como jugador en el equipo de esa ficha copiada y la enlaza."""
+    sheet = _related_sheet(request, pk)
+    try:
+        player_copy.join_and_link(request.user, sheet)
+    except player_copy.LinkError as exc:
+        messages.error(request, str(exc))
+        return redirect("my_profile")
+    request.session[SESSION_KEY] = sheet.club_id
+    messages.success(request, _("Ficha enlazada: ya estás en %(club)s.") % {"club": sheet.club.name})
+    return redirect("home")
+
+
+@login_required
+@require_POST
+def reject_related_sheet(request, pk):
+    """«No es mía» en Mi perfil: deja de proponer esa ficha."""
+    player_copy.not_mine(request.user, _related_sheet(request, pk))
+    messages.success(request, _("De acuerdo, no volveremos a proponerte esa ficha."))
+    return redirect("my_profile")
 
 
 @login_required
@@ -876,7 +1032,7 @@ def delete_account_view(request):
             logout(request)
             with transaction.atomic():
                 delete_account(user, delete_player=delete_player)
-            messages.success(request, _("Tu cuenta se ha eliminado. Gracias por haber usado Zyra."))
+            messages.success(request, _("Tu cuenta se ha eliminado. Gracias por usar Zyra."))
             return redirect("home")
     return render(request, "delete_account.html", {
         "blocker": blocker, "needs_password": needs_password, "player": player, "error": error,
@@ -935,7 +1091,7 @@ def remove_member(request, membership_id):
         return leave_club(request)
     else:
         remove_membership(membership)
-        messages.success(request, _("%(username)s ya no es miembro del club.") % {"username": membership.user.username})
+        messages.success(request, _("%(username)s ya no es miembro del equipo.") % {"username": membership.user.username})
     return redirect("club_members")
 
 
@@ -957,12 +1113,12 @@ def leave_club(request):
     if is_last_admin(membership) and is_only_member(membership):
         club = membership.club
         if not club_name_matches(club, request.POST.get("confirm_name")):
-            messages.error(request, _("Para eliminar el club escribe su nombre exactamente: %(club)s.") % {"club": club.name})
+            messages.error(request, _("Para eliminar el equipo escribe su nombre exactamente: %(club)s.") % {"club": club.name})
             return redirect("home")
         club_name = club.name
         delete_club(club)
         request.session.pop(SESSION_KEY, None)
-        messages.success(request, _("Has abandonado %(club)s y el club se ha eliminado con todos sus datos.") % {"club": club_name})
+        messages.success(request, _("Has abandonado %(club)s y el equipo se ha eliminado con todos sus datos.") % {"club": club_name})
         return redirect("home")
     if is_last_admin(membership):
         messages.error(request, _("Eres el capitán de %(club)s: traspasa la capitanía a otro jugador enlazado antes de "

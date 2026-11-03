@@ -47,7 +47,7 @@ class DeleteClubOnLeaveTests(TestCase):
     def test_modal_warns_that_the_club_will_be_deleted(self):
         """El popup avisa del borrado y pide escribir el nombre del club."""
         response = self.client.get(reverse("home"))
-        self.assertContains(response, "Si lo abandonas, el club se eliminará")
+        self.assertContains(response, "Si lo abandonas, el equipo se eliminará")
         self.assertContains(response, 'name="confirm_name"')
 
     def test_modal_is_the_usual_one_when_there_are_more_members(self):

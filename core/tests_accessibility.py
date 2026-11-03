@@ -76,7 +76,8 @@ class A11yParser(HTMLParser):
             if a.get("aria-hidden") != "true" and not a.get("aria-label"):
                 self.problems.append(f'icono <i class="{cls}"> sin aria-hidden="true" ni aria-label')
         elif tag == "canvas":
-            if a.get("role") != "img" or not (a.get("aria-label") or a.get("aria-labelledby")):
+            # Un canvas decorativo (aria-hidden) va dentro de un contenedor role="img" con su aria-label.
+            if a.get("aria-hidden") != "true" and (a.get("role") != "img" or not (a.get("aria-label") or a.get("aria-labelledby"))):
                 self.problems.append(f"<canvas id={a.get('id')!r}> sin role=\"img\" y aria-label")
         if tag in LABELLABLE:
             kind = a.get("type", "text") if tag == "input" else tag
@@ -175,6 +176,14 @@ class AccessibilityTests(TestCase):
                 titles.setdefault(title, []).append(url)
         return titles
 
+    def test_my_statistics_without_a_linked_sheet(self):
+        """«Mis estadísticas» con dos equipos y sin ficha enlazada explica cómo enlazarla."""
+        other = User.objects.create_user("dos", email="dos@example.com", password="pass-12345")
+        create_club("Dos SNP", "Sevilla", other)
+        create_club("Dos LAPI", "Sevilla", other, competition="lapi")
+        self.client.login(username="dos", password="pass-12345")
+        self._assert_accessible([reverse("my_statistics")])
+
     def test_public_pages(self):
         self._assert_accessible([
             reverse("home"), reverse("login"), reverse("register"), reverse("register_club"), reverse("privacy"),
@@ -183,6 +192,15 @@ class AccessibilityTests(TestCase):
             *[reverse("guide_detail", args=[g.slug]) + "?lang=en" for g in GUIDES],
             unsubscribe_path(self.user),
         ])
+
+    def test_error_500_page(self):
+        """La página de error 500 es autónoma: se pinta sin contexto y es accesible (UX-008)."""
+        from django.template.loader import render_to_string
+        html = render_to_string("500.html")
+        problems, title = audit(html)
+        self.assertEqual(problems, [])
+        self.assertIn("Algo ha fallado", title)
+        self.assertIn(reverse("home"), html)
 
     def test_club_pages(self):
         self.client.login(username="capi", password="pass-12345")
@@ -193,7 +211,7 @@ class AccessibilityTests(TestCase):
             reverse("edit_match_date", args=[self.match.public_id]),
             reverse("edit_call", args=[self.call.public_id]),
             reverse("view_call_log", args=[self.call.public_id]),
-            reverse("list_players"), reverse("create_player"), reverse("show_player", args=[p]),
+            reverse("list_players"), reverse("create_player"),
             reverse("edit_player", args=[p]), reverse("manage_roster"), reverse("snp_account"),
             reverse("list_teams"), reverse("create_team"), reverse("edit_team", args=[self.rival.public_id]),
             reverse("manage_teams"),

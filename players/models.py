@@ -4,6 +4,7 @@ import datetime
 from django.conf import settings
 from django.core.validators import RegexValidator
 from django.db import models
+from django.db.models.signals import post_save
 from django.utils.translation import gettext, gettext_lazy as _
 
 from core import crypto
@@ -59,6 +60,30 @@ def joined_by(joined_season, season):
     return joined is None or current is None or current >= joined
 
 
+
+# Partículas de apellido que van en minúscula: «de la Fuente».
+_PARTICLES = {"de", "del", "la", "las", "los", "y", "san", "van", "von", "da", "do", "dos", "di"}
+
+
+def proper_name(text):
+    """
+    Nombre propio en caja de título («Alberto Montaño»). Solo normaliza las palabras escritas
+    enteras en mayúsculas o en minúsculas; las mixtas («McGregor») se respetan. Los titulares
+    lo pasan a mayúsculas con CSS (UX-023).
+    """
+    out = []
+    tokens = str(text or "").split()
+    for i, token in enumerate(tokens):
+        # Una partícula solo va en minúscula entre otras palabras («de la»); al principio o al final es el apellido.
+        if token.lower() in _PARTICLES and 0 < i < len(tokens) - 1:
+            out.append(token.lower())
+        elif token.isupper() or token.islower():
+            out.append("-".join(part[:1].upper() + part[1:].lower() for part in token.split("-")))
+        else:
+            out.append(token)
+    return " ".join(out)
+
+
 class Player(PublicIdModel):
     """
     Jugador de un club. Pertenece siempre al equipo propio del club y hereda su categoría.
@@ -91,6 +116,11 @@ class Player(PublicIdModel):
     )
     snp_score = models.FloatField(null=True)
     in_team = models.BooleanField(default=True)
+    # Ficha de otro equipo (de otra competición) de la que se copió con «Copiar jugadores»: solo se
+    # copian nombre, apellidos, foto, posición y mano; las estadísticas se quedan en cada equipo.
+    copied_from = models.ForeignKey(
+        "self", on_delete=models.SET_NULL, null=True, blank=True, related_name="copies",
+    )
     # Copia de la categoría de su equipo (Team.gender): se asigna al guardar.
     gender = models.CharField(_("Categoría"), max_length=1, choices=Team.GENDERS, blank=True, default="")
     joined_season = models.CharField(
@@ -120,18 +150,19 @@ class Player(PublicIdModel):
     @property
     def full_name(self):
         """
-        Nombre y apellidos en mayúsculas. Lo guardado no se toca: los formularios de edición
-        siguen mostrando name/last_name tal cual.
+        Nombre y apellidos en caja de título (UX-023: las mayúsculas quedan para los titulares,
+        que las aplican con CSS). Lo guardado no se toca: los formularios de edición siguen
+        mostrando name/last_name tal cual.
         """
-        return f'{self.name} {self.last_name}'.strip().upper()
+        return proper_name(f'{self.name} {self.last_name}')
 
     @property
     def short_name(self):
-        """Nombre y primer apellido, en mayúsculas."""
-        return f'{self.name} {self.get_first_last_name()}'.strip().upper()
+        """Nombre y primer apellido, en caja de título."""
+        return proper_name(f'{self.name} {self.get_first_last_name()}')
 
     def __str__(self):
-        """Nombre completo en mayúsculas."""
+        """Nombre completo en caja de título."""
         return self.full_name
 
     def get_first_last_name(self):
@@ -264,6 +295,19 @@ class SnpTeamImport(PublicIdModel):
 
 # Al cambiar o borrar la foto se borra el fichero antiguo (core/images.py).
 connect_photo_cleanup(Player)
+
+SHARED_FIELDS = {"name", "last_name", "photo", "user"}
+
+
+def _sync_linked_sheets(sender, instance, raw=False, update_fields=None, **kwargs):
+    """Al guardar una ficha enlazada, sus otras fichas (otros equipos) toman su nombre, apellidos y foto."""
+    if raw or not instance.user_id or (update_fields is not None and not SHARED_FIELDS & set(update_fields)):
+        return
+    from .copy import sync_linked_sheets
+    sync_linked_sheets(instance)
+
+
+post_save.connect(_sync_linked_sheets, sender=Player, dispatch_uid="players.Player.sync_linked_sheets")
 
 
 class SnpUpdateRequest(PublicIdModel):

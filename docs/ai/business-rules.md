@@ -19,16 +19,46 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
 
 ## Cuentas y clubes
 
-- [V] Una cuenta pertenece a un solo club (no suspendido): `core.services.club_of`; lo comprueban
-  `register_club` y `accept_invitation`. Tests: `core/tests_onboarding.py`, `core/tests_invitations.py`.
+- [V] Cada club es el espacio de una competición (`Club.competition`, SNP o LAPI, fija). Una cuenta tiene como mucho un
+  espacio (no suspendido) por competición: `core.services.club_of(user, competition)`; lo comprueban `register_club`
+  (solo ofrece las competiciones libres, `free_competitions`) y `accept_invitation`/`invitation` (`one_space_message`).
+  En espacios sin SNP no hay cuenta SNP, sincronización ni paso de SNP en «Primeros pasos» o «Prepara la temporada».
+  Tests: `core/tests_spaces.py`, `core/tests_onboarding.py`, `core/tests_invitations.py`, `core/tests_space_invitations.py`.
+- [V] Vistas unidas (`core/spaces.py`): con más de un espacio, Enfrentamientos, Calendario, Inicio (Pendiente y próximo
+  enfrentamiento) juntan los espacios con el filtro «Todas · SNP · LAPI» (`?espacio=`, se recuerda en sesión, por defecto
+  «Todas»). Cada tarjeta lleva la etiqueta de su competición y sus acciones según el rol en ese espacio.
+  Estadísticas nunca mezcla equipos: Equipo, Jugador, Parejas y Rivales son siempre de una competición (chips SNP · LAPI;
+  Equipo recuerda la suya en `TEAM_SPACE_KEY`, la primera vez la del primer equipo que gestiona). Lo global es de la persona:
+  con jugador enlazado en dos o más espacios (`spaces.linked_players`, `my_stats_available`) hay una primera pestaña
+  «Mis estadísticas» (`my_statistics`, `data_analyse/templates/stats_mine.html`, `static/js/stats_spaces.js`) con chips Todas · SNP · LAPI y
+  el enlace Estadísticas del menú abre en ella. «Todas» cuenta sus partidos (no puntos) y pone cada competición al lado de
+  la otra con su color (sets, local/visitante, ganados por temporada apilados con total, convocatorias en las que se
+  apunta); SNP o LAPI (`?espacio=`) redirige a su ficha de jugador en esa competición, que mantiene la pestaña y los chips.
+  En la interfaz no se dice «espacio» sino equipo/competición. El menú de usuario solo informa («Tus equipos»: equipo,
+  competición y papel; `Membership.team_role_label`) y no cambia de espacio; con varios equipos la cabecera muestra el
+  nombre del usuario. El espacio activo cambia sin aviso (`switch_to`): al abrir un enfrentamiento de otro espacio
+  (`call_for_match`, `space_match`), con `?en=` (`follow_space`, antes de comprobar el rol), al abrir cualquier pantalla de
+  gestión de un objeto de otro equipo suyo (`follow_object`/`follow_match`/`follow_call`/`follow_game`/`follow_player`:
+  sigue al club del objeto antes de comprobar el rol, así un enlace de otra pestaña nunca da un 403 equivocado; si en ese
+  equipo no tiene permiso, el 403 dice de qué equipo es y qué papel tiene, `_team_reason`) y al elegir competición en
+  Estadísticas. «Nuevo enfrentamiento» (`choose_managed_space`) pregunta en qué equipo si gestiona más de uno
+  (`match/templates/create_match_choose.html`) y va directo si gestiona uno; el formulario dice «Se creará en …» y envía con su `?en=`.
+  Estadísticas › Advertencias solo la ven capitán y gestores (`manages_any`) y solo de los equipos que gestionan
+  (`managed_consult_view`). Mi perfil lista la ficha de cada equipo («Mis fichas»). Cada competición tiene su color (SNP `--z-snp`, LAPI `--z-lapi`; el lima es de Zyra) y solo muestra lo que le aplica: `Competition.has_draws` oculta los empates en LAPI y las «pts» por partido salen solo con `ordered_pairs`. Con la convocatoria abierta se dice «apuntados»; «convocados», al cerrarla. Cerrar convocatoria (`close_call`) vuelve a comprobar la regla de fases finales (`force_finals`). Plantilla, Club y Rivales (`management_view`): si gestiona unos espacios y en otros solo juega, solo ve
+  los que gestiona; el selector SNP | LAPI sale si gestiona todos o es jugador en todos. El registro muestra desactivadas las
+  competiciones en las que ya tiene equipo. Inicio con varios equipos: la tira de equipos los enseña todos («Tus equipos»,
+  `home_teams`); quien es jugador en todos sus equipos no ve Plantilla en
+  el menú (`hide_roster_nav`, `spaces.plays_only`); la ficha del jugador es una sola, la de Estadísticas › Jugador (cabecera con foto, perfil, «Editar» y, para quien gestiona, el número de advertencias; `show_player` redirige a ella), y Plantilla enlaza a esa misma URL. Pestañas de Estadísticas: Yo (`my_statistics`; con jugador enlazado en un solo equipo lleva a su ficha), Equipo, Jugadores, Parejas y Rivales. Advertencias (`warnings_statistics`) se gestiona desde Plantilla (solo capitán y gestores) y no es pestaña de Estadísticas. Jugador, Parejas y Rivales solo eligen SNP o LAPI (sin «Todas»). El informe puede incluir los partidos de la temporada
+  en otras competiciones de los convocados con cuenta enlazada (`Match.report_other_competitions`), solo de los equipos que gestionan todos los destinatarios del informe (`report.can_share_other_competition`). Tests:
+  `core/tests_spaces_unified.py`.
 - [V] Se puede crear una cuenta sin club (`register_account`, o Google desde esa página): queda en `no_club` hasta aceptar una
   invitación o registrar un club. Back-office: KPI «Sin club» (`accounts_without_club`: activas y no staff), filtro `?kind=no_club`.
   Tests: `core/tests_account_without_club.py`, `AccountsWithoutClubTests` en `backoffice/tests_ops.py`.
-- [V] Rol de gestor (`Membership.MANAGER`, hasta `MAX_MANAGERS`=2 por club): lo nombra y quita solo el capitán (`set_manager`, vista `set_manager_view`). `club_manager_required` (capitán o gestor) protege lo deportivo: enfrentamientos, convocatorias, alineaciones, resultados, cierre de acta, advertencias, jugadores y equipos. `club_admin_required` (solo capitán) protege miembros, invitaciones, traspaso, cuenta SNP, «Completar equipo», reabrir actas, eliminar enfrentamientos y convocatorias, desenlazar jugadores y eliminar el club. Al traspasar la capitanía los gestores se mantienen; `admin_emails` incluye a los gestores. Prueba: `core/tests_roles.py` (cada URL por rol).
+- [V] Rol de gestor (`Membership.MANAGER`, hasta `MAX_MANAGERS`=2 por club): lo nombra y quita solo el capitán (`set_manager`, vista `set_manager_view`). `club_manager_required` (capitán o gestor) protege lo deportivo: enfrentamientos (también eliminarlos con el acta abierta), convocatorias, alineaciones, resultados, cierre y reapertura de acta, advertencias, jugadores y equipos. `club_admin_required` (solo capitán) protege miembros, invitaciones, traspaso, cuenta SNP, «Completar equipo», eliminar convocatorias, desenlazar jugadores y eliminar el club. Al traspasar la capitanía los gestores se mantienen; `admin_emails` incluye a los gestores. Prueba: `core/tests_roles.py` (cada URL por rol).
 - [V] Un club tiene un único capitán (restricción `unique_captain_per_club`). Se cede con
   `transfer_captaincy` (vista `transfer_captaincy_view`) solo a un miembro enlazado a un `Player` del club
   (`eligible_successors`); el antiguo pasa a miembro y se borra la `SnpAccount` del club (eran sus credenciales) y se reabre «Primeros pasos»
-  (`onboarding_dismissed_at=None`), cuyos 3 pasos son «Conecta SNP o añade a tus jugadores», «Invita a tus jugadores» y «Crea tu primer enfrentamiento» (se muestran primero en la portada y ocultan los bloques vacíos mientras queden pendientes). El capitán no puede quitarse ni abandonar sin ceder antes.
+  (`onboarding_dismissed_at=None`), cuyos 3 pasos son «Conecta SNP o añade a tus jugadores» («Añade a tus jugadores» fuera de la SNP), «Invita a tus jugadores» y «Crea tu primer enfrentamiento» (se muestran primero en la portada y ocultan los bloques vacíos mientras queden pendientes). El capitán no puede quitarse ni abandonar sin ceder antes.
 - [V] Eliminar la cuenta («Mi perfil», `delete_account`): un capitán debe ceder antes la capitanía
   (`account_delete_blocker`); la ficha de jugador se desenlaza (o se borra si se elige). El capitán
   solo puede eliminar el club tras desvincular todas las demás cuentas. Tests: `core/tests_account_lifecycle.py`.
@@ -56,6 +86,10 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
   suspendido, email bloqueado, ya miembro, o miembro de otro club.
 - [V] No se invita a un email que ya es miembro ni a uno bloqueado (`InviteMemberForm.clean_email`).
 - [V] Los capitanes no crean cuentas ajenas: cada jugador crea la suya desde el enlace.
+- [V] Invitación de ficha copiada (`Invitation.player`, `players/copy.py`): dura 30 días
+  (`COPY_INVITATION_TTL`), llega por correo y sale en el Inicio («Aceptar y unirme» / «Rechazar»,
+  `respond_copy_invitation`). Al aceptarla, `accept_invitation` crea la membresía como jugador y
+  `link_player` enlaza la ficha. Al rechazarla se borra la invitación y la ficha queda sin cuenta.
 
 ## Jugadores
 
@@ -66,8 +100,20 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
   de lo que se pierde (`delete_player`, plantilla `players/templates/confirm_delete.html`).
 - [V] `in_team=False` saca al jugador de la plantilla sin borrarlo; los selectores de convocatoria
   muestran solo `in_team=True` más los ya convocados (`selectable_players`).
-- [V] Nombres en mayúsculas al mostrarse (`full_name`, `short_name`); texto plano sin HTML
+- [V] Nombres en caja de título al mostrarse (`full_name`, `short_name`, vía `proper_name`; los titulares los pasan a mayúsculas con CSS); texto plano sin HTML
   (`core/validators.py`). Nombres parecidos → aviso antes de guardar (`core/similarity.py`, cabecera `X-Similar-Check`).
+- [V] «Copiar jugadores» (`players/copy.py`, vista `copy_players`): del equipo de otra competición de
+  la misma cuenta al activo; hay que ser capitán o gestor en los dos (`managed_pairs`). Se copian
+  nombre, apellidos, foto (mismo fichero), posición y mano; estadísticas, puntos SNP y convocatorias
+  se quedan en el origen (`Player.copied_from`). Estados de `candidates`: `already` (ya tiene ficha,
+  por copia, cuenta o nombre parecido), `other_team` (su cuenta está en otro equipo de esa
+  competición), `member` (ya es miembro sin ficha: se enlaza directamente), `invite` (tiene cuenta:
+  invitación) y `copy`. Si la plantilla pasa de `rules.max_roster` (LAPI 15) se avisa, no se impide.
+- [V] Las fichas enlazadas a una misma cuenta comparten nombre, apellidos y foto: el `post_save` de
+  `Player` llama a `sync_linked_sheets`. La posición y la mano son de cada equipo.
+- [V] Mi perfil propone enlazar las fichas copiadas antes de que el jugador tuviera cuenta
+  (`related_unlinked`): «Sí, enlazarla» (`join_and_link`, entra como jugador) o «No es mía»
+  (`not_mine`, quita `copied_from`).
 
 ## Equipos
 
@@ -82,12 +128,27 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
 
 ## Partidos, convocatorias y actas
 
+- [V] Los números del ciclo salen de la ficha de la competición (`core/competitions.py`, `competition_for`): partidos por enfrentamiento y sus puntos, convocados mínimos y partido de desempate. Hay dos: SNP (5 partidos 3-3-2-2-2, 10 convocados, desempate en el 3) y LAPI (3 partidos de 1 punto, 6 convocados, sin empate posible); cada club juega la de su espacio (`Club.competition`). El recomendador `match/advisor.py` recibe la ficha: en la SNP ordena las parejas por puntos SNP; sin `has_snp` (LAPI) usa solo historial y afinidad, sin orden de juego (cruce por sorteo), y la pantalla de parejas y el PDF no muestran puntos ni orden. Por eso mismo (`ordered_pairs=False`) Estadísticas no muestra en LAPI «Por número de partido» (equipo y jugador) ni «Balance de partidos por jugador». Tests: `core/tests_competitions.py`.
+
 Orden obligatorio del ciclo (`match/views.py`) [V], cubierto por `match/tests_flow.py`:
 
-1. **Partido** (`MatchForm`): el equipo propio juega como local o visitante; local ≠ visitante. Selector «Competición» bloqueado en SNP (`MatchForm.COMPETITIONS`, no persistido aún).
+1. **Partido** (`MatchForm`): el equipo propio juega como local o visitante; local ≠ visitante. Selector «Competición» bloqueado en la del espacio (`Club.competition`).
+   Tipos según la competición (`Competition.match_types`): SNP Enfrentamiento, Reto, Play Off; LAPI Liga, Playoffs,
+   Fase final (los enfrentamientos LAPI antiguos pasaron a Liga, migración match/0015). Solo la liga
+   (`league_type`) tiene jornada (`Match.round_number`, opcional) y puntos de liga (`Match.league_points`: LAPI
+   ganar 3-0 = 4, 2-1 = 3, perder = 1; total de la temporada en Estadísticas › Equipo, `match/league.py`). En
+   Playoffs y Fase final (`final_types`), convocar a quien no ha jugado `finals_min_regular` (2) enfrentamientos de
+   liga esa temporada pide marcar «Convocarlos igualmente» (`force_finals`, reglamento LAPI 8.2). Tests: `match/tests_league.py`.
+   **No presentado** (competiciones con `no_show`: SNP y LAPI; no en amistosos): con el acta abierta, en cualquier
+   fase, «Más» › «No se presentó el rival» / «No nos presentamos» (`mark_no_show`, capitán o gestor) borra
+   parejas y resultados, guarda `Match.no_show` (`own`/`rival`) y cierra el acta con todos los puntos para el
+   que sí se presentó (SNP 12-0, normativa 20.3; LAPI 3-0). Cuenta en el balance del equipo, sus rachas y Rivales (no como mayor victoria o peor
+   derrota), no en jugadores, parejas ni asistencia (las consultas de convocatorias filtran `match__no_show=""`); no envía el correo de resultado.
+   Puntos de liga: 4 si no se presentó el rival, 0 si no nos presentamos (las sanciones del reglamento no se
+   muestran nunca). «Quitar no presentado» (`undo_no_show`) reabre el acta; reabrirla también lo quita.
    Amistoso: `match_type="amistoso"`; puede tener rival escrito a mano (`rival_name`, sin crear
    `Team`, ese lado `NULL`) que no puede llamarse como el equipo propio.
-2. **Convocatoria** (mínimo 10 jugadores al crearla y al editarla, `MIN_CALL_PLAYERS` en `match/phase.py`): una por partido; si ya existe o el acta está cerrada → `existing_call`.
+2. **Convocatoria** (mínimo `min_call_players` de la competición al crearla y al editarla: 10 SNP, 6 LAPI): una por partido; si ya existe o el acta está cerrada → `existing_call`.
    Se edita mientras el acta siga abierta (`edit_call` mira `match.draft_mode`); cada cambio se anota en `CallLog`.
 3. **Cerrar convocatoria** (`close_call`, POST): ≥10 jugadores y abierta. Siempre se cierra aunque
    falle el envío del informe.
@@ -98,19 +159,31 @@ Orden obligatorio del ciclo (`match/views.py`) [V], cubierto por `match/tests_fl
    gana los dos primeros; con 1-1 el tercero es obligatorio (set normal o super tie-break a 10 con
    2 de diferencia). Con `Result.retired` (partido finalizado por lesión) vale un resultado incompleto
    (`validate_retired_result`, p. ej. 7-5 / 3-0): gana quien va ganando (más sets, luego más juegos).
+   En las competiciones con `injury_completes` (SNP 15.10 y LAPI) se indica la pareja lesionada (`Result.injured_side`) y
+   gana siempre la sana: `complete_retired_result` le completa el set a medias a 6 (a 7 si la lesionada
+   tenía 5 o 6) y los sets que falten 6-0 (3-2 queda 3-6 / 0-6). La casilla y la pareja están en el resultado de un partido y en «Poner resultados» (`match/templates/includes/injury_fields.html`, prefijo `gN_`); la etiqueta «Lesión» dice qué pareja se lesionó.
    Al guardar fija `Game.winner`.
+   **Pareja no presentada** (`pair_no_show`, solo SNP, normativa 20.2): en «Poner resultados», «¿Se jugó?»
+   por partido guarda `Game.no_show` (`own`/`rival`/`both`), borra su resultado y sus jugadores (no cuenta para
+   jugadores ni parejas). Al cerrar el acta `match/pair_no_show.py` (`apply`) deja los puntos en cada `Game.score`:
+   un equipo sin una pareja → 6 puntos al cumplidor y 2/2/1/1 en los jugados (2 a las dos mejores parejas, las
+   de número más bajo); 6-6 lo gana quien ganó los 4 jugados; dos o más parejas del mismo equipo → 0-12; la
+   misma pareja en los dos → ese partido se anula; parejas distintas → cada uno pierde la suya con sus puntos.
+   Tests: `match/tests_pair_no_show.py`.
 6. **Cerrar acta** (`close_match`, POST): acta abierta y 5 partidos con resultado. Suma puntos,
    fija `Match.result` (valores canónicos en `match/outcomes.py`; `EMPATE` posible, p. ej. 6/6, salvo en Reto y Play Off: ahí el 6-6 lo decide el ganador del partido 3, `determine_match_result`) y `result_points`,
    y cierra `Game.draft_mode`. Con fecha futura exige `confirm_future`. Los resultados se pueden
    meter de una vez en `enter_results` (guardado parcial; «Guardar y cerrar acta»). La fase y la siguiente acción salen siempre de
    `match/phase.py` (`phase_of`/`phases_for`), que usan el inicio, el listado y la página del enfrentamiento. Siempre son 5 partidos: no se contempla un acta con menos. Todo en una transacción.
-7. **Reabrir acta** (`reopen_match`, POST, capitán): vuelve a borrador, resultado `NONE`, anota `reopened_at/by`.
+7. **Reabrir acta** (`reopen_match`, POST, capitán o gestor): vuelve a borrador, resultado `NONE`, anota `reopened_at/by`.
 
 Con el acta cerrada [V]: no se borra el partido (`delete_match`) ni su convocatoria (`delete_call`),
 ni se editan parejas (`edit_game_match`).
 
 - [V] Advertencias (`create_penalty`): solo a jugadores del club con `in_team=True`. El motivo (`kind`) es obligatorio y «Otro» exige detalle. Solo capitán y gestores las aplican, editan (`edit_penalty`: motivo y detalle, desde el historial de Estadísticas › Advertencias) y retiran (`delete_penalty`, que acepta `next` interno: «Quitar» en el registro de la convocatoria y «Deshacer» en el aviso, que lleva la URL en `extra_tags="undo=…"`); las de otros clubes se ignoran.
-- [V] Alineación sugerida (`suggested_lineup`, `match/advisor.py`): solo propone, no guarda.
+- [V] Alineación sugerida (`suggested_lineup`, `match/advisor.py`): solo propone, no guarda. Necesita `players_per_lineup` convocados de la competición (10 SNP, 6 LAPI).
+- [V] Dar de baja a todos los jugadores del equipo (`manage_roster`, `edit_player`) se permite, pero avisa antes de guardar y después.
+- [V] Crear otro espacio con una cuenta que ya tiene jugador: no se pide el nombre, el nuevo jugador copia nombre y apellidos del primero (`register_club`).
 
 ## Informe PDF y correos
 
@@ -148,6 +221,10 @@ ni se editan parejas (`edit_game_match`).
 
 ## SNP
 
+- [V] «Completar equipo» no duplica fichas copiadas: los jugadores sin puntos SNP
+  (`same_player_options`) se ofrecen en «¿Es el mismo jugador?» y `confirm(team_import, same=...)`
+  les da los puntos en vez de crear otra ficha.
+
 - [V] Credenciales SNP cifradas con `FIELD_ENCRYPTION_KEY`; cambiar la clave invalida las guardadas.
 - [V] Cruce de nombres SNP ↔ jugador sin mayúsculas, tildes, categoría final ni segundo apellido
   ausente (`players/snp.py`, `match_scores`); ambiguos y sin pareja no se actualizan.
@@ -156,7 +233,7 @@ ni se editan parejas (`edit_game_match`).
   cuenta del capitán). Para ante 429/403/503 o fallos de red seguidos.
 - [V] Mientras una búsqueda web está en marcha (`SnpTeamImport.RUNNING`) los capitanes ven en toda la web la barra de `core/templates/includes/sync_bar.html` (`progress`/`stage` del import, `sync_status`) y `not_while_syncing` bloquea `create_player`, `create_team` y `create_match`.
 - [V] «Prepara la temporada» (`core/season_prep.py`, `Club.season_prep`): tarjeta del Inicio de capitanes y gestores del 1 de julio al 31 de octubre en clubes creados antes del 1 de julio; tres pasos (plantilla y rivales los marca a mano quien los revisa con `season_prep_step`; SNP se marca solo con una búsqueda web correcta de la temporada o con «Omitir este paso», solo capitán). «Ahora no» (`season_prep_dismiss`) solo capitán. Se oculta sola al completar los tres. Dentro de la tarjeta va la tarea de SNP (`sync_task(this_season=True)`), por lo que no sale la tarea suelta «Sincronizar datos». Tests: `core/tests_season_prep.py`.
-- [V] «Mi forma» (`data_analyse/my_form.py`): tarjeta del Inicio solo para quien tiene su cuenta enlazada a un jugador (nada nuevo para el capitán que no juega). Solo partidos competitivos (los amistosos no cuentan en nada). Últimos 5 (del más antiguo a la izquierda al más reciente a la derecha), racha, balance (anillo de victorias y derrotas) y convocatorias son todos de la temporada actual: un solo gráfico, «jugadas Y de las X convocatorias cerradas en las que te apuntaste»; SNP = puntos actuales y gráfica a todo el ancho de los últimos 30 días con cada actualización en su fecha, máximo/mínimo y diferencia (`SnpScoreHistory`); el botón de la tarjeta lleva a `player_statistics?player=`. Cada usuario puede ocultarla y volver a mostrarla (`toggle_my_form`, `UserPreference.my_form_hidden`). Tests: `core/tests_my_form.py`.
+- [V] «Mi forma» (`data_analyse/my_form.py`): tarjeta del Inicio solo para quien tiene su cuenta enlazada a un jugador (nada nuevo para el capitán que no juega). Solo partidos competitivos (los amistosos no cuentan en nada). Últimos 5 (del más antiguo a la izquierda al más reciente a la derecha), racha, balance (anillo de victorias y derrotas) y convocatorias son todos de la temporada actual: un solo gráfico, «jugadas Y de las X convocatorias cerradas en las que te apuntaste»; SNP = puntos actuales y gráfica a todo el ancho de los últimos 30 días con cada actualización en su fecha, máximo/mínimo y diferencia (`SnpScoreHistory`); el botón de la tarjeta lleva a `player_statistics?en=<competición>&player=`. Con jugador en varias competiciones (`others`) suma partidos y convocatorias de todas (son partidos, no puntos), marca la competición de cada uno de los últimos partidos y da el desglose (`by_competition`); los puntos SNP son del jugador de la SNP y la tarjeta no cambia con el espacio activo. Cada usuario puede ocultarla y volver a mostrarla (`toggle_my_form`, `UserPreference.my_form_hidden`). Tests: `core/tests_my_form.py`.
 - [V] «Pedir actualización a Zyra» (`players/snp_requests.py`, `SnpUpdateRequest`): solo el capitán (`snp_update_request`, POST, nota opcional) desde el paso de SNP de «Prepara la temporada» y desde Jugadores; una sola abierta por club. El personal la atiende en `/backoffice/snp-requests/` («Completar equipo» lanza el proceso `complete_snp_team` sin el límite de la web; «Marcar hecha» la cierra y cumple el paso de SNP de la temporada). Con más de `ALERT_OPEN_REQUESTS` (5) abiertas, `backoffice.alerts` envía el correo al personal. Tests: `core/tests_snp_requests.py`.
 - [V] «Completar equipo» desde la web: solo UNA vez con éxito por temporada, contada desde el último 1 de julio (en el alta, con la cuenta SNP ya registrada o desde «Prepara la temporada»;
   `snp_import.web_import_done`, `season_window_start`), máx. 3 búsquedas al día con 1 min entre ellas (no cuentan las canceladas ni las rechazadas por cuenta SNP ya corregida; guardar la cuenta SNP con datos distintos pone `snp_import_failures` a 0). Si SNP rechazó la cuenta y no ha cambiado, no se relanza (`account_unchanged_after_failure`); la tarea «Conecta SNP o añade a tus jugadores» solo se marca con una búsqueda web hecha. Cada búsqueda fallida suma a
@@ -178,7 +255,13 @@ ni se editan parejas (`edit_game_match`).
 - [V] Una pareja es la misma con independencia de quién juegue en cada lado (`pairs.pair_key`);
   los rankings exigen un mínimo de partidos (`min_games_pair`).
 - [V] Rivales (`data_analyse/rivals.py`): se agrupan por equipo (`Team.pk`, no por nombre: mismo nombre en dos divisiones = dos rivales) o, en amistosos con rival escrito a mano, por el nombre sin distinguir mayúsculas; solo enfrentamientos con el acta cerrada. La «Previa» (enfrentamiento y convocatoria) cuenta los cerrados anteriores contra el mismo rival, de cualquier tipo, y no se pinta sin historial; «mejor pareja» exige `MIN_GAMES_PAIR` partidos y alguna victoria.
-- [V] Filtro de tipo: Todos / Competitivos / Amistosos (`?match_type=`); temporada `?season=` (equipo, jugador y parejas; sin ella, todas las temporadas).
+- [V] Contexto único de Estadísticas (Equipo, Jugador, Parejas, Rivales, Advertencias): la competición es el equipo activo (`?en=`, `spaces.consult_view`; ya no hay `?espacio=` ni clave de sesión propia en Equipo), la temporada es la común (`core/season_choice.choose_season`, la actual salvo elección explícita, recordada en sesión) y el tipo es Competitivos por defecto (`stats_match_type`; `?match_type=todos` incluye los amistosos, como «Mi forma»). Los tres filtros van en la misma fila (`core/templates/includes/filters_row.html`; Competición · Temporada · Tipo) justo bajo las pestañas, en todas las pantallas. Rivales (lista y ficha) usa los mismos valores por defecto y lleva el filtro de tipo.
+- [V] Cabecera que se entiende sin scroll (fase 4): Equipo muestra el balance una sola vez (V-E-D, % con su base y barra segmentada si hay empates) más la forma de los últimos 5 enfrentamientos y la racha (`team_card.form_and_streak`); la media SNP vive solo en el ranking SNP, que da su fecha de actualización (`records.snp_ranking` → `updated`, `stale` a los `SNP_STALE_DAYS`=6 días; la ficha del jugador también). En LAPI el bloque «Liga» junta la última jornada (`team_card.league_summary`) y la elegibilidad de fases finales de la temporada en curso (`finals_roster`, con las jornadas que le faltan a cada jugador); «No presentados y lesiones» solo sale si hay alguno. Yo (`my_statistics`) da el % de victorias global y por competición; la ficha del jugador añade «Equipo: X %» (`team_win_pct`). Tests: `data_analyse/tests_comprender.py`.
+- [V] Enfrentamientos (fase 9): la lista (`list_match`) no lleva resumen de cifras ni indicador de pendientes (para eso está «Requieren acción»; lo que el jugador debe responder, en Inicio; el balance, en Estadísticas › Equipo); el enfrentamiento cerrado es una línea (`z-fixture--closed`) con el marcador desde nuestro equipo (`club_score`) para capitán y jugador, y el recorrido `z-flow4` solo aparece en los abiertos del capitán o gestor (el jugador ve la tarjeta `is-player` en los próximos). En el acta (`match/templates/call_for_match.html`) el estado es único (junto al marcador, sin insignia de cabecera ni etiqueta «Acta cerrada»); las fases (`z-status4`) y la «Previa» solo con el acta abierta, y cerrada la sustituye el enlace «Historial contra…» (`rival_history_url`, `data_analyse/templatetags/rivals.py`). Tests: `match/tests_fase9.py`.
+- [V] Densidad y accesibilidad (fase 8): las tarjetas de Estadísticas no llevan notas descriptivas (`st-card-note` no existe); la explicación que haga falta va en un tooltip «i» (`data_analyse/templates/includes/stat_tip.html`). Cada `st-section` declara `data-level` (understand/compare/deepen): en móvil `static/js/stats-mobile.js` solo deja siempre abiertas las de `understand` y pliega el resto (con `data-summary` como resumen). Glosario: enfrentamiento = cruce entre equipos, partido = juego de una pareja, «apuntado» = respuesta del jugador, «convocado» = lo decide el capitán; cada cifra lleva su unidad. Los lienzos de Chart.js llevan `aria-hidden` y su contenedor `role="img"`, con título y valores en el `aria-label` (plugin `zDescribe` de `static/js/chart-style.js`).
+- [V] Parejas y Rivales (fase 7): sin pareja elegida, Parejas lista todas las parejas (`pair_list_context`, `comparison.sort_pairs`: `?orden=` jugados/mejor/peor/nombre, `?q=`, 15 por página; sin mínimo). La ficha de pareja es compacta (`compact`: solo resumen y últimos partidos) con menos de `MIN_PAIR_SHEET_GAMES` (2) partidos juntos; la evolución del % y el «Cambio» entre temporadas (`pairs.pair_summary`) siguen la regla de tendencias (`MIN_TREND_GAMES`). En LAPI (`not ordered_pairs`) el kicker es «N partidos juntos», sin Puntos, y los partidos llevan `type_label` y `round`. Rivales: `rival_summary` añade `pct` y ordena por `pct` o `worst` (el balance sigue aceptado). La ficha de rival usa `rivals.pairs_against` (mejores y peores parejas con `MIN_GAMES_PAIR`). Las tarjetas que solo dirían «no hay datos» no se renderizan. Tests: `data_analyse/tests.py`, `data_analyse/tests_rivals.py`, `match/tests_league.py`.
+- [V] Comparaciones (fase 6, `data_analyse/comparison.py`): Equipo, Jugador, Pareja, «Yo» y el PDF mensual usan las mismas cinco situaciones de set (`SET_ROWS`: Tras ganar el 1.er set, Tras perder el 1.er set, Tie-breaks, Set decisivo, Roscos a favor sobre los sets jugados) y no enseñan las que no tienen casos. Las situaciones se dibujan con `data_analyse/templates/includes/set_situations.html` (barras con título y descripción; «Yo» con una barra por competición). «Local y visitante» de Jugador y Pareja es un bloque (`venue_split`, `data_analyse/templates/includes/venue_split.html`) con la unidad escrita en partidos; Equipo mantiene sus dos tarjetas de enfrentamientos ganados / total. Una tendencia (evolución del % por temporada, `trend`) necesita al menos dos temporadas con `MIN_TREND_GAMES` (5) partidos, y el «Cambio» entre temporadas solo se calcula si las dos las alcanzan. En la ficha, «Compañeros» (`partner_rows`) ordena por partidos y muestra el % real; mejor y peor solo entre quienes tienen 5 o más. «Yo» muestra el % de victorias por temporada y competición (no volúmenes) y el compromiso como cifra por competición. Tests: `data_analyse/tests_comparison.py`.
+- [V] Tabla de plantilla (fase 5, `data_analyse/roster_table.py`): sustituye al Top 5 y a los récords de jugador de Equipo y es la entrada de Estadísticas › Jugadores (sin `?player=`). Una fila por jugador `in_team` con jugados, V-D, % de victorias, % de convocatorias cerradas a las que se apuntó (`signup_by_player`, solo desde su `joined_season`) y, con SNP, puntos y último cambio. Opciones por URL: `?lado=` (todos/local/visitante) y `?orden=` (pct/played/signup/snp/name); sin mínimo de partidos (cuenta todo el que ha jugado). «Se apunta» respeta `?lado=` (solo convocatorias de enfrentamientos como local o visitante). En SNP, la columna «Evolución» trae la mini línea de las últimas `SPARK_POINTS` actualizaciones y los puestos que sube o baja (`records.snp_ranking`: `spark`, `rank_delta`). Quien no ha jugado ninguno va al final del orden por %. Equipo lleva cinco récords (racha de victorias con «sin perder», mayor victoria, peor derrota, mejor temporada, pareja con más victorias); no hay bloque «Puntos SNP» aparte: la media del equipo y su fecha de actualización van sobre la tabla (`roster.snp`); el balance por jugador 3/2 y la asistencia están en «Profundizar» (`st-fold`, plegado). Tests: `data_analyse/tests_roster.py`.
 - [V] Asistencia a convocatorias (`attendance.signup_attendance`): apuntados / (plantilla actual con `joined_by` + los apuntados que ya no están); «Todas» promedia por temporada. Sin historial de plantilla, las bajas que no se apuntaron no cuentan.
 - [I] Las métricas se calculan en Python sobre el log de partidos; con muchos partidos por club
   conviene vigilar el rendimiento.

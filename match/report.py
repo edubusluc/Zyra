@@ -10,6 +10,8 @@ from django.utils.translation import gettext as _, pgettext
 
 from data_analyse.pairs import COMPETITIVE, club_game_log, match_type_lookup
 
+from core.competitions import competition_for
+
 from . import advisor, outcomes
 from call.models import Call
 
@@ -119,13 +121,15 @@ def build_report(call):
                     usage[pid]["games"] += 1
                 usage[pid]["last"] = max(filter(None, (usage[pid]["last"], g["date"])))
     calls = (Call.objects.filter(match__club=club, match__season=match.season, match__draft_mode=False, draft_mode=False,
+                                 match__no_show="",
                                  match__start_date__lt=match.start_date)
              .filter(**call_scope_filter).exclude(pk=call.pk).values_list("players", flat=True))
     for pid in calls:
         if pid in usage:
             usage[pid]["calls"] += 1
 
-    lineup_a, lineup_b = advisor.recommend(forms, pairs, [p.id for p in called])
+    comp = competition_for(club)
+    lineup_a, lineup_b = advisor.recommend(forms, pairs, [p.id for p in called], comp)
     lineups = []
     for letter, lineup, compare_to in (("A", lineup_a, None), ("B", lineup_b, lineup_a)):
         if lineup:
@@ -150,8 +154,52 @@ def build_report(call):
         "lineups": lineups,
         "usage": usage,  # por id de convocado: {'games', 'calls', 'last'}
         "competitive_only": competitive_only,
-        "enough_players": len(called) >= advisor.PLAYERS_PER_LINEUP,
+        "enough_players": len(called) >= comp.players_per_lineup,
+        "other_competitions": other_competitions(called, match) if match.report_other_competitions else [],
+        "competition": comp,
     }
+
+
+def _manager_ids(club):
+    """Ids de los usuarios que son capitán o gestor de ``club``."""
+    from core.models import Membership
+    return set(Membership.objects.filter(club=club, role__in=[Membership.ADMIN, Membership.MANAGER])
+               .values_list("user_id", flat=True))
+
+
+def can_share_other_competition(club, other):
+    """
+    True si el informe de ``club`` puede llevar datos de ``other`` (otro equipo de la misma persona):
+    solo cuando todos los capitanes y gestores que reciben el informe de ``club`` lo son también de
+    ``other``. Así nadie ve datos de un equipo que no gestiona.
+    """
+    return _manager_ids(club) <= _manager_ids(other)
+
+
+def other_competitions(called, match):
+    """
+    Partidos de la temporada del enfrentamiento que los convocados con cuenta enlazada han jugado
+    en sus otros espacios (otras competiciones): una fila por jugador y competición con
+    {'player', 'club', 'played', 'wins'}. Solo informativo: no entra en las alineaciones. Solo
+    cuenta los otros equipos que gestionan todos los destinatarios del informe
+    (``can_share_other_competition``).
+    """
+    from data_analyse.views import build_game_log
+    from players.models import Player
+
+    by_user = {p.user_id: p for p in called if p.user_id}
+    rows = []
+    others = (Player.objects.filter(user_id__in=by_user).exclude(club=match.club)
+              .select_related("club").order_by("club__competition"))
+    shareable = {}
+    for other in others:
+        if shareable.setdefault(other.club_id, can_share_other_competition(match.club, other.club)) is False:
+            continue
+        log = [g for g in build_game_log(other) if g["season"] == match.season]
+        rows.append({"player": by_user[other.user_id], "club": other.club, "played": len(log),
+                     "wins": sum(g["won"] for g in log)})
+    rows.sort(key=lambda r: (r["player"].name, r["player"].last_name))
+    return rows
 
 
 def suggested_lineups(call):
@@ -159,20 +207,22 @@ def suggested_lineups(call):
     Alineaciones recomendadas (A y, si la hay, B) para rellenar el formulario de parejas.
 
     Usa el mismo recomendador que el informe de la convocatoria, con la historia anterior
-    al enfrentamiento. Devuelve una lista (vacía con menos de 10 convocados) de
+    al enfrentamiento y la ficha de su competición. Devuelve una lista (vacía si no hay
+    convocados para llenar todas las parejas) de
     {'key', 'title', 'win', 'expected', 'explanation', 'pairs': [[id, id], ...]} con las
-    parejas en orden de juego (partido 1 primero).
+    parejas en orden de juego (partido 1 primero) si la competición lo fija.
     """
     match = call.match
+    comp = competition_for(match.club)
     called = list(call.players.all())
-    if len(called) < advisor.PLAYERS_PER_LINEUP:
+    if len(called) < comp.players_per_lineup:
         return []
     own_local = match.own_is_local
     venue_label = pgettext("sede, en minúscula", "local") if own_local else pgettext("sede, en minúscula", "visitante")
     log = [g for g in club_game_log(match.club, match_type=COMPETITIVE if match.report_competitive_only else None)
            if g['date'] < match.start_date]
     forms, pairs = advisor.build_forms(log, called, own_local)
-    lineup_a, lineup_b = advisor.recommend(forms, pairs, [p.id for p in called])
+    lineup_a, lineup_b = advisor.recommend(forms, pairs, [p.id for p in called], comp)
     result = []
     for key, lineup, compare_to in (("A", lineup_a, None), ("B", lineup_b, lineup_a)):
         if not lineup:
@@ -181,6 +231,8 @@ def suggested_lineups(call):
             "key": key,
             "title": _("Alineación %(letter)s · %(title)s") % {"letter": key, "title": lineup.title},
             "win": round(lineup.win * 100),
+            # Con poco historial la cifra es una estimación débil: el formulario la presenta con su base (H-21).
+            "history": len({g["match_id"] for g in log}),
             "expected": round(lineup.expected, 1),
             "explanation": advisor.explain(lineup, venue_label, compare_to=compare_to),
             "pairs": [[p.a.id, p.b.id] for p in lineup.pairs],

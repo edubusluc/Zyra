@@ -5,17 +5,17 @@
 {% block content %}
 <div class="z-page-head">
     <div>
-        <span class="z-eyebrow">{{ current_club.name }}</span>
+        <span class="z-eyebrow">{% if multi_space and space_only_name %}{% blocktranslate with name=space_only_name %}Equipos de {{ name }}{% endblocktranslate %}{% elif multi_space %}{% translate "Todos tus equipos" %}{% else %}{{ current_club.name }}{% endif %}</span>
         <h1>{% translate "Enfrentamientos" %}</h1>
     </div>
     <div class="z-actions">
-        {% if can_manage %}
-        <a href="{% url 'create_match' %}" class="btn btn-primary text-nowrap"><i class="fa-solid fa-plus me-1" aria-hidden="true"></i> {% translate "Nuevo enfrentamiento" %}</a>
-        {% endif %}
+        {% if create_spaces %}<a href="{% url 'list_teams' %}" class="btn btn-secondary text-nowrap"><i class="fa-solid fa-shield-halved me-1" aria-hidden="true"></i> {% translate "Equipos rivales" %}</a>{% endif %}
+        {% include 'includes/create_match_button.html' %}
     </div>
 </div>
 
 {% include 'includes/match_view_tabs.html' with current='calendar' %}
+{% include 'includes/filters_row.html' %}
 
 <div class="z-cal-nav">
     <a class="btn btn-secondary btn-sm" href="?month={{ month_prev }}" aria-label="{% translate 'Mes anterior' %}"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></a>
@@ -59,7 +59,7 @@
 <ul class="z-cal-legend" aria-label="{% translate 'Leyenda' %}">
     <li><span class="z-cal-event is-upcoming">{% translate "Próximo" %}</span></li>
     <li><span class="z-cal-event is-played">{% translate "Jugado, con marcador" %}</span></li>
-    <li><span class="z-cal-event is-open">{% translate "Acta abierta" %}</span></li>
+    <li><span class="z-cal-event is-open">{% translate "Fecha pasada, sin cerrar" %}</span></li>
     <li><span class="z-cal-event is-friendly">{% translate "Amistoso" %}</span></li>
 </ul>
 {% endblock %}

@@ -20,10 +20,10 @@ def signup_attendance(club, season=None, match_type=None):
 
     Sin ``season`` devuelve ``{'mode': 'seasons', 'rows': [...], 'average': pct}`` con una fila por
     temporada (media de sus convocatorias). Con ``season`` devuelve ``{'mode': 'calls', ...}`` con una
-    fila por convocatoria, por fecha. Cada fila: ``label``, ``signed``, ``eligible``, ``pct`` (y
+    fila por convocatoria, por fecha (``day``: AAAA-MM-DD). Cada fila: ``label``, ``signed``, ``eligible``, ``pct`` (y
     ``calls`` en el modo por temporadas). ``average`` es None si no hay convocatorias.
     """
-    calls = Call.objects.filter(match__club=club, match__draft_mode=False, draft_mode=False,
+    calls = Call.objects.filter(match__club=club, match__draft_mode=False, draft_mode=False, match__no_show="",
                                 **match_type_lookup(match_type, "match__"))
     if season:
         calls = calls.filter(match__season=season)
@@ -38,6 +38,7 @@ def signup_attendance(club, season=None, match_type=None):
         per_call.append({
             'season': call.match.season,
             'label': f"{call.match.start_date:%d/%m} · {call.match.rival_label}",
+            'day': f"{call.match.start_date:%Y-%m-%d}",
             'signed': len(signed),
             'eligible': len(eligible),
             'pct': _pct(len(signed), len(eligible)),

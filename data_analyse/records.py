@@ -5,6 +5,8 @@ Los récords salen de los enfrentamientos cerrados del club y del log de partido
 (data_analyse.pairs.club_game_log), con los mismos filtros de temporada y tipo que el
 resto de la página de equipo.
 """
+from django.utils import timezone
+
 from match import outcomes
 from match.models import Match
 from players.models import Player, SnpScoreHistory
@@ -28,7 +30,7 @@ def _outcome(match):
     return None
 
 
-def _points(match):
+def match_points(match):
     """(puntos del club, puntos del rival) sumando el valor de los partidos ganados por cada lado."""
     own = rival = 0
     for g in match.games.all():
@@ -59,8 +61,8 @@ def team_records(club, season=None, match_type=None, log=None):
     Récords del equipo con los filtros dados. Devuelve un diccionario con las claves que
     tengan datos: 'win_streak' y 'unbeaten' ({'n', 'from', 'to'}), 'biggest_win' y
     'worst_defeat' ({'own', 'rival', 'name', 'date', 'public_id'}), 'best_season'
-    ({'season', 'pct', 'played', 'wins'}), 'game_streak' (partidos seguidos ganados),
-    'top_player' y 'top_pair' ({'name', 'n'}: más victorias) y 'most_games' ({'name', 'n'}).
+    ({'season', 'pct', 'played', 'wins'}) y 'top_pair' ({'name', 'n'}: pareja con más victorias). Son los
+    cinco récords de Equipo; «sin perder» acompaña a la racha de victorias.
     """
     matches = (
         Match.objects.filter(club=club, draft_mode=False, **pair_stats.match_type_lookup(match_type))
@@ -75,7 +77,7 @@ def team_records(club, season=None, match_type=None, log=None):
         outcome = _outcome(m)
         if outcome is None:
             continue
-        own, rival = _points(m)
+        own, rival = match_points(m)
         rows.append({'match': m, 'outcome': outcome, 'own': own, 'rival': rival})
 
     records = {}
@@ -91,10 +93,11 @@ def team_records(club, season=None, match_type=None, log=None):
         m = r['match']
         return {'own': r['own'], 'rival': r['rival'], 'name': m.rival_label, 'date': m.start_date, 'public_id': m.public_id}
 
-    wins = [r for r in rows if r['outcome'] == 'V' and r['own'] + r['rival']]
+    # Un «No presentado» cuenta en las rachas, pero no es la mayor victoria ni la peor derrota.
+    wins = [r for r in rows if r['outcome'] == 'V' and r['own'] + r['rival'] and not r['match'].no_show]
     if wins:
         records['biggest_win'] = score_row(max(wins, key=lambda r: (r['own'] - r['rival'], r['match'].start_date)))
-    losses = [r for r in rows if r['outcome'] == 'D' and r['own'] + r['rival']]
+    losses = [r for r in rows if r['outcome'] == 'D' and r['own'] + r['rival'] and not r['match'].no_show]
     if losses:
         records['worst_defeat'] = score_row(max(losses, key=lambda r: (r['rival'] - r['own'], r['match'].start_date)))
 
@@ -112,16 +115,9 @@ def team_records(club, season=None, match_type=None, log=None):
 
     if log is None:
         log = pair_stats.club_game_log(club, season, match_type)
-    game_streak = _longest(log, lambda g: g['won'])
-    if game_streak and game_streak[0] >= 2:
-        records['game_streak'] = {'n': game_streak[0], 'from': game_streak[1]['date'], 'to': game_streak[2]['date']}
-
     people = {p.id: p for p in Player.objects.filter(club=club)}
-    player_wins, player_games, pair_wins = {}, {}, {}
+    pair_wins = {}
     for g in log:
-        for pid in g['pair']:
-            player_games[pid] = player_games.get(pid, 0) + 1
-            player_wins[pid] = player_wins.get(pid, 0) + g['won']
         if g['won']:
             pair_wins[g['pair']] = pair_wins.get(g['pair'], 0) + 1
 
@@ -133,15 +129,45 @@ def team_records(club, season=None, match_type=None, log=None):
         n, label = min(named)
         return {'name': label, 'n': -n}
 
-    player_name = lambda pid: people[pid].full_name if pid in people else None  # noqa: E731
     pair_name = lambda key: (f"{pair_stats.pair_label(people[key[0]])} / {pair_stats.pair_label(people[key[1]])}"  # noqa: E731
                              if key[0] in people and key[1] in people else None)
-    for key, counts, name in (('top_player', player_wins, player_name), ('most_games', player_games, player_name),
-                              ('top_pair', pair_wins, pair_name)):
-        value = top(counts, name)
-        if value:
-            records[key] = value
+    value = top(pair_wins, pair_name)
+    if value:
+        records['top_pair'] = value
     return records
+
+
+# Días sin actualizar los puntos SNP a partir de los cuales el dato se marca como antiguo (el job corre lunes y
+# miércoles; el panel de salud del back-office avisa con el mismo plazo).
+SNP_STALE_DAYS = 6
+
+
+def snp_is_stale(updated):
+    """True si la fecha de la última actualización SNP (``updated``) es de hace más de ``SNP_STALE_DAYS`` días."""
+    return bool(updated) and (timezone.localdate() - updated).days > SNP_STALE_DAYS
+
+
+# Actualizaciones que dibuja la mini evolución de cada jugador (las más recientes de la temporada).
+SPARK_POINTS = 6
+
+
+def sparkline(values, width=64, height=20):
+    """
+    Mini gráfico de línea de ``values`` (puntos SNP en cada actualización) para una celda de la tabla:
+    ``{'points': "x,y x,y …", 'width', 'height', 'values'}`` listo para un ``<polyline>`` SVG, o None con menos
+    de dos valores. Sin cambios es una línea plana a media altura.
+    """
+    if len(values) < 2:
+        return None
+    low, high = min(values), max(values)
+    pad = 2
+    step = (width - 2 * pad) / (len(values) - 1)
+    span = (high - low) or 1
+    points = []
+    for i, v in enumerate(values):
+        y = height / 2 if high == low else height - pad - (v - low) / span * (height - 2 * pad)
+        points.append(f"{pad + i * step:.1f},{y:.1f}")
+    return {'points': " ".join(points), 'width': width, 'height': height, 'values': [round(v) for v in values]}
 
 
 def snp_ranking(club, season):
@@ -149,20 +175,23 @@ def snp_ranking(club, season):
     Ranking de puntos SNP de la plantilla actual y media del equipo en la temporada ``season``.
 
     Devuelve {'rows', 'chart', 'average', 'riser'}: cada fila es {'pos', 'player', 'score',
-    'first', 'delta'} (``delta``: variación respecto a la actualización anterior, no a la
+    'first', 'delta', 'rank_delta' (puestos que ha subido, negativo si baja), 'spark'} (``delta``: variación respecto a la actualización anterior, no a la
     primera de la temporada; None con menos de dos actualizaciones); ``chart`` es la media del equipo en cada actualización
-    ({'labels', 'average'}); ``riser``, la fila que más ha subido (o None).
+    ({'labels', 'average'}); ``riser``, la fila que más ha subido (o None); ``updated``, la fecha de la
+    última actualización de la temporada (None si no hay) y ``stale``, si ya pasó el plazo (``SNP_STALE_DAYS``).
     """
     squad = list(Player.objects.filter(club=club, in_team=True))
     history = (SnpScoreHistory.objects.filter(player__in=squad, season=season)
                .order_by('date').values_list('player_id', 'date', 'score'))
-    first, last, prev, by_date = {}, {}, {}, {}
+    first, last, prev, by_date, series = {}, {}, {}, {}, {}
     for pid, date, score in history:
         first.setdefault(pid, score)
         if pid in last:
             prev[pid] = last[pid]
         last[pid] = score
         by_date.setdefault(date, []).append(score)
+        series.setdefault(pid, []).append(score)
+    updated = max(by_date) if by_date else None
 
     rows = []
     for p in squad:
@@ -170,10 +199,20 @@ def snp_ranking(club, season):
         if score is None:
             continue
         delta = round(last[p.id] - prev[p.id], 1) if p.id in prev and last[p.id] != prev[p.id] else (0 if p.id in prev else None)
-        rows.append({'player': p, 'score': round(score, 1), 'first': first.get(p.id), 'delta': delta})
+        rows.append({'player': p, 'score': round(score, 1), 'first': first.get(p.id), 'delta': delta,
+                     'spark': sparkline(series.get(p.id, [])[-SPARK_POINTS:])})
     rows.sort(key=lambda r: (-r['score'], r['player'].name, r['player'].last_name))
     for i, r in enumerate(rows, start=1):
         r['pos'] = i
+    # Puestos que ha subido (+) o bajado (-) desde la actualización anterior, entre quienes tienen las dos.
+    compared = [r for r in rows if r['player'].id in prev]
+    before = {r['player'].id: i for i, r in enumerate(
+        sorted(compared, key=lambda r: (-prev[r['player'].id], r['player'].name, r['player'].last_name)), start=1)}
+    now = {r['player'].id: i for i, r in enumerate(
+        sorted(compared, key=lambda r: (-last[r['player'].id], r['player'].name, r['player'].last_name)), start=1)}
+    for r in rows:
+        pid = r['player'].id
+        r['rank_delta'] = before[pid] - now[pid] if pid in before else None
 
     risers = [r for r in rows if r['delta']]
     riser = max(risers, key=lambda r: r['delta']) if risers else None
@@ -182,6 +221,8 @@ def snp_ranking(club, season):
         'rows': rows,
         'average': round(sum(r['score'] for r in rows) / len(rows), 1) if rows else None,
         'riser': riser if riser and riser['delta'] > 0 else None,
+        'updated': updated,
+        'stale': snp_is_stale(updated),
         'chart': {
             'labels': [d.strftime('%d/%m') for d in dates],
             'average': [round(sum(by_date[d]) / len(by_date[d]), 1) for d in dates],

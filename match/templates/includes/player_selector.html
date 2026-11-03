@@ -1,4 +1,4 @@
-{# Selector de jugadores para convocatorias. Recibe: players (con penalty_reasons), selected, submit_label, min_players #}
+{# Selector de jugadores para convocatorias. Recibe: players (con penalty_reasons y, en fases finales LAPI, finals_short/finals_played), selected, submit_label, min_players #}
 {% load static i18n zyra_format %}
 <div class="z-selector" data-selector data-min="{{ min_players|default:0 }}" data-page-size="30">
     <div class="z-selector-tools">
@@ -11,11 +11,16 @@
             <button type="button" class="btn btn-sm" data-selector-filter="Derecha">{% translate "Derecha" %}</button>
             <button type="button" class="btn btn-sm" data-selector-filter="Revés">{% translate "Revés" %}</button>
             <button type="button" class="btn btn-sm" data-selector-filter="Mixto">{% translate "Mixto" %}</button>
-            <button type="button" class="btn btn-sm" data-selector-filter="selected">{% translate "Elegidos" %}</button>
         </div>
-        <div class="d-flex gap-2">
-            <button type="button" class="btn btn-outline-secondary btn-sm" data-selector-all>{% translate "Marcar visibles" %}</button>
-            <button type="button" class="btn btn-outline-secondary btn-sm" data-selector-none>{% translate "Quitar todos" %}</button>
+        <div class="d-flex gap-2 align-items-center">
+            <button type="button" class="btn btn-outline-secondary btn-sm" data-selector-filter="selected">{% translate "Ver solo elegidos" %}</button>
+            <details class="z-more z-selector-more">
+                <summary class="btn btn-outline-secondary btn-sm" aria-label="{% translate 'Más acciones' %}"><i class="fa-solid fa-ellipsis" aria-hidden="true"></i></summary>
+                <ul>
+                    <li><button type="button" data-selector-all title="{% translate 'Marca todos los jugadores que se ven con el filtro y la búsqueda actuales' %}"><i class="fa-regular fa-square-check" aria-hidden="true"></i> {% translate "Marcar todos los de la lista" %}</button></li>
+                    <li><button type="button" data-selector-none><i class="fa-regular fa-square" aria-hidden="true"></i> {% translate "Quitar todos" %}</button></li>
+                </ul>
+            </details>
         </div>
     </div>
 
@@ -27,10 +32,11 @@
             <span class="z-pick-body">
                 <span class="z-pick-name" title="{{ player.full_name }}">{{ player.short_name }}</span>
                 <span class="z-pick-meta">
-                    {{ player.get_position_display|default:"—" }} · SNP {{ player.snp_score|snp_points }}{% if not player.in_team %} · {% translate "fuera del equipo" %}{% endif %}
+                    {{ player.get_position_display|default:"—" }}{% if request.club.rules.has_snp %} · SNP {{ player.snp_score|snp_points }}{% endif %}{% if player.season_total %} · <span title="{% blocktranslate with n=player.played total=player.season_total %}Jugó {{ n }} de {{ total }} enfrentamientos esta temporada{% endblocktranslate %}">{% blocktranslate with n=player.played total=player.season_total %}Jugó {{ n }}/{{ total }}{% endblocktranslate %}</span>{% endif %}{% if not player.in_team %} · {% translate "fuera del equipo" %}{% endif %}
                 </span>
-                {# Para decidir sin salir de la pantalla: partidos jugados esta temporada y advertencias a la vista #}
-                {% if player.season_total %}<span class="z-pick-meta">{% blocktranslate with n=player.played total=player.season_total %}Jugó {{ n }} de {{ total }}{% endblocktranslate %}</span>{% endif %}
+                {# Jugó n/m va en la misma línea que la posición y los puntos (UX-034); las advertencias, aparte y a la vista #}
+                {% if player.finals_short %}<span class="z-pick-meta z-pick-warn-text"><i class="fa-solid fa-flag" aria-hidden="true"></i> {% blocktranslate with n=player.finals_played need=finals_minimum %}Liga: {{ n }} de {{ need }} necesarios{% endblocktranslate %}</span>{% endif %}
+                {% if player.copy_pending %}<span class="z-pick-meta" title="{% translate 'Esta persona aún no ha aceptado la invitación al equipo: no recibe correos hasta que acepte.' %}"><i class="fa-solid fa-hourglass-half" aria-hidden="true"></i> {% translate "Pendiente de aceptar" %}</span>{% endif %}
                 {% if player.penalty_reasons %}
                 <span class="z-pick-meta z-pick-warn-text" title="{{ player.penalty_reasons|join:'; ' }}"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> {% blocktranslate count n=player.penalty_reasons|length %}{{ n }} advertencia{% plural %}{{ n }} advertencias{% endblocktranslate %}</span>
                 {% endif %}

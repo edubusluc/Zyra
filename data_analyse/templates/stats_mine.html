@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+{% block page_title %}{% translate "Estadísticas" %} · {% endblock %}
+
+{% block content %}
+{{ spaces_chart|json_script:"spaces-chart-data" }}
+<script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
+<script src="{% static 'js/chart-style.js' %}"></script>
+{# «Mis estadísticas · Todas» (data_analyse.views.my_statistics): tus partidos de todas tus competiciones y gráficos con cada una al lado de la otra (stats_spaces.js), sin sumar puntos. #}
+<div class="st-page st-page--mine">
+    {% include 'includes/stats_tabs.html' %}
+    {% include 'includes/filters_row.html' with season=True type=True %}
+    <header class="st-head">
+      <div>
+        <h1 class="st-title">{% translate "Mis estadísticas" %}</h1>
+        <p class="st-subtitle">
+          {% translate "Todas tus competiciones" %} · {% if selected_season %}{% blocktranslate with season=selected_season %}Temporada {{ season }}{% endblocktranslate %}{% else %}{% translate "Todas las temporadas" %}{% endif %}{% if selected_match_type_label %} · {{ selected_match_type_label }}{% endif %}
+        </p>
+      </div>
+    </header>
+
+    <section aria-label="{% translate 'Tus partidos' %}" class="st-section">
+      <div class="z-space-kpis z-space-kpis--four">
+        <div class="is-lime"><b>{% if me.played %}{{ me.pct|floatformat:0 }}%{% else %}—{% endif %}</b><span>{% translate "de victorias" %}</span></div>
+        <div><b>{{ me.played }}</b><span>{% translate "Partidos jugados" %}</span></div>
+        <div class="is-won"><b>{{ me.wins }}</b><span>{% translate "Ganados" %}</span></div>
+        <div><b>{{ me.losses }}</b><span>{% translate "Perdidos" %}</span></div>
+      </div>
+      <ul class="z-space-rows" aria-label="{% translate 'Tus partidos por competición' %}">
+        {% for row in rows %}
+        <li class="z-comp-frame z-comp-frame--{{ row.club.competition }}">
+          <span class="z-space-rows-name">{% include 'includes/competition_badge.html' with code=row.club.competition name=row.club.rules.name %} <span class="z-space-rows-text"><b>{{ row.club.name }}</b><small>{% if row.played %}{% blocktranslate trimmed with pct=row.pct wins=row.wins losses=row.losses count played=row.played %}{{ pct }}% de victorias en {{ played }} partido jugado · {{ wins }}V {{ losses }}D{% plural %}{{ pct }}% de victorias en {{ played }} partidos jugados · {{ wins }}V {{ losses }}D{% endblocktranslate %}{% else %}{% translate "Todavía sin partidos jugados" %}{% endif %}</small></span></span>
+          {% if row.calls.total %}<span class="z-space-rows-calls"><b>{{ row.calls.signed }}/{{ row.calls.total }}</b><small>{% translate "convocatorias a las que te apuntaste" %}</small></span>{% endif %}
+          <a href="{% url 'my_statistics' %}?espacio={{ row.club.competition }}">{% blocktranslate with competition=row.club.rules.name %}Ver {{ competition }}{% endblocktranslate %} <i class="fa-solid fa-chevron-right" aria-hidden="true"></i></a>
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
+
+    {# Cada gráfico pone las competiciones una al lado de la otra, con su color; nunca suma puntos de una con otra. #}
+    <section aria-labelledby="charts-title" class="st-section mt-4" data-level="compare">
+      <h2 class="st-section-title" id="charts-title">{% translate "Gráficos" %}</h2>
+      <ul class="z-comp-legend z-comp-legend--dots" aria-label="{% translate 'Competiciones' %}">
+        {% for row in rows %}<li><i class="z-dot z-dot--{{ row.club.competition }}" aria-hidden="true"></i> {{ row.club.rules.name }}</li>{% endfor %}
+      </ul>
+      <div class="st-grid st-grid--2">
+        <article class="st-card">
+          <h3 class="st-card-title">{% translate "Sets" %}</h3>
+          {% if set_compare %}
+          <div class="z-set-compare">
+            {% for item in set_compare %}
+            <div class="z-set-row">
+              <b>{{ item.label }}<small>{{ item.hint }}</small></b>
+              <div class="z-set-bars">
+                {% for c in item.comps %}<div class="z-set-bar" title="{{ c.name }}: {% if c.r.total %}{% blocktranslate with w=c.r.wins t=c.r.total %}{{ w }} de {{ t }}{% endblocktranslate %}{% else %}—{% endif %}"><span class="z-set-bar--{{ c.code }}" style="width: {{ c.r.pct|default:0 }}%"></span></div>{% endfor %}
+              </div>
+              <em>{% for c in item.comps %}{% if not forloop.first %} / {% endif %}{% if c.r.pct is None %}—{% else %}{{ c.r.pct }}%{% endif %}{% endfor %}</em>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="st-muted st-nodata">{% translate "Todavía no hay resultados set a set." %}</p>
+          {% endif %}
+        </article>
+
+        {% if has_local or has_visiting %}
+        <section class="st-card">
+          <h3 class="st-card-title">{% translate "Local y visitante" %}</h3>
+          <div class="st-chart st-chart--mine" role="img" aria-label="{% translate 'Porcentaje de victorias en casa y fuera por competición' %}"><canvas id="spacesSidesChart" aria-hidden="true"></canvas></div>
+        </section>
+        {% endif %}
+
+        {% if spaces_chart.years.labels %}
+        <section class="st-card">
+          <h3 class="st-card-title">{% translate "% de victorias por temporada" %}</h3>
+          <div class="st-chart st-chart--mine" role="img" aria-label="{% translate '% de victorias por temporada y competición' %}"><canvas id="spacesYearsChart" aria-hidden="true"></canvas></div>
+        </section>
+        {% endif %}
+
+        {% if spaces_chart.attendance.labels %}
+        <section class="st-card">
+          {% translate "% de las convocatorias cerradas, por competición." as tip_text %}
+          <h3 class="st-card-title">{% translate "Convocatorias en las que te apuntas" %}{% include 'includes/stat_tip.html' with tip=tip_text %}</h3>
+          <ul class="z-commit-list">
+            {% for row in rows %}{% if row.calls.total %}
+            <li><span><i class="z-dot z-dot--{{ row.club.competition }}" aria-hidden="true"></i> {{ row.club.rules.name }}</span><b>{% widthratio row.calls.signed row.calls.total 100 %}%</b><small>{{ row.calls.signed }}/{{ row.calls.total }}</small></li>
+            {% endif %}{% empty %}{% endfor %}
+          </ul>
+          {% if spaces_chart.attendance.labels|length > 1 %}
+          <div class="st-chart st-chart--mine" role="img" aria-label="{% translate 'Convocatorias en las que te apuntas' %}"><canvas id="spacesAttendanceChart" aria-hidden="true"></canvas></div>
+          {% endif %}
+        </section>
+        {% endif %}
+      </div>
+    </section>
+</div>
+<script src="{% static 'js/stats_spaces.js' %}"></script>
+<script src="{% static 'js/stats-tips.js' %}"></script>
+{% endblock %}

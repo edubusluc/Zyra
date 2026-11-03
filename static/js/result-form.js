@@ -8,26 +8,39 @@ document.querySelectorAll('[data-result]').forEach(function (form) {
   const validSet = (a, b) => VALID.includes(`${Math.max(a, b)}-${Math.min(a, b)}`);
   const validTB = (a, b) => { const h = Math.max(a, b), l = Math.min(a, b); return h >= 10 && (h === 10 ? h - l >= 2 : h - l === 2); };
   const checks = form.querySelector('[data-result-checks]');
-  const names = Array.from(form.querySelectorAll('.z-result-team')).map((e) => e.textContent.trim());
+  const teams = Array.from(form.querySelectorAll('.z-result-team'));
+  const names = teams.map((e) => e.textContent.trim());
+  // Lado del equipo propio (0 local, 1 visitante; -1 si no se sabe): el ganador solo va en lima
+  // cuando gana el equipo propio; si gana el rival, en neutro (UX-005).
+  const ownSide = teams.findIndex((e) => e.hasAttribute('data-own'));
 
   const setInvalid = (n, a, b) =>
     interpolate(gettext('Set %(n)s: %(score)s no es un resultado válido'), { n: n, score: `${a}-${b}` }, true);
 
-  function line(ok, text) {
+  function line(ok, text, rivalWins) {
     const li = document.createElement('li');
-    li.className = ok === null ? '' : ok ? 'is-ok' : 'is-bad';
+    li.className = ok === null ? '' : !ok ? 'is-bad' : rivalWins ? 'is-rival' : 'is-ok';
     const icon = document.createElement('i');
-    icon.className = `fa-solid ${ok === null ? 'fa-circle-info' : ok ? 'fa-check' : 'fa-xmark'}`;
+    icon.className = `fa-solid ${ok === null ? 'fa-circle-info' : !ok ? 'fa-xmark' : rivalWins ? 'fa-trophy' : 'fa-check'}`;
     icon.setAttribute('aria-hidden', 'true');
     li.append(icon, document.createTextNode(' ' + text));
     checks.appendChild(li);
   }
 
+  // True si el ganador (0 local, 1 visitante) no es el equipo propio.
+  const rivalWon = (side) => ownSide !== -1 && side !== ownSide;
+
   const retiredBox = form.querySelector('[data-retired]');
+  // Sets de un partido acabado por lesión: 0-0 o vacío es un set sin jugar; un 0 con juegos del
+  // rival (0-6) sí cuenta, como en scoring.py.
+  const enteredSets = () => [1, 2, 3].map((n) => {
+    const pair = [val(input(n, 'l')), val(input(n, 'v'))];
+    return pair.every((x) => !x) ? [null, null] : pair;
+  });
 
   // Partido finalizado por lesión: mismas reglas que scoring.validate_retired_result
   function refreshRetired() {
-    const s = [1, 2, 3].map((n) => [val(input(n, 'l')), val(input(n, 'v'))].map((x) => x || null));
+    const s = enteredSets();
     const played = [0, 1, 2].filter((i) => s[i][0] !== null || s[i][1] !== null);
     if (!played.length) return;
     const last = played[played.length - 1];
@@ -47,14 +60,65 @@ document.querySelectorAll('[data-result]').forEach(function (form) {
     let v = entered.filter((x) => x[1] > x[0]).length;
     if (l === v) { l = entered.reduce((t, x) => t + x[0], 0); v = entered.reduce((t, x) => t + x[1], 0); }
     if (l === v) line(false, gettext('No se puede saber quién iba ganando: el resultado está empatado.'));
-    else line(true, interpolate(gettext('Ganador del partido: %(team)s'), { team: names[l > v ? 0 : 1] }, true));
+    else line(true, interpolate(gettext('Ganador del partido: %(team)s'), { team: names[l > v ? 0 : 1] }, true), rivalWon(l > v ? 0 : 1));
   }
 
+  // Lesión (SNP y LAPI): la pareja sana gana y se completan sus juegos (scoring.complete_retired_result).
+  const injuredBox = form.querySelector('[data-injured]');
+  function refreshInjured() {
+    const side = form.querySelector('[data-injured-side]:checked');
+    if (!side) { line(null, gettext('Indica qué pareja se lesionó.')); return; }
+    const flip = side.dataset.injuredSide === 'v';
+    const s = enteredSets();
+    const played = [0, 1, 2].filter((i) => s[i][0] !== null || s[i][1] !== null);
+    const last = played.length ? played[played.length - 1] : -1;
+    for (let i = 0; i <= last; i++) {
+      const [a, b] = s[i];
+      if (a === null || b === null) { line(false, interpolate(gettext('Set %(n)s: falta el resultado.'), { n: i + 1 }, true)); return; }
+      if (i < last && !validSet(a, b)) { line(false, setInvalid(i + 1, a, b)); return; }
+    }
+    // (lesionada, sana) en cada set
+    const own = s.slice(0, last + 1).map(([a, b]) => (flip ? [b, a] : [a, b]));
+    if (own.length && !validSet(own[own.length - 1][0], own[own.length - 1][1])) {
+      const [hurt, healthy] = own[own.length - 1];
+      const target = hurt >= 5 ? 7 : 6;
+      if (healthy > target || hurt > 6) { line(false, setInvalid(own.length, s[last][0], s[last][1])); return; }
+      own[own.length - 1] = [hurt, target];
+    }
+    if (own.filter(([hurt, healthy]) => hurt > healthy).length >= 2) {
+      line(false, gettext('El partido ya estaba decidido: no puede acabar por lesión.'));
+      return;
+    }
+    while (own.filter(([hurt, healthy]) => healthy > hurt).length < 2) own.push([0, 6]);
+    const score = own.map(([a, b]) => (flip ? `${b}-${a}` : `${a}-${b}`)).join(' / ');
+    line(true, interpolate(gettext('Queda %(score)s. Ganador del partido: %(team)s'), { score: score, team: names[flip ? 0 : 1] }, true), rivalWon(flip ? 0 : 1));
+  }
+
+  // «Pareja no presentada» (SNP): sin sets que rellenar; Zyra reparte los puntos al cerrar el acta.
+  const noShow = form.querySelector('[data-pair-no-show]');
+  const playedBox = form.querySelector('[data-played]');
+
+  // El marcador vivo (más abajo) lee el ganador de cada partido: data-winner = 0 local, 1 visitante
   function refresh() {
+    delete form.dataset.winner;
+    refreshCard();
+    form.dispatchEvent(new CustomEvent('resultchange', { bubbles: true }));
+  }
+
+  function refreshCard() {
     checks.innerHTML = '';
+    if (noShow && playedBox) {
+      playedBox.hidden = noShow.value !== '';
+      if (noShow.value !== '') {
+        line(null, gettext('Sin resultado: Zyra reparte los puntos al cerrar el acta (normativa SNP 20.2).'));
+        return;
+      }
+    }
+    if (injuredBox) injuredBox.hidden = !(retiredBox && retiredBox.checked);
+    form.querySelectorAll('[data-retired-help]').forEach((el) => { el.hidden = !(retiredBox && retiredBox.checked); });
     if (retiredBox && retiredBox.checked) {
       input(3, 'l').disabled = input(3, 'v').disabled = false;
-      refreshRetired();
+      if (injuredBox) refreshInjured(); else refreshRetired();
       return;
     }
     const s = [1, 2, 3].map((n) => [val(input(n, 'l')), val(input(n, 'v'))]);
@@ -90,7 +154,8 @@ document.querySelectorAll('[data-result]').forEach(function (form) {
 
     if (ok && winners.length >= 2) {
       const w = winners.filter((x) => x === 0).length >= 2 ? 0 : 1;
-      line(true, interpolate(gettext('Ganador del partido: %(team)s'), { team: names[w] }, true));
+      form.dataset.winner = String(w);
+      line(true, interpolate(gettext('Ganador del partido: %(team)s'), { team: names[w] }, true), rivalWon(w));
     }
   }
 
@@ -108,5 +173,147 @@ document.querySelectorAll('[data-result]').forEach(function (form) {
     el.addEventListener('focus', () => el.select());
   });
   if (retiredBox) retiredBox.addEventListener('change', refresh);
+  if (noShow) noShow.addEventListener('change', refresh);
+  form.querySelectorAll('[data-injured-side]').forEach((el) => el.addEventListener('change', refresh));
   refresh();
 });
+
+// «Poner resultados»: «Guardar y cerrar acta» solo está activo cuando todos los partidos tienen resultado
+// (o pareja no presentada), y al lado dice cuántos faltan.
+(function () {
+  const closeBtn = document.querySelector('[data-close-match]');
+  if (!closeBtn) return;
+  const hint = document.querySelector('[data-close-hint]');
+  const cards = Array.from(document.querySelectorAll('[data-result]'));
+  const filled = (v) => v && v.value.trim() !== '';
+  const complete = (card) => {
+    const noShow = card.querySelector('[data-pair-no-show]');
+    if (noShow && noShow.value) return true;
+    return ['set1_local', 'set1_visiting', 'set2_local', 'set2_visiting'].every((n) => filled(card.querySelector(`[name$="${n}"]`)));
+  };
+  function refreshClose() {
+    const missing = cards.filter((c) => !complete(c));
+    closeBtn.disabled = missing.length > 0;
+    closeBtn.classList.toggle('disabled', missing.length > 0);
+    if (hint) {
+      hint.textContent = missing.length
+        ? interpolate(ngettext('Falta %(n)s resultado para cerrar el acta', 'Faltan %(n)s resultados para cerrar el acta', missing.length), { n: missing.length }, true)
+        : '';
+    }
+  }
+  cards.forEach((c) => {
+    c.addEventListener('input', refreshClose);
+    c.addEventListener('change', refreshClose);
+  });
+  refreshClose();
+})();
+
+// Vista previa del reparto de puntos con parejas no presentadas (SNP, normativa 20.2), antes de cerrar el acta.
+// Replica match/pair_no_show.py: 6 puntos al equipo cumplidor y 2/2/1/1 en los cuatro partidos jugados.
+(function () {
+  const box = document.querySelector('[data-noshow-preview]');
+  if (!box) return;
+  const cards = Array.from(document.querySelectorAll('[data-result]'));
+  const points = box.dataset.points.split(',').map(Number);
+  const total = points.reduce((a, b) => a + b, 0);
+  const ownLocal = box.dataset.ownLocal === '1';
+  const names = { l: box.dataset.local, v: box.dataset.visiting };
+  const own = ownLocal ? 'l' : 'v';
+  const rival = ownLocal ? 'v' : 'l';
+  const num = (card, name) => {
+    const el = card.querySelector(`[name$="${name}"]`);
+    return el && el.value.trim() !== '' ? parseInt(el.value, 10) : null;
+  };
+  // Lado ganador de un partido jugado según sus sets, o null si aún no se sabe.
+  const winnerOf = (card) => {
+    let l = 0, v = 0;
+    ['1', '2', '3'].forEach((n) => {
+      const a = num(card, `set${n}_local`), b = num(card, `set${n}_visiting`);
+      if (a === null || b === null || a === b) return;
+      if (a > b) l += 1; else v += 1;
+    });
+    return l > v ? 'l' : v > l ? 'v' : null;
+  };
+  const tally = () => ({ l: 0, v: 0 });
+  function refresh() {
+    const rows = cards.map((card, i) => ({ card, pts: points[i], ns: (card.querySelector('[data-pair-no-show]') || {}).value || '' }));
+    const ownMissing = rows.filter((r) => r.ns === 'own' || r.ns === 'both');
+    const rivalMissing = rows.filter((r) => r.ns === 'rival' || r.ns === 'both');
+    if (!ownMissing.length && !rivalMissing.length) { box.hidden = true; return; }
+    const sum = tally();
+    let note = '';
+    if (ownMissing.length >= 2 || rivalMissing.length >= 2) {
+      if (ownMissing.length >= 2 && rivalMissing.length < 2) sum[rival] = total;
+      else if (rivalMissing.length >= 2 && ownMissing.length < 2) sum[own] = total;
+      note = gettext('Dos parejas sin presentarse: el equipo pierde el enfrentamiento 0-%(total)s.');
+    } else if (rows.some((r) => r.ns === 'both')) {
+      rows.forEach((r) => { if (!r.ns) { const w = winnerOf(r.card); if (w) sum[w] += r.pts; } });
+      note = gettext('La misma pareja falta en los dos equipos: ese partido se anula y el resto puntúa normal.');
+    } else if (ownMissing.length && rivalMissing.length) {
+      sum[rival] += ownMissing[0].pts; sum[own] += rivalMissing[0].pts;
+      rows.forEach((r) => { if (!r.ns) { const w = winnerOf(r.card); if (w) sum[w] += r.pts; } });
+      note = gettext('Cada equipo pierde la pareja que no presentó, con sus puntos normales.');
+    } else {
+      const keeper = ownMissing.length ? rival : own;
+      const infractor = keeper === own ? rival : own;
+      sum[keeper] += total / 2;
+      const played = rows.filter((r) => !r.ns);
+      let unknown = false, allInfractor = played.length === 4;
+      played.forEach((r, i) => {
+        const w = winnerOf(r.card);
+        if (!w) { unknown = true; allInfractor = false; return; }
+        sum[w] += i < 2 ? 2 : 1;
+        if (w !== infractor) allInfractor = false;
+      });
+      note = gettext('Una pareja sin presentarse: %(keeper)s se lleva 6 puntos por ella y los otros cuatro partidos reparten 2, 2, 1 y 1 (los 2 para las parejas con número más bajo).');
+      if (unknown) note += ' ' + gettext('Faltan resultados por rellenar: el reparto es provisional.');
+      if (allInfractor && sum.l === sum.v) note += ' ' + interpolate(gettext('6-6: gana %(team)s por haber ganado los cuatro partidos jugados.'), { team: names[infractor] }, true);
+      note = interpolate(note, { keeper: names[keeper] }, true);
+    }
+    note = interpolate(note, { total: total }, true);
+    box.innerHTML = '';
+    const head = document.createElement('p');
+    const strong = document.createElement('strong');
+    strong.textContent = interpolate(gettext('Reparto previsto: %(local)s %(a)s – %(b)s %(visiting)s'),
+      { local: names.l, a: sum.l, b: sum.v, visiting: names.v }, true);
+    head.appendChild(strong);
+    const p = document.createElement('p');
+    p.className = 'mb-0 small';
+    p.textContent = note;
+    box.append(head, p);
+    box.hidden = false;
+  }
+  cards.forEach((c) => { c.addEventListener('input', refresh); c.addEventListener('change', refresh); });
+  refresh();
+})();
+
+// Marcador global en vivo (UX-031): suma los puntos de cada partido ganado según lo que se va tecleando.
+(function () {
+  const box = document.querySelector('[data-live-score]');
+  if (!box) return;
+  const cards = Array.from(document.querySelectorAll('[data-result]'));
+  const localEl = box.querySelector('[data-live-local]');
+  const visitingEl = box.querySelector('[data-live-visiting]');
+  const note = box.querySelector('[data-live-note]');
+  const fmt = (n) => String(Math.round(n * 10) / 10).replace('.', ',');
+  function refreshScore() {
+    let local = 0;
+    let visiting = 0;
+    let played = 0;
+    let special = 0;
+    cards.forEach((card) => {
+      const ns = card.querySelector('[data-pair-no-show]');
+      if (ns && ns.value) { special += 1; return; }
+      const pts = Number(String(card.dataset.score).replace(',', '.')) || 0;
+      if (card.dataset.winner === '0') { local += pts; played += 1; }
+      else if (card.dataset.winner === '1') { visiting += pts; played += 1; }
+    });
+    localEl.textContent = fmt(local);
+    visitingEl.textContent = fmt(visiting);
+    let text = interpolate(gettext('%(n)s de %(total)s partidos con resultado'), { n: played, total: cards.length }, true);
+    if (special) text += ' · ' + gettext('los no presentados se reparten al cerrar el acta');
+    note.textContent = text;
+  }
+  document.addEventListener('resultchange', refreshScore);
+  refreshScore();
+})();

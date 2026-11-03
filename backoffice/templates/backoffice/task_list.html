@@ -1,5 +1,5 @@
 {% extends 'backoffice/base.html' %}
-{% load i18n %}
+{% load i18n %}{% load zyra_format %}
 {% block title %}{% translate "Tareas" %}{% endblock %}
 
 {% block content %}
@@ -40,7 +40,7 @@
     <tbody>
     {% for t in page %}
         <tr>
-            <td class="text-nowrap">{{ t.due_date|date:"j M Y" }}{% if t.overdue %} <span class="z-badge z-badge--danger">{% translate "Atrasada" %}</span>{% endif %}</td>
+            <td class="text-nowrap">{{ t.due_date|date_day }}{% if t.overdue %} <span class="z-badge z-badge--danger">{% translate "Atrasada" %}</span>{% endif %}</td>
             <td>{{ t.title }}</td>
             <td>{% if t.club %}<a href="{% url 'backoffice:club_detail' t.club.public_id %}">{{ t.club.name }}</a>{% else %}—{% endif %}</td>
             <td>{{ t.assigned_to.username|default:"—" }}</td>

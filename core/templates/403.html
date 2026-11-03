@@ -12,7 +12,7 @@
             {% if reason %}{{ reason }}{% else %}{% translate "No tienes permiso para ver esta página o realizar esta acción." %}{% endif %}
         </p>
         {% if not csrf %}
-        <p class="text-muted small">{% translate "Si crees que deberías tener acceso, pide a un capitán de tu club que revise tu rol en Miembros." %}</p>
+        <p class="text-muted small">{% translate "Si crees que deberías tener acceso, pide al capitán de ese equipo que revise tu rol en Miembros." %}</p>
         {% endif %}
         <a class="btn btn-primary btn-lg" href="{% url 'home' %}">{% translate "Volver al inicio" %}</a>
     </div>

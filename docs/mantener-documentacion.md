@@ -59,10 +59,10 @@ Una sola página para que todas las pantallas hablen igual.
 | Registrar quién juega con quién | **Alinear parejas** | crear partidos |
 | Ver la lista de jugadores citados | **Convocatoria** / **Convocar** | llamada |
 | Terminar un enfrentamiento | **Cerrar acta** | finalizar |
-| Menú de equipo | **Club** (Miembros e invitaciones, Mi equipo, Rivales, Cuenta SNP) | Equipos |
-| Equipos contra los que se juega | **Rivales** | Equipos |
+| Menú de equipo | **Club** (Miembros e invitaciones, Mi equipo, Equipos rivales, Cuenta SNP) | Equipos |
+| Catálogo de equipos contra los que se juega | **Equipos rivales** (el balance contra cada uno es la pestaña **Rivales** de Estadísticas) | Equipos |
 | Estados del enfrentamiento | Borrador · Convocado · Alineado · Jugado · Acta cerrada | otros sinónimos |
-| Pestañas de la ficha del jugador | Resumen · Estadísticas | Perfil, Jugador |
+| Pestañas de Estadísticas | Yo · Equipo · Jugadores · Parejas · Rivales | Mis estadísticas, Jugador |
 
 Formatos comunes:
 

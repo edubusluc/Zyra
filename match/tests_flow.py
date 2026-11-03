@@ -127,6 +127,14 @@ class MatchLifecycleTests(TestCase):
         self.client.post(reverse("delete_match", args=[match.public_id]))
         self.assertFalse(Match.objects.filter(pk=match.pk).exists())
 
+    def test_match_page_offers_delete_only_to_captains_while_open(self):
+        match = self._create_match()
+        page = self.client.get(reverse("call_for_match", args=[match.public_id]))
+        delete_url = reverse("delete_match", args=[match.public_id]) + "?desde=ficha"
+        self.assertContains(page, delete_url)
+        confirm = self.client.get(delete_url)
+        self.assertContains(confirm, reverse("call_for_match", args=[match.public_id]))
+
 
 class NoDrawTiebreakTests(TestCase):
     """Reto y Play Off no admiten empate: el 6-6 lo decide el ganador del partido 3."""

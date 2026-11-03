@@ -1,8 +1,8 @@
 {% load i18n %}{% include "emails/_title_start.html" %}{% blocktranslate with username=user.username %}¡Bienvenido a Zyra, {{ username }}!{% endblocktranslate %}</h1>
 {% if created %}
-<p style="margin:0 0 12px;">{% blocktranslate trimmed with club=club.name %}Tu registro se ha completado y has creado el equipo <strong>{{ club }}</strong>. Como capitán puedes gestionar jugadores, partidos, convocatorias y estadísticas, e invitar al resto del equipo desde <em>Miembros del club</em>.{% endblocktranslate %}</p>
+<p style="margin:0 0 12px;">{% blocktranslate trimmed with club=club.name %}Ya estás dentro: has creado el equipo <strong>{{ club }}</strong>. Como capitán puedes gestionar jugadores, partidos, convocatorias y estadísticas, e invitar al resto del equipo desde <em>Miembros del club</em>.{% endblocktranslate %}</p>
 {% else %}
-<p style="margin:0 0 12px;">{% blocktranslate trimmed with club=club.name %}Tu registro se ha completado y ya formas parte de <strong>{{ club }}</strong>. Desde ahora puedes consultar los partidos, las convocatorias y las estadísticas del equipo.{% endblocktranslate %}</p>
+<p style="margin:0 0 12px;">{% blocktranslate trimmed with club=club.name %}Ya estás dentro: formas parte de <strong>{{ club }}</strong>. Desde ahora puedes consultar los partidos, las convocatorias y las estadísticas del equipo.{% endblocktranslate %}</p>
 {% endif %}
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 16px; border-collapse:collapse;">
   <tr>

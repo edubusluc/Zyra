@@ -8,7 +8,7 @@ from django.urls import reverse
 from call.models import Call
 from core.services import create_club
 from data_analyse import pairs as pair_stats
-from data_analyse import records
+from data_analyse import records, team_card
 from data_analyse.attendance import signup_attendance
 from data_analyse.sets import best_and_worst_number, by_game_number, own_sets, set_stats
 from match.models import Game, Match, Result
@@ -133,9 +133,9 @@ class ClubSetsTests(ClubDataMixin, TestCase):
         self.assertNotIn('worst_defeat', rec)
         self.assertNotIn('win_streak', rec)
         self.assertEqual(rec['unbeaten']['n'], 2)
-        self.assertEqual(rec['game_streak']['n'], 2)
-        self.assertEqual(rec['top_player']['n'], 2)  # A y B: 2 victorias; desempata el nombre
-        self.assertEqual(rec['top_player']['name'], self.a.full_name)
+        # Solo los cinco récords de Equipo: ni partidos seguidos ni «más victorias» o «más partidos» de jugador.
+        for gone in ('game_streak', 'top_player', 'most_games'):
+            self.assertNotIn(gone, rec)
         self.assertEqual(rec['top_pair']['n'], 2)
 
     def test_snp_ranking(self):
@@ -155,18 +155,87 @@ class ClubSetsTests(ClubDataMixin, TestCase):
         self.assertEqual(snp['riser']['player'], self.a)
         self.assertEqual(snp['chart'], {'labels': ['01/10', '08/10'], 'average': [32.5, 40.0]})
 
+    def test_player_page_all_seasons_shows_charts_and_detail(self):
+        url = reverse('player_statistics')
+        response = self.client.get(url, {'player': self.a.public_id})
+        self.assertContains(response, 'id="chartPlayed"')
+        self.assertContains(response, "Detalle por temporada")
+        self.assertNotContains(response, 'st-table--links')
+        response = self.client.get(url, {'player': self.a.public_id, 'season': '2025-2026'})
+        self.assertContains(response, 'st-table--links')
+        self.assertNotContains(response, 'id="chartPlayed"')
+        self.assertNotContains(response, "Detalle por temporada")
+
+    def test_pair_page_without_best_pairs_and_season_detail(self):
+        url = reverse('pair_statistics')
+        params = {'p1': self.a.public_id, 'p2': self.b.public_id}
+        response = self.client.get(url, params)
+        self.assertNotContains(response, "Mejores parejas")
+        self.assertNotContains(response, "Evolución del % de victorias")
+        response = self.client.get(url, {**params, 'season': '2025-2026'})
+        self.assertNotContains(response, "Evolución del % de victorias")
+        self.assertEqual(len(response.context['season_games']), 2)
+
+    def test_points_series_by_round_or_by_season(self):
+        Match.objects.filter(pk=self.m1.pk).update(result_points="6/6")
+        Match.objects.filter(pk=self.m2.pk).update(result_points="3/9")
+        by_round = team_card.points_series(self.club, "2025-2026")
+        self.assertFalse(by_round['by_season'])
+        self.assertEqual(by_round['labels'], ['E1', 'E2'])
+        self.assertEqual(by_round['values'], [6, 9])
+        self.assertEqual(by_round['total'], 15)
+        # Con «Todas» hay una barra por temporada, con la suma de sus puntos.
+        overall = team_card.points_series(self.club)
+        self.assertTrue(overall['by_season'])
+        self.assertEqual(overall['labels'], ['25-26'])
+        self.assertEqual(overall['values'], [by_round['total']])
+
+    def test_venue_matches(self):
+        venue = team_card.venue_matches(self.club)
+        self.assertEqual(venue['local'], {'won': 0, 'lost': 0, 'drawn': 1, 'total': 1})
+        self.assertEqual(venue['visiting'], {'won': 1, 'lost': 0, 'drawn': 0, 'total': 1})
+
+    def test_snp_points_card_is_not_called_league(self):
+        """SNP no tiene liga: la tarjeta de puntos por enfrentamiento no usa el nombre de la liga LAPI."""
+        Match.objects.filter(pk=self.m1.pk).update(result_points="6/6")
+        response = self.client.get(reverse('team_statistics'))
+        self.assertContains(response, "Puntos por enfrentamiento")
+        self.assertNotContains(response, "Puntos de liga")
+
+    def test_streak_tile_colour_follows_the_result(self):
+        url = reverse('player_statistics')
+        for player in (self.a, self.b):
+            response = self.client.get(url, {'player': player.public_id, 'season': 'all'})
+            kind = response.context['s']['streak_type']
+            tile = {'V': 'st-kpi-tile--up', 'D': 'st-kpi-tile--down'}.get(kind)
+            if tile:
+                self.assertContains(response, f'class="st-kpi-tile {tile}"')
+            self.assertNotContains(response, 'st-kpi-tile st-kpi-tile--up' if kind != 'V' else 'st-kpi-tile--down')
+
+    def test_team_page_has_side_menu_and_snp_ranking(self):
+        response = self.client.get(reverse('team_statistics'))
+        self.assertContains(response, 'class="st-side"')
+        self.assertNotContains(response, 'id="sec-snp"')  # los puntos SNP viven en la tabla de plantilla
+        self.assertNotContains(response, "Juegos como local")
+        self.assertContains(response, "Ganados como visitante")
+        self.assertContains(response, "enfrentamientos ganados / total fuera")
+        self.assertNotContains(response, "st-card-note")
+        self.assertContains(response, 'data-level="deepen"')
+
     def test_team_page_shows_new_sections(self):
         response = self.client.get(reverse('team_statistics'))
         self.assertContains(response, "Por número de partido")
         self.assertNotContains(response, "Mejor en el partido")
-        self.assertContains(response, "Set decisivo")
-        self.assertContains(response, "Récords del equipo")
-        self.assertContains(response, "Ranking SNP del equipo")
+        self.assertContains(response, "Tie-breaks")
+        self.assertContains(response, "Roscos a favor")
+        self.assertContains(response, 'id="sec-plantilla"')
+        self.assertNotContains(response, "Mejores jugadores como visitante")
         self.assertEqual(response.context['records']['biggest_win']['own'], 5)
 
     def test_player_page_clutch_and_lineup_rate(self):
         response = self.client.get(reverse('player_statistics'), {'player': self.c.public_id})
-        self.assertContains(response, "Sets clutch")
+        self.assertContains(response, "Tras perder el 1.er set")
+        self.assertNotContains(response, "Sets clutch")
         self.assertEqual(response.context['clutch']['tiebreak']['total'], 1)
         self.assertEqual(response.context['lineup_rate'], {'signed': 2, 'aligned': 2, 'benched': 0, 'pct': 100})
         rows = response.context['game_numbers']
@@ -191,7 +260,7 @@ class ClubSetsTests(ClubDataMixin, TestCase):
         self.assertEqual(att['average'], 67)
         self.assertEqual(signup_attendance(self.club, "2019-2020")['average'], None)
         response = self.client.get(reverse('team_statistics'))
-        self.assertContains(response, "Asistencia a las convocatorias")
+        self.assertContains(response, "Récords")
         self.assertEqual(response.context['attendance']['rows'][0]['pct'], 67)
 
     def test_calls_before_joining_season_do_not_count(self):
@@ -223,6 +292,8 @@ class ClubSetsTests(ClubDataMixin, TestCase):
 
     def test_pair_page_sets(self):
         response = self.client.get(reverse('pair_statistics'), {'p1': self.a.public_id, 'p2': self.b.public_id})
+        # Con 2 partidos juntos ya salen los sets, la forma y Local y visitante (comparison.MIN_PAIR_SHEET_GAMES).
+        self.assertFalse(response.context['compact'])
         self.assertContains(response, "Sets de la pareja")
         st = response.context['pair_sets']
         self.assertEqual((st['played'], st['comeback']['wins'], st['bagels_for']), (2, 1, 1))

@@ -8,6 +8,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from .models import Penalty, KINDS, KIND_LABELS, OTHER, REASON_MAX_LENGTH
 from players.models import Player
 from call.models import Call
+from core import spaces
 from core.decorators import club_manager_required
 
 # Prefijo de ``extra_tags`` con el que un aviso lleva un botón «Deshacer» (la URL va detrás);
@@ -21,6 +22,7 @@ def _ids_from(request):
     return [part.strip() for chunk in raw for part in chunk.split(",") if part.strip()]
 
 
+@spaces.follow_call
 @club_manager_required
 def create_penalty(request, call_id):
     """
@@ -68,6 +70,7 @@ def _safe_next(request):
     return None
 
 
+@spaces.follow_object("penalty.Penalty", "penalty_id", "call__match__club")
 @club_manager_required
 def edit_penalty(request, penalty_id):
     """

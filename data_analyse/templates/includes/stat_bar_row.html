@@ -1,0 +1,3 @@
+{% load i18n l10n %}
+{# Fila de barra del diseño (nombre con texto descriptivo, barra y %). Recibe label, desc y r (dict de set_stats con pct; None sin datos). #}
+<div class="st-bar-row"{% if r.total %} title="{% blocktranslate with w=r.wins t=r.total %}{{ w }} de {{ t }}{% endblocktranslate %}"{% endif %}><b>{{ label }}<small>{{ desc }}</small></b><div class="st-meter"><span style="width: {{ r.pct|default:0|unlocalize }}%"></span></div><em>{% if r.pct is None %}—{% else %}{{ r.pct }}%{% endif %}</em></div>

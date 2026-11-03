@@ -202,6 +202,37 @@ class CallLogPageTests(PenaltyBase):
         Penalty.objects.create(player=self.ana, call=self.call, kind="late_drop")
         page = self.client.get(reverse("warnings_statistics"), {"season": "all"})
         self.assertContains(page, "Baja de última hora")
+        self.assertContains(page, "Por motivo")
+
+
+class WarningsLiveInRosterTests(PenaltyBase):
+    """EST-011: Advertencias se gestiona desde Plantilla, no es una pestaña de Estadísticas."""
+
+    def test_statistics_tabs_no_longer_include_warnings(self):
+        page = self.client.get(reverse("team_statistics"))
+        self.assertNotContains(page, reverse("warnings_statistics"))
+
+    def test_roster_links_to_warnings_for_managers_and_highlights_roster(self):
+        roster = self.client.get(reverse("list_players"))
+        self.assertContains(roster, reverse("warnings_statistics"))
+        page = self.client.get(reverse("warnings_statistics"))
+        self.assertEqual(page.context["nav_section"], "players")
+        self.assertContains(page, reverse("list_players"))
+        self.client.logout()
+        self.client.login(username="member", password=PASSWORD)
+        self.assertNotContains(self.client.get(reverse("list_players")), reverse("warnings_statistics"))
+
+    def test_player_sheet_shows_the_warning_count_to_managers_only(self):
+        Penalty.objects.create(player=self.ana, call=self.call, kind="late")
+        url = reverse("player_statistics") + f"?player={self.ana.public_id}"
+        sheet = self.client.get(url)
+        self.assertEqual(sheet.context["hero"]["warnings"], 1)
+        self.assertContains(sheet, "1 advertencia")
+        self.client.logout()
+        self.client.login(username="member", password=PASSWORD)
+        other = self.client.get(url)
+        self.assertEqual(other.context["hero"]["warnings"], 0)
+        self.assertNotContains(other, "advertencia")
 
 
 class LegacyMigrationTests(TestCase):
@@ -240,7 +271,7 @@ class EditPenaltyTests(PenaltyBase):
     def test_edit_form_prefilled(self):
         response = self.client.get(self.url)
         self.assertContains(response, "5 min")
-        self.assertContains(response, "ANA")
+        self.assertContains(response, "Ana")
 
     def test_edit_updates_kind_and_detail_and_returns_to_next(self):
         response = self.client.post(self.url, {"kind": "conduct", "reason": "Gritos", "next": self.history})
@@ -279,7 +310,7 @@ class EditPenaltyTests(PenaltyBase):
     def test_history_shows_actions_and_delete_returns_to_history(self):
         response = self.client.get(self.history)
         self.assertContains(response, self.url)
-        self.assertContains(response, "Acciones")
+        self.assertContains(response, "Editar la advertencia de")
         response = self.client.post(reverse("delete_penalty") + f"?ids={self.pen.public_id}", {"next": self.history})
         self.assertRedirects(response, self.history)
         self.assertFalse(Penalty.objects.exists())

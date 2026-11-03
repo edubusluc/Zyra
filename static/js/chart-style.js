@@ -1,0 +1,188 @@
+// Estilo común de los gráficos de estadísticas («Social club»): sin cuadrículas ni ejes,
+// barras redondeadas con su cifra dentro, líneas lima con área suave y tooltips oscuros.
+// Se carga tras Chart.js y antes del script de cada vista.
+(function () {
+  if (typeof Chart === 'undefined') return;
+  const LIME = '#B4F100';
+  const INK = '#0A0A0A';
+
+  Chart.defaults.font.family = "'Archivo', system-ui, sans-serif";
+  Chart.defaults.font.weight = 700;
+  Chart.defaults.scale.grid.display = false;
+  Chart.defaults.scale.border.display = false;
+  Chart.defaults.elements.bar.borderRadius = 10;
+  Chart.defaults.elements.bar.borderSkipped = false;
+  Chart.defaults.elements.line.tension = 0.35;
+  Chart.defaults.elements.line.borderWidth = 4;
+  Chart.defaults.elements.line.borderColor = LIME;
+  Chart.defaults.elements.point.radius = 5;
+  Chart.defaults.elements.point.hoverRadius = 7;
+  Chart.defaults.elements.point.borderWidth = 3;
+  Chart.defaults.elements.point.borderColor = '#171813';
+  Chart.defaults.elements.point.backgroundColor = LIME;
+  Chart.defaults.plugins.tooltip.backgroundColor = INK;
+  Chart.defaults.plugins.tooltip.borderColor = 'rgba(180, 241, 0, 0.5)';
+  Chart.defaults.plugins.tooltip.borderWidth = 1;
+  Chart.defaults.plugins.tooltip.cornerRadius = 12;
+  Chart.defaults.plugins.tooltip.padding = 10;
+  Chart.defaults.plugins.tooltip.titleFont = { weight: 800 };
+
+  // Alternativa accesible (EST-046): el canvas va oculto a los lectores de pantalla y el contenedor con role="img"
+  // lleva en su aria-label el título y los valores de cada serie, que se actualizan con el gráfico.
+  const flat = (v) => (Array.isArray(v) ? v.join(' ') : String(v));
+  Chart.register({
+    id: 'zDescribe',
+    afterUpdate(chart) {
+      const box = chart.canvas.parentElement;
+      if (!box || box.getAttribute('role') !== 'img') return;
+      if (!box.dataset.zTitle) box.dataset.zTitle = box.getAttribute('aria-label') || '';
+      const labels = (chart.data.labels || []).map(flat);
+      const parts = chart.data.datasets.map((ds) => {
+        const values = (ds.data || []).map((v, i) => (v === null || v === undefined ? null : `${labels[i] || i + 1} ${v}`)).filter(Boolean);
+        return `${ds.label ? ds.label + ': ' : ''}${values.join(', ')}`;
+      }).filter(Boolean);
+      box.setAttribute('aria-label', [box.dataset.zTitle, parts.join('. ')].filter(Boolean).join('. '));
+    },
+  });
+
+  const rgba = (hex, a) => {
+    const m = /^#([0-9a-f]{6})$/i.exec(hex || '');
+    if (!m) return hex;
+    const n = parseInt(m[1], 16);
+    return `rgba(${n >> 16}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
+  };
+
+  // Área bajo cada línea: degradado del color de la línea a transparente.
+  Chart.register({
+    id: 'zAreaGradient',
+    beforeDatasetsDraw(chart) {
+      const area = chart.chartArea;
+      if (!area) return;
+      chart.data.datasets.forEach((ds, i) => {
+        const meta = chart.getDatasetMeta(i);
+        if (meta.type !== 'line' || !ds.fill || typeof ds.borderColor !== 'string') return;
+        const g = chart.ctx.createLinearGradient(0, area.top, 0, area.bottom);
+        g.addColorStop(0, rgba(ds.borderColor, 0.35));
+        g.addColorStop(1, rgba(ds.borderColor, 0));
+        ds.backgroundColor = g;
+      });
+    },
+  });
+
+  // Cifra de cada barra dentro de ella, en Anton, solo si cabe (barras anchas y altas; en las
+  // horizontales, tramos de al menos 16 px).
+  Chart.register({
+    id: 'zBarValues',
+    afterDatasetsDraw(chart) {
+      if (chart.config.type !== 'bar') return;
+      const horizontal = chart.options.indexAxis === 'y';
+      const ctx = chart.ctx;
+      ctx.save();
+      ctx.font = horizontal ? "400 15px 'Anton', 'Archivo', sans-serif" : "400 18px 'Anton', 'Archivo', sans-serif";
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = INK;
+      chart.data.datasets.forEach((ds, i) => {
+        if (chart.isDatasetVisible && !chart.isDatasetVisible(i)) return;
+        chart.getDatasetMeta(i).data.forEach((bar, j) => {
+          const v = ds.data[j];
+          if (typeof v !== 'number' || v <= 0) return;
+          // Barras horizontales (UX-040): la cifra va en el centro del tramo, si cabe.
+          if (horizontal) {
+            if (Math.abs(bar.x - bar.base) < 16 || bar.height < 14) return;
+            ctx.fillText(String(v), (bar.x + bar.base) / 2, bar.y);
+            return;
+          }
+          if (bar.width < 26 || Math.abs(bar.base - bar.y) < 30) return;
+          ctx.fillText(String(v), bar.x, (bar.y + bar.base) / 2);
+        });
+      });
+      ctx.restore();
+    },
+  });
+
+  // Línea lima sin ejes con el último valor en grande (puntos SNP por temporada de la ficha del jugador y del equipo).
+  // ``opts``: ``label`` del dataset, ``format(valor)`` para la cifra y el tooltip e ``y`` (escala fija, p. ej. 0-100).
+  window.zSeasonLine = function (canvas, series, opts = {}) {
+    const lang = document.documentElement.lang || 'es';
+    const label = opts.label || gettext('Puntos SNP');
+    const format = opts.format || ((v) => v.toLocaleString(lang));
+    const short = (y) => y.replace(/^\d{2}(\d{2})-\d{2}(\d{2})$/, '$1-$2');
+    const lastValue = {
+      id: 'lastValue',
+      afterDatasetsDraw(chart) {
+        const meta = chart.getDatasetMeta(0).data;
+        const point = meta[meta.length - 1];
+        if (!point) return;
+        const { ctx, chartArea } = chart;
+        ctx.save();
+        ctx.font = "400 22px 'Anton', 'Archivo', sans-serif";
+        ctx.fillStyle = '#FFFFFF';
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'bottom';
+        ctx.fillText(format(series.scores[series.scores.length - 1]), Math.min(point.x + 8, chartArea.right + 8), point.y - 10);
+        ctx.restore();
+      },
+    };
+    return new Chart(canvas, {
+      type: 'line',
+      plugins: [lastValue],
+      data: {
+        labels: series.labels.map((y, i) => (series.played ? [short(y), interpolate(gettext('%(n)s partidos'), { n: series.played[i] }, true)] : short(y))),
+        datasets: [{ label, data: series.scores, borderColor: '#B4F100', fill: true, borderWidth: 3, pointRadius: 0, pointHoverRadius: 6 }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: { top: 34, right: 16 } },
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: (c) => ' ' + (opts.format ? format(c.parsed.y) : interpolate(gettext('%(n)s puntos'), { n: format(c.parsed.y) }, true)) } },
+        },
+        scales: { x: { grid: { display: false } }, y: { display: false, grace: '12%', ...opts.y } },
+      },
+    });
+  };
+
+  // «Partidos jugados» (ganados y perdidos, tramos pegados) y «Evolución del % de victorias» por temporada:
+  // los usan la ficha del jugador y la de la pareja. ``seasons``: {labels, wins, losses, pct}.
+  window.zSeasonCharts = function (seasons, playedCanvas, pctCanvas) {
+    const charts = [];
+    const short = (y) => y.replace(/^\d{2}(\d{2})-\d{2}(\d{2})$/, '$1-$2');
+    if (playedCanvas && seasons) {
+      // Solo se redondean la base del primer tramo y la cima del último.
+      const edge = (ctx) => {
+        const filled = ctx.chart.data.datasets.map((d, i) => (Number(d.data[ctx.dataIndex]) > 0 ? i : -1)).filter((i) => i >= 0);
+        const bottom = ctx.datasetIndex === filled[0] ? 10 : 0;
+        const top = ctx.datasetIndex === filled[filled.length - 1] ? 10 : 0;
+        return { topLeft: top, topRight: top, bottomLeft: bottom, bottomRight: bottom };
+      };
+      const bar = (label, data, color) => ({ label, data, backgroundColor: color, borderRadius: edge, borderSkipped: false, borderWidth: 0, maxBarThickness: 64 });
+      charts.push(new Chart(playedCanvas, {
+        type: 'bar',
+        data: {
+          labels: seasons.labels.map(short),
+          datasets: [bar(gettext('Ganados'), seasons.wins, '#B4F100'), bar(gettext('Perdidos'), seasons.losses, '#FF5C63')],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, pointStyle: 'rectRounded', boxWidth: 10 } } },
+          scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, display: false, beginAtZero: true } },
+        },
+      }));
+    }
+    // Con ``seasons.trend`` (ficha del jugador) solo se dibujan las temporadas con muestra suficiente y cada
+    // punto lleva debajo sus partidos; sin él (pareja), todas las temporadas.
+    const trend = seasons && seasons.trend;
+    const pctSeries = trend ? { labels: trend.labels, scores: trend.pct, played: trend.played } : seasons && { labels: seasons.labels, scores: seasons.pct };
+    if (pctCanvas && pctSeries && pctSeries.scores.length > 1) {
+      charts.push(window.zSeasonLine(pctCanvas, pctSeries, {
+        label: gettext('% victorias'),
+        format: (v) => `${Math.round(v)}%`,
+        y: { min: 0, max: 100, grace: 0 },
+      }));
+    }
+    return charts;
+  };
+})();

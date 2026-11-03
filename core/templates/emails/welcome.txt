@@ -1,6 +1,6 @@
 {% load i18n %}{% autoescape off %}{% blocktranslate with username=user.username %}¡Bienvenido a Zyra, {{ username }}!{% endblocktranslate %}
 
-{% if created %}{% blocktranslate trimmed with club=club.name %}Tu registro se ha completado y has creado el equipo {{ club }}. Como capitán puedes gestionar jugadores, partidos, convocatorias y estadísticas, e invitar al resto del equipo desde "Miembros del club".{% endblocktranslate %}{% else %}{% blocktranslate trimmed with club=club.name %}Tu registro se ha completado y ya formas parte de {{ club }}. Desde ahora puedes consultar los partidos, las convocatorias y las estadísticas del equipo.{% endblocktranslate %}{% endif %}
+{% if created %}{% blocktranslate trimmed with club=club.name %}Ya estás dentro: has creado el equipo {{ club }}. Como capitán puedes gestionar jugadores, partidos, convocatorias y estadísticas, e invitar al resto del equipo desde "Miembros del club".{% endblocktranslate %}{% else %}{% blocktranslate trimmed with club=club.name %}Ya estás dentro: formas parte de {{ club }}. Desde ahora puedes consultar los partidos, las convocatorias y las estadísticas del equipo.{% endblocktranslate %}{% endif %}
 
 {% translate "Usuario" %}: {{ user.username }}
 {% if created %}{% translate "Equipo creado" %}{% else %}{% translate "Equipo" %}{% endif %}: {{ club.name }}

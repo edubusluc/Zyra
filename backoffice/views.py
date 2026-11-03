@@ -26,6 +26,7 @@ from django.utils.translation import gettext as _, ngettext
 from django.views.decorators.http import require_POST
 
 from core import blocklist, email_verification, moderation
+from core.competitions import CHOICES as COMPETITION_CHOICES
 from core.emails import send_photo_removed_email, send_unverified_account_email
 from core.models import BlockedEmail, Club, Invitation, Membership, PhotoCheck, PhotoRemoval, ServiceSwitch
 from match.models import Match
@@ -112,13 +113,18 @@ CLUB_ORDERINGS = {
 def club_list(request):
     """
     Lista de clubes (solo personal) con sus contadores. Filtros por GET: ``q`` (nombre o
-    slug), ``activity`` (active/inactive según AT_RISK_DAYS) y ``order`` (CLUB_ORDERINGS).
+    slug), ``competition`` (SNP o LAPI), ``activity`` (active/inactive según AT_RISK_DAYS) y ``order`` (CLUB_ORDERINGS).
     """
     q = request.GET.get("q", "").strip()
     activity = request.GET.get("activity", "")
     order = request.GET.get("order", "recent")
+    competition = request.GET.get("competition", "")
 
     clubs = annotate_clubs(Club.objects.all())
+    if competition in dict(COMPETITION_CHOICES):
+        clubs = clubs.filter(competition=competition)
+    else:
+        competition = ""
     if q:
         clubs = clubs.filter(Q(name__icontains=q) | Q(slug__icontains=q))
     today = timezone.localdate()
@@ -134,7 +140,8 @@ def club_list(request):
 
     return render(request, "backoffice/club_list.html", {
         "section": "clubs", "page": _page(request, clubs), "q": q, "activity": activity, "order": order,
-        "extra": _extra(request, "q", "activity", "order"), "at_risk_days": AT_RISK_DAYS,
+        "competition": competition, "competitions": COMPETITION_CHOICES,
+        "extra": _extra(request, "q", "activity", "order", "competition"), "at_risk_days": AT_RISK_DAYS,
     })
 
 
@@ -859,7 +866,7 @@ def _report_removal(request, removed, notified, not_notified):
         return
     messages.success(request, ngettext("%(n)s foto eliminada.", "%(n)s fotos eliminadas.", removed) % {"n": removed})
     if notified:
-        messages.success(request, _("Se ha avisado por email al usuario."))
+        messages.success(request, _("Usuario avisado por email."))
     if not_notified:
         messages.warning(request, _("No se ha podido avisar por email (el usuario no tiene email o falló el envío)."))
 

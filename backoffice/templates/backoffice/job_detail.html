@@ -1,5 +1,5 @@
 {% extends 'backoffice/base.html' %}
-{% load i18n backoffice_tags tz %}
+{% load i18n backoffice_tags tz %}{% load zyra_format %}
 {% block title %}{{ job.name }}{% endblock %}
 
 {% block content %}
@@ -64,7 +64,7 @@
         <div><dt>{% translate "Comando" %}</dt><dd><code>python manage.py {{ job.spec.command }} {{ job.spec.args|join:" " }}</code></dd></div>
         <div><dt>{% translate "Cuándo" %}</dt><dd>{{ job|cron_text }}{% if job.spec.schedule %} <span class="text-muted">({% blocktranslate with schedule=job.spec.schedule tz=time_zone %}{{ schedule }}, hora de {{ tz }}{% endblocktranslate %})</span>{% endif %}</dd></div>
         <div><dt>{% translate "Estado" %}</dt><dd>{% if job.running_since %}{% with running=job.runs.first %}{% if running %}<a href="{% url 'backoffice:run_detail' running.public_id %}" class="z-badge z-badge--warning">{% translate "En curso · ver en directo" %}</a>{% else %}<span class="z-badge z-badge--warning">{% translate "En curso" %}</span>{% endif %}{% endwith %}{% elif job.enabled %}{% translate "Activo" %}{% else %}<span class="z-badge z-badge--outline">{% translate "En pausa" %}</span>{% endif %}{% if job.run_requested_at %} · {% with username=job.run_requested_by.username|default:"—" %}{% blocktranslate %}pedida a mano por {{ username }}{% endblocktranslate %}{% endwith %}{% endif %}</dd></div>
-        <div><dt>{% translate "Próxima ejecución" %}</dt><dd>{% if job.enabled and job.next_run_at %}{{ job.next_run_at|timezone:time_zone|date:"j M Y H:i" }}{% else %}—{% endif %}</dd></div>
+        <div><dt>{% translate "Próxima ejecución" %}</dt><dd>{% if job.enabled and job.next_run_at %}{{ job.next_run_at|timezone:time_zone|date_day_time }}{% else %}—{% endif %}</dd></div>
         <div><dt>{% translate "Ejecuciones" %}</dt><dd>{% blocktranslate trimmed count n=ok_count %}{{ n }} correcta{% plural %}{{ n }} correctas{% endblocktranslate %} · {% blocktranslate with n=error_count %}{{ n }} con error{% endblocktranslate %}</dd></div>
     </dl>
 </section>

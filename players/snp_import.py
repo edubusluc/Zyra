@@ -255,13 +255,25 @@ def _update_existing_scores(club, existing):
     return updated
 
 
+def same_player_options(club):
+    """
+    Jugadores de la plantilla sin puntos SNP (p. ej. copiados de LAPI con otro nombre): en
+    «Completar equipo» el capitán puede decir que un nombre nuevo de SNP es uno de ellos.
+    """
+    return list(Player.objects.filter(club=club, in_team=True, snp_score__isnull=True).order_by("name", "last_name"))
+
+
 @transaction.atomic
-def confirm(team_import):
+def confirm(team_import, same=None):
     """
     Crea los jugadores pendientes de ``team_import`` y actualiza los puntos SNP de los que
     ya estaban. Antes vuelve a comprobar que los nuevos no existan (alguien puede haberlos
     creado entre la búsqueda y la confirmación). De un jugador existente solo cambian los
     puntos SNP, nunca el nombre, la posición ni el resto de sus datos.
+
+    ``same`` ({nombre en SNP: id de jugador}) son los que el capitán ha dicho que ya están en
+    el equipo con otro nombre («¿Es el mismo jugador?», p. ej. copiados de LAPI): no se crean y
+    ese jugador recibe los puntos.
     """
     team_import = SnpTeamImport.objects.select_for_update().get(pk=team_import.pk)
     if team_import.status != SnpTeamImport.READY:
@@ -270,7 +282,13 @@ def confirm(team_import):
     entries = [{"name": e["snp_name"], "score": e["score"]} for e in team_import.to_add]
     still_missing = {e["snp_name"] for e in plan_import(club, entries)[0]}
     created, today, season = [], timezone.localdate(), current_season()
+    chosen = Player.objects.in_bulk([pid for pid in (same or {}).values()])
     for entry in team_import.to_add:
+        player = chosen.get((same or {}).get(entry["snp_name"]))
+        if player is not None and player.club_id == club.pk:
+            team_import.existing.append({"snp_name": entry["snp_name"], "category": entry.get("category", ""),
+                                         "player": str(player), "player_id": player.pk, "score": entry["score"]})
+            continue
         if entry["snp_name"] not in still_missing:
             team_import.existing.append({"snp_name": entry["snp_name"], "player": _("creado mientras tanto")})
             continue

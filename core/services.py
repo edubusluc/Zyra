@@ -2,10 +2,12 @@
 Operaciones de negocio sobre clubes y cuentas que usan varias vistas: crear un club, aceptar
 una invitación, dar de baja a un miembro, traspasar la capitanía y eliminar una cuenta. Cada una se ejecuta en una transacción.
 
-Cada cuenta pertenece a un solo club: quien ya es miembro (o capitán) de uno no puede
-registrar otro ni unirse a otro (``club_of``). Los clubes suspendidos no cuentan, porque
-ya no se pueden usar.
+Cada club es el «espacio» de una competición (``Club.competition``) y una cuenta tiene como
+mucho un espacio por competición: quien ya es miembro (o capitán) de un club SNP no puede
+registrar ni unirse a otro club SNP, pero sí a uno LAPI (``club_of``). Los clubes suspendidos
+no cuentan, porque ya no se pueden usar.
 """
+from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -13,27 +15,62 @@ from django.utils.translation import gettext as _
 from players.models import Player, SnpAccount
 from team.models import Team
 from .blocklist import is_user_blocked
+from .competitions import COMPETITIONS
 from .models import Club, Invitation, Membership
 
+User = get_user_model()
 
-def club_of(user):
-    """Club (no suspendido) al que pertenece ``user``, o None si no tiene ninguno."""
-    membership = (
-        Membership.objects.filter(user=user, club__suspended_at__isnull=True)
-        .select_related("club").order_by("pk").first()
-    )
+
+def club_of(user, competition=None):
+    """Club (no suspendido) al que pertenece ``user`` en la competición ``competition`` (código),
+    o en cualquiera si no se indica; None si no tiene ninguno."""
+    memberships = Membership.objects.filter(user=user, club__suspended_at__isnull=True)
+    if competition is not None:
+        memberships = memberships.filter(club__competition=competition)
+    membership = memberships.select_related("club").order_by("pk").first()
     return membership.club if membership else None
+
+
+def free_competitions(user):
+    """Competiciones (fichas) en las que ``user`` aún no tiene espacio, en el orden del registro."""
+    taken = set(Membership.objects.filter(user=user, club__suspended_at__isnull=True)
+                .values_list("club__competition", flat=True)) if user.is_authenticated else set()
+    return [c for c in COMPETITIONS.values() if c.code not in taken]
+
+
+def one_space_message(club):
+    """Aviso de que ya tiene el espacio ``club`` en su competición y no puede tener otro."""
+    return _("Ya tienes el equipo %(club)s en %(competition)s y solo se puede tener un equipo por "
+             "competición. Abandónalo antes de unirte o crear otro de %(competition)s.") % {
+        "club": club.name, "competition": club.rules.name}
+
+
+class SpaceTaken(Exception):
+    """La cuenta ya tiene un equipo en esa competición (un espacio por competición)."""
+    pass
+
+
+def ensure_space_free(user, competition):
+    """
+    Dentro de una transacción: bloquea la cuenta ``user`` y comprueba que no tiene equipo en
+    ``competition``; si no, lanza ``SpaceTaken``. El bloqueo hace que dos envíos a la vez del
+    formulario de alta (doble clic, dos pestañas) no creen dos equipos en la misma competición.
+    """
+    User.objects.select_for_update().get(pk=user.pk)
+    if club_of(user, competition) is not None:
+        raise SpaceTaken(competition)
 
 
 @transaction.atomic
 def create_club(name, location, admin_user, gender="", country="", division="",
-                player_name="", player_last_name=""):
+                player_name="", player_last_name="", competition="snp"):
     """
-    Crea un club con su equipo propio y deja a admin_user como capitán. Con
+    Crea un club (el espacio de la competición ``competition``) con su equipo propio y deja a
+    admin_user como capitán. Con
     ``player_name`` y ``player_last_name`` crea también el jugador del capitán en el
     equipo propio, enlazado a su cuenta.
     """
-    club = Club.objects.create(name=name)
+    club = Club.objects.create(name=name, competition=competition)
     own_team = Team.objects.create(club=club, name=name, location=location, gender=gender, country=country,
                                    division=division, is_own=True, in_group=True)
     Membership.objects.create(user=admin_user, club=club, role=Membership.ADMIN)
@@ -54,7 +91,8 @@ def accept_invitation(invitation, user):
     Da de alta a ``user`` como miembro del club de la invitación y apunta el uso. La
     invitación se bloquea mientras tanto, así una invitación de un solo uso (las de
     email) no puede usarse dos veces aunque lleguen dos peticiones a la vez. Los enlaces
-    compartidos (``reusable``) siguen valiendo para más personas.
+    compartidos (``reusable``) siguen valiendo para más personas. Si es la invitación de una
+    ficha copiada (``Invitation.player``), enlaza esa ficha a la cuenta.
     """
     invitation = Invitation.objects.select_for_update().select_related("club").get(pk=invitation.pk)
     if not invitation.is_valid:
@@ -65,15 +103,18 @@ def accept_invitation(invitation, user):
         raise InvitationError(_("Tu email está bloqueado en Zyra y no puede unirse a clubes."))
     if Membership.objects.filter(user=user, club=invitation.club).exists():
         raise InvitationError(_("Ya eres miembro de %(club)s.") % {"club": invitation.club.name})
-    current = club_of(user)
+    current = club_of(user, invitation.club.competition)
     if current is not None:
-        raise InvitationError(_("Ya perteneces a %(club)s y solo se puede pertenecer a un club. "
-                                "Abandona ese club antes de unirte a otro.") % {"club": current.name})
+        raise InvitationError(one_space_message(current))
     membership = Membership.objects.create(user=user, club=invitation.club, role=Membership.MEMBER)
     invitation.used_by = user
     invitation.used_at = timezone.now()
     invitation.use_count += 1
     invitation.save(update_fields=["used_by", "used_at", "use_count"])
+    if invitation.player_id:
+        # Invitación de una ficha copiada de otro equipo: la cuenta queda enlazada a esa ficha.
+        from players.copy import link_player
+        link_player(invitation, user)
     return membership
 
 
@@ -145,7 +186,7 @@ def set_manager(club, current, target, enable):
         raise ManagerError(_("Elige a otro miembro del club."))
     if enable and not target.is_manager:
         if club.memberships.filter(role=Membership.MANAGER).count() >= Membership.MAX_MANAGERS:
-            raise ManagerError(_("Un club puede tener como máximo %(n)s gestores.") % {"n": Membership.MAX_MANAGERS})
+            raise ManagerError(_("Un equipo puede tener como máximo %(n)s gestores.") % {"n": Membership.MAX_MANAGERS})
         target.role = Membership.MANAGER
         target.manager_welcome_pending = True
     elif not enable and target.is_manager:

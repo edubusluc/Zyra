@@ -1,0 +1,12 @@
+{% load i18n %}
+{# Selector de competición único (UX-013): el desplegable «Competición» de la fila única de filtros (junto a Temporada y Tipo). Recibe items: dicts con url (o code, para ?en=), code, label (o club) y active. Se marca en lima si no es «Todas». #}
+<nav aria-label="{% translate 'Competición' %}" class="z-fsel-wrap z-space-switcher z-space-filter">
+  <details class="z-fsel{% for item in items %}{% if item.active and item.code != 'todas' %} is-active{% endif %}{% endfor %}" data-filter-menu>
+    <summary><small>{% translate "Competición" %}</small><span>{% for item in items %}{% if item.active %}{% if item.club %}{{ item.club.name }} {% include 'includes/competition_badge.html' with code=item.code name=item.name %}{% elif item.code != 'todas' %}{% include 'includes/competition_badge.html' with code=item.code name=item.label %}{% else %}{{ item.label }}{% endif %}{% endif %}{% endfor %}</span></summary>
+    <ul class="z-fsel-menu">
+      {% for item in items %}
+      <li><a href="{% if item.url %}{{ item.url }}{% else %}{{ request.path }}?en={{ item.code }}{% endif %}"{% if item.active %} aria-current="page"{% endif %}>{% if item.club %}{{ item.club.name }} {% include 'includes/competition_badge.html' with code=item.code name=item.name %}{% elif item.code != 'todas' %}{% include 'includes/competition_badge.html' with code=item.code name=item.label %}{% else %}{{ item.label }}{% endif %}</a></li>
+      {% endfor %}
+    </ul>
+  </details>
+</nav>

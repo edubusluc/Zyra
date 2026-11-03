@@ -6,9 +6,11 @@ from callLog.models import CallLog
 from players.models import Player
 from penalty.models import Penalty, KINDS
 from django.views.decorators.http import require_http_methods
+from core import spaces
 from core.decorators import club_required
 
 # Create your views here.
+@spaces.follow_call
 @club_required
 @require_http_methods(["GET", "POST"])
 def view_call_log(request, call_id):
@@ -22,7 +24,7 @@ def view_call_log(request, call_id):
     players = Player.objects.filter(club=request.club, in_team=True).order_by('name', 'last_name')
     if not Call.objects.filter(public_id=call_id, match__club=request.club).exists():
         return render(request, "view_call_log.html", {
-            "error_message": _("No se encontró el registro de llamada con el ID especificado."),
+            "error_message": _("No existe ese registro de llamada."),
             "log_lines": [],
             "players": players,
             "call_id": call_id,

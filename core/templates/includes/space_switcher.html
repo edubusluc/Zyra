@@ -1,0 +1,7 @@
+{% load i18n %}
+{# Selector de competición de Plantilla, Club y Rivales (core.spaces.management_view): solo para quien gestiona todos sus equipos. #}
+{% if request.space_switcher %}
+{% include 'includes/competition_selector.html' with items=request.space_switcher %}
+{% elif request.space_current %}
+<p class="z-space-note">{% translate "Equipo:" %} {% include 'includes/competition_badge.html' with code=request.space_current.competition name=request.space_current.rules.name short=True %} <strong>{{ request.space_current.name }}</strong></p>
+{% endif %}

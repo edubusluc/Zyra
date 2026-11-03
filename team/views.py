@@ -1,22 +1,25 @@
 """Vistas de equipos: lista, alta, edición y edición conjunta."""
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import Teamform
-from .models import Team
+from .models import Team, divisions_for
 from django.contrib import messages
 from django.db import transaction
-from django.utils.translation import gettext as _, ngettext
+from django.utils.translation import gettext as _, gettext_lazy, ngettext
 from django.urls import reverse
 from django.views.decorators.http import require_GET, require_POST, require_http_methods
 from core.decorators import club_required, not_while_syncing, club_manager_required
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import Q
 from django.http import JsonResponse
-from core import similarity
+from core import similarity, spaces
 
 # Los grupos de SNP tienen unos 15-30 equipos: se ven de una vez, sin paginar.
 TEAMS_PER_PAGE = 30
+# ?volver= de create_team para volver al formulario de enfrentamiento tras crear el rival.
+BACK_TO_MATCH = "enfrentamiento"
 
 
+@spaces.management_view
 @club_required
 @require_GET
 def list_team(request):
@@ -55,6 +58,8 @@ def list_team(request):
     return render(request, "list_teams.html",
                   {"teams": teams, "search": search, "only_group": only_group})
 
+@spaces.choose_managed_space("choose_space.html", title=gettext_lazy("Crear rival"),
+                            question=gettext_lazy("¿En qué equipo quieres crear el rival?"), back="list_teams")
 @club_manager_required
 @not_while_syncing
 @require_http_methods(["GET", "POST"])
@@ -65,7 +70,8 @@ def create_team(request):
     GET muestra el formulario con los valores del equipo propio. POST lo valida y, si hay
     equipos con un nombre igual o parecido, vuelve a mostrarlo para que se confirme. Las
     peticiones de comprobación responden en JSON sin crear nada. Al crearlo redirige a la
-    lista de equipos.
+    lista de equipos o, si se llegó desde el formulario de enfrentamiento (``?volver=enfrentamiento``),
+    de vuelta a él.
     """
     similar = []
     if request.method == "POST":
@@ -80,11 +86,15 @@ def create_team(request):
                 team = form.save(commit=False)
                 team.club = request.club
                 team.save()
+                if request.GET.get("volver") == BACK_TO_MATCH:
+                    messages.success(request, _("Rival %(team)s creado. Ya puedes elegirlo.") % {"team": team.name})
+                    return redirect(reverse("create_match") + (f"?{spaces.SWITCH_PARAM}={request.club.competition}"
+                                                               if spaces.is_multi_space(request) else ""))
                 return redirect("list_teams")
         else:
             if similarity.is_check_request(request):
                 return JsonResponse({"valid": False, "similar": []})
-            messages.error(request, _("Error al crear el equipo. Por favor, verifica los datos."))
+            messages.error(request, _("No se ha podido crear el equipo. Revisa los datos."))
 
     else:
         form = Teamform(club=request.club)
@@ -119,6 +129,7 @@ def similar_team_item(team):
     }
 
 
+@spaces.follow_object("team.Team", "team_id")
 @club_manager_required
 @require_POST
 def reactivate_team(request, team_id):
@@ -131,6 +142,7 @@ def reactivate_team(request, team_id):
     return redirect("list_teams")
 
 
+@spaces.follow_object("team.Team", "team_id")
 @club_manager_required
 @require_http_methods(["GET", "POST"])
 def edit_team(request, team_id):
@@ -147,7 +159,7 @@ def edit_team(request, team_id):
             form.save()
             return redirect('club_home' if team.is_own else 'list_teams')
         else:
-            messages.error(request, _("Error al editar el equipo. Por favor, verifica los datos."))
+            messages.error(request, _("No se ha podido editar el equipo. Revisa los datos."))
     else:
         form = Teamform(instance=team, club=request.club)
 
@@ -156,7 +168,7 @@ def edit_team(request, team_id):
         'team': team,
         'genders': Team.GENDERS,
         'countries': Team.COUNTRIES,
-        'divisions': Team.DIVISIONS,
+        'divisions': divisions_for(request.club.rules),
     }
     return render(request, 'edit_team.html', context)
 
@@ -180,6 +192,7 @@ def manage_teams(request):
 
     if request.method == "POST":
         valid = {f: {v for v, _label in Team._meta.get_field(f).choices} for f in BULK_FIELDS}
+        valid['division'] = set(request.club.rules.divisions)
         for row in rows:
             team = row["team"]
             for f in BULK_FIELDS:
@@ -223,6 +236,6 @@ def manage_teams(request):
         "rows": rows,
         "genders": Team.GENDERS,
         "countries": Team.COUNTRIES,
-        "divisions": Team.DIVISIONS,
+        "divisions": divisions_for(request.club.rules),
         "in_group_count": sum(r["in_group"] for r in rows),
     })

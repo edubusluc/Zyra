@@ -1,25 +1,25 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n %}{% load zyra_format %}
 {% block page_title %}{% translate "Rivales" %} · {% endblock %}
 
 {% block content %}
   <div class="st-page">
     {% include 'includes/stats_tabs.html' %}
+    {% include 'includes/filters_row.html' with season=True type=True %}
 
     <header class="st-head">
       <div>
-        <h1 class="st-title">{% translate "Rivales" %}</h1>
+        <h1 class="st-title">{% translate "Rivales" %} <span class="z-comp-badge z-comp-badge--{{ current_club.competition }}">{{ current_club.rules.name }}</span></h1>
         <p class="st-subtitle">{% translate "Cómo te va contra cada equipo. Solo cuentan los enfrentamientos con el acta cerrada." %}</p>
       </div>
     </header>
 
-    {% include 'includes/season_filter.html' %}
     <form method="get" class="st-search" role="search" action="{% url 'rival_statistics' %}">
       {% for name, value in season_keep_fields %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}
       <label class="visually-hidden" for="rival-q">{% translate "Buscar rival por nombre" %}</label>
       <input class="st-input" type="search" id="rival-q" name="q" value="{{ search }}" placeholder="{% translate 'Buscar rival por nombre…' %}" autocomplete="off">
       <button class="st-btn" type="submit">{% translate "Buscar" %}</button>
-      {% if search %}<a class="st-chip" href="{% url 'rival_statistics' %}{% if selected_season %}?season={{ selected_season|urlencode:'' }}{% endif %}">{% translate "Quitar búsqueda" %}</a>{% endif %}
+      {% if search %}<a class="st-chip" href="{% url 'rival_statistics' %}?match_type={{ match_type_param }}{% if selected_season %}&amp;season={{ selected_season|urlencode:'' }}{% endif %}">{% translate "Quitar búsqueda" %}</a>{% endif %}
     </form>
 
     {% if not total_rivals %}
@@ -38,14 +38,15 @@
         {% for link in sort_links %}<a class="st-chip" href="{{ link.url }}"{% if link.active %} aria-current="page"{% endif %}>{{ link.label }}</a>{% endfor %}
       </nav>
       <div class="st-table-fit">
-        <table class="st-table st-table--fit">
+        <table class="st-table st-table--fit st-table--cards">
           <caption class="visually-hidden">{% translate "Balance contra cada rival" %}</caption>
           <thead>
             <tr>
               <th scope="col">{% translate "Rival" %}</th>
               <th scope="col" title="{% translate 'Enfrentamientos jugados' %}">{% translate "J" %}</th>
-              <th scope="col" title="{% translate 'Ganados – empatados – perdidos' %}">{% translate "G-E-P" %}</th>
-              <th scope="col" title="{% translate 'Puntos a favor – en contra' %}">{% translate "Pts" %}</th>
+              {% if current_club.rules.has_draws %}<th scope="col" title="{% translate 'Ganados – empatados – perdidos' %}">{% translate "G-E-P" %}</th>{% else %}<th scope="col" title="{% translate 'Ganados – perdidos' %}">{% translate "G-P" %}</th>{% endif %}
+              <th scope="col" title="{% translate '% de enfrentamientos ganados' %}">{% translate "% victorias" %}</th>
+              {% if current_club.rules.league_type %}<th scope="col" title="{% translate 'Puntos de liga contra este rival' %}">{% translate "Puntos de liga" %}</th>{% else %}<th scope="col" title="{% translate 'Puntos a favor – en contra' %}">{% translate "Puntos a favor-en contra" %}</th>{% endif %}
               <th scope="col">{% translate "Último" %}</th>
             </tr>
           </thead>
@@ -53,14 +54,15 @@
             {% for r in rivals %}
             <tr>
               <th scope="row">
-                <a href="{% url 'rival_detail' %}?{{ r.query }}{% if selected_season %}&amp;season={{ selected_season|urlencode:'' }}{% endif %}{% if selected_match_type %}&amp;match_type={{ selected_match_type }}{% endif %}">{{ r.label }}</a>
+                <a href="{% url 'rival_detail' %}?{{ r.query }}{% if selected_season %}&amp;season={{ selected_season|urlencode:'' }}{% endif %}&amp;match_type={{ match_type_param }}">{{ r.label }}</a>
                 {% if r.friendly_only %}<span class="z-badge ms-1">{% translate "Amistoso" %}</span>{% endif %}
                 {% if r.team and r.team.division %}<small class="st-muted d-block">{{ r.team.get_division_display }}</small>{% endif %}
               </th>
-              <td class="st-nw">{{ r.played }}</td>
-              <td class="st-nw">{{ r.won }}-{{ r.drawn }}-{{ r.lost }}</td>
-              <td class="st-nw">{{ r.points_for }}-{{ r.points_against }}</td>
-              <td class="st-last">{% include 'includes/rival_outcome.html' with e=r.last %}<small class="st-muted d-block">{{ r.last.date|date:"d/m/Y" }}</small></td>
+              <td class="st-nw st-c-played" data-label="{% translate 'Enfrentamientos' %}">{{ r.played }}</td>
+              <td class="st-nw st-c-record" data-label="{% if current_club.rules.has_draws %}{% translate 'G-E-P' %}{% else %}{% translate 'G-P' %}{% endif %}">{% if current_club.rules.has_draws %}{{ r.won }}-{{ r.drawn }}-{{ r.lost }}{% else %}{{ r.won }}-{{ r.lost }}{% endif %}</td>
+              <td class="st-nw st-c-pct" data-label="{% translate '% victorias' %}">{{ r.pct }}%</td>
+              {% if current_club.rules.league_type %}<td class="st-nw st-c-points" data-label="{% translate 'Liga' %}">{{ r.league_points }}</td>{% else %}<td class="st-nw st-c-points" data-label="{% translate 'Puntos' %}">{{ r.points_for }}-{{ r.points_against }}</td>{% endif %}
+              <td class="st-last st-c-last">{% include 'includes/rival_outcome.html' with e=r.last %}<small class="st-muted d-block">{{ r.last.date|date_day }}</small></td>
             </tr>
             {% endfor %}
           </tbody>

@@ -3,10 +3,345 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 02/11/2026 · Back-office: clubes por competición
+
+- **Dashboard**: una tarjeta de «Clubes SNP» y otra de «Clubes LAPI» con el total, los activos y las altas de 30 días. Cada club es un espacio de una sola competición y tiene un único equipo propio, así que cada uno cuenta una vez y las dos tarjetas suman el total de «Clubes».
+- **Lista de clubes**: columna «Competición» y filtro por competición, que también enlazan las tarjetas.
+
+## 02/11/2026 · Estadísticas: fase 9 (Enfrentamientos)
+
+- **Lista para gestionar**: desaparece el resumen de cinco cifras (Jugados, Ganados, Empatados, Perdidos, Pendientes) y no lo sustituye ningún indicador: los pendientes ya están en «Requieren acción» y el balance, en Estadísticas › Equipo. Los títulos «Próximos» y «Jugados» ocupan todo el ancho también en la vista de jugador.
+- **Cerrados en una línea**: fecha, rival, competición, tipo o jornada y el resultado leído desde nuestro equipo («1–2» y D/V/E), igual para capitán y jugador. El recorrido de cuatro pasos queda solo en los pendientes del capitán o gestor; los jugadores siguen viendo la tarjeta de «Próximos».
+- **Un solo estado en el acta**: desaparecen la insignia de la cabecera y la etiqueta «Acta cerrada»; con el acta cerrada tampoco se muestran las cuatro fases. El estado está junto al marcador.
+- **«Previa» solo antes de jugar**: con el acta cerrada, en su lugar, el enlace «Historial contra [rival]» a su ficha en Estadísticas › Rivales (todas las temporadas).
+
+## 02/11/2026 · Estadísticas: fase 8 (densidad, móvil y accesibilidad)
+
+- **Sin notas descriptivas**: desaparecen los textos de una línea bajo los títulos de las tarjetas; lo que hace falta explicar (mínimos, reglas de puntos, cómo se alinean las parejas) va en un tooltip «i» junto al título, que se abre al pasar el ratón o al pulsar en móvil.
+- **Secciones por nivel**: cada sección declara su nivel (`data-level`: comprender, comparar o profundizar). En móvil solo las de «comprender» están siempre abiertas; el resto se pliega, con un resumen en la cabecera (p. ej. «23 jugadores»). Equipo en móvil llega plegado y sin desbordar horizontalmente, y el globo del tooltip ya no ensancha la página.
+- **Mismas palabras en todas partes**: enfrentamiento (jornada o cruce entre dos equipos) frente a partido (parejas dentro de él); «Partidos jugados» con su unidad al lado de la cifra, y «Convocatorias» con «a las que se apuntó» para distinguir apuntarse de ser convocado.
+- **Gráficos accesibles**: todos los lienzos van ocultos a los lectores de pantalla y el contenedor lleva en su etiqueta el título y los valores de cada serie (también en Parejas).
+- **Limpieza**: se eliminan cinco plantillas que ya no usaba ninguna vista.
+
+## 02/11/2026 · Estadísticas: fase 7 (Parejas y Rivales)
+
+- **Parejas · todas las parejas**: sin pareja elegida, la entrada es la lista de todas las que han jugado juntas (partidos, V-D y %), con buscador por nombre y orden por más partidos, mejor %, peor % o nombre. Desaparecen «Mejores parejas» y «Parejas por mejorar» (con umbrales distintos); no hay selector de mínimo, la base va en cada fila.
+- **Ficha de pareja que escala con la muestra**: con un solo partido juntos solo se ven el resumen y el partido; la racha, la forma, Local y visitante, los sets y el rendimiento por temporada aparecen a partir de 2. El gráfico «Partidos jugados» solo con dos temporadas o más y la evolución del % con las mismas reglas que en Jugador (temporadas de 5 partidos o más); el «Cambio» solo entre temporadas con muestra.
+- **Pareja en LAPI**: el encabezado dice «N partidos juntos» (ya no «Pareja sorteada N veces»), la tabla por temporada no tiene la columna Puntos y la columna Tipo de «Últimos partidos juntos» se rellena con el tipo y la jornada («Liga · J5»).
+- **Rivales con %**: cada rival lleva su % de victorias; se ordena por mejor % o «Peor primero» (el rival contra el que peor nos va) en lugar de por balance. Las cabeceras de puntos son explícitas: «Puntos de liga» en LAPI y «Puntos a favor-en contra» en SNP.
+- **Ficha de rival**: el resumen son una línea (enfrentamientos, G-E-P con %, puntos y último resultado); «Racha contra ellos» pasa a «Últimos enfrentamientos» y «Mejores parejas contra ellos» a «Parejas contra ellos», con las mejores y las peores (mínimo de partidos).
+- **Sin tarjetas vacías**: la evolución de puntos SNP del jugador, el compañero, Local y visitante y las convocatorias de «Yo» no se dibujan cuando no hay datos.
+
+## 02/11/2026 · Estadísticas: fase 6 (comparar)
+
+- **Sets iguales en todas partes**: Equipo, Jugador, Pareja, «Yo» y el informe mensual en PDF usan las mismas situaciones y nombres: Tras ganar el 1.er set, Tras perder el 1.er set, Tie-breaks, Set decisivo y Roscos a favor. Se dibujan con el estilo de barras del antiguo «Sets clutch» (título con su descripción, barra y %; los casos, en el tooltip) y las que no tienen ninguno no se muestran; en «Yo» cada situación lleva una barra por competición. «Sets ajustados» y «Super tie-break» salen de la web (el PDF conserva el super tie-break).
+- **Local y visitante**: Jugador y Pareja comparten un bloque con la unidad escrita (porcentaje, V-D y partidos). Equipo conserva sus dos tarjetas «Ganados como local / visitante», ahora con el texto «enfrentamientos ganados / total».
+- **Yo · gráficos**: «Ganados por temporada» (volumen) pasa a «% de victorias por temporada» por competición, con los partidos de cada barra en el tooltip. Las convocatorias a las que te apuntas se muestran como cifra por competición; la línea solo aparece con dos temporadas o más.
+- **Compañeros**: «Grado de afinidad» se sustituye por la lista de Compañeros, con partidos, V-D y % real, la pareja habitual primera (como en la cabecera), el mejor y el peor % entre quienes tienen 5 partidos o más, y enlace a la pareja. La afinidad suavizada solo desempata.
+- **Evolución sin falsas tendencias**: el gráfico «% de victorias por temporada» de la ficha del jugador solo usa temporadas con 5 partidos o más (y al menos dos), con los partidos bajo cada punto, y el «Cambio» de la tabla solo se calcula entre temporadas con muestra. «Partidos jugados» pasa a «Profundizar».
+- **Detalle por temporada**: la tabla baja de 9 a 5 columnas (Temporada, Jugados, V-D, %, Cambio) y los puntos, las convocatorias y el alineado están en «Profundizar».
+
+## 02/11/2026 · Estadísticas: fase 5 (tabla de plantilla)
+
+- **Tabla de plantilla**: sustituye a los dos Top 5 y a las tarjetas «Más victorias» y «Más partidos jugados» de Equipo. Una fila por jugador con Jugados, V-D, % de victorias, «Se apunta» (% de convocatorias cerradas a las que se apuntó) y, en SNP, los puntos con su último cambio. Se ordena pulsando la columna y tiene el conmutador Todos · Local · Visitante.
+- **Sin mínimo de partidos**: cuenta el % de todo el que ha jugado; quien no ha jugado ninguno va apagado al final, y así se ve también a quien rinde peor.
+- **«Se apunta» sigue el filtro**: con Local o Visitante cuenta solo las convocatorias de los enfrentamientos en los que el equipo juega en ese lado.
+- **Evolución SNP en la tabla**: cada jugador lleva una mini línea con sus últimas actualizaciones y los puestos que sube o baja en el ranking desde la anterior, para ver el «pique» semanal sin un gráfico aparte.
+- **Jugadores**: sin jugador elegido, la entrada es esta misma tabla (con filtro de temporada y tipo) y cada fila abre su ficha; desaparecen la cuadrícula de avatares y el texto de ayuda.
+- **Puntos SNP**: desaparece el bloque aparte (y su gráfico de la media del equipo). Los puntos, el cambio y la evolución de cada jugador están en la tabla; la media del equipo y la fecha de la última actualización (con aviso a los 6 días) van en una línea sobre la tabla.
+- **Récords**: cinco (racha de victorias con «sin perder» en un «i», mayor victoria, peor derrota, mejor temporada y pareja con más victorias).
+- **Profundizar**: la asistencia a las convocatorias y el balance por jugador (partidos de 3 y 2 puntos) pasan a dos secciones plegadas; no se pierden.
+
+## 02/11/2026 · Estadísticas: fase 4 (comprender)
+
+- **Equipo · balance**: una sola lectura (victorias, empates y derrotas, el % con su base «de 14 enfrentamientos» y una barra segmentada si hay empates). Desaparece el pie «Ganados · 7 de 14».
+- **Equipo · forma y racha**: los últimos 5 enfrentamientos con los mismos círculos que Jugador, Pareja y Rival, y la racha actual.
+- **Equipo · media SNP**: se quita la tarjeta «Media por jugador», que repetía la «Media del equipo» del ranking SNP; el ranking indica «Actualizado el dd/mm/aaaa» y avisa si hace más de 6 días.
+- **Equipo · Liga (LAPI)**: un solo bloque con los puntos de la última jornada, las jornadas jugadas y los elegibles para las fases finales; quienes no lo son salen en un desplegable con las jornadas que les faltan. La cita del reglamento pasa a un «i». «No presentados y lesiones» solo aparece si hay alguno.
+- **Yo (Mis estadísticas)**: el % de victorias, global y por competición, con el número de partidos jugados; «te apuntaste a X de Y» pasa a una cifra propia.
+- **Yo · Sets**: la tarjeta muestra las mismas cuatro situaciones que el «Sets clutch» de la ficha (Tie-breaks, Cerrar el partido, Remontadas y Roscos a favor) con su descripción a la vista, no en un «i».
+- **Ficha del jugador**: junto a su % de victorias aparece «Equipo: X %» (los partidos de todo el club en el mismo periodo), y los puntos SNP indican cuándo se actualizaron, con aviso a los 6 días.
+
+## 02/11/2026 · Estadísticas: fase 3 (navegación y fichas)
+
+- **Pestañas**: cinco (Yo, Equipo, Jugadores, Parejas, Rivales), que caben en 390 px sin deslizar. «Yo» sustituye a «Mis estadísticas» y a «Jugador · Yo» y aparece en cuanto tienes jugador enlazado; con un solo equipo abre directamente tu ficha.
+- **Ficha del jugador en móvil**: foto y rol en una fila, nombre a ancho completo, datos en una línea, botones lado a lado y el anillo con su texto «de victorias».
+- **Ficha del jugador**: «Editar jugador» y las advertencias son botones visibles bajo el nombre (antes eran enlaces de texto pequeños).
+- **Ficha única de jugador**: Plantilla y Estadísticas enlazan a la misma ficha (foto, posición, mano, desde, puntos SNP, «Editar» y, para capitán y gestores, el número de advertencias). Desaparece la pestaña «Resumen» y la ficha duplicada de Plantilla; la antigua URL redirige.
+- **Advertencias**: salen de Estadísticas y se abren desde Plantilla (solo capitán y gestores).
+- **Equipos rivales**: el catálogo de Enfrentamientos y de Equipo se llama «Equipos rivales», para no confundirlo con la pestaña Rivales de Estadísticas.
+- **Local y visitante (jugador y pareja)**: la barra solo pinta el tramo de ganados o de perdidos que tiene partidos; antes un 0 dibujaba un círculo suelto.
+- **Tipo**: en Equipo y Jugador el desplegable «Tipo» muestra «Competitivos» cuando es el filtro por defecto (antes salía en blanco).
+
+## 02/11/2026 · Estadísticas: fase 2 (contexto único)
+
+- **Competición**: Equipo sigue al equipo activo como el resto de pantallas (Jugador, Parejas, Rivales). Si eliges LAPI en una pestaña, todas abren LAPI; se elimina la clave de sesión propia de Equipo.
+- **Tipo de enfrentamiento**: Estadísticas cuenta por defecto solo los competitivos (los amistosos no se mezclan, igual que «Mi forma» en Inicio). «Todos» sigue disponible en el filtro Tipo, y el balance de Inicio coincide con el de Jugador · Yo con los filtros por defecto.
+- **Rivales**: la lista y la ficha usan la temporada y el tipo por defecto del resto (antes sumaban todas las temporadas y los amistosos) y la lista incorpora el filtro de tipo.
+- **Filtros**: Competición · Temporada · Tipo van en la misma fila, justo bajo las pestañas, en todas las pantallas de Estadísticas.
+- **Selector de competición**: el desplegable cerrado muestra también SNP o LAPI junto al nombre del equipo, para distinguirlos cuando se llaman igual.
+
+## 02/11/2026 · Estadísticas: fase 1 (datos que no inducen a error)
+
+- **Mis estadísticas**: «Local y visitante» pasa a mostrar el % de victorias en casa frente a fuera de cada competición (antes repetía ganados y perdidos, que ya dicen las filas de arriba). Sus barras y las de «Ganados por temporada» son más anchas, con la cifra dentro y sin huecos grandes, como en «Puntos de liga». «Ganados por temporada» solo aparece con «Todas»; con una temporada elegida no tiene sentido y se oculta.
+- **Equipo**: se quitan «Juegos como local» y «Juegos como visitante» (juegos de tenis sumados, que repetían «Ganados como local/visitante» con otra unidad).
+- **Equipo · Plantilla y fases finales (LAPI)**: indica su temporada y calcula siempre la temporada en curso; con una temporada pasada elegida no se muestra.
+- **Equipo · SNP**: «Puntos de liga» pasa a llamarse «Puntos por enfrentamiento», porque SNP no tiene liga (LAPI mantiene «Puntos de liga»).
+- **Móvil**: el % de victorias del jugador y de la pareja se ve también en el móvil (anillo bajo el nombre).
+- **Racha actual**: la cifra va en lima si es de victorias y en rojo si es de derrotas.
+
+## 02/11/2026 · Fila única de filtros
+
+- **Un solo bloque de filtros**: Competición, Temporada y Tipo son desplegables en una sola fila, igual en Enfrentamientos, Calendario, Plantilla, Club, Miembros y todas las pestañas de Estadísticas (Mis estadísticas, Equipo, Jugador, Parejas, Rivales y Advertencias). Cada uno dice su valor y se marca en lima si no es «Todas».
+- Dentro de Competitivos, el tipo concreto se elige en un cuarto desplegable «Competitivo» de la misma fila. Se quitan las píldoras de competición y los chips de tipo.
+
+## 02/11/2026 · Estadísticas rediseñadas (fases 5, 6 y 7: Parejas, Rivales y Advertencias)
+
+- **Parejas**: cabecera lima con la pareja, su balance y el % de victorias («Pareja habitual del partido N» en SNP, «Pareja sorteada N veces» en LAPI), racha, forma reciente, victorias como local y visitante con barras, sets, mejores parejas y «Últimos partidos juntos» (en LAPI con tipo y jornada en vez de número de partido y sin columna de puntos). Con una pareja elegida ya no se repite «Mejores parejas». Con «Todas», «Detalle por temporada» resume cada temporada; con una temporada concreta no sale la evolución del % y el detalle lista los partidos de la pareja en ella. Los gráficos siguen el estilo de Zyra.
+- **Rivales**: la lista muestra «Pts liga» en LAPI; la ficha del rival estrena cifras (la primera en lima), «Racha contra ellos» y, en LAPI, los puntos de liga de cada cruce. Un rival que no se presentó aparece con la etiqueta «No presentado».
+- **Advertencias**: tres cifras con la de advertencias en ámbar, «Por jugador» y el nuevo gráfico «Por motivo», con el recuento de cada tipo.
+
+## 02/11/2026 · Ficha del jugador: evolución por temporadas
+
+- Con **«Todas»** vuelven «Partidos jugados» (ganados y perdidos por temporada), «Evolución del % de victorias» y la tabla «Detalle por temporada», con el estilo de gráficos de Zyra. Con **una temporada concreta** se ve solo la tabla de «Partidos jugados» de esa temporada.
+
+## 02/11/2026 · Equipo: ajustes de la fase 3
+
+- **Puntos de liga**: con una temporada elegida, una barra por jornada (o enfrentamiento en SNP); con «Todas», una barra por temporada.
+- **Balance de partidos por jugador**: barras finas y redondeadas, separadas y sin ejes. Vuelve la tabla de **Ranking SNP** (sección «Puntos SNP») y los gráficos de **Juegos como local** y **como visitante** en Gráficos.
+- Las cifras del inicio pasan a «Ganados como local» y «Ganados como visitante» (partidos ganados / total). Nuevo **menú lateral** «En esta página» en escritorio que marca la sección visible.
+
+## 01/11/2026 · Estadísticas rediseñadas (fase 3: Equipo · SNP y LAPI)
+
+- **Equipo** como en el diseño aprobado: tarjeta lima de «Balance de enfrentamientos» (con empates solo si la competición los admite y, en SNP, las eliminatorias 6-6 a favor y en contra), cifras de juegos en casa y fuera y media de puntos SNP por jugador (SNP).
+- **Puntos de liga**: barras pegadas con los puntos de cada jornada (LAPI: 4, 3, 1 o 0) o de cada enfrentamiento (SNP, de 12 posibles), solo las últimas 7; en LAPI, «Plantilla y fases finales» con elegibles según el reglamento 8.2. «Eliminatorias 6-6» pasa al balance.
+- **Top 5**: mejores jugadores como local y como visitante. **Partidos y sets**: «Por número de partido» (SNP), «Sets» con Tie-breaks, Cerrar el partido, Remontadas y Roscos a favor, cada uno con su texto, y en LAPI «No presentados y lesiones». **Récords** con las ocho tarjetas, **Balance de partidos por jugador** (SNP).
+- Los títulos de sección vuelven a verse en escritorio (el botón de plegar los ocultaba), los chips de tipo son los de la competición (en LAPI: Liga, Playoffs, Fase final) y desaparece el aviso «Cada competición puntúa distinto» de las pantallas de estadísticas. Se quitan de Equipo los gráficos de juegos como local y visitante (están en la tarjeta del balance), ganados por año y la tabla de ranking SNP; la asistencia por temporada sigue en Gráficos.
+
+## 01/11/2026 · Estadísticas rediseñadas (fase 2: ficha del jugador · SNP y LAPI)
+
+- **Jugador** (y «Mi ficha»): tarjeta lima con nombre, rol, pareja habitual, puntos SNP y puesto del equipo (o jornadas de liga en LAPI), anillo de % de victorias y balance; cifras de Jugados, Racha, Puntos ganados (de los posibles) y Convocados (en LAPI, Jornadas y «1 punto cada uno»).
+- Forma reciente, Local y visitante con barras fijas, «Partidos y sets» (SNP: por número de partido; LAPI: sets y fases finales con la regla de elegibilidad), Asistencia y afinidad, y puntos SNP o partidos por temporada. Al final queda el listado de «Partidos jugados» (de la temporada elegida o de todas); se elimina la tabla de detalle por temporada.
+- «Sets clutch» lista Set decisivo, Tie-breaks, Remontadas, Cerrar el partido y Sets ajustados, cada uno con un texto descriptivo bajo el nombre. En LAPI no hay gráfico por temporada y el de puntos SNP solo sale con «Todas».
+- Los filtros de tipo pasan a chips por tipo de enfrentamiento, y los «i» explican cada medida (también al pulsar en móvil).
+
+## 01/11/2026 · Pulido visual, textos y back-office (auditoría UX/UI, fase 6)
+
+- **Resultados**: el equipo propio lleva la etiqueta «Tu equipo» en lugar de una estrella, que se leía como «ganador».
+- **Alinear parejas** (escritorio): la barra de guardar va en la columna lateral, bajo «Orden de juego», y ya no tapa la última pareja.
+- **Rivales**: se quita la tarjeta lima «Nuevo rival» del final de la lista; queda el botón de la cabecera.
+- **Equipo**: los accesos rápidos son botones iguales de 44 px en una rejilla a todo el ancho.
+- **Navegación**: la barra inferior del móvil ya no se esconde al bajar (solo la cabecera), y el cambio de página usa un fundido de 0,2 s sin retardos.
+- **Portada**: las líneas de la pista se desvanecen bajo el texto del titular.
+- **Iniciar sesión**: el campo de usuario sugiere «ana@correo.com», la contraseña no repite su etiqueta y la cabecera ofrece «Registrarme».
+- **Formularios**: las etiquetas ya no llevan dos puntos y los títulos «Editar jugador» y «Editar equipo» van en minúscula. Un nombre o unos apellidos de jugador necesitan al menos una letra («GON ,» ya no se admite).
+- **Mi perfil**: en escritorio, en dos columnas (Cuenta y Mis fichas | Preferencias y Eliminar mi cuenta).
+- **Back-office**: ninguna tabla amplía la página en móvil (el texto oculto de las tablas con scroll propio la desbordaba) y el árbol de tablas de la consola SQL usa `<details>` sin botones dentro del resumen, con objetivos de al menos 24 px y los dos menús laterales con nombre propio.
+- **Enfrentamientos**: «Requieren acción» es solo para quien gestiona ese equipo; los jugadores ven únicamente «Próximos» y «Jugados».
+- **Sin cambios**: «Enfrentamientos» cabe en la barra inferior a 390 px con la letra a 12 px (se hizo en la fase 4), así que no hace falta el nombre corto «Partidos».
+
+## 01/11/2026 · Estadísticas rediseñadas (fase 1: Mis estadísticas · Todas)
+
+- **Cabecera de Estadísticas** como en el diseño aprobado: pestañas en mayúsculas sin iconos, fila «Competición» (Todas · SNP · LAPI con su color) con el contexto a la derecha, temporada y chips de tipo (Todos · Competitivos · Amistosos).
+- **Mis estadísticas · Todas**: tarjetas de Jugados (lima), Ganados y Perdidos; una fila por competición con borde de su color y «N jugados · XV YD · te apuntaste a a de b» y gráficos en dos columnas: Sets (dos barras finas por situación, con un «i» que explica cada una), Local y visitante (ganados y perdidos por competición), Ganados por temporada (apilados con el total) y Convocatorias (líneas sin ejes con el último valor).
+
+## 01/11/2026 · Flujos y densidad (auditoría UX/UI, fase 5)
+
+- **Estadísticas en móvil**: los filtros se recogen en una sola fila «Filtros · …» y cada sección se pliega bajo su título (solo la primera queda abierta; los enlaces del índice abren la suya). La página de equipo pasa de unos 7.700 px a unos 3.200. Los bloques con pocos datos muestran un único aviso compacto («Se mostrará cuando…») en lugar de un gráfico casi vacío, y el de afinidad ajusta su altura a las barras.
+- **Rivales en móvil**: cada rival es una tarjeta con nombre, último resultado y balance.
+- **Ficha del enfrentamiento**: el estado «Acta cerrada» ya no se repite en el aviso final (que queda solo con las acciones) y la barra «Siguiente» es de una línea en móvil, con la ayuda solo si bloquea el paso.
+- **Convocatoria**: una sola línea de datos por jugador (posición · puntos · jugó), buscador y filtros fijos al recorrer la lista y las acciones masivas en un menú «⋯».
+- **Resultados en escritorio**: panel lateral fijo con el marcador global en vivo y las acciones de guardado.
+- **Miembros**: invitar va arriba, las reglas de los roles en un plegable «¿Qué puede hacer cada rol?» y el título ya no repite la competición. **Registro de equipo**: la explicación del capitán va en un plegable.
+- **Inicio**: «Pendiente» muestra solo el rival y la acción en la línea de la fecha; los jugadores ven «Tus pendientes» (enlazar la ficha, subir la foto, quién es su pareja).
+- **Portada**: ejemplo del «Próximo enfrentamiento» con datos de muestra y funciones en carrusel en móvil. La elección de equipo al crear (rival, jugador, enfrentamiento) usa tarjetas grandes lado a lado.
+- **Ajustes tras revisar la fase 5**: en una temporada sin partidos, «Por número de partido» y «Sets clutch» ocupan toda la tarjeta con solo el aviso «No hay datos para mostrar» (con partidos, «—» en los números sin jugar). Crear rival añade, en escritorio, la tarjeta «Así se verá» (como al crear un enfrentamiento), que se rellena sola con el nombre, la división, la localización, la categoría y el país. En el registro, el botón de Google ya no se solapa con el formulario. La «Previa» enlaza con el último enfrentamiento contra ese rival. Las tarjetas del selector de convocatoria miden lo mismo. «¿Qué puede hacer cada rol?» pasa a una lista con la insignia de cada rol. En escritorio, el registro de equipo pone la presentación a la izquierda y el formulario a la derecha, para ver los campos sin hacer scroll. «Tus pendientes» se separa de la tarjeta de enfrentamientos, la tilde de «Sáb» de la portada ya no choca con el texto de arriba y crear un enfrentamiento ya no repite el equipo donde se creará.
+
+## 01/11/2026 · Sistema de diseño (auditoría UX/UI, fase 4)
+
+- **Capas CSS**: `style.css` declara `@layer overrides, base, vendor, tokens, components, screens` e importa Bootstrap y Font Awesome en su capa. Las reglas propias ganan a Bootstrap sin subir especificidad; los `!important` que pisan utilidades de Bootstrap viven en la capa `overrides`. Se comprobó con capturas antes y después (sin diferencias visibles).
+- **Escalas con tokens**: ocho tamaños de letra (`--z-fs-xs` … `--z-fs-3xl`, mínimo 12 px) y cuatro radios (`--z-radius-xs/sm/-/lg`) sustituyen a unos 40 y 25 valores sueltos.
+- **Títulos de sección** con una sola voz (Anton, sin el override tardío), **insignia de división** neutra (el color queda para estados) y **mayúsculas** solo en títulos, kickers y nombres: botones, etiquetas, cabeceras de tabla e insignias van en caja de oración.
+- **Fechas** en el mismo formato en toda la web (`date_short`, `date_long`, `date_day`, `date_day_time` en `zyra_format`) y **sets** sin ceros inútiles.
+- **Iniciales** cuando un jugador no tiene foto (`includes/player_avatar.html`), con aro neutro.
+- **Nombres de jugador** en caja de título («Alberto Montaño»; `proper_name` en `players/models.py`): `full_name` y `short_name` ya no devuelven mayúsculas, que quedan solo en titulares (CSS) y en el PDF de convocatoria. Sustituye a la decisión de la PR #65.
+- **Textos**: «Plantilla» para los jugadores del equipo, «Crear rival», «Nuevo jugador» y «equipo» en lugar de «club» en los avisos.
+
+## 01/11/2026 · Espacios (auditoría UX/UI, fase 3)
+
+- **Altas sin equipo por defecto**: quien gestiona equipos de SNP y de LAPI elige en cuál crea un rival o un jugador (pantalla «¿En qué equipo…?»), y los formularios dicen «Se creará en SNP · …». En Miembros, el selector de arriba y «Invitas a …» dejan claro a qué equipo se invita.
+- **Selector de competición único**: en Estadísticas, Enfrentamientos, Calendario, Jugadores, Rivales, Club y Miembros es el mismo control segmentado, con la insignia SNP/LAPI y el nombre del equipo.
+- **Enfrentamientos agrupados**: el listado va en «Requieren acción» (acta abierta con la fecha pasada), «Próximos» (el más cercano primero) y «Jugados».
+
+## 01/11/2026 · Móvil primero (auditoría UX/UI, fase 2)
+
+- **Estadísticas**: las pestañas se deslizan en horizontal dentro de su fila (ya no ensanchan la página a 375 px) y «Mis estadísticas» pasa a «Mías» en móvil.
+- **Formularios**: los campos miden 16 px como mínimo, así Safari en iPhone ya no amplía la página al enfocarlos.
+- **Pantallas táctiles**: botones, chips e iconos llegan a 44 px de alto.
+- **Inicio en móvil**: primero los equipos, luego el próximo enfrentamiento y «Pendiente», y después los avisos y «Primeros pasos» (que se pliega a lo esencial). El panel del próximo enfrentamiento queda centrado y, en móvil y tableta, también dibuja la pista de pádel de fondo (de pie en móvil, tumbada en tableta).
+- **Ficha del enfrentamiento**: los convocados se muestran como nombre y primer apellido, en hasta dos líneas y sin la pastilla «Convocado». El jugador ve solo las fases de convocatoria y acta, y si se había apuntado le dice que avise a su capitán si cambia su disponibilidad.
+- **Fecha pasada**: la lista y el Inicio usan el mismo estado rojo «Vencido · …».
+- **Enfrentamientos, Jugadores y Rivales**: en móvil, la acción principal va primero y lo secundario se recoge en un menú «Más».
+- **Balance por jugador**: cada tramo de barra lleva su cifra, las series perdidas llevan rayas además del rojo y hay una tabla equivalente para lectores de pantalla.
+
+## 01/11/2026 · Accesibilidad y lectura del resultado (auditoría UX/UI, fase 1)
+
+- **Marcador de la ficha**: los nombres de los equipos ya no se parten a mitad de palabra; el tamaño se ajusta al ancho del marcador y en móvil y tableta los dos equipos van debajo del resultado.
+- **Lima solo para lo tuyo**: el resultado se pinta en lima si gana tu equipo, en rojo si pierde y en blanco si empata; en los partidos y en «Meter resultados» el lima solo marca los sets de tu equipo, y cuando gana el rival se indica en neutro.
+- **Campos de formulario**: bordes con contraste suficiente (3:1, WCAG 1.4.11) en campos, desplegables, calendario y casillas.
+- **Error del servidor**: nueva página 500 propia, con el estilo de Zyra y un botón para volver al inicio.
+- **Enlaces dentro de texto** siempre subrayados (no solo por color), un título principal oculto para lectores de pantalla en el Inicio del club y encabezados sin saltos en las estadísticas de jugador.
+
+## 01/11/2026 · Más aire en Inicio y Enfrentamientos
+
+- **Gráficos de estadísticas**: estilo común en todas las vistas (`static/js/chart-style.js`): sin cuadrículas ni ejes, barras muy redondeadas con su cifra dentro, líneas lima con área suave, tooltips oscuros y barras de progreso más gruesas.
+- **Mis estadísticas, Advertencias y «Crear rival»** siguen el mockup: datos grandes en Anton, una tarjeta por competición con franja de color, advertencias como tarjetas con fecha, jugador, motivo y enfrentamiento, y formulario de rival con campos holgados y botón a todo el ancho.
+- **Estadísticas**: el primer dato de «Mis estadísticas» y la ficha de jugador va en lima, «Mejores parejas» es un panel lima y el recuento de advertencias se marca en ámbar.
+- **Rivales**: tarjetas con escudo, nombre grande y etiquetas separadas por una línea, tarjeta lima «Nuevo rival» al final y formulario de creación con cabecera y ancho propios.
+- **Portada pública**: nuevo diseño con bloque lima sobre la pista, «Convoca. Alinea. Gana.», tarjetas de las competiciones disponibles (SNP y LAPI), funciones, pasos numerados, guías y preguntas.
+- **Inicio y listado**: los botones de los avisos («Nombrar gestor», «Registrar cuenta») arrancan en el mismo borde y las tarjetas de enfrentamiento y las filas de «Pendiente» tienen más separación para reducir el ruido visual. En el bloque «Próximo enfrentamiento» el contenido sube, los nombres de los equipos son más grandes y el botón «Ver convocatoria» más pequeño.
+
+## 31/10/2026 · Nuevo estilo visual (fase 3: estadísticas)
+
+- **Estadísticas del equipo**: el balance de enfrentamientos pasa a bloque lima con cifras gigantes (victorias, empates, derrotas), barra y datos en fichas oscuras. Títulos de sección y tarjetas en Anton, y los Top 5 llevan barra de porcentaje por fila.
+- **Crear enfrentamiento**: en escritorio, a la derecha del formulario aparece «Así se verá», una tarjeta lima que se rellena en vivo con el tipo, la fecha, la hora, el lugar y los equipos (`static/js/match-form.js`).
+
+## 30/10/2026 · Nuevo estilo visual (fase 2: listado de enfrentamientos)
+
+- **Ficha del enfrentamiento**: marcador y nombres de los equipos en grande (en escritorio, sobre la pista 2:1 con la red entre local y visitante), banner del tipo («Liga · Jornada 2»), desenlace y lugar al lado, cuatro tarjetas de estado con cifra y barra (convocatoria, parejas, resultados, acta) y lista de convocados identificable: avatar, nombre en mayúsculas, pareja P1/P2/P3 con su compañero y etiqueta Convocado o Suplente.
+- **Menos colores**: el color solo significa estado. Lima = hecho o victoria, ámbar = pendiente o convocatoria abierta, rojo = derrota; la competición va solo en su etiqueta (SNP/LAPI) y la fecha es neutra. Se quita la «E» del banner de la ficha.
+- **Inicio**: la tarjeta abre con una línea de texto plano, «Próximo enfrentamiento · LAPI · Playoffs», sin etiquetas de color, y la pista 2:1 se ve también cuando no hay panel «Pendiente» (ancho máximo 820 px).
+- **Ficha**: los convocados se ven primero y los suplentes quedan tras «Ver suplentes».
+- **Listado para jugadores**: el recorrido de pasos solo lo ve el capitán o gestor; a los jugadores se les muestra una tarjeta como la de Inicio: fecha en grande, local contra visitante, estado y borde con el color de la competición.
+- **Tarjeta del listado**: una fila por enfrentamiento con fecha en bloque neutro, competición, píldora de tipo («Liga», «Jornada N»…) y recorrido de cuatro pasos (Convoc. · Parejas · Result. · Acta) con ✓ hecho y «!» actual, calculado por `MatchPhase.track`. El marcador grande y el estado van a la derecha; en móvil, debajo.
+
+## 30/10/2026 · Nuevo estilo visual (fase 1: base e Inicio)
+
+- **Tipografía**: los títulos pasan a Anton (condensada, deportiva, en mayúsculas y sin cursiva); el cuerpo sigue en Archivo. El logotipo y la portada pública conservan Syncopate. Anton va en `static/zyra/fonts/` (licencia OFL).
+- **Cabecera**: como el mockup. Escudo en círculo, pestañas solo con texto (sin iconos ni mayúsculas) con la activa en lima sin brillo, y botones de idioma y usuario en píldora plana. Con un solo equipo el botón de usuario dice «Nombre · Rol».
+- **Barra móvil**: oscura, con el lima reservado a la pestaña activa.
+- **Inicio**: el próximo enfrentamiento es un bloque lima con la fecha enorme, un indicador de días de fondo oscuro y los equipos local y visitante a cada lado de la red. En escritorio, junto a «Pendiente», el bloque es una pista de pádel de proporción 2:1 (nunca se deforma).
+- **Pendiente**: panel propio con su contador y el botón «+ Nuevo»; las filas son una lista plana.
+- **Equipos**: el banner grande «Tus equipos» pasa a una tira compacta con cada equipo (escudo, competición, rol y categoría).
+- **En racha** desaparece del Inicio (la racha de cada jugador y pareja sigue en sus estadísticas). «Registra tu cuenta de SNP» es un aviso como el del gestor, junto a él.
+- **Mi forma**: cuatro zonas (balance en anillo, últimos partidos con la racha, «te apuntaste → jugaste» y puntos SNP con su gráfica).
+
+## 30/10/2026 · Espacios por competición (pendientes de la auditoría, PR #210)
+
+- **Plantilla, Club y Rivales**: con rol mixto (gestionas un equipo y juegas en otro) la página dice «Equipo: X · LAPI» en vez de no mostrar nada.
+- **Enfrentamientos**: el filtro de rival tiene etiqueta visible y «Quitar el rival» solo quita el rival (mantiene temporada y tipo). Al crear uno de liga se propone la jornada siguiente; la hora es un campo de 24 h (escribe 2030 y queda 20:30).
+- **Poner resultados (SNP)**: la pregunta es «¿Se presentaron las dos parejas?» y, al marcar una pareja no presentada, se ve el reparto previsto de puntos (normativa 20.2) antes de cerrar el acta.
+- **Reabrir acta**: también pueden el capitán y los gestores (queda anotado quién).
+- **Convocatoria**: una ficha copiada que aún no aceptó la invitación se puede convocar y sale «Pendiente de aceptar».
+- **Informes**: los datos de otras competiciones solo se incluyen si todos los que reciben el informe gestionan también ese otro equipo.
+- **Filtros**: Competición, Temporada y Tipo son desplegables en una sola fila (con el rival en el listado); cada uno dice su valor y se marca en lima si no es «Todas». El panel lateral de Estadísticas › Equipo aparece desde 1024 px.
+- **Mis estadísticas**: con dos equipos y sin ficha enlazada la pestaña explica cómo enlazarla.
+- **Inicio › En racha**: con varios equipos, cada competición tiene su bloque (SNP y LAPI por separado).
+- **Enfrentamientos y estadísticas**: el selector de enfrentamientos competitivos es un desplegable igual que Competición, Temporada y Tipo.
+- **Gestionar plantilla**: arriba dice de qué equipo es la plantilla que editas.
+- **Jugadores**: el aviso «Cópialos en vez de crearlos a mano» sale en ambos sentidos (SNP → LAPI y LAPI → SNP) y desaparece en cuanto se copia un jugador.
+- **Mis estadísticas**: la tarjeta de sets explica cada dato dentro de la propia tarjeta, bajo su nombre (set decisivo, tie-breaks…) y, con una temporada elegida, se ve la gráfica de convocatorias de esa temporada (barras por competición).
+- **Colores SNP/LAPI**: en Mis estadísticas cada competición tiene su marco (tinte suave y línea superior de su color) y los datos van en lima; las gráficas comparativas mantienen dorado y turquesa para distinguir series.
+
+## 30/10/2026 · Espacios por competición (selectores, datos y zonas grises)
+
+- **Inicio**: «Ver los N pendientes» indica cuántos tienen la fecha pasada; el capitán ve «Pon la categoría» (enlace a editar el equipo) cuando falta.
+- **Estadísticas**: la ficha de jugador muestra la competición en el título; «Ver pareja» solo se activa al elegir los dos jugadores.
+- **Avisos**: la preferencia del correo de resultado dice que vale para todos tus equipos; la página de advertencias dice de qué equipo son.
+
+## 30/10/2026 · Espacios por competición (revisión de usabilidad, prioridades 2 y 3, PR #209)
+
+- **Convocatoria**: con la convocatoria abierta la web dice «apuntados» y «Te has apuntado»; «convocados» y «Estás convocado» solo cuando está cerrada. «Cerrar convocatoria» y «Reenviar informe» piden confirmación y dicen a qué correos se envía. En Playoffs y Fase final, la regla de los 2 enfrentamientos de liga se ve en la ficha, se vuelve a comprobar al cerrar y separa a los apuntados que no la cumplen del resto.
+- **Advertencias**: una sola palabra en todos los textos («Advertencias y cambios», «Poner advertencia»).
+- **Menú «Más»** de la ficha agrupado en Convocatoria, Resultado especial y Enfrentamiento. Los textos de «No presentado» dicen lo que pasa en cada competición (SNP 12-0; LAPI 3-0 y puntos de liga).
+- **Poner resultados**: un partido por fila con los nombres enteros; «Guardar y cerrar acta» se activa cuando están todos los resultados y dice cuántos faltan; el error nombra los partidos que faltan. La ayuda de lesión solo sale al marcar la casilla.
+- **Alinear parejas**: nombre corto y posición en el selector, «Vaciar pareja», y la alineación sugerida dice cuántos enfrentamientos de historial la respaldan.
+- **Selector de convocatoria**: «Jugó 2/3 esta temporada», «Mínimo 6 cumplido», «Marcar todos los de la lista» y «Ver solo elegidos».
+- **LAPI**: sin «· 1 pts» en cada partido ni empates en el balance, el listado y Rivales.
+- **Listado**: en móvil, temporada, tipo y rival van plegados tras «Filtros»; las etiquetas se llaman Temporada y Tipo; el filtro de competición recordado se ve en la cabecera con «Ver todas»; sin papelera en cada tarjeta; «Eres jugador aquí» solo si gestionas otro equipo.
+- **Inicio**: «Próximo enfrentamiento» muestra tipo y jornada; el aviso del gestor dice de qué equipo habla y no sale si ya tiene uno; «Mi forma» y «Mis estadísticas» usan las mismas palabras.
+- **Estadísticas**: «Juegos en casa: 59 ganados · 60 perdidos», «Roscos: 0 a favor · 0 en contra», muestras pequeñas avisadas, y una nota en Equipo, Jugador, Parejas y Rivales de por qué no hay «Todas».
+- **Menú de usuario**: «Estás en:» presenta tus equipos como texto, no como opciones.
+- **Plantilla y copiar jugadores**: «Copiado de SNP» pasa a la ficha del jugador; primero salen los que se pueden copiar y, si no hay nadie, el aviso va arriba y la lista queda plegada.
+- **Colores**: SNP dorado (#DBA400), LAPI turquesa (#61E2C9) y el lima queda para Zyra (acción, activo, victoria).
+
+## 30/10/2026 · Espacios por competición (revisión de usabilidad, prioridad 1, PR #208)
+
+- Los enlaces de gestión (convocatoria, parejas, resultados, jugadores, advertencias…) abren siempre el **equipo correcto**, aunque en otra pestaña hayas cambiado de equipo. Si en ese equipo no tienes permiso, el aviso dice de qué equipo es y qué papel tienes.
+- **Advertencias** solo la ven el capitán y los gestores, y solo de los equipos que gestionan.
+- **Nuevo enfrentamiento** pregunta en qué equipo crearlo si eres capitán o gestor de varios; el formulario dice «Se creará en …» con un enlace para cambiar de equipo.
+- La web habla de **equipo** en vez de «club» (menú, registro, miembros, abandonar…).
+- Un mismo **estado** para cada enfrentamiento en el listado, el calendario, el Inicio y su página: «Por convocar», «Convocatoria abierta», «Por alinear», «Faltan 2 resultados», «Acta por cerrar», «Acta cerrada». Los avisos de progreso explican cada número («Faltan 2 apuntados para cerrar la convocatoria (8 de 10)»).
+- **Mi perfil** muestra tu ficha en cada equipo («Mis fichas»), y la barra inferior del móvil dice «Enfrentamientos».
+
+## 29/10/2026 · Espacios por competición (informe mensual por equipo y normativa SNP)
+
+- El **informe mensual** llega en un solo correo con un PDF por cada equipo en el que jugaste ese mes (SNP y LAPI), cada uno con su competición en la cabecera. El de LAPI no lleva la gráfica de puntos SNP.
+- **No presentado** también en SNP: el equipo que no se presenta pierde 12-0 (normativa SNP 20.3).
+- **Lesión** en SNP como en LAPI: se elige la pareja lesionada y Zyra completa el partido para la sana (normativa 15.10).
+- **Pareja no presentada** en SNP: en «Poner resultados», «¿Se jugó?» marca qué pareja no vino. Al cerrar el acta Zyra reparte los puntos como dice la normativa 20.2 (6 puntos para el cumplidor y 2/2/1/1 en los partidos jugados; dos parejas, 0-12; la misma pareja en los dos equipos, partido anulado).
+
+## 29/10/2026 · Espacios por competición (fase 2: copiar jugadores entre SNP y LAPI)
+
+- En Plantilla, **«Copiar de SNP»** (o de LAPI) trae jugadores de tu equipo de la otra competición si eres capitán o gestor en los dos. Se copian nombre, apellidos, foto y posición; las estadísticas, los puntos SNP y las convocatorias se quedan donde estaban.
+- Los que ya tienen cuenta reciben una **invitación** por correo y en su Inicio; se les puede convocar antes de que acepten. Si la rechazan, la ficha queda sin cuenta y puedes borrarla.
+- Las fichas de una misma persona comparten nombre, apellidos y foto: si los cambia en un equipo, cambian en todos. La posición es de cada equipo.
+- En LAPI, Zyra avisa si la plantilla pasa de 15 jugadores, sin impedirlo.
+- En «Completar equipo», la columna **«¿Es el mismo jugador?»** deja decir que un nombre de SNP es un jugador que ya tienes (por ejemplo, copiado de LAPI) para no crear otra ficha.
+- En Mi perfil, si te copiaron a otro equipo antes de tener cuenta, puedes enlazar esa ficha («Sí, enlazarla») o decir «No es mía».
+- Aunque solo tengas un equipo, cada enfrentamiento (listado, calendario, Inicio y su página) lleva la etiqueta de su competición, SNP o LAPI.
+- El menú de usuario dice directamente **«Añadir equipo LAPI»** (o SNP) en vez de «Añadir equipo de otra competición», y abre el registro con esa competición elegida.
+
+## 29/10/2026 · Espacios por competición (fase 1c: no presentados y lesiones en LAPI)
+
+- **No presentado**: en un enfrentamiento LAPI con el acta abierta, «Más» › «No se presentó el rival» o «No nos presentamos» lo cierra con 3-0 para quien sí se presentó. Cuenta en el balance del equipo y en los puntos de liga (4 o 0), pero no en jugadores, parejas ni asistencia. Se puede quitar con «Quitar no presentado».
+- **Lesión en LAPI**: al marcar «Partido finalizado por lesión» se elige la pareja lesionada y Zyra completa el partido para la sana (3-2 queda 3-6 / 0-6), con la vista previa en el formulario.
+- En LAPI, Estadísticas ya no muestra «Por número de partido» ni «Balance de partidos por jugador»: el orden de los partidos lo decide el sorteo.
+- La lesión también se marca en «Poner resultados», partido a partido, y la etiqueta «Lesión» dice qué pareja se lesionó. Al editar una lesión ya guardada la vista previa ya no da error con los sets 0-6.
+- Si eres jugador en todos tus equipos, en Estadísticas › Jugador ves las estadísticas de tus compañeros, pero sin la pestaña «Resumen» de la ficha de Plantilla, que es de la vista de capitán.
+
+## 29/10/2026 · Espacios por competición (fase 1b: enfrentamientos LAPI)
+
+- Los enfrentamientos LAPI tienen sus tipos: **Liga**, **Playoffs** y **Fase final** (los que ya existían pasan a Liga). Los de liga pueden llevar **jornada**, que sale en el listado y en el enfrentamiento.
+- **Puntos de liga**: ganar 3-0 da 4, ganar 2-1 da 3 y perder 1. Se ven en cada enfrentamiento cerrado y el total de la temporada en Estadísticas › Equipo.
+- En Playoffs y Fase final, la convocatoria avisa de quién no ha jugado al menos 2 enfrentamientos de liga esa temporada (reglamento LAPI) y pide marcar «Convocarlos igualmente» para incluirlos.
+- El selector de jugadores de la convocatoria ya no muestra puntos SNP en LAPI.
+
+## 28/10/2026 · Espacios por competición (fase 1a)
+
+- Cada club es ahora el **espacio** de una competición: SNP (todos los que ya existían) o **LAPI** (3 partidos de 1 punto y 6 convocados). Una cuenta puede tener un espacio en cada competición, con un rol distinto en cada uno.
+- El menú de usuario muestra la competición del espacio activo, «Cambiar de espacio» y **«Crear otro espacio»**, que abre el registro con los datos de tu equipo ya puestos. Al registrarse se elige la competición, y las divisiones son las suyas (Future…Grand Slam en SNP, 1.ª a 5.ª en LAPI).
+- Las invitaciones a un espacio de otra competición se aceptan aunque ya estés en otro; a uno de la misma competición, no.
+- En los espacios LAPI no se ofrece nada de SNP (cuenta, sincronización ni ese paso en «Primeros pasos»).
+- En LAPI la **alineación sugerida** se basa en el historial y la afinidad de los convocados (no en puntos SNP) y funciona con 6 convocados. La pantalla de parejas no muestra puntos ni orden de juego, porque el cruce lo decide el sorteo, y el informe PDF y su correo explican el formato LAPI.
+- Al crear otro espacio, si tu cuenta ya tiene jugador no se te vuelve a pedir el nombre.
+- Dar de baja al último jugador de la plantilla sigue permitido, pero Zyra avisa de que te quedarás sin jugadores.
+- **Varios espacios en una sola vista**: si estás en un espacio SNP y en uno LAPI, Enfrentamientos, Calendario, Inicio y Estadísticas los juntan, con el filtro **Todas · SNP · LAPI** (empieza en Todas y recuerda tu elección). Cada tarjeta lleva la etiqueta de su competición y solo muestra las acciones que tu rol permite en ese espacio. Abrir un enfrentamiento de otro espacio te cambia a él y te lo dice.
+- «Nuevo enfrentamiento» dice dónde se crea o, si gestionas los dos espacios, pregunta la competición. **Rivales** tiene botón junto a «Nuevo enfrentamiento» y el formulario ofrece «¿No está el rival? Añádelo».
+- Plantilla y Club: si eres capitán en un espacio y jugador en otro, solo ves el que gestionas; si eres capitán (o jugador) en los dos, cambias con un selector arriba.
+- Estadísticas con «Todas»: tus partidos de todas las competiciones y una fila por equipo; los puntos y el detalle aparecen al elegir una competición.
+- El informe puede **incluir datos de otras competiciones** de los convocados con cuenta enlazada (casilla en «Más opciones» al crear el enfrentamiento).
+- Ya no se habla de «espacios»: el menú de usuario muestra **«Tus equipos»** (equipo, competición y tu papel en cada uno) solo para informar, y con equipos en varias competiciones la cabecera lleva tu nombre. «Cambiar de espacio» desaparece: abrir un enfrentamiento te lleva a su equipo sin avisos.
+- **«Añadir equipo de otra competición»** sustituye a «Crear otro espacio»; el registro enseña desactivadas las competiciones en las que ya tienes equipo («Ya tienes Los Gladiadores en SNP») y, si ya las tienes todas, el menú lo dice.
+- El selector SNP | LAPI de Plantilla, Club y Rivales aparece si gestionas los equipos de las dos competiciones o eres jugador en los dos; si eres capitán en uno y jugador en otro, ves solo el que gestionas.
+- En el Inicio, si tu equipo no tiene categoría (SNP) o división (LAPI), la tarjeta lo dice.
+- El Inicio con equipos en varias competiciones enseña **los dos equipos** en el banner (escudo, competición y tu papel) y «En racha» de cada uno; ya no cambia según el último enfrentamiento que abriste.
+- **«Mi forma»** suma tus partidos y convocatorias de SNP y LAPI, con el desglose por competición y la competición de cada uno de tus últimos partidos. Los puntos SNP siguen igual.
+- Si eres jugador en todos tus equipos, **Plantilla** sale del menú. Jugador, Parejas y Rivales ya no tienen «Todas»: se consultan por competición.
+- **«Mis estadísticas»**: si juegas en equipos de varias competiciones, Estadísticas abre en una pestaña nueva con lo tuyo. «Todas» cuenta tus partidos de SNP y LAPI (sin sumar puntos) con gráficos de cada competición al lado de la otra: sets, local y visitante, partidos ganados por temporada y convocatorias en las que te apuntas. SNP o LAPI abren tu ficha en esa competición.
+- Equipo, Jugador, Parejas y Rivales se consultan siempre por competición (SNP · LAPI), sin «Todas»; Equipo recuerda la que elegiste.
+- En el Inicio, la tarjeta de cada equipo dice la categoría en SNP («Categoría 500») y la división en LAPI.
+
+## 28/10/2026 · Reglas de competición en una ficha (espacios, fase 0)
+
+- La página del enfrentamiento tiene **«Eliminar enfrentamiento»** en el menú «Más» (capitán y gestores, con el acta abierta); al cancelar vuelves a la página del enfrentamiento. Los gestores ahora también pueden eliminar enfrentamientos, y la papelera del listado se ve en rojo.
+- «Guardar y cerrar acta» con resultados pendientes guarda lo que hayas puesto y te deja en «Poner resultados» con el aviso, en lugar de llevarte a la página del enfrentamiento.
+- Preparación para tener más competiciones que la SNP: el número de partidos, los puntos de cada uno, los convocados mínimos y el partido de desempate salen de una ficha por competición (`core/competitions.py`) en lugar de estar fijos en el código. Para los usuarios no cambia nada: la SNP sigue con 5 partidos (3, 3, 2, 2 y 2 puntos) y 10 convocados.
+
 ## 28/10/2026 · Estadísticas por temporadas
 
-- «Enfrentamientos ganados por año» solo aparece en la vista «Todas»; al filtrar una temporada no se muestra. Con muchas temporadas enseña una ventana (8 en escritorio, 5 en móvil) con botones «Antes / Después», para que barras y etiquetas no se aprieten.
 - El buscador de temporadas lleva flecha para desplegar la lista completa.
+- (Al volcar la rama de espacios a `main`: «Enfrentamientos ganados por año» con ventana «Antes / Después» sigue fuera de Estadísticas › Equipo, como en el rediseño de la fase 3.)
 
 ## 28/10/2026 · Editar y eliminar advertencias
 

@@ -45,8 +45,8 @@ def message_templates():
         "blank": {"subject": "", "body": ""},
         "news": {
             "subject": _("Novedades en Zyra"),
-            "body": _("Hola {nombre},\n\nHemos añadido mejoras en Zyra que pueden venirte bien en {club}. "
-                      "Entra y échales un vistazo; si algo no te cuadra, respóndeme a este correo.\n\nUn saludo."),
+            "body": _("Hola {nombre},\n\nHemos sacado mejoras nuevas en Zyra y creo que os vendrán bien en {club}. "
+                      "Échales un ojo y, si algo no te cuadra, respóndeme a este correo.\n\nUn saludo."),
         },
         "inactive": {
             "subject": _("¿Te echamos una mano con Zyra?"),

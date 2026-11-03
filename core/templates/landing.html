@@ -8,50 +8,81 @@
 
 {% block content %}
 <section class="z-hero">
-    <div>
+    <div class="z-hero-main">
         <p class="z-hero-tag">{% translate "Sube el nivel de tu equipo" %}</p>
-        <h1 class="z-hero-title">Zyra <span class="z-hero-subtitle">{% translate "Gestión de equipos de pádel" %}</span></h1>
+        <h1 class="z-hero-title"><span class="visually-hidden">Zyra · {% translate "Gestión de equipos de pádel" %}. </span>{% translate "Convoca." %}<br>{% translate "Alinea." %}<br>{% translate "Gana." %}</h1>
         <p class="z-hero-text">{% translate "La app para capitanes de equipos de pádel que juegan ligas por equipos: convoca a tus jugadores, organiza las parejas, apunta los resultados y descubre qué parejas funcionan mejor." %}</p>
         <div class="z-hero-actions">
             <a class="btn btn-primary btn-lg" href="{% url 'register' %}">{% translate "Registrarme gratis" %}</a>
             <a class="btn btn-outline-light btn-lg" href="{% url 'login' %}">{% translate "Ya tengo cuenta" %}</a>
         </div>
     </div>
-    <div class="z-hero-art">
-        <img src="{% static 'zyra/logo.svg' %}" alt="{% translate 'Logotipo de Zyra' %}" width="150" height="150">
+    <aside class="z-hero-comps" aria-labelledby="comps-title">
+        <span class="z-hero-sticker">{% translate "Gratis" %}</span>
+        <p id="comps-title" class="z-hero-comps-title">{% translate "Competiciones disponibles" %}</p>
+        <div class="z-hero-comp" data-comp="snp">
+            <span class="z-comp-badge z-comp-badge--snp">SNP</span>
+            <strong>{% translate "Liga SNP" %}</strong>
+            <p>{% translate "Enfrentamientos por equipos con categoría (Future, 500, 1000, Grand Slam), puntos SNP por jugador y orden de parejas como en la liga." %}</p>
+        </div>
+        <div class="z-hero-comp" data-comp="lapi">
+            <span class="z-comp-badge z-comp-badge--lapi">LAPI</span>
+            <strong>{% translate "Liga LAPI" %}</strong>
+            <p>{% translate "Liga, playoffs y fase final, clasificación por puntos (4 / 3 / 1) y estadísticas propias de la competición." %}</p>
+        </div>
+        <p class="z-hero-comps-note">{% translate "Un mismo jugador puede estar en las dos. Cada competición tiene su espacio y sus estadísticas, sin mezclar." %}</p>
+    </aside>
+</section>
+
+<section class="z-landing-section z-landing-preview" aria-labelledby="preview-title">
+    <div class="z-landing-preview-text">
+        <h2 id="preview-title" class="z-landing-title">{% translate "Tu próximo enfrentamiento" %}</h2>
+        <p>{% translate "Fecha, rival, convocados y lo que falta por hacer, en la primera pantalla. El capitán convoca y alinea; los jugadores ven si están convocados y con quién juegan." %}</p>
     </div>
+    <figure class="z-preview-card" aria-label="{% translate 'Ejemplo de la pantalla de inicio de Zyra' %}">
+        <p class="z-preview-kicker">{% translate "Próximo enfrentamiento" %} · <span class="z-comp-badge z-comp-badge--snp">SNP</span> 500</p>
+        <p class="z-preview-date">{% translate "Sáb 14" %} <small>{% translate "Nov" %}</small></p>
+        <p class="z-preview-teams"><span>{% translate "Tu equipo" %}</span><span class="z-preview-vs">vs</span><span>{% translate "Rival" %}</span></p>
+        <ol class="z-preview-steps" aria-hidden="true">
+            <li class="is-done">{% translate "Convoc." %}</li>
+            <li class="is-done">{% translate "Parejas" %}</li>
+            <li class="is-now">{% translate "Result." %}</li>
+            <li>{% translate "Acta" %}</li>
+        </ol>
+        <figcaption>{% translate "Ejemplo con datos de muestra" %}</figcaption>
+    </figure>
 </section>
 
 <section class="z-landing-section" aria-labelledby="features-title">
-    <h2 id="features-title" class="z-landing-title">{% translate "Todo lo que necesita el capitán de un equipo de pádel" %}</h2>
+    <h2 id="features-title" class="z-landing-title">{% translate "Herramientas para el capitán de un equipo de pádel" %}</h2>
     <div class="z-features">
         <div class="z-card z-feature">
-            <i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>
+            <span class="z-feature-num" aria-hidden="true">1</span>
             <h3>{% translate "Convocatorias" %}</h3>
             <p>{% translate "Convoca jugadores para cada partido, registra los cambios y envía el informe de la convocatoria en PDF por email." %}</p>
         </div>
         <div class="z-card z-feature">
-            <i class="fa-solid fa-table-tennis-paddle-ball" aria-hidden="true"></i>
+            <span class="z-feature-num" aria-hidden="true">2</span>
             <h3>{% translate "Partidos y parejas" %}</h3>
             <p>{% translate "Organiza las parejas de cada enfrentamiento, con alineación sugerida, y apunta el resultado de cada set." %}</p>
         </div>
         <div class="z-card z-feature">
-            <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
+            <span class="z-feature-num" aria-hidden="true">3</span>
             <h3>{% translate "Estadísticas de pádel" %}</h3>
             <p>{% translate "Victorias por jugador y pareja, rachas, afinidad entre compañeros y evolución por temporada." %}</p>
         </div>
         <div class="z-card z-feature">
-            <i class="fa-solid fa-ranking-star" aria-hidden="true"></i>
+            <span class="z-feature-num" aria-hidden="true">4</span>
             <h3>{% translate "Puntos SNP" %}</h3>
             <p>{% translate "Trae los puntos SNP de tus jugadores para ordenar las parejas como en la liga." %}</p>
         </div>
         <div class="z-card z-feature">
-            <i class="fa-solid fa-users" aria-hidden="true"></i>
-            <h3>{% translate "Tu club, en privado" %}</h3>
+            <span class="z-feature-num" aria-hidden="true">5</span>
+            <h3>{% translate "Tu equipo, en privado" %}</h3>
             <p>{% translate "Invita a tus jugadores con un enlace. Nadie de fuera del club ve sus datos." %}</p>
         </div>
         <div class="z-card z-feature">
-            <i class="fa-solid fa-mobile-screen" aria-hidden="true"></i>
+            <span class="z-feature-num" aria-hidden="true">6</span>
             <h3>{% translate "En el móvil" %}</h3>
             <p>{% translate "Funciona en el navegador del móvil y del ordenador, sin instalar nada, en español y en inglés." %}</p>
         </div>
@@ -61,7 +92,7 @@
 <section class="z-landing-section" aria-labelledby="steps-title">
     <h2 id="steps-title" class="z-landing-title">{% translate "Cómo funciona" %}</h2>
     <ol class="z-steps">
-        <li class="z-card"><strong>{% translate "Registra tu club" %}</strong> {% translate "Crea la cuenta del capitán y el equipo con el que compites." %}</li>
+        <li class="z-card"><strong>{% translate "Registra tu equipo" %}</strong> {% translate "Crea la cuenta del capitán y el equipo con el que compites." %}</li>
         <li class="z-card"><strong>{% translate "Añade a tu equipo" %}</strong> {% translate "Da de alta a los jugadores e invítalos a unirse al club." %}</li>
         <li class="z-card"><strong>{% translate "Juega y mide" %}</strong> {% translate "Convoca, apunta los resultados y deja que las estadísticas te digan qué parejas rinden mejor." %}</li>
     </ol>

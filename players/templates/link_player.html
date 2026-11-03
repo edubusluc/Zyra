@@ -35,7 +35,7 @@
     {% if p.linked %}<div class="z-claim is-taken" data-name="{{ p.full_name }}">
     {% else %}<form method="post" action="{% url 'link_player' p.public_id %}" class="z-claim is-free" data-name="{{ p.full_name }}" data-loading-text="{% translate 'Vinculando tu jugador…' %}">
         {% csrf_token %}{% endif %}
-        <img src="{% if p.photo %}{{ p.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="" class="z-avatar z-avatar--sm">
+        {% include 'includes/player_avatar.html' with player=p size="z-avatar--sm" alt="" %}
         <span class="z-pick-body">
             <span class="z-pick-name">{{ p.full_name }}</span>
             <span class="z-pick-meta">{% if p.linked %}{% translate "Ya enlazado" %}{% else %}{{ p.get_position_display }}{% endif %}</span>
@@ -61,7 +61,7 @@
             <div class="modal-body">
                 <p>{% translate "Vas a enlazar tu cuenta a:" %}</p>
                 <p class="z-claim-confirm-name" data-claim-name></p>
-                <p class="text-muted small mb-0">{% translate "Asegúrate de que eres tú: solo tu capitán podrá deshacerlo." %}</p>
+                <p class="text-muted small mb-0">{% translate "Comprueba que eres tú: solo tu capitán podrá deshacerlo." %}</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{% translate "Cancelar" %}</button>
@@ -83,11 +83,11 @@
     <form method="post" enctype="multipart/form-data" class="mt-3" data-loading-text="{% translate 'Creando tu jugador…' %}">
         {% csrf_token %}
         <div class="row g-3">
-            <div class="col-sm-6"><label class="form-label" for="{{ new_form.name.id_for_label }}">{% translate "Nombre:" %}</label>{{ new_form.name }}</div>
-            <div class="col-sm-6"><label class="form-label" for="{{ new_form.last_name.id_for_label }}">{% translate "Apellidos:" %}</label>{{ new_form.last_name }}</div>
-            <div class="col-sm-6"><label class="form-label" for="{{ new_form.position.id_for_label }}">{% translate "Posición:" %}</label>{{ new_form.position }}</div>
-            <div class="col-sm-6"><label class="form-label" for="{{ new_form.skillfull_hand.id_for_label }}">{% translate "Mano hábil:" %}</label>{{ new_form.skillfull_hand }}</div>
-            <div class="col-12"><label class="form-label" for="{{ new_form.photo.id_for_label }}">{% translate "Foto:" %}</label>{{ new_form.photo }}</div>
+            <div class="col-sm-6"><label class="form-label" for="{{ new_form.name.id_for_label }}">{% translate "Nombre" %}</label>{{ new_form.name }}</div>
+            <div class="col-sm-6"><label class="form-label" for="{{ new_form.last_name.id_for_label }}">{% translate "Apellidos" %}</label>{{ new_form.last_name }}</div>
+            <div class="col-sm-6"><label class="form-label" for="{{ new_form.position.id_for_label }}">{% translate "Posición" %}</label>{{ new_form.position }}</div>
+            <div class="col-sm-6"><label class="form-label" for="{{ new_form.skillfull_hand.id_for_label }}">{% translate "Mano hábil" %}</label>{{ new_form.skillfull_hand }}</div>
+            <div class="col-12"><label class="form-label" for="{{ new_form.photo.id_for_label }}">{% translate "Foto" %}</label>{{ new_form.photo }}</div>
         </div>
         <div class="text-center mt-3">
             <button type="submit" class="btn btn-primary">{% translate "Crear mi jugador" %}</button>

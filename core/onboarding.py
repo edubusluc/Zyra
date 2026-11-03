@@ -14,9 +14,28 @@ from players.models import Player, SnpTeamImport
 
 
 def onboarding_steps(club):
-    """Pasos de la lista para ``club``: diccionarios con key, title, help, url, action y done."""
+    """Pasos de la lista para ``club``: diccionarios con key, title, help, url, action y done.
+
+    En competiciones sin SNP el primer paso es solo añadir jugadores (no hay cuenta SNP).
+    """
+    # La cuenta SNP solo cuenta cuando «Completar equipo» ha salido bien: si falla, la tarea sigue pendiente.
+    players_done = (
+        SnpTeamImport.objects.filter(club=club, source=SnpTeamImport.WEB, status=SnpTeamImport.DONE).exists()
+        # El jugador del capitán se crea al registrar el club: no cuenta como plantilla.
+        or Player.objects.filter(club=club).exclude(
+            user_id__in=club.memberships.filter(role=Membership.ADMIN).values("user_id")
+        ).exists()
+    )
+    players = {
+        "key": "players",
+        "title": _("Añade a tus jugadores"),
+        "help": _("Crea las fichas de los jugadores de tu equipo para poder convocarlos."),
+        "url": reverse("create_player"),
+        "action": _("Añadir jugador"),
+        "done": players_done,
+    }
     return [
-        {
+        players if not club.rules.has_snp else {
             "key": "players",
             "title": _("Conecta SNP o añade a tus jugadores"),
             "help": _("Con tu cuenta de SNP traemos a todo el equipo con sus puntos. Si prefieres, añade los jugadores a mano."),
@@ -24,12 +43,7 @@ def onboarding_steps(club):
             "action": _("Conectar SNP"),
             "alt_url": reverse("create_player"),
             "alt_action": _("Prefiero añadir jugadores a mano"),
-            # El jugador del capitán se crea al registrar el club: no cuenta como plantilla.
-            # La cuenta SNP solo cuenta cuando «Completar equipo» ha salido bien: si falla, la tarea sigue pendiente.
-            "done": SnpTeamImport.objects.filter(club=club, source=SnpTeamImport.WEB, status=SnpTeamImport.DONE).exists()
-            or Player.objects.filter(club=club).exclude(
-                user_id__in=club.memberships.filter(role=Membership.ADMIN).values("user_id")
-            ).exists(),
+            "done": players_done,
         },
         {
             "key": "invite",

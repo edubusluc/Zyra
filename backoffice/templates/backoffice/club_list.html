@@ -12,6 +12,10 @@
 
 <form method="get" class="bo-filters" role="search">
     <input type="search" name="q" value="{{ q }}" placeholder="{% translate 'Buscar por nombre' %}" class="form-control" aria-label="{% translate 'Buscar club' %}">
+    <select name="competition" class="form-select" aria-label="{% translate 'Competición' %}">
+        <option value="">{% translate "Todas las competiciones" %}</option>
+        {% for code, name in competitions %}<option value="{{ code }}" {% if competition == code %}selected{% endif %}>{{ name }}</option>{% endfor %}
+    </select>
     <select name="activity" class="form-select" aria-label="{% translate 'Actividad' %}">
         <option value="">{% translate "Toda la actividad" %}</option>
         <option value="active" {% if activity == 'active' %}selected{% endif %}>{% blocktranslate with days=at_risk_days %}Con partidos en {{ days }} días{% endblocktranslate %}</option>

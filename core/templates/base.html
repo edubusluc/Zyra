@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>{% block title %}{% block page_title %}{% endblock %}{% if current_club %}{{ current_club.name }} · {% endif %}Zyra{% endblock %}</title>
-    <meta name="description" content="{% block description %}{% translate 'Zyra: gestión de equipos de pádel — jugadores, convocatorias, partidos y estadísticas.' %}{% endblock %}">
+    <meta name="description" content="{% block description %}{% translate 'Zyra: gestión de equipos de pádel. Jugadores, convocatorias, partidos y estadísticas.' %}{% endblock %}">
     {% block robots %}{% endblock %}
     <link rel="canonical" href="{% block canonical %}{{ canonical_url }}{% endblock %}">
     {# La misma página en cada idioma (?lang=en): los buscadores muestran la de su usuario #}
@@ -39,8 +39,6 @@
     <link rel="apple-touch-icon" href="{% static 'zyra/apple-touch-icon.png' %}">
     {# Fuentes servidas desde la propia web (style.css): sin Google Fonts no se envía la IP del visitante a Google #}
     <link rel="preload" href="{% static 'zyra/fonts/Archivo-Regular.ttf' %}" as="font" type="font/ttf" crossorigin>
-    <link rel="stylesheet" href="{% static 'vendor/fontawesome/css/all.min.css' %}">
-    <link rel="stylesheet" href="{% static 'vendor/bootstrap/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'style.css' %}">
     <script src="{% url 'javascript-catalog' %}"></script>
 </head>
@@ -60,9 +58,11 @@
             <ul class="z-nav">
                 <li><a href="{% url 'home' %}" class="z-nav-link {% if nav_section == 'home' %}is-active{% endif %}"{% if nav_section == 'home' %} aria-current="page"{% endif %}><i class="fa-solid fa-house" aria-hidden="true"></i> {% translate "Inicio" %}</a></li>
                 <li><a href="{% url 'list_match' %}" class="z-nav-link {% if nav_section == 'matches' %}is-active{% endif %}"{% if nav_section == 'matches' %} aria-current="page"{% endif %}><i class="fa-solid fa-table-tennis-paddle-ball" aria-hidden="true"></i> {% translate "Enfrentamientos" %}</a></li>
+                {% if not hide_roster_nav %}
                 <li><a href="{% url 'list_players' %}" class="z-nav-link {% if nav_section == 'players' %}is-active{% endif %}"{% if nav_section == 'players' %} aria-current="page"{% endif %}><i class="fa-solid fa-user" aria-hidden="true"></i> {% translate "Plantilla" context "equipo" %}</a></li>
-                <li><a href="{% url 'team_statistics' %}" class="z-nav-link {% if nav_section == 'stats' %}is-active{% endif %}"{% if nav_section == 'stats' %} aria-current="page"{% endif %}><i class="fa-solid fa-chart-simple" aria-hidden="true"></i> {% translate "Estadísticas" %}</a></li>
-                <li><a href="{% url 'club_home' %}" class="z-nav-link {% if nav_section == 'club' %}is-active{% endif %}"{% if nav_section == 'club' %} aria-current="page"{% endif %}><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> {% translate "Club" %}</a></li>
+                {% endif %}
+                <li><a href="{% if my_stats_available %}{% url 'my_statistics' %}{% else %}{% url 'team_statistics' %}{% endif %}" class="z-nav-link {% if nav_section == 'stats' %}is-active{% endif %}"{% if nav_section == 'stats' %} aria-current="page"{% endif %}><i class="fa-solid fa-chart-simple" aria-hidden="true"></i> {% translate "Estadísticas" %}</a></li>
+                <li><a href="{% url 'club_home' %}" class="z-nav-link {% if nav_section == 'club' %}is-active{% endif %}"{% if nav_section == 'club' %} aria-current="page"{% endif %}><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> {% translate "Equipo" %}</a></li>
             </ul>
         </nav>
         {% endif %}
@@ -96,23 +96,28 @@
             <div class="dropdown z-user-menu">
                 <button class="btn btn-secondary btn-sm dropdown-toggle d-inline-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="fa-solid fa-circle-user" aria-hidden="true"></i>
-                    <span class="z-club-name">{% if current_club %}{{ current_club.name }}{% else %}{{ user.username }}{% endif %}</span>
+                    {% if user_teams|length > 1 %}
+                    {# Con equipo en varias competiciones, el botón lleva su nombre: «Tus equipos» del menú dice dónde está. #}
+                    <span class="z-club-name">{{ user.first_name|default:user.username }}</span>
+                    {% else %}
+                    <span class="z-club-name">{{ user.first_name|default:user.username }}{% if current_role %}<span class="z-club-role"> · {{ current_role }}</span>{% endif %}</span>
+                    {% endif %}
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li><span class="dropdown-header">{{ user.username }}</span></li>
-                    {% if user_memberships|length > 1 %}
-                    <li><span class="dropdown-header">{% translate "Cambiar de club" %}</span></li>
-                    {% for m in user_memberships %}
-                    <li>
-                        <form action="{% url 'switch_club' %}" method="post" data-loading-text="{% translate 'Cambiando de club…' %}">
-                            {% csrf_token %}
-                            <input type="hidden" name="club_id" value="{{ m.club_id }}">
-                            <button type="submit" class="dropdown-item {% if m.club_id == current_club.id %}active{% endif %}">
-                                <i class="fa-solid {% if m.club_id == current_club.id %}fa-check{% else %}fa-shield-halved{% endif %}" aria-hidden="true"></i> {{ m.club.name }}
-                            </button>
-                        </form>
-                    </li>
+                    {% if user_teams|length > 1 %}
+                    {# Solo informa: no se cambia de equipo desde aquí (core.spaces lo hace al abrir cada página). #}
+                    <li><span class="dropdown-header">{% translate "Estás en:" %}</span></li>
+                    {% for m in user_teams %}
+                    <li role="presentation"><span class="dropdown-item-text z-team-item">{% include 'includes/competition_badge.html' with code=m.club.competition name=m.club.rules.name short=True %}<span class="z-team-item-name">{{ m.club.name }}</span><small class="text-muted">{{ m.team_role_label }}</small></span></li>
                     {% endfor %}
+                    {% endif %}
+                    {% if current_club %}
+                    {% if free_competitions %}
+                    {% for c in free_competitions %}<li><a class="dropdown-item" href="{% url 'register_club' %}?competicion={{ c.code }}"><i class="fa-solid fa-plus" aria-hidden="true"></i> {% blocktranslate with competition=c.name %}Añadir equipo {{ competition }}{% endblocktranslate %}</a></li>{% endfor %}
+                    {% else %}
+                    <li><span class="dropdown-item-text small text-muted"><i class="fa-solid fa-check me-1" aria-hidden="true"></i>{% blocktranslate with competitions=team_competitions %}Ya tienes equipo en {{ competitions }}{% endblocktranslate %}</span></li>
+                    {% endif %}
                     <li><hr class="dropdown-divider"></li>
                     {% endif %}
                     <li><a class="dropdown-item" href="{% url 'my_profile' %}"><i class="fa-solid fa-id-badge" aria-hidden="true"></i> {% translate "Mi perfil" %}</a></li>
@@ -120,7 +125,7 @@
                     <li><a class="dropdown-item" href="{% url 'backoffice:dashboard' %}"><i class="fa-solid fa-gauge-high" aria-hidden="true"></i> Back-office</a></li>
                     {% endif %}
                     {% if not current_club %}
-                    <li><a class="dropdown-item" href="{% url 'register_club' %}"><i class="fa-solid fa-plus" aria-hidden="true"></i> {% translate "Registrar un club" %}</a></li>
+                    <li><a class="dropdown-item" href="{% url 'register_club' %}"><i class="fa-solid fa-plus" aria-hidden="true"></i> {% translate "Registrar mi equipo" %}</a></li>
                     {% endif %}
                     <li><hr class="dropdown-divider"></li>
                     <li>
@@ -132,8 +137,12 @@
                 </ul>
             </div>
             {% else %}
+            {% if request.resolver_match.url_name == 'login' %}
+            <a href="{% url 'register' %}" class="btn btn-primary btn-sm">{% translate "Registrarme" %}</a>
+            {% else %}
             <a href="{% url 'register' %}" class="btn btn-outline-light btn-sm z-desktop-only">{% translate "Registrarme" %}</a>
             <a href="{% url 'login' %}" class="btn btn-primary btn-sm">{% translate "Iniciar sesión" %}</a>
+            {% endif %}
             {% endif %}
         </div>
     </div>
@@ -153,17 +162,19 @@
     <a href="{% url 'guide_index' %}">{% translate "Guías" %}</a>
     <a href="mailto:{{ contact_email }}">{% translate "Contacto" %}</a>
   </nav>
-  <p>&copy; {% now "Y" %} Zyra{% if current_club %} · {{ current_club.name }}{% endif %}</p>
+  <p>&copy; {% now "Y" %} Zyra{% if current_club and user_teams|length < 2 %} · {{ current_club.name }}{% endif %}</p>
 </footer>
 
 {% if current_club %}
 <nav class="z-bottom-nav" aria-label="{% translate 'Navegación móvil' %}">
     <ul>
         <li><a href="{% url 'home' %}" class="{% if nav_section == 'home' %}is-active{% endif %}" {% if nav_section == 'home' %}aria-current="page"{% endif %}><i class="fa-solid fa-house" aria-hidden="true"></i><span class="z-bn-label">{% translate "Inicio" %}</span></a></li>
-        <li><a href="{% url 'list_match' %}" class="{% if nav_section == 'matches' %}is-active{% endif %}" {% if nav_section == 'matches' %}aria-current="page"{% endif %}><i class="fa-solid fa-table-tennis-paddle-ball" aria-hidden="true"></i><span class="z-bn-label">{% translate "Partidos" %}</span></a></li>
+        <li><a href="{% url 'list_match' %}" class="{% if nav_section == 'matches' %}is-active{% endif %}" {% if nav_section == 'matches' %}aria-current="page"{% endif %}><i class="fa-solid fa-table-tennis-paddle-ball" aria-hidden="true"></i><span class="z-bn-label">{% translate "Enfrentamientos" %}</span></a></li>
+        {% if not hide_roster_nav %}
         <li><a href="{% url 'list_players' %}" class="{% if nav_section == 'players' %}is-active{% endif %}" {% if nav_section == 'players' %}aria-current="page"{% endif %}><i class="fa-solid fa-user" aria-hidden="true"></i><span class="z-bn-label">{% translate "Plantilla" context "equipo" %}</span></a></li>
-        <li><a href="{% url 'team_statistics' %}" class="{% if nav_section == 'stats' %}is-active{% endif %}" {% if nav_section == 'stats' %}aria-current="page"{% endif %}><i class="fa-solid fa-chart-simple" aria-hidden="true"></i><span class="z-bn-label">{% translate "Estadísticas" %}</span></a></li>
-        <li><a href="{% url 'club_home' %}" class="{% if nav_section == 'club' %}is-active{% endif %}" {% if nav_section == 'club' %}aria-current="page"{% endif %}><i class="fa-solid fa-shield-halved" aria-hidden="true"></i><span class="z-bn-label">{% translate "Club" %}</span></a></li>
+        {% endif %}
+        <li><a href="{% if my_stats_available %}{% url 'my_statistics' %}{% else %}{% url 'team_statistics' %}{% endif %}" class="{% if nav_section == 'stats' %}is-active{% endif %}" {% if nav_section == 'stats' %}aria-current="page"{% endif %}><i class="fa-solid fa-chart-simple" aria-hidden="true"></i><span class="z-bn-label">{% translate "Estadísticas" %}</span></a></li>
+        <li><a href="{% url 'club_home' %}" class="{% if nav_section == 'club' %}is-active{% endif %}" {% if nav_section == 'club' %}aria-current="page"{% endif %}><i class="fa-solid fa-shield-halved" aria-hidden="true"></i><span class="z-bn-label">{% translate "Equipo" %}</span></a></li>
     </ul>
 </nav>
 {% endif %}
@@ -172,7 +183,7 @@
 {% with deletes_club=leaving_deletes_club %}
 <div class="modal fade" id="leaveClubModal" tabindex="-1" aria-labelledby="leaveClubTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <form class="modal-content" method="post" action="{% url 'leave_club' %}"{% if deletes_club %} data-delete-club{% endif %} data-loading-text="{% translate 'Abandonando el club…' %}">
+        <form class="modal-content" method="post" action="{% url 'leave_club' %}"{% if deletes_club %} data-delete-club{% endif %} data-loading-text="{% translate 'Abandonando el equipo…' %}">
             {% csrf_token %}
             <div class="modal-header">
                 {% if deletes_club %}
@@ -185,21 +196,21 @@
             <div class="modal-body">
                 {% if deletes_club %}
                 <div class="alert alert-danger" role="alert">
-                    <p class="mb-2"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> <strong>{% translate "Eres el único miembro del club. Si lo abandonas, el club se eliminará." %}</strong></p>
-                    <p class="mb-0">{% translate "Se borrarán para siempre tu equipo, los equipos rivales, los jugadores y sus fotos, los enfrentamientos, las convocatorias, las sanciones, las estadísticas y la cuenta SNP. Esto no se puede deshacer." %}</p>
+                    <p class="mb-2"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> <strong>{% translate "Eres el único miembro del equipo. Si lo abandonas, el equipo se eliminará." %}</strong></p>
+                    <p class="mb-0">{% translate "Se borrarán para siempre tu equipo, los equipos rivales, los jugadores y sus fotos, los enfrentamientos, las convocatorias, las advertencias, las estadísticas y la cuenta SNP. Esto no se puede deshacer." %}</p>
                 </div>
                 <label for="leaveClubConfirm" class="form-label">{% blocktranslate with club=current_club.name %}Escribe <strong>{{ club }}</strong> para confirmar:{% endblocktranslate %}</label>
                 <input type="text" class="form-control" id="leaveClubConfirm" name="confirm_name" autocomplete="off" required data-club-name="{{ current_club.name }}">
                 {% else %}
-                <p class="mb-0">{% translate "Dejarás de ver los enfrentamientos, jugadores y estadísticas del club, y tu cuenta se desenlazará de tu jugador. Para volver necesitarás una nueva invitación." %}</p>
+                <p class="mb-0">{% translate "Dejarás de ver los enfrentamientos, jugadores y estadísticas de este equipo (tus otros equipos no cambian), y tu cuenta se desenlazará de tu jugador en él. Para volver necesitarás una nueva invitación." %}</p>
                 {% endif %}
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{% translate "Cancelar" %}</button>
                 {% if deletes_club %}
-                <button type="submit" class="btn btn-danger" data-delete-club-submit disabled>{% translate "Eliminar el club" %}</button>
+                <button type="submit" class="btn btn-danger" data-delete-club-submit disabled>{% translate "Eliminar el equipo" %}</button>
                 {% else %}
-                <button type="submit" class="btn btn-danger">{% translate "Abandonar el club" %}</button>
+                <button type="submit" class="btn btn-danger">{% blocktranslate with club=current_club.name %}Abandonar {{ club }}{% endblocktranslate %}</button>
                 {% endif %}
             </div>
         </form>
@@ -217,6 +228,7 @@
 <script src="{% static 'js/custom-select.js' %}"></script>
 <script src="{% static 'js/form-errors.js' %}"></script>
 <script src="{% static 'js/page-transitions.js' %}"></script>
+<script src="{% static 'js/filter-menu.js' %}"></script>
 {# Precarga las secciones principales (solo lectura) al ir a pulsarlas: la página siguiente llega antes y el paso es más fluido. Navegadores sin soporte lo ignoran. #}
 <script type="speculationrules">
 {"prefetch": [{"where": {"or": [{"href_matches": "/"}, {"href_matches": "/data_analyse/*"}, {"href_matches": "/match/list_match"}, {"href_matches": "/players/list_players"}, {"href_matches": "/team/list_teams"}]}, "eagerness": "moderate"}]}

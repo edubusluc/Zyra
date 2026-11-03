@@ -11,7 +11,7 @@ from django.conf import settings
 from django.db import models
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
-from players.models import Player, SEASON_START_MONTH
+from players.models import Player, SEASON_START_MONTH, proper_name
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext, gettext_lazy as _
 from . import outcomes, scoring
@@ -49,27 +49,37 @@ class Match(PublicIdModel):
     RETO = "reto"
     PLAYOFF = "playoff"
     AMISTOSO = "amistoso"
-    # Tipos de un partido competitivo; un amistoso no tiene tipo propio y se guarda como AMISTOSO.
+    LIGA = "liga"
+    FASE_FINAL = "fase_final"
+    # Tipos de un partido competitivo de todas las competiciones (los de cada una, con su nombre,
+    # en ``core.competitions``); un amistoso no tiene tipo propio y se guarda como AMISTOSO.
     COMPETITIVE_TYPES = [
         (ENFRENTAMIENTO, _("Enfrentamiento")),
         (RETO, _("Reto")),
         (PLAYOFF, _("Play Off")),
+        (LIGA, _("Liga")),
+        (FASE_FINAL, _("Fase final")),
     ]
     MATCH_TYPES = COMPETITIVE_TYPES + [(AMISTOSO, _("Amistoso"))]
-    # Tipos de eliminatoria sin empate: si queda 6-6, decide el ganador del partido 3.
+    # Tipos de eliminatoria sin empate: si quedan empatados a puntos, decide el partido de
+    # desempate de la competición (``core.competitions``; el 3 en la SNP).
     NO_DRAW_TYPES = (RETO, PLAYOFF)
-    TIEBREAK_GAME = 3
 
     start_date = models.DateField()
     # Hora de inicio (opcional): se muestra junto a la fecha y en el informe.
     start_time = models.TimeField(_("Hora"), null=True, blank=True)
     match_type = models.CharField(_("Tipo de partido"), max_length=15, choices=MATCH_TYPES, default=ENFRENTAMIENTO)
+    # Jornada de la liga regular (solo en las competiciones con liga, como la LAPI); opcional.
+    round_number = models.PositiveSmallIntegerField(_("Jornada"), null=True, blank=True)
     result = models.CharField(max_length=20, choices=POSSIBLE_RESULT, blank = True, default=outcomes.NONE)
     result_points = models.CharField(max_length=20, blank = True, default=outcomes.NONE)
     draft_mode = models.BooleanField(default=True)
     # Qué partidos cuentan en las estadísticas del informe PDF (se elige al crear el partido).
     report_scope = models.CharField(_("Datos del informe"), max_length=15, choices=REPORT_SCOPES,
                                     default=REPORT_SCOPE_ALL)
+    # El informe PDF añade, de los convocados con cuenta enlazada, sus partidos de esta temporada en
+    # sus otros espacios (otras competiciones). Se elige al crear el partido.
+    report_other_competitions = models.BooleanField(_("Incluir datos de otras competiciones"), default=False)
     season = models.CharField(max_length=9, blank = True, default="NONE")
     # Copia de la ubicación del equipo local al crear el partido. Es una copia, no un
     # enlace: si el equipo cambia de sede después, los partidos ya creados no cambian.
@@ -77,6 +87,12 @@ class Match(PublicIdModel):
     # Rival de un amistoso que no es un equipo del grupo: solo se guarda su nombre en el
     # propio partido (no se crea ningún equipo) y ese lado (local o visiting) queda vacío.
     rival_name = models.CharField(_("Rival"), max_length=100, blank=True, default="")
+    # «No presentado» (competiciones con ``Competition.no_show``: SNP y LAPI): qué equipo no se
+    # presentó. El acta se cierra sin partidos; el que no se presenta pierde todos los puntos.
+    NO_SHOW_OWN = "own"
+    NO_SHOW_RIVAL = "rival"
+    NO_SHOW_CHOICES = [(NO_SHOW_OWN, _("No se presentó el equipo propio")), (NO_SHOW_RIVAL, _("No se presentó el rival"))]
+    no_show = models.CharField(_("No presentado"), max_length=5, choices=NO_SHOW_CHOICES, blank=True, default="")
     # Última vez que un capitán reabrió el acta ya cerrada para corregirla (y quién).
     reopened_at = models.DateTimeField(null=True, blank=True)
     reopened_by = models.ForeignKey(
@@ -122,6 +138,42 @@ class Match(PublicIdModel):
     def is_friendly(self):
         """True si es un partido amistoso."""
         return self.match_type == self.AMISTOSO
+
+    @property
+    def type_label(self):
+        """Nombre del tipo de enfrentamiento en su competición («Playoffs» en LAPI, «Play Off» en SNP)."""
+        if self.is_friendly:
+            return _("Amistoso")
+        return self.club.rules.type_label(self.match_type) or self.get_match_type_display()
+
+    @property
+    def is_league(self):
+        """True si es un enfrentamiento de la liga regular de su competición (con jornada y puntos de liga)."""
+        return bool(self.match_type) and self.match_type == self.club.rules.league_type
+
+    @property
+    def league_points(self):
+        """Puntos de liga del equipo propio en un enfrentamiento de liga cerrado (LAPI: 4, 3 o 1; 0 si no se
+        presentó); None si no aplica."""
+        if self.draft_mode or not self.is_league:
+            return None
+        if self.no_show == self.NO_SHOW_OWN:
+            return 0  # sin las sanciones del reglamento: Zyra nunca las muestra
+        parts = (self.result_points or "").replace("-", "/").split("/")
+        if len(parts) != 2 or not all(p.strip().isdigit() for p in parts):
+            return None
+        local, visiting = (int(p) for p in parts)
+        own, rival = (local, visiting) if self.own_is_local else (visiting, local)
+        return self.club.rules.league_points_for(own, rival)
+
+    @property
+    def no_show_team(self):
+        """Nombre del equipo que no se presentó; '' si el enfrentamiento se jugó."""
+        if self.no_show == self.NO_SHOW_OWN:
+            return self.local_name if self.own_is_local else self.visiting_name
+        if self.no_show == self.NO_SHOW_RIVAL:
+            return self.rival_label
+        return ""
 
     @property
     def no_draw(self):
@@ -207,6 +259,14 @@ class Game(PublicIdModel):
     score = models.IntegerField(choices= NUMBER_GAME, null = True)
     winner = models.CharField(max_length=10, null=True)
     draft_mode = models.BooleanField(default=True)
+    # «Pareja no presentada» (normativa SNP 20.2, ``Competition.pair_no_show``): qué pareja no se
+    # presentó a este partido. No lleva resultado ni jugadores; al cerrar el acta
+    # ``match.pair_no_show.apply`` reparte los puntos del enfrentamiento.
+    NO_SHOW_OWN, NO_SHOW_RIVAL, NO_SHOW_BOTH = "own", "rival", "both"
+    NO_SHOW_CHOICES = [(NO_SHOW_OWN, _("No se presentó nuestra pareja")),
+                       (NO_SHOW_RIVAL, _("No se presentó la pareja rival")),
+                       (NO_SHOW_BOTH, _("No se presentó ninguna de las dos"))]
+    no_show = models.CharField(_("Pareja no presentada"), max_length=5, choices=NO_SHOW_CHOICES, blank=True, default="")
 
     class Meta:
         constraints = [
@@ -227,7 +287,7 @@ class Game(PublicIdModel):
     def player_name(self, slot):
         """Nombre del jugador de esa posición, también si ya se ha eliminado."""
         player = getattr(self, slot)
-        return str(player) if player else self.removed_player_names.get(slot, "").upper()
+        return str(player) if player else proper_name(self.removed_player_names.get(slot, ""))
 
     def _pair_label(self, first, second):
         """'Jugador 1 / Jugador 2' de esas dos posiciones; '' si falta alguno."""
@@ -292,6 +352,10 @@ class Result(PublicIdModel):
     draft_mode = models.BooleanField(default=True)
     # Partido finalizado por lesión: admite un resultado incompleto; gana quien iba ganando
     retired = models.BooleanField(default=False)
+    # Pareja lesionada ('local' o 'visiting') en las competiciones que completan el partido
+    # para la pareja sana (``Competition.injury_completes``: SNP y LAPI); vacío en los resultados antiguos.
+    INJURED_SIDES = [("local", _("Local")), ("visiting", _("Visitante"))]
+    injured_side = models.CharField(_("Pareja lesionada"), max_length=8, choices=INJURED_SIDES, blank=True, default="")
 
     class Meta:
         constraints = [
@@ -308,12 +372,20 @@ class Result(PublicIdModel):
         ]
 
     def clean(self):
-        """Valida el resultado con las reglas del pádel y normaliza el set 3 no jugado."""
+        """Valida el resultado con las reglas del pádel y normaliza el set 3 no jugado.
+
+        Si acabó por lesión en una competición que lo completa (LAPI), rellena los juegos de la
+        pareja sana (``scoring.complete_retired_result``).
+        """
         values = [scoring.to_int(v) for pair in self.sets() for v in pair]
-        validate = scoring.validate_retired_result if self.retired else scoring.validate_padel_result
-        sets, self._winner = validate(
-            (values[0], values[1]), (values[2], values[3]), (values[4], values[5])
-        )
+        sets = (values[0], values[1]), (values[2], values[3]), (values[4], values[5])
+        if self.retired and self.game.match.club.rules.injury_completes:
+            sets, self._winner = scoring.complete_retired_result(*sets, injured=self.injured_side)
+        else:
+            if not self.retired:
+                self.injured_side = ""
+            validate = scoring.validate_retired_result if self.retired else scoring.validate_padel_result
+            sets, self._winner = validate(*sets)
         (self.set1_local, self.set1_visiting), (self.set2_local, self.set2_visiting), \
             (self.set3_local, self.set3_visiting) = sets
 

@@ -33,6 +33,8 @@ entero sigue siendo la clave de los FK. Excepciones sin `public_id`: `backoffice
   Única por (`user`, `club`). `can_manage` = capitán o gestor. El valor guardado sigue siendo `admin` aunque la interfaz diga «Capitán».
 - **Invitation**: `token` único, `email` (vacío = enlace), `reusable` (enlace compartido, varios
   usos), `use_count`, `expires_at` (24 h, `INVITATION_TTL`). `Invitation.objects.pending()`.
+  `player` (FK a `Player`, `CASCADE`, nulo): invitación de una ficha copiada a otro equipo (30 días,
+  `players/copy.py`); al aceptarla la ficha se enlaza a la cuenta.
 - **AccountNoticeLog** (`backoffice/models.py`): registro de avisos de «email sin confirmar» y de cuentas eliminadas por ese motivo; guarda copia de usuario y email, `deadline_at`, `email_sent` y quién lo hizo (`performed_by`, `SET_NULL`).
 - **PhotoCheck** (`approved`/`rejected`/`unchecked`), **PhotoRemoval**, **BlockedEmail** (`email`
   único, normalizado por `core/blocklist.py`): moderación. FKs con `SET_NULL` para conservar el registro.
@@ -52,7 +54,9 @@ entero sigue siendo la clave de los FK. Excepciones sin `public_id`: `backoffice
 - `user` (enlace a la cuenta, `SET_NULL`); única por (`club`, `user`) cuando no es nulo.
 - `in_team` (False = ya no está en la plantilla, se conserva para estadísticas), `snp_score`,
   `joined_season` (`AAAA-AAAA`, selector con las de `season_choices`; las convocatorias anteriores no cuentan en sus estadísticas, `joined_by`), `position`, `skillfull_hand` (sic).
-- Mostrar siempre `full_name` / `short_name` (mayúsculas); lo guardado no se toca.
+- Mostrar siempre `full_name` / `short_name` (caja de título; mayúsculas solo en titulares por CSS); lo guardado no se toca.
+- `copied_from` (FK a sí mismo, `SET_NULL`, `related_name="copies"`): ficha de la que se copió con
+  «Copiar jugadores». Las fichas con la misma `user` comparten nombre, apellidos y foto (`SHARED_FIELDS`).
 - Temporada: de septiembre a agosto (`SEASON_START_MONTH = 9`, `current_season()`).
 
 #### SNP
@@ -68,17 +72,20 @@ entero sigue siendo la clave de los FK. Excepciones sin `public_id`: `backoffice
 ### match (`match/models.py`)
 
 - **Match**: `club`, `local`, `visiting` (FK a `Team`, nullable), `start_date`, `match_type`
-  (`enfrentamiento`/`reto`/`playoff`/`amistoso`), `draft_mode` (True = acta abierta), `result`
+  (`enfrentamiento`/`reto`/`playoff`/`liga`/`fase_final`/`amistoso`; los de cada competición en
+  `core.competitions`), `round_number` (jornada de liga, opcional), `no_show` (`own`/`rival`: no presentado, acta cerrada sin partidos), `draft_mode` (True = acta abierta), `result`
   (`Victoria Local`/`Victoria Visitante`/`EMPATE`/`NONE`), `result_points` (`"7/5"`; formato
   antiguo `"7-5"`, ver `match.views.split_points`), `season` y `location` (rellenos en `save()` solo
   si están vacíos; `location` es copia, no enlace), `rival_name` (amistoso con rival escrito a mano:
   ese lado queda `NULL`), `report_scope` (`todos`/`competitivos`: partidos que alimentan el informe PDF). Usar `local_name`, `visiting_name`, `rival_label`, `own_is_local`, nunca `match.local.name` a pelo.
 - **Game**: `match`, `n_game` 1..5 (único por match + `CheckConstraint`), `player_1/2_local`,
   `player_1/2_visiting` (`SET_NULL`), `removed_player_names` (JSON), `score` (3 en partidos 1–2,
-  2 en 3–5, `match.lineup.game_points`), `winner` (`Local`/`Visitante`), `draft_mode`.
+  2 en 3–5, `match.lineup.game_points`; con parejas no presentadas los fija `match/pair_no_show.py` al cerrar),
+  `winner` (`Local`/`Visitante`), `draft_mode`, `no_show` (`own`/`rival`/`both`: pareja no presentada, SNP;
+  sin resultado ni jugadores).
   Solo se rellenan los jugadores del lado del equipo propio. `save()` llama a `clean()`.
 - **Result**: uno por `Game` (`unique_result_per_game`; el FK se llama `results` pese a ello),
-  sets `set1..3_local/visiting` (sets 2 y 3 nullable) y `retired` (finalizado por lesión, admite resultado incompleto). `save()` valida con `match/scoring.py` y normaliza el set 3 no jugado.
+  sets `set1..3_local/visiting` (sets 2 y 3 nullable) y `retired` (finalizado por lesión, admite resultado incompleto) con `injured_side` (pareja lesionada; en SNP y LAPI se completa para la sana). `save()` valida con `match/scoring.py` y normaliza el set 3 no jugado.
 
 ### call, callLog, penalty
 

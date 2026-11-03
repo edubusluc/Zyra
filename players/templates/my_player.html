@@ -12,7 +12,7 @@
 
 <div class="z-panel">
     <div class="z-profile">
-        <img src="{% if player.photo %}{{ player.photo.url }}{% else %}{% static 'zyra/avatar.svg' %}{% endif %}" alt="{% blocktranslate with name=player.full_name %}Foto de {{ name }}{% endblocktranslate %}" class="z-avatar z-avatar--xl">
+        {% blocktranslate asvar photo_alt with name=player.full_name %}Foto de {{ name }}{% endblocktranslate %}{% include 'includes/player_avatar.html' with player=player size="z-avatar--xl" alt=photo_alt %}
         <div>
             <span class="z-eyebrow">{% blocktranslate with season=player.joined_season %}Desde {{ season }}{% endblocktranslate %}</span>
             <h2 class="z-profile-name">{{ player.full_name }}</h2>
@@ -28,9 +28,9 @@
     <form method="post" enctype="multipart/form-data" data-loading-text="{% translate 'Guardando tus datos…' %}">
         {% csrf_token %}
         <div class="row g-3">
-            <div class="col-sm-6"><label class="form-label" for="{{ form.position.id_for_label }}">{% translate "Posición:" %}</label>{{ form.position }}</div>
-            <div class="col-sm-6"><label class="form-label" for="{{ form.skillfull_hand.id_for_label }}">{% translate "Mano hábil:" %}</label>{{ form.skillfull_hand }}</div>
-            <div class="col-12"><label class="form-label" for="{{ form.photo.id_for_label }}">{% translate "Nueva foto:" %}</label>{{ form.photo }}</div>
+            <div class="col-sm-6"><label class="form-label" for="{{ form.position.id_for_label }}">{% translate "Posición" %}</label>{{ form.position }}</div>
+            <div class="col-sm-6"><label class="form-label" for="{{ form.skillfull_hand.id_for_label }}">{% translate "Mano hábil" %}</label>{{ form.skillfull_hand }}</div>
+            <div class="col-12"><label class="form-label" for="{{ form.photo.id_for_label }}">{% translate "Nueva foto" %}</label>{{ form.photo }}</div>
         </div>
         <div class="text-center mt-3">
             <button type="submit" class="btn btn-primary">{% translate "Guardar" %}</button>

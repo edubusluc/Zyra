@@ -8,8 +8,6 @@
     <title>{% block title %}{% translate "Back-office" %}{% endblock %} · Zyra</title>
     <meta name="theme-color" content="#0B0B0B">
     <link rel="icon" href="{% static 'zyra/logo.svg' %}" type="image/svg+xml">
-    <link rel="stylesheet" href="{% static 'vendor/fontawesome/css/all.min.css' %}">
-    <link rel="stylesheet" href="{% static 'vendor/bootstrap/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'style.css' %}">
     <link rel="stylesheet" href="{% static 'backoffice.css' %}">
     <script src="{% url 'javascript-catalog' %}"></script>
@@ -19,7 +17,7 @@
 <a class="z-skip-link" href="#contenido">{% translate "Saltar al contenido" %}</a>
 
 <div class="bo-shell">
-    <aside class="bo-side">
+    <aside class="bo-side" aria-label="{% translate 'Menú del back-office' %}">
         <a href="{% url 'backoffice:dashboard' %}" class="z-brand bo-brand" aria-label="{% translate 'Back-office de Zyra' %}">
             <img src="{% static 'zyra/logo.svg' %}" alt="">
             <span class="z-wordmark">ZYRA</span>

@@ -36,6 +36,13 @@
         <b>{{ kpis.clubs.total }}</b>
         <small>{% blocktranslate trimmed with active=kpis.clubs.active new=kpis.clubs.new_30 %}{{ active }} activos · +{{ new }} en 30 días{% endblocktranslate %}</small>
     </a>
+    {% for c in kpis.clubs.by_competition %}
+    <a class="bo-kpi" href="{% url 'backoffice:club_list' %}?competition={{ c.code }}">
+        <span class="bo-kpi-label">{% blocktranslate with name=c.name %}Clubes {{ name }}{% endblocktranslate %}</span>
+        <b>{{ c.total }}</b>
+        <small>{% blocktranslate trimmed with active=c.active new=c.new_30 %}{{ active }} activos · +{{ new }} en 30 días{% endblocktranslate %}</small>
+    </a>
+    {% endfor %}
     <a class="bo-kpi" href="{% url 'backoffice:user_list' %}">
         <span class="bo-kpi-label">{% translate "Usuarios" %}</span>
         <b>{{ kpis.users.total }}</b>

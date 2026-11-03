@@ -1,9 +1,10 @@
 /*
  * Formulario de partido:
- *  - Modo Amistoso: oculta el tipo de partido (Enfrentamiento, Reto, Play Off) y
+ *  - Modo Amistoso: oculta el tipo de partido (Enfrentamiento, Reto, Play Off; Liga, Playoffs, Fase final) y
  *    deja elegir si el rival es un equipo del grupo o un nombre escrito a mano.
  *  - Cards de local y visitante: al elegir un equipo en el desplegable se
  *    actualizan su nombre y su foto.
+ *  - Jornada: solo visible con el tipo de liga de la competición (LAPI).
  */
 (function () {
   const form = document.querySelector('[data-match-form]');
@@ -45,15 +46,26 @@
   if (kindRow && kindSelect && legacy && typeSelect) {
     kindRow.hidden = false;
     legacy.hidden = true;
-    kindSelect.value = checkedValue('mode') === 'amistoso' ? 'amistoso' : (typeSelect.value || 'enfrentamiento');
+    kindSelect.value = checkedValue('mode') === 'amistoso' ? 'amistoso' : (typeSelect.value || kindSelect.options[0].value);
     kindSelect.addEventListener('change', () => {
       const friendly = kindSelect.value === 'amistoso';
       const mode = form.querySelector(`input[name="mode"][value="${friendly ? 'amistoso' : 'competitivo'}"]`);
       if (mode) { mode.checked = true; mode.dispatchEvent(new Event('change', { bubbles: true })); }
       if (!friendly) typeSelect.value = kindSelect.value;
+      syncRound();
     });
   }
+  // Jornada (LAPI): solo en los enfrentamientos de liga (data-league-type en su fila).
+  const roundRow = form.querySelector('[data-round-row]');
+  function syncRound() {
+    if (!roundRow) return;
+    const kind = kindSelect && !kindRow.hidden ? kindSelect.value : (checkedValue('mode') === 'amistoso' ? 'amistoso' : typeSelect && typeSelect.value);
+    roundRow.hidden = kind !== roundRow.dataset.leagueType;
+  }
+  if (typeSelect) typeSelect.addEventListener('change', syncRound);
+  form.querySelectorAll('input[name="mode"]').forEach((r) => r.addEventListener('change', syncRound));
   syncMode();
+  syncRound();
 
   // Lugar: por defecto el del equipo local (el propio si juega en casa, el rival si juega fuera);
   // si la persona lo ha escrito a mano, no se pisa.
@@ -87,4 +99,42 @@
     select.addEventListener('change', sync);
     sync();
   });
+
+  // Hora en 24 h con el mismo aspecto que el resto de campos: escribe 2030 y queda 20:30 (S-12).
+  const time = form.querySelector('[data-time-24h]');
+  if (time) {
+    time.addEventListener('input', () => {
+      const digits = time.value.replace(/\D/g, '').slice(0, 4);
+      time.value = digits.length > 2 ? digits.slice(0, 2) + ':' + digits.slice(2) : digits;
+    });
+  }
+
+  // «Así se verá»: tarjeta de vista previa que se rellena con lo que se va escribiendo.
+  const preview = document.querySelector('[data-match-preview]');
+  if (preview) {
+    const field = (name) => form.querySelector(`[name="${name}"]`);
+    const set = (attr, text) => { preview.querySelector(`[data-preview-${attr}]`).textContent = text; };
+    function syncPreview() {
+      const kind = kindSelect && !kindRow.hidden ? kindSelect.options[kindSelect.selectedIndex].textContent.trim() : '';
+      set('kind', kind);
+      const iso = field('start_date') && field('start_date').value;
+      const date = /^\d{4}-\d{2}-\d{2}$/.test(iso || '') ? new Date(iso + 'T12:00:00') : null;
+      if (date) set('date', date.toLocaleDateString(document.documentElement.lang || 'es', { weekday: 'short', day: 'numeric', month: 'short' }).replace(',', ''));
+      const time = field('start_time') ? field('start_time').value : '';
+      const where = place ? place.value : '';
+      set('meta', [time, where].filter(Boolean).join(' · '));
+      const manual = !manualRival.hidden;
+      const option = rivalSelect && rivalSelect.options[rivalSelect.selectedIndex];
+      const rival = manual ? (field('rival_name').value || '') : (option && option.value ? option.textContent.trim() : '');
+      const own = preview.dataset.ownName;
+      const home = checkedValue('own_side') !== 'visiting';
+      set('local', (home ? own : rival) || '—');
+      set('visiting', (home ? rival : own) || '—');
+    }
+    form.addEventListener('input', syncPreview);
+    form.addEventListener('change', syncPreview);
+    // La fecha la rellena un selector propio: se vuelve a leer cuando cambia su campo oculto.
+    setInterval(syncPreview, 600);
+    syncPreview();
+  }
 })();

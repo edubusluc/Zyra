@@ -5,7 +5,44 @@
 {% block content %}
 <div class="table-container my-4">
     <h1>{% blocktranslate with club=current_club.name %}Miembros de {{ club }}{% endblocktranslate %}</h1>
+    {% include 'includes/space_switcher.html' %}
 
+    <h2 class="h4 z-heading-plain mt-3" id="invitar">{% translate "Invitar jugadores" %}</h2>
+    {% include 'includes/target_team.html' with invite=True %}
+    <p class="text-muted mb-2">{% translate "Invita por email o comparte un enlace. Caduca a las 24 horas." %}</p>
+    <details class="z-more-options mb-3">
+        <summary>{% translate "Más información" %}</summary>
+        <p class="text-muted small mt-2">{% translate "Podrá registrarse con usuario, email y contraseña o con Google, o unirse con la cuenta que ya tenga, y entrará como miembro. La invitación por email sirve para una sola persona; el enlace lo pueden usar varias." %}</p>
+    </details>
+    <form method="post" action="{% url 'create_invitation' %}?en={{ request.club.competition }}" class="mb-3" novalidate data-loading-text="{% translate 'Enviando la invitación…' %}">
+        {% csrf_token %}
+        {{ invite_form.as_p }}
+        <button type="submit" class="btn btn-primary"><i class="fa-regular fa-envelope" aria-hidden="true"></i> {% translate "Enviar invitación" %}</button>
+    </form>
+    <form method="post" action="{% url 'create_invitation_link' %}?en={{ request.club.competition }}" class="mb-3" data-loading-text="{% translate 'Generando el enlace…' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-outline-primary"><i class="fa-solid fa-link" aria-hidden="true"></i> {% translate "Generar enlace de invitación" %}</button>
+    </form>
+    <details class="z-more-options mb-3">
+        <summary>{% translate "¿Qué puede hacer cada rol?" %}</summary>
+        <ul class="z-roles">
+            <li class="z-role is-captain">
+                <span class="z-badge z-badge--lime">{% translate "Capitán" %}</span>
+                <p><strong>{% translate "Gestiona todo el equipo." %}</strong> {% translate "Invita a los jugadores y puede pasar la gestión a otra persona. Solo hay uno por equipo." %}</p>
+            </li>
+            <li class="z-role is-manager">
+                <span class="z-badge">{% translate "Gestor" %}</span>
+                <p><strong>{% translate "Ayuda con el día a día." %}</strong> {% translate "Enfrentamientos, resultados, jugadores y rivales. Hasta dos por equipo." %}</p>
+            </li>
+            <li class="z-role is-player">
+                <span class="z-badge">{% translate "Jugador" %}</span>
+                <p><strong>{% translate "Solo consulta." %}</strong> {% translate "Ve la convocatoria, sus resultados y sus estadísticas; no edita nada." %}</p>
+            </li>
+        </ul>
+        <p class="text-muted small mt-2">{% translate "Los miembros son de este equipo: tus equipos de otras competiciones tienen los suyos. Para pasar la gestión a otra persona, pulsa «Hacer capitán» en su fila: tú pasarás a ser jugador (solo consulta). Para poder hacerlo, tiene que estar enlazado a un jugador de este equipo («Mi perfil»). Para eliminar el equipo, quita antes a todos los miembros y abandónalo desde Equipo." %}</p>
+    </details>
+
+    <h2 class="h4 z-heading-plain mt-4">{% translate "Miembros" %}</h2>
     <div class="z-table-wrap"><table class="table align-middle z-table-stack">
         <thead>
             <tr><th>{% translate "Usuario" %}</th><th>{% translate "Email y rol" %}</th><th><span class="visually-hidden">{% translate "Acciones" %}</span></th></tr>
@@ -17,7 +54,7 @@
                 <td>
                     <div class="d-flex flex-wrap gap-2 align-items-center">
                         <span class="text-muted">{{ m.user.email|default:"—" }}</span>
-                        {% if m.is_admin %}<span class="z-badge z-badge--lime">{% translate "Capitán" %}</span>{% elif m.is_manager %}<span class="z-badge">{% translate "Gestor" %}</span>{% else %}<span class="text-muted">{% translate "Miembro (solo lectura)" %}</span>{% endif %}
+                        {% if m.is_admin %}<span class="z-badge z-badge--lime">{% translate "Capitán" %}</span>{% elif m.is_manager %}<span class="z-badge">{% translate "Gestor" %}</span>{% else %}<span class="text-muted">{% translate "Jugador (solo consulta)" %}</span>{% endif %}
                         {# El email se cambia en «Mi perfil», que pide la contraseña actual. #}
                         {% if m.user_id == request.user.id %}<a href="{% url 'my_profile' %}?edit=email" class="btn btn-sm btn-outline-primary">{% translate "Cambiar email" %}</a>{% endif %}
                     </div>
@@ -30,7 +67,7 @@
                         <button type="submit" class="btn btn-sm btn-outline-secondary">{% translate "Quitar gestor" %}</button>
                     </form>
                     {% elif managers_full %}
-                    <button type="button" class="btn btn-sm btn-outline-secondary" disabled title="{% translate 'Un club puede tener como máximo dos gestores.' %}">{% translate "Hacer gestor" %}</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" disabled title="{% translate 'Un equipo puede tener como máximo dos gestores.' %}">{% translate "Hacer gestor" %}</button>
                     {% else %}
                     <form method="post" action="{% url 'set_manager' m.public_id %}" class="d-inline" data-confirm="{% blocktranslate with username=m.user.username %}¿Hacer gestor a {{ username }}? Podrá crear enfrentamientos, convocatorias, alineaciones y resultados, cerrar actas, poner advertencias y gestionar jugadores y equipos. No podrá gestionar miembros, la cuenta SNP, reabrir actas ni eliminar el club.{% endblocktranslate %}" data-loading-text="{% translate 'Guardando el rol…' %}">
                         {% csrf_token %}<input type="hidden" name="enable" value="1">
@@ -53,25 +90,9 @@
         {% endfor %}
         </tbody>
     </table></div>
-    <p class="text-muted small">{% translate "Un club tiene un solo capitán, que invita a los jugadores y gestiona el club, y hasta dos gestores, que le ayudan con los enfrentamientos, los resultados, los jugadores y los equipos. Para pasar la gestión a otra persona, pulsa «Hacer capitán» en su fila: tú pasarás a ser miembro (solo lectura). Para poder hacerlo, el miembro tiene que estar enlazado a un jugador del club («Mi perfil»). Para eliminar el club, quita antes a todos los miembros y abandónalo desde el menú." %}</p>
 
-    <h2 class="h4 z-heading-plain mt-4" id="invitaciones">{% translate "Invitar jugadores" %}</h2>
-    <p class="text-muted mb-2">{% translate "Invita por email o comparte un enlace. Caduca a las 24 horas." %}</p>
-    <details class="z-more-options mb-3">
-        <summary>{% translate "Más información" %}</summary>
-        <p class="text-muted small mt-2">{% translate "Podrá registrarse con usuario, email y contraseña o con Google, o unirse con la cuenta que ya tenga, y entrará como miembro. La invitación por email sirve para una sola persona; el enlace lo pueden usar varias." %}</p>
-    </details>
-    <form method="post" action="{% url 'create_invitation' %}" class="mb-3" novalidate data-loading-text="{% translate 'Enviando la invitación…' %}">
-        {% csrf_token %}
-        {{ invite_form.as_p }}
-        <button type="submit" class="btn btn-primary"><i class="fa-regular fa-envelope" aria-hidden="true"></i> {% translate "Enviar invitación" %}</button>
-    </form>
-    <form method="post" action="{% url 'create_invitation_link' %}" class="mb-3" data-loading-text="{% translate 'Generando el enlace…' %}">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-outline-primary"><i class="fa-solid fa-link" aria-hidden="true"></i> {% translate "Generar enlace de invitación" %}</button>
-    </form>
     {% if has_invitations %}
-    <h3 class="h5 z-heading-plain mt-3">{% translate "Invitaciones pendientes" %}</h3>
+    <h2 class="h4 z-heading-plain mt-4" id="invitaciones">{% translate "Invitaciones pendientes" %}</h2>
     <div class="z-toolbar">
         <div class="z-toolbar-group">
             <form method="get" action="#invitaciones" class="z-search" role="search">

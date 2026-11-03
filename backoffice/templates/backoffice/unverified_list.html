@@ -1,5 +1,5 @@
 {% extends 'backoffice/base.html' %}
-{% load i18n %}
+{% load i18n %}{% load zyra_format %}
 {% block title %}{% translate "Emails sin confirmar" %}{% endblock %}
 
 {% block content %}
@@ -34,8 +34,8 @@
         <tr>
             <td><a href="{% url 'backoffice:user_detail' u.id %}">{{ u.username }}</a></td>
             <td>{{ u.email }}</td>
-            <td>{{ u.date_joined|date:"j M Y H:i" }}</td>
-            <td>{% if u.last_deadline %}{% blocktranslate with d=u.last_deadline|date:"j M Y" %}plazo hasta el {{ d }}{% endblocktranslate %}{% if u.overdue %} <span class="z-badge z-badge--danger">{% translate "vencido" %}</span>{% endif %}{% else %}<span class="text-muted">{% translate "sin avisar" %}</span>{% endif %}</td>
+            <td>{{ u.date_joined|date_day_time }}</td>
+            <td>{% if u.last_deadline %}{% blocktranslate with d=u.last_deadline|date_day %}plazo hasta el {{ d }}{% endblocktranslate %}{% if u.overdue %} <span class="z-badge z-badge--danger">{% translate "vencido" %}</span>{% endif %}{% else %}<span class="text-muted">{% translate "sin avisar" %}</span>{% endif %}</td>
             <td class="text-end">
                 <form method="post" action="{% url 'backoffice:unverified_warn' u.id %}" class="d-inline-flex gap-2 align-items-center" data-confirm="{% translate "¿Enviar el aviso a este email?" %}" data-loading-text="{% translate 'Enviando el aviso…' %}">
                     {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
@@ -67,11 +67,11 @@
         <tbody>
         {% for e in log %}
             <tr>
-                <td>{{ e.created_at|date:"j M Y H:i" }}</td>
+                <td>{{ e.created_at|date_day_time }}</td>
                 <td>{{ e.get_action_display }}{% if e.action == 'warning' and not e.email_sent %} <span class="z-badge z-badge--danger">{% translate "correo no enviado" %}</span>{% endif %}</td>
                 <td>{{ e.username }}</td>
                 <td>{{ e.email|default:"—" }}</td>
-                <td>{% if e.deadline_at %}{{ e.deadline_at|date:"j M Y" }}{% else %}—{% endif %}</td>
+                <td>{% if e.deadline_at %}{{ e.deadline_at|date_day }}{% else %}—{% endif %}</td>
                 <td>{{ e.performed_by_name|default:"—" }}</td>
             </tr>
         {% empty %}

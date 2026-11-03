@@ -6,7 +6,9 @@ import sys
 
 def main():
     """Run administrative tasks."""
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'zyra.settings')
+    # `manage.py test` usa los ajustes de test (hash de contraseñas rápido); el resto, los normales.
+    es_test = len(sys.argv) > 1 and sys.argv[1] == 'test'
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'zyra.settings_test' if es_test else 'zyra.settings')
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

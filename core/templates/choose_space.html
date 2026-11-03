@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+{% block page_title %}{{ choose_title }} · {% endblock %}
+
+{% block content %}
+{# Quien gestiona equipos de varias competiciones elige en cuál hace el alta, sin dar por hecho el equipo activo (core.spaces.choose_managed_space, UX-002). #}
+<div class="z-page-head">
+    <div>
+        <h1>{{ choose_title }}</h1>
+    </div>
+</div>
+<p class="text-muted">{{ choose_question }}</p>
+<ul class="z-home-teams z-choose-teams">
+    {% for club in clubs %}
+    {% with team=club.own_team %}
+    <li>
+        <a class="z-home-team z-home-team--{{ club.competition }} z-choose-team" href="{{ choose_path }}?en={{ club.competition }}">
+            <img class="z-home-team-logo" src="{% if team.photo %}{{ team.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="">
+            <span class="z-home-team-text">
+                <strong>{{ club.name }}</strong>
+                <span>{% include 'includes/competition_badge.html' with code=club.competition name=club.rules.name %}</span>
+            </span>
+            <i class="fa-solid fa-chevron-right ms-auto" aria-hidden="true"></i>
+        </a>
+    </li>
+    {% endwith %}
+    {% endfor %}
+</ul>
+<p class="mt-3"><a href="{% url choose_back %}" class="btn btn-outline-secondary">{% translate "Cancelar" %}</a></p>
+{% endblock %}

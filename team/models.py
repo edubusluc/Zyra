@@ -23,11 +23,18 @@ class Team(PublicIdModel):
         ("IT", _("Italia")),
         ("SE", _("Suecia")),
     ]
+    # Divisiones de todas las competiciones; cada club solo ofrece las de la suya
+    # (``Competition.divisions``, ver ``divisions_for``).
     DIVISIONS = [
         ("future", "Future"),
         ("500", "500"),
         ("1000", "1000"),
         ("grand_slam", "Grand Slam"),
+        ("lapi_1", _("1.ª división")),
+        ("lapi_2", _("2.ª división")),
+        ("lapi_3", _("3.ª división")),
+        ("lapi_4", _("4.ª división")),
+        ("lapi_5", _("5.ª división")),
     ]
     # null=True solo para poder migrar datos existentes (ver comando assign_default_club).
     club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name="teams", null=True)
@@ -68,3 +75,8 @@ class Team(PublicIdModel):
 
 # Al cambiar o borrar la foto se borra el fichero antiguo (core/images.py).
 connect_photo_cleanup(Team)
+
+
+def divisions_for(competition):
+    """Divisiones (código, nombre) de ``Team.DIVISIONS`` que usa la competición ``competition``."""
+    return [(code, label) for code, label in Team.DIVISIONS if code in competition.divisions]

@@ -1,32 +1,42 @@
 {% extends 'base.html' %}
-{% load static i18n %}
+{% load static i18n %}{% load zyra_format %}
 {% block page_title %}{% translate "Enfrentamientos" %} · {% endblock %}
 
 {% block content %}
 <div class="z-page-head">
     <div>
-        <span class="z-eyebrow">{{ current_club.name }}</span>
+        <span class="z-eyebrow">{% if multi_space and space_only_name %}{% blocktranslate with name=space_only_name %}Equipos de {{ name }}{% endblocktranslate %}{% elif multi_space %}{% translate "Todos tus equipos" %}{% else %}{{ current_club.name }}{% endif %}</span>
         <h1>{% translate "Enfrentamientos" %}</h1>
     </div>
     <div class="z-actions">
-        {% if can_manage %}
-        <a href="{% url 'create_match' %}" class="btn btn-primary text-nowrap"><i class="fa-solid fa-plus me-1" aria-hidden="true"></i> {% translate "Nuevo enfrentamiento" %}</a>
+        {% if create_spaces %}<a href="{% url 'list_teams' %}" class="btn btn-secondary text-nowrap z-actions-secondary"><i class="fa-solid fa-shield-halved me-1" aria-hidden="true"></i> {% translate "Equipos rivales" %}</a>{% endif %}
+        {% include 'includes/create_match_button.html' %}
+        {# UX-017: en móvil lo secundario pasa a «Más» y la acción principal va primero. #}
+        {% if create_spaces %}<div class="dropdown z-actions-more">
+            <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{% translate 'Más acciones' %}"><i class="fa-solid fa-ellipsis" aria-hidden="true"></i> <span>{% translate "Más" %}</span></button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="{% url 'list_teams' %}"><i class="fa-solid fa-shield-halved me-2" aria-hidden="true"></i> {% translate "Equipos rivales" %}</a></li>
+            </ul>
+        </div>
         {% endif %}
     </div>
 </div>
 
 <script src="{% static 'js/player-picker.js' %}" defer></script>
 {% include 'includes/match_view_tabs.html' with current='list' %}
-{% include 'includes/season_filter.html' %}
-{# Tipo de partido: mismos chips que las estadísticas; se combinan con temporada, rival y buscador. #}
-{% include 'includes/match_type_filter.html' %}
+{# Competición, temporada, tipo y rival: una fila de desplegables; en móvil van plegados en «Filtros» para que el primer enfrentamiento se vea sin desplazarse (H-24). #}
+<details class="z-filters" data-filters>
+<summary class="btn btn-secondary btn-sm"><i class="fa-solid fa-sliders me-1" aria-hidden="true"></i> {% translate "Filtros" %}{% if filtering %} <span class="z-badge z-badge--lime">{% translate "activos" %}</span>{% endif %}</summary>
+<div class="z-fsel-row">
+{# Competición, temporada y tipo (fila única, se combinan con rival y buscador) #}
+{% include 'includes/filters_row.html' with season=True type=True bare=True %}
 
 {# Buscador por nombre y filtro por rival: sin temporada elegida, buscan en todas. #}
 <form method="get" class="z-match-filters" role="search">
     {% if request.GET.season %}<input type="hidden" name="season" value="{{ selected_season }}">{% endif %}
     {% if selected_match_type %}<input type="hidden" name="match_type" value="{{ selected_match_type }}">{% endif %}
     {% if rivals %}
-    <label for="rival-filter" class="visually-hidden">{% translate "Rival" %}</label>
+    <label for="rival-filter" class="st-filter-label">{% translate "Rival" %}</label>
     <select class="st-select" name="rival" id="rival-filter" onchange="this.form.submit()" data-picker data-picker-toggle data-placeholder="{% translate 'Filtrar por rival...' %}">
         <option value="">{% translate "Todos los rivales" %}</option>
         {% for name in rivals %}<option value="{{ name }}" {% if name == rival %}selected{% endif %}>{{ name }}</option>{% endfor %}
@@ -35,70 +45,123 @@
     <noscript><button type="submit" class="btn btn-secondary btn-sm">{% translate "Buscar" %}</button></noscript>
     {% if filtering %}
     <span class="z-match-filters-count">{% blocktranslate trimmed count n=matches.paginator.count %}{{ n }} enfrentamiento{% plural %}{{ n }} enfrentamientos{% endblocktranslate %}</span>
-    <a href="{{ request.path }}{% if request.GET.season %}?season={{ selected_season|urlencode }}{% endif %}" class="btn btn-outline-secondary btn-sm">{% translate "Limpiar" %}</a>
+    {% endif %}
+    {% if rival_filtering %}
+    <a href="{{ request.path }}{% if request.GET.season or selected_match_type %}?{% if request.GET.season %}season={{ selected_season|urlencode }}{% endif %}{% if request.GET.season and selected_match_type %}&amp;{% endif %}{% if selected_match_type %}match_type={{ selected_match_type|urlencode }}{% endif %}{% endif %}" class="btn btn-outline-secondary btn-sm">{% translate "Quitar el rival" %}</a>
     {% endif %}
 </form>
-
-<div class="z-summary" role="group" aria-label="{% translate 'Resumen' %}">
-    <div><b>{{ summary.played }}</b><span>{% translate "Jugados" %}</span></div>
-    <div class="is-win"><b>{{ summary.won }}</b><span>{% translate "Ganados" %}</span></div>
-    <div class="is-draw"><b>{{ summary.drawn }}</b><span>{% translate "Empatados" %}</span></div>
-    <div class="is-loss"><b>{{ summary.lost }}</b><span>{% translate "Perdidos" %}</span></div>
-    <div><b>{{ summary.pending }}</b><span>{% translate "Pendientes" %}</span></div>
 </div>
+</details>
+<script>
+(function () {
+  // Escritorio: los filtros siempre a la vista; móvil: plegados tras «Filtros».
+  const box = document.querySelector('[data-filters]');
+  if (!box) return;
+  const wide = window.matchMedia('(min-width: 768px)');
+  const sync = () => { if (wide.matches) box.open = true; };
+  sync();
+  wide.addEventListener('change', sync);
+})();
+</script>
 
 {% if matches %}
-{% comment %}Una tarjeta por partido: fecha, tipo (si no es un enfrentamiento) y estado arriba;
-un equipo por fila con sus puntos; abajo lugar, convocados y el enlace al partido (toda la
-tarjeta es pulsable).{% endcomment %}
+{% comment %}Una fila por enfrentamiento: franja de la competición, fecha, competición y tipo, equipos,
+lugar y convocados, recorrido de cuatro pasos (convocatoria, parejas, resultados, acta) y resultado
+o estado. Toda la tarjeta es pulsable.{% endcomment %}
 <ol class="z-fixtures">
     {% for m in matches %}
-    <li class="z-fixture {% if m.outcome == 'V' %}is-win{% elif m.outcome == 'D' %}is-loss{% elif m.outcome == 'E' %}is-draw{% else %}is-pending{% endif %}">
-        <div class="z-fixture-head">
-            <time class="z-fixture-date" datetime="{{ m.start_date|date:'Y-m-d' }}" title="{% blocktranslate with season=m.season %}Temporada {{ season }}{% endblocktranslate %}">
-                <i class="fa-regular fa-calendar" aria-hidden="true"></i>{{ m.start_date|date:"D j M Y" }}
-            </time>
-            {% if m.match_type != m.ENFRENTAMIENTO %}<span class="z-fixture-type">{{ m.get_match_type_display }}</span>{% endif %}
+    {% ifchanged m.group %}<li class="z-fixtures-head z-fixtures-head--{{ m.group }}"><h2>{% if m.group == 'action' %}{% translate "Requieren acción" %}{% elif m.group == 'upcoming' %}{% translate "Próximos" %}{% else %}{% translate "Jugados" %}{% endif %}</h2></li>{% endifchanged %}
+    <li class="z-fixture{% if m.outcome %} z-fixture--closed{% elif not m.can_manage %} is-player{% endif %} {% if m.outcome == 'V' %}is-win{% elif m.outcome == 'D' %}is-loss{% elif m.outcome == 'E' %}is-draw{% else %}is-pending{% endif %}" data-comp="{{ m.club.competition }}">
+        {% if m.outcome %}
+        {# EST-038: el enfrentamiento cerrado, en una línea y con el resultado desde nuestro equipo (igual para capitán y jugador). #}
+        <time class="z-closed-date" datetime="{{ m.start_date|date:'Y-m-d' }}" title="{% blocktranslate with season=m.season %}Temporada {{ season }}{% endblocktranslate %}">{{ m.start_date|date:"j M" }}<small>{{ m.start_date|date:"Y" }}</small></time>
+        <div class="z-closed-main">
+            <span class="z-closed-rival">{% translate "vs" %} {{ m.rival_label }}</span>
+            <span class="z-closed-meta">
+                {% include 'includes/competition_badge.html' with code=m.club.competition name=m.club.rules.name short=True %}
+                <span class="z-fixture-type">{% if m.round_number and m.is_league %}{% blocktranslate with n=m.round_number %}Jornada {{ n }}{% endblocktranslate %}{% else %}{{ m.type_label }}{% endif %}</span>
+                {% if m.no_show %}<span class="z-fixture-type">{% translate "No presentado" %}</span>{% endif %}
+                {% if m.tiebreak %}<span class="z-fixture-type z-fixture-tiebreak" title="{% if m.outcome == 'V' %}{% translate '6-6: la pareja 3 ganó su partido y desempató' %}{% else %}{% translate '6-6: la pareja 3 perdió su partido y desempató el rival' %}{% endif %}"><i class="fa-solid fa-scale-balanced" aria-hidden="true"></i> {% translate "Desempate" %}</span>{% endif %}
+            </span>
+        </div>
+        <span class="z-closed-result">
+            <b class="z-closed-score">{% if m.own_points is not None %}{{ m.own_points }}–{{ m.rival_points }}{% else %}—{% endif %}</b>
+            <span class="z-fixture-state {% if m.outcome == 'V' %}is-win{% elif m.outcome == 'D' %}is-loss{% else %}is-draw{% endif %}" title="{% if m.outcome == 'V' %}{% translate 'Victoria' %}{% elif m.outcome == 'D' %}{% translate 'Derrota' %}{% else %}{% translate 'Empate' %}{% endif %}">{{ m.outcome }}</span>
+        </span>
+        <a href="{% url 'call_for_match' m.public_id %}" class="z-closed-open stretched-link" aria-label="{% blocktranslate with local=m.local_name visiting=m.visiting_name %}Ver {{ local }} contra {{ visiting }}{% endblocktranslate %}"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></a>
+        {% elif not m.can_manage %}
+        <div class="z-pfx-head">
+            {% include 'includes/competition_badge.html' with code=m.club.competition name=m.club.rules.name short=True %}
+            <span class="z-fixture-type">{% if m.round_number and m.is_league %}{% blocktranslate with n=m.round_number %}Jornada {{ n }}{% endblocktranslate %}{% else %}{{ m.type_label }}{% endif %}</span>
+            {% if m.no_show %}<span class="z-fixture-type">{% translate "No presentado" %}</span>{% endif %}
             {% if m.outcome == 'V' %}<span class="z-fixture-state is-win">{% translate "Victoria" %}</span>
             {% elif m.outcome == 'D' %}<span class="z-fixture-state is-loss">{% translate "Derrota" %}</span>
             {% elif m.outcome == 'E' %}<span class="z-fixture-state is-draw">{% translate "Empate" %}</span>
-            {% elif m.pending_close %}<span class="z-fixture-state is-pending-close">{% translate "Pdt. cerrar acta" %}</span>
-            {% elif m.upcoming %}<span class="z-fixture-state is-upcoming">{% translate "Próximo" %}</span>
-            {% else %}<span class="z-fixture-state is-open">{% translate "Sin resultado" %}</span>{% endif %}
+            {% else %}<span class="z-fixture-state {% if m.upcoming %}is-upcoming{% else %}is-open{% endif %}">{{ m.phase.label }}</span>{% endif %}
         </div>
+        <time class="z-pfx-date" datetime="{{ m.start_date|date:'Y-m-d' }}" title="{% blocktranslate with season=m.season %}Temporada {{ season }}{% endblocktranslate %}">{{ m.start_date|date_short }}<small>{{ m.start_date|date:"Y" }}</small></time>
+        <p class="z-pfx-meta">{% if m.start_time %}<strong>{{ m.start_time|time:"H:i" }}</strong>{% endif %}{% if m.location %}<span class="z-location"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>{{ m.location }}</span></span>{% endif %}</p>
+        <div class="z-pfx-teams">
+            <span class="z-pfx-team{% if m.local.is_own %} is-own{% endif %}">{{ m.local_name }}<small>{% translate "Local" %}</small></span>
+            <span class="z-pfx-vs">{% if m.outcome %}{{ m.local_points }}–{{ m.visiting_points }}{% else %}VS{% endif %}</span>
+            <span class="z-pfx-team{% if m.visiting.is_own %} is-own{% endif %}">{{ m.visiting_name }}<small>{% translate "Visitante" %}</small></span>
+        </div>
+        <div class="z-pfx-foot">{% if multi_space and create_spaces %}<span class="z-fixture-meta z-fixture-role">{% translate "Eres jugador aquí" %}</span>{% endif %}
+        <a href="{% url 'call_for_match' m.public_id %}" class="z-pfx-open stretched-link" aria-label="{% blocktranslate with local=m.local_name visiting=m.visiting_name %}Ver {{ local }} contra {{ visiting }}{% endblocktranslate %}">{% translate "Ver enfrentamiento" %}<i class="fa-solid fa-chevron-right" aria-hidden="true"></i></a></div>
+        {% else %}
+        <time class="z-fixture-date" datetime="{{ m.start_date|date:'Y-m-d' }}" title="{% blocktranslate with season=m.season %}Temporada {{ season }}{% endblocktranslate %}">
+            <b>{{ m.start_date|date:"d" }}</b><small>{{ m.start_date|date:"M" }}</small>
+        </time>
+        <div class="z-fixture-main">
+            <div class="z-fixture-head">
+                {% include 'includes/competition_badge.html' with code=m.club.competition name=m.club.rules.name short=True %}
+                <span class="z-fixture-type">{% if m.round_number and m.is_league %}{% blocktranslate with n=m.round_number %}Jornada {{ n }}{% endblocktranslate %}{% else %}{{ m.type_label }}{% endif %}</span>
+                {% if m.no_show %}<span class="z-fixture-type">{% translate "No presentado" %}</span>{% endif %}
+                <span class="visually-hidden">{{ m.start_date|date_long }}</span>
+            </div>
         <div class="z-fixture-teams">
             {% with lp=m.local_points vp=m.visiting_points %}
             <div class="z-fixture-team {% if m.local.is_own %}is-own{% endif %} {% if lp and vp and lp|add:0 > vp|add:0 %}is-winner{% elif lp and vp and lp|add:0 < vp|add:0 %}is-loser{% endif %}">
                 <img src="{% if m.local.photo %}{{ m.local.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="" width="36" height="36" loading="lazy">
                 <span class="z-fixture-name">{{ m.local_name }}</span>
-                {% if lp %}<b class="z-fixture-points">{{ lp }}</b>{% endif %}
             </div>
             <div class="z-fixture-team {% if m.visiting.is_own %}is-own{% endif %} {% if lp and vp and vp|add:0 > lp|add:0 %}is-winner{% elif lp and vp and vp|add:0 < lp|add:0 %}is-loser{% endif %}">
                 <img src="{% if m.visiting.photo %}{{ m.visiting.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="" width="36" height="36" loading="lazy">
                 <span class="z-fixture-name">{{ m.visiting_name }}</span>
-                {% if vp %}<b class="z-fixture-points">{{ vp }}</b>{% endif %}
             </div>
             {% endwith %}
         </div>
-        <div class="z-fixture-foot">
-            {% if m.location %}<span class="z-fixture-meta z-fixture-place"><i class="fa-solid fa-location-dot" aria-hidden="true"></i>{{ m.location }}</span>{% endif %}
-            {% if m.tiebreak %}<span class="z-fixture-meta z-fixture-tiebreak"><i class="fa-solid fa-scale-balanced" aria-hidden="true"></i>{% if m.outcome == 'V' %}{% if m.tiebreak_pair %}{% blocktranslate trimmed with pair=m.tiebreak_pair %}6-6: la pareja 3 ganó su partido y desempató ({{ pair }}){% endblocktranslate %}{% else %}{% translate "6-6: la pareja 3 ganó su partido y desempató" %}{% endif %}{% else %}{% translate "6-6: la pareja 3 perdió su partido y desempató el rival" %}{% endif %}</span>{% endif %}
-            {% if m.outcome is None %}<span class="z-fixture-meta"><i class="fa-solid fa-user-check" aria-hidden="true"></i>{% if m.called %}{% blocktranslate trimmed count n=m.called %}{{ n }} convocado{% plural %}{{ n }} convocados{% endblocktranslate %}{% else %}{% translate "Sin convocatoria" %}{% endif %}</span>{% endif %}
-            <span class="z-fixture-actions">
-                <a href="{% url 'call_for_match' m.public_id %}" class="z-fixture-open stretched-link" aria-label="{% blocktranslate with local=m.local_name visiting=m.visiting_name %}Ver {{ local }} contra {{ visiting }}{% endblocktranslate %}">{% translate "Ver enfrentamiento" %}<i class="fa-solid fa-chevron-right" aria-hidden="true"></i></a>
-                {% if m.draft_mode and is_club_admin %}
-                <a href="{% url 'delete_match' m.public_id %}" class="z-edit z-edit--danger z-fixture-delete" aria-label="{% translate 'Eliminar enfrentamiento' %}" title="{% translate 'Eliminar enfrentamiento' %}"><i class="fa-solid fa-trash" aria-hidden="true"></i></a>
-                {% endif %}
-            </span>
+            <div class="z-fixture-foot">
+                {% if m.location %}<span class="z-fixture-meta z-fixture-place"><i class="fa-solid fa-location-dot" aria-hidden="true"></i>{{ m.location }}</span>{% endif %}
+                {% if m.tiebreak %}<span class="z-fixture-meta z-fixture-tiebreak"><i class="fa-solid fa-scale-balanced" aria-hidden="true"></i>{% if m.outcome == 'V' %}{% if m.tiebreak_pair %}{% blocktranslate trimmed with pair=m.tiebreak_pair %}6-6: la pareja 3 ganó su partido y desempató ({{ pair }}){% endblocktranslate %}{% else %}{% translate "6-6: la pareja 3 ganó su partido y desempató" %}{% endif %}{% else %}{% translate "6-6: la pareja 3 perdió su partido y desempató el rival" %}{% endif %}</span>{% endif %}
+                {% if m.outcome is None %}<span class="z-fixture-meta"><i class="fa-solid fa-user-check" aria-hidden="true"></i>{% if m.called and m.phase.action == 'close_call' %}{% blocktranslate trimmed count n=m.called %}{{ n }} apuntado{% plural %}{{ n }} apuntados{% endblocktranslate %}{% elif m.called %}{% blocktranslate trimmed count n=m.called %}{{ n }} convocado{% plural %}{{ n }} convocados{% endblocktranslate %}{% else %}{% translate "Sin convocatoria" %}{% endif %}</span>{% endif %}
+                <span class="z-fixture-actions">
+                    <a href="{% url 'call_for_match' m.public_id %}" class="z-fixture-open stretched-link" aria-label="{% blocktranslate with local=m.local_name visiting=m.visiting_name %}Ver {{ local }} contra {{ visiting }}{% endblocktranslate %}">{% translate "Ver enfrentamiento" %}<i class="fa-solid fa-chevron-right" aria-hidden="true"></i></a>
+                    {% if multi_space and not m.can_manage and create_spaces %}<span class="z-fixture-meta z-fixture-role">{% translate "Eres jugador aquí" %}</span>{% endif %}
+                </span>
+            </div>
         </div>
+        {% if m.can_manage %}
+        <ol class="z-flow4" aria-label="{% translate 'Recorrido del enfrentamiento' %}">
+            {% for step in m.phase.track %}<li class="{% if step.state == 'done' %}is-done{% elif step.state == 'cur' %}is-cur{% endif %}"><i aria-hidden="true">{% if step.state == 'done' %}&#10003;{% elif step.state == 'cur' %}!{% endif %}</i>{{ step.label }}</li>{% endfor %}
+        </ol>
+        {% endif %}
+        <div class="z-fixture-result">
+            {% if m.outcome %}<b class="z-fixture-score">{{ m.local_points }} – {{ m.visiting_points }}</b>
+            <span class="z-fixture-state {% if m.outcome == 'V' %}is-win{% elif m.outcome == 'D' %}is-loss{% else %}is-draw{% endif %}">{% if m.outcome == 'V' %}{% translate "Victoria" %}{% elif m.outcome == 'D' %}{% translate "Derrota" %}{% else %}{% translate "Empate" %}{% endif %}</span>
+            {% elif m.pending_close %}<span class="z-fixture-state is-pending-close">{{ m.phase.label }}</span>
+            {% elif m.upcoming %}<span class="z-fixture-state is-upcoming">{{ m.phase.label }}</span>
+            {% else %}<span class="z-fixture-state is-overdue" title="{% translate 'Fecha pasada' %}">{% translate "Vencido" %} · {{ m.phase.label }}</span>{% endif %}
+        </div>
+        {% endif %}
     </li>
     {% endfor %}
 </ol>
 {% else %}
 <div class="z-empty">
     <i class="fa-solid fa-table-tennis-paddle-ball" aria-hidden="true"></i>
-    {% if filtering %}{% translate "Ningún enfrentamiento coincide con la búsqueda." %}{% elif selected_season != all_seasons %}{% blocktranslate with season=selected_season %}No hay enfrentamientos en la temporada {{ season }}.{% endblocktranslate %}{% elif can_manage %}{% translate "Crea tu primer enfrentamiento para preparar la convocatoria." %}{% else %}{% translate "Cuando tu capitán cree el primer enfrentamiento lo verás aquí." %}{% endif %}
-    {% if can_manage %}<div class="mt-3"><a class="btn btn-primary btn-sm" href="{% url 'create_match' %}">{% translate "Crear enfrentamiento" %}</a></div>{% endif %}
+    {% if filtering %}{% translate "Ningún enfrentamiento coincide con la búsqueda." %}{% elif selected_season != all_seasons %}{% blocktranslate with season=selected_season %}No hay enfrentamientos en la temporada {{ season }}.{% endblocktranslate %}{% elif create_spaces %}{% translate "Crea tu primer enfrentamiento para preparar la convocatoria." %}{% else %}{% translate "Cuando tu capitán cree el primer enfrentamiento lo verás aquí." %}{% endif %}
+    {% if create_spaces %}<div class="mt-3">{% include 'includes/create_match_button.html' with classes='btn btn-primary btn-sm' %}</div>{% endif %}
 </div>
 {% endif %}
 

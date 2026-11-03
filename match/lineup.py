@@ -1,8 +1,10 @@
 """
-Alineación de un enfrentamiento: las 5 parejas del club y el orden de los partidos.
+Alineación de un enfrentamiento: las parejas del club y el orden de los partidos.
 
+Cuántas parejas hay y cuánto vale cada partido lo dice la ficha de la competición
+(``core.competitions``; en la SNP, 5 partidos que valen 3, 3, 2, 2 y 2 puntos).
 Se valida y se guarda siempre la alineación completa, en una transacción: o se
-guardan los 5 partidos o ninguno. Así no pueden quedar partidos a medias ni
+guardan todos los partidos o ninguno. Así no pueden quedar partidos a medias ni
 duplicados.
 """
 import json
@@ -10,9 +12,9 @@ import json
 from django.db import transaction
 from django.utils.translation import gettext as _
 
-from .models import Game
+from core.competitions import competition_for
 
-GAMES_PER_MATCH = 5
+from .models import Game
 
 
 class LineupError(Exception):
@@ -20,9 +22,9 @@ class LineupError(Exception):
     pass
 
 
-def game_points(index):
-    """Puntos en juego según el orden del partido: los dos primeros valen 3, el resto 2."""
-    return 3 if index in (1, 2) else 2
+def game_points(index, competition=None):
+    """Puntos en juego según el orden del partido (en la SNP los dos primeros valen 3 y el resto 2)."""
+    return (competition or competition_for()).points_for(index)
 
 
 def parse_lineup(raw, call, match_games=None):
@@ -34,8 +36,9 @@ def parse_lineup(raw, call, match_games=None):
         data = json.loads(raw or "[]")
     except (TypeError, ValueError):
         raise LineupError(_("Los datos de la alineación no son válidos."))
-    if not isinstance(data, list) or len(data) != GAMES_PER_MATCH:
-        raise LineupError(_("Hay que completar las %(n)s parejas antes de guardar.") % {"n": GAMES_PER_MATCH})
+    games_per_match = competition_for(call.match).games
+    if not isinstance(data, list) or len(data) != games_per_match:
+        raise LineupError(_("Hay que completar las %(n)s parejas antes de guardar.") % {"n": games_per_match})
 
     called = {p.id: p for p in call.players.all()}
     games_by_id = {g.id: g for g in (match_games or [])}
@@ -75,12 +78,12 @@ def _assign(game, match, n, p1, p2):
     setattr(game, f"player_1_{other}", None)
     setattr(game, f"player_2_{other}", None)
     game.n_game = n
-    game.score = game_points(n)
+    game.score = game_points(n, competition_for(match))
 
 
 @transaction.atomic
 def create_games(match, lineup):
-    """Crea los 5 partidos del enfrentamiento a partir de la alineación ya validada.
+    """Crea los partidos del enfrentamiento a partir de la alineación ya validada.
 
     Bloquea el enfrentamiento mientras tanto y falla con LineupError si ya tenía partidos,
     para que dos envíos simultáneos no creen partidos duplicados.

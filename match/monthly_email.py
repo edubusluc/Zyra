@@ -1,6 +1,7 @@
 """
 Envío del informe mensual: a cada cuenta enlazada a un jugador que jugó partidos el mes
-anterior se le manda por email un PDF con sus estadísticas (``send_monthly_reports``).
+anterior se le manda por email un PDF con sus estadísticas (``send_monthly_reports``). Si la
+cuenta juega en varios equipos (SNP y LAPI), recibe un único correo con un PDF por equipo.
 
 Es idempotente: ``MonthlyReportDelivery`` guarda una fila por cuenta y mes, reservada antes
 de enviar. Si el correo falla se borra la reserva y la siguiente pasada lo reintenta; si ya
@@ -17,6 +18,7 @@ from django.utils.html import escape, format_html
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
+from core.competitions import COMPETITIONS
 from core.emails import build_email
 from core.models import MonthlyReportDelivery, UserPreference
 from core.unsubscribe import unsubscribe_path
@@ -41,15 +43,24 @@ class Summary:
 
 
 def recipient_players():
-    """Un jugador por cuenta activa enlazada, de clubes no suspendidos, sin repetir cuentas."""
+    """
+    Fichas de cada cuenta activa enlazada, de clubes no suspendidos: ``[(user, [player, ...])]``,
+    una entrada por cuenta con sus fichas en el orden de las competiciones (SNP, LAPI).
+    """
+    order = {code: i for i, code in enumerate(COMPETITIONS)}
     players = (Player.objects.filter(user__isnull=False, user__is_active=True, club__suspended_at__isnull=True)
                .select_related("user", "club").order_by("user_id", "pk"))
-    seen, result = set(), []
+    grouped = {}
     for player in players:
-        if player.user_id not in seen:
-            seen.add(player.user_id)
-            result.append(player)
-    return result
+        grouped.setdefault(player.user_id, (player.user, []))[1].append(player)
+    for _user, sheets in grouped.values():
+        sheets.sort(key=lambda p: (order.get(p.club.competition, len(order)), p.pk))
+    return list(grouped.values())
+
+
+def build_reports(players, month, scope):
+    """Informe de ``month`` de cada ficha de ``players`` que jugó ese mes (puede quedar vacío)."""
+    return [r for r in (build_monthly_report(p, month, scope) for p in players) if r["played"]]
 
 
 def absolute_unsubscribe_url(user):
@@ -57,33 +68,52 @@ def absolute_unsubscribe_url(user):
     return f"{settings.SITE_URL}{unsubscribe_path(user)}"
 
 
-def _bodies(report, unsubscribe_url):
-    """Texto plano y HTML del correo, con el resumen del mes y el enlace de baja."""
-    player = report["player"]
+def _summary_line(report, several):
+    """Resumen del mes de un informe; con varios equipos dice de cuál es."""
     values = {"month": month_label(report["month"]), "played": report["played"], "wins": report["wins"],
-              "pct": report["pct"], "points": report["points"]}
-    greeting = _("Hola %(name)s,") % {"name": player.name.strip().title()}
-    summary = _("Este es tu resumen de %(month)s: has jugado %(played)s partidos, ganado %(wins)s (%(pct)s%%) "
-                "y sumado %(points)s puntos.") % values
-    attached = _("Te adjuntamos el informe en PDF con tus parejas, tus sets y el detalle de cada partido.")
+              "pct": report["pct"], "points": report["points"], "club": report["club"].name,
+              "competition": report["club"].rules.name}
+    if several:
+        return _("%(club)s (%(competition)s): has jugado %(played)s partidos, ganado %(wins)s (%(pct)s%%) "
+                 "y sumado %(points)s puntos.") % values
+    return _("Este es tu resumen de %(month)s: has jugado %(played)s partidos, ganado %(wins)s (%(pct)s%%) "
+             "y sumado %(points)s puntos.") % values
+
+
+def _bodies(reports, unsubscribe_url):
+    """Texto plano y HTML del correo, con el resumen del mes de cada equipo y el enlace de baja."""
+    several = len(reports) > 1
+    greeting = _("Hola %(name)s,") % {"name": reports[0]["player"].name.strip().title()}
+    lines = [_summary_line(r, several) for r in reports]
+    if several:
+        lines.insert(0, _("Este es tu resumen de %(month)s en cada uno de tus equipos:")
+                     % {"month": month_label(reports[0]["month"])})
+        attached = _("Te adjuntamos un informe en PDF por equipo con tus parejas, tus sets y el detalle de cada partido.")
+    else:
+        attached = _("Te adjuntamos el informe en PDF con tus parejas, tus sets y el detalle de cada partido.")
     regards = _("¡Nos vemos en pista!")
     unsub = _("Si no quieres recibir más estos correos, puedes desactivarlos aquí:")
-    text = f"{greeting}\n\n{summary}\n\n{attached}\n\n{regards}\n\n{unsub}\n{unsubscribe_url}"
+    text = "\n\n".join([greeting, *lines, attached, regards, f"{unsub}\n{unsubscribe_url}"])
     html = mark_safe(
-        format_html("<p>{}</p><p>{}</p><p>{}</p><p>{}</p>", greeting, summary, attached, regards)
+        "".join(format_html("<p>{}</p>", part) for part in [greeting, *lines, attached, regards])
         + format_html('<p style="font-size:12px; color:#6B6B6B;">{} <a href="{}">{}</a></p>',
                       unsub, unsubscribe_url, _("Desactivar correos mensuales"))
     )
     return text, html
 
 
-def build_message(report, to, unsubscribe_url):
-    """Correo con el PDF adjunto y la cabecera List-Unsubscribe (los clientes de correo muestran «Cancelar suscripción»)."""
-    subject = _("Tu informe de %(month)s · Zyra") % {"month": month_label(report["month"])}
-    text, html = _bodies(report, unsubscribe_url)
+def build_message(reports, to, unsubscribe_url):
+    """
+    Correo con un PDF adjunto por equipo y la cabecera List-Unsubscribe (los clientes de correo
+    muestran «Cancelar suscripción»). Con varios equipos, cada PDF lleva la competición en el nombre.
+    """
+    subject = _("Tu informe de %(month)s · Zyra") % {"month": month_label(reports[0]["month"])}
+    text, html = _bodies(reports, unsubscribe_url)
     email = build_email(subject, text, html, to=[to])
     email.extra_headers = {"List-Unsubscribe": f"<{unsubscribe_url}>"}
-    email.attach(report_filename(report), render_monthly_report(report), "application/pdf")
+    for report in reports:
+        email.attach(report_filename(report, with_competition=len(reports) > 1),
+                     render_monthly_report(report), "application/pdf")
     return email
 
 
@@ -109,8 +139,7 @@ def send_monthly_reports(month, dry_run=False, limit=None):
     summary = Summary()
     connection = None
     try:
-        for player in recipient_players():
-            user = player.user
+        for user, players in recipient_players():
             enabled, scope = UserPreference.monthly_for(user)
             if not enabled:
                 summary.skip("lo desactivó")
@@ -119,8 +148,8 @@ def send_monthly_reports(month, dry_run=False, limit=None):
             elif MonthlyReportDelivery.objects.filter(user=user, month=month).exists():
                 summary.skip("ya enviado")
             else:
-                report = build_monthly_report(player, month, scope)
-                if not report["played"]:
+                reports = build_reports(players, month, scope)
+                if not reports:
                     summary.skip("sin partidos")
                 elif limit is not None and len(summary.sent) >= limit:
                     summary.skip("límite de la pasada")
@@ -128,7 +157,7 @@ def send_monthly_reports(month, dry_run=False, limit=None):
                     summary.sent.append(user.email)
                 elif _claim(user, month, user.email):
                     try:
-                        message = build_message(report, user.email, absolute_unsubscribe_url(user))
+                        message = build_message(reports, user.email, absolute_unsubscribe_url(user))
                         if connection is None:
                             connection = get_connection(fail_silently=False)
                             connection.open()
@@ -163,18 +192,18 @@ def send_monthly_report_manually(email, month):
     (todos/competitivos) elegido en «Mi perfil». Devuelve la cuenta; lanza ``ManualSendError``
     si no se puede enviar y propaga el error del correo si falla.
     """
-    player = next((p for p in recipient_players() if p.user.email.lower() == email.strip().lower()), None)
-    if player is None:
+    found = next(((u, ps) for u, ps in recipient_players() if u.email.lower() == email.strip().lower()), None)
+    if found is None:
         raise ManualSendError(f"No hay ninguna cuenta activa con ese email enlazada a un jugador: {email}")
-    user = player.user
+    user, players = found
     _enabled, scope = UserPreference.monthly_for(user)
-    report = build_monthly_report(player, month, scope)
-    if not report["played"]:
+    reports = build_reports(players, month, scope)
+    if not reports:
         raise ManualSendError(f"{user.email} no jugó partidos en {month:%Y-%m}: no hay informe que enviar.")
     connection = get_connection(fail_silently=False)
     try:
         connection.open()
-        connection.send_messages([build_message(report, user.email, absolute_unsubscribe_url(user))])
+        connection.send_messages([build_message(reports, user.email, absolute_unsubscribe_url(user))])
     finally:
         _close(connection)
     now = timezone.now()

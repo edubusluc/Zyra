@@ -1,0 +1,8 @@
+{% load i18n %}
+{# Aviso de en qué equipo se hace el alta (UX-002), solo si el usuario tiene equipos en varias competiciones. invite=True para las invitaciones. #}
+{% if request.user_memberships|length > 1 and request.club %}
+<p class="z-target-team" role="note"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+    <span>{% if invite %}{% translate "Invitas a" %}{% else %}{% translate "Se creará en" %}{% endif %}
+    {% include 'includes/competition_badge.html' with code=request.club.competition name=request.club.rules.name %}
+    <strong>{{ request.club.name }}</strong></span></p>
+{% endif %}

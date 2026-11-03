@@ -1,5 +1,5 @@
 {% extends 'backoffice/base.html' %}
-{% load i18n backoffice_tags %}
+{% load i18n backoffice_tags %}{% load zyra_format %}
 {% block title %}{% translate "Usuarios" %}{% endblock %}
 
 {% block content %}
@@ -36,7 +36,7 @@
             <td>{{ u.email|default:"—" }}</td>
             <td class="text-end">{{ u.n_clubs }}</td>
             <td>{{ u.last_login|ago }}</td>
-            <td>{{ u.date_joined|date:"j M Y" }}</td>
+            <td>{{ u.date_joined|date_day }}</td>
         </tr>
     {% empty %}
         <tr><td colspan="5" class="text-muted">{% translate "No hay usuarios con esos filtros." %}</td></tr>

@@ -227,7 +227,7 @@ class SnpAccountTests(TestCase):
             call_command("update_snp_scores", stdout=out)
         self.assertIn("Jugadores a actualizar: 2\n", out.getvalue())
         self.assertIn("Jugadores actualizados correctamente: 1\n", out.getvalue())
-        self.assertIn("Jugadores no actualizados: 1 (LUIS GÓMEZ)\n", out.getvalue())
+        self.assertIn("Jugadores no actualizados: 1 (Luis Gómez)\n", out.getvalue())
 
         out = StringIO()
         with mock.patch("players.snp.scrape_scores", lambda *a, **k: [{"name": "Ana Alvarez", "score": 3.0},
@@ -252,7 +252,9 @@ class SnpAccountTests(TestCase):
         self.client.login(username="admin", password="pass-12345")
         response = self.client.get(reverse("player_statistics"), {"player": self.player.public_id})
         self.assertEqual(response.context["chart_snp"], {"labels": ["28/09", "05/10"], "scores": [100.0, 120.5], "changes": [None, 20.5]})
-        self.assertContains(response, 'id="chartSnp"')
+        # La ficha rediseñada muestra los puntos SNP al cierre de cada temporada
+        self.assertEqual(response.context["snp_seasons"], {"labels": ["2019-2020", current_season()], "scores": [1.0, 120.5]})
+        self.assertContains(response, 'id="data-snp-seasons"')
 
     def test_home_shows_snp_notice_to_admin_until_account_exists(self):
         viewer = User.objects.create_user("viewer", password="pass-12345")
@@ -499,7 +501,7 @@ class CompleteTeamTests(TestCase):
         self.assertEqual(team_import.status, SnpTeamImport.READY)
         self.assertEqual([(p["name"], p["last_name"]) for p in team_import.to_add],
                          [("Maria Jose", "Gomez Ruiz"), ("Pedro", "Raposo Bellerin")])
-        self.assertEqual(team_import.existing, [{"snp_name": "ANA ALVAREZ", "category": "500", "player": "ANA ÁLVAREZ",
+        self.assertEqual(team_import.existing, [{"snp_name": "ANA ALVAREZ", "category": "500", "player": "Ana Álvarez",
                                                  "player_id": self.ana.pk, "score": 42.5}])
         self.assertEqual(Player.objects.count(), 1)  # la búsqueda no crea nada
 
@@ -511,7 +513,7 @@ class CompleteTeamTests(TestCase):
         self.assertEqual(self.client.get(reverse("complete_team_status", args=[team_import.public_id])).json()["status"], "ready")
 
         response = self.client.post(reverse("complete_team_confirm", args=[team_import.public_id]), follow=True)
-        self.assertContains(response, "su posición en pista ha quedado vacía")
+        self.assertContains(response, "su posición ha quedado vacía")
         pedro = Player.objects.get(name="Pedro")
         self.assertEqual((pedro.last_name, pedro.snp_score, pedro.in_team, pedro.team), ("Raposo Bellerin", 120.0, True, self.club.own_team))
         self.assertTrue(SnpScoreHistory.objects.filter(player=pedro, score=120.0).exists())
@@ -817,7 +819,7 @@ class CompleteTeamTests(TestCase):
         out = StringIO()
         call_command("complete_snp_team", team_id, "--dry-run", stdout=out)
         self.assertIn("Jugadores a añadir: 2 (Maria Jose Gomez Ruiz, Pedro Raposo Bellerin)", out.getvalue())
-        self.assertIn("Ya registrados (solo se actualizan sus puntos SNP): 1 (ANA ALVAREZ → ANA ÁLVAREZ)", out.getvalue())
+        self.assertIn("Ya registrados (solo se actualizan sus puntos SNP): 1 (ANA ALVAREZ → Ana Álvarez)", out.getvalue())
         self.assertEqual(Player.objects.count(), 1)
 
         SnpTeamImport.objects.create(club=self.club, status=SnpTeamImport.DONE, finished_at=timezone.now())
@@ -847,12 +849,12 @@ class CompleteTeamTests(TestCase):
         self.assertEqual((self.ana.name, self.ana.last_name), ("Ana María", "Álvarez Ruiz"))
         self.assertContains(self.client.get(reverse("edit_player", args=[self.ana.public_id])), 'name="last_name"')
 
-    def test_names_are_shown_in_uppercase_but_stored_as_typed(self):
+    def test_names_are_shown_in_title_case_but_stored_as_typed(self):
         self.ana.name, self.ana.last_name = "ana maría", "álvarez ruiz"
         self.ana.save()
-        self.assertEqual((self.ana.full_name, self.ana.short_name), ("ANA MARÍA ÁLVAREZ RUIZ", "ANA MARÍA ÁLVAREZ"))
-        self.assertContains(self.client.get(reverse("list_players")), "ANA MARÍA ÁLVAREZ")
-        self.assertContains(self.client.get(reverse("show_player", args=[self.ana.public_id])), "ANA MARÍA ÁLVAREZ")
+        self.assertEqual((self.ana.full_name, self.ana.short_name), ("Ana María Álvarez Ruiz", "Ana María Álvarez"))
+        self.assertContains(self.client.get(reverse("list_players")), "Ana María Álvarez")
+        self.assertContains(self.client.get(reverse("show_player", args=[self.ana.public_id]), follow=True), "Ana María Álvarez")
         # El formulario de edición muestra lo guardado, sin cambiarlo.
         self.assertContains(self.client.get(reverse("edit_player", args=[self.ana.public_id])), 'value="álvarez ruiz"')
 
@@ -981,7 +983,7 @@ class CreatePlayerSimilarityTests(TestCase):
     def test_similar_player_asks_before_creating(self):
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context["similar"], ["MARÍA GARCÍA LÓPEZ"])
+        self.assertEqual(response.context["similar"], ["María García López"])
         self.assertEqual(Player.objects.filter(club=self.club).count(), 1)
 
         self.client.post(self.url, {**self.data, "confirm_similar": "1"})
@@ -989,7 +991,7 @@ class CreatePlayerSimilarityTests(TestCase):
 
     def test_check_request_and_players_of_other_clubs(self):
         response = self.client.post(self.url, self.data, HTTP_X_SIMILAR_CHECK="1")
-        self.assertEqual(response.json(), {"valid": True, "similar": ["MARÍA GARCÍA LÓPEZ"]})
+        self.assertEqual(response.json(), {"valid": True, "similar": ["María García López"]})
         # Solo cuenta el equipo del club activo
         response = self.client.post(self.url, {**self.data, "name": "Lucia", "last_name": "Martin"}, HTTP_X_SIMILAR_CHECK="1")
         self.assertEqual(response.json(), {"valid": True, "similar": []})
@@ -1066,11 +1068,11 @@ class DeletePlayerTests(TestCase):
         self.assertIsNone(self.game.player_1_local)
         self.assertEqual(self.game.player_2_local, self.bea)
         self.assertTrue(self.game.results.exists())
-        self.assertEqual(self.game.local_pair_label, "ANA LÓPEZ / BEA RUIZ")
+        self.assertEqual(self.game.local_pair_label, "Ana López / Bea Ruiz")
         page = self.client.get(reverse("call_for_match", args=[self.match.public_id])).content.decode()
-        self.assertIn("ANA LÓPEZ / BEA RUIZ", page)
+        self.assertIn("Ana López / Bea Ruiz", page)
         # El compañero conserva sus estadísticas.
-        self.assertEqual(self.client.get(reverse("show_player", args=[self.bea.public_id])).status_code, 200)
+        self.assertEqual(self.client.get(reverse("show_player", args=[self.bea.public_id]), follow=True).status_code, 200)
 
     def test_members_cannot_delete(self):
         viewer = User.objects.create_user("viewer", password="pass-12345")
@@ -1136,7 +1138,7 @@ class PlayerListSearchTests(TestCase):
         response = self.client.get(reverse("list_players"))
         self.assertEqual(len(response.context["players"]), 12)
         self.assertContains(response, "data-selector-search")
-        self.assertContains(response, 'data-name="JUGADOR3 ÁLVAREZ"')
+        self.assertContains(response, 'data-name="Jugador3 Álvarez"')
         self.assertContains(response, 'data-page-size="30"')
 
 
@@ -1345,3 +1347,20 @@ class ListPlayersTeamToggleTests(TestCase):
         self.assertFalse(page.context["only_team"])
         self.assertEqual([p.name for p in page.context["players"]], ["Ana", "Bea"])
         self.assertContains(page, "?order_by=name&amp;team=0")
+
+
+class PlayerNameLettersTests(TestCase):
+    """UX-051: los nombres de jugador necesitan al menos una letra."""
+
+    def test_punctuation_only_names_are_rejected(self):
+        from .forms import PlayerForm
+        form = PlayerForm(data={"name": "Gon", "last_name": ",", "position": "", "joined_season": ""})
+        self.assertFalse(form.is_valid())
+        self.assertIn("last_name", form.errors)
+        form = PlayerForm(data={"name": "123", "last_name": "Pérez"})
+        self.assertIn("name", form.errors)
+
+    def test_form_labels_have_no_colon(self):
+        """UX-050: las etiquetas de los formularios no llevan dos puntos."""
+        from .forms import PlayerForm
+        self.assertNotIn(":", str(PlayerForm()["name"].label_tag()).split("</label>")[0].rsplit(">", 1)[-1])

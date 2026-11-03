@@ -94,7 +94,7 @@ class MatchesAndCallsTests(TestCase):
         self.assertTrue(response.context["season_all"]["active"])
         self.assertEqual(response.context["summary"]["drawn"], 1)
         self.assertNotIn("page=", response.context["season_chips"][0]["url"])
-        self.assertContains(response, 'class="z-fixture is-draw"')
+        self.assertContains(response, 'class="z-fixture z-fixture--closed is-draw"')
 
         # Una temporada que no existe se ignora y manda la última elegida en la sesión («Todas»)
         response = self.client.get(reverse("list_match"), {"season": "1999-2000"})
@@ -124,8 +124,8 @@ class MatchesAndCallsTests(TestCase):
         self.assertEqual(cards[self.current.id].called, 2)
         self.assertTrue(cards[self.current.id].upcoming)
         self.assertContains(response, "Victoria")
-        self.assertContains(response, "Próximo")
-        self.assertContains(response, "2 convocados")
+        self.assertContains(response, "Convocatoria abierta")
+        self.assertContains(response, "2 apuntados")
         self.assertContains(response, "Ver enfrentamiento")
 
     def test_match_list_search_for_older_seasons(self):
@@ -190,16 +190,19 @@ class MatchesAndCallsTests(TestCase):
         self.assertTrue(response.context["filtering"])
         self.assertContains(response, 'aria-current="page">Amistosos')
 
-    def test_long_call_groups_are_collapsed(self):
-        """Con muchos convocados en una posición, se ven los primeros y el resto tras «Ver N más»."""
-        players = [Player.objects.create(club=self.club, name=f"P{i:02d}", last_name="X", position="Derecha")
-                   for i in range(11)]
+    def test_call_roster_shows_pairs_and_substitutes(self):
+        """La ficha lista a los convocados con su pareja (P1, P2...) y marca como suplentes a los demás."""
+        players = [Player.objects.create(club=self.club, name=f"P{i}", last_name="X") for i in range(3)]
         call = Call.objects.create(match=self.current, draft_mode=False)
         call.players.set(players)
+        Game.objects.create(match=self.current, n_game=1, player_1_local=players[0], player_2_local=players[1])
         response = self.client.get(reverse("call_for_match", args=[self.current.public_id]))
-        drive = next(g for g in response.context["groups"] if len(g["players"]) == 11)
-        self.assertEqual(drive["hidden"], 3)
-        self.assertContains(response, "Ver 3 más")
+        roster = {p.name: p for p in response.context["convocados"]}
+        self.assertEqual(roster["P0"].pair_n, 1)
+        self.assertEqual(roster["P0"].partner, players[1])
+        self.assertIsNone(roster["P2"].pair_n)
+        self.assertContains(response, "Suplente")
+        self.assertContains(response, "z-status4")
 
     def test_call_players_are_alphabetical_and_current(self):
         response = self.client.get(reverse("create_call", args=[self.current.public_id]))
@@ -374,10 +377,14 @@ class LineupTests(TestCase):
         url = reverse("create_result", args=[game.public_id])
         data = {"set1_local": "7", "set1_visiting": "5", "set2_local": "3", "set2_visiting": "0"}
         self.assertIn("errors", self.client.post(url, data).context)   # sin el check no vale
-        self.client.post(url, {**data, "retired": "on"})
+        self.assertIn("errors", self.client.post(url, {**data, "retired": "on"}).context)  # falta la pareja lesionada
+        # Normativa SNP 15.10: se completan los juegos para la pareja sana.
+        self.client.post(url, {**data, "retired": "on", "injured_side": "visiting"})
         game.refresh_from_db()
         self.assertEqual(game.winner, "Local")
-        self.assertTrue(Result.objects.get(game=game).retired)
+        result = Result.objects.get(game=game)
+        self.assertTrue(result.retired)
+        self.assertEqual(result.sets()[:2], [(7, 5), (6, 0)])
         self.assertContains(self.client.get(reverse("call_for_match", args=[self.match.public_id])), "Lesión")
 
 
@@ -698,15 +705,15 @@ class PendingCloseLabelTests(TestCase):
     def test_all_results_shows_pending_close(self):
         self._games(5)
         page = self.client.get(reverse("list_match"), {"season": "all"})
-        self.assertContains(page, "Pdt. cerrar acta")
-        self.assertNotContains(page, "Sin resultado")
+        self.assertContains(page, "Acta por cerrar")
+        self.assertNotContains(page, "Faltan")
 
-    def test_missing_results_keeps_no_result(self):
+    def test_missing_results_says_how_many(self):
         self._games(4)
         page = self.client.get(reverse("list_match"), {"season": "all"})
-        self.assertContains(page, "Sin resultado")
-        self.assertNotContains(page, "Pdt. cerrar acta")
+        self.assertContains(page, "Falta 1 resultado")
+        self.assertNotContains(page, "Acta por cerrar")
 
-    def test_no_games_keeps_no_result(self):
+    def test_no_games_says_next_step(self):
         page = self.client.get(reverse("list_match"), {"season": "all"})
-        self.assertContains(page, "Sin resultado")
+        self.assertContains(page, "Por convocar")

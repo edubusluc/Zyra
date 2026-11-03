@@ -12,6 +12,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 from reportlab.platypus import BaseDocTemplate, Frame, PageTemplate, KeepTogether, Paragraph, Spacer, Table, TableStyle
 
+from data_analyse.comparison import SET_ROWS
 from .monthly_report import CALL_ABSENT, CALL_BENCHED, CALL_PLAYED, MAX_CALL_ROWS, MAX_GAME_ROWS
 from .report_pdf import (
     draw_made_with, draw_page_header, BOTTOM_MARGIN, CONTENT_W, GUTTER, HEADING_GAP, MARGIN, PAGE_H, PAGE_W,
@@ -26,9 +27,13 @@ def month_label(month):
     return date_format(month, "F Y")
 
 
-def report_filename(report):
-    """Nombre del PDF, p. ej. 'informe-mensual-2026-09.pdf'."""
-    return f"informe-mensual-{report['month']:%Y-%m}.pdf"
+def report_filename(report, with_competition=False):
+    """
+    Nombre del PDF, p. ej. 'informe-mensual-2026-09.pdf'; con ``with_competition`` (correo con
+    un PDF por equipo) lleva la competición: 'informe-mensual-2026-09-lapi.pdf'.
+    """
+    suffix = f"-{report['club'].competition}" if with_competition else ""
+    return f"informe-mensual-{report['month']:%Y-%m}{suffix}.pdf"
 
 
 def scope_label(report):
@@ -41,7 +46,7 @@ def scope_label(report):
 def _on_page(canvas, doc, report):
     """Fondo, cabecera (logo, club y mes) y pie del informe mensual."""
     canvas.saveState()
-    draw_page_header(canvas, report["club"].name, month_label(report["month"]).upper())
+    draw_page_header(canvas, f"{report['club'].name} · {report['club'].rules.name}", month_label(report["month"]).upper())
     canvas.setFont("Archivo", 7)
     canvas.drawString(MARGIN, 8 * mm, _("Informe mensual automático · Zyra"))
     draw_made_with(canvas, PAGE_W - MARGIN, align="right")
@@ -123,13 +128,12 @@ def _snp_section(report, st):
 
 
 def _clutch_section(report, st):
-    """Panel «Sets clutch» de las estadísticas del jugador: decisivo, tie-breaks, remontadas y más, con su V-D."""
+    """Panel «Sets» de las estadísticas del jugador, con las mismas situaciones y nombres que la web (comparison.SET_ROWS), con su V-D."""
     sets = report["sets"]
-    story = [Paragraph(esc(_("Sets clutch")), st["section"]),
+    story = [Paragraph(esc(_("Sets")), st["section"]),
              Paragraph(esc(_("Cómo respondes en los momentos decisivos: tercer set, tie-breaks y remontadas.")),
                        st["muted"]), Spacer(1, HEADING_GAP)]
-    situations = [(_("Set decisivo"), "third"), (_("Tie-breaks"), "tiebreak"), (_("Remontadas"), "comeback"),
-                  (_("Cerrar el partido"), "first_set"), (_("Sets ajustados"), "close")]
+    situations = [(str(label), key) for key, label, _hint in SET_ROWS if key != "bagels"]
     if sets["super_tb"]["total"]:
         situations.append((_("Super tie-break"), "super_tb"))
     cells = []
@@ -217,7 +221,10 @@ def _story(report):
     cards = Table([[left, right]], colWidths=[CONTENT_W / 2, CONTENT_W / 2])
     cards.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "TOP"), ("LEFTPADDING", (0, 0), (-1, -1), 0)]))
     story += [_panel(cards), Spacer(1, SECTION_GAP)]
-    for section in (_clutch_section, _snp_section, _calls_section):
+    # Sin puntos SNP en las competiciones que no los tienen (LAPI).
+    sections = (_clutch_section, _snp_section, _calls_section) if report["club"].rules.has_snp \
+        else (_clutch_section, _calls_section)
+    for section in sections:
         story += [KeepTogether(section(report, st)), Spacer(1, SECTION_GAP)]
 
     # Parejas

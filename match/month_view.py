@@ -41,14 +41,14 @@ def month_weeks(first):
     return calendar.Calendar(firstweekday=0).monthdatescalendar(first.year, first.month)
 
 
-def month_events(club, weeks):
+def month_events(clubs, weeks):
     """
-    Enfrentamientos del club entre el primer y el último día de ``weeks``, agrupados por fecha:
+    Enfrentamientos de los clubes ``clubs`` (uno o varios espacios) entre el primer y el último día de ``weeks``, agrupados por fecha:
     ``{fecha: [enfrentamiento, ...]}`` ordenados por hora y, sin ella, al final del día.
     """
     first, last = weeks[0][0], weeks[-1][-1]
-    matches = (Match.objects.filter(club=club, start_date__range=(first, last))
-               .select_related("local", "visiting")
+    matches = (Match.objects.filter(club__in=clubs, start_date__range=(first, last))
+               .select_related("local", "visiting", "club")
                .order_by("start_date", "start_time", "id"))
     by_day = {}
     for match in matches:

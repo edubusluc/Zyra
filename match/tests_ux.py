@@ -67,17 +67,23 @@ class PhaseTests(UxBase):
         call.players.set(self.players[:8])
         p = phase.phase_for(match)
         self.assertEqual((p.state, p.action, p.missing_players), (phase.DRAFT, phase.CLOSE_CALL, 2))
-        self.assertIn("8/10", str(p.pending_label))
+        self.assertEqual(str(p.pending_label), "Faltan 2 para cerrar la convocatoria (8 de 10)")
+        self.assertEqual(str(p.label), "Convocatoria abierta")
         call.players.set(self.players[:12])
+        self.assertEqual(str(phase.phase_for(match).pending_label), "Cerrar convocatoria · 12 apuntados (mín. 10)")
         call.draft_mode = False
         call.save()
         self.assertEqual(phase.phase_for(match).state, phase.CALLED)
+        self.assertEqual(str(phase.phase_for(match).label), "Por alinear")
         games = self.lineup(match)
         p = phase.phase_for(match)
         self.assertEqual((p.state, p.action), (phase.LINED_UP, phase.ENTER_RESULTS))
+        self.assertEqual(str(p.label), "Faltan 5 resultados")
+        self.assertEqual(str(p.pending_label), "Poner resultados · faltan 5")
         self.client.post(reverse("enter_results", args=[match.public_id]), self.results_post(games))
         self.assertEqual(phase.phase_for(match).state, phase.PLAYED)
         self.assertEqual(phase.phase_for(match).action, phase.CLOSE_MATCH)
+        self.assertEqual(str(phase.phase_for(match).label), "Acta por cerrar")
         self.client.post(reverse("close_match", args=[match.public_id]))
         match.refresh_from_db()
         self.assertEqual(phase.phase_for(match).state, phase.CLOSED)
@@ -115,7 +121,7 @@ class MatchPageTests(UxBase):
         call.players.set(self.players[:8])
         page = self.client.get(reverse("call_for_match", args=[match.public_id]))
         self.assertContains(page, "Siguiente: Cerrar convocatoria")
-        self.assertContains(page, "Faltan 2 convocados")
+        self.assertContains(page, "Faltan 2 apuntados para cerrar la convocatoria (8 de 10)")
         self.assertContains(page, "disabled")
         call.players.set(self.players[:12])
         page = self.client.get(reverse("call_for_match", args=[match.public_id]))
@@ -199,6 +205,24 @@ class EnterResultsTests(UxBase):
         self.assertEqual(self.m.result_points, "12/0")
         self.assertIn("Acta cerrada: Victoria 12-0", " ".join(texts(response)))
 
+    def test_close_with_missing_results_stays_on_the_results_page(self):
+        response = self.client.post(self.url, self.results_post(self.games, only={1, 2, 3}, action="close"))
+        self.assertRedirects(response, self.url, fetch_redirect_response=False)
+        self.m.refresh_from_db()
+        self.assertTrue(self.m.draft_mode)
+        self.assertEqual(sum(g.results.count() for g in self.games), 3)
+        self.assertIn("falta el resultado de Partido 4 y Partido 5", " ".join(texts(response)))
+
+    def test_results_page_disables_close_until_all_results_and_lists_one_game_per_row(self):
+        page = self.client.get(self.url)
+        self.assertContains(page, "data-close-match")
+        self.assertContains(page, "data-close-hint")
+
+    def test_competitions_only_have_draws_when_the_points_allow_it(self):
+        from core.competitions import LAPI, SNP
+        self.assertTrue(SNP.has_draws)
+        self.assertFalse(LAPI.has_draws)
+
     def test_future_match_needs_confirmation_to_close(self):
         self.m.start_date = timezone.localdate() + datetime.timedelta(days=7)
         self.m.save()
@@ -264,11 +288,13 @@ class CreateMatchFormTests(UxBase):
         self.assertContains(response, "novalidate")
         self.assertFalse(Match.objects.exists())
 
-    def test_competition_selector_is_locked_on_snp(self):
+    def test_competition_is_shown_as_data(self):
+        # La competición es la del equipo: se muestra como dato, no como un selector bloqueado.
         page = self.client.get(reverse("create_match"))
-        self.assertContains(page, 'name="competition"')
-        self.assertContains(page, "disabled")
-        self.assertContains(page, '<option value="snp" selected>SNP</option>', html=True)
+        self.assertNotContains(page, 'name="competition"')
+        self.assertContains(page, "z-create-in")
+        self.assertContains(page, "Se creará en")
+        self.assertNotContains(page, "Cambiar de equipo")
         form = page.context["form"]
         self.assertTrue(form.fields["competition"].disabled)
 
@@ -310,11 +336,14 @@ class ClubAndSharedPiecesTests(UxBase):
         self.client.get(url, {"season": "all"})
         self.assertIsNone(self.client.get(url).context["selected_season"])
 
-    def test_player_card_has_tabs_and_form(self):
-        response = self.client.get(reverse("show_player", args=[self.players[0].public_id]))
-        self.assertContains(response, reverse("player_statistics") + f"?player={self.players[0].public_id}")
-        self.assertContains(response, 'aria-current="page"')
-        self.assertEqual(response.context["form"], [])
+    def test_player_sheet_is_the_statistics_sheet(self):
+        """EST-013: Plantilla y Estadísticas enlazan a una única ficha de jugador."""
+        sheet = reverse("player_statistics") + f"?player={self.players[0].public_id}"
+        self.assertRedirects(self.client.get(reverse("show_player", args=[self.players[0].public_id])), sheet,
+                             fetch_redirect_response=False)
+        response = self.client.get(sheet)
+        self.assertContains(response, "st-hero")
+        self.assertContains(response, reverse("edit_player", args=[self.players[0].public_id]))
 
     def test_team_statistics_without_pie_has_index(self):
         match = self.match()

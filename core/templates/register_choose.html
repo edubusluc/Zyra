@@ -14,16 +14,16 @@
             <a class="z-role-card" href="{% url 'register_account' %}">
                 <i class="fa-solid fa-user" aria-hidden="true"></i>
                 <h2>{% translate "Registrarme como jugador" %}</h2>
-                <p>{% translate "Crea tu cuenta y únete al club de tu equipo cuando un capitán te invite." %}</p>
-                <p class="z-role-note"><i class="fa-solid fa-circle-info" aria-hidden="true"></i> {% translate "Necesitas la invitación de tu capitán para entrar en su club." %}</p>
+                <p>{% translate "Crea tu cuenta y únete a tu equipo cuando su capitán te invite." %}</p>
+                <p class="z-role-note"><i class="fa-solid fa-circle-info" aria-hidden="true"></i> {% translate "Necesitas la invitación de tu capitán para entrar en su equipo." %}</p>
                 <span class="z-role-go">{% translate "Crear mi cuenta" %} <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
             </a>
             <a class="z-role-card" href="{% url 'register_club' %}">
                 <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
                 <h2>{% translate "Registrarme como capitán" %}</h2>
-                <p>{% translate "Crea el club de tu equipo, convoca a tus jugadores y apunta los resultados." %}</p>
-                <p class="z-role-note"><i class="fa-solid fa-circle-info" aria-hidden="true"></i> {% translate "Serás el encargado del club: invitas a los jugadores, creas los equipos y apuntas los resultados. Podrás traspasar la capitanía a otro miembro cuando quieras." %}</p>
-                <span class="z-role-go">{% translate "Crear mi club" %} <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+                <p>{% translate "Registra tu equipo, convoca a tus jugadores y apunta los resultados." %}</p>
+                <p class="z-role-note"><i class="fa-solid fa-circle-info" aria-hidden="true"></i> {% translate "Serás el encargado del equipo: invitas a los jugadores, creas los rivales y apuntas los resultados. Podrás traspasar la capitanía a otro jugador cuando quieras." %}</p>
+                <span class="z-role-go">{% translate "Crear mi equipo" %} <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
             </a>
         </div>
         <p class="z-auth-foot">{% url 'login' as login_url %}{% blocktranslate trimmed %}¿Ya tienes cuenta? <a href="{{ login_url }}">Inicia sesión</a>{% endblocktranslate %}</p>

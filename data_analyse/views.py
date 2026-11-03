@@ -4,30 +4,34 @@ Estadísticas del club: del equipo, por jugador, por parejas y advertencias.
 Todas se calculan sobre los partidos cerrados del club y admiten filtro por temporada
 y por tipo de partido.
 """
+from collections import Counter
+
 from match import outcomes
 from django.shortcuts import render
-from match.models import Match, Game, Result
-from django.db.models import Sum
-from django.db.models.functions import Coalesce
-from players.models import Player
+from match.models import Match, Game
+from players.models import Player, proper_name
 from team.models import Team
 from call.models import Call
 from django.db.models import Q, Count
 from django.views.decorators.http import require_GET
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse
 from django.http import Http404
 from django.core.paginator import Paginator
 from urllib.parse import urlencode
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext as _, gettext_lazy
 from core.decorators import club_required, club_manager_required
-from penalty.models import Penalty
+from core import spaces
+from core.competitions import competition_for
+from penalty.models import KINDS as PENALTY_KINDS, Penalty
 from core.season_choice import ALL_SEASONS, choose_season
 from players.models import current_season, joined_by
 from . import pairs as pair_stats
 from . import rivals as rival_stats
 from . import records
+from . import comparison, player_card, roster_table, team_card
 from .attendance import signup_attendance
-from .sets import best_and_worst_number, by_game_number, own_sets, set_stats
+from .sets import by_game_number, own_sets, set_stats
 
 def _zero_state(request, title):
     """
@@ -67,6 +71,21 @@ def selected_match_type(request):
     """Filtro elegido en la URL (?match_type=competitivo, reto, amistoso...); None = todos."""
     value = request.GET.get(MATCH_TYPE_PARAM)
     return value if value in pair_stats.FILTER_VALUES else None
+
+
+ALL_TYPES = "todos"
+
+
+def stats_match_type(request):
+    """
+    Filtro de tipo de las pantallas de Estadísticas: sin nada en la URL, ``competitivo`` (lo que cuenta
+    para la clasificación; los amistosos no se mezclan por defecto, igual que en «Mi forma»);
+    ``?match_type=todos`` los incluye (devuelve None) y cualquier otro valor válido filtra por él.
+    """
+    value = request.GET.get(MATCH_TYPE_PARAM)
+    if value == ALL_TYPES:
+        return None
+    return value if value in pair_stats.FILTER_VALUES else COMPETITIVE
 
 
 # ---------------------------------------------------------------
@@ -112,17 +131,23 @@ def season_filter_context(request, seasons, selected_season, all_value=ALL_SEASO
     }
 
 
-def match_type_context(request, match_type):
+def match_type_context(request, match_type, by_type=False, stats=False):
     """
     Filtro por tipo de partido: chips Todos / Competitivos / Amistosos (``match_types``) y, dentro
     de Competitivos, un selector con todos los partidos competitivos o un tipo (``competitive_types``).
     Cada enlace conserva el resto de la URL (jugador, pareja, temporada); ``match_type_qs`` sirve
-    para añadir el filtro a los enlaces que ya existían (temporadas).
+    para añadir el filtro a los enlaces que ya existían (temporadas). Con ``by_type`` (pantallas de una sola
+    competición) los chips son Todos, un chip por tipo de la competición y Amistosos, sin «Competitivos».
+    Con ``stats`` (Estadísticas) el tipo por defecto es Competitivos y «Todos» va explícito
+    (``?match_type=todos``, ver ``stats_match_type``); ``match_type_param`` es el valor a conservar en los
+    enlaces y formularios y ``match_type_changed`` dice si el filtro se aparta del defecto (se marca en lima).
     """
     def url(value):
         """URL de la página actual con el tipo de partido ``value`` (sin él para «Todos»)."""
         params = request.GET.copy()
-        if value:
+        if stats:
+            params[MATCH_TYPE_PARAM] = value or ALL_TYPES
+        elif value:
             params[MATCH_TYPE_PARAM] = value
         else:
             params.pop(MATCH_TYPE_PARAM, None)
@@ -135,9 +160,18 @@ def match_type_context(request, match_type):
         {'label': _("Competitivos"), 'url': url(COMPETITIVE), 'active': competitive},
         {'label': _("Amistosos"), 'url': url(Match.AMISTOSO), 'active': match_type == Match.AMISTOSO},
     ]
-    competitive_labels = [(COMPETITIVE, _("Todos los enfrentamientos")), (Match.ENFRENTAMIENTO, _("Enfrentamientos")),
-                          (Match.RETO, _("Retos")), (Match.PLAYOFF, _("Play offs"))]
+    # Tipos de la competición del espacio activo (Enfrentamientos, Retos, Play offs en SNP; Liga,
+    # Playoffs, Fase final en LAPI).
+    rules = request.club.rules if getattr(request, "club", None) is not None else competition_for(None)
+    competitive_labels = [(COMPETITIVE, _("Todos los enfrentamientos"))] + [
+        (value, plural) for value, _label, plural in rules.match_types]
     labels = dict(competitive_labels, **{COMPETITIVE: _("Competitivos"), Match.AMISTOSO: _("Amistosos")})
+    if by_type:
+        # Con el defecto de Estadísticas (Competitivos) el desplegable tiene que poder mostrarlo como elegido.
+        options = ([options[0]] + ([options[1]] if stats else [])
+                   + [{'label': plural, 'url': url(value), 'active': value == match_type} for value, _label, plural in rules.match_types]
+                   + [options[2]])
+        competitive = False
     return {
         'match_types': options,
         'competitive_types': [{'label': label, 'value': value, 'url': url(value), 'active': value == match_type}
@@ -147,7 +181,9 @@ def match_type_context(request, match_type):
                             for value in values],
         'selected_match_type': match_type,
         'selected_match_type_label': labels.get(match_type),
-        'match_type_qs': f"&{MATCH_TYPE_PARAM}={match_type}" if match_type else "",
+        'match_type_param': (match_type or ALL_TYPES) if stats else (match_type or ""),
+        'match_type_changed': (match_type != COMPETITIVE) if stats else bool(match_type),
+        'match_type_qs': f"&{MATCH_TYPE_PARAM}={(match_type or ALL_TYPES) if stats else match_type}" if (stats or match_type) else "",
     }
 
 
@@ -201,55 +237,6 @@ def calculate_tiebreak_stats(season, team, match_type=None):
             'for_pct': for_pct, 'against_pct': 100 - for_pct if total else 0}
 
 
-def _games_totals(season, team, own_local, match_type=None):
-    """
-    Juegos ganados y perdidos por el equipo jugando en casa (own_local) o fuera,
-    sumados en la base de datos con una sola consulta.
-    """
-    results = _by_type(Result.objects.filter(game__match__draft_mode=False), match_type, "game__match__")
-    results = results.filter(game__match__local=team) if own_local else results.filter(game__match__visiting=team)
-    if season is not None:
-        results = results.filter(game__match__season=season)
-    sums = results.aggregate(**{
-        f"{side}{n}": Coalesce(Sum(f"set{n}_{side}"), 0)
-        for side in ("local", "visiting") for n in (1, 2, 3)
-    })
-    local = sums["local1"] + sums["local2"] + sums["local3"]
-    visiting = sums["visiting1"] + sums["visiting2"] + sums["visiting3"]
-    won, lost = (local, visiting) if own_local else (visiting, local)
-    total = won + lost
-    return (
-        won, lost,
-        round(won / total * 100, 2) if total else 0,
-        round(lost / total * 100, 2) if total else 0,
-    )
-
-
-def calculate_local_game_statistics(season, team, match_type=None):
-    """Juegos ganados y perdidos (y sus %) del equipo cuando juega en casa."""
-    return _games_totals(season, team, own_local=True, match_type=match_type)
-
-
-def calculate_visiting_game_statistics(season, team, match_type=None):
-    """Juegos ganados y perdidos (y sus %) del equipo cuando juega fuera."""
-    return _games_totals(season, team, own_local=False, match_type=match_type)
-
-
-def calculate_matches_won_per_year(team, match_type=None):
-    """{temporada: {'won', 'drawn', 'lost'}} en orden, con una sola consulta."""
-    dicc_match = {}
-    rows = _by_type(Match.objects.filter(club=team.club, draft_mode=False), match_type).values_list('season', 'result', 'local_id', 'visiting_id')
-    for season, result, local_id, visiting_id in rows:
-        d = dicc_match.setdefault(season, {'won': 0, 'drawn': 0, 'lost': 0})
-        if (result == LOCAL_WIN and local_id == team.id) or (result == VISITING_WIN and visiting_id == team.id):
-            d['won'] += 1
-        elif result == DRAW:
-            d['drawn'] += 1
-        elif result in (LOCAL_WIN, VISITING_WIN):
-            d['lost'] += 1
-    return dict(sorted(dicc_match.items()))
-
-
 def column_chart(club, season, match_type=None):
     """Partidos de 2 y 3 puntos ganados/perdidos por jugador actual (una sola consulta)."""
     players = Player.objects.filter(club=club, in_team=True)
@@ -295,41 +282,82 @@ def format_for_chart(dic):
     return players
 
 
+ROSTER_ANCHOR = "sec-plantilla"
+# Parámetros propios de la tabla de plantilla: no se arrastran al enlace de una ficha.
+ROSTER_PARAMS = ("lado", "orden")
+
+
+def roster_context(request, players, log, season, match_type, snp=None):
+    """
+    Datos de la tabla de plantilla (``includes/roster_table.html``) con las opciones de ``?lado=`` y
+    ``?orden=``: filas, enlaces de cada opción (siempre con el resto de filtros y con el ancla
+    de la tabla) y el enlace de la ficha de cada jugador.
+    """
+    has_snp = request.club.rules.has_snp
+    side, sort = roster_table.parse_options(request.GET, has_snp)
+    snp_rows = {r["player"].id: r for r in (snp or {}).get("rows", [])}
+    rows = roster_table.roster_rows(players, log, roster_table.signup_by_player(request.club, players, season, match_type, side),
+                                    side, sort, snp_rows)
+
+    def url(**changes):
+        """Enlace a esta misma página con ``changes`` sobre los parámetros actuales y el ancla de la tabla."""
+        params = request.GET.copy()
+        for key, value in changes.items():
+            params[key] = value
+        return f"{request.path}?{params.urlencode()}#{ROSTER_ANCHOR}"
+
+    sheet = request.GET.copy()
+    for key in ROSTER_PARAMS:
+        sheet.pop(key, None)
+    for row in rows:
+        sheet["player"] = row["player"].public_id
+        row["url"] = f"{reverse('player_statistics')}?{sheet.urlencode()}"
+    side_labels = {roster_table.SIDE_ALL: _("Todos"), roster_table.SIDE_LOCAL: _("Local"),
+                   roster_table.SIDE_VISITING: _("Visitante")}
+    return {"roster": {
+        "rows": rows, "side": side, "sort": sort, "has_snp": has_snp,
+        "sides": [(value, side_labels[value], url(lado=value), value == side) for value in roster_table.SIDES],
+        "sort_urls": {key: url(orden=key) for key in roster_table.SORTS},
+        "anchor": ROSTER_ANCHOR,
+        # Media del equipo y fecha de la última actualización de puntos SNP, sobre la tabla (None sin puntos).
+        "snp": {"average": snp["average"], "updated": snp["updated"], "stale": snp["stale"]} if snp and snp["rows"] else None,
+    }}
+
+
+@spaces.consult_view
 @club_required
 @require_GET
 def team_statistics(request):
     """
-    Estadísticas del equipo propio: balance de enfrentamientos y juegos, evolución por
-    temporada, partidos de 2 y 3 puntos por jugador y top 5 de jugadores y parejas.
+    Estadísticas del equipo propio: balance de enfrentamientos y juegos, puntos de liga o de cada
+    enfrentamiento, sets, récords y mejores jugadores como local, y puntos SNP del equipo.
     Requiere pertenecer al club y solo GET. Filtra por temporada (``?season=``) y tipo de partido.
+
+    Como el resto de pantallas de Estadísticas, es del equipo activo (``?en=`` lo cambia, ``spaces.consult_view``)
+    y con varios espacios lleva el selector de competición: los equipos de cada competición no se mezclan
+    (lo global de la persona está en «Mis estadísticas»).
     """
     zero = _zero_state(request, _("Estadísticas del equipo"))
     if zero:
         return zero
     seasons = get_total_season(Match.objects.filter(club=request.club))
     team = request.club.own_team
-    match_type = selected_match_type(request)
-    min_games_pair = pair_stats.min_games_pair(match_type)
-
+    match_type = stats_match_type(request)
     seasons = sorted(seasons, key=lambda s: int(s.split('-')[0]), reverse=True)
     selected_season = choose_season(request, seasons)
     if selected_season == ALL_SEASONS:
         selected_season = None
 
-    dicc = column_chart(request.club, selected_season, match_type)
+    dicc = column_chart(request.club, selected_season, match_type) if request.club.rules.ordered_pairs else {}
     column_chart_data = format_for_chart(dicc)
 
     if not team:
-        return render(request, 'team_statistics.html', {"seasons": seasons, **match_type_context(request, match_type),
+        return render(request, 'team_statistics.html', {"seasons": seasons, **match_type_context(request, match_type, stats=True),
                                                         **season_filter_context(request, seasons, selected_season)})
 
     (total_matches, total_won, drawn_matches, lost_matches,
-     percentage_won, percentage_drawn, percentage_lost) = calculate_match_statistics(selected_season or None, team, match_type)
-    local_games_won, local_games_lost, percentage_local_games_won, percentage_local_games_lost = calculate_local_game_statistics(selected_season or None, team, match_type)
-    visiting_games_won, visiting_games_lost, percentage_visiting_games_won, percentage_visiting_games_lost = calculate_visiting_game_statistics(selected_season or None, team, match_type)
+     percentage_won, _percentage_drawn, _percentage_lost) = calculate_match_statistics(selected_season or None, team, match_type)
 
-    # La evolución por temporada solo tiene sentido con «Todas»: al filtrar una temporada no se muestra.
-    dicc_line_chart = calculate_matches_won_per_year(team, match_type) if selected_season is None else {}
     tiebreaks = calculate_tiebreak_stats(selected_season or None, team, match_type)
 
     # Top 5 (jugadores actuales del equipo), respetando la temporada y el tipo de partido elegidos
@@ -337,7 +365,7 @@ def team_statistics(request):
     log = pair_stats.club_game_log(request.club, selected_season or None, match_type)
 
     context = {
-        **match_type_context(request, match_type),
+        **match_type_context(request, match_type, stats=True, by_type=True),
         **season_filter_context(request, seasons, selected_season),
         'team': team,
         'total_matches': total_matches,
@@ -345,33 +373,186 @@ def team_statistics(request):
         'drawn_matches': drawn_matches,
         'tiebreaks': tiebreaks,
         'lost_matches': lost_matches,
-        'local_games_won': local_games_won,
-        'local_games_lost': local_games_lost,
         'percentage_won': percentage_won,
-        'percentage_drawn': percentage_drawn,
-        'percentage_lost': percentage_lost,
-        'visiting_games_won': visiting_games_won,
-        'visiting_games_lost': visiting_games_lost,
-        'percentage_local_games_won': percentage_local_games_won,
-        'percentage_local_games_lost': percentage_local_games_lost,
-        'percentage_visiting_games_won': percentage_visiting_games_won,
-        'percentage_visiting_games_lost': percentage_visiting_games_lost,
-        'dicc_line_chart': dicc_line_chart,
-        'current_season': current_season(),
         "seasons": seasons,
         "selected_season": selected_season,
         "column_chart_data": column_chart_data,
-        "top_local_players": pair_stats.top_players(log, squad, local=True),
-        "top_visiting_players": pair_stats.top_players(log, squad, local=False),
-        "top_local_pairs": pair_stats.top_pairs(log, squad, local=True, min_games=min_games_pair),
-        "top_visiting_pairs": pair_stats.top_pairs(log, squad, local=False, min_games=min_games_pair),
-        "min_games_player": pair_stats.MIN_GAMES_PLAYER,
-        "min_games_pair": min_games_pair,
     }
     context.update(team_extra_context(request.club, selected_season, match_type, log))
+    context.update(roster_context(request, squad, log, selected_season, match_type, context['snp']))
     context['attendance'] = signup_attendance(request.club, selected_season, match_type)
+    context.update(team_card_context(request.club, selected_season, match_type, context))
 
     return render(request, 'team_statistics.html', context)
+
+
+@club_required
+@require_GET
+def my_statistics(request):
+    """
+    «Mis estadísticas»: lo de la persona en todas sus competiciones, para quien tiene jugador en
+    varias (``spaces.linked_players``). «Todas» junta sus partidos y pone cada competición al lado de
+    la otra en los gráficos, sin sumar puntos; ``?espacio=snp`` (o lapi) lleva a su ficha de jugador
+    en esa competición. Con un solo jugador enlazado va directo a su ficha; con ninguno (y varios
+    equipos) explica cómo enlazar la ficha (stats_mine_link.html). Filtra por temporada y
+    tipo de partido. Renderiza stats_mine.html.
+    """
+    players = spaces.linked_players(request)
+    if len(players) < 2:
+        if players:
+            return redirect(f"{reverse('player_statistics')}?en={players[0].club.competition}&player={players[0].public_id}")
+        if len(spaces.user_clubs(request)) > 1:
+            return render(request, 'stats_mine_link.html')
+        return redirect('team_statistics')
+    wanted = request.GET.get(spaces.SPACE_PARAM)
+    chosen = next((p for p in players if p.club.competition == wanted), None)
+    if chosen:
+        params = request.GET.copy()
+        params.pop(spaces.SPACE_PARAM, None)
+        params[spaces.SWITCH_PARAM] = chosen.club.competition
+        params['player'] = chosen.public_id
+        return redirect(f"{reverse('player_statistics')}?{params.urlencode()}")
+
+    match_type = stats_match_type(request)
+    clubs = [p.club for p in players]
+    seasons = sorted(get_total_season(Match.objects.filter(club__in=clubs)),
+                     key=lambda s: int(s.split('-')[0]), reverse=True)
+    selected_season = choose_season(request, seasons)
+    if selected_season == ALL_SEASONS:
+        selected_season = None
+
+    rows, all_log, logs = [], [], []
+    for player in players:
+        log = [g for g in build_game_log(player, match_type) if not selected_season or g['season'] == selected_season]
+        logs.append(log)
+        all_log += log
+        summary = summarize(log)
+        present, total = calls_by_season(player, match_type)
+        if selected_season:
+            present, total = {selected_season: present.get(selected_season, 0)}, {selected_season: total.get(selected_season, 0)}
+        rows.append({"club": player.club, "player": player, "played": summary['played'], "wins": summary['wins'],
+                     "losses": summary['losses'], "pct": round(summary['pct']),
+                     "calls": signup_summary(present, total)})
+    me = summarize(all_log)
+
+    return render(request, 'stats_mine.html', {
+        **match_type_context(request, match_type, stats=True),
+        **season_filter_context(request, seasons, selected_season),
+        **mine_chips(request, players, None),
+        **players_charts(players, logs, selected_season, match_type),
+        'selected_season': selected_season,
+        'rows': rows,
+        'me': me,
+    })
+
+
+def mine_chips(request, players, active):
+    """
+    Chips de «Mis estadísticas» (Todas y una por competición con jugador enlazado) para
+    ``includes/stats_tabs.html``; ``active``: código de la competición abierta o None para «Todas».
+    """
+    base = reverse('my_statistics')
+    chips = [{"code": spaces.ALL_SPACES, "label": _("Todas"), "url": base, "active": active is None}]
+    chips += [{"code": p.club.competition, "label": str(p.club.rules.name), "club": p.club, "name": p.club.rules.name,
+               "url": f"{base}?{spaces.SPACE_PARAM}={p.club.competition}", "active": active == p.club.competition}
+              for p in players]
+    return {"mine_chips": chips}
+
+
+def players_charts(players, logs, season, match_type):
+    """
+    Gráficos de «Mis estadísticas · Todas» con cada competición al lado de la otra, nunca sumadas en
+    una cifra (los puntos de un partido no valen lo mismo en SNP que en LAPI). ``logs``: partidos de
+    cada jugador de ``players`` (build_game_log, ya filtrados por temporada).
+
+    Devuelve ``set_rows`` (cada situación de sets con el % de cada competición), ``set_compare`` (las que tienen casos, para
+    la tabla de stats_mine.html) y ``spaces_chart``
+    para stats_spaces.js: competiciones, % de victorias como local y como visitante,
+    partidos ganados por temporada (sin temporada elegida) y % de convocatorias en las que se apuntó
+    por temporada (con una temporada elegida, solo esa: se dibuja con barras).
+    """
+    comps, sets_by_comp, local, visiting, years, attendance = [], [], [], [], [], []
+    for player, log in zip(players, logs):
+        club = player.club
+        comps.append({"code": club.competition, "name": str(club.rules.name), "club": club.name})
+        sets_by_comp.append(set_stats(log))
+        local.append({"won": sum(g["won"] for g in log if g["local"]),
+                      "lost": sum(not g["won"] for g in log if g["local"])})
+        visiting.append({"won": sum(g["won"] for g in log if not g["local"]),
+                         "lost": sum(not g["won"] for g in log if not g["local"])})
+        per_year = {}
+        for g in log:
+            row = per_year.setdefault(g["season"], {"won": 0, "played": 0})
+            row["won"] += g["won"]
+            row["played"] += 1
+        years.append(per_year if not season else {})
+        present, total = calls_by_season(player, match_type)
+        if season:
+            present, total = {season: present.get(season, 0)}, {season: total.get(season, 0)}
+        attendance.append({s: round(present.get(s, 0) / n * 100) for s, n in total.items() if n})
+
+    # Las mismas situaciones de set que en Equipo, Jugador y Pareja (data_analyse.comparison.SET_ROWS).
+    set_rows = [{
+        "key": key, "label": label, "hint": hint,
+        "comps": [{"code": c["code"], "name": c["name"],
+                   "r": comparison.bagels_situation(st) if key == "bagels" else st[key]}
+                  for c, st in zip(comps, sets_by_comp)],
+    } for key, label, hint in comparison.SET_ROWS]
+    # Las filas sin ningún caso en ninguna competición no se enseñan.
+    set_compare = [row for row in set_rows if any(c["r"]["total"] for c in row["comps"])]
+
+    # % de victorias en casa y fuera de cada competición (None sin partidos), para «Local y visitante».
+    pct = lambda r: round(100 * r["won"] / (r["won"] + r["lost"])) if r["won"] + r["lost"] else None
+    totals = [{"won": a["won"] + b["won"], "lost": a["lost"] + b["lost"], "local": a, "visiting": b,
+               "pct_local": pct(a), "pct_visiting": pct(b)}
+              for a, b in zip(local, visiting)]
+
+    by_start = lambda s: int(s.split('-')[0])
+    labels = sorted({y for per in years for y in per}, key=by_start)
+    att_labels = sorted({s for per in attendance for s in per}, key=by_start)
+    return {
+        "set_rows": set_rows,
+        "set_compare": set_compare,
+        "sets_played": any(st["played"] for st in sets_by_comp),
+        "has_local": any(r["won"] or r["lost"] for r in local),
+        "has_visiting": any(r["won"] or r["lost"] for r in visiting),
+        "spaces_chart": {
+            "comps": comps,
+            "local": local,
+            "visiting": visiting,
+            "totals": totals,
+            # % de victorias por temporada y competición (None si no jugó), con los partidos que lo respaldan.
+            "years": {
+                "labels": labels,
+                "pct": [[round(100 * per[y]["won"] / per[y]["played"]) if y in per else None for y in labels] for per in years],
+                "played": [[per[y]["played"] if y in per else 0 for y in labels] for per in years],
+            },
+            "attendance": {"labels": att_labels, "series": [[per.get(s) for s in att_labels] for per in attendance]},
+            "currentSeason": current_season(),
+        },
+    }
+
+
+def team_card_context(club, season, match_type, context):
+    """
+    Datos de las tarjetas de «Equipo» del diseño: puntos de liga o de cada enfrentamiento, plantilla y
+    fases finales, no presentados y lesiones, filas de sets con su texto, y tarjetas y puntos SNP del equipo.
+    ``context`` es lo ya calculado (sets, ranking SNP).
+    """
+    rules = club.rules
+    sets = context['set_stats']
+    snp = context['snp']
+    extra = {
+        'team_form': team_card.form_and_streak(club, season, match_type),
+        'league': team_card.league_summary(club, season or current_season()),
+        'league_season': season or current_season(),
+        'points_card': team_card.points_series(club, season, match_type),
+        'finals': team_card.finals_roster(club, current_season()) if season in (None, current_season()) else None,
+        'walkovers': team_card.walkovers(club, season, match_type),
+        'set_rows': comparison.set_situation_rows(sets),
+        'venue': team_card.venue_matches(club, season, match_type),
+    }
+    return extra
 
 
 def team_extra_context(club, season, match_type, log):
@@ -380,18 +561,12 @@ def team_extra_context(club, season, match_type, log):
     partido, sets, récords y ranking SNP de la plantilla (de la temporada elegida o la actual).
     """
     numbers = by_game_number(log)
-    best_number, worst_number = best_and_worst_number(numbers, min_games=1)
-    snp_season = season or current_season()
-    snp = records.snp_ranking(club, snp_season)
+    snp = records.snp_ranking(club, season or current_season())
     return {
         'game_numbers': numbers,
-        'best_number': best_number,
-        'worst_number': worst_number,
         'set_stats': set_stats(log),
         'records': records.team_records(club, season, match_type, log),
         'snp': snp,
-        'snp_season': snp_season,
-        'snp_chart': snp['chart'],
     }
 
 
@@ -415,7 +590,7 @@ def degree_of_affinity(player, match_type=None, season=None):
     Incluye a los compañeros que ya no están en el equipo (in_team=False) y a los
     eliminados (por el nombre guardado en el partido); 'in_team' los distingue.
     Con ``season`` solo cuenta los partidos de esa temporada.
-    Devuelve: [{'name', 'affinity', 'games', 'wins', 'losses', 'in_team'}, ...] de mayor a menor.
+    Devuelve: [{'name', 'public_id' (None si ya no existe), 'affinity', 'games', 'wins', 'losses', 'in_team'}, ...] de mayor a menor.
     """
     games = Game.objects.filter(
         Q(player_1_local=player) | Q(player_2_local=player) |
@@ -441,17 +616,17 @@ def degree_of_affinity(player, match_type=None, season=None):
         partner_id = getattr(g, partner_slot + '_id')
         if partner_id in people:
             partner = people[partner_id]
-            key, name, in_team = partner_id, partner.full_name, partner.in_team
+            key, name, in_team, public_id = partner_id, partner.full_name, partner.in_team, partner.public_id
         elif partner_id is None and g.removed_player_names.get(partner_slot):
             # Jugador eliminado: se agrupa por el nombre guardado en el partido
-            name = g.removed_player_names[partner_slot].upper()
-            key, in_team = ('removed', name), False
+            name = proper_name(g.removed_player_names[partner_slot])
+            key, in_team, public_id = ('removed', name), False, None
         else:
             continue
 
         won = g.winner == side
         weight = g.score or 1
-        a = acc.setdefault(key, {'name': name, 'in_team': in_team, 'games': 0, 'wins': 0, 'stake': 0, 'won_pts': 0})
+        a = acc.setdefault(key, {'name': name, 'public_id': public_id, 'in_team': in_team, 'games': 0, 'wins': 0, 'stake': 0, 'won_pts': 0})
         a['games'] += 1
         a['wins'] += won
         a['stake'] += weight
@@ -462,6 +637,7 @@ def degree_of_affinity(player, match_type=None, season=None):
         rate = (a['won_pts'] + PRIOR_POINTS * 0.5) / (a['stake'] + PRIOR_POINTS)
         results.append({
             'name': a['name'],
+            'public_id': a['public_id'],
             'affinity': round(rate * 100),
             'games': a['games'],
             'wins': a['wins'],
@@ -516,6 +692,7 @@ def build_game_log(player, match_type=None):
             'local': is_local,
             'won': won,
             'points': g.score if won else 0,
+            'possible': g.score,
             'sets_won': sets_won,
             'sets_lost': sets_lost,
             'sets': own_sets(next(iter(g.results.all()), None), is_local),
@@ -536,7 +713,7 @@ def _sets_text(game, is_local):
 
 def season_games(player, season, match_type=None):
     """
-    Partidos (Game) cerrados del jugador en una temporada, del más reciente al más antiguo.
+    Partidos (Game) cerrados del jugador en una temporada (``season`` None = todas), del más reciente al más antiguo.
     Solo partidos de enfrentamientos de su club: los enlaces llevan a call_for_match,
     que también exige que el enfrentamiento sea del club activo.
     Cada elemento: {'match_id', 'match_public_id', 'n_game', 'date', 'rival', 'local', 'partner', 'sets', 'won', 'points'}
@@ -550,13 +727,14 @@ def season_games(player, season, match_type=None):
             match__draft_mode=False,
             winner__in=outcomes.WINNERS,
             match__club=player.club,
-            match__season=season,
         )
         .select_related('match__local', 'match__visiting',
                         'player_1_local', 'player_2_local', 'player_1_visiting', 'player_2_visiting')
         .prefetch_related('results')
         .order_by('-match__start_date', '-match_id', 'n_game')
     )
+    if season:
+        games = games.filter(match__season=season)
     games = _by_type(games, match_type, "match__")
 
     rows = []
@@ -575,8 +753,11 @@ def season_games(player, season, match_type=None):
             'local': is_local,
             'partner': partner,
             'sets': _sets_text(g, is_local),
+            'type_label': g.match.type_label,
+            'round': g.match.round_number,
             'won': won,
             'points': g.score if won else 0,
+            'possible': g.score,
         })
     return rows
 
@@ -586,7 +767,8 @@ def calls_by_season(player, match_type=None):
     Convocatorias por temporada: ({temporada: a las que se apuntó}, {temporada: total}). Solo cuentan
     las de su temporada de incorporación en adelante (``Player.joined_season``): antes no estaba en el equipo.
     """
-    base = _by_type(Call.objects.filter(match__club=player.club, match__draft_mode=False, draft_mode=False), match_type, "match__")
+    base = _by_type(Call.objects.filter(match__club=player.club, match__draft_mode=False, draft_mode=False,
+                                        match__no_show=""), match_type, "match__")
     total = dict(base.order_by().values_list('match__season').annotate(n=Count('id', distinct=True)))
     present = dict(
         base.filter(players__id=player.id)
@@ -602,7 +784,7 @@ def aligned_by_season(player, match_type=None):
     partido}. Junto con calls_by_season da el "apuntado y alineado".
     """
     signed = _by_type(
-        Call.objects.filter(match__club=player.club, match__draft_mode=False, draft_mode=False,
+        Call.objects.filter(match__club=player.club, match__draft_mode=False, draft_mode=False, match__no_show="",
                             players__id=player.id), match_type, "match__"
     ).values_list('match_id', 'match__season')
     seasons = dict(signed)
@@ -692,6 +874,7 @@ def summarize(log):
         'losses': total - wins,
         'pct': _pct(wins, total),
         'points': sum(g['points'] for g in log),
+        'points_possible': sum(g.get('possible', 0) for g in log),
 
         'local_played': len(local),
         'local_wins': sum(local),
@@ -727,7 +910,7 @@ def summarize_by_season(log, calls_present, calls_total):
     for g in log:
         by_season.setdefault(g['season'], []).append(g)
 
-    rows, previous = [], None
+    rows, previous = [], None  # previous: (% , partidos) de la temporada anterior
     for season in sorted(by_season, key=lambda s: int(s.split('-')[0])):
         games = by_season[season]
         wins = sum(g['won'] for g in games)
@@ -741,12 +924,25 @@ def summarize_by_season(log, calls_present, calls_total):
             'points': sum(g['points'] for g in games),
             'calls_present': calls_present.get(season, 0),
             'calls_total': calls_total.get(season, 0),
-            'delta': round(pct - previous, 1) if previous is not None else None,
+            # El cambio de % solo cuenta si las dos temporadas tienen muestra (comparison.MIN_TREND_GAMES).
+            'delta': (round(pct - previous[0], 1) if previous and comparison.is_reliable(previous[1])
+                      and comparison.is_reliable(len(games)) else None),
+            'reliable': comparison.is_reliable(len(games)),
         })
-        previous = pct
+        previous = (pct, len(games))
     return rows
 
 
+def team_win_pct(club, season, match_type):
+    """
+    % de partidos ganados por todo el club en la misma competición, temporada y tipo de partido que se
+    consulta (``club_game_log``), para situar el % de un jugador. None si el club no tiene partidos.
+    """
+    log = pair_stats.club_game_log(club, season, match_type)
+    return round(100 * sum(g['won'] for g in log) / len(log)) if log else None
+
+
+@spaces.consult_view
 @club_required
 @require_GET
 def statistics_per_player(request):
@@ -754,6 +950,8 @@ def statistics_per_player(request):
     Estadísticas de un jugador del club (``?player=``): balance, rachas, evolución por
     temporada, afinidad con sus compañeros, puntos SNP y, con ``?season=``, el resumen, la afinidad
     y el detalle de esa temporada (combinable con ``?match_type=``). Sin jugador muestra solo el selector. Requiere pertenecer al club y solo GET.
+    Quien es jugador en todos sus equipos (``spaces.plays_only``) no ve la pestaña «Resumen» de la
+    ficha (la de Plantilla).
     """
     # Con un jugador elegido se sigue viendo su historial de puntos SNP aunque no haya enfrentamientos cerrados.
     zero = None if request.GET.get('player') else _zero_state(request, _("Estadísticas de jugadores"))
@@ -761,10 +959,23 @@ def statistics_per_player(request):
         return zero
     players = Player.objects.filter(club=request.club, in_team=True).order_by('name', 'last_name')
     player_id = request.GET.get('player')
-    match_type = selected_match_type(request)
+    match_type = stats_match_type(request)
 
     if not player_id:
-        return render(request, 'player_statistics.html', {'players': players, **match_type_context(request, match_type)})
+        # Sin jugador elegido, la entrada es la tabla de plantilla: cada fila lleva a su ficha.
+        seasons = sorted(get_total_season(Match.objects.filter(club=request.club)),
+                         key=lambda s: int(s.split('-')[0]), reverse=True)
+        selected_season = choose_season(request, seasons)
+        if selected_season == ALL_SEASONS:
+            selected_season = None
+        log = pair_stats.club_game_log(request.club, selected_season, match_type)
+        snp = records.snp_ranking(request.club, selected_season or current_season()) if request.club.rules.has_snp else None
+        return render(request, 'player_statistics.html', {
+            'players': players, 'selected_season': selected_season,
+            **match_type_context(request, match_type, stats=True, by_type=True),
+            **season_filter_context(request, seasons, selected_season),
+            **roster_context(request, list(players), log, selected_season, match_type, snp),
+        })
 
     # Solo jugadores del club activo: los de otros clubes dan 404
     player = get_object_or_404(Player, public_id=player_id, club=request.club)
@@ -784,7 +995,6 @@ def statistics_per_player(request):
     season_log = [g for g in log if g['season'] == selected_season] if selected_season else log
     summary = summarize(season_log)
     player_numbers = by_game_number(season_log)
-    player_best_number, player_worst_number = best_and_worst_number(player_numbers, min_games=1)
     calls_present, calls_total = calls_by_season(player, match_type)
     rows = summarize_by_season(log, calls_present, calls_total)
     aligned = aligned_by_season(player, match_type)
@@ -805,15 +1015,33 @@ def statistics_per_player(request):
             'calls_total': total,
             'calls_absent': total - present,
             'aligned': aligned.get(selected_season, 0),
-            'games': season_games(player, selected_season, match_type),
         })
 
     # Puntos SNP de la temporada elegida (o de la actual), uno por actualización semanal
     snp_season = selected_season or current_season()
     snp_history = list(player.snp_history.filter(season=snp_season))
 
+    clutch = set_stats(season_log)
+    affinity = degree_of_affinity(player, match_type, selected_season)
+    snp_updated = player.snp_history.order_by('-date').values_list('date', flat=True).first()
+    team_pct = team_win_pct(request.club, selected_season, match_type)
+    is_me = bool(player.user_id and player.user_id == request.user.id)
     context = {
-        **match_type_context(request, match_type),
+        'hero': {
+            'role': player_card.role_label(player),
+            'partner': player_card.usual_partner(affinity),
+            'snp_score': player.snp_score,
+            'snp_rank': player_card.snp_rank(player),
+            'snp_updated': snp_updated,
+            'snp_stale': records.snp_is_stale(snp_updated),
+            'team_pct': team_pct,
+            'is_me': is_me,
+            # Advertencias: solo las ve quien gestiona el equipo.
+            'warnings': player.penalties.count() if request.membership.can_manage else 0,
+        },
+        'league': player_card.league_rounds(player, selected_season),
+        'snp_seasons': player_card.snp_by_season(player),
+        **match_type_context(request, match_type, stats=True, by_type=True),
         **season_filter_context(request, all_seasons, selected_season),
         'players': players,
         'selected_player': player.public_id,
@@ -822,26 +1050,33 @@ def statistics_per_player(request):
         'selected_season': selected_season,
         's': summary,
         'd': detail,
+        'games': season_games(player, selected_season, match_type),
         'seasons_asc': rows,
         'seasons_desc': list(reversed(rows)),
-        # enteros para anchos de barra (evita comas decimales en style="")
-        'pct_w': round(summary['pct']),
-        'local_pct_w': round(summary['local_pct']),
-        'visiting_pct_w': round(summary['visiting_pct']),
-        # datos de los gráficos (json_script en la plantilla)
         'chart_seasons': {
             'labels': [r['season'] for r in rows],
             'wins': [r['wins'] for r in rows],
             'losses': [r['losses'] for r in rows],
             'pct': [r['pct'] for r in rows],
+            'played': [r['played'] for r in rows],
+            # Evolución del % solo con temporadas de muestra suficiente; None si no hay tendencia que dibujar.
+            'trend': comparison.trend(rows),
         },
-        'chart_affinity': degree_of_affinity(player, match_type, selected_season),
+        # enteros para anchos de barra (evita comas decimales en style="")
+        'pct_w': round(summary['pct']),
+        'local_pct_w': round(summary['local_pct']),
+        'visiting_pct_w': round(summary['visiting_pct']),
+        'chart_affinity': affinity,
+        'min_trend_games': comparison.MIN_TREND_GAMES,
         'lineup_rate': lineup_rate,
         'signup_rate': signup_rate,
         'game_numbers': player_numbers,
-        'best_number': player_best_number,
-        'worst_number': player_worst_number,
-        'clutch': set_stats(season_log),
+        'clutch': clutch,
+        'clutch_rows': comparison.set_situation_rows(clutch),
+        'venue': comparison.venue_split(
+            {'won': summary['local_wins'], 'lost': summary['local_losses']},
+            {'won': summary['visiting_wins'], 'lost': summary['visiting_losses']}, 'games'),
+        'partners': comparison.partner_rows(affinity),
         'snp_season': snp_season,
         'chart_snp': {
             'labels': [h.date.strftime('%d/%m') for h in snp_history],
@@ -850,6 +1085,11 @@ def statistics_per_player(request):
             'changes': [None] + [round(b.score - a.score, 1) for a, b in zip(snp_history, snp_history[1:])],
         },
     }
+    # Su propio jugador, con jugador en varias competiciones: es «Mis estadísticas» de esta competición.
+    if is_me:
+        mine = spaces.linked_players(request)
+        if len(mine) > 1:
+            context.update(mine_chips(request, mine, request.club.competition))
     return render(request, 'player_statistics.html', context)
 
 
@@ -857,6 +1097,7 @@ def statistics_per_player(request):
 # ESTADÍSTICAS POR PAREJAS
 # ---------------------------------------------------------------
 
+@spaces.consult_view
 @club_required
 @require_GET
 def statistics_per_pair(request):
@@ -871,26 +1112,20 @@ def statistics_per_pair(request):
         return zero
     club_players = list(Player.objects.filter(club=request.club).order_by('name', 'last_name'))
     by_public_id = {p.public_id: p for p in club_players}
-    match_type = selected_match_type(request)
+    match_type = stats_match_type(request)
     seasons = sorted(get_total_season(Match.objects.filter(club=request.club)),
                      key=lambda s: int(s.split('-')[0]), reverse=True)
     selected_season = choose_season(request, seasons)
     if selected_season == ALL_SEASONS:
         selected_season = None
-    min_games_pair = pair_stats.min_games_pair(match_type)
     log = pair_stats.club_game_log(request.club, selected_season, match_type)
-    best_pairs, worst_pairs = pair_stats.best_and_worst_pairs(pair_stats.all_pairs(log, club_players), min_games=min_games_pair)
 
     p1_id, p2_id = request.GET.get('p1', ''), request.GET.get('p2', '')
     context = {
-        **match_type_context(request, match_type),
+        **match_type_context(request, match_type, stats=True),
         **season_filter_context(request, seasons, selected_season),
         'selected_season': selected_season,
         'players': club_players,
-        'best_pairs': best_pairs,
-        'worst_pairs': worst_pairs,
-        'min_games_pair': min_games_pair,
-        'worst_min_games': pair_stats.IMPROVE_MIN_GAMES_PAIR,
         'selected_p1': p1_id or None,
         'selected_p2': p2_id or None,
     }
@@ -904,12 +1139,26 @@ def statistics_per_pair(request):
             context['error'] = _("Elige dos jugadores distintos.")
         else:
             summary = pair_stats.pair_summary(log, p1.id, p2.id)
+            pair_log = [g for g in log if g['pair'] == pair_stats.pair_key(p1.id, p2.id)]
+            pair_sets = set_stats(pair_log)
+            numbers = Counter(g['n_game'] for g in pair_log)
             context.update({
+                # Con un solo partido juntos la ficha es solo el resumen y el partido (comparison.MIN_PAIR_SHEET_GAMES).
+                'compact': summary['played'] < comparison.MIN_PAIR_SHEET_GAMES,
+                'min_trend_games': comparison.MIN_TREND_GAMES,
+                'usual_number': numbers.most_common(1)[0][0] if numbers else None,
+                'set_rows': comparison.set_situation_rows(pair_sets),
+                'venue': comparison.venue_split(
+                    {'won': summary['local_wins'], 'lost': summary['local_losses']},
+                    {'won': summary['visiting_wins'], 'lost': summary['visiting_losses']}, 'games'),
                 'p1': p1,
                 'p2': p2,
                 's': summary,
                 'last_games': pair_last_games(request.club, p1, p2, match_type=match_type, season=selected_season),
-                'pair_sets': set_stats([g for g in log if g['pair'] == pair_stats.pair_key(p1.id, p2.id)]),
+                # Con una temporada elegida, «Detalle por temporada» lista todos los partidos de la pareja en ella.
+                'season_games': (pair_last_games(request.club, p1, p2, n=None, match_type=match_type, season=selected_season)
+                                 if selected_season else None),
+                'pair_sets': pair_sets,
                 'pct_w': round(summary['pct']),
                 'local_pct_w': round(summary['local_pct']),
                 'visiting_pct_w': round(summary['visiting_pct']),
@@ -918,10 +1167,46 @@ def statistics_per_pair(request):
                     'wins': [r['wins'] for r in summary['seasons']],
                     'losses': [r['losses'] for r in summary['seasons']],
                     'pct': [r['pct'] for r in summary['seasons']],
+                    'played': [r['played'] for r in summary['seasons']],
+                    'trend': comparison.trend(summary['seasons']),
                 },
             })
+    else:
+        context.update(pair_list_context(request, pair_stats.all_pairs(log, club_players)))
 
     return render(request, 'pair_statistics.html', context)
+
+
+PAIRS_PER_PAGE = 15
+
+
+def pair_list_context(request, pairs):
+    """
+    Lista de todas las parejas que han jugado juntas (entrada de Parejas sin pareja elegida): se ordena con
+    ``?orden=`` (partidos, mejor %, peor % o nombre), se busca con ``?q=`` y se pagina de 15 en 15. Devuelve
+    ``pair_rows`` (página), ``pair_sort_links``, ``pair_search``, ``pair_total`` y ``pair_page_extra``.
+    """
+    sort = request.GET.get('orden')
+    sort = sort if sort in comparison.PAIR_SORTS else comparison.PAIR_SORT_PLAYED
+    search = (request.GET.get('q') or '').strip()
+    rows = comparison.sort_pairs(pairs, sort, search)
+    keep = request.GET.copy()
+    keep.pop(PAGE_PARAM, None)
+    links = []
+    for value, label in ((comparison.PAIR_SORT_PLAYED, _("Más partidos")), (comparison.PAIR_SORT_BEST, _("Mejor %")),
+                         (comparison.PAIR_SORT_WORST, _("Peor %")), (comparison.PAIR_SORT_NAME, _("Nombre"))):
+        params = keep.copy()
+        params['orden'] = value
+        links.append({'label': label, 'url': f"{request.path}?{params.urlencode()}", 'active': value == sort})
+    return {
+        'pair_rows': Paginator(rows, PAIRS_PER_PAGE).get_page(request.GET.get(PAGE_PARAM)),
+        'pair_sort_links': links,
+        'pair_search': search,
+        'pair_total': len(rows),
+        'pair_has_any': bool(pairs),
+        'pair_page_extra': ("&" + keep.urlencode()) if keep else "",
+        'pair_keep_fields': [(k, v) for k, v in keep.items() if k in ('season', 'orden', MATCH_TYPE_PARAM)],
+    }
 
 
 PAIR_LAST_GAMES = 5
@@ -930,7 +1215,7 @@ PAIR_LAST_GAMES = 5
 def pair_last_games(club, p1, p2, n=PAIR_LAST_GAMES, match_type=None, season=None):
     """
     Últimos `n` partidos (Game) cerrados de la pareja en el club (de una temporada si se indica), del más reciente al más antiguo.
-    Cada elemento: {'match_id', 'match_public_id', 'n_game', 'date', 'season', 'rival', 'local', 'sets', 'won', 'points'}
+    Cada elemento: {'match_id', 'match_public_id', 'n_game', 'date', 'season', 'rival', 'local', 'sets', 'type_label', 'round', 'won', 'points'}
     """
     together = (
         Q(player_1_local=p1, player_2_local=p2) | Q(player_1_local=p2, player_2_local=p1) |
@@ -940,13 +1225,13 @@ def pair_last_games(club, p1, p2, n=PAIR_LAST_GAMES, match_type=None, season=Non
         Game.objects
         .filter(together, draft_mode=False, match__draft_mode=False, winner__in=outcomes.WINNERS, match__club=club,
                 **pair_stats.match_type_lookup(match_type, prefix='match__'))
-        .select_related('match__local', 'match__visiting')
+        .select_related('match__local', 'match__visiting', 'match__club')
         .prefetch_related('results')
         .order_by('-match__start_date', '-match_id', '-n_game')
     )
     if season:
         games = games.filter(match__season=season)
-    games = games[:n]
+    games = games[:n] if n else games
     rows = []
     for g in games:
         is_local = p1.id in (g.player_1_local_id, g.player_2_local_id)
@@ -960,6 +1245,8 @@ def pair_last_games(club, p1, p2, n=PAIR_LAST_GAMES, match_type=None, season=Non
             'rival': g.match.visiting_name if is_local else g.match.local_name,
             'local': is_local,
             'sets': _sets_text(g, is_local),
+            'type_label': g.match.type_label,
+            'round': g.match.round_number,
             'won': won,
             'points': (g.score or 0) if won else 0,
         })
@@ -972,11 +1259,14 @@ def pair_last_games(club, p1, p2, n=PAIR_LAST_GAMES, match_type=None, season=Non
 
 
 
+@spaces.managed_consult_view
 @club_manager_required
 @require_GET
 def warnings_statistics(request):
     """
-    Advertencias del club por jugador y su ranking. Solo capitanes y solo GET. Sin
+    Advertencias del club por jugador y su ranking. Solo capitán y gestores, y solo de los equipos que
+    gestionan (``spaces.managed_consult_view``: con rol mixto se abre el equipo que gestiona y el
+    selector de competición solo ofrece esos). Solo GET. Sin
     ``?season=`` muestra la temporada actual; ``?season=all``, todas.
     """
     penalties = (
@@ -999,8 +1289,14 @@ def warnings_statistics(request):
         row['count'] += 1
         row['items'].append(pen)
     ranking = sorted(by_player.values(), key=lambda r: (-r['count'], r['player'].name, r['player'].last_name))
+    kinds = Counter(pen.kind for pen in penalties)
+    top_kind = max(kinds.values(), default=0)
+    by_kind = [{'label': label, 'count': kinds.get(code, 0),
+                'pct': round(100 * kinds.get(code, 0) / top_kind) if top_kind else 0}
+               for code, label in PENALTY_KINDS]
 
     return render(request, 'warnings_statistics.html', {
+        'by_kind': by_kind,
         **season_filter_context(request, seasons, selected_season, all_value=ALL_SEASONS),
         'seasons': seasons,
         'selected_season': selected_season,
@@ -1028,28 +1324,31 @@ def _rival_query(row):
 
 def _season_and_type(request, with_type):
     """
-    (temporadas, temporada elegida o None para «Todas», filtro de tipo de partido) de la URL. En Rivales
-    se muestran por defecto todas las temporadas; ``with_type`` False ignora el filtro de tipo.
+    (temporadas, temporada elegida o None para «Todas», filtro de tipo de partido) de la URL, con los
+    mismos valores por defecto que el resto de Estadísticas: la temporada común (``choose_season``) y
+    Competitivos; ``with_type`` False ignora el filtro de tipo.
     """
     seasons = sorted(get_total_season(Match.objects.filter(club=request.club)),
                      key=lambda s: int(s.split('-')[0]), reverse=True)
-    selected = choose_season(request, seasons, default_all=True)
-    return seasons, (None if selected == ALL_SEASONS else selected), (selected_match_type(request) if with_type else None)
+    selected = choose_season(request, seasons)
+    return seasons, (None if selected == ALL_SEASONS else selected), (stats_match_type(request) if with_type else None)
 
 
+@spaces.consult_view
 @club_required
 @require_GET
 def rival_statistics(request):
     """
     Balance contra cada rival (enfrentamientos jugados, ganados, empatados y perdidos, puntos y último
-    resultado) de todas las temporadas por defecto. Se ordena con ``?sort=`` (rival, balance o último), se
-    busca por nombre con ``?q=`` y se pagina de 15 en 15. Admite el filtro de temporada, no el de tipo de
-    partido. Requiere pertenecer al club y solo GET.
+    resultado), con la temporada y el tipo por defecto del resto de Estadísticas (temporada común y
+    Competitivos: los amistosos no se mezclan salvo ``?match_type=todos``). Se ordena con ``?sort=`` (rival,
+    % de victorias, peor primero o último), se busca por nombre con ``?q=`` y se pagina de 15 en 15. Requiere pertenecer al club y
+    solo GET.
     """
     zero = _zero_state(request, _("Estadísticas por rival"))
     if zero:
         return zero
-    seasons, selected_season, match_type = _season_and_type(request, with_type=False)
+    seasons, selected_season, match_type = _season_and_type(request, with_type=True)
     sort = request.GET.get("sort")
     sort = sort if sort in rival_stats.SORTS else rival_stats.SORT_RIVAL
     search = (request.GET.get("q") or "").strip()
@@ -1063,12 +1362,13 @@ def rival_statistics(request):
     keep = request.GET.copy()
     keep.pop(PAGE_PARAM, None)
     sort_links = []
-    for value, label in ((rival_stats.SORT_RIVAL, _("Rival")), (rival_stats.SORT_BALANCE, _("Balance")),
-                         (rival_stats.SORT_LAST, _("Último enfrentamiento"))):
+    for value, label in ((rival_stats.SORT_RIVAL, _("Rival")), (rival_stats.SORT_PCT, _("Mejor %")),
+                         (rival_stats.SORT_WORST, _("Peor primero")), (rival_stats.SORT_LAST, _("Último enfrentamiento"))):
         params = keep.copy()
         params["sort"] = value
         sort_links.append({"label": label, "url": f"{request.path}?{params.urlencode()}", "active": value == sort})
     return render(request, "rival_statistics.html", {
+        **match_type_context(request, match_type, stats=True),
         **season_filter_context(request, seasons, selected_season),
         "selected_season": selected_season,
         "rivals": page,
@@ -1076,18 +1376,19 @@ def rival_statistics(request):
         "page_extra": ("&" + keep.urlencode()) if keep else "",
         "total_rivals": len(rows),
         "search": search,
-        "season_keep_fields": [(k, v) for k, v in keep.items() if k in ("season", "sort")],
+        "season_keep_fields": [(k, v) for k, v in keep.items() if k in ("season", "sort", MATCH_TYPE_PARAM)],
     })
 
 
+@spaces.consult_view
 @club_required
 @require_GET
 def rival_detail(request):
     """
-    Ficha de un rival: balance, historial de enfrentamientos (con enlace a cada acta) y mejores parejas
-    contra él. El rival es un equipo (``?team=<id público>``) o, en un amistoso con rival escrito a
-    mano, su nombre (``?name=``). Un equipo de otro club da 404. Por defecto todas las temporadas; filtra por
-    temporada y por tipo de partido y pagina el historial de 10 en 10.
+    Ficha de un rival: resumen en una línea, últimos enfrentamientos, historial (con enlace a cada acta) y las
+    mejores y peores parejas contra él. El rival es un equipo (``?team=<id público>``) o, en un amistoso con rival escrito a
+    mano, su nombre (``?name=``). Un equipo de otro club da 404. Filtra por temporada y por tipo de partido
+    (por defecto la temporada común y Competitivos, como Rivales) y pagina el historial de 10 en 10.
     """
     team = None
     name = (request.GET.get("name") or "").strip()
@@ -1102,12 +1403,13 @@ def rival_detail(request):
     keep.pop(PAGE_PARAM, None)
     history = Paginator(detail["history"], HISTORY_PER_PAGE).get_page(request.GET.get(PAGE_PARAM)) if detail else None
     return render(request, "rival_detail.html", {
-        **match_type_context(request, match_type),
+        **match_type_context(request, match_type, stats=True),
         **season_filter_context(request, seasons, selected_season),
         "selected_season": selected_season,
         "detail": detail,
         "history": history,
         "page_extra": ("&" + keep.urlencode()) if keep else "",
+        "pairs_groups": ([(_("Mejores"), detail["pairs_best"]), (_("Peores"), detail["pairs_worst"])] if detail else []),
         "rival_label": detail["label"] if detail else (team.name if team else name),
         "team": team,
         "min_games_pair": pair_stats.MIN_GAMES_PAIR,

@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static i18n %}
+{% load static i18n %}{% load zyra_format %}
 {% block page_title %}{% translate "Bienvenida" %} · {% endblock %}
 
 {# Una pantalla tras aceptar una invitación (core.views.member_welcome): capitán, equipo y próxima convocatoria. #}
@@ -28,7 +28,7 @@
                 <div>
                     <span class="z-welcome-label">{% translate "Tu próxima convocatoria" %}</span>
                     {% if next_match %}
-                    <strong>{{ next_match.local_name }} – {{ next_match.visiting_name }} · {{ next_match.start_date|date:"D j M" }}</strong>
+                    <strong>{{ next_match.local_name }} – {{ next_match.visiting_name }} · {{ next_match.start_date|date_short }}</strong>
                     {% if my_status %}
                     <span class="text-muted small">{% if not my_status.has_call %}{% translate "Todavía no hay convocatoria." %}{% elif my_status.called %}{% translate "Estás convocado." %}{% else %}{% translate "De momento no estás convocado." %}{% endif %}</span>
                     {% else %}

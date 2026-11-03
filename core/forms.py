@@ -9,8 +9,10 @@ from django.utils.translation import gettext, gettext_lazy as _
 
 from team.models import Team
 from .blocklist import is_blocked
+from .competitions import CHOICES as COMPETITION_CHOICES, COMPETITIONS, get_competition
 from .models import Membership
-from .validators import plain_text
+from .services import club_of
+from .validators import plain_text, player_name
 
 User = get_user_model()
 
@@ -37,22 +39,59 @@ def password_rules(user=None):
 
 
 class ClubForm(forms.Form):
-    """Datos del club nuevo y de su equipo propio."""
-    name = forms.CharField(label=_("Nombre del club"), max_length=100)
+    """Datos del club nuevo (el espacio de una competición) y de su equipo propio.
+
+    ``competitions`` son las fichas que se pueden elegir (las que la cuenta aún no tiene); la
+    división tiene que ser de la competición elegida.
+    """
+    competition = forms.ChoiceField(label=_("Competición"), choices=COMPETITION_CHOICES, widget=forms.RadioSelect,
+                                    required=False,
+                                    error_messages={"invalid_choice": _("Ya tienes equipo en esa competición: elige otra.")},
+                                    help_text=_("Cada competición lleva su propio equipo, con sus jugadores, rivales y "
+                                                "enfrentamientos. Puedes tener un equipo en cada competición."))
+    name = forms.CharField(label=_("Nombre del equipo"), max_length=100)
     location = forms.CharField(label=_("Localización"), max_length=100)
     # Categoría y nacionalidad vienen rellenas con lo más habitual (Masculino, España); la división la elige el usuario.
     gender = forms.ChoiceField(label=_("Categoría"), choices=[("", _("Elige una opción"))] + Team.GENDERS,
                                initial=Team.MALE, help_text=_("Los jugadores del club tendrán esta categoría."))
     country = forms.ChoiceField(label=_("Nacionalidad del equipo"), choices=[("", _("Elige una opción"))] + Team.COUNTRIES,
                                 initial="ES",
-                                help_text=_("País del circuito en el que juega, por ejemplo España. Decide dónde se buscan tus jugadores en SNP."))
+                                help_text=_("País en el que juega, por ejemplo España."))
     division = forms.ChoiceField(label=_("División"), choices=[("", _("Elige una opción"))] + Team.DIVISIONS,
-                                 help_text=_("Nivel del circuito, por ejemplo Future o 500."))
+                                 help_text=_("Nivel en el que juega el equipo en su competición."))
 
-    def __init__(self, *args, **kwargs):
-        """Los nombres solo admiten texto plano (core.validators)."""
+    def __init__(self, *args, competitions=None, **kwargs):
+        """Limita las competiciones a ``competitions`` y los nombres a texto plano (core.validators)."""
         super().__init__(*args, **kwargs)
+        competitions = list(competitions or COMPETITIONS.values())
+        self.fields["competition"].choices = [(c.code, c.name) for c in competitions]
+        self.fields["competition"].initial = competitions[0].code
         plain_text(self, "name", "location")
+
+    @property
+    def rules(self):
+        """Ficha de la competición elegida (la primera disponible si aún no hay una válida)."""
+        code = (self.data.get(self.add_prefix("competition")) or self.initial.get("competition")
+                or self.fields["competition"].initial)
+        if code not in dict(self.fields["competition"].choices):
+            code = self.fields["competition"].initial
+        return get_competition(code)
+
+    def clean_competition(self):
+        """Sin competición, la SNP; tiene que ser una en la que la cuenta aún no tenga espacio."""
+        code = self.cleaned_data.get("competition") or "snp"
+        if code not in dict(self.fields["competition"].choices):
+            raise forms.ValidationError(_("Ya tienes equipo en %(competition)s: elige otra competición.")
+                                        % {"competition": get_competition(code).name})
+        return code
+
+    def clean(self):
+        """La división tiene que ser de la competición elegida."""
+        cleaned = super().clean()
+        code, division = cleaned.get("competition"), cleaned.get("division")
+        if code and division and division not in get_competition(code).divisions:
+            self.add_error("division", _("Elige una división de %(competition)s.") % {"competition": get_competition(code).name})
+        return cleaned
 
 
 class CaptainPlayerForm(forms.Form):
@@ -69,7 +108,7 @@ class CaptainPlayerForm(forms.Form):
     def __init__(self, *args, **kwargs):
         """Los nombres solo admiten texto plano (core.validators)."""
         super().__init__(*args, **kwargs)
-        plain_text(self, "name", "last_name")
+        player_name(self, "name", "last_name")
 
 
 class CaptainSnpForm(forms.Form):
@@ -198,6 +237,14 @@ class InviteMemberForm(forms.Form):
             raise forms.ValidationError(gettext("Ese email ya pertenece a un miembro del club."))
         if is_blocked(email):
             raise forms.ValidationError(gettext("No se puede invitar a este email."))
+        # Un espacio por competición: quien ya tiene equipo en esta competición no podría aceptar.
+        competition = self.club.rules if self.club is not None else None
+        if competition is not None:
+            for user in User.objects.filter(email__iexact=email):
+                if club_of(user, competition.code) is not None:
+                    raise forms.ValidationError(
+                        gettext("Ese email ya tiene un equipo en %(competition)s y solo se puede tener uno por competición.")
+                        % {"competition": competition.name})
         return email
 
 

@@ -6,6 +6,7 @@ club. En cada Game solo figuran los jugadores del propio club, en el lado local
 o en el visitante, así que la pareja es siempre la del lado que tiene jugadores.
 """
 import datetime
+from .comparison import is_reliable
 from match import outcomes
 from django.db.models import Q
 
@@ -19,7 +20,7 @@ MIN_GAMES_PAIR = 2
 TOP_N = 5
 
 # En retos y play off se juegan pocos partidos: sus parejas se muestran sin mínimo.
-NO_MINIMUM_MATCH_TYPES = (Match.RETO, Match.PLAYOFF)
+NO_MINIMUM_MATCH_TYPES = (Match.RETO, Match.PLAYOFF, Match.FASE_FINAL)
 
 
 # Filtro "Competitivos": todos los tipos de partido competitivo (enfrentamiento, reto, play off).
@@ -137,19 +138,6 @@ def _rank(counts, names, min_games):
     return rows[:TOP_N]
 
 
-def top_players(log, players, local):
-    """Top 5 jugadores por % de victorias como local (local=True) o visitante."""
-    names = {p.id: p.full_name for p in players}
-    counts = {}
-    for g in log:
-        if g['local'] != local:
-            continue
-        for pid in g['pair']:
-            wins, played = counts.get(pid, (0, 0))
-            counts[pid] = (wins + g['won'], played + 1)
-    return _rank(counts, names, MIN_GAMES_PLAYER)
-
-
 def top_pairs(log, players, local, min_games=MIN_GAMES_PAIR):
     """Top 5 parejas por % de victorias como local (local=True) o visitante."""
     by_id = {p.id: p for p in players}
@@ -248,9 +236,10 @@ def pair_summary(log, p1_id, p2_id):
             'pct': pct,
             'points': sum(g['points'] for g in sg),
             'matches': len({g['match_id'] for g in sg}),
-            'delta': round(pct - previous, 1) if previous is not None else None,
+            # El cambio solo cuenta entre temporadas con muestra (comparison.MIN_TREND_GAMES).
+            'delta': (round(pct - previous[0], 1) if previous and is_reliable(previous[1]) and is_reliable(len(sg)) else None),
         })
-        previous = pct
+        previous = (pct, len(sg))
 
     return {
         'played': played,

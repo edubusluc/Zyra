@@ -229,7 +229,6 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = config('DATA_UPLOAD_MAX_MEMORY_SIZE', default=2 * 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 2000
 RATE_LIMITS_ENABLED = config('RATE_LIMITS_ENABLED', default=not TESTING, cast=bool)
 
-
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 

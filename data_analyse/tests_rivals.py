@@ -71,6 +71,12 @@ class RivalsTests(RivalsBase):
         by_last = [r["label"] for r in rivals.rival_summary(self.club, sort=rivals.SORT_LAST)]
         self.assertEqual(by_last[0], "Amigos de Pedro")
 
+    def test_summary_has_form_and_no_league_points_in_snp(self):
+        self.seed()
+        row = next(r for r in rivals.rival_summary(self.club) if r['label'] == 'Norte')
+        self.assertEqual(row['form'], list(row['streak']))
+        self.assertEqual(row['league_points'], 0)  # SNP no tiene puntos de liga
+
     def test_filters_by_season_and_type(self):
         self.seed()
         labels = lambda **kw: {r["label"] for r in rivals.rival_summary(self.club, **kw)}  # noqa: E731
@@ -106,6 +112,33 @@ class RivalsTests(RivalsBase):
         self.assertEqual((detail["best_pairs"][0]["wins"], detail["best_pairs"][0]["played"]), (3, 4))
         self.assertIsNone(rivals.rival_detail(self.club, players, name="Nadie"))
 
+    def test_summary_has_pct_and_sorts_best_or_worst_first(self):
+        """EST-035: el % de victorias va en cada fila y se ordena de mejor a peor y al revés."""
+        self.seed()
+        self.match(self.sur, datetime.date(2026, 3, 7), 9, 3, games=[(1, False), (2, False)])
+        by = lambda sort: [(r["label"], r["pct"]) for r in rivals.rival_summary(self.club, match_type="competitivo", sort=sort)]  # noqa: E731
+        self.assertEqual(by(rivals.SORT_PCT), [("Norte", 67), ("Sur", 50)])
+        self.assertEqual(by(rivals.SORT_WORST), [("Sur", 50), ("Norte", 67)])
+
+    def test_detail_pairs_against_best_and_worst(self):
+        """EST-036: parejas contra el rival, mejores y peores, con su % y mínimo de partidos."""
+        self.seed()
+        players = list(Player.objects.filter(club=self.club))
+        detail = rivals.rival_detail(self.club, players, team=self.norte)
+        self.assertEqual(detail["pct"], 67)
+        self.assertEqual([(r["pct"], r["played"]) for r in detail["pairs_best"]], [(75, 4)])
+        self.assertEqual(detail["pairs_worst"], [])  # una sola pareja: ya está en las mejores
+        # Con una pareja que pierde contra él, sale en «peores» y no en «mejores».
+        c = Player.objects.create(club=self.club, name="C", last_name="Cson", joined_season="2020-2021")
+        for day in (1, 2):
+            m = Match.objects.create(club=self.club, local=self.own, visiting=self.norte, start_date=datetime.date(2026, 2, day),
+                                     draft_mode=False, result="Victoria Visitante", result_points="2/10")
+            Game.objects.create(match=m, n_game=1, score=3, winner="Visitante", draft_mode=False,
+                                player_1_local=self.a, player_2_local=c)
+        detail = rivals.rival_detail(self.club, players + [c], team=self.norte)
+        self.assertEqual([(r["p1"].name, r["p2"].name) for r in detail["pairs_best"]], [("A", "B")])
+        self.assertEqual([(r["p1"].name, r["p2"].name, r["pct"]) for r in detail["pairs_worst"]], [("A", "C", 0)])
+
     def test_preview_only_with_history(self):
         self.seed()
         nxt = Match.objects.create(club=self.club, local=self.own, visiting=self.norte, start_date=datetime.date(2026, 5, 1))
@@ -135,14 +168,38 @@ class RivalViewsTests(RivalsBase):
         self.assertEqual(self.client.get(reverse("rival_statistics"), {"sort": "balance"}).status_code, 200)
         self.assertEqual(self.client.get(reverse("rival_statistics"), {"sort": "x"}).status_code, 200)
 
-    def test_list_defaults_to_all_seasons_without_type_filter(self):
+    def test_list_defaults_to_competitive_and_has_type_filter(self):
+        """EST-034: Rivales usa el mismo tipo por defecto que el resto (Competitivos) y lleva el filtro de tipo."""
         self.seed()  # cierres de 2025-2026 y anteriores a la temporada actual
-        response = self.client.get(reverse("rival_statistics"))
+        response = self.client.get(reverse("rival_statistics"), {"season": "all"})
         self.assertContains(response, "Norte")
         self.assertContains(response, "Sur")
-        self.assertNotContains(response, 'aria-label="Tipo de enfrentamiento"')
-        # El tipo de partido de la URL se ignora en la lista
-        self.assertContains(self.client.get(reverse("rival_statistics"), {"match_type": "amistoso"}), "Norte")
+        self.assertContains(response, 'aria-label="Tipo de enfrentamiento"')
+        self.assertEqual(response.context["selected_match_type"], "competitivo")
+        self.assertNotContains(response, "Amigos de Pedro")
+        todos = self.client.get(reverse("rival_statistics"), {"season": "all", "match_type": "todos"})
+        self.assertContains(todos, "Amigos de Pedro")
+        self.assertContains(self.client.get(reverse("rival_statistics"), {"season": "all", "match_type": "amistoso"}),
+                            "Amigos de Pedro")
+
+    def test_list_shows_pct_and_explicit_points_headers(self):
+        self.seed()
+        response = self.client.get(reverse("rival_statistics"), {"season": "all"})
+        self.assertContains(response, "% victorias")
+        self.assertContains(response, "Puntos a favor-en contra")
+        self.assertNotContains(response, "Pts liga")
+        for sort in ("pct", "worst"):
+            self.assertEqual(self.client.get(reverse("rival_statistics"), {"season": "all", "sort": sort}).status_code, 200)
+        self.assertContains(response, "Peor primero")
+
+    def test_detail_page_summary_line_and_renamed_blocks(self):
+        self.seed()
+        response = self.client.get(reverse("rival_detail"), {"team": self.norte.public_id, "season": "all"})
+        self.assertContains(response, "st-rival-line")
+        self.assertContains(response, "Últimos enfrentamientos")
+        self.assertContains(response, "Parejas contra ellos")
+        self.assertNotContains(response, "Racha contra ellos")
+        self.assertNotContains(response, "Mejores parejas contra ellos")
 
     def test_list_search_by_name(self):
         self.seed()
@@ -211,10 +268,22 @@ class RivalViewsTests(RivalsBase):
             club=self.club, name="Nuevo", location="X", in_group=True), start_date=datetime.date(2026, 5, 8))
         self.assertNotContains(self.client.get(reverse("call_for_match", args=[fresh.public_id])), "z-preview")
 
+    def test_preview_links_to_the_last_match(self):
+        """UX-032 de la fase 6: el «último» de la Previa lleva a ese enfrentamiento."""
+        self.seed()
+        nxt = Match.objects.create(club=self.club, local=self.own, visiting=self.norte, start_date=datetime.date(2026, 5, 1))
+        last = rivals.rival_preview(nxt)["last"]["match"]
+        html = self.client.get(reverse("call_for_match", args=[nxt.public_id])).content.decode()
+        self.assertIn('class="z-preview-last" href="%s"' % reverse("call_for_match", args=[last.public_id]), html)
+
     def test_query_count_does_not_grow_with_rivals(self):
+        from django.core.cache import cache
         from django.db import connection
         from django.test.utils import CaptureQueriesContext
         self.seed()
+        # El apunte de actividad del back-office se limita por caché (compartida entre pruebas): si la marca de
+        # otra prueba caduca a mitad de esta, la consulta extra no tiene que ver con los rivales.
+        cache.clear()
 
         def queries():
             with CaptureQueriesContext(connection) as ctx:

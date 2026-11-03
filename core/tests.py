@@ -6,6 +6,8 @@ from django.core.management import call_command
 from django.test import SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 
+from core.middleware import SESSION_KEY
+
 from call.models import Call
 from core.models import Club, Membership
 from core.services import create_club
@@ -107,14 +109,16 @@ class ClubIsolationTests(TestCase):
         self.assertTrue(Match.objects.filter(pk=self.match_b.pk, draft_mode=True).exists())
         self.assertTrue(Call.objects.filter(pk=call_b.pk).exists())
 
-    def test_member_of_both_clubs_only_sees_active_club_matches(self):
-        """Aunque el usuario pertenezca a los dos clubes, solo accede a los partidos del club activo."""
+    def test_member_of_both_clubs_opens_matches_in_their_space(self):
+        """Con los dos clubes, abrir un partido del otro cambia a ese club; la gestión sigue el rol de cada uno."""
         Membership.objects.create(user=self.user_a, club=self.club_b, role=Membership.MEMBER)
-        self.assertEqual(self.client.get(reverse("call_for_match", args=[self.match_b.public_id])).status_code, 404)
-
-        self.client.post(reverse("switch_club"), {"club_id": self.club_b.id})
         self.assertEqual(self.client.get(reverse("call_for_match", args=[self.match_b.public_id])).status_code, 200)
-        self.assertEqual(self.client.get(reverse("call_for_match", args=[self.match_a.public_id])).status_code, 404)
+        self.assertEqual(self.client.session[SESSION_KEY], self.club_b.id)
+        # En el club B es miembro: no gestiona aunque sea capitán en A.
+        self.assertEqual(self.client.get(reverse("create_call", args=[self.match_b.public_id])).status_code, 403)
+        # Las vistas de gestión siguen al club del enfrentamiento: con B activo, el de A se gestiona y A pasa a ser el activo.
+        self.assertEqual(self.client.get(reverse("create_call", args=[self.match_a.public_id])).status_code, 200)
+        self.assertEqual(self.client.session[SESSION_KEY], self.club_a.id)
 
     def test_player_statistics_only_link_own_club_matches(self):
         """La tabla de partidos del jugador no incluye enfrentamientos de otro club."""
@@ -127,7 +131,7 @@ class ClubIsolationTests(TestCase):
                             player_1_local=self.player_a, player_2_local=self.player_b)
 
         response = self.client.get(reverse("player_statistics"), {"player": self.player_a.public_id, "season": "2025-2026"})
-        self.assertEqual([g["match_id"] for g in response.context["d"]["games"]], [self.match_a.id])
+        self.assertEqual([g["match_id"] for g in response.context["games"]], [self.match_a.id])
         self.assertNotContains(response, reverse("call_for_match", args=[self.match_b.public_id]))
 
     def test_player_statistics_only_lists_own_players(self):
@@ -139,7 +143,7 @@ class ClubIsolationTests(TestCase):
         Match.objects.filter(pk=self.match_a.pk).update(draft_mode=False)
         response = self.client.get(reverse("team_statistics"))
         self.assertEqual(response.context["team"], self.club_a.own_team)
-        self.assertEqual([c["player"] for c in response.context["column_chart_data"]], ["ANA ALPHA"])
+        self.assertEqual(response.context["total_matches"], 1)
 
     def test_created_objects_belong_to_active_club(self):
         self.client.post(reverse("create_player"), {
@@ -286,7 +290,7 @@ class RolesAndClubSwitchTests(TestCase):
         self.assertFalse(Player.objects.filter(club=club, user__isnull=False).exists())
         page = self.client.get(response.url, follow=True)
         self.assertContains(page, "¿Quién eres en el equipo?")
-        self.assertContains(page, "su posición en pista ha quedado vacía")
+        self.assertContains(page, "su posición ha quedado vacía")
 
         ana = Player.objects.get(club=club, name="Ana")
         self.client.post(reverse("link_player", args=[ana.public_id]))
@@ -433,6 +437,10 @@ class HomeTests(TestCase):
         self.assertEqual(response.context["days_left"], 3)
         self.assertContains(response, soon.maps_url.replace("&", "&amp;"))
         self.assertNotEqual(response.context["next_match"], later)
+        # El enfrentamiento es el bloque protagonista: indicador de días y los dos equipos.
+        self.assertContains(response, 'class="z-next-match-days"')
+        self.assertContains(response, "En 3 días")
+        self.assertContains(response, "z-next-match-teams")
 
     def test_empty_home(self):
         response = self.client.get(reverse("home"))
@@ -442,24 +450,6 @@ class HomeTests(TestCase):
         self.client.post(reverse("dismiss_onboarding"))
         response = self.client.get(reverse("home"))
         self.assertContains(response, "Programa el próximo enfrentamiento para preparar la convocatoria.")
-        self.assertContains(response, "Cierra enfrentamientos para ver aquí quién encadena victorias.")
-
-    def test_hot_player_and_pair(self):
-        ana = Player.objects.create(club=self.club, name="Ana", last_name="Alpha")
-        bea = Player.objects.create(club=self.club, name="Bea", last_name="Beta")
-        for n, day in enumerate((1, 2), start=1):
-            m = Match.objects.create(club=self.club, local=self.own, visiting=self.rival, draft_mode=False,
-                                     start_date=self.today - datetime.timedelta(days=10 - day))
-            Game.objects.create(match=m, n_game=1, score=3, winner="Local", draft_mode=False,
-                                player_1_local=ana, player_2_local=bea)
-
-        response = self.client.get(reverse("home"))
-        self.assertEqual(response.context["hot_player"]["streak"], 2)
-        self.assertEqual(response.context["hot_pair"]["label"], "ANA ALPHA / BEA BETA")
-        self.assertContains(response, "2 victorias seguidas")
-        # El botón abre la pareja con sus identificadores públicos (con el id interno daba 404)
-        self.assertContains(response, f"?p1={ana.public_id}&amp;p2={bea.public_id}")
-
 
     def test_pages_load_hide_on_scroll_navigation(self):
         # Cabecera y barra inferior se esconden al bajar (static/js/nav.js)

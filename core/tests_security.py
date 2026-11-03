@@ -183,7 +183,7 @@ class StoredXssTests(SecurityBase):
         response = self.client.get(reverse("team_statistics"))
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, "<script>alert(1)")
-        self.assertContains(response, 'id="column-chart-data"')
+        self.assertContains(response, 'id="points-card-data"')  # los datos de los gráficos van en json_script
 
 
 class FormValidationTests(SecurityBase):

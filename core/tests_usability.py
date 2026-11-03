@@ -43,8 +43,8 @@ class RegisterWizardTests(TestCase):
         self.assertEqual(form["country"].value(), "ES")
         self.assertFalse(form["division"].value())  # la división la elige el usuario
 
-    def test_division_has_a_help_line_with_examples(self):
-        self.assertContains(self.client.get(reverse("register_club")), "por ejemplo Future o 500")
+    def test_division_has_a_help_line_with_help(self):
+        self.assertContains(self.client.get(reverse("register_club")), "Nivel en el que juega el equipo")
 
     def test_snp_is_preselected_and_the_exact_match_notice_is_folded(self):
         page = self.client.get(reverse("register_club"))
@@ -109,15 +109,15 @@ class HomeFirstStepsTests(TestCase):
 
     def test_first_steps_come_first_and_empty_blocks_are_hidden(self):
         html = self.client.get(reverse("home")).content.decode()
-        self.assertIn("Prepara tu club en Zyra", html)
-        for hidden in ("Todo al día", "Próximo enfrentamiento", "En racha", "Nadie encadena"):
+        self.assertIn("Prepara tu equipo en Zyra", html)
+        for hidden in ("Todo al día", "Próximo enfrentamiento"):
             self.assertNotIn(hidden, html)
         self.assertIn("Siguiente paso", html)
 
     def test_empty_blocks_come_back_when_first_steps_are_dismissed(self):
         self.client.post(reverse("dismiss_onboarding"))
         html = self.client.get(reverse("home")).content.decode()
-        for shown in ("Todo al día", "Próximo enfrentamiento", "En racha"):
+        for shown in ("Todo al día", "Próximo enfrentamiento"):
             self.assertIn(shown, html)
 
     def test_next_step_order_is_players_invite_match(self):
@@ -249,7 +249,7 @@ class ClubHubTests(TestCase):
         self.assertIn("<summary>Más información</summary>", html)
 
     def test_club_legend_explains_club_team_and_group(self):
-        self.assertContains(self.client.get(reverse("club_home")), "Tu club reúne a los miembros")
+        self.assertContains(self.client.get(reverse("club_home")), "Aquí configuras este equipo: sus miembros")
 
 
 class EmptyStatesTests(TestCase):

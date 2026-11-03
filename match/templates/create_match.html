@@ -3,6 +3,7 @@
 {% block page_title %}{% translate "Crear enfrentamiento" %} · {% endblock %}
 
 {% block content %}
+<div class="z-create-layout">
 <div class="table-container">
     <h1>{% translate "Crear enfrentamiento" %}</h1>
 
@@ -10,12 +11,15 @@
     <div class="alert-message">{{ error }}</div>
     {% endfor %}
 
-    <form method="POST" class="z-match-form" data-match-form novalidate data-loading-text="{% translate 'Creando el enfrentamiento…' %}" data-own-location="{{ form.own_team.location|default:'' }}">
+    <form method="POST" action="{{ request.get_full_path }}" class="z-match-form" data-match-form novalidate data-loading-text="{% translate 'Creando el enfrentamiento…' %}" data-own-location="{{ form.own_team.location|default:'' }}">
         {% csrf_token %}
 
-        <p>
-            <label for="{{ form.competition.id_for_label }}">{{ form.competition.label }}:</label>
-            {{ form.competition }}
+        {# Competición: es la del equipo, así que se muestra como dato (no como un selector bloqueado). Quien gestiona varios equipos puede volver a elegir. #}
+        <p class="z-create-in">
+            <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+            <span>{% blocktranslate with team=current_club.name %}Se creará en <strong>{{ team }}</strong>{% endblocktranslate %}</span>
+            {% include 'includes/competition_badge.html' with code=current_club.competition name=current_club.rules.name %}
+            {% if can_change_team %}<a href="{% url 'create_match' %}" class="z-create-in-change">{% translate "Cambiar de equipo" %}</a>{% endif %}
         </p>
 
         {# Un solo selector (U12): static/js/match-form.js lo sincroniza con «Modo» y «Tipo de partido», que sin JavaScript se ven tal cual. #}
@@ -41,6 +45,13 @@
         </p>
         {% for error in form.match_type.errors %}<div class="alert-message">{{ error }}</div>{% endfor %}
         </div>
+        {% if form.has_rounds %}
+        <p data-round-row data-league-type="{{ form.rules.league_type }}">
+            {{ form.round_number.label_tag }} {{ form.round_number }}
+            <small class="text-muted d-block mt-1">{% translate "Te proponemos la siguiente a la última de liga que has creado; puedes cambiarla." %}</small>
+        </p>
+        {% for error in form.round_number.errors %}<div class="alert-message">{{ error }}</div>{% endfor %}
+        {% endif %}
 
         <fieldset class="z-mode" data-rival-source-row{% if form.mode.value != "amistoso" %} hidden{% endif %}>
             <legend class="form-label">{{ form.rival_source.label }}</legend>
@@ -53,9 +64,7 @@
 
         <div class="z-team-cards" data-group-rival{% if form.manual_rival %} hidden{% endif %}>
             {% include "includes/match_team_card.html" with field=form.rival team=form.rival_team %}
-            {% if can_manage and not form.rival.field.queryset.exists %}
-            <p class="z-rival-empty">{% translate "Todavía no tienes rivales en tu grupo." %} <a href="{% url 'create_team' %}">{% translate "Crear rival" %}</a></p>
-            {% endif %}
+            <p class="z-rival-empty">{% if not form.rival.field.queryset.exists %}{% translate "Todavía no tienes rivales en tu grupo." %}{% else %}{% translate "¿No está el rival?" %}{% endif %} <a href="{% url 'create_team' %}?volver=enfrentamiento&amp;en={{ request.club.competition }}">{% translate "Añádelo" %}</a></p>
             {% for error in form.local.errors %}<div class="alert-message">{{ error }}</div>{% endfor %}
         </div>
 
@@ -88,7 +97,7 @@
 
         <p>
             {{ form.location.label_tag }} {{ form.location }}
-            <small class="text-muted d-block mt-1">{% translate "Por defecto, la sede del equipo local. Cámbiala si se juega en otro sitio." %}</small>
+            <small class="text-muted d-block mt-1">{% translate "Por defecto, la localidad del equipo local. Escribe la dirección del club para que «Cómo llegar» funcione." %}</small>
         </p>
 
         <details class="z-more-options">
@@ -103,6 +112,13 @@
                 <p class="form-text mb-0"><a href="{% url 'my_profile' %}">{% translate "Edita tus preferencias" %}</a> {% translate "para guardar esta opción por defecto." %}</p>
                 {% for error in form.report_scope.errors %}<div class="alert-message">{{ error }}</div>{% endfor %}
             </fieldset>
+            {% if form.other_competitions_available %}
+            <p class="form-check mt-3">
+                {{ form.report_other_competitions }}
+                <label class="form-check-label" for="{{ form.report_other_competitions.id_for_label }}">{{ form.report_other_competitions.label }}</label>
+                <small class="form-text d-block">{% translate "Añade al informe lo que han jugado esta temporada en sus otras competiciones los convocados con cuenta enlazada. No cambia las alineaciones." %}</small>
+            </p>
+            {% endif %}
         </details>
 
         <div class="d-flex flex-wrap gap-2 mt-3">
@@ -110,6 +126,20 @@
             <a href="{% url 'list_match' %}" class="btn btn-outline-secondary">{% translate "Cancelar" %}</a>
         </div>
     </form>
+</div>
+
+{# «Así se verá»: vista previa en vivo de la tarjeta del enfrentamiento (solo escritorio; static/js/match-form.js). #}
+<aside class="z-create-preview" aria-label="{% translate 'Así se verá' %}" data-match-preview data-own-name="{{ current_club.name }}">
+    <span class="z-create-preview-tag">{% translate "Así se verá" %}</span>
+    <p class="z-create-preview-kicker"><span>{{ current_club.rules.name }}</span> · <span data-preview-kind></span></p>
+    <p class="z-create-preview-date" data-preview-date>{% translate "Elige la fecha" %}</p>
+    <p class="z-create-preview-meta" data-preview-meta></p>
+    <div class="z-create-preview-teams">
+        <span><b data-preview-local></b><small>{% translate "Local" %}</small></span>
+        <i aria-hidden="true">VS</i>
+        <span><b data-preview-visiting></b><small>{% translate "Visitante" %}</small></span>
+    </div>
+</aside>
 </div>
 
 <script src="{% static 'js/date-picker.js' %}" defer></script>

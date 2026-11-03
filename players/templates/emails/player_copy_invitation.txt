@@ -1,0 +1,13 @@
+{% load i18n %}{% autoescape off %}{% blocktranslate with club=club.name %}Te han añadido a {{ club }}{% endblocktranslate %}
+
+{% if inviter and source_club %}{% blocktranslate trimmed with name=inviter source=source_club.name club=club.name competition=competition %}{{ name }}, capitán de {{ source }}, ha copiado tu ficha al equipo {{ club }} ({{ competition }}).{% endblocktranslate %}{% else %}{% blocktranslate trimmed with club=club.name competition=competition %}Han copiado tu ficha al equipo {{ club }} ({{ competition }}).{% endblocktranslate %}{% endif %} {% translate "Acepta para verlo en Zyra con tu misma cuenta, apuntarte a sus convocatorias y ver tus estadísticas de las dos competiciones en «Mis estadísticas»." %}
+
+{% translate "Si no juegas en ese equipo, recházala y tu ficha allí se queda sin enlazar a tu cuenta." %}
+
+{% translate "Ver la invitación:" %}
+{{ url }}
+
+{% translate "También la tienes en el Inicio de Zyra." %}
+
+{% translate "Un saludo," %}
+{% translate "El equipo de Zyra" %}{% endautoescape %}

@@ -55,8 +55,13 @@ def _bodies(match):
     greeting = _("Hola,")
     closed = _("Se ha cerrado la convocatoria de %(club)s para el enfrentamiento contra %(rival)s del %(date)s "
                "(%(local)s vs %(visiting)s).")
-    attached = _("Te adjuntamos el informe en PDF con el estado del equipo, las rachas, los precedentes "
-                 "contra este rival y dos alineaciones recomendadas según el formato de la SNP.")
+    if match.club.rules.has_snp:
+        attached = _("Te adjuntamos el informe en PDF con el estado del equipo, las rachas, los precedentes "
+                     "contra este rival y dos alineaciones recomendadas según el formato de la SNP.")
+    else:
+        attached = _("Te adjuntamos el informe en PDF con el estado del equipo, las rachas, los precedentes "
+                     "contra este rival y dos alineaciones recomendadas según el historial y la afinidad "
+                     "de los convocados.")
     questions = _("Si tienes cualquier duda, responde a este correo y le llegará a quien cerró la convocatoria.")
     regards = _("Un saludo,")
     values = {"club": club, "rival": rival, "date": date, "local": match.local_name, "visiting": match.visiting_name}

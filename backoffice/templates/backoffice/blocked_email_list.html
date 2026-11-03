@@ -1,5 +1,5 @@
 {% extends 'backoffice/base.html' %}
-{% load i18n %}
+{% load i18n %}{% load zyra_format %}
 {% block title %}{% translate "Emails bloqueados" %}{% endblock %}
 
 {% block content %}
@@ -36,7 +36,7 @@
             <td>{{ b.original_email }}{% if b.original_email|lower != b.email %} <small class="text-muted">({{ b.email }})</small>{% endif %}</td>
             <td>{% if b.club %}<a href="{% url 'backoffice:club_detail' b.club.public_id %}">{{ b.club.name }}</a>{% else %}—{% endif %}</td>
             <td class="text-muted">{{ b.reason|default:"—" }}</td>
-            <td>{{ b.created_at|date:"j M Y" }}</td>
+            <td>{{ b.created_at|date_day }}</td>
             <td>{{ b.blocked_by.username|default:"—" }}</td>
             <td class="text-end">
                 <form method="post" action="{% url 'backoffice:blocked_email_delete' b.public_id %}" data-confirm="{% translate "¿Desbloquear este email?" %}" data-loading-text="{% translate 'Desbloqueando el email…' %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn btn-outline-light btn-sm">{% translate "Desbloquear" %}</button></form>

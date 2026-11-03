@@ -1,11 +1,11 @@
 {% extends 'backoffice/base.html' %}
-{% load i18n backoffice_tags %}
+{% load i18n backoffice_tags %}{% load zyra_format %}
 {% block title %}{{ member.username }}{% endblock %}
 
 {% block content %}
 <div class="z-page-head">
     <div>
-        <span class="z-eyebrow"><a href="{% url 'backoffice:user_list' %}">{% translate "Usuarios" %}</a> · {% with created=member.date_joined|date:"j M Y" %}{% blocktranslate %}alta el {{ created }}{% endblocktranslate %}{% endwith %}</span>
+        <span class="z-eyebrow"><a href="{% url 'backoffice:user_list' %}">{% translate "Usuarios" %}</a> · {% with created=member.date_joined|date_day %}{% blocktranslate %}alta el {{ created }}{% endblocktranslate %}{% endwith %}</span>
         <h1>{{ member.username }}</h1>
     </div>
     <div class="z-actions">
@@ -32,7 +32,7 @@
         <dl class="bo-facts">
             <div><dt>{% translate "Nombre" %}</dt><dd>{{ member.get_full_name|default:"—" }}</dd></div>
             <div><dt>{% translate "Email" %}</dt><dd>{{ member.email|default:"—" }}</dd></div>
-            <div><dt>{% translate "Último acceso" %}</dt><dd>{% if member.last_login %}{{ member.last_login|date:"j M Y H:i" }} ({{ member.last_login|ago }}){% else %}{% translate "nunca" %}{% endif %}</dd></div>
+            <div><dt>{% translate "Último acceso" %}</dt><dd>{% if member.last_login %}{{ member.last_login|date_day_time }} ({{ member.last_login|ago }}){% else %}{% translate "nunca" %}{% endif %}</dd></div>
             <div><dt>{% translate "Acceso" %}</dt><dd>{% if login_methods %}{{ login_methods|join:" · " }}{% else %}{% translate "Sin método de acceso" %}{% endif %}</dd></div>
             <div><dt>{% translate "Jugador enlazado" %}</dt><dd>{% for player in linked_players %}{{ player.full_name }} <span class="text-muted">({{ player.team.name }}{% if player.team.club %} · {{ player.team.club.name }}{% endif %}){% if not player.in_team %} · {% translate "fuera del equipo" %}{% endif %}</span>{% if not forloop.last %}<br>{% endif %}{% empty %}{% translate "Sin enlazar" %}{% endfor %}</dd></div>
             <div><dt>{% translate "Estado" %}</dt><dd>{% if member.is_active %}{% translate "Activo" %}{% else %}<span class="z-badge z-badge--danger">{% translate "Inactivo" %}</span>{% endif %}{% if member.is_staff %} · <span class="z-badge z-badge--lime">{% translate "Staff" %}</span>{% endif %}{% if member.is_superuser %} · {% translate "Superusuario" %}{% endif %}</dd></div>
@@ -44,7 +44,7 @@
         <dl class="bo-facts">
             {% if invitation_used %}
             <div><dt>{% translate "Invitación" %}</dt><dd>{% url 'backoffice:club_detail' invitation_used.club.public_id as club_url %}{% with creator=invitation_used.created_by.username|default:"—" club_name=invitation_used.club.name %}{% blocktranslate trimmed %}de {{ creator }} a <a href="{{ club_url }}">{{ club_name }}</a>{% endblocktranslate %}{% endwith %}</dd></div>
-            <div><dt>{% translate "Usada el" %}</dt><dd>{{ invitation_used.used_at|date:"j M Y H:i" }}</dd></div>
+            <div><dt>{% translate "Usada el" %}</dt><dd>{{ invitation_used.used_at|date_day_time }}</dd></div>
             {% else %}
             <div><dt>{% translate "Invitación" %}</dt><dd>{% translate "No entró por invitación" %}</dd></div>
             {% endif %}
@@ -124,7 +124,7 @@
     {% if photo_removals %}
     <ul class="mb-0">
         {% for r in photo_removals %}
-        <li>{{ r.created_at|date:"j M Y" }} · {{ r.subject }}{% if r.club %} ({{ r.club.name }}){% endif %}{% if r.reason %} · {{ r.reason }}{% endif %}{% if not r.email_sent %} · <span class="z-badge z-badge--danger">{% translate "email no enviado" %}</span>{% endif %}</li>
+        <li>{{ r.created_at|date_day }} · {{ r.subject }}{% if r.club %} ({{ r.club.name }}){% endif %}{% if r.reason %} · {{ r.reason }}{% endif %}{% if not r.email_sent %} · <span class="z-badge z-badge--danger">{% translate "email no enviado" %}</span>{% endif %}</li>
         {% endfor %}
     </ul>
     {% if photo_removals|length > 1 %}

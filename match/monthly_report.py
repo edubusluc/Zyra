@@ -16,7 +16,7 @@ from data_analyse.pairs import COMPETITIVE, _current_run, match_type_lookup
 from data_analyse.sets import own_sets, set_stats
 from call.models import Call
 from match.models import Game
-from players.models import SnpScoreHistory, joined_by
+from players.models import SnpScoreHistory, joined_by, proper_name
 
 CALL_PLAYED, CALL_BENCHED, CALL_ABSENT = "played", "benched", "absent"
 
@@ -46,7 +46,7 @@ def _partner_and_side(game, player):
         for mine, other in ((first, second), (second, first)):
             if getattr(game, mine + "_id") == player.pk:
                 partner = getattr(game, other)
-                name = partner.short_name if partner else game.removed_player_names.get(other, "").upper()
+                name = partner.short_name if partner else proper_name(game.removed_player_names.get(other, ""))
                 return name, partner, local
     return "", None, None
 
@@ -59,9 +59,10 @@ def monthly_calls(player, start, end, scope=None):
     ``CALL_BENCHED`` (se apuntó pero no jugó: no convocado) o ``CALL_ABSENT`` (no se apuntó).
     """
     calls = (
-        Call.objects.filter(match__club=player.club, match__start_date__range=(start, end), match__draft_mode=False, draft_mode=False)
+        Call.objects.filter(match__club=player.club, match__start_date__range=(start, end), match__draft_mode=False, draft_mode=False,
+                            match__no_show="")
         .filter(**match_type_lookup(COMPETITIVE if scope == REPORT_SCOPE_COMPETITIVE else None, "match__"))
-        .select_related("match__local", "match__visiting")
+        .select_related("match__local", "match__visiting", "match__club")
         .order_by("match__start_date", "match_id")
     )
     signed = set(Call.objects.filter(pk__in=[c.pk for c in calls], players=player).values_list("pk", flat=True))
@@ -80,7 +81,7 @@ def monthly_calls(player, start, end, scope=None):
         else:
             status = CALL_PLAYED if call.match_id in played else CALL_BENCHED
         rows.append({"date": call.match.start_date, "rival": call.match.rival_label,
-                     "match_type": call.match.get_match_type_display(), "status": status})
+                     "match_type": call.match.type_label, "status": status})
     return rows
 
 
@@ -111,7 +112,7 @@ def build_monthly_report(player, month, scope=None):
                 match__club=player.club, match__start_date__range=(start, end),
                 match__draft_mode=False, draft_mode=False, winner__in=outcomes.WINNERS)
         .filter(**match_type_lookup(COMPETITIVE if scope == REPORT_SCOPE_COMPETITIVE else None, "match__"))
-        .select_related("match__local", "match__visiting", "player_1_local", "player_2_local",
+        .select_related("match__local", "match__visiting", "match__club", "player_1_local", "player_2_local",
                         "player_1_visiting", "player_2_visiting")
         .prefetch_related("results")
         .order_by("match__start_date", "match_id", "n_game")
@@ -126,7 +127,7 @@ def build_monthly_report(player, month, scope=None):
         sets = own_sets(next(iter(g.results.all()), None), is_local)
         points = (g.score or 0) if won else 0
         rows.append({
-            "date": g.match.start_date, "rival": g.match.rival_label, "match_type": g.match.get_match_type_display(),
+            "date": g.match.start_date, "rival": g.match.rival_label, "match_type": g.match.type_label,
             "partner": name, "n_game": g.n_game, "sets": sets, "won": won, "points": points,
             "match_id": g.match_id,
         })
