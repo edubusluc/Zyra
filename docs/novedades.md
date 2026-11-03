@@ -3,6 +3,9 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 03/11/2026 · Ficha del jugador sin «Equipo: X %»
+
+- **Más espacio en la cabecera**: se quita la comparación «Equipo: X %» junto al anillo de victorias (confundía con pocos partidos y no decía con qué se comparaba); el anillo y el balance ocupan ese hueco.
 ## 03/11/2026 · Plantilla: subida o bajada de puntos SNP
 
 - **Evolución en puntos**: la columna «Evolución» de la tabla de plantilla muestra cuántos puntos SNP ha subido o bajado cada jugador (▲ +N / ▼ -N) en lugar de la mini línea. Si la última actualización no cambió ningún valor del equipo, se mantiene la subida o bajada de la última en la que sí hubo cambios, en vez de poner «=» a todos.

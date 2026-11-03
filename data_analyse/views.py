@@ -939,15 +939,6 @@ def summarize_by_season(log, calls_present, calls_total):
     return rows
 
 
-def team_win_pct(club, season, match_type):
-    """
-    % de partidos ganados por todo el club en la misma competición, temporada y tipo de partido que se
-    consulta (``club_game_log``), para situar el % de un jugador. None si el club no tiene partidos.
-    """
-    log = pair_stats.club_game_log(club, season, match_type)
-    return round(100 * sum(g['won'] for g in log) / len(log)) if log else None
-
-
 @spaces.consult_view
 @club_required
 @require_GET
@@ -1030,7 +1021,6 @@ def statistics_per_player(request):
     clutch = set_stats(season_log)
     affinity = degree_of_affinity(player, match_type, selected_season)
     snp_updated = player.snp_history.order_by('-date').values_list('date', flat=True).first()
-    team_pct = team_win_pct(request.club, selected_season, match_type)
     is_me = bool(player.user_id and player.user_id == request.user.id)
     context = {
         'hero': {
@@ -1040,7 +1030,6 @@ def statistics_per_player(request):
             'snp_rank': player_card.snp_rank(player),
             'snp_updated': snp_updated,
             'snp_stale': records.snp_is_stale(snp_updated),
-            'team_pct': team_pct,
             'is_me': is_me,
             # Advertencias: solo las ve quien gestiona el equipo.
             'warnings': player.penalties.count() if request.membership.can_manage else 0,
