@@ -15606,3 +15606,9 @@ msgstr "Previous fixture"
 #: core/templates/home.html
 msgid "Enfrentamiento siguiente"
 msgstr "Next fixture"
+
+msgid "Cargar sin avisar"
+msgstr "Load without notifying"
+
+msgid "Para cargar enfrentamientos ya jugados: no se envía ni el informe de la convocatoria ni el correo del resultado a nadie."
+msgstr "For loading matches already played: neither the call-up report nor the result email is sent to anyone."

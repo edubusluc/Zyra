@@ -198,6 +198,7 @@ ni se editan parejas (`edit_game_match`).
   respeta el alcance y suma `MonthlyReportDelivery.manual_sends`/`last_manual_at`. Necesita `SITE_URL`. Programado en `JOBS` (`0 9 1 * *`); sin `run_scheduler`, un cron mensual del host que
   ejecute `python manage.py send_monthly_reports`. Tests: `match/tests_monthly.py`.
 
+- [V] `Match.silent` (casilla «Cargar sin avisar» al crear): ni el informe de la convocatoria ni el correo del resultado se envían (el reenvío manual del back-office sigue disponible).
 - [V] Al cerrar el acta (`do_close_match`) se avisa del resultado por email (`match/result_email.py`): un
   `MatchResultDelivery` por enfrentamiento y miembro activo del club con email (capitán incluido; club no
   suspendido) y `UserPreference.match_result_email` activo (por defecto sí; interruptor en «Mi perfil» y enlace de baja

@@ -568,7 +568,10 @@ def close_call(request, match_id):
     if request.method == "POST":
         call.draft_mode = False
         call.save()
-        _send_report(request, call, _("Convocatoria cerrada"))
+        if call.match.silent:
+            messages.success(request, _("Convocatoria cerrada"))
+        else:
+            _send_report(request, call, _("Convocatoria cerrada"))
         return redirect('call_for_match', call.match.public_id)
 
     return redirect('call_for_match', call.match.public_id)

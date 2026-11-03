@@ -76,6 +76,20 @@ class MatchResultEmailTests(ResultEmailFixture):
         delivery = MatchResultDelivery.objects.get(user=self.member)
         self.assertEqual((delivery.status, delivery.attempts, delivery.result_points), ("sent", 1, "8/4"))
 
+    def test_silent_match_sends_no_result_email_nor_reopen_checkbox(self):
+        match = self._match()
+        Match.objects.filter(pk=match.pk).update(silent=True)
+        self._close(match)
+        self.assertEqual(len(mail.outbox), 0)
+        self.assertFalse(MatchResultDelivery.objects.filter(match=match).exists())
+
+    def test_create_form_accepts_silent_flag(self):
+        from match.forms import MatchForm
+        form = MatchForm({"start_date": "2020-01-01", "own_side": "local", "mode": "competitivo", "rival": self.rival.pk,
+                          "silent": "on"}, club=self.club, user=self.captain)
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertTrue(form.save().silent)
+
     def test_defeat_draw_and_friendly_variants(self):
         lost = self._match(wins=(4,))                       # 2 puntos contra 10
         self._close(lost)

@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 03/11/2026 · Cargar enfrentamientos pasados sin avisar
+
+- **Casilla «Cargar sin avisar»** al crear un enfrentamiento: al cerrar la convocatoria no se manda el informe a los capitanes y al cerrar el acta no se envía el correo del resultado, para cargar resultados antiguos sin molestar a nadie.
+
 ## 03/11/2026 · Inicio: carrusel de próximos enfrentamientos
 
 - **Tarjeta «Próximo enfrentamiento»**: con más de un enfrentamiento abierto, el más cercano va delante y el siguiente (hasta tres en total) queda por debajo, asomando por el lado, más pequeño y difuminado. Sirve sobre todo cuando un fin de semana hay partido de SNP y de LAPI.

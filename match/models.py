@@ -95,6 +95,8 @@ class Match(PublicIdModel):
     no_show = models.CharField(_("No presentado"), max_length=5, choices=NO_SHOW_CHOICES, blank=True, default="")
     # Última vez que un capitán reabrió el acta ya cerrada para corregirla (y quién).
     reopened_at = models.DateTimeField(null=True, blank=True)
+    # Enfrentamiento ya jugado que se carga de golpe: no envía el informe de la convocatoria ni el correo del resultado.
+    silent = models.BooleanField(_("Cargar sin avisar"), default=False)
     reopened_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+",
     )

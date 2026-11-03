@@ -227,6 +227,8 @@ def notify_match_closed(match, resend=False):
     (``reopened_at``) solo lo hace con ``resend``. Nunca lanza: si algo falla
     (SMTP caído, SITE_URL sin configurar…) el aviso queda pendiente o se registra, y el acta sigue cerrada.
     """
+    if match.silent:
+        return  # enfrentamiento cargado sin avisar
     if match.reopened_at is not None and not resend:
         return  # recierre tras reabrir: el resultado ya se avisó, solo se repite si el capitán lo pide
     try:

@@ -58,7 +58,7 @@ class MatchForm(forms.ModelForm):
     class Meta:
         model = Match
         fields = ['match_type', 'round_number', 'local', 'visiting', 'rival_name', 'start_date', 'start_time', 'location', 'report_scope',
-                  'report_other_competitions']
+                  'report_other_competitions', 'silent']
         labels = {'local': _('Local'), 'visiting': _('Visitante'), 'rival_name': _('Nombre del rival'),
                   'start_date': _('Fecha'), 'start_time': _('Hora (opcional)'), 'location': _('Lugar'),
                   'report_scope': _('Datos del informe')}
@@ -67,6 +67,7 @@ class MatchForm(forms.ModelForm):
             'round_number': forms.NumberInput(attrs={'min': 1, 'max': 99, 'inputmode': 'numeric'}),
             'report_scope': forms.RadioSelect(),
             'report_other_competitions': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'silent': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'rival_name': forms.TextInput(attrs={'placeholder': _('Ej.: Pádel Norte'), 'autocomplete': 'off'}),
             'start_time': forms.TimeInput(format='%H:%M', attrs={
                 'type': 'text', 'inputmode': 'numeric', 'placeholder': '20:30', 'maxlength': 5, 'autocomplete': 'off',

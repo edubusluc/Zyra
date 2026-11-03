@@ -121,6 +121,12 @@
             {% endif %}
         </details>
 
+        <p class="form-check mt-3">
+            {{ form.silent }}
+            <label class="form-check-label" for="{{ form.silent.id_for_label }}">{{ form.silent.label }}</label>
+            <button type="button" class="z-tip" data-tip="{% translate 'Para cargar enfrentamientos ya jugados: no se envía ni el informe de la convocatoria ni el correo del resultado a nadie.' %}" aria-label="{% translate 'Para cargar enfrentamientos ya jugados: no se envía ni el informe de la convocatoria ni el correo del resultado a nadie.' %}" aria-expanded="false"><i class="fa-solid fa-circle-info" aria-hidden="true"></i></button>
+        </p>
+
         <div class="d-flex flex-wrap gap-2 mt-3">
             <button type="submit" class="btn btn-primary">{% translate "Crear enfrentamiento" %}</button>
             <a href="{% url 'list_match' %}" class="btn btn-outline-secondary">{% translate "Cancelar" %}</a>
@@ -144,5 +150,6 @@
 
 <script src="{% static 'js/date-picker.js' %}" defer></script>
 <script src="{% static 'js/match-form.js' %}" defer></script>
+<script src="{% static 'js/stats-tips.js' %}" defer></script>
 
 {% endblock %}
