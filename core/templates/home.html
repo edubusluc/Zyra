@@ -212,7 +212,7 @@
 {% if upcoming %}
 {# Enfrentamiento protagonista: bloque lima; en escritorio es una pista de pádel de proporción 2:1 (la red separa local y visitante). #}
 {# Con más de uno, el más cercano va delante y el siguiente asoma por detrás, difuminado; los puntos y el gesto de deslizar cambian de tarjeta (static/js/next-match-deck.js). #}
-<div class="z-next-deck" data-next-deck role="region" aria-roledescription="{% translate 'carrusel' %}" aria-label="{% translate 'Próximos enfrentamientos' %}">
+<div class="z-next-deck{% if upcoming|length > 1 %} z-next-deck--multi{% endif %}" data-next-deck data-pos="first" role="region" aria-roledescription="{% translate 'carrusel' %}" aria-label="{% translate 'Próximos enfrentamientos' %}">
     <h2 class="visually-hidden">{% translate "Próximo enfrentamiento" %}</h2>
     <div class="z-next-deck-track">
         {% for item in upcoming %}
@@ -222,10 +222,17 @@
         {% endfor %}
     </div>
     {% if upcoming|length > 1 %}
-    <div class="z-next-deck-dots">
-        {% for item in upcoming %}
-        <button type="button" data-next-dot aria-label="{% blocktranslate with n=forloop.counter total=upcoming|length comp=item.match.club.rules.name %}Ver el enfrentamiento {{ n }} de {{ total }} · {{ comp }}{% endblocktranslate %}"{% if forloop.first %} aria-current="true"{% endif %}></button>
-        {% endfor %}
+    <div class="z-next-picker">
+        <button type="button" class="z-next-arrow" data-next-prev aria-label="{% translate 'Enfrentamiento anterior' %}"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
+        <div class="z-next-chips">
+            {% for item in upcoming %}
+            <button type="button" class="z-next-chip z-next-chip--{{ item.match.club.competition }}" data-next-dot aria-label="{% blocktranslate with n=forloop.counter total=upcoming|length comp=item.match.club.rules.name date=item.match.start_date|date_short %}Ver el enfrentamiento {{ n }} de {{ total }} · {{ comp }} · {{ date }}{% endblocktranslate %}"{% if forloop.first %} aria-current="true"{% endif %}>
+                <span class="z-next-chip-comp">{{ item.match.club.rules.name }}</span>
+                <span class="z-next-chip-date">{{ item.match.start_date|date_short }}</span>
+            </button>
+            {% endfor %}
+        </div>
+        <button type="button" class="z-next-arrow" data-next-next aria-label="{% translate 'Enfrentamiento siguiente' %}"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
     </div>
     {% endif %}
 </div>

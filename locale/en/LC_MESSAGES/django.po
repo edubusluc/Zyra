@@ -15599,5 +15599,13 @@ msgstr "Upcoming fixtures"
 
 #: core/templates/home.html
 #, python-format
-msgid "Ver el enfrentamiento %(n)s de %(total)s · %(comp)s"
-msgstr "Show fixture %(n)s of %(total)s · %(comp)s"
+msgid "Ver el enfrentamiento %(n)s de %(total)s · %(comp)s · %(date)s"
+msgstr "Show fixture %(n)s of %(total)s · %(comp)s · %(date)s"
+
+#: core/templates/home.html
+msgid "Enfrentamiento anterior"
+msgstr "Previous fixture"
+
+#: core/templates/home.html
+msgid "Enfrentamiento siguiente"
+msgstr "Next fixture"
