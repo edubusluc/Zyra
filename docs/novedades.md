@@ -7,6 +7,9 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 - **Tarjeta «Próximo enfrentamiento»**: con más de un enfrentamiento abierto, el más cercano va delante y el siguiente (hasta tres en total) queda por debajo, asomando por el lado, más pequeño y difuminado. Sirve sobre todo cuando un fin de semana hay partido de SNP y de LAPI.
 - **Cambiar de tarjeta**: puntos debajo de la tarjeta, deslizando, tocando la que asoma o con las flechas del teclado. Con un solo enfrentamiento todo queda como antes. (PR #246)
+## 03/11/2026 · Plantilla: subida o bajada de puntos SNP
+
+- **Evolución en puntos**: la columna «Evolución» de la tabla de plantilla muestra cuántos puntos SNP ha subido o bajado cada jugador (▲ +N / ▼ -N) en lugar de la mini línea. Si la última actualización no cambió ningún valor del equipo, se mantiene la subida o bajada de la última en la que sí hubo cambios, en vez de poner «=» a todos.
 
 ## 03/11/2026 · Estadísticas: equipo sin enfrentamientos cerrados
 
