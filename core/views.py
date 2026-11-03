@@ -60,6 +60,8 @@ INVITATIONS_PER_PAGE = 10
 DOUBLE_SUBMIT_WINDOW = datetime.timedelta(seconds=30)
 # Filas del bloque «Pendiente» del inicio: el resto se ve en el listado de enfrentamientos.
 HOME_PENDING_ROWS = 3
+# Enfrentamientos que el carrusel del inicio deja deslizar: el más cercano y los dos siguientes.
+HOME_UPCOMING_MAX = 3
 
 # Invitación pendiente de aceptar mientras el visitante inicia sesión con Google
 PENDING_INVITE_KEY = "pending_invitation"
@@ -90,6 +92,17 @@ def email_needs_confirmation(user):
     return bool(user.email) and user.has_usable_password() and not email_verification.is_verified(user)
 
 
+def _home_upcoming(user, match, my_player, club, today):
+    """Datos de una tarjeta del carrusel del inicio: enfrentamiento, estado del jugador y días que faltan."""
+    player = my_player if match.club_id == club.id else Player.objects.filter(club=match.club, user=user).first()
+    status = None
+    if player:
+        games = list(match.games.select_related('player_1_local', 'player_2_local',
+                                                'player_1_visiting', 'player_2_visiting'))
+        status = player_status(player, Call.objects.filter(match=match).first(), games)
+    return {"match": match, "status": status, "player": player, "days_left": (match.start_date - today).days}
+
+
 @require_safe
 def home(request):
     """Portada del club: logo, próximo partido y jugador/pareja en racha."""
@@ -115,15 +128,11 @@ def home(request):
     managed = spaces.managed_clubs(request, clubs)
     pending = [{"match": m, "phase": phases[m.id], "overdue": m.start_date < today}
                for m in open_matches if m.club in managed]
-    my_status = None
     my_player = Player.objects.filter(club=club, user=request.user).first()
-    next_player = my_player if next_match is None or next_match.club_id == club.id else (
-        Player.objects.filter(club=next_match.club, user=request.user).first())
-    if next_match and next_player:
-        games = list(next_match.games.select_related('player_1_local', 'player_2_local',
-                                                     'player_1_visiting', 'player_2_visiting'))
-        call = Call.objects.filter(match=next_match).first()
-        my_status = player_status(next_player, call, games)
+    # Carrusel «Próximo enfrentamiento»: el más cercano va delante y el siguiente asoma por detrás.
+    upcoming = [_home_upcoming(request.user, m, my_player, club, today)
+                for m in [m for m in open_matches if m.start_date >= today][:HOME_UPCOMING_MAX]]
+    my_status = upcoming[0]["status"] if upcoming else None
     # Banner: con varios equipos, todos (en el orden de las competiciones), no el del espacio activo.
     home_teams = [{"club": c, "team": c.own_team, "membership": spaces.membership_for(request, c)}
                   for c in clubs] if len(clubs) > 1 else []
@@ -168,6 +177,7 @@ def home(request):
         'own_team': club.own_team,
         'season': current_season(),
         'next_match': next_match,
+        'upcoming': upcoming,
         'pending': pending[:HOME_PENDING_ROWS],
         'pending_total': len(pending),
         'pending_overdue': sum(1 for p in pending if p['overdue']),

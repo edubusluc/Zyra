@@ -74,6 +74,8 @@ Sección **Club** del menú principal: Miembros e invitaciones, Mi equipo, Rival
 
 La página del enfrentamiento muestra las fases Convocatoria · Parejas · Resultados · Acta, un único botón «Siguiente: …» y un menú «Más». El inicio del capitán lista lo **Pendiente** (una fila por enfrentamiento abierto) y el del jugador indica si está convocado y con quién juega. La lógica está en `match/phase.py`. Los resultados de los 5 partidos se rellenan de una vez en «Resultados del enfrentamiento».
 
+**Próximo enfrentamiento**: el Inicio enseña el enfrentamiento abierto más cercano en una tarjeta lima. Si hay más (hasta tres), el siguiente queda por debajo, asomando por el lado y difuminado; se cambia de tarjeta con el selector de debajo (una pastilla por enfrentamiento con su competición y su día, y flechas en escritorio), arrastrando, tocando la que asoma o con las flechas del teclado. Cada tarjeta muestra la competición y el estado del jugador en ese enfrentamiento.
+
 **Mi forma**: quien tiene su cuenta enlazada a un jugador ve en el Inicio la tarjeta «Mi forma»: sus últimos 5 partidos de la temporada (V/D, del más antiguo al más reciente), la racha, el balance de la temporada (anillo de victorias y derrotas), de las convocatorias en las que se ha apuntado a cuántas ha ido (una sola barra) y sus puntos SNP con una gráfica a todo el ancho de los últimos 30 días (fechas de inicio y fin, máximo y mínimo y la diferencia; al pasar el ratón sobre ella se ve el valor y la fecha de ese punto). Solo cuentan los partidos competitivos. Se puede **ocultar** y **volver a mostrar** (botón «Mostrar mi forma») sin afectar a nadie más; con «Mis estadísticas» se abren sus estadísticas de jugador.
 
 ## Prepara la temporada

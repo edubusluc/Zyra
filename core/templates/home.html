@@ -208,45 +208,34 @@
 {% endif %}
 
 
-<div class="z-home-grid{% if next_match and pending or next_match and can_manage and not onboarding %} z-home-grid--both{% endif %}">
-{% if next_match %}
+<div class="z-home-grid{% if upcoming and pending or upcoming and can_manage and not onboarding %} z-home-grid--both{% endif %}">
+{% if upcoming %}
 {# Enfrentamiento protagonista: bloque lima; en escritorio es una pista de pádel de proporción 2:1 (la red separa local y visitante). #}
-<article class="z-next-match" aria-labelledby="next-match-title">
-    <h2 id="next-match-title" class="visually-hidden">{% translate "Próximo enfrentamiento" %}</h2>
-    <div class="z-next-match-when">
-        <p class="z-next-match-kicker">{% translate "Próximo enfrentamiento" %} · {{ next_match.club.rules.name }} · {% if next_match.round_number and next_match.is_league %}{% blocktranslate with n=next_match.round_number %}Jornada {{ n }}{% endblocktranslate %}{% else %}{{ next_match.type_label }}{% endif %}</p>
-        <span class="z-next-match-days">{% if days_left == 0 %}{% translate "Hoy" %}{% elif days_left == 1 %}{% translate "Mañana" %}{% else %}{% blocktranslate trimmed count n=days_left %}En {{ n }} día{% plural %}En {{ n }} días{% endblocktranslate %}{% endif %}</span>
+{# Con más de uno, el más cercano va delante y el siguiente asoma por detrás, difuminado; los puntos y el gesto de deslizar cambian de tarjeta (static/js/next-match-deck.js). #}
+<div class="z-next-deck{% if upcoming|length > 1 %} z-next-deck--multi{% endif %}" data-next-deck data-pos="first" role="region" aria-roledescription="{% translate 'carrusel' %}" aria-label="{% translate 'Próximos enfrentamientos' %}">
+    <h2 class="visually-hidden">{% translate "Próximo enfrentamiento" %}</h2>
+    <div class="z-next-deck-track">
+        {% for item in upcoming %}
+        <div class="z-next-slide{% if forloop.first %} is-front{% elif forloop.counter == 2 %} is-next{% endif %}" data-next-slide role="group" aria-roledescription="{% translate 'diapositiva' %}" aria-label="{% blocktranslate with n=forloop.counter total=upcoming|length %}{{ n }} de {{ total }}{% endblocktranslate %}">
+            {% include 'includes/next_match_card.html' %}
+        </div>
+        {% endfor %}
     </div>
-    <div class="z-next-match-date">
-        <p class="z-next-match-day">{{ next_match.start_date|date_short }}<small>{{ next_match.start_date|date:"Y" }}</small></p>
-        <p class="z-next-match-meta">{% if next_match.start_time %}<strong>{{ next_match.start_time|time:"H:i" }}</strong>{% endif %}{% if next_match.location %}<a class="z-location" href="{{ next_match.maps_url }}" target="_blank" rel="noopener" title="{% translate 'Cómo llegar' %}"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>{{ next_match.location }}</span></a>{% else %}<span class="z-location"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>{% translate "Sin ubicación" %}</span></span>{% endif %}</p>
+    {% if upcoming|length > 1 %}
+    <div class="z-next-picker">
+        <button type="button" class="z-next-arrow" data-next-prev aria-label="{% translate 'Enfrentamiento anterior' %}"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
+        <div class="z-next-chips">
+            {% for item in upcoming %}
+            <button type="button" class="z-next-chip z-next-chip--{{ item.match.club.competition }}" data-next-dot aria-label="{% blocktranslate with n=forloop.counter total=upcoming|length comp=item.match.club.rules.name date=item.match.start_date|date_short %}Ver el enfrentamiento {{ n }} de {{ total }} · {{ comp }} · {{ date }}{% endblocktranslate %}"{% if forloop.first %} aria-current="true"{% endif %}>
+                <span class="z-next-chip-comp">{{ item.match.club.rules.name }}</span>
+                <span class="z-next-chip-date">{{ item.match.start_date|date_short }}</span>
+            </button>
+            {% endfor %}
+        </div>
+        <button type="button" class="z-next-arrow" data-next-next aria-label="{% translate 'Enfrentamiento siguiente' %}"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
     </div>
-    {% if my_status %}
-    <p class="z-next-match-me{% if my_status.called %} is-in{% endif %}" role="status">
-        <i class="fa-solid {% if my_status.called %}fa-circle-check{% else %}fa-circle-info{% endif %}" aria-hidden="true"></i>
-        <span>{% if not my_status.has_call %}{% translate "Todavía no hay convocatoria" %}
-        {% elif my_status.called and not my_status.closed %}<strong>{% translate "Te has apuntado" %}</strong> · {% translate "la convocatoria sigue abierta" %}
-        {% elif my_status.called %}<strong>{% translate "Estás convocado" %}</strong>{% if my_status.game %} · {% blocktranslate with n=my_status.game.n_game pts=my_status.game.score|snp_points:"" %}Partido {{ n }} · {{ pts }} pts{% endblocktranslate %}{% if my_status.partner %} · {% blocktranslate with name=my_status.partner.full_name %}con {{ name }}{% endblocktranslate %}{% endif %}{% elif my_status.closed %} · {% translate "las parejas aún no están decididas" %}{% endif %}
-        {% else %}<strong>{% translate "No estás convocado" %}</strong>{% if not my_status.closed %} · {% translate "la convocatoria sigue abierta" %}{% endif %}{% endif %}</span>
-    </p>
-    {% elif not my_player and not can_manage %}
-    <p class="z-next-match-me"><i class="fa-solid fa-link" aria-hidden="true"></i> <a href="{% url 'my_player' %}">{% translate "Enlaza tu cuenta con tu jugador para ver si estás convocado." %}</a></p>
     {% endif %}
-    <div class="z-next-match-cta">
-        <a class="btn btn-secondary" href="{% url 'call_for_match' next_match.public_id %}"><i class="fa-solid fa-clipboard-list me-1" aria-hidden="true"></i> {% translate "Ver convocatoria" %}</a>
-    </div>
-    <div class="z-next-match-teams">
-        <div class="z-next-match-team {% if next_match.local.is_own %}is-own{% endif %}">
-            <span>{{ next_match.local_name }}</span>
-            <small>{% translate "Local" %}</small>
-        </div>
-        <div class="z-versus-vs" aria-hidden="true">VS</div>
-        <div class="z-next-match-team {% if next_match.visiting.is_own %}is-own{% endif %}">
-            <span>{{ next_match.visiting_name }}</span>
-            <small>{% translate "Visitante" %}</small>
-        </div>
-    </div>
-</article>
+</div>
 {% elif not onboarding %}
 <h2 class="z-section-title">{% translate "Próximo enfrentamiento" %}</h2>
 <div class="z-empty">
@@ -396,5 +385,6 @@
 
 
 
+<script src="{% static 'js/next-match-deck.js' %}"></script>
 {% if my_form.snp.chart %}<script src="{% static 'js/my-form-chart.js' %}"></script>{% endif %}
 {% endblock %}

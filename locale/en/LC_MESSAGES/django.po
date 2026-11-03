@@ -15581,3 +15581,28 @@ msgstr "Your other teams do have statistics."
 
 msgid "Ver estadísticas de %(team)s"
 msgstr "See %(team)s statistics"
+
+#: core/templates/home.html
+msgid "carrusel"
+msgstr "carousel"
+
+#: core/templates/home.html
+msgid "diapositiva"
+msgstr "slide"
+
+#: core/templates/home.html
+msgid "Próximos enfrentamientos"
+msgstr "Upcoming fixtures"
+
+#: core/templates/home.html
+#, python-format
+msgid "Ver el enfrentamiento %(n)s de %(total)s · %(comp)s · %(date)s"
+msgstr "Show fixture %(n)s of %(total)s · %(comp)s · %(date)s"
+
+#: core/templates/home.html
+msgid "Enfrentamiento anterior"
+msgstr "Previous fixture"
+
+#: core/templates/home.html
+msgid "Enfrentamiento siguiente"
+msgstr "Next fixture"
