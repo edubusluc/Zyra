@@ -6,7 +6,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 ## 03/11/2026 · Inicio: carrusel de próximos enfrentamientos
 
 - **Tarjeta «Próximo enfrentamiento»**: con más de un enfrentamiento abierto, el más cercano va delante y el siguiente (hasta tres en total) queda por debajo, asomando por el lado, más pequeño y difuminado. Sirve sobre todo cuando un fin de semana hay partido de SNP y de LAPI.
-- **Cambiar de tarjeta**: puntos debajo de la tarjeta, deslizando, tocando la que asoma o con las flechas del teclado. Con un solo enfrentamiento todo queda como antes. (PR #PR)
+- **Cambiar de tarjeta**: puntos debajo de la tarjeta, deslizando, tocando la que asoma o con las flechas del teclado. Con un solo enfrentamiento todo queda como antes. (PR #246)
 
 ## 03/11/2026 · Estadísticas: equipo sin enfrentamientos cerrados
 
