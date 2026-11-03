@@ -6,6 +6,9 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 ## 03/11/2026 · Estadísticas: equipo sin enfrentamientos cerrados
 
 - **Sin callejón**: si el equipo activo no tiene enfrentamientos cerrados y otro equipo de la cuenta sí, la tarjeta vacía lleva el selector de competición, dice qué equipo está vacío y ofrece un botón para ver el otro. Nunca cambia de equipo por sí sola.
+## 03/11/2026 · Aviso de nuevo gestor según competición
+
+- La tarjeta «Ahora eres gestor del equipo» ya no menciona la cuenta SNP ni «equipos» en los clubes LAPI: allí dice que el capitán sigue gestionando los miembros y las invitaciones.
 
 ## 02/11/2026 · Back-office: clubes por competición
 

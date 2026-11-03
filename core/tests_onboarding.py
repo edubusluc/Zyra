@@ -336,6 +336,18 @@ class ManagerWelcomeTests(TestCase):
         self.client.post(reverse("dismiss_manager_welcome"))
         self.assertNotContains(self.client.get(reverse("home")), "Ahora eres gestor")
 
+    def test_text_depends_on_competition(self):
+        from core.services import set_manager
+        self.client.force_login(self.user)
+        set_manager(self.club, Membership.objects.get(user=self.captain), self.membership, True)
+        self.assertContains(self.client.get(reverse("home")), "cuenta SNP")
+        self.club.competition = "lapi"
+        self.club.save()
+        html = self.client.get(reverse("home")).content.decode()
+        self.assertIn("Ahora eres gestor", html)
+        self.assertNotIn("cuenta SNP los sigue", html)
+        self.assertNotIn("jugadores y equipos", html)
+
     def test_captain_and_members_do_not_see_it(self):
         Membership.objects.filter(pk=self.membership.pk).update(manager_welcome_pending=True)
         self.client.force_login(self.user)
