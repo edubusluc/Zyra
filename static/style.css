@@ -3846,6 +3846,9 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
   .st-roster-table tbody th { max-width: 6.8rem; white-space: normal; line-height: 1.2; }
 }
 .st-roster-evo { white-space: nowrap; }
+.st-roster-table .st-roster-evo b { font-family: inherit; font-size: inherit; font-weight: 800; }
+.st-roster-table .st-roster-evo b.st-up { color: var(--st-win); }
+.st-roster-table .st-roster-evo b.st-down { color: var(--st-loss); }
 
 /* Fase 6 · comparar: Local y visitante común, tabla de sets de «Mis estadísticas», compañeros y convocatorias. */
 .st-venue-split { display: flex; flex-direction: column; gap: 14px; margin-top: 12px; }
