@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 03/11/2026 · Inicio: carrusel de próximos enfrentamientos
+
+- **Tarjeta «Próximo enfrentamiento»**: con más de un enfrentamiento abierto, el más cercano va delante y el siguiente (hasta tres en total) queda por debajo, asomando por el lado, más pequeño y difuminado. Sirve sobre todo cuando un fin de semana hay partido de SNP y de LAPI.
+- **Cambiar de tarjeta**: puntos debajo de la tarjeta, deslizando, tocando la que asoma o con las flechas del teclado. Con un solo enfrentamiento todo queda como antes. (PR #PR)
+
 ## 03/11/2026 · Estadísticas: equipo sin enfrentamientos cerrados
 
 - **Sin callejón**: si el equipo activo no tiene enfrentamientos cerrados y otro equipo de la cuenta sí, la tarjeta vacía lleva el selector de competición, dice qué equipo está vacío y ofrece un botón para ver el otro. Nunca cambia de equipo por sí sola.

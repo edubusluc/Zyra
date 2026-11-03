@@ -1444,7 +1444,7 @@ a.z-card:hover, .z-card--link:hover {
 /* ---------- Inicio: enfrentamiento protagonista ---------- */
 .z-home-grid { display: grid; gap: 18px; margin-top: 24px; }
 @media (min-width: 1100px) {
-    .z-home-grid:not(.z-home-grid--both) .z-next-match { max-width: 820px; }
+    .z-home-grid:not(.z-home-grid--both) .z-next-deck { max-width: 820px; }
     .z-home-grid--both { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); align-items: start; }
     /* La altura de la fila la marca la pista (2:1); «Pendiente» se estira hasta ella y recorta lo que sobre. */
     .z-home-grid--both .z-home-pending { align-self: stretch; contain: size; overflow: hidden; }
@@ -1521,6 +1521,31 @@ a.z-card:hover, .z-card--link:hover {
     .z-home-grid .z-next-match-team > span { font-size: clamp(1.4rem, 5.2cqw, 2.9rem); }
     .z-home-grid .z-next-match .z-versus-vs, .z-home-grid .z-versus-vs { display: block; padding: 4px 12px; font-size: clamp(1rem, 3cqw, 1.5rem); color: var(--z-ink); background: var(--z-lime); border-radius: 999px; }
     .z-home-grid .z-next-match-team + .z-versus-vs + .z-next-match-team > span::before { content: none; }
+}
+
+/* Carrusel de «Próximo enfrentamiento»: el más cercano delante y el siguiente por detrás, asomando y
+   difuminado. Sin JS solo se ve el primero. */
+.z-next-deck { display: grid; gap: 12px; min-width: 0; }
+.z-next-deck-track { display: grid; min-width: 0; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+.z-next-deck.has-next .z-next-deck-track { padding-right: 28px; }
+.z-next-deck.has-prev .z-next-deck-track { padding-left: 28px; }
+.z-next-slide { grid-area: 1 / 1; display: grid; min-width: 0; transition: transform .4s var(--z-ease); }
+.z-next-slide .z-next-match { transition: opacity .4s ease, filter .4s ease; }
+.z-next-slide.is-front { z-index: 3; }
+.z-next-slide.is-front .z-next-match { box-shadow: 0 14px 32px -14px rgba(0, 0, 0, .75); }
+.z-next-slide.is-next, .z-next-slide.is-prev { z-index: 1; cursor: pointer; }
+.z-next-slide.is-next { transform: translateX(28px) scale(.94); transform-origin: right center; }
+.z-next-slide.is-prev { transform: translateX(-28px) scale(.94); transform-origin: left center; }
+.z-next-slide.is-next .z-next-match, .z-next-slide.is-prev .z-next-match { opacity: .55; filter: blur(4px); }
+.z-next-slide.is-next a, .z-next-slide.is-prev a, .z-next-slide.is-next button, .z-next-slide.is-prev button { pointer-events: none; }
+.z-next-slide:not(.is-front):not(.is-next):not(.is-prev) { visibility: hidden; }
+.z-next-deck-dots { display: flex; justify-content: center; gap: 4px; }
+.z-next-deck-dots button { display: grid; place-items: center; width: 32px; height: 32px; padding: 0; background: transparent; border: 0; border-radius: 50%; cursor: pointer; }
+.z-next-deck-dots button::before { content: ""; width: 8px; height: 8px; background: var(--z-border-control); border-radius: 999px; transition: width .25s ease, background .25s ease; }
+.z-next-deck-dots button[aria-current="true"]::before { width: 24px; background: var(--z-lime); }
+.z-next-deck-dots button:focus-visible { outline: 2px solid var(--z-text); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) {
+    .z-next-slide, .z-next-slide .z-next-match, .z-next-deck-dots button::before { transition: none; }
 }
 
 /* Panel «Pendiente» */

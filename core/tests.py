@@ -442,6 +442,29 @@ class HomeTests(TestCase):
         self.assertContains(response, "En 3 días")
         self.assertContains(response, "z-next-match-teams")
 
+    def test_home_deck_shows_next_matches_in_order(self):
+        # Carrusel: el más cercano delante, el siguiente por detrás (máx. 3) y un punto por tarjeta.
+        for days in (9, 2, 5, 14):
+            Match.objects.create(club=self.club, local=self.own, visiting=self.rival,
+                                 start_date=self.today + datetime.timedelta(days=days))
+        response = self.client.get(reverse("home"))
+        upcoming = response.context["upcoming"]
+        self.assertEqual([u["days_left"] for u in upcoming], [2, 5, 9])
+        self.assertEqual(response.context["next_match"], upcoming[0]["match"])
+        html = response.content.decode()
+        self.assertEqual(html.count("data-next-slide"), 3)
+        self.assertEqual(html.count("data-next-dot"), 3)
+        self.assertContains(response, "js/next-match-deck.js")
+        self.assertIn("z-next-slide is-front", html)
+        self.assertIn("z-next-slide is-next", html)
+
+    def test_home_deck_single_match_has_no_dots(self):
+        Match.objects.create(club=self.club, local=self.own, visiting=self.rival,
+                             start_date=self.today + datetime.timedelta(days=4))
+        response = self.client.get(reverse("home"))
+        self.assertContains(response, "z-next-deck")
+        self.assertNotContains(response, "data-next-dot")
+
     def test_empty_home(self):
         response = self.client.get(reverse("home"))
         self.assertIsNone(response.context["next_match"])
