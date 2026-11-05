@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 05/11/2026 · Ficha del enfrentamiento: previa con escudos 3D
+
+- **Escudos como monedas**: los escudos de los dos equipos giran dos vueltas lentas al abrir la ficha y se quedan de frente (sin movimiento con «reducir animaciones»). Sin foto, se muestran las iniciales.
+- **Previa ampliada**: junto al cara a cara con el rival aparece la alineación propia, partido a partido, mientras el acta está abierta.
+
 ## 02/11/2026 · Back-office: clubes por competición
 
 - **Dashboard**: una tarjeta de «Clubes SNP» y otra de «Clubes LAPI» con el total, los activos y las altas de 30 días. Cada club es un espacio de una sola competición y tiene un único equipo propio, así que cada uno cuenta una vez y las dos tarjetas suman el total de «Clubes».

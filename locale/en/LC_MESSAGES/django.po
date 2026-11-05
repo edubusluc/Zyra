@@ -15567,3 +15567,6 @@ msgstr "History against %(rival)s"
 
 msgid "Desempate"
 msgstr "Tie-break"
+
+msgid "Alineación"
+msgstr "Lineup"

@@ -772,6 +772,22 @@ def match_kind(match):
     return {"title": title, "subtitle": match.club.rules.name}
 
 
+def lineup_rows(match, games):
+    """Parejas propias de cada partido alineado, para la previa de la ficha: [{"n", "label"}].
+
+    Solo con el acta abierta (con ella cerrada, los resultados ya muestran las parejas) y sin
+    contar los partidos con pareja no presentada o sin jugadores propios.
+    """
+    if not match.draft_mode:
+        return []
+    rows = []
+    for game in games:
+        label = game.local_pair_label if match.own_is_local else game.visiting_pair_label
+        if label and not game.no_show:
+            rows.append({"n": game.n_game, "label": label})
+    return rows
+
+
 @club_required
 def call_for_match(request, match_id):
     """Página de un enfrentamiento: convocatoria, partidos y resultados.
@@ -825,6 +841,7 @@ def call_for_match(request, match_id):
         "score_local": split_points(match.result_points)[0] if outcome else None,
         "score_visiting": split_points(match.result_points)[1] if outcome else None,
         "is_future": match.start_date > today,
+        "lineup_rows": lineup_rows(match, games),
         "my_status": my_status,
         "report_emails": ", ".join(admin_emails(request.club)) if call else "",
         "share_text": share_text(match, games) if not match.draft_mode else "",

@@ -13,11 +13,11 @@
 
 <div class="z-ficha-top">
     <div class="z-versus">
-        <div class="z-versus-team"><small>{% translate "Local" %}</small>{{ match.local_name }}</div>
+        <div class="z-versus-team">{% include 'includes/crest_coin.html' with team=match.local name=match.local_name side="local" %}<span class="z-versus-name"><small>{% translate "Local" %}</small>{{ match.local_name }}</span></div>
         <div class="z-versus-mid">
             <div class="z-versus-vs{% if outcome == 'D' %} is-loss{% elif outcome == 'E' %} is-draw{% endif %}">{% if score_local %}{{ score_local }}–{{ score_visiting }}{% else %}VS{% endif %}</div>
         </div>
-        <div class="z-versus-team"><small>{% translate "Visitante" %}</small>{{ match.visiting_name }}</div>
+        <div class="z-versus-team">{% include 'includes/crest_coin.html' with team=match.visiting name=match.visiting_name side="visiting" %}<span class="z-versus-name"><small>{% translate "Visitante" %}</small>{{ match.visiting_name }}</span></div>
     </div>
     <aside class="z-ficha-side">
         <div class="z-kind"><b>{{ kind.title }}</b><small>{{ kind.subtitle }}</small></div>
@@ -34,7 +34,15 @@
 {# EST-040: la «Previa» ayuda a decidir antes de jugar; con el acta cerrada solo queda el enlace al historial (capitán y jugador). #}
 {% if match.draft_mode %}
 {% rival_preview match as preview %}
+<div class="z-stage-info{% if preview and lineup_rows %} z-stage-info--two{% endif %}">
 {% include 'includes/rival_preview.html' %}
+{% if lineup_rows %}
+<section class="z-lineup-brief" aria-labelledby="lineup-brief-title">
+  <h2 class="z-preview-title" id="lineup-brief-title">{% translate "Alineación" %}</h2>
+  <ol>{% for row in lineup_rows %}<li><span>{% blocktranslate with n=row.n %}Partido {{ n }}{% endblocktranslate %}</span> <strong>{{ row.label }}</strong></li>{% endfor %}</ol>
+</section>
+{% endif %}
+</div>
 {% else %}
 {% rival_history_url match as history_url %}
 {% if history_url %}<p class="z-rival-history"><a href="{{ history_url }}"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> {% blocktranslate with rival=match.rival_label %}Historial contra {{ rival }}{% endblocktranslate %} <i class="fa-solid fa-chevron-right" aria-hidden="true"></i></a></p>{% endif %}

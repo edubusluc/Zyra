@@ -19,6 +19,7 @@ from team.models import Team
 
 User = get_user_model()
 PAST = datetime.date(2026, 10, 10)
+FUTURE = datetime.date(2027, 3, 1)
 
 
 def texts(response):
@@ -352,3 +353,26 @@ class ClubAndSharedPiecesTests(UxBase):
         response = self.client.get(reverse("team_statistics"), {"season": "all"})
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, "myPieChart")
+
+
+class FichaPreviewTests(UxBase):
+    """Previa de la ficha: escudos como monedas y bloque de alineación."""
+
+    def test_coins_show_both_teams_and_initials_without_photo(self):
+        m = self.match(FUTURE)
+        page = self.client.get(reverse("call_for_match", args=[m.public_id]))
+        self.assertContains(page, "z-coin-face", count=4)  # delantera y trasera de cada equipo
+        self.assertContains(page, "<b>RI</b>")  # el rival sin foto muestra sus iniciales
+
+    def test_lineup_block_lists_own_pairs_while_the_record_is_open(self):
+        m = self.match(FUTURE)
+        self.closed_call(m)
+        self.lineup(m)
+        page = self.client.get(reverse("call_for_match", args=[m.public_id]))
+        self.assertContains(page, "z-lineup-brief")
+        self.assertContains(page, "Jug00 X / Jug01 X")
+
+    def test_no_lineup_block_without_pairs(self):
+        m = self.match(FUTURE)
+        page = self.client.get(reverse("call_for_match", args=[m.public_id]))
+        self.assertNotContains(page, "z-lineup-brief")

@@ -1,0 +1,8 @@
+{# Escudo del equipo como «moneda» que gira al abrir la ficha (CSS 3D, sin JS). Recibe team (o None) y name. #}
+<span class="z-coin-scene" aria-hidden="true">
+  <span class="z-coin z-coin--{{ side }}">
+    {% for i in "0123456789" %}<span class="z-coin-edge" style="--i: {{ forloop.counter0 }}"></span>{% endfor %}
+    <span class="z-coin-face z-coin-front">{% if team and team.photo %}<img src="{{ team.photo.url }}" alt="" loading="lazy">{% else %}<b>{{ name|slice:":2"|upper }}</b>{% endif %}</span>
+    <span class="z-coin-face z-coin-back">{% if team and team.photo %}<img src="{{ team.photo.url }}" alt="" loading="lazy">{% else %}<b>{{ name|slice:":2"|upper }}</b>{% endif %}</span>
+  </span>
+</span>
