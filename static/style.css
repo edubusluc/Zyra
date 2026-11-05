@@ -2958,7 +2958,8 @@ a.z-hub-card:hover, a.z-hub-card:focus-visible { border-color: var(--z-lime); co
     .z-next-main .btn { width: 100%; min-height: 44px; text-align: center; }
     .z-next-hint:not(.is-blocking) { display: none; }
     .z-next .z-more summary { min-height: 44px; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
-    .z-more ul { bottom: calc(100% + 6px); left: 0; right: auto; max-width: calc(100vw - 2 * var(--z-gutter, 16px)); margin: 0; }
+    .z-more ul { bottom: calc(100% + 6px); left: auto; right: 0; width: max-content; min-width: min(230px, calc(100vw - 2 * var(--z-gutter, 16px))); max-width: calc(100vw - 2 * var(--z-gutter, 16px)); margin: 0; }
+    .z-more li a, .z-more li button { white-space: normal; overflow-wrap: anywhere; }
 }
 
 /* Crear enfrentamiento: error en la card del rival y opciones plegadas */

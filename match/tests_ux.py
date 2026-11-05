@@ -2,10 +2,12 @@
 convocatoria de al menos 10, crear enfrentamiento con rival y lado, y estado del jugador."""
 import datetime
 import json
+from pathlib import Path
 
 from django.contrib.auth import get_user_model
 from django.contrib.messages import get_messages
-from django.test import TestCase
+from django.conf import settings
+from django.test import SimpleTestCase, TestCase
 from django.urls import reverse
 from django.utils import timezone
 
@@ -307,6 +309,22 @@ class CreateMatchFormTests(UxBase):
         page = self.client.get(reverse("create_match"))
         self.assertContains(page, "Cancelar")
         self.assertContains(page, "Más opciones")
+
+
+class MoreMenuMobileTests(SimpleTestCase):
+    """El menú «Más» se ancla al borde derecho y se cierra con Escape/fuera (filter-menu.js)."""
+
+    def test_mobile_menu_is_right_aligned_and_bounded(self):
+        css = (Path(settings.BASE_DIR) / "static" / "style.css").read_text(encoding="utf-8")
+        rule = next(line for line in css.splitlines() if line.strip().startswith(".z-more ul { bottom:"))
+        self.assertIn("right: 0", rule)
+        self.assertIn("max-width: calc(100vw", rule)
+
+    def test_more_menus_close_with_escape(self):
+        for name in ("match/templates/call_for_match.html", "match/templates/includes/player_selector.html"):
+            html = (Path(settings.BASE_DIR) / name).read_text(encoding="utf-8")
+            self.assertIn('class="z-more', html)
+            self.assertRegex(html, r'<details class="z-more[^"]*" data-filter-menu>')
 
 
 class ClubAndSharedPiecesTests(UxBase):
