@@ -5,7 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 05/11/2026 · Inicio con tarjetas del mismo alto
 
-- **Inicio · Próximo enfrentamiento y Pendiente**: en escritorio las dos tarjetas miden siempre lo mismo, la de la más alta. Con un único enfrentamiento (sin selector) la pista ocupa también el hueco que reservaría el selector. En móvil se apilan con su altura natural.
+- **Inicio · Próximo enfrentamiento y Pendiente**: en escritorio las dos tarjetas miden siempre lo mismo, la de la más alta. Con un único enfrentamiento (sin selector) la pista ocupa también el hueco que reservaría el selector, y entonces los nombres de los equipos y la ubicación se muestran más grandes. En móvil se apilan con su altura natural.
 
 ## 05/11/2026 · TikTok en el pie de página
 
