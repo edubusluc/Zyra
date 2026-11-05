@@ -1,6 +1,6 @@
 /* Selector de páginas del bloque «Pendiente» del Inicio (core/templates/home.html).
-   Cada página reúne pocas filas (vencidos y próximos 14 días). Sin JS se ven todas; con JS se muestra una
-   y el selector (flechas y números) cambia de página. */
+   Cada página reúne pocas filas (vencidos y próximos 14 días). Sin JS se ven todas; con JS se apilan y se ve una
+   (la tarjeta mide siempre lo mismo y el selector queda abajo); el selector (flechas y números) cambia de página. */
 (function () {
     'use strict';
     document.querySelectorAll('[data-pending-pages]').forEach(function (box) {
@@ -13,7 +13,11 @@
         var index = 0;
 
         function render() {
-            pages.forEach(function (page, k) { page.hidden = k !== index; });
+            pages.forEach(function (page, k) {
+                var off = k !== index;
+                page.classList.toggle('is-inactive', off);
+                if (off) { page.setAttribute('inert', ''); } else { page.removeAttribute('inert'); }
+            });
             chips.forEach(function (chip, k) { chip.setAttribute('aria-current', k === index ? 'true' : 'false'); });
             if (prevBtn) { prevBtn.disabled = index === 0; }
             if (nextBtn) { nextBtn.disabled = index === pages.length - 1; }
@@ -24,6 +28,7 @@
         }
 
         picker.hidden = false;
+        box.classList.add('is-paged');
         chips.forEach(function (chip, k) { chip.addEventListener('click', function () { go(k); }); });
         if (prevBtn) { prevBtn.addEventListener('click', function () { go(index - 1); }); }
         if (nextBtn) { nextBtn.addEventListener('click', function () { go(index + 1); }); }

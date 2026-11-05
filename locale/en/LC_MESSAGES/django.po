@@ -15670,3 +15670,14 @@ msgstr[1] "See the full calendar (%(n)s more)"
 #: match/templates/list_match.html
 msgid "Ver solo las próximas semanas"
 msgstr "Show only the coming weeks"
+
+#: match/templates/list_match.html
+#, python-format
+msgid "%(n)s enfrentamiento más programado"
+msgid_plural "%(n)s enfrentamientos más programados"
+msgstr[0] "%(n)s more match scheduled"
+msgstr[1] "%(n)s more matches scheduled"
+
+#: match/templates/list_match.html
+msgid "Ver el calendario completo"
+msgstr "See the full calendar"

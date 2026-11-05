@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 05/11/2026 · Pendiente fijo y calendario a la vista
+
+- **Inicio · Pendiente**: con varias páginas, la tarjeta mide siempre lo mismo (la de la página más alta) y el selector queda anclado abajo, tenga la página 1, 2 o 3 filas.
+- **Enfrentamientos**: el aviso de «hasta el …» se sustituye por una franja «N enfrentamientos más programados» con los meses (p. ej. «Noviembre 3 · Diciembre 5») y el botón «Ver el calendario completo», para que se vea que el calendario está generado.
+
 ## 05/11/2026 · Calendario completo sin abrumar
 
 - **Inicio · Pendiente**: solo enseña lo vencido y lo que cae en los próximos 14 días, de 3 en 3 filas, con un selector de páginas de flechas y números que cabe en cualquier ancho (antes las pastillas con fechas se cortaban). Lo más lejano queda a un enlace: «Ver el calendario completo».
