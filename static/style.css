@@ -2958,6 +2958,10 @@ a.z-hub-card:hover, a.z-hub-card:focus-visible { border-color: var(--z-lime); co
 .z-results-all .z-result-team { overflow: visible; text-overflow: clip; white-space: normal; overflow-wrap: anywhere; }
 .z-results-all .z-result-team small { overflow: visible; text-overflow: clip; white-space: normal; }
 .z-result-card { margin: 0; padding: 14px 16px; }
+/* El borde de cada tarjeta dice cómo va tu equipo en ese partido: lima gana, rojo pierde (solo cuando ya hay ganador). */
+.z-result-card:is([data-own-side="0"][data-winner="0"], [data-own-side="1"][data-winner="1"]) { border-color: var(--z-lime); }
+.z-result-card:is([data-own-side="0"][data-winner="1"], [data-own-side="1"][data-winner="0"]) { border-color: var(--z-danger); }
+.z-result-grid .z-result-team { overflow: visible; text-overflow: clip; white-space: normal; overflow-wrap: anywhere; }
 .z-result-legend { float: left; width: 100%; margin: 0 0 12px; padding: 0; font-size: var(--z-fs-sm); font-weight: 800; letter-spacing: .01em; }
 .z-result-legend + * { clear: both; }
 

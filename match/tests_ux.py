@@ -210,6 +210,15 @@ class EnterResultsTests(UxBase):
         lineup = self.client.get(reverse("edit_games_match", args=[self.m.public_id]))
         self.assertContains(lineup, "data-order-toggle")
 
+    def test_own_team_is_marked_the_same_way_everywhere_and_cards_know_the_side(self):
+        page = self.client.get(self.url)
+        self.assertContains(page, "data-own-side=")
+        self.assertContains(page, "z-own-tag")
+        game = Game.objects.filter(match=self.m).first()
+        single = self.client.get(reverse("create_result", args=[game.public_id]))
+        self.assertContains(single, "z-own-tag")
+        self.assertNotContains(single, "fa-star")
+
     def test_team_names_are_wrapped_so_the_winner_line_has_no_tag_or_pair(self):
         page = self.client.get(self.url)
         self.assertContains(page, "<span data-name>", count=10)  # dos equipos por cada uno de los 5 partidos
