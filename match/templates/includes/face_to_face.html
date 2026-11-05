@@ -25,7 +25,7 @@
     </div>
     <ul class="z-h2h-last">
       {% for e in preview.recent %}<li><a href="{% url 'call_for_match' e.match.public_id %}" title="{% translate 'Ver ese enfrentamiento' %}">
-        <small>{{ e.date|date:"d/m/Y" }}</small>
+        <small>{{ e.date|date:"j M Y" }}</small>
         <b class="{% if e.outcome == 'V' %}is-win{% elif e.outcome == 'D' %}is-loss{% endif %}">{% if e.own is not None %}{{ e.own }}–{{ e.other }}{% else %}–{% endif %}</b>
         <span class="{% if e.outcome == 'V' %}is-win{% elif e.outcome == 'D' %}is-loss{% endif %}">{% if e.outcome == 'V' %}{% translate "Ganado" %}{% elif e.outcome == 'D' %}{% translate "Perdido" %}{% else %}{% translate "Empatado" %}{% endif %}</span>
       </a></li>{% endfor %}
