@@ -7,6 +7,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 - **Alto fijo**: la lista no cambia el tamaño de la tarjeta principal tengas más o menos jugadores; las parejas se alinean en dos columnas («Partido N» y la pareja).
 - **Acta cerrada**: «Compartir resultado», «Ver estadísticas» (y «Quitar no presentado») van dentro de la tarjeta principal, bajo el VS, y ya no sale «No estás convocado».
+- **Tu pareja en lima**: en la ficha nueva ya no hay aviso «Estás convocado»; tu nombre (o tu pareja) sale resaltado en lima en la lista de apuntados, convocados o parejas.
 
 ## 05/11/2026 · Ficha del enfrentamiento: lista en filas e iconos planos
 

@@ -72,7 +72,7 @@
 {% endif %}
 {% endif %}
 
-{% if my_status and not match.no_show and not stage_view or my_status and not match.no_show and stage_view and my_status.called and my_status.closed and match.draft_mode %}
+{% if my_status and not match.no_show and not stage_view %}
 {# El jugador enlazado a esta cuenta ve si juega y con quién (H-06). #}
 <div class="z-mystatus {% if my_status.called %}is-in{% endif %}" role="status">
     <i class="fa-solid {% if my_status.called %}fa-circle-check{% else %}fa-circle-info{% endif %}" aria-hidden="true"></i>

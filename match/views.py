@@ -823,7 +823,7 @@ def stage_card(match, call, convocados, games, rows, min_call):
             "players": players}
 
 
-def lineup_rows(match, games):
+def lineup_rows(match, games, me_id=None):
     """Parejas propias de cada partido alineado, para la previa de la ficha: [{"n", "label"}].
 
     Solo con el acta abierta (con ella cerrada, los resultados ya muestran las parejas) y sin
@@ -838,7 +838,8 @@ def lineup_rows(match, games):
         if label and not game.no_show:
             own = outcomes.WINNER_LOCAL if match.own_is_local else outcomes.WINNER_VISITING
             state = "" if not game.winner else ("win" if game.winner == own else "loss")
-            rows.append({"n": game.n_game, "label": label, "state": state})
+            own_ids = (game.player_1_local_id, game.player_2_local_id) if match.own_is_local else (game.player_1_visiting_id, game.player_2_visiting_id)
+            rows.append({"n": game.n_game, "label": label, "state": state, "me": bool(me_id) and me_id in own_ids})
     return rows
 
 
@@ -896,7 +897,7 @@ def call_for_match(request, match_id):
         "score_visiting": split_points(match.result_points)[1] if outcome else None,
         "is_future": match.start_date > today,
         "stage_view": UserPreference.match_stage_for(request.user),
-        "stage_card": stage_card(match, call, convocados, games, lineup_rows(match, games),
+        "stage_card": stage_card(match, call, convocados, games, lineup_rows(match, games, me.id if me else None),
                                  competition_for(match).min_call_players),
         "my_status": my_status,
         "report_emails": ", ".join(admin_emails(request.club)) if call else "",

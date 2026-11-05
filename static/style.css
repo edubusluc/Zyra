@@ -4198,3 +4198,4 @@ a.z-menu-card:active, button.z-menu-card:not(:disabled):active, .z-menu summary.
 .z-stage-pager { margin-top: auto; padding-top: 8px; }
 .z-closed-actions { justify-content: center; margin-top: 14px; }
 @media (max-width: 991.98px) { .z-stage-card { min-height: 0; } .z-stage-list { min-height: 0; } }
+.z-stage-card ol.z-stage-list li.is-me > strong, .z-stage-card ol.z-stage-list li.is-me > span { color: var(--z-lime); }

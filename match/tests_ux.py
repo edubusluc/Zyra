@@ -162,8 +162,8 @@ class MatchPageTests(UxBase):
         self.players[2].save()
         self.client.force_login(member)
         page = self.client.get(reverse("call_for_match", args=[match.public_id]))
-        self.assertContains(page, "Estás convocado")
-        self.assertContains(page, "Partido 2")
+        self.assertNotContains(page, "Estás convocado")
+        self.assertContains(page, '<li class="is-me"><span>Partido 2')
         self.assertContains(page, self.players[3].full_name)
         self.assertNotContains(page, "Siguiente:")
         # un jugador no convocado
