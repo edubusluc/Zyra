@@ -1451,7 +1451,7 @@ a.z-card:hover, .z-card--link:hover {
        Con un único enfrentamiento no hay selector y la pista ocupa también ese hueco. */
     .z-home-grid--both .z-next-deck { display: flex; flex-direction: column; }
     .z-home-grid--both .z-next-deck-track { flex: 1; }
-    .z-home-grid--both .z-next-deck-track::before { content: ""; grid-area: 1 / 1; aspect-ratio: 2 / 1; }
+    .z-home-grid--both .z-next-deck-track::before { content: ""; grid-area: 1 / 1; width: 100%; align-self: start; aspect-ratio: 2 / 1; }
     .z-home-grid--both .z-next-slide { align-self: stretch; }
     .z-home-grid--both .z-next-slide .z-next-match { aspect-ratio: auto; align-self: stretch; }
 }
