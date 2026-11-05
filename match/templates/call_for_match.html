@@ -127,7 +127,6 @@
 </div>
 {% endif %}
 
-{% if stage_view and match.draft_mode and stage_card %}<div class="z-stage-roster">{% include 'includes/stage_card.html' %}</div>{% endif %}
 
 {% if stage_view and match.draft_mode %}<div class="z-stage-after">{% if preview %}{% include 'includes/rival_preview.html' %}{% else %}<aside class="z-first-meeting" aria-label="{% translate 'Previa del enfrentamiento' %}"><h2 class="z-h2h-title">{% translate "Previa" %}</h2><p>{% blocktranslate with rival=match.rival_label %}Primer enfrentamiento contra {{ rival }}.{% endblocktranslate %}</p></aside>{% endif %}</div>{% endif %}
 

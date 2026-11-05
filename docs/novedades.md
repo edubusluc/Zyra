@@ -3,6 +3,13 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 05/11/2026 · Ficha del enfrentamiento: tarjeta enfocada (fase 3)
+
+- **Tarjeta enfocada**: la fase que tiene lista (Convocatoria con apuntados o convocados, Parejas con los partidos) ocupa el doble de ancho y de alto en escritorio y lleva la lista dentro; las demás fases se reparten a su lado. En móvil y tablet va primero, a todo el ancho.
+- **Sin páginas ocultas**: desaparece el selector «‹ 1/3 ›». La lista se desplaza por dentro, se puede recorrer con el teclado y se abre ya con tu nombre a la vista.
+- **Parejas para los jugadores**: quien no gestiona también ve la tarjeta de parejas cuando están alineadas.
+- Cerrar convocatoria y cerrar acta siguen siendo formularios con confirmación, ahora en la cabecera de la tarjeta enfocada.
+
 ## 05/11/2026 · Ficha del enfrentamiento: escenario «Pista» (fase 2)
 
 - **Pista como escenario**: el fondo es una pista de pádel inclinada con sus líneas y la red como divisor entre local y visitante; el VS (o el marcador) queda sobre la red y los escudos de pie sobre el suelo.
