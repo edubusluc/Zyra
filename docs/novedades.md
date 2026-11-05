@@ -3,6 +3,12 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 05/11/2026 · Ficha del enfrentamiento: escenario completo
+
+- **Escenario a todo el ancho**: desaparece el panel lateral. La fecha, el lugar y las etiquetas suben a una línea sobre los escudos y el estado (p. ej. «Convocatoria abierta») queda bajo el VS.
+- **Tarjetas de acción**: Convocatoria, Parejas, Resultados y Acta pasan a tarjetas (hecho en lima, siguiente paso en ámbar) que llevan a su pantalla; cerrar convocatoria y acta siguen en el botón «Siguiente».
+- **Cara a cara bajo las tarjetas**, como sección propia.
+
 ## 05/11/2026 · Ficha del enfrentamiento: interruptor de vista
 
 - **Vuelta a la ficha clásica**: en «Mi perfil» hay un ajuste, activado por defecto, para ver la ficha con escudos en 3D y la tarjeta de apuntados, convocados y parejas. Al desactivarlo cada usuario ve el marcador de siempre, sin escudos ni tarjeta.

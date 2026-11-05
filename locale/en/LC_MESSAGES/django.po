@@ -15707,3 +15707,6 @@ msgstr "Show the match page with 3D crests and the call-up card"
 
 msgid "Si lo desactivas, ves la ficha clásica. Es un ajuste tuyo."
 msgstr "If you turn it off, you see the classic match page. This setting is yours only."
+
+msgid "siguiente paso"
+msgstr "next step"

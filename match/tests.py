@@ -224,7 +224,7 @@ class MatchesAndCallsTests(TestCase):
         self.assertEqual(roster["P0"].partner, players[1])
         self.assertIsNone(roster["P2"].pair_n)
         self.assertContains(response, "Suplente")
-        self.assertContains(response, "z-status4")
+        self.assertContains(response, "Fases del enfrentamiento")
 
     def test_call_players_are_alphabetical_and_current(self):
         response = self.client.get(reverse("create_call", args=[self.current.public_id]))

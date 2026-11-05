@@ -1,0 +1,15 @@
+{# Tarjetas de acción de la ficha (vista «previa»): cada fase es una tarjeta; la actual va en ámbar y las hechas en lima. Los POST (cerrar convocatoria y acta) siguen en el bloque «Siguiente». #}
+{% load i18n %}
+<nav class="z-menu{% if not can_manage %} z-menu--short{% endif %}" aria-label="{% translate 'Fases del enfrentamiento' %}">
+{% for c in status_cards %}{% if can_manage or forloop.first or forloop.last %}
+  {% firstof "" as card_url %}
+  {% if can_manage %}{% if forloop.counter == 1 %}{% if not call_for_match %}{% url 'create_call' match_id as card_url %}{% elif match.draft_mode %}{% url 'edit_call' call_for_match.public_id as card_url %}{% endif %}
+  {% elif forloop.counter == 2 %}{% if games_count %}{% url 'edit_games_match' match.public_id as card_url %}{% elif phase.action == 'create_games' %}{% url 'create_game' match_id as card_url %}{% endif %}
+  {% elif forloop.counter == 3 %}{% if games_count %}{% url 'enter_results' match.public_id as card_url %}{% endif %}{% endif %}{% endif %}
+  <{% if card_url %}a href="{{ card_url }}"{% else %}div{% endif %} class="z-menu-card{% if c.state == 'done' %} is-done{% elif c.state == 'cur' %} is-next{% endif %}"{% if c.state == 'cur' %} aria-current="step"{% endif %}>
+    <span class="z-menu-ic" aria-hidden="true">{% if c.state == 'done' %}&#10003;{% elif forloop.counter == 1 %}&#9776;{% elif forloop.counter == 2 %}&#8644;{% elif forloop.counter == 3 %}&#9998;{% else %}&#9873;{% endif %}</span>
+    <b>{{ c.label }}</b>
+    <small>{{ c.figure }}{% if c.state == 'cur' %} · {% translate "siguiente paso" %}{% endif %}{% if c.state == 'done' %}<span class="visually-hidden"> ({% translate "hecho" %})</span>{% endif %}</small>
+  </{% if card_url %}a{% else %}div{% endif %}>
+{% endif %}{% endfor %}
+</nav>

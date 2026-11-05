@@ -437,3 +437,24 @@ class FichaPreviewTests(UxBase):
         self.assertFalse(UserPreference.match_stage_for(self.user))
         self.client.post(url, {"stage_form": "1", "match_stage_view": "on"})
         self.assertTrue(UserPreference.match_stage_for(self.user))
+
+    def test_action_cards_link_to_the_next_steps(self):
+        m = self.match(FUTURE)
+        page = self.ficha(m)
+        self.assertContains(page, "z-menu-card", count=4)
+        self.assertContains(page, 'href="%s"' % reverse("create_call", args=[m.public_id]))
+        self.assertContains(page, "siguiente paso")
+
+    def test_stage_view_drops_the_side_panel_and_keeps_the_preview_below_the_cards(self):
+        m = self.match(FUTURE)
+        page = self.ficha(m)
+        self.assertNotContains(page, "z-ficha-side")
+        self.assertContains(page, "z-stage-kicker")
+
+    def test_classic_view_keeps_the_side_panel_and_phase_bar(self):
+        from core.models import UserPreference
+        UserPreference.objects.update_or_create(user=self.user, defaults={"match_stage_view": False})
+        page = self.ficha(self.match(FUTURE))
+        self.assertContains(page, "z-ficha-side")
+        self.assertContains(page, "z-status4")
+        self.assertNotContains(page, "z-menu-card")
