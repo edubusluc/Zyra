@@ -798,7 +798,6 @@ def match_kind(match):
     return {"title": title, "subtitle": match.club.rules.name}
 
 
-STAGE_CARD_MAX = 12  # nombres visibles en la tarjeta central; el resto va como «y N más»
 
 
 def stage_card(match, call, convocados, games, rows, min_call):
@@ -817,11 +816,11 @@ def stage_card(match, call, convocados, games, rows, min_call):
         return {"kind": "open", "title": _("Apuntados"),
                 "meta": _("%(n)s de %(total)s") % {"n": len(players), "total": min_call},
                 "pct": min(100, round(100 * len(players) / min_call)) if min_call else 0,
-                "players": players[:STAGE_CARD_MAX], "rest": players[STAGE_CARD_MAX:]}
+                "players": players}
     subs = sum(1 for p in players if p["sub"])
     meta = _("%(n)s · %(s)s suplentes") % {"n": len(players), "s": subs} if subs else str(len(players))
     return {"kind": "called", "title": _("Convocados"), "meta": meta,
-            "players": players[:STAGE_CARD_MAX], "rest": players[STAGE_CARD_MAX:]}
+            "players": players}
 
 
 def lineup_rows(match, games):

@@ -4125,8 +4125,6 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .z-versus--stage .z-versus-team:nth-child(2) .z-crest-scene { filter: drop-shadow(0 0 22px rgba(var(--z-lime-rgb), .28)); }
 .z-versus--stage .z-versus-team:nth-child(4) .z-crest-scene { filter: drop-shadow(0 0 22px rgba(190, 205, 225, .22)); }
 .z-versus--stage .z-versus-team:nth-child(4) .z-crest-edge { filter: brightness(0) invert(.78) sepia(.2) hue-rotate(180deg); }
-.z-crest-front::after { content: ""; position: absolute; inset: 0; pointer-events: none; mix-blend-mode: soft-light; background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, .55) 46%, transparent 60%); animation: z-crest-sheen 6.5s ease-in-out infinite; }
-@keyframes z-crest-sheen { 0%, 55% { transform: translateX(-70%); opacity: 0; } 70% { opacity: 1; } 100% { transform: translateX(70%); opacity: 0; } }
 .z-versus--stage .z-versus-name { text-shadow: 0 2px 0 rgba(0, 0, 0, .6), 0 0 18px rgba(0, 0, 0, .8); }
 .z-versus--stage .z-versus-vs { background: linear-gradient(180deg, #E4FF7A 0%, var(--z-lime) 45%, #6E9400 100%); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 2px 0 rgba(0, 0, 0, .7)) drop-shadow(0 0 20px rgba(var(--z-lime-rgb), .35)); }
 .z-versus--stage .z-versus-vs.is-loss { background: linear-gradient(180deg, #FFB3B6, var(--z-danger) 55%, #8F2A30); -webkit-background-clip: text; background-clip: text; }
@@ -4161,9 +4159,32 @@ a.z-menu-card:active, button.z-menu-card:not(:disabled):active, .z-menu summary.
 }
 @media (prefers-reduced-motion: reduce) {
     .z-crest-scene { transform: none; transition: none; }
-    .z-crest-front::after, .z-menu-card::after { display: none; }
+    .z-menu-card::after { display: none; }
     .z-menu-card { transition: none; }
 }
 .z-menu { align-items: stretch; }
 .z-menu-card { height: auto; align-self: stretch; }
 @media (max-width: 991.98px) { .z-menu > :last-child:nth-child(odd) { grid-column: 1 / -1; } }
+/* Ajustes: VS e iconos planos, tarjetas mayores y lista en filas sin tarjeta. */
+.z-versus--stage .z-versus-vs, .z-versus--stage .z-versus-vs.is-loss, .z-versus--stage .z-versus-vs.is-draw { background: none; -webkit-background-clip: border-box; background-clip: border-box; filter: none; }
+.z-versus--stage .z-versus-vs { color: var(--z-lime); }
+.z-versus--stage .z-versus-vs.is-loss { color: var(--z-danger); }
+.z-versus--stage .z-versus-vs.is-draw { color: #FFFFFF; }
+.z-menu-ic { text-shadow: none; font-size: 1.7rem; }
+.z-menu-card { min-height: 150px; padding: 18px; gap: 10px; }
+.z-menu-card b { font-size: var(--z-fs-base); }
+.z-menu-card small { font-size: var(--z-fs-sm); }
+.z-stage-card, .z-stage-card.is-open, .z-stage-card.is-called, .z-stage-card.is-pairs { max-width: 420px; padding: 0; background: none; border: 0; box-shadow: none; border-radius: 0; }
+.z-stage-card::before { display: none; }
+.z-stage-card h2 { padding-bottom: 8px; border-bottom: 2px solid var(--z-warning); }
+.z-stage-card.is-called h2, .z-stage-card.is-pairs h2 { border-bottom-color: var(--z-lime); }
+.z-stage-card .z-stage-meter { display: none; }
+.z-stage-list, .z-stage-card ul.z-stage-list { display: block; margin: 0; padding: 0; list-style: none; font-size: 1.05rem; }
+.z-stage-list li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 2px; border-bottom: 1px solid var(--z-border); color: var(--z-text); }
+.z-stage-list li[hidden] { display: none; }
+.z-stage-list li.is-me { color: var(--z-lime); font-weight: 800; }
+.z-stage-list li em { margin-left: 0; font-size: .7rem; letter-spacing: .08em; color: var(--z-muted); border: 0; padding: 0; }
+.z-stage-pager { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 8px; font-size: var(--z-fs-sm); color: var(--z-muted); }
+.z-stage-pager button { display: grid; place-items: center; width: 34px; height: 34px; color: var(--z-text); background: var(--z-surface-2); border: 1px solid var(--z-border-strong); border-radius: 50%; cursor: pointer; }
+.z-stage-pager button:disabled { opacity: .35; cursor: default; }
+.z-stage-pager button:focus-visible { outline: 2px solid var(--z-lime); outline-offset: 2px; }

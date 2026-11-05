@@ -10,7 +10,7 @@
   {% elif can_manage and forloop.last and phase.action == 'close_match' %}{% include 'includes/ficha_close_match.html' with card=True figure=c.figure %}
   {% else %}
   <{% if card_url %}a href="{{ card_url }}"{% else %}div{% endif %} class="z-menu-card{% if c.state == 'done' %} is-done{% elif c.state == 'cur' %} is-next{% endif %}"{% if c.state == 'cur' %} aria-current="step"{% endif %}>
-    <span class="z-menu-ic" aria-hidden="true">{% if c.state == 'done' %}&#10003;{% elif forloop.counter == 1 %}&#9776;{% elif forloop.counter == 2 %}&#8644;{% elif forloop.counter == 3 %}&#9998;{% else %}&#9873;{% endif %}</span>
+    <i class="z-menu-ic fa-solid {% if c.state == 'done' %}fa-circle-check{% elif forloop.counter == 1 %}fa-users{% elif forloop.counter == 2 %}fa-shuffle{% elif forloop.counter == 3 %}fa-pen-to-square{% else %}fa-flag-checkered{% endif %}" aria-hidden="true"></i>
     <b>{{ c.label }}</b>
     <small>{{ c.figure }}{% if c.state == 'cur' %} · {% translate "siguiente paso" %}{% endif %}{% if c.state == 'done' %}<span class="visually-hidden"> ({% translate "hecho" %})</span>{% endif %}</small>
   </{% if card_url %}a{% else %}div{% endif %}>

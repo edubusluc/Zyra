@@ -415,14 +415,14 @@ class FichaPreviewTests(UxBase):
         self.assertContains(page, "Jug00 X / Jug01 X")
         self.assertNotContains(page, "is-called")
 
-    def test_long_call_is_trimmed_with_a_remainder(self):
-        from match.views import STAGE_CARD_MAX
+    def test_long_call_lists_every_name_for_paging(self):
         m = self.match(FUTURE)
         call = Call.objects.create(match=m, draft_mode=True)
         extra = [Player.objects.create(club=self.club, name=f"Extra{i}", last_name="Z", snp_score=10 + i) for i in range(5)]
         call.players.set(self.players + extra)
         page = self.ficha(m)
-        self.assertContains(page, f"y {len(self.players) + 5 - STAGE_CARD_MAX} más")
+        self.assertContains(page, "data-stage-list")
+        self.assertContains(page, "Extra4")
 
     def test_own_name_is_highlighted_and_no_open_call_notice(self):
         m = self.match(FUTURE)

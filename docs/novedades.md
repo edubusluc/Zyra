@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 05/11/2026 · Ficha del enfrentamiento: lista en filas e iconos planos
+
+- **Lista sin tarjeta**: apuntados, convocados y parejas van en filas, una por nombre, y se paginan de 6 en 6 con un selector «‹ 1/2 ›» (se abre en la página donde está tu nombre).
+- **Acabado plano**: sin el destello blanco de los escudos, con el VS en color liso y los iconos de las tarjetas de acción como iconos planos (no emojis); las tarjetas son más grandes.
+
 ## 05/11/2026 · Ficha del enfrentamiento: acabado premium
 
 - **Escenario de carbono** con foco de luz que sigue al puntero, borde biselado y franja lima; los escudos reciben luz de borde distinta (local lima, visitante acero), sombra en el suelo y un destello periódico, y se ladean ligeramente con el ratón.

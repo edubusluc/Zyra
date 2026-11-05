@@ -1,7 +1,7 @@
 {% load i18n %}
 {# Menú «Más» de la ficha (fecha, informe, no presentado, eliminar); con card=True es la última tarjeta de acción. #}
 <details class="z-more" data-filter-menu>
-        {% if card %}<summary class="z-menu-card"><span class="z-menu-ic" aria-hidden="true">&#8943;</span><b>{% translate "Más" %}</b><small>{% translate "Fecha, informe, eliminar" %}</small></summary>{% else %}<summary class="btn btn-secondary">{% translate "Más" %} <i class="fa-solid fa-ellipsis" aria-hidden="true"></i></summary>{% endif %}
+        {% if card %}<summary class="z-menu-card"><i class="z-menu-ic fa-solid fa-ellipsis" aria-hidden="true"></i><b>{% translate "Más" %}</b><small>{% translate "Fecha, informe, eliminar" %}</small></summary>{% else %}<summary class="btn btn-secondary">{% translate "Más" %} <i class="fa-solid fa-ellipsis" aria-hidden="true"></i></summary>{% endif %}
         <ul>
             {% if call_for_match %}
             <li class="z-more-title" role="presentation">{% translate "Convocatoria" %}</li>
