@@ -15642,3 +15642,31 @@ msgid "%(s)s apuntados de %(e)s posibles · %(n)s convocatoria"
 msgid_plural "%(s)s apuntados de %(e)s posibles · %(n)s convocatorias"
 msgstr[0] "%(s)s signed up out of %(e)s possible · %(n)s call-up"
 msgstr[1] "%(s)s signed up out of %(e)s possible · %(n)s call-ups"
+
+#: core/templates/home.html
+#, python-format
+msgid "Ver el calendario completo (%(n)s enfrentamiento más adelante)"
+msgid_plural "Ver el calendario completo (%(n)s enfrentamientos más adelante)"
+msgstr[0] "See the full calendar (%(n)s later match)"
+msgstr[1] "See the full calendar (%(n)s later matches)"
+
+#: core/templates/home.html
+#, python-format
+msgid "Ver la página %(n)s de %(total)s"
+msgstr "Go to page %(n)s of %(total)s"
+
+#: match/templates/list_match.html
+#, python-format
+msgid "Se muestran los enfrentamientos hasta el %(date)s."
+msgstr "Showing matches up to %(date)s."
+
+#: match/templates/list_match.html
+#, python-format
+msgid "Ver el calendario completo (%(n)s más)"
+msgid_plural "Ver el calendario completo (%(n)s más)"
+msgstr[0] "See the full calendar (%(n)s more)"
+msgstr[1] "See the full calendar (%(n)s more)"
+
+#: match/templates/list_match.html
+msgid "Ver solo las próximas semanas"
+msgstr "Show only the coming weeks"

@@ -29,8 +29,10 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
   «Todas»). Cada tarjeta lleva la etiqueta de su competición y sus acciones según el rol en ese espacio.
 - [V] Inicio por semanas (`core/views.py` `home`, igual para todos los roles): el carrusel «Próximo enfrentamiento» solo
   enseña los partidos abiertos de la semana natural (lunes a domingo) del más cercano desde hoy (la actual o, si en ella no
-  queda ninguno, la siguiente con partidos). «Pendiente» muestra siempre los vencidos aparte y el resto en páginas de dos
-  semanas naturales con partidos (`_home_pending_pages`), con el selector de `static/js/pending-pages.js`.
+  queda ninguno, la siguiente con partidos). «Pendiente» muestra los vencidos y lo de los próximos 14 días (`HOME_PENDING_DAYS`) en
+  páginas de 3 filas (`_home_pending_pages`), con el selector de `static/js/pending-pages.js`; los jugadores ven sus tareas
+  (`player_todos`) en la misma tarjeta. El listado de Enfrentamientos oculta los abiertos a más de 14 días
+  (`LIST_HORIZON_DAYS`) salvo con `?ver=todo`, búsqueda o rival.
   Estadísticas nunca mezcla equipos: Equipo, Jugador, Parejas y Rivales son siempre de una competición (chips SNP · LAPI;
   Equipo recuerda la suya en `TEAM_SPACE_KEY`, la primera vez la del primer equipo que gestiona). Lo global es de la persona:
   con jugador enlazado en dos o más espacios (`spaces.linked_players`, `my_stats_available`) hay una primera pestaña

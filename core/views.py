@@ -58,8 +58,10 @@ from .services import (
 INVITATIONS_PER_PAGE = 10
 # Un segundo envío igual dentro de este margen se toma por doble clic y no crea otra invitación.
 DOUBLE_SUBMIT_WINDOW = datetime.timedelta(seconds=30)
-# Semanas naturales (lunes a domingo) por página del bloque «Pendiente» del inicio.
-HOME_PENDING_WEEKS_PER_PAGE = 2
+# «Pendiente» del inicio: solo lo vencido y lo que cae en los próximos 14 días, en páginas de
+# HOME_PENDING_ROWS filas (el calendario lejano no tapa lo urgente).
+HOME_PENDING_DAYS = 14
+HOME_PENDING_ROWS = 3
 
 # Invitación pendiente de aceptar mientras el visitante inicia sesión con Google
 PENDING_INVITE_KEY = "pending_invitation"
@@ -95,20 +97,16 @@ def _week_start(day):
     return day - datetime.timedelta(days=day.weekday())
 
 
-def _home_pending_pages(rows):
+def _home_pending_pages(rows, today):
     """
-    Agrupa las filas de «Pendiente» (ya ordenadas por fecha, sin vencidos) en páginas de
-    ``HOME_PENDING_WEEKS_PER_PAGE`` semanas naturales con partidos; las semanas vacías no cuentan.
-    Cada página lleva sus filas y el lunes y domingo que abarca.
+    Páginas de «Pendiente» del inicio: primero lo vencido y después lo que cae dentro de
+    ``HOME_PENDING_DAYS`` días desde hoy (``rows`` ya viene ordenado por fecha), de ``HOME_PENDING_ROWS`` en
+    ``HOME_PENDING_ROWS``. Devuelve las páginas y cuántas filas quedan fuera por estar más lejos.
     """
-    weeks = sorted({_week_start(r["match"].start_date) for r in rows})
-    pages = []
-    for i in range(0, len(weeks), HOME_PENDING_WEEKS_PER_PAGE):
-        chunk = weeks[i:i + HOME_PENDING_WEEKS_PER_PAGE]
-        start, end = chunk[0], chunk[-1] + datetime.timedelta(days=6)
-        pages.append({"start": start, "end": end,
-                      "rows": [r for r in rows if start <= r["match"].start_date <= end]})
-    return pages
+    limit = today + datetime.timedelta(days=HOME_PENDING_DAYS)
+    shown = [r for r in rows if r["match"].start_date <= limit]
+    pages = [shown[i:i + HOME_PENDING_ROWS] for i in range(0, len(shown), HOME_PENDING_ROWS)]
+    return [{"rows": chunk} for chunk in pages], len(rows) - len(shown)
 
 
 def _home_upcoming(user, match, my_player, club, today):
@@ -148,9 +146,8 @@ def home(request):
     pending = [{"match": m, "phase": phases[m.id], "overdue": m.start_date < today}
                for m in open_matches if m.club in managed]
     my_player = Player.objects.filter(club=club, user=request.user).first()
-    # «Pendiente»: los vencidos siempre, aparte; el resto, en páginas de dos semanas naturales.
-    pending_overdue_rows = [r for r in pending if r["overdue"]]
-    pending_pages = _home_pending_pages([r for r in pending if not r["overdue"]])
+    # «Pendiente»: los vencidos siempre y lo de los próximos 14 días, en páginas; lo más lejano queda fuera.
+    pending_pages, pending_far = _home_pending_pages(pending, today)
     # Carrusel «Próximo enfrentamiento»: solo la semana natural del más cercano (la actual o, si no
     # queda nada en ella, la siguiente con partidos); el más cercano va delante y el siguiente asoma.
     future = [m for m in open_matches if m.start_date >= today]
@@ -204,9 +201,10 @@ def home(request):
         'next_match': next_match,
         'upcoming': upcoming,
         'pending': pending,
-        'pending_overdue_rows': pending_overdue_rows,
         'pending_pages': pending_pages,
-        'pending_total': len(pending),
+        'pending_far': pending_far,
+        'pending_total': len(pending) - pending_far,
+        'pending_count': len(pending) - pending_far + len(player_todos),
         'pending_overdue': sum(1 for p in pending if p['overdue']),
         'multi_space': spaces.is_multi_space(request),
         'my_player': my_player,

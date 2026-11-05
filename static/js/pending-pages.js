@@ -1,6 +1,6 @@
 /* Selector de páginas del bloque «Pendiente» del Inicio (core/templates/home.html).
-   Cada página reúne dos semanas naturales. Sin JS se ven todas; con JS se muestra una y el selector
-   (mismas pastillas y flechas que el carrusel) cambia de página. */
+   Cada página reúne pocas filas (vencidos y próximos 14 días). Sin JS se ven todas; con JS se muestra una
+   y el selector (flechas y números) cambia de página. */
 (function () {
     'use strict';
     document.querySelectorAll('[data-pending-pages]').forEach(function (box) {
