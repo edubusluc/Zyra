@@ -128,7 +128,7 @@
 {% endif %}
 
 
-{% if stage_view and match.draft_mode %}<div class="z-stage-after">{% if preview %}{% include 'includes/rival_preview.html' %}{% else %}<aside class="z-first-meeting" aria-label="{% translate 'Previa del enfrentamiento' %}"><h2 class="z-h2h-title">{% translate "Previa" %}</h2><p>{% blocktranslate with rival=match.rival_label %}Primer enfrentamiento contra {{ rival }}.{% endblocktranslate %}</p></aside>{% endif %}</div>{% endif %}
+{% if stage_view and match.draft_mode %}<div class="z-stage-after">{% if preview %}{% include 'includes/face_to_face.html' %}{% else %}<aside class="z-first-meeting" aria-label="{% translate 'Previa del enfrentamiento' %}"><h2 class="z-h2h-title">{% translate "Previa" %}</h2><p>{% blocktranslate with rival=match.rival_label %}Primer enfrentamiento contra {{ rival }}.{% endblocktranslate %}</p></aside>{% endif %}</div>{% endif %}
 
 {% if can_manage and not match.draft_mode and not stage_view %}
 {# Acta cerrada: el estado ya está en la cabecera y en las fases (UX-019); aquí solo las acciones. #}
@@ -137,6 +137,7 @@
 </div>
 {% endif %}
 
+{% if stage_view and not match.draft_mode %}<div class="z-stage-closed">{% endif %}
 {% if not stage_view or not match.draft_mode %}<h2 class="z-section-title mt-0">{% translate "Convocatoria" %}</h2>{% endif %}
 
 {% if can_manage and report_deliveries %}
@@ -246,6 +247,8 @@
 </div>
 
 {% endif %}
+
+{% if stage_view and not match.draft_mode %}</div>{% endif %}
 
 {% if can_manage and not match.draft_mode and not match.no_show %}
 <form method="POST" action="{% url 'reopen_match' match.public_id %}" class="text-center mt-4" data-confirm="{% translate "¿Reabrir el acta? Mientras esté abierta este enfrentamiento no cuenta en las estadísticas. Tendrás que volver a cerrarla." %}" data-loading-text="{% translate 'Reabriendo el acta…' %}">

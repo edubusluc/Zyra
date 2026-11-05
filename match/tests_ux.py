@@ -571,3 +571,31 @@ class FichaPreviewTests(UxBase):
 
     def test_no_focused_card_without_a_call(self):
         self.assertNotContains(self.ficha(self.match(FUTURE)), "has-focus")
+
+    def _past_meeting(self, points="7/5", result="Local", date=PAST):
+        return Match.objects.create(club=self.club, local=self.own, visiting=self.rival, start_date=date,
+                                    draft_mode=False, result=result, result_points=points)
+
+    def test_face_to_face_shows_balance_form_points_and_last_scores(self):
+        self._past_meeting("7/5", "Local", datetime.date(2025, 1, 10))
+        self._past_meeting("4/8", "Visitante", datetime.date(2025, 3, 10))
+        page = self.ficha(self.match(FUTURE))
+        self.assertContains(page, 'class="z-f2f"')
+        self.assertContains(page, "z-f2f-form")
+        self.assertContains(page, "Últimos enfrentamientos")
+        self.assertContains(page, "7–5")
+        self.assertContains(page, "4–8")
+
+    def test_face_to_face_hides_league_points_outside_a_league(self):
+        self._past_meeting()
+        self.assertNotContains(self.ficha(self.match(FUTURE)), "Puntos de liga")
+
+    def test_closed_match_wraps_call_and_games_in_the_stage_language(self):
+        m = self.match(PAST)
+        self.closed_call(m)
+        self.lineup(m)
+        m.draft_mode = False
+        m.save()
+        page = self.ficha(m)
+        self.assertContains(page, "z-stage-closed")
+        self.assertContains(page, "z-game-head")
