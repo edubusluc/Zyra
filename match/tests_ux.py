@@ -389,6 +389,12 @@ class FichaPreviewTests(UxBase):
         self.assertContains(page, "z-crest-back", count=2)
         self.assertContains(page, ">RI<")  # el rival sin foto muestra sus iniciales
 
+    def test_crest_depth_uses_six_light_edge_layers_per_team(self):
+        """El canto del escudo son 6 capas con solo la silueta, no 14 copias completas con filtro."""
+        page = self.ficha(self.match(FUTURE))
+        self.assertContains(page, "z-crest-edge", count=12)
+        self.assertNotContains(page, "z-crest-edge\" style=\"--i: 6")
+
     def test_no_card_without_a_call(self):
         self.assertNotContains(self.ficha(self.match(FUTURE)), "z-stage-card")
 

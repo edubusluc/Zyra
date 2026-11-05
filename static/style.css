@@ -4106,7 +4106,7 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
     .z-closed-actions { justify-content: center; margin-top: 14px; }
 
     /* Escudos 3D */
-    .z-crest-scene { --crest: clamp(120px, 40cqi, 260px); position: relative; display: block; width: var(--crest); height: var(--crest); perspective: 900px; transform: translate3d(calc(var(--lx, 0) * -6px), calc(var(--ly, 0) * -4px), 0) rotateX(calc(var(--ly, 0) * -6deg)) rotateY(calc(var(--lx, 0) * 8deg)); transition: transform .25s cubic-bezier(.2, .7, .2, 1); will-change: transform; }
+    .z-crest-scene { --crest: clamp(120px, 40cqi, 260px); position: relative; display: block; width: var(--crest); height: var(--crest); perspective: 900px; transform: translate3d(calc(var(--lx, 0) * -6px), calc(var(--ly, 0) * -4px), 0) rotateX(calc(var(--ly, 0) * -6deg)) rotateY(calc(var(--lx, 0) * 8deg)); transition: transform .25s cubic-bezier(.2, .7, .2, 1); }
     .z-crest-scene::after { content: ""; position: absolute; left: 12%; right: 12%; bottom: -14px; height: 18px; border-radius: 50%; background: radial-gradient(closest-side, rgba(0, 0, 0, .75), transparent); filter: blur(3px); transform: translateZ(-60px); pointer-events: none; }
     .z-versus--stage .z-versus-team:nth-child(2) .z-crest-scene { filter: drop-shadow(0 0 22px rgba(var(--z-lime-rgb), .28)); }
     .z-versus--stage .z-versus-team:nth-child(4) .z-crest-scene { filter: drop-shadow(0 0 22px color-mix(in srgb, var(--z-stage-steel) 22%, transparent)); }
@@ -4114,8 +4114,12 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
     .z-crest--visiting { animation-direction: reverse; }
     .z-crest-layer { position: absolute; inset: 0; display: grid; place-items: center; }
     .z-crest-layer img, .z-crest-layer svg { width: 100%; height: 100%; object-fit: contain; overflow: visible; }
-    .z-crest-edge { filter: brightness(0) invert(.62); transform: translateZ(calc((var(--i) - 5.5) * .8px)); }
-    .z-versus--stage .z-versus-team:nth-child(4) .z-crest-edge { filter: brightness(0) invert(.78) sepia(.2) hue-rotate(180deg); }
+    .z-crest-edge { transform: translateZ(calc((var(--i) - 2.5) * 1.7px)); }
+    .z-crest-edge path { fill: #9FA39A; }
+    .z-versus--stage .z-versus-team:nth-child(4) .z-crest-edge path { fill: #8FA0B5; }
+    .z-crest-edge.is-photo { filter: brightness(0) invert(.62); }
+    .z-versus--stage .z-versus-team:nth-child(4) .z-crest-edge.is-photo { filter: brightness(0) invert(.78) sepia(.2) hue-rotate(180deg); }
+    .z-crest.is-paused { animation-play-state: paused; }
     .z-crest-front { transform: translateZ(8px); }
     .z-crest-back { transform: rotateY(180deg) translateZ(8px); }
     /* Escudo de reserva (equipo sin foto): tono propio derivado del nombre, siglas en blanco */
@@ -4257,7 +4261,7 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
         .z-menu > li:nth-child(4) { animation-delay: .24s; }
         .z-menu > li:nth-child(5) { animation-delay: .32s; }
     }
-    @media (prefers-reduced-motion: reduce) {
+    @media (prefers-reduced-motion: reduce), (hover: none) {
         .z-crest { animation: none; transform: rotateY(-20deg); }
         .z-crest-scene { transform: none; transition: none; }
         .z-menu-card, .z-menu-card::after { transition: none; }
