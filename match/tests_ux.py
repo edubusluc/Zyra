@@ -203,6 +203,13 @@ class EnterResultsTests(UxBase):
         self.assertNotContains(page, "z-preview")
         self.assertNotContains(page, "z-f2f")
 
+    def test_no_show_select_hides_behind_a_link_and_order_panel_collapses_on_mobile(self):
+        page = self.client.get(self.url)
+        self.assertContains(page, "data-noshow-toggle")
+        self.assertContains(page, "data-noshow-box hidden")
+        lineup = self.client.get(reverse("edit_games_match", args=[self.m.public_id]))
+        self.assertContains(lineup, "data-order-toggle")
+
     def test_team_names_are_wrapped_so_the_winner_line_has_no_tag_or_pair(self):
         page = self.client.get(self.url)
         self.assertContains(page, "<span data-name>", count=10)  # dos equipos por cada uno de los 5 partidos

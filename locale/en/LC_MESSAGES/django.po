@@ -15748,3 +15748,9 @@ msgstr "Lost"
 
 msgid "Empatado"
 msgstr "Drawn"
+
+msgid "Una pareja no se presentó"
+msgstr "A pair did not show up"
+
+msgid "Mostrar el orden de juego"
+msgstr "Show the playing order"

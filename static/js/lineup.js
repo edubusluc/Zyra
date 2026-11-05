@@ -9,6 +9,21 @@
   const selects = Array.from(form.querySelectorAll('select[data-player]'));
   const list = document.getElementById('pair-order-list');
   const ordered = form.hasAttribute('data-lineup-ordered');
+  // En móvil el orden de juego va plegado; el botón lo abre y lo cierra (en escritorio siempre se ve).
+  const orderToggle = document.querySelector('[data-order-toggle]');
+  if (orderToggle && list) {
+    const mobile = window.matchMedia('(max-width: 991.98px)');
+    const sync = () => {
+      const open = !mobile.matches || orderToggle.getAttribute('aria-expanded') === 'true';
+      list.classList.toggle('is-collapsed', !open);
+    };
+    orderToggle.addEventListener('click', () => {
+      orderToggle.setAttribute('aria-expanded', String(orderToggle.getAttribute('aria-expanded') !== 'true'));
+      sync();
+    });
+    mobile.addEventListener('change', sync);
+    sync();
+  }
   // Puntos SNP enteros con el separador de miles del idioma, igual que en el resto de Zyra («68 500»).
   const groupThousands = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, typeof get_format === 'function' ? get_format('THOUSAND_SEPARATOR') : ' ');
 
