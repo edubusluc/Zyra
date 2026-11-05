@@ -1,9 +1,11 @@
-{# Tarjetas de acción de la ficha (vista «previa»): cada fase es una tarjeta; la actual va en ámbar y las hechas en lima. Cerrar la convocatoria y el acta son formularios con confirmación dentro de su tarjeta; «Más» es la última. #}
+{# Tarjetas de acción de la ficha (vista «previa»). La fase que tiene lista (apuntados, convocados o parejas) es la tarjeta enfocada: ocupa el doble y la lleva dentro. cada fase es una tarjeta; la actual va en ámbar y las hechas en lima. Cerrar la convocatoria y el acta son formularios con confirmación dentro de su tarjeta; «Más» es la última. #}
 {% load i18n %}
 <nav aria-label="{% translate 'Fases del enfrentamiento' %}">
-<ol class="z-menu{% if not can_manage %} z-menu--short{% endif %}">
-{% for c in status_cards %}{% if can_manage or forloop.first or forloop.last %}
-<li>
+<ol class="z-menu{% if not can_manage %} z-menu--short{% endif %}{% if stage_card %} has-focus{% endif %}">
+{% for c in status_cards %}{% if can_manage or forloop.first or forloop.last or forloop.counter == 2 and stage_card.kind == 'pairs' %}
+{% firstof "" as focus %}{% if stage_card %}{% if stage_card.kind == 'pairs' %}{% if forloop.counter == 2 %}{% firstof "1" as focus %}{% endif %}{% elif forloop.counter == 1 %}{% firstof "1" as focus %}{% endif %}{% endif %}
+<li{% if focus %} class="is-focus"{% endif %}>
+{% if focus %}<div class="z-menu-focus">{% endif %}
   {% firstof "" as card_url %}
   {% if can_manage %}{% if forloop.counter == 1 %}{% if not call_for_match %}{% url 'create_call' match_id as card_url %}{% elif match.draft_mode %}{% url 'edit_call' call_for_match.public_id as card_url %}{% endif %}
   {% elif forloop.counter == 2 %}{% if games_count %}{% url 'edit_games_match' match.public_id as card_url %}{% elif phase.action == 'create_games' %}{% url 'create_game' match_id as card_url %}{% endif %}
@@ -18,6 +20,7 @@
     <small>{{ c.figure }}{% if c.state == 'cur' %} · {% translate "siguiente paso" %}{% endif %}{% if c.state == 'done' %}<span class="visually-hidden"> ({% translate "hecho" %})</span>{% endif %}{% if lock_reason %}<span class="visually-hidden"> ({{ lock_reason }})</span>{% endif %}</small>
   </{% if card_url %}a{% else %}div{% endif %}>
   {% endif %}
+{% if focus %}{% include 'includes/stage_card.html' %}</div>{% endif %}
 </li>
 {% endif %}{% endfor %}
 {% if can_manage %}<li>{% include 'includes/ficha_more.html' with card=True %}</li>{% endif %}

@@ -545,3 +545,29 @@ class FichaPreviewTests(UxBase):
 
     def test_no_countdown_for_a_played_match(self):
         self.assertNotContains(self.ficha(self.match(PAST)), "z-stage-count")
+
+    def test_the_list_lives_inside_the_focused_card_of_its_phase(self):
+        m = self.match(FUTURE)
+        call = Call.objects.create(match=m, draft_mode=True)
+        call.players.set(self.players[:4])
+        html = self.ficha(m).content.decode()
+        self.assertIn("has-focus", html)
+        focus = html.index('<li class="is-focus">')
+        self.assertLess(focus, html.index("z-stage-card"))
+        self.assertLess(html.index("z-stage-card"), html.index("</li>", focus))  # la lista va dentro de esa tarjeta
+        self.assertEqual(html.count('<div class="z-menu-focus">'), 1)
+
+    def test_pairs_focus_the_pairs_card_and_players_see_it_too(self):
+        m = self.match(FUTURE)
+        self.closed_call(m)
+        self.lineup(m)
+        page = self.ficha(m)
+        self.assertContains(page, '<li class="is-focus">')
+        self.assertContains(page, "z-stage-card is-pairs")
+        member = User.objects.create_user("socio2", password="pass-12345")
+        Membership.objects.create(user=member, club=self.club, role=Membership.MEMBER)
+        self.client.force_login(member)
+        self.assertContains(self.ficha(m), "z-stage-card is-pairs")
+
+    def test_no_focused_card_without_a_call(self):
+        self.assertNotContains(self.ficha(self.match(FUTURE)), "has-focus")
