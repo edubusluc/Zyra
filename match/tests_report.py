@@ -212,12 +212,14 @@ class ReportTests(TestCase):
                 width = pdfmetrics.stringWidth(header, "Archivo-Bold", 7.5)
                 self.assertLessEqual(width + pad, report_pdf.PLAYER_COLS[col])
 
-    def test_titles_use_the_italic_display_font(self):
-        """El PDF registra Syncopate en cursiva (como los títulos de la web) y la usa en el título."""
+    def test_titles_use_the_display_font(self):
+        """El PDF registra Anton (la fuente de títulos de la web) y la usa en títulos, secciones y cifras."""
         from match.report_pdf import _register_fonts, _styles
         _register_fonts()
-        self.assertIn("Syncopate-Italic", pdfmetrics.getRegisteredFontNames())
-        self.assertEqual(_styles()["title"].fontName, "Syncopate-Italic")
+        self.assertIn("Anton", pdfmetrics.getRegisteredFontNames())
+        for name in ("title", "section", "kpi_value", "lineup_title"):
+            with self.subTest(style=name):
+                self.assertEqual(_styles()[name].fontName, "Anton")
 
     def test_not_enough_players(self):
         self.call.players.set(self.players[:6])
