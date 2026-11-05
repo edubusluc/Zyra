@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 05/11/2026 · Ficha del enfrentamiento: cara a cara en la previa
+
+- **Previa rediseñada**: victorias, empates y derrotas contra ese rival en cifras grandes, una barra con la proporción y los tres últimos enfrentamientos (fecha, desenlace y marcador, cada uno enlazado), más la mejor pareja contra ellos.
+
 ## 05/11/2026 · Ficha del enfrentamiento: previa con escudos 3D
 
 - **Escudos en 3D**: los escudos de los dos equipos se muestran extruidos (sin ficha detrás) y giran despacio y sin parar, en sentidos opuestos; con «reducir animaciones» se quedan quietos. Sin foto, un escudo con las iniciales.

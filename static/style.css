@@ -1326,6 +1326,7 @@ a.z-card:hover, .z-card--link:hover {
 .z-stage-more { margin: 6px 0 0; font-size: var(--z-fs-xs); color: var(--z-muted); }
 @media (min-width: 992px) {
     .z-versus { grid-template-columns: minmax(0, 1fr) minmax(240px, 320px) minmax(0, 1fr); aspect-ratio: auto; padding: 22px 4%; align-items: center; }
+    .z-versus::before { display: none; }
     .z-versus-mid { position: static; transform: none; padding: 0; background: none; display: grid; justify-items: center; }
     .z-versus-team:first-child, .z-versus-team:last-child { padding: 0; text-align: center; justify-items: center; }
 }
@@ -3221,6 +3222,22 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
     background: rgba(var(--z-lime-rgb), .06);
 }
 .z-preview-title { margin: 0 0 4px; font-size: var(--z-fs-xs); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--z-lime); }
+.z-h2h { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; text-align: center; }
+.z-h2h-n { margin: 0; }
+.z-h2h-n b { display: block; font: 400 2rem/1 var(--z-display); color: #FFFFFF; }
+.z-h2h-n span { font-size: var(--z-fs-xs); letter-spacing: .1em; text-transform: uppercase; color: var(--z-muted); }
+.z-h2h-bar { display: flex; height: 6px; margin: 10px 0; background: var(--z-surface-3); }
+.z-h2h-bar i { display: block; background: var(--z-muted); }
+.z-h2h-bar .is-win { background: var(--z-lime); }
+.z-h2h-bar .is-loss { background: var(--z-danger); }
+.z-h2h-last { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; font-size: var(--z-fs-sm); }
+.z-h2h-last a { display: flex; justify-content: space-between; gap: 8px; padding-top: 6px; color: var(--z-text); text-decoration: none; border-top: 1px solid var(--z-border); }
+.z-h2h-last a:hover strong { text-decoration: underline; }
+.z-h2h-last span { color: var(--z-muted); }
+.z-h2h-last strong::first-letter { text-transform: uppercase; }
+.z-h2h-last .is-win { color: var(--z-lime); }
+.z-h2h-last .is-loss { color: var(--z-danger); }
+.z-h2h-best { margin: 10px 0 0; font-size: var(--z-fs-sm); color: var(--z-muted); }
 .st-sort { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0 0; }
 
 /* Tablas de Rivales: caben en pantalla sin scroll lateral (el texto se ajusta y en móvil se compactan) */
