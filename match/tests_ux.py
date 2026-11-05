@@ -188,6 +188,21 @@ class EnterResultsTests(UxBase):
         for n in range(1, 6):
             self.assertContains(page, f'name="g{n}_set1_local"')
 
+    def test_action_screens_share_the_compact_stage_header(self):
+        call = Call.objects.get(match=self.m)
+        game = Game.objects.filter(match=self.m).first()
+        for url in (self.url, reverse("edit_games_match", args=[self.m.public_id]),
+                    reverse("edit_call", args=[call.public_id]), reverse("create_result", args=[game.public_id])):
+            page = self.client.get(url)
+            self.assertContains(page, 'class="z-strip"', msg_prefix=url)
+            self.assertContains(page, "z-mini-crest", count=2, msg_prefix=url)
+
+    def test_call_screens_do_not_repeat_the_preview(self):
+        call = Call.objects.get(match=self.m)
+        page = self.client.get(reverse("edit_call", args=[call.public_id]))
+        self.assertNotContains(page, "z-preview")
+        self.assertNotContains(page, "z-f2f")
+
     def test_team_names_are_wrapped_so_the_winner_line_has_no_tag_or_pair(self):
         page = self.client.get(self.url)
         self.assertContains(page, "<span data-name>", count=10)  # dos equipos por cada uno de los 5 partidos
