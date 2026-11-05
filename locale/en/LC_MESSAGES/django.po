@@ -15690,3 +15690,14 @@ msgstr[1] "%(n)s more matches scheduled"
 #: match/templates/list_match.html
 msgid "Ver el calendario completo"
 msgstr "See the full calendar"
+
+#, python-format
+msgid "%(n)s · %(s)s suplentes"
+msgstr "%(n)s · %(s)s substitutes"
+
+msgid "SUP"
+msgstr "SUB"
+
+#, python-format
+msgid "y %(n)s más"
+msgstr "and %(n)s more"

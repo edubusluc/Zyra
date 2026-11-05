@@ -21,6 +21,7 @@ from team.models import Team
 
 User = get_user_model()
 PAST = datetime.date(2026, 10, 10)
+FUTURE = datetime.date(2027, 3, 1)
 
 
 def texts(response):
@@ -370,3 +371,51 @@ class ClubAndSharedPiecesTests(UxBase):
         response = self.client.get(reverse("team_statistics"), {"season": "all"})
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, "myPieChart")
+
+
+class FichaPreviewTests(UxBase):
+    """Previa de la ficha: escudos 3D y tarjeta central según la fase."""
+
+    def ficha(self, m):
+        return self.client.get(reverse("call_for_match", args=[m.public_id]))
+
+    def test_crests_render_for_both_teams_with_initials_without_photo(self):
+        page = self.ficha(self.match(FUTURE))
+        self.assertContains(page, "z-crest-front", count=2)
+        self.assertContains(page, "z-crest-back", count=2)
+        self.assertContains(page, ">RI<")  # el rival sin foto muestra sus iniciales
+
+    def test_no_card_without_a_call(self):
+        self.assertNotContains(self.ficha(self.match(FUTURE)), "z-stage-card")
+
+    def test_open_call_shows_signed_up_players(self):
+        m = self.match(FUTURE)
+        call = Call.objects.create(match=m, draft_mode=True)
+        call.players.set(self.players[:3])
+        page = self.ficha(m)
+        self.assertContains(page, "is-open")
+        self.assertContains(page, "Jug00")
+
+    def test_closed_call_lists_called_players(self):
+        m = self.match(FUTURE)
+        self.closed_call(m)
+        page = self.ficha(m)
+        self.assertContains(page, "is-called")
+
+    def test_lineup_replaces_the_call_with_pairs(self):
+        m = self.match(FUTURE)
+        self.closed_call(m)
+        self.lineup(m)
+        page = self.ficha(m)
+        self.assertContains(page, "is-pairs")
+        self.assertContains(page, "Jug00 X / Jug01 X")
+        self.assertNotContains(page, "is-called")
+
+    def test_long_call_is_trimmed_with_a_remainder(self):
+        from match.views import STAGE_CARD_MAX
+        m = self.match(FUTURE)
+        call = Call.objects.create(match=m, draft_mode=True)
+        extra = [Player.objects.create(club=self.club, name=f"Extra{i}", last_name="Z", snp_score=10 + i) for i in range(5)]
+        call.players.set(self.players + extra)
+        page = self.ficha(m)
+        self.assertContains(page, f"y {len(self.players) + 5 - STAGE_CARD_MAX} más")

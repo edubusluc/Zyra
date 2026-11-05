@@ -1,0 +1,1 @@
+{% if team and team.photo %}<img src="{{ team.photo.url }}" alt="" decoding="async">{% else %}<svg viewBox="0 0 100 104" focusable="false"><path d="M50 3 94 17V52C94 77 76 93 50 101 24 93 6 77 6 52V17Z" class="z-crest-shield"/><text x="50" y="66" text-anchor="middle" class="z-crest-initials">{{ name|slice:":2"|upper }}</text></svg>{% endif %}

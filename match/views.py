@@ -798,6 +798,48 @@ def match_kind(match):
     return {"title": title, "subtitle": match.club.rules.name}
 
 
+STAGE_CARD_MAX = 12  # nombres visibles en la tarjeta central; el resto va como «y N más»
+
+
+def stage_card(match, call, convocados, games, rows, min_call):
+    """Contenido de la tarjeta sobre el VS de la ficha: apuntados, convocados o parejas.
+
+    Sin convocatoria o con el acta cerrada no hay tarjeta (devuelve None): el marcador ya cuenta
+    el desenlace. ``rows`` son las parejas propias (``lineup_rows``) y ``min_call`` los apuntados
+    que pide la competición.
+    """
+    if not call or not match.draft_mode:
+        return None
+    if rows:
+        return {"kind": "pairs", "title": _("Parejas"), "meta": "", "rows": rows}
+    players = [{"name": p.short_name, "sub": p.is_sub} for p in convocados]
+    if call.draft_mode:
+        return {"kind": "open", "title": _("Apuntados"),
+                "meta": _("%(n)s de %(total)s") % {"n": len(players), "total": min_call},
+                "pct": min(100, round(100 * len(players) / min_call)) if min_call else 0,
+                "players": players[:STAGE_CARD_MAX], "more": max(0, len(players) - STAGE_CARD_MAX)}
+    subs = sum(1 for p in players if p["sub"])
+    meta = _("%(n)s · %(s)s suplentes") % {"n": len(players), "s": subs} if subs else str(len(players))
+    return {"kind": "called", "title": _("Convocados"), "meta": meta,
+            "players": players[:STAGE_CARD_MAX], "more": max(0, len(players) - STAGE_CARD_MAX)}
+
+
+def lineup_rows(match, games):
+    """Parejas propias de cada partido alineado, para la previa de la ficha: [{"n", "label"}].
+
+    Solo con el acta abierta (con ella cerrada, los resultados ya muestran las parejas) y sin
+    contar los partidos con pareja no presentada o sin jugadores propios.
+    """
+    if not match.draft_mode:
+        return []
+    rows = []
+    for game in games:
+        label = game.local_pair_label if match.own_is_local else game.visiting_pair_label
+        if label and not game.no_show:
+            rows.append({"n": game.n_game, "label": label})
+    return rows
+
+
 @club_required
 def call_for_match(request, match_id):
     """Página de un enfrentamiento: convocatoria, partidos y resultados.
@@ -851,6 +893,8 @@ def call_for_match(request, match_id):
         "score_local": split_points(match.result_points)[0] if outcome else None,
         "score_visiting": split_points(match.result_points)[1] if outcome else None,
         "is_future": match.start_date > today,
+        "stage_card": stage_card(match, call, convocados, games, lineup_rows(match, games),
+                                 competition_for(match).min_call_players),
         "my_status": my_status,
         "report_emails": ", ".join(admin_emails(request.club)) if call else "",
         "share_text": share_text(match, games) if not match.draft_mode else "",
