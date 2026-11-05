@@ -1304,9 +1304,9 @@ a.z-card:hover, .z-card--link:hover {
 .z-crest--visiting { animation-direction: reverse; }
 .z-crest-layer { position: absolute; inset: 0; display: grid; place-items: center; }
 .z-crest-layer img, .z-crest-layer svg { width: 100%; height: 100%; object-fit: contain; overflow: visible; }
-.z-crest-edge { filter: brightness(.42); transform: translateZ(calc((var(--i) - 5.5) * 1.5px)); }
-.z-crest-front { transform: translateZ(14px); }
-.z-crest-back { transform: rotateY(180deg) translateZ(14px); }
+.z-crest-edge { filter: brightness(0) invert(.62); transform: translateZ(calc((var(--i) - 5.5) * .8px)); }
+.z-crest-front { transform: translateZ(8px); }
+.z-crest-back { transform: rotateY(180deg) translateZ(8px); }
 .z-crest-shield { fill: var(--z-lime); stroke: var(--z-ink); stroke-width: 3; }
 .z-crest-initials { font: 400 34px var(--z-display); fill: var(--z-ink); }
 @keyframes z-crest-spin { to { transform: rotateY(360deg); } }
