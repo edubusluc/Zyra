@@ -3,6 +3,14 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 05/11/2026 · Ficha del enfrentamiento: escenario «Pista» (fase 2)
+
+- **Pista como escenario**: el fondo es una pista de pádel inclinada con sus líneas y la red como divisor entre local y visitante; el VS (o el marcador) queda sobre la red y los escudos de pie sobre el suelo.
+- **Datos en chips**: fecha y hora, y lugar, como chips sobre el escenario; «Local» y «Visitante» como cinta bajo cada nombre (lima el local, acero el visitante).
+- **Cuenta atrás**: bajo el VS, «Hoy», «Mañana» o «Faltan N días» mientras el acta está abierta.
+- **La lista sale del escenario**: apuntados, convocados o parejas van ahora bajo las tarjetas de acción, así que el escenario mide lo mismo con 3 o con 17 jugadores y los escudos se ven siempre en la primera pantalla del móvil.
+- **Tablet**: el escenario usa el diseño de tres columnas desde 768 px.
+
 ## 05/11/2026 · Ficha del enfrentamiento: cimientos (fase 1)
 
 - **Escudo de reserva**: un equipo sin foto muestra un escudo con tono propio derivado de su nombre y las siglas de sus dos primeras palabras («AI», «NO»), en vez del escudo lima igual para todos.
