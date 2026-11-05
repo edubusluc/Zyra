@@ -106,7 +106,7 @@
       </section>
       {% endif %}
 
-      <section id="sec-plantilla" aria-labelledby="roster-title" class="st-section" data-level="compare" data-summary="{% blocktranslate count n=roster.rows|length %}{{ n }} jugador{% plural %}{{ n }} jugadores{% endblocktranslate %}">
+      <section id="sec-plantilla" aria-labelledby="roster-title" class="st-section" data-level="compare" data-summary="{% blocktranslate count n=roster.total %}{{ n }} jugador{% plural %}{{ n }} jugadores{% endblocktranslate %}">
         <h2 class="st-section-title" id="roster-title">{% translate "Plantilla" %}{% if selected_season %} · {{ selected_season }}{% endif %}</h2>
         {% include 'includes/roster_table.html' %}
       </section>
@@ -208,4 +208,5 @@
 
   <script src="{% static 'js/team_statistics.js' %}"></script>
   <script src="{% static 'js/stats-tips.js' %}"></script>
+  <script src="{% static 'js/roster-table.js' %}" defer></script>
 {% endblock %}

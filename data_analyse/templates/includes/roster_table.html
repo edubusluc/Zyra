@@ -38,6 +38,7 @@
       </tbody>
     </table>
   </div>
+  {% include 'includes/pagination.html' with page=roster.rows extra=roster.page_extra %}
   {% else %}
     <p class="st-muted mt-3 mb-0">{% translate "Todavía no hay jugadores en el equipo." %}</p>
   {% endif %}

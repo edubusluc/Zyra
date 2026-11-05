@@ -125,7 +125,46 @@ class RosterPagesTests(ClubDataMixin, TestCase):
         self.assertContains(page, 'id="sec-plantilla"')
         self.assertNotContains(page, "st-player-grid")
         self.assertNotContains(page, "Pulsa en un jugador")
-        self.assertEqual(len(page.context["roster"]["rows"]), Player.objects.filter(club=self.club, in_team=True).count())
+        self.assertEqual(page.context["roster"]["total"], Player.objects.filter(club=self.club, in_team=True).count())
+
+
+class RosterPaginationTests(ClubDataMixin, TestCase):
+    """La tabla de plantilla (Equipo y entrada de Jugadores) se pagina de 15 en 15."""
+
+    def setUp(self):
+        super().setUp()
+        for i in range(20):  # 5 + 20 = 25 jugadores
+            Player.objects.create(club=self.club, name=f"Extra{i:02d}", last_name="Prueba", joined_season="2020-2021")
+
+    def _get(self, name, **params):
+        return self.client.get(reverse(name), {"season": "all", "match_type": "todos", **params})
+
+    def test_both_pages_show_15_per_page_with_pager(self):
+        for name in ("team_statistics", "player_statistics"):
+            with self.subTest(name):
+                page = self._get(name)
+                roster = page.context["roster"]
+                self.assertEqual((len(roster["rows"]), roster["total"], roster["rows"].paginator.num_pages), (15, 25, 2))
+                self.assertContains(page, "page-link")
+                self.assertContains(page, "1 de 2")
+                self.assertEqual(len(self._get(name, page=2).context["roster"]["rows"]), 10)
+
+    def test_small_roster_has_no_pager(self):
+        Player.objects.filter(name__startswith="Extra").delete()
+        self.assertNotContains(self._get("team_statistics"), "page-link")
+
+    def test_pager_and_options_keep_filters_and_reset_page(self):
+        roster = self._get("team_statistics", page=2, orden="played").context["roster"]
+        self.assertEqual(roster["rows"].number, 2)
+        self.assertIn("orden=played", roster["page_extra"])
+        self.assertTrue(roster["page_extra"].endswith("#sec-plantilla"))
+        self.assertNotIn("page=", roster["page_extra"])
+        self.assertTrue(all("page=" not in url for _v, _l, url, _a in roster["sides"]))
+        self.assertTrue(all("page=" not in url for url in roster["sort_urls"].values()))
+        self.assertTrue(all("page=" not in r["url"] for r in roster["rows"]))
+
+    def test_summary_counts_the_whole_squad(self):
+        self.assertContains(self._get("team_statistics"), 'data-summary="25 jugadores"')
 
 
 class RosterSideAndMinimumTests(ClubDataMixin, TestCase):

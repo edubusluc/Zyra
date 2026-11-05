@@ -290,14 +290,17 @@ def format_for_chart(dic):
 
 ROSTER_ANCHOR = "sec-plantilla"
 # Parámetros propios de la tabla de plantilla: no se arrastran al enlace de una ficha.
-ROSTER_PARAMS = ("lado", "orden")
+ROSTER_PARAMS = ("lado", "orden", PAGE_PARAM)
+# Jugadores por página en la tabla de plantilla.
+ROSTER_PER_PAGE = 15
 
 
 def roster_context(request, players, log, season, match_type, snp=None):
     """
     Datos de la tabla de plantilla (``includes/roster_table.html``) con las opciones de ``?lado=`` y
-    ``?orden=``: filas, enlaces de cada opción (siempre con el resto de filtros y con el ancla
-    de la tabla) y el enlace de la ficha de cada jugador.
+    ``?orden=``: filas de la página pedida con ``?page=`` (``ROSTER_PER_PAGE`` por página), enlaces de cada
+    opción (siempre con el resto de filtros, con el ancla de la tabla y volviendo a la primera página) y el
+    enlace de la ficha de cada jugador. ``total`` es el número de jugadores de toda la plantilla.
     """
     has_snp = request.club.rules.has_snp
     side, sort = roster_table.parse_options(request.GET, has_snp)
@@ -308,20 +311,26 @@ def roster_context(request, players, log, season, match_type, snp=None):
     def url(**changes):
         """Enlace a esta misma página con ``changes`` sobre los parámetros actuales y el ancla de la tabla."""
         params = request.GET.copy()
+        params.pop(PAGE_PARAM, None)
         for key, value in changes.items():
             params[key] = value
         return f"{request.path}?{params.urlencode()}#{ROSTER_ANCHOR}"
 
+    page = Paginator(rows, ROSTER_PER_PAGE).get_page(request.GET.get(PAGE_PARAM))
+    keep = request.GET.copy()
+    keep.pop(PAGE_PARAM, None)
+
     sheet = request.GET.copy()
     for key in ROSTER_PARAMS:
         sheet.pop(key, None)
-    for row in rows:
+    for row in page:
         sheet["player"] = row["player"].public_id
         row["url"] = f"{reverse('player_statistics')}?{sheet.urlencode()}"
     side_labels = {roster_table.SIDE_ALL: _("Todos"), roster_table.SIDE_LOCAL: _("Local"),
                    roster_table.SIDE_VISITING: _("Visitante")}
     return {"roster": {
-        "rows": rows, "side": side, "sort": sort, "has_snp": has_snp,
+        "rows": page, "total": len(rows), "side": side, "sort": sort, "has_snp": has_snp,
+        "page_extra": (("&" + keep.urlencode() if keep else "") + f"#{ROSTER_ANCHOR}"),
         "sides": [(value, side_labels[value], url(lado=value), value == side) for value in roster_table.SIDES],
         "sort_urls": {key: url(orden=key) for key in roster_table.SORTS},
         "anchor": ROSTER_ANCHOR,

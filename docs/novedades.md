@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 05/11/2026 · Plantilla paginada en Estadísticas
+
+- **Tabla de plantilla de 15 en 15**: en Estadísticas › Equipo y Jugadores la plantilla se pagina de 15 en 15 jugadores. Cambiar de página, ordenar o elegir Local/Visitante solo actualiza la tabla, sin recargar toda la pantalla.
+
 ## 05/11/2026 · Inicio: partidos semana a semana
 
 - **Carrusel por semana**: «Próximo enfrentamiento» solo enseña los partidos de la semana (lunes a domingo); si esta semana no queda ninguno, enseña la siguiente semana con partidos.
