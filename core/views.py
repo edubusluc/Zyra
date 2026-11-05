@@ -58,10 +58,8 @@ from .services import (
 INVITATIONS_PER_PAGE = 10
 # Un segundo envío igual dentro de este margen se toma por doble clic y no crea otra invitación.
 DOUBLE_SUBMIT_WINDOW = datetime.timedelta(seconds=30)
-# Filas del bloque «Pendiente» del inicio: el resto se ve en el listado de enfrentamientos.
-HOME_PENDING_ROWS = 3
-# Enfrentamientos que el carrusel del inicio deja deslizar: el más cercano y los dos siguientes.
-HOME_UPCOMING_MAX = 3
+# Semanas naturales (lunes a domingo) por página del bloque «Pendiente» del inicio.
+HOME_PENDING_WEEKS_PER_PAGE = 2
 
 # Invitación pendiente de aceptar mientras el visitante inicia sesión con Google
 PENDING_INVITE_KEY = "pending_invitation"
@@ -90,6 +88,27 @@ DELETE_ACCOUNT_LIMIT, DELETE_ACCOUNT_WINDOW = 5, 60 * 60
 def email_needs_confirmation(user):
     """True si la cuenta tiene email por confirmar (las de Google no tienen contraseña y nacen verificadas)."""
     return bool(user.email) and user.has_usable_password() and not email_verification.is_verified(user)
+
+
+def _week_start(day):
+    """Lunes de la semana natural que contiene ``day``."""
+    return day - datetime.timedelta(days=day.weekday())
+
+
+def _home_pending_pages(rows):
+    """
+    Agrupa las filas de «Pendiente» (ya ordenadas por fecha, sin vencidos) en páginas de
+    ``HOME_PENDING_WEEKS_PER_PAGE`` semanas naturales con partidos; las semanas vacías no cuentan.
+    Cada página lleva sus filas y el lunes y domingo que abarca.
+    """
+    weeks = sorted({_week_start(r["match"].start_date) for r in rows})
+    pages = []
+    for i in range(0, len(weeks), HOME_PENDING_WEEKS_PER_PAGE):
+        chunk = weeks[i:i + HOME_PENDING_WEEKS_PER_PAGE]
+        start, end = chunk[0], chunk[-1] + datetime.timedelta(days=6)
+        pages.append({"start": start, "end": end,
+                      "rows": [r for r in rows if start <= r["match"].start_date <= end]})
+    return pages
 
 
 def _home_upcoming(user, match, my_player, club, today):
@@ -122,16 +141,22 @@ def home(request):
     clubs = spaces.user_clubs(request) or [club]
     # Actas abiertas, las más antiguas primero: las pasadas son lo que se quedó a medias (H-02).
     open_matches = list(Match.objects.filter(club__in=clubs, draft_mode=True)
-                        .select_related('local', 'visiting', 'club').order_by('start_date', 'id')[:30])
+                        .select_related('local', 'visiting', 'club').order_by('start_date', 'id')[:200])
     phases = phases_for(open_matches)
     next_match = next((m for m in open_matches if m.start_date >= today), None)
     managed = spaces.managed_clubs(request, clubs)
     pending = [{"match": m, "phase": phases[m.id], "overdue": m.start_date < today}
                for m in open_matches if m.club in managed]
     my_player = Player.objects.filter(club=club, user=request.user).first()
-    # Carrusel «Próximo enfrentamiento»: el más cercano va delante y el siguiente asoma por detrás.
+    # «Pendiente»: los vencidos siempre, aparte; el resto, en páginas de dos semanas naturales.
+    pending_overdue_rows = [r for r in pending if r["overdue"]]
+    pending_pages = _home_pending_pages([r for r in pending if not r["overdue"]])
+    # Carrusel «Próximo enfrentamiento»: solo la semana natural del más cercano (la actual o, si no
+    # queda nada en ella, la siguiente con partidos); el más cercano va delante y el siguiente asoma.
+    future = [m for m in open_matches if m.start_date >= today]
+    week_end = _week_start(future[0].start_date) + datetime.timedelta(days=6) if future else None
     upcoming = [_home_upcoming(request.user, m, my_player, club, today)
-                for m in [m for m in open_matches if m.start_date >= today][:HOME_UPCOMING_MAX]]
+                for m in future if m.start_date <= week_end]
     my_status = upcoming[0]["status"] if upcoming else None
     # Banner: con varios equipos, todos (en el orden de las competiciones), no el del espacio activo.
     home_teams = [{"club": c, "team": c.own_team, "membership": spaces.membership_for(request, c)}
@@ -178,7 +203,9 @@ def home(request):
         'season': current_season(),
         'next_match': next_match,
         'upcoming': upcoming,
-        'pending': pending[:HOME_PENDING_ROWS],
+        'pending': pending,
+        'pending_overdue_rows': pending_overdue_rows,
+        'pending_pages': pending_pages,
         'pending_total': len(pending),
         'pending_overdue': sum(1 for p in pending if p['overdue']),
         'multi_space': spaces.is_multi_space(request),

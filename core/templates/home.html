@@ -257,24 +257,38 @@
         {% if can_manage %}<a class="btn btn-primary btn-sm" href="{% url 'create_match' %}">+ {% translate "Nuevo" %}</a>{% endif %}
     </div>
 {% if pending %}
+{% if pending_overdue_rows %}
 <ul class="z-pending">
-    {% for row in pending %}
-    <li>
-        <a href="{% url 'call_for_match' row.match.public_id %}" class="z-pending-row{% if row.overdue %} is-overdue{% endif %}">
-            <span class="z-pending-main">
-                <strong>{% include 'includes/competition_badge.html' with code=row.match.club.competition name=row.match.club.rules.name short=True %} {{ row.match.rival_label }}</strong>
-                <span class="z-pending-line">
-                    <small>{{ row.match.start_date|date_long }} · {% if row.overdue %}{% translate "Vencido" %} · {% endif %}{{ row.phase.label }}</small>
-                    <span class="z-pending-action">{{ row.phase.pending_label }} <i class="fa-solid fa-chevron-right" aria-hidden="true"></i></span>
-                </span>
-            </span>
-        </a>
-    </li>
+    {% for row in pending_overdue_rows %}
+    <li>{% include 'includes/pending_row.html' %}</li>
     {% endfor %}
 </ul>
-{% if pending_total > pending|length %}
-<p><a href="{% url 'list_match' %}?season=all">{% blocktranslate with n=pending_total %}Ver los {{ n }} pendientes{% endblocktranslate %}{% if pending_overdue %} {% blocktranslate trimmed count o=pending_overdue %}({{ o }} con fecha pasada){% plural %}({{ o }} con fecha pasada){% endblocktranslate %}{% endif %}</a></p>
 {% endif %}
+{# Páginas de dos semanas: sin JS se ven todas; static/js/pending-pages.js enseña una y el selector cambia de página. #}
+<div data-pending-pages>
+    {% for page in pending_pages %}
+    <div data-pending-page role="group" aria-label="{% blocktranslate with n=forloop.counter total=pending_pages|length %}Página {{ n }} de {{ total }}{% endblocktranslate %}">
+        <ul class="z-pending">
+            {% for row in page.rows %}
+            <li>{% include 'includes/pending_row.html' %}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endfor %}
+    {% if pending_pages|length > 1 %}
+    <div class="z-next-picker" data-pending-picker hidden>
+        <button type="button" class="z-next-arrow" data-pending-prev aria-label="{% translate 'Página anterior' %}"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
+        <div class="z-next-chips">
+            {% for page in pending_pages %}
+            <button type="button" class="z-next-chip" data-pending-dot aria-label="{% blocktranslate with n=forloop.counter total=pending_pages|length start=page.start|date_short end=page.end|date_short %}Ver la página {{ n }} de {{ total }} · del {{ start }} al {{ end }}{% endblocktranslate %}"{% if forloop.first %} aria-current="true"{% endif %}>
+                <span class="z-next-chip-date">{{ page.start|date_short }} – {{ page.end|date_short }}</span>
+            </button>
+            {% endfor %}
+        </div>
+        <button type="button" class="z-next-arrow" data-pending-next aria-label="{% translate 'Página siguiente' %}"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+    </div>
+    {% endif %}
+</div>
 {% else %}
 <div class="z-empty"><i class="fa-solid fa-circle-check" aria-hidden="true"></i>{% translate "Todo al día" %}</div>
 {% endif %}
@@ -349,7 +363,7 @@
         <div class="z-myform-zone z-myform-snp">
             <div class="z-myform-snp-head">
                 <span class="z-eyebrow">{% translate "Puntos SNP" %} <span class="z-myform-snp-period">· {% translate "últimos 30 días" %}</span></span>
-                <span class="z-myform-big">{{ my_form.snp.score|snp_points }}{% if my_form.snp.delta %} <small class="{% if my_form.snp.delta > 0 %}z-myform-up{% else %}z-myform-down{% endif %}">{% if my_form.snp.delta > 0 %}+{% endif %}{{ my_form.snp.delta|floatformat:"-1" }} <span class="visually-hidden">{% translate "en los últimos 30 días" %}</span></small>{% endif %}</span>
+                <span class="z-myform-big">{{ my_form.snp.score|snp_points }}{% if my_form.snp.delta %} <small class="{% if my_form.snp.delta > 0 %}z-myform-up{% else %}z-myform-down{% endif %}">{% if my_form.snp.delta > 0 %}+{% endif %}{{ my_form.snp.delta|floatformat:"-1" }} <span class="visually-hidden">{% translate "respecto a la actualización anterior" %}</span></small>{% endif %}</span>
             </div>
             {% with chart=my_form.snp.chart %}
             {% if chart %}
@@ -386,5 +400,6 @@
 
 
 <script src="{% static 'js/next-match-deck.js' %}"></script>
+<script src="{% static 'js/pending-pages.js' %}"></script>
 {% if my_form.snp.chart %}<script src="{% static 'js/my-form-chart.js' %}"></script>{% endif %}
 {% endblock %}
