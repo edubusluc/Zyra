@@ -25,12 +25,8 @@ on:
   schedule:
     - cron: "17 */3 * * *"
 
-# Mínimo privilegio: lee el código y escribe en issues. «id-token» lo exige la acción de Claude.
-permissions:
-  contents: read
-  issues: write
-  pull-requests: read
-  id-token: write
+# Mínimo privilegio: sin permisos por defecto; cada job declara los suyos.
+permissions: {}
 
 concurrency:
   group: idea-analysis-${{ github.event.issue.number || inputs.issue }}
@@ -57,6 +53,12 @@ jobs:
           done
 
   analizar:
+    # Lee el código y escribe en issues. «id-token» lo exige la acción de Claude.
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: read
+      id-token: write
     # Solo se ejecuta por orden del propietario: nadie más puede lanzar el análisis ni inyectar instrucciones.
     if: >-
       (github.event_name == 'workflow_dispatch' && inputs.tipo == 'idea') || (
