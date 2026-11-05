@@ -261,11 +261,12 @@ class RivalViewsTests(RivalsBase):
         self.client.login(username="otro", password="pass-12345")
         self.assertNotContains(self.client.get(reverse("rival_statistics")), "Norte")
 
-    def test_preview_block_on_match_and_call_pages(self):
+    def test_preview_block_on_match_page_only(self):
         self.seed()
         nxt = Match.objects.create(club=self.club, local=self.own, visiting=self.norte, start_date=datetime.date(2026, 5, 1))
-        for url in (reverse("call_for_match", args=[nxt.public_id]), reverse("create_call", args=[nxt.public_id])):
-            self.assertContains(self.client.get(url), "Previa", msg_prefix=url)
+        self.assertContains(self.client.get(reverse("call_for_match", args=[nxt.public_id])), "Previa")
+        # En crear convocatoria ya no se repite: el balance contra el rival está en la ficha.
+        self.assertNotContains(self.client.get(reverse("create_call", args=[nxt.public_id])), "Previa")
         fresh = Match.objects.create(club=self.club, local=self.own, visiting=Team.objects.create(
             club=self.club, name="Nuevo", location="X", in_group=True), start_date=datetime.date(2026, 5, 8))
         self.assertNotContains(self.client.get(reverse("call_for_match", args=[fresh.public_id])), "z-preview")

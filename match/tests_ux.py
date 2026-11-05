@@ -197,9 +197,11 @@ class EnterResultsTests(UxBase):
             self.assertContains(page, 'class="z-strip"', msg_prefix=url)
             self.assertContains(page, "z-mini-crest", count=2, msg_prefix=url)
 
-    def test_call_screens_show_the_face_to_face_instead_of_the_old_preview(self):
+    def test_call_screens_do_not_repeat_the_preview(self):
         call = Call.objects.get(match=self.m)
-        self.assertNotContains(self.client.get(reverse("edit_call", args=[call.public_id])), "z-preview")
+        page = self.client.get(reverse("edit_call", args=[call.public_id]))
+        self.assertNotContains(page, "z-preview")
+        self.assertNotContains(page, "z-f2f")
 
     def test_team_names_are_wrapped_so_the_winner_line_has_no_tag_or_pair(self):
         page = self.client.get(self.url)
