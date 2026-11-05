@@ -6,6 +6,9 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 ## 05/11/2026 · Estadísticas: plantilla paginada
 
 - **Tabla de plantilla**: en «Estadísticas · Equipo» y en la entrada de «Jugadores» se muestran 15 jugadores por página, con «Anterior» / «Siguiente» debajo. Cambiar de lado (Todos/Local/Visitante) o de orden vuelve a la primera página. (Issue #256)
+## 05/11/2026 · Informes PDF con la fuente actual de la web
+
+- **Títulos y cifras de los PDF** (convocatoria e informe mensual) pasan a Anton, la fuente de títulos de la web, en lugar de Syncopate en cursiva. El logotipo «ZYRA» de la cabecera conserva Syncopate. (Issue #254)
 
 ## 03/11/2026 · Inicio: carrusel de próximos enfrentamientos
 
