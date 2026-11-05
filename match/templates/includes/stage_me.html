@@ -1,0 +1,5 @@
+{% load i18n %}{# Qué le toca al jugador enlazado a esta cuenta, en una pastilla bajo el VS de la ficha (my_status, match/phase.py). #}
+{% if my_status.has_call %}
+<p class="z-stage-me {% if my_status.called %}is-in{% else %}is-out{% endif %}" role="status"><i class="fa-solid {% if my_status.called %}fa-circle-check{% else %}fa-circle-info{% endif %}" aria-hidden="true"></i>
+<span>{% if my_status.called and not my_status.closed %}{% translate "Te has apuntado" %}{% elif my_status.called %}{% translate "Estás convocado" %}{% if my_status.game %} · {% blocktranslate with n=my_status.game.n_game %}Partido {{ n }}{% endblocktranslate %}{% if my_status.partner %} · {% blocktranslate with name=my_status.partner.short_name %}con {{ name }}{% endblocktranslate %}{% endif %}{% endif %}{% elif not my_status.closed %}{% translate "Todavía no te has apuntado" %}{% else %}{% translate "No estás convocado" %}{% endif %}</span></p>
+{% endif %}

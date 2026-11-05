@@ -3,6 +3,22 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 05/11/2026 · Ficha del enfrentamiento: cimientos (fase 1)
+
+- **Escudo de reserva**: un equipo sin foto muestra un escudo con tono propio derivado de su nombre y las siglas de sus dos primeras palabras («AI», «NO»), en vez del escudo lima igual para todos.
+- **Fases como lista**: las tarjetas de acción vuelven a ser una lista ordenada con el paso actual marcado; las fases todavía no disponibles (parejas, resultados, acta) salen con candado, sin relieve y con el motivo para lectores de pantalla y como ayuda al pasar el ratón.
+- **Aviso personal**: bajo el VS, una pastilla dice si te has apuntado, si estás convocado (con tu partido y tu pareja) o si no lo estás, solo mientras el acta está abierta.
+- **Tamaños y fecha**: ningún texto de la ficha baja de 12 px, los controles (paginador, lápiz de fecha, volver) miden 44 px y desaparece el punto suelto entre fecha y lugar en móvil.
+- **Por dentro**: todo el CSS de la ficha vive ahora en un solo bloque dentro de las capas del sistema de diseño y usa tokens `--z-stage-*`; se elimina lo que se anulaba (degradado del VS, barra de apuntados oculta, fondo de la tarjeta).
+
+## 05/11/2026 · Inicio con tarjetas del mismo alto
+
+- **Inicio · Próximo enfrentamiento y Pendiente**: en escritorio las dos tarjetas miden siempre lo mismo, la de la más alta. Con un único enfrentamiento (sin selector) la pista ocupa también el hueco que reservaría el selector, y entonces los nombres de los equipos y la ubicación se muestran más grandes. En móvil se apilan con su altura natural.
+
+## 05/11/2026 · TikTok en el pie de página
+
+- **Pie de página**: icono discreto de TikTok junto a los enlaces legales, en todas las pantallas, que abre @zyrapadel en una pestaña nueva. Tiene nombre accesible traducido (es/en).
+
 ## 05/11/2026 · Ficha del enfrentamiento: tarjeta de alto fijo y acta cerrada integrada
 
 - **Alto fijo**: la lista no cambia el tamaño de la tarjeta principal tengas más o menos jugadores; las parejas se alinean en dos columnas («Partido N» y la pareja).

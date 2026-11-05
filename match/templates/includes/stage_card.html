@@ -2,7 +2,6 @@
 {% load i18n %}{% if stage_card %}
 <section class="z-stage-card is-{{ stage_card.kind }}" aria-label="{{ stage_card.title }}">
   <h2>{{ stage_card.title }} <span>{{ stage_card.meta }}</span></h2>
-  {% if stage_card.kind == "open" %}<div class="z-stage-meter" aria-hidden="true"><i style="width: {{ stage_card.pct }}%"></i></div>{% endif %}
   {% if stage_card.kind == "pairs" %}
   <ol class="z-stage-list" data-stage-list>{% for row in stage_card.rows %}<li{% if row.me %} class="is-me"{% endif %}><span>{% blocktranslate with n=row.n %}Partido {{ n }}{% endblocktranslate %}</span> <strong{% if row.state %} class="is-{{ row.state }}"{% endif %}>{{ row.label }}{% if row.me %} <span class="visually-hidden">({% translate "tú" %})</span>{% endif %}{% if row.state == "win" %} <span class="visually-hidden">({% translate "ganado" %})</span>{% elif row.state == "loss" %} <span class="visually-hidden">({% translate "perdido" %})</span>{% endif %}</strong></li>{% endfor %}</ol>
   {% else %}

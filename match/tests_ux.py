@@ -162,7 +162,7 @@ class MatchPageTests(UxBase):
         self.players[2].save()
         self.client.force_login(member)
         page = self.client.get(reverse("call_for_match", args=[match.public_id]))
-        self.assertNotContains(page, "Estás convocado")
+        self.assertContains(page, "Estás convocado · Partido 2 · con %s" % self.players[3].short_name)
         self.assertContains(page, '<li class="is-me"><span>Partido 2')
         self.assertContains(page, self.players[3].full_name)
         self.assertNotContains(page, "Siguiente:")
@@ -171,7 +171,7 @@ class MatchPageTests(UxBase):
         Membership.objects.create(user=other, club=self.club, role=Membership.MEMBER)
         outsider = Player.objects.create(club=self.club, name="Fuera", last_name="Y", user=other)
         self.client.force_login(other)
-        self.assertNotContains(self.client.get(reverse("call_for_match", args=[match.public_id])), "No estás convocado")
+        self.assertContains(self.client.get(reverse("call_for_match", args=[match.public_id])), "No estás convocado")
         self.assertTrue(games)
 
 
@@ -424,14 +424,14 @@ class FichaPreviewTests(UxBase):
         self.assertContains(page, "data-stage-list")
         self.assertContains(page, "Extra4")
 
-    def test_own_name_is_highlighted_and_no_open_call_notice(self):
+    def test_own_name_is_highlighted_and_the_status_pill_says_you_signed_up(self):
         m = self.match(FUTURE)
         Call.objects.create(match=m, draft_mode=True).players.set(self.players[:3])
         Player.objects.filter(id=self.players[0].id).update(user=self.user)
         page = self.ficha(m)
         self.assertContains(page, 'class="is-me"')
-        self.assertNotContains(page, "Todavía no te has apuntado")
-        self.assertNotContains(page, "Te has apuntado")
+        self.assertContains(page, "z-stage-me is-in")
+        self.assertContains(page, "Te has apuntado")
 
     def test_classic_view_without_crests_or_card_when_the_switch_is_off(self):
         from core.models import UserPreference
@@ -501,3 +501,29 @@ class FichaPreviewTests(UxBase):
         self.own.save()
         page = self.ficha(self.match(FUTURE))
         self.assertContains(page, "Local · 1000")
+
+    def test_fallback_crest_uses_word_initials_and_a_team_hue(self):
+        from core.templatetags.zyra_format import crest_hue, crest_initials
+        self.assertEqual(crest_initials("Atlético Isleño"), "AI")
+        self.assertEqual(crest_initials("NorthPadel"), "NO")
+        self.assertEqual(crest_initials(""), "")
+        self.assertEqual(crest_hue("Rival"), crest_hue("rival"))
+        self.assertNotEqual(crest_hue("Rival"), crest_hue("Otro club"))
+        self.assertContains(self.ficha(self.match(FUTURE)), "--h: ")
+
+    def test_phases_are_an_ordered_list_and_unavailable_ones_are_locked(self):
+        page = self.ficha(self.match(FUTURE))
+        self.assertContains(page, '<ol class="z-menu">')
+        self.assertContains(page, 'aria-current="step"')
+        self.assertContains(page, "is-locked", count=3)  # parejas, resultados y acta aún no están disponibles
+        self.assertContains(page, 'aria-disabled="true"', count=3)
+        self.assertContains(page, "Cierra antes la convocatoria")
+
+    def test_signed_up_player_sees_their_own_status_pill(self):
+        m = self.match(FUTURE)
+        call = Call.objects.create(match=m, draft_mode=True)
+        call.players.set(self.players[:2])
+        Player.objects.filter(id=self.players[0].id).update(user=self.user)
+        self.assertContains(self.ficha(m), "Te has apuntado")
+        call.players.remove(self.players[0])
+        self.assertContains(self.ficha(m), "Todavía no te has apuntado")
