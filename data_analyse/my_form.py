@@ -28,7 +28,8 @@ def _snp(player, today):
     actualización del histórico según su fecha: ``line`` y ``area`` (puntos SVG de un lienzo de
     ``CHART_WIDTH`` x ``CHART_HEIGHT``), ``dot`` (posición en % del último punto), ``high`` y ``low``,
     ``start`` y ``end`` (fechas del periodo), ``points`` (cada actualización con su posición en %, puntos y
-    fecha, para el indicador al pasar el ratón) y ``delta`` (cambio entre la primera y la última); vacía si
+    fecha, para el indicador al pasar el ratón) y ``delta`` (variación de la última actualización respecto a la
+    anterior, igual que la columna «Evolución» de la tabla de plantilla); vacía si
     hay menos de dos actualizaciones.
     """
     if player.snp_score is None:
@@ -45,7 +46,7 @@ def _snp(player, today):
     ys = [CHART_PAD + (high - score) / span * (CHART_HEIGHT - 2 * CHART_PAD) if high != low else CHART_HEIGHT / 2
           for score in scores]
     line = " ".join(f"{x:.1f},{y:.1f}" for x, y in zip(xs, ys))
-    data["delta"] = scores[-1] - scores[0]
+    data["delta"] = round(scores[-1] - scores[-2], 1)
     data["chart"] = {
         "line": line,
         "area": f"{line} {xs[-1]:.1f},{CHART_HEIGHT} {xs[0]:.1f},{CHART_HEIGHT}",
