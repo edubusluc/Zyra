@@ -123,6 +123,7 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
 - [V] Equipo nuevo del grupo copia categoría, país y división del propio. «Gestionar equipos»
   (`manage_teams`) trata los rivales, del grupo y dados de baja (`in_group=False`), que se vuelven
   a dar de alta allí o desde el aviso de nombre parecido (`reactivate_team`, POST).
+- [V] `Team.default_time` (hora habitual de juego, opcional, solo equipo propio; vacía en los ya creados) se pide en el alta del club y en «Editar equipo» y precarga la hora del formulario de enfrentamiento cuando el equipo juega en casa (en visitante se vacía); siempre editable.
 - [V] El equipo propio nunca sale del grupo: `Team.save`, `Teamform.clean` y la migración
   `team/0006` lo fuerzan. Al crear un equipo se avisa de nombres parecidos aunque estén de baja.
 

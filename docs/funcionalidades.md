@@ -122,6 +122,7 @@ En Enfrentamientos hay dos vistas: **Lista** y **Calendario**. El calendario (`m
   (Future, 500, 1000, Grand Slam). No se repite un nombre dentro de la misma división y avisa
   de nombres parecidos ([`team`](referencia/team/index.md), [`core.similarity`](referencia/core/similarity.md)).
 - Un equipo nuevo sale relleno con los datos del propio.
+- El equipo propio guarda su **hora habitual de juego** (opcional): se pide al crear el club y en «Editar equipo», y llega escrita al crear un enfrentamiento como local (editable).
 - **Gestionar equipos**: editar varios a la vez (en el grupo, división...).
 
 ## Partidos

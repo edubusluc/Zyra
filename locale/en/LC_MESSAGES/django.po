@@ -15567,3 +15567,12 @@ msgstr "History against %(rival)s"
 
 msgid "Desempate"
 msgstr "Tie-break"
+
+msgid "Hora habitual de juego"
+msgstr "Usual playing time"
+
+msgid "Hora habitual de juego (opcional)"
+msgstr "Usual playing time (optional)"
+
+msgid "Se propondrá al crear tus enfrentamientos como local; podrás cambiarla en cada uno."
+msgstr "It will be suggested when you create your home matches; you can change it in each one."

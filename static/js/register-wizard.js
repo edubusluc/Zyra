@@ -8,7 +8,7 @@
   if (!form) return;
   const DRAFT_KEY = 'zyra.register.draft';
   // Campos que se guardan como borrador (nunca contraseñas)
-  const DRAFT_FIELDS = /^(name|location|gender|country|division|username|email|player-name|player-last_name)$/;
+  const DRAFT_FIELDS = /^(name|location|gender|country|division|default_time|username|email|player-name|player-last_name)$/;
 
   function init() {
     const forms = window.ZyraForms;

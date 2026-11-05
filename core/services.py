@@ -63,16 +63,16 @@ def ensure_space_free(user, competition):
 
 @transaction.atomic
 def create_club(name, location, admin_user, gender="", country="", division="",
-                player_name="", player_last_name="", competition="snp"):
+                player_name="", player_last_name="", competition="snp", default_time=None):
     """
     Crea un club (el espacio de la competición ``competition``) con su equipo propio y deja a
     admin_user como capitán. Con
     ``player_name`` y ``player_last_name`` crea también el jugador del capitán en el
-    equipo propio, enlazado a su cuenta.
+    equipo propio, enlazado a su cuenta. ``default_time`` es la hora habitual de juego del equipo.
     """
     club = Club.objects.create(name=name, competition=competition)
     own_team = Team.objects.create(club=club, name=name, location=location, gender=gender, country=country,
-                                   division=division, is_own=True, in_group=True)
+                                   division=division, is_own=True, in_group=True, default_time=default_time)
     Membership.objects.create(user=admin_user, club=club, role=Membership.ADMIN)
     if player_name and player_last_name:
         Player.objects.create(club=club, team=own_team, name=player_name, last_name=player_last_name,

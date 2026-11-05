@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 05/11/2026 · Hora habitual de juego del equipo
+
+- **Campo nuevo y opcional** en el alta del club y en «Editar equipo» (solo el equipo propio): la hora a la que suele jugar en casa. Los equipos ya creados lo tienen vacío para que el capitán lo complete.
+- **Enfrentamiento como local**: el formulario llega con esa hora ya escrita; sigue siendo editable y, si el equipo juega de visitante, se deja en blanco. El día no se propone: se elige siempre.
+
 ## 02/11/2026 · Back-office: clubes por competición
 
 - **Dashboard**: una tarjeta de «Clubes SNP» y otra de «Clubes LAPI» con el total, los activos y las altas de 30 días. Cada club es un espacio de una sola competición y tiene un único equipo propio, así que cada uno cuenta una vez y las dos tarjetas suman el total de «Clubes».

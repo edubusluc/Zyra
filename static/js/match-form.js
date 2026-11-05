@@ -84,6 +84,19 @@
     if (rivalSelect) rivalSelect.addEventListener('change', syncPlace);
   }
 
+  // Hora: la habitual del equipo propio si juega en casa; en visitante se deja en blanco. Si la
+  // persona la ha escrito a mano, no se pisa.
+  const startTime = form.querySelector('input[name="start_time"]');
+  let timeEdited = startTime && startTime.value !== '' && startTime.value !== (form.dataset.ownTime || '');
+  function syncTime() {
+    if (!startTime || timeEdited) return;
+    startTime.value = checkedValue('own_side') === 'visiting' ? '' : (form.dataset.ownTime || '');
+  }
+  if (startTime) {
+    startTime.addEventListener('input', () => { timeEdited = true; });
+    form.querySelectorAll('input[name="own_side"]').forEach((r) => r.addEventListener('change', syncTime));
+  }
+
   form.querySelectorAll('[data-team-card]').forEach((card) => {
     const select = card.querySelector('select');
     const name = card.querySelector('[data-team-name]');
