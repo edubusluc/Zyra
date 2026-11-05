@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 05/11/2026 · Informes PDF con la fuente actual de la web
+
+- **Títulos y cifras de los PDF** (convocatoria e informe mensual) pasan a Anton, la fuente de títulos de la web, en lugar de Syncopate en cursiva. El logotipo «ZYRA» de la cabecera conserva Syncopate. (Issue #254)
+
 ## 03/11/2026 · Inicio: carrusel de próximos enfrentamientos
 
 - **Tarjeta «Próximo enfrentamiento»**: con más de un enfrentamiento abierto, el más cercano va delante y el siguiente (hasta tres en total) queda por debajo, asomando por el lado, más pequeño y difuminado. Sirve sobre todo cuando un fin de semana hay partido de SNP y de LAPI.
