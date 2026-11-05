@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 05/11/2026 · Inicio: partidos semana a semana
+
+- **Carrusel por semana**: «Próximo enfrentamiento» solo enseña los partidos de la semana (lunes a domingo); si esta semana no queda ninguno, enseña la siguiente semana con partidos.
+- **«Pendiente» por páginas**: los vencidos se ven siempre arriba y el resto va en páginas de dos semanas, con el mismo selector de pastillas y flechas del carrusel. (PR #251)
 ## 05/11/2026 · Informes PDF con la fuente actual de la web
 
 - **Títulos y cifras de los PDF** (convocatoria e informe mensual) pasan a Anton, la fuente de títulos de la web, en lugar de Syncopate en cursiva. El logotipo «ZYRA» de la cabecera conserva Syncopate. (Issue #254)

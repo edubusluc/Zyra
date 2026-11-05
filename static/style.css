@@ -1545,6 +1545,7 @@ a.z-card:hover, .z-card--link:hover {
 
 /* Selector: una pastilla por tarjeta con su competición y su día, para saber qué hay antes de pulsar. */
 .z-next-picker { display: flex; align-items: stretch; gap: 8px; }
+.z-next-picker[hidden] { display: none; }
 .z-next-chips { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 8px; flex: 1; min-width: 0; }
 .z-next-chip { display: grid; justify-items: center; align-content: center; gap: 2px; min-height: 52px; padding: 6px 10px; color: var(--z-text); background: var(--z-surface-2); border: 1px solid var(--z-border-control); border-radius: var(--z-radius-sm); cursor: pointer; transition: background .25s ease, border-color .25s ease, color .25s ease; }
 .z-next-chip:hover { border-color: var(--z-border-control-hover); background: var(--z-surface-3); }
