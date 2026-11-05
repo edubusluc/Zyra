@@ -1455,7 +1455,10 @@ a.z-card:hover, .z-card--link:hover {
     .z-home-grid--both .z-next-slide { align-self: stretch; }
     .z-home-grid--both .z-next-slide .z-next-match { aspect-ratio: auto; align-self: stretch; }
     /* Con la tarjeta estirada hay sitio de sobra: equipos y ubicación más grandes. */
-    .z-home-grid.z-home-grid--both .z-next-match-team > span { font-size: clamp(1.6rem, 5.8cqw, 3.2rem); }
+    .z-home-grid.z-home-grid--both .z-next-match-team > span { font-size: clamp(1.3rem, 5.2cqw, 3rem); white-space: nowrap; }
+    .z-home-grid.z-home-grid--both .z-next-match { row-gap: clamp(12px, 2.4cqw, 26px); }
+    .z-home-grid--both .z-next-match-meta { margin-top: clamp(8px, 1.4cqw, 16px); }
+    .z-home-grid--both .z-next-match-teams { margin: 0 3%; }
     .z-home-grid--both .z-next-match-meta .z-location { font-size: var(--z-fs-lg); }
     .z-home-grid--both .z-next-match-meta .z-location span { white-space: normal; }
 }
