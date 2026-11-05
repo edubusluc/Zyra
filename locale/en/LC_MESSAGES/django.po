@@ -15754,3 +15754,9 @@ msgstr "A pair did not show up"
 
 msgid "Mostrar el orden de juego"
 msgstr "Show the playing order"
+
+msgid "Vista 3D"
+msgstr "3D view"
+
+msgid "Cambiando la vista…"
+msgstr "Switching the view…"

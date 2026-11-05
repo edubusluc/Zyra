@@ -10,6 +10,7 @@
         <h1>{{ match.local_name }} – {{ match.visiting_name }}</h1>
         <p class="mb-0">{% include 'includes/competition_badge.html' with code=match.club.competition name=match.club.rules.name short=True %}</p>
     </div>
+    {% include 'includes/stage_toggle.html' %}
 </div>
 {% endif %}
 
@@ -17,6 +18,7 @@
     <div class="z-versus{% if stage_view %} z-versus--stage{% endif %}">
         {% if stage_view %}
         <div class="z-stage-kicker">
+            {% include 'includes/stage_toggle.html' %}
             <p class="z-stage-kind"><a href="{% url 'list_match' %}" class="z-stage-back" aria-label="{% translate 'Volver a Enfrentamientos' %}"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i></a> <b>{{ kind.title }}</b> · {{ kind.subtitle }}</p>
             <p class="z-stage-when"><span class="z-stage-date">{{ match.start_date|date_short|capfirst }}{% if match.start_time %} · {{ match.start_time|time:"H:i" }}{% endif %}{% if can_manage and match.draft_mode %}<a href="{% url 'edit_match_date' match.public_id %}" class="z-edit-date" title="{% translate 'Cambiar fecha' %}"><i class="fa-solid fa-pen" aria-hidden="true"></i><span class="visually-hidden">{% translate "Cambiar fecha" %}</span></a>{% endif %}</span>{% if match.location %}<a class="z-location" href="{{ match.maps_url }}" target="_blank" rel="noopener"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>{{ match.location }}</span></a>{% endif %}
             {% if match.no_show %}<span class="z-tag">{% blocktranslate with team=match.no_show_team %}No presentado: {{ team }}{% endblocktranslate %}</span>{% endif %}

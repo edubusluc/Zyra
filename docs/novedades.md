@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 05/11/2026 · Ficha del enfrentamiento: interruptor «Vista 3D»
+
+- **Interruptor en la propia ficha** para pasar de la vista con escudos 3D a la vista clásica (la de antes del 3D) y volver. El ajuste se guarda por usuario y es el mismo que ya existía en «Mi perfil».
+- **Vista clásica como la de antes**: vuelve el bloque «Previa» de siempre (balance, último y mejor pareja). Las mejoras de funcionamiento siguen en las dos vistas.
+
 ## 05/11/2026 · Convocatoria, parejas y resultados: coherencia (fase 4)
 
 - **Una sola marca de «Tu equipo»**: la etiqueta de siempre también al editar un resultado, en lugar de una estrella.

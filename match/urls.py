@@ -20,6 +20,7 @@ urlpatterns = (
     path('close_match/<pid:match_id>/', close_match, name='close_match'),
     path('reopen_match/<pid:match_id>/', reopen_match, name='reopen_match'),
     path('no_show/<pid:match_id>/', mark_no_show, name='mark_no_show'),
+    path('stage_view/<pid:match_id>/', set_stage_view, name='set_stage_view'),
     path('no_show/<pid:match_id>/undo/', undo_no_show, name='undo_no_show'),
     path('delete_call/<pid:match_id>/', delete_call, name='delete_call'),
     path('close_call/<pid:match_id>/', close_call, name='close_call'),
