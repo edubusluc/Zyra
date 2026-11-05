@@ -18,4 +18,4 @@
 {% endif %}{% endfor %}
 {% if can_manage %}{% include 'includes/ficha_more.html' with card=True %}{% endif %}
 </nav>
-{% if can_manage and phase.action != 'nothing' %}<div class="z-menu-hint">{% include 'includes/ficha_hint.html' %}</div>{% endif %}
+{% if can_manage and phase.missing_players and phase.action == 'close_call' %}<div class="z-menu-hint">{% include 'includes/ficha_hint.html' %}</div>{% endif %}

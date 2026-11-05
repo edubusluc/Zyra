@@ -18,7 +18,7 @@
         {% if stage_view %}
         <div class="z-stage-kicker">
             <p class="z-stage-kind"><a href="{% url 'list_match' %}" class="z-stage-back" aria-label="{% translate 'Volver a Enfrentamientos' %}"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i></a> <b>{{ kind.title }}</b> · {{ kind.subtitle }}</p>
-            <p class="z-stage-when">{{ match.start_date|date_long }}{% if can_manage and match.draft_mode %} <a href="{% url 'edit_match_date' match.public_id %}" class="z-edit-date" title="{% translate 'Cambiar fecha' %}"><i class="fa-solid fa-pen" aria-hidden="true"></i><span class="visually-hidden">{% translate "Cambiar fecha" %}</span></a>{% endif %}{% if match.location %} · <a class="z-location" href="{{ match.maps_url }}" target="_blank" rel="noopener"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>{{ match.location }}</span></a>{% endif %}
+            <p class="z-stage-when">{{ match.start_date|date_short|capfirst }}{% if match.start_time %} · {{ match.start_time|time:"H:i" }}{% endif %}{% if can_manage and match.draft_mode %} <a href="{% url 'edit_match_date' match.public_id %}" class="z-edit-date" title="{% translate 'Cambiar fecha' %}"><i class="fa-solid fa-pen" aria-hidden="true"></i><span class="visually-hidden">{% translate "Cambiar fecha" %}</span></a>{% endif %}{% if match.location %} · <a class="z-location" href="{{ match.maps_url }}" target="_blank" rel="noopener"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>{{ match.location }}</span></a>{% endif %}
             {% if match.no_show %}<span class="z-tag">{% blocktranslate with team=match.no_show_team %}No presentado: {{ team }}{% endblocktranslate %}</span>{% endif %}
             {% if match.league_points is not None %}<span class="z-tag is-lime">{% blocktranslate count n=match.league_points %}{{ n }} punto de liga{% plural %}{{ n }} puntos de liga{% endblocktranslate %}</span>{% endif %}</p>
         </div>
@@ -71,7 +71,7 @@
 {% endif %}
 {% endif %}
 
-{% if my_status and not match.no_show %}
+{% if my_status and not match.no_show and not stage_view or my_status and not match.no_show and stage_view and my_status.closed %}
 {# El jugador enlazado a esta cuenta ve si juega y con quién (H-06). #}
 <div class="z-mystatus {% if my_status.called %}is-in{% endif %}" role="status">
     <i class="fa-solid {% if my_status.called %}fa-circle-check{% else %}fa-circle-info{% endif %}" aria-hidden="true"></i>

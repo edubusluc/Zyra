@@ -812,7 +812,7 @@ def stage_card(match, call, convocados, games, rows, min_call):
         return None
     if rows:
         return {"kind": "pairs", "title": _("Parejas"), "meta": "", "rows": rows}
-    players = [{"name": p.short_name, "sub": p.is_sub} for p in convocados]
+    players = [{"name": p.short_name, "sub": p.is_sub, "me": getattr(p, "is_me", False)} for p in convocados]
     if call.draft_mode:
         return {"kind": "open", "title": _("Apuntados"),
                 "meta": _("%(n)s de %(total)s") % {"n": len(players), "total": min_call},

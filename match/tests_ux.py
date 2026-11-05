@@ -424,6 +424,15 @@ class FichaPreviewTests(UxBase):
         page = self.ficha(m)
         self.assertContains(page, f"y {len(self.players) + 5 - STAGE_CARD_MAX} más")
 
+    def test_own_name_is_highlighted_and_no_open_call_notice(self):
+        m = self.match(FUTURE)
+        Call.objects.create(match=m, draft_mode=True).players.set(self.players[:3])
+        Player.objects.filter(id=self.players[0].id).update(user=self.user)
+        page = self.ficha(m)
+        self.assertContains(page, 'class="is-me"')
+        self.assertNotContains(page, "Todavía no te has apuntado")
+        self.assertNotContains(page, "Te has apuntado")
+
     def test_classic_view_without_crests_or_card_when_the_switch_is_off(self):
         from core.models import UserPreference
         m = self.match(FUTURE)

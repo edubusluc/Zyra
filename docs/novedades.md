@@ -3,6 +3,12 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 05/11/2026 · Ficha del enfrentamiento: tarjeta grande y fondo de escenario
+
+- **Tarjeta principal más grande** con los nombres en texto plano separados por puntos; tu nombre va resaltado en lima. Desaparece el aviso «Te has apuntado / Todavía no te has apuntado» mientras la convocatoria está abierta.
+- **Informe PDF**: el destinatario solo se muestra en el aviso al cerrar la convocatoria, no en la ficha.
+- **Fondo con franja lima**, escudos más grandes, tarjetas de acción con las mismas proporciones y la línea «Sáb 14 nov · 10:00 · Pista».
+
 ## 05/11/2026 · Ficha del enfrentamiento: ajustes del escenario
 
 - **Sin título ni listas**: en la vista nueva desaparece el título de la página (queda para lectores de pantalla) y, con el acta abierta, las listas de convocatoria y partidos de debajo: lo cuenta la tarjeta central, que muestra el resto de nombres desplegando «y N más» y marca cada pareja con su resultado.
