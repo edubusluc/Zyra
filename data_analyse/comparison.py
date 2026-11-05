@@ -35,6 +35,10 @@ def bagels_situation(st):
             'pct': round(100 * wins / total) if total else None}
 
 
+# Unidad sobre la que se cuenta cada situación de set («N de M <unidad>»): partidos o sets.
+SET_UNITS = {'first_set': 'games', 'comeback': 'games', 'third': 'games', 'tiebreak': 'sets', 'bagels': 'sets'}
+
+
 def set_situation_rows(st):
     """
     Filas ``(título, explicación, situación)`` de ``SET_ROWS`` para un set_stats ``st``; las mismas en todas
@@ -44,7 +48,7 @@ def set_situation_rows(st):
     for key, label, hint in SET_ROWS:
         situation = bagels_situation(st) if key == 'bagels' else st[key]
         if situation['total']:
-            rows.append((label, hint, situation))
+            rows.append((label, hint, dict(situation, unit=SET_UNITS[key])))
     return rows
 
 

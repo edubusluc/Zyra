@@ -60,7 +60,14 @@
         ctx.textBaseline = 'bottom';
         chart.data.datasets.forEach((ds, i) => {
           chart.getDatasetMeta(i).data.forEach((bar, j) => {
-            if (ds.data[j] !== null && ds.data[j] !== undefined) ctx.fillText(`${ds.data[j]}%`, bar.x, bar.y - 3);
+            if (ds.data[j] === null || ds.data[j] === undefined) return;
+            ctx.font = `600 12px ${Chart.defaults.font.family}`;
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillText(`${ds.data[j]}%`, bar.x, bar.y - 3);
+            // Los partidos en que se apoya el %, en pequeño sobre la cifra.
+            ctx.font = `400 10px ${Chart.defaults.font.family}`;
+            ctx.fillStyle = '#A8A8A8';
+            ctx.fillText(interpolate(gettext('%(n)s part.'), { n: data.years.played[i][j] }, true), bar.x, bar.y - 17);
           });
         });
         ctx.restore();
@@ -87,7 +94,7 @@
         },
         scales: {
           x: { grid: { display: false }, ticks: { autoSkip: false, maxRotation: 0, font: { size: 12 } } },
-          y: { display: false, beginAtZero: true, max: 100, grace: '12%' },
+          y: { display: false, beginAtZero: true, max: 100, grace: '22%' },
         },
       },
     });

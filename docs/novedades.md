@@ -3,6 +3,13 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 05/11/2026 · Estadísticas: de dónde sale cada porcentaje
+
+- **Base visible bajo cada barra**, en texto pequeño como en «Local y visitante»: «2V – 1D · 3 partidos» en «Por número de partido» y «3 de 4 partidos» o «2 de 3 sets» en las situaciones de set (Equipo, Jugador, Pareja y Mis estadísticas). Ya no depende de pasar el ratón.
+- **Ficha del jugador**: «Se apunta» y «Juega cuando se apunta» dicen «N de M convocatorias».
+- **Mis estadísticas**: «Local y visitante» suma el balance en casa y fuera de cada competición bajo la gráfica, y «% de victorias por temporada» pone los partidos sobre cada barra.
+- **Equipo**: «Asistencia a las convocatorias» indica cuántos apuntados de cuántos posibles y en cuántas convocatorias.
+
 ## 05/11/2026 · Inicio: partidos semana a semana
 
 - **Carrusel por semana**: «Próximo enfrentamiento» solo enseña los partidos de la semana (lunes a domingo); si esta semana no queda ninguno, enseña la siguiente semana con partidos.

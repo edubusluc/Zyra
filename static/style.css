@@ -3774,6 +3774,7 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .st-bar-row { display: grid; grid-template-columns: minmax(6rem, 9rem) 1fr 3.4rem; align-items: center; gap: 12px; }
 .st-bar-row b { font-size: var(--z-fs-sm); font-weight: 700; color: #FFFFFF; }
 .st-bar-row b small { display: block; font-size: var(--z-fs-xs); font-weight: 600; color: var(--st-muted); }
+.st-bar-row b small.st-bar-base, .z-set-row b small.st-bar-base { font-weight: 400; }
 .st-bars--desc .st-bar-row { grid-template-columns: minmax(7rem, 44%) 1fr 3.4rem; }
 .st-bar-row em { font-family: var(--z-display); font-style: normal; font-size: var(--z-fs-xl); text-align: right; color: #FFFFFF; font-variant-numeric: tabular-nums; }
 .st-bar-row .st-meter { margin-top: 0; height: 14px; }
@@ -3901,6 +3902,7 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .z-commit-list { display: flex; flex-direction: column; gap: 10px; margin: 12px 0 0; padding: 0; list-style: none; }
 .z-commit-list li { display: grid; grid-template-columns: 1fr auto auto; align-items: baseline; gap: 12px; }
 .z-commit-list b { font-family: var(--z-display); font-size: var(--z-fs-xl); font-weight: 400; color: #FFFFFF; }
+.z-commit-list.z-venue-notes small { min-width: 0; }
 .z-commit-list small { min-width: 3.4rem; text-align: right; color: var(--st-muted); }
 
 /* Fase 7 · ficha de rival: resumen en una línea. */

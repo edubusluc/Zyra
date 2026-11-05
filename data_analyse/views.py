@@ -501,7 +501,8 @@ def players_charts(players, logs, season, match_type):
     set_rows = [{
         "key": key, "label": label, "hint": hint,
         "comps": [{"code": c["code"], "name": c["name"],
-                   "r": comparison.bagels_situation(st) if key == "bagels" else st[key]}
+                   "r": dict(comparison.bagels_situation(st) if key == "bagels" else st[key],
+                             unit=comparison.SET_UNITS[key])}
                   for c, st in zip(comps, sets_by_comp)],
     } for key, label, hint in comparison.SET_ROWS]
     # Las filas sin ningún caso en ninguna competición no se enseñan.
@@ -513,6 +514,10 @@ def players_charts(players, logs, season, match_type):
                "pct_local": pct(a), "pct_visiting": pct(b)}
               for a, b in zip(local, visiting)]
 
+    # Una línea por competición con su balance en casa y fuera, para el texto bajo la gráfica.
+    venue_notes = [{"code": c["code"], "name": c["name"], "local": a, "visiting": b}
+                   for c, a, b in zip(comps, local, visiting) if a["won"] + a["lost"] + b["won"] + b["lost"]]
+
     by_start = lambda s: int(s.split('-')[0])
     labels = sorted({y for per in years for y in per}, key=by_start)
     att_labels = sorted({s for per in attendance for s in per}, key=by_start)
@@ -520,6 +525,7 @@ def players_charts(players, logs, season, match_type):
         "set_rows": set_rows,
         "set_compare": set_compare,
         "sets_played": any(st["played"] for st in sets_by_comp),
+        "venue_notes": venue_notes,
         "has_local": any(r["won"] or r["lost"] for r in local),
         "has_visiting": any(r["won"] or r["lost"] for r in visiting),
         "spaces_chart": {
