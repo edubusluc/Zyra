@@ -419,3 +419,21 @@ class FichaPreviewTests(UxBase):
         call.players.set(self.players + extra)
         page = self.ficha(m)
         self.assertContains(page, f"y {len(self.players) + 5 - STAGE_CARD_MAX} más")
+
+    def test_classic_view_without_crests_or_card_when_the_switch_is_off(self):
+        from core.models import UserPreference
+        m = self.match(FUTURE)
+        self.closed_call(m)
+        UserPreference.objects.update_or_create(user=self.user, defaults={"match_stage_view": False})
+        page = self.ficha(m)
+        self.assertNotContains(page, "z-crest-front")
+        self.assertNotContains(page, "z-stage-card")
+        self.assertNotContains(page, "z-versus--stage")
+
+    def test_profile_switch_turns_the_stage_view_off_and_on(self):
+        from core.models import UserPreference
+        url = reverse("my_profile")
+        self.client.post(url, {"stage_form": "1"})  # casilla sin marcar
+        self.assertFalse(UserPreference.match_stage_for(self.user))
+        self.client.post(url, {"stage_form": "1", "match_stage_view": "on"})
+        self.assertTrue(UserPreference.match_stage_for(self.user))

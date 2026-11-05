@@ -33,7 +33,8 @@ class UserPreference(models.Model):
     si cuenta todos sus partidos o solo los competitivos. ``match_result_email`` activa el aviso
     del resultado al cerrarse el acta de un enfrentamiento de su club. ``manager_tip_dismissed_at``
     marca que el capitán cerró el aviso «Añade un gestor» de la portada; ``my_form_hidden``, que el jugador
-    ocultó la tarjeta «Mi forma».
+    ocultó la tarjeta «Mi forma»; ``match_stage_view``, que prefiere la ficha del enfrentamiento
+    con escudos 3D y tarjeta de fase (si no, ve la ficha clásica).
     """
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="preference")
     report_scope = models.CharField(max_length=15, choices=REPORT_SCOPES, default=REPORT_SCOPE_ALL)
@@ -45,6 +46,14 @@ class UserPreference(models.Model):
     manager_tip_dismissed_at = models.DateTimeField(null=True, blank=True)
     # El jugador ocultó la tarjeta «Mi forma» del Inicio; la puede volver a mostrar.
     my_form_hidden = models.BooleanField(default=False)
+    # Vista «previa» de la ficha del enfrentamiento (escudos 3D); desactivada vuelve a la clásica.
+    match_stage_view = models.BooleanField(default=True)
+
+    @classmethod
+    def match_stage_for(cls, user):
+        """True si ``user`` quiere la ficha con escudos 3D (por defecto sí)."""
+        value = cls.objects.filter(user=user).values_list("match_stage_view", flat=True).first()
+        return True if value is None else value
 
     @classmethod
     def my_form_is_hidden(cls, user):

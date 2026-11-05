@@ -12,13 +12,13 @@
 </div>
 
 <div class="z-ficha-top">
-    <div class="z-versus">
-        <div class="z-versus-team">{% include 'includes/crest_3d.html' with team=match.local name=match.local_name side="local" %}<span class="z-versus-name"><small>{% translate "Local" %}</small>{{ match.local_name }}</span></div>
+    <div class="z-versus{% if stage_view %} z-versus--stage{% endif %}">
+        <div class="z-versus-team">{% if stage_view %}{% include 'includes/crest_3d.html' with team=match.local name=match.local_name side="local" %}{% endif %}<span class="z-versus-name"><small>{% translate "Local" %}</small>{{ match.local_name }}</span></div>
         <div class="z-versus-mid">
-            {% include 'includes/stage_card.html' %}
+            {% if stage_view %}{% include 'includes/stage_card.html' %}{% endif %}
             <div class="z-versus-vs{% if outcome == 'D' %} is-loss{% elif outcome == 'E' %} is-draw{% endif %}">{% if score_local %}{{ score_local }}–{{ score_visiting }}{% else %}VS{% endif %}</div>
         </div>
-        <div class="z-versus-team">{% include 'includes/crest_3d.html' with team=match.visiting name=match.visiting_name side="visiting" %}<span class="z-versus-name"><small>{% translate "Visitante" %}</small>{{ match.visiting_name }}</span></div>
+        <div class="z-versus-team">{% if stage_view %}{% include 'includes/crest_3d.html' with team=match.visiting name=match.visiting_name side="visiting" %}{% endif %}<span class="z-versus-name"><small>{% translate "Visitante" %}</small>{{ match.visiting_name }}</span></div>
     </div>
     <aside class="z-ficha-side">
         <div class="z-kind"><b>{{ kind.title }}</b><small>{{ kind.subtitle }}</small></div>

@@ -6,7 +6,7 @@ Todas las vistas trabajan solo con datos del club activo (``request.club``).
 from . import outcomes
 from core.competitions import competition_for
 from core import spaces
-from core.models import Invitation
+from core.models import Invitation, UserPreference
 from core.season_choice import ALL_SEASONS, choose_season
 from django.shortcuts import render, redirect, get_object_or_404
 from core import ratelimit
@@ -893,6 +893,7 @@ def call_for_match(request, match_id):
         "score_local": split_points(match.result_points)[0] if outcome else None,
         "score_visiting": split_points(match.result_points)[1] if outcome else None,
         "is_future": match.start_date > today,
+        "stage_view": UserPreference.match_stage_for(request.user),
         "stage_card": stage_card(match, call, convocados, games, lineup_rows(match, games),
                                  competition_for(match).min_call_players),
         "my_status": my_status,
