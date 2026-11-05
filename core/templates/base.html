@@ -161,6 +161,7 @@
     <a href="{% url 'cookies' %}">{% translate "Cookies" %}</a>
     <a href="{% url 'guide_index' %}">{% translate "Guías" %}</a>
     <a href="mailto:{{ contact_email }}">{% translate "Contacto" %}</a>
+    <a class="z-footer-social" href="https://www.tiktok.com/@zyrapadel" target="_blank" rel="noopener noreferrer" aria-label="{% translate 'Zyra en TikTok (se abre en una pestaña nueva)' %}"><i class="fa-brands fa-tiktok" aria-hidden="true"></i></a>
   </nav>
   <p>&copy; {% now "Y" %} Zyra{% if current_club and user_teams|length < 2 %} · {{ current_club.name }}{% endif %}</p>
 </footer>
