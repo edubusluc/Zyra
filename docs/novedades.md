@@ -3,6 +3,12 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 05/11/2026 · Ficha del enfrentamiento: escudos 3D más ligeros (fase 5)
+
+- **Mismo volumen con menos coste**: el canto de cada escudo pasa de 14 copias completas a 6 capas con solo la silueta y sin filtros, así que la ficha dibuja la mitad de capas 3D y pesa menos en el móvil.
+- **El giro se pausa** cuando el escenario sale de la pantalla y en dispositivos táctiles los escudos quedan quietos y ligeramente girados.
+- Se elimina la reserva permanente de capa de GPU de los escudos.
+
 ## 05/11/2026 · Ficha del enfrentamiento: Previa y acta cerrada (fase 4)
 
 - **Previa en el idioma de la ficha**: victorias, empates y derrotas contra el rival con barra de proporción, forma de los últimos enfrentamientos, partidos a favor y en contra, mejor pareja y los marcadores de los últimos cruces con su resultado (Ganado, Perdido, Empatado). Los puntos de liga solo aparecen en competiciones de liga.
