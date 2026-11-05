@@ -38,7 +38,7 @@
         target.searchParams.has('player')) { return; }
     event.preventDefault();
     swap(target.href, true);
-  });
+  }, true);  // captura: page-transitions.js ve el clic cancelado y no atenúa la página
 
   window.addEventListener('popstate', function () {
     if (document.querySelector(SELECTOR)) { swap(window.location.href, false); }
