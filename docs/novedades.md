@@ -3,6 +3,13 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 05/11/2026 · Ficha del enfrentamiento: pulido final (fase 6)
+
+- **Tablet**: los dos escudos quedan a la misma altura aunque un nombre ocupe dos líneas, y el escudo ya no se sale de su columna.
+- **Previa en móvil**: los tres últimos marcadores caben en una sola fila.
+- **Fechas de la Previa** con el mes localizado (11 ene 2026 / 11 Jan 2026) en lugar de dd/mm/aaaa.
+- Revisión de accesibilidad con axe-core en escritorio, tablet y móvil (acta abierta, con parejas y cerrada): sin incidencias. Textos de la ficha revisados en inglés.
+
 ## 05/11/2026 · Ficha del enfrentamiento: escudos 3D más ligeros (fase 5)
 
 - **Mismo volumen con menos coste**: el canto de cada escudo pasa de 14 copias completas a 6 capas con solo la silueta y sin filtros, así que la ficha dibuja la mitad de capas 3D y pesa menos en el móvil.
