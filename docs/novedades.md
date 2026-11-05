@@ -3,6 +3,13 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 05/11/2026 · Ficha del enfrentamiento: ajustes del escenario
+
+- **Sin título ni listas**: en la vista nueva desaparece el título de la página (queda para lectores de pantalla) y, con el acta abierta, las listas de convocatoria y partidos de debajo: lo cuenta la tarjeta central, que muestra el resto de nombres desplegando «y N más» y marca cada pareja con su resultado.
+- **«Local · categoría»** bajo el nombre de cada equipo.
+- **Cerrar convocatoria, cerrar acta y «Más»** son tarjetas de acción; el botón «Siguiente» ya no existe en la vista nueva.
+- **Cara a cara** siempre visible: sin historial, «Primer enfrentamiento contra…».
+
 ## 05/11/2026 · Ficha del enfrentamiento: escenario completo
 
 - **Escenario a todo el ancho**: desaparece el panel lateral. La fecha, el lugar y las etiquetas suben a una línea sobre los escudos y el estado (p. ej. «Convocatoria abierta») queda bajo el VS.

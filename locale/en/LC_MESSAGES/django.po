@@ -15710,3 +15710,13 @@ msgstr "If you turn it off, you see the classic match page. This setting is your
 
 msgid "siguiente paso"
 msgstr "next step"
+
+msgid "Cerrar convocatoria"
+msgstr "Close the call-up"
+
+msgid "Fecha, informe, eliminar"
+msgstr "Date, report, delete"
+
+#, python-format
+msgid "Primer enfrentamiento contra %(rival)s."
+msgstr "First match against %(rival)s."

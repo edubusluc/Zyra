@@ -1298,7 +1298,8 @@ a.z-card:hover, .z-card--link:hover {
 }
 /* Previa de la ficha: escudos extruidos en 3D (giro lento continuo) y tarjeta de fase sobre el VS. */
 .z-versus--stage .z-versus-team { display: grid; justify-items: center; gap: 10px; }
-.z-versus--stage .z-versus-name { display: block; }
+.z-versus--stage .z-versus-name { display: block; text-align: center; }
+.z-versus--stage .z-versus-team, .z-versus--stage .z-versus-team:last-child { text-align: center; }
 .z-crest-scene { --crest: clamp(88px, 26cqi, 190px); display: block; width: var(--crest); height: var(--crest); perspective: 900px; }
 .z-crest { position: relative; display: block; width: 100%; height: 100%; transform-style: preserve-3d; animation: z-crest-spin 26s linear infinite; }
 .z-crest--visiting { animation-direction: reverse; }
@@ -1358,6 +1359,23 @@ a.z-card:hover, .z-card--link:hover {
 .z-menu-card.is-done .z-menu-ic { color: var(--z-lime); }
 .z-menu-card.is-next { border-top-color: var(--z-warning); background: rgba(242, 177, 52, .08); }
 .z-menu-card.is-next .z-menu-ic { color: var(--z-warning); }
+.z-menu form { display: contents; }
+.z-menu button.z-menu-card { width: 100%; font: inherit; color: var(--z-text); text-align: left; cursor: pointer; }
+.z-menu button.z-menu-card:disabled { cursor: not-allowed; opacity: .6; }
+.z-menu .z-more summary.z-menu-card { height: 100%; }
+.z-menu .z-more { display: grid; }
+.z-menu-hint { margin: -4px 0 14px; }
+.z-menu-hint .z-next-hint { margin: 0; }
+.z-stage-back { color: inherit; }
+.z-versus--stage .z-versus-name small { margin-top: 4px; }
+.z-first-meeting { padding: 14px; background: var(--z-surface); border: 1px solid var(--z-border); border-radius: var(--z-radius); }
+.z-h2h-title { margin: 0 0 6px; font: 400 1rem var(--z-display); letter-spacing: .06em; text-transform: uppercase; color: var(--z-lime); }
+.z-first-meeting p { margin: 0; color: var(--z-muted); }
+.z-stage-card details { margin-top: 6px; }
+.z-stage-card summary { cursor: pointer; font-size: var(--z-fs-xs); color: var(--z-muted); }
+.z-stage-card details ul { margin-top: 6px; }
+.z-stage-card .is-win { color: var(--z-lime); }
+.z-stage-card .is-loss { color: var(--z-danger); }
 a.z-menu-card:hover { background: var(--z-surface-3); }
 a.z-menu-card:focus-visible { outline: 2px solid var(--z-lime); outline-offset: 2px; }
 @media (min-width: 992px) { .z-next--stage .z-next-get { display: none; } }

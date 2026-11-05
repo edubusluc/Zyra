@@ -214,6 +214,8 @@ class MatchesAndCallsTests(TestCase):
 
     def test_call_roster_shows_pairs_and_substitutes(self):
         """La ficha lista a los convocados con su pareja (P1, P2...) y marca como suplentes a los demás."""
+        from core.models import UserPreference
+        UserPreference.objects.update_or_create(user=self.user, defaults={"match_stage_view": False})
         players = [Player.objects.create(club=self.club, name=f"P{i}", last_name="X") for i in range(3)]
         call = Call.objects.create(match=self.current, draft_mode=False)
         call.players.set(players)
@@ -394,6 +396,8 @@ class LineupTests(TestCase):
 
 
     def test_retired_flag_saves_incomplete_result(self):
+        from core.models import UserPreference
+        UserPreference.objects.update_or_create(user=self.user, defaults={"match_stage_view": False})
         self.client.post(reverse("create_game", args=[self.match.public_id]), {"ordered_games": self.lineup()})
         game = self.match.games.get(n_game=1)
         url = reverse("create_result", args=[game.public_id])

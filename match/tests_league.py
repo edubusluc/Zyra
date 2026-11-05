@@ -241,6 +241,8 @@ class LapiMatchTests(TestCase):
         self.assertContains(page, "Sets de la pareja")
 
     def test_injury_from_all_results_screen(self):
+        from core.models import UserPreference
+        UserPreference.objects.update_or_create(user=self.user, defaults={"match_stage_view": False})
         match = self._match()
         Call.objects.create(match=match, draft_mode=False).players.set(self.players)
         games = [Game.objects.create(match=match, n_game=n, score=1, player_1_local=self.players[2 * n - 2],

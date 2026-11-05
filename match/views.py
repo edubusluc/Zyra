@@ -817,18 +817,19 @@ def stage_card(match, call, convocados, games, rows, min_call):
         return {"kind": "open", "title": _("Apuntados"),
                 "meta": _("%(n)s de %(total)s") % {"n": len(players), "total": min_call},
                 "pct": min(100, round(100 * len(players) / min_call)) if min_call else 0,
-                "players": players[:STAGE_CARD_MAX], "more": max(0, len(players) - STAGE_CARD_MAX)}
+                "players": players[:STAGE_CARD_MAX], "rest": players[STAGE_CARD_MAX:]}
     subs = sum(1 for p in players if p["sub"])
     meta = _("%(n)s · %(s)s suplentes") % {"n": len(players), "s": subs} if subs else str(len(players))
     return {"kind": "called", "title": _("Convocados"), "meta": meta,
-            "players": players[:STAGE_CARD_MAX], "more": max(0, len(players) - STAGE_CARD_MAX)}
+            "players": players[:STAGE_CARD_MAX], "rest": players[STAGE_CARD_MAX:]}
 
 
 def lineup_rows(match, games):
     """Parejas propias de cada partido alineado, para la previa de la ficha: [{"n", "label"}].
 
     Solo con el acta abierta (con ella cerrada, los resultados ya muestran las parejas) y sin
-    contar los partidos con pareja no presentada o sin jugadores propios.
+    contar los partidos con pareja no presentada o sin jugadores propios. ``state`` es «win»,
+    «loss» o vacío si el partido aún no tiene resultado.
     """
     if not match.draft_mode:
         return []
@@ -836,7 +837,9 @@ def lineup_rows(match, games):
     for game in games:
         label = game.local_pair_label if match.own_is_local else game.visiting_pair_label
         if label and not game.no_show:
-            rows.append({"n": game.n_game, "label": label})
+            own = outcomes.WINNER_LOCAL if match.own_is_local else outcomes.WINNER_VISITING
+            state = "" if not game.winner else ("win" if game.winner == own else "loss")
+            rows.append({"n": game.n_game, "label": label, "state": state})
     return rows
 
 

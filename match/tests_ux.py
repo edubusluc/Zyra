@@ -117,6 +117,8 @@ class CallMinimumTests(UxBase):
 
 class MatchPageTests(UxBase):
     def test_next_step_button_follows_the_phase(self):
+        from core.models import UserPreference
+        UserPreference.objects.update_or_create(user=self.user, defaults={"match_stage_view": False})
         match = self.match()
         page = self.client.get(reverse("call_for_match", args=[match.public_id]))
         self.assertContains(page, "Siguiente: Crear convocatoria")
@@ -136,6 +138,8 @@ class MatchPageTests(UxBase):
         self.assertNotContains(page, 'class="btn btn-danger btn-sm"')
 
     def test_title_shows_teams_and_closed_page_shows_outcome_and_share(self):
+        from core.models import UserPreference
+        UserPreference.objects.update_or_create(user=self.user, defaults={"match_stage_view": False})
         match = self.match()
         self.closed_call(match)
         games = self.lineup(match)
@@ -322,7 +326,7 @@ class MoreMenuMobileTests(SimpleTestCase):
         self.assertIn("max-width: calc(100vw", rule)
 
     def test_more_menus_close_with_escape(self):
-        for name in ("match/templates/call_for_match.html", "match/templates/includes/player_selector.html"):
+        for name in ("match/templates/includes/ficha_more.html", "match/templates/includes/player_selector.html"):
             html = (Path(settings.BASE_DIR) / name).read_text(encoding="utf-8")
             self.assertIn('class="z-more', html)
             self.assertRegex(html, r'<details class="z-more[^"]*" data-filter-menu>')
@@ -441,7 +445,7 @@ class FichaPreviewTests(UxBase):
     def test_action_cards_link_to_the_next_steps(self):
         m = self.match(FUTURE)
         page = self.ficha(m)
-        self.assertContains(page, "z-menu-card", count=4)
+        self.assertContains(page, "z-menu-card", count=5)  # cuatro fases y «Más»
         self.assertContains(page, 'href="%s"' % reverse("create_call", args=[m.public_id]))
         self.assertContains(page, "siguiente paso")
 
@@ -458,3 +462,33 @@ class FichaPreviewTests(UxBase):
         self.assertContains(page, "z-ficha-side")
         self.assertContains(page, "z-status4")
         self.assertNotContains(page, "z-menu-card")
+
+    def test_close_call_is_a_card_with_the_confirmation_form(self):
+        m = self.match(FUTURE)
+        call = Call.objects.create(match=m, draft_mode=True)
+        call.players.set(self.players[:10])
+        page = self.ficha(m)
+        self.assertContains(page, reverse("close_call", args=[m.public_id]))
+        self.assertContains(page, "Cerrar convocatoria")
+        self.assertNotContains(page, "z-next-main")  # el botón «Siguiente» ya no existe en la vista nueva
+
+    def test_stage_view_hides_the_page_title_and_the_lists_below(self):
+        m = self.match(FUTURE)
+        self.closed_call(m)
+        self.lineup(m)
+        page = self.ficha(m)
+        self.assertNotContains(page, "z-page-head")
+        self.assertContains(page, '<h1 class="visually-hidden">')
+        self.assertNotContains(page, "z-call-head")
+        self.assertNotContains(page, "z-game-head")
+
+    def test_head_to_head_shows_a_first_meeting_line_without_history(self):
+        page = self.ficha(self.match(FUTURE))
+        self.assertContains(page, "z-first-meeting")
+        self.assertContains(page, "Primer enfrentamiento contra Rival")
+
+    def test_category_is_shown_under_each_team_name(self):
+        self.own.division = "1000"
+        self.own.save()
+        page = self.ficha(self.match(FUTURE))
+        self.assertContains(page, "Local · 1000")
