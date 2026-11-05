@@ -3,6 +3,12 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 05/11/2026 · Ficha del enfrentamiento: acabado premium
+
+- **Escenario de carbono** con foco de luz que sigue al puntero, borde biselado y franja lima; los escudos reciben luz de borde distinta (local lima, visitante acero), sombra en el suelo y un destello periódico, y se ladean ligeramente con el ratón.
+- **VS metálico** con relieve y tarjetas de acción con volumen: se elevan al pasar el ratón, se hunden al pulsar, brillan en el siguiente paso y tienen foco visible y estado desactivado claro.
+- **Entrada animada** de escudos, VS, tarjeta y acciones; con «reducir movimiento» no hay animación ni parallax.
+
 ## 05/11/2026 · Ficha del enfrentamiento: tarjeta grande y fondo de escenario
 
 - **Tarjeta principal más grande** con los nombres en texto plano separados por puntos; tu nombre va resaltado en lima. Desaparece el aviso «Te has apuntado / Todavía no te has apuntado» mientras la convocatoria está abierta.
