@@ -3963,5 +3963,18 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .z-rival-history a { display: inline-flex; align-items: center; gap: 8px; font-size: var(--z-fs-sm); font-weight: 800; color: var(--z-lime); text-decoration: none; }
 
 /* Listado de enfrentamientos: aviso del horizonte y enlace al calendario completo */
+/* Resumen de lo programado más adelante: una franja con los meses y el acceso al calendario completo */
+.z-ahead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; margin: 0 0 16px; padding: 12px 16px; background: var(--z-surface-2); border: 1px dashed var(--z-border-control); border-radius: var(--z-radius); }
+.z-ahead-main { display: grid; gap: 6px; min-width: 0; }
+.z-ahead h2 { margin: 0; font-family: inherit; font-size: var(--z-fs-md); font-weight: 800; letter-spacing: 0; text-transform: none; }
+.z-ahead h2 i { margin-right: 6px; color: var(--z-lime); }
+.z-ahead-months { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0; padding: 0; list-style: none; color: var(--z-muted); font-size: var(--z-fs-sm); }
+.z-ahead-months b { color: var(--z-text); }
 .z-horizon { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 12px; margin: 16px 0; color: var(--z-muted); font-size: var(--z-fs-sm); text-align: center; }
 .z-horizon a { font-weight: 800; }
+
+/* «Pendiente»: con JS las páginas se apilan en la misma celda, así la tarjeta mide siempre lo de la más alta y el selector queda anclado abajo */
+[data-pending-pages].is-paged { display: grid; grid-template-rows: 1fr auto; }
+[data-pending-pages].is-paged > [data-pending-page] { grid-area: 1 / 1; }
+[data-pending-pages].is-paged > [data-pending-page].is-inactive { visibility: hidden; pointer-events: none; }
+[data-pending-pages].is-paged > .z-pending-picker { grid-area: 2 / 1; align-self: end; }

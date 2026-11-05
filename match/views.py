@@ -206,7 +206,7 @@ def list_match(request):
     todos con resultado) para pintar su tarjeta.
 
     Por defecto no enseña los enfrentamientos abiertos que quedan a más de ``LIST_HORIZON_DAYS`` días
-    (``hidden_far``, con enlace a ``?ver=todo``, el calendario completo); al buscar o filtrar por rival
+    (``hidden_far``, resumidos por mes en ``far_months``, con enlace a ``?ver=todo``, el calendario completo); al buscar o filtrar por rival
     se ven todos. No cambia el resumen.
 
     Con varios espacios junta los enfrentamientos de todos (``?espacio=``, core.spaces): cada
@@ -258,7 +258,12 @@ def list_match(request):
     horizon_end = today + timedelta(days=LIST_HORIZON_DAYS)
     show_all = request.GET.get('ver') == FULL_CALENDAR or bool(search or rival)
     upcoming_open = open_matches.filter(start_date__gte=today)
-    hidden_far = 0 if show_all else upcoming_open.filter(start_date__gt=horizon_end).count()
+    far_dates = [] if show_all else list(upcoming_open.filter(start_date__gt=horizon_end)
+                                         .order_by('start_date').values_list('start_date', flat=True))
+    hidden_far = len(far_dates)
+    # Resumen de lo que queda programado más adelante (por mes), para que se vea que el calendario existe.
+    far_months = [{'month': day, 'n': sum(1 for d in far_dates if (d.year, d.month) == (day.year, day.month))}
+                  for day in dict.fromkeys(d.replace(day=1) for d in far_dates)]
     if hidden_far:
         upcoming_open = upcoming_open.filter(start_date__lte=horizon_end)
     matches = [*open_matches.filter(start_date__lt=today).order_by('start_date', 'id'),
@@ -321,6 +326,8 @@ def list_match(request):
         'summary': summary,
         'hidden_far': hidden_far,
         'horizon_end': horizon_end,
+        'far_months': far_months,
+        'far_last': far_dates[-1] if far_dates else None,
         'full_calendar': request.GET.get('ver') == FULL_CALENDAR and not (search or rival),
         'has_draws': any(c.rules.has_draws for c in clubs),
         'search': search,

@@ -89,6 +89,8 @@ class MatchesAndCallsTests(TestCase):
         self.assertIn(near.id, ids)
         self.assertNotIn(far.id, ids)
         self.assertEqual(response.context["hidden_far"], 1)
+        self.assertEqual([m["n"] for m in response.context["far_months"]], [1])
+        self.assertContains(response, "1 enfrentamiento más programado")
         self.assertContains(response, "Ver el calendario completo")
         full = self.client.get(reverse("list_match"), {"season": "all", "ver": "todo"})
         self.assertIn(far.id, [m.id for m in full.context["matches"]])
