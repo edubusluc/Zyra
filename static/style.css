@@ -1446,9 +1446,14 @@ a.z-card:hover, .z-card--link:hover {
 .z-home-grid { display: grid; gap: 18px; margin-top: 24px; }
 @media (min-width: 1100px) {
     .z-home-grid:not(.z-home-grid--both) .z-next-deck { max-width: 820px; }
-    .z-home-grid--both { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); align-items: start; }
-    /* La altura de la fila la marca la pista (2:1); «Pendiente» crece con sus filas sin recortarlas. */
-    .z-home-grid--both .z-home-pending { align-self: start; }
+    .z-home-grid--both { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); align-items: stretch; }
+    /* Las dos tarjetas miden siempre lo mismo: la fila la marca la más alta (la pista 2:1 o «Pendiente» con sus filas).
+       Con un único enfrentamiento no hay selector y la pista ocupa también ese hueco. */
+    .z-home-grid--both .z-next-deck { display: flex; flex-direction: column; }
+    .z-home-grid--both .z-next-deck-track { flex: 1; }
+    .z-home-grid--both .z-next-deck-track::before { content: ""; grid-area: 1 / 1; aspect-ratio: 2 / 1; }
+    .z-home-grid--both .z-next-slide { align-self: stretch; }
+    .z-home-grid--both .z-next-slide .z-next-match { aspect-ratio: auto; align-self: stretch; }
 }
 .z-next-match {
     container-type: inline-size;
