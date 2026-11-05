@@ -349,7 +349,7 @@
         <div class="z-myform-zone z-myform-snp">
             <div class="z-myform-snp-head">
                 <span class="z-eyebrow">{% translate "Puntos SNP" %} <span class="z-myform-snp-period">· {% translate "últimos 30 días" %}</span></span>
-                <span class="z-myform-big">{{ my_form.snp.score|snp_points }}{% if my_form.snp.delta %} <small class="{% if my_form.snp.delta > 0 %}z-myform-up{% else %}z-myform-down{% endif %}">{% if my_form.snp.delta > 0 %}+{% endif %}{{ my_form.snp.delta|floatformat:"-1" }} <span class="visually-hidden">{% translate "en los últimos 30 días" %}</span></small>{% endif %}</span>
+                <span class="z-myform-big">{{ my_form.snp.score|snp_points }}{% if my_form.snp.delta %} <small class="{% if my_form.snp.delta > 0 %}z-myform-up{% else %}z-myform-down{% endif %}">{% if my_form.snp.delta > 0 %}+{% endif %}{{ my_form.snp.delta|floatformat:"-1" }} <span class="visually-hidden">{% translate "respecto a la actualización anterior" %}</span></small>{% endif %}</span>
             </div>
             {% with chart=my_form.snp.chart %}
             {% if chart %}

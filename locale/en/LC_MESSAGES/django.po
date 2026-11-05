@@ -7503,8 +7503,8 @@ msgid "últimos 30 días"
 msgstr "last 30 days"
 
 #: core/templates/home.html:345
-msgid "en los últimos 30 días"
-msgstr "in the last 30 days"
+msgid "respecto a la actualización anterior"
+msgstr "compared with the previous update"
 
 #: core/templates/home.html:349
 #, python-format
