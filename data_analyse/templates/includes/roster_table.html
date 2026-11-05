@@ -38,6 +38,13 @@
       </tbody>
     </table>
   </div>
+  {% if roster.pages %}
+  <nav class="d-flex justify-content-between align-items-center mt-3" aria-label="{% translate 'Paginación' %}">
+    {% if roster.pages.previous %}<a class="st-chip" href="{{ roster.pages.previous }}" rel="prev">{% translate "Anterior" %}</a>{% else %}<span></span>{% endif %}
+    <span class="st-muted">{% blocktranslate with number=roster.pages.number total=roster.pages.total %}{{ number }} de {{ total }}{% endblocktranslate %}</span>
+    {% if roster.pages.next %}<a class="st-chip" href="{{ roster.pages.next }}" rel="next">{% translate "Siguiente" %}</a>{% else %}<span></span>{% endif %}
+  </nav>
+  {% endif %}
   {% else %}
     <p class="st-muted mt-3 mb-0">{% translate "Todavía no hay jugadores en el equipo." %}</p>
   {% endif %}
