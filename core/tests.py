@@ -443,13 +443,17 @@ class HomeTests(TestCase):
         self.assertContains(response, "z-next-match-teams")
 
     def test_home_deck_shows_next_matches_in_order(self):
-        # Carrusel: el más cercano delante, el siguiente por detrás (máx. 3) y un punto por tarjeta.
-        for days in (9, 2, 5, 14):
+        # Carrusel: el más cercano delante, el siguiente por detrás y un punto por tarjeta; solo la
+        # semana natural (lunes a domingo) del más cercano.
+        # Se parte del próximo lunes para que la prueba no dependa del día en que se ejecuta.
+        monday = self.today + datetime.timedelta(days=7 - self.today.weekday())
+        offsets = [(monday - self.today).days + k for k in (6, 0, 2)]
+        for days in offsets + [(monday - self.today).days + 7, (monday - self.today).days + 14]:
             Match.objects.create(club=self.club, local=self.own, visiting=self.rival,
                                  start_date=self.today + datetime.timedelta(days=days))
         response = self.client.get(reverse("home"))
         upcoming = response.context["upcoming"]
-        self.assertEqual([u["days_left"] for u in upcoming], [2, 5, 9])
+        self.assertEqual([u["days_left"] for u in upcoming], sorted(offsets))
         self.assertEqual(response.context["next_match"], upcoming[0]["match"])
         html = response.content.decode()
         self.assertEqual(html.count("data-next-slide"), 3)
@@ -457,6 +461,42 @@ class HomeTests(TestCase):
         self.assertContains(response, "js/next-match-deck.js")
         self.assertIn("z-next-slide is-front", html)
         self.assertIn("z-next-slide is-next", html)
+
+    def test_home_deck_empty_week_shows_next_week_with_matches(self):
+        # Sin partidos esta semana, el carrusel enseña la siguiente semana con partidos.
+        monday = self.today + datetime.timedelta(days=7 - self.today.weekday())
+        for days in (15, 17, 22):
+            Match.objects.create(club=self.club, local=self.own, visiting=self.rival,
+                                 start_date=monday + datetime.timedelta(days=days))
+        response = self.client.get(reverse("home"))
+        dates = [u["match"].start_date for u in response.context["upcoming"]]
+        self.assertEqual(dates, [monday + datetime.timedelta(days=15), monday + datetime.timedelta(days=17)])
+        self.assertEqual(response.context["next_match"].start_date, dates[0])
+
+    def test_home_pending_overdue_always_and_pages_of_two_weeks(self):
+        # «Pendiente»: vencidos aparte y el resto en páginas de dos semanas naturales con partidos.
+        monday = self.today + datetime.timedelta(days=7 - self.today.weekday())
+        Match.objects.create(club=self.club, local=self.own, visiting=self.rival,
+                             start_date=self.today - datetime.timedelta(days=30))
+        for weeks in (0, 1, 2, 5):
+            Match.objects.create(club=self.club, local=self.own, visiting=self.rival,
+                                 start_date=monday + datetime.timedelta(weeks=weeks))
+        response = self.client.get(reverse("home"))
+        self.assertEqual(len(response.context["pending_overdue_rows"]), 1)
+        pages = response.context["pending_pages"]
+        self.assertEqual([len(p["rows"]) for p in pages], [2, 2])
+        self.assertEqual(pages[0]["start"], monday)
+        self.assertEqual(pages[0]["end"], monday + datetime.timedelta(days=13))
+        self.assertEqual(response.context["pending_total"], 5)
+        self.assertContains(response, "data-pending-dot", count=2)
+        self.assertContains(response, "js/pending-pages.js")
+
+    def test_home_pending_single_page_has_no_selector(self):
+        Match.objects.create(club=self.club, local=self.own, visiting=self.rival,
+                             start_date=self.today + datetime.timedelta(days=1))
+        response = self.client.get(reverse("home"))
+        self.assertEqual(len(response.context["pending_pages"]), 1)
+        self.assertNotContains(response, "data-pending-dot")
 
     def test_home_deck_single_match_has_no_dots(self):
         Match.objects.create(club=self.club, local=self.own, visiting=self.rival,

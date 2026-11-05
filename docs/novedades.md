@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 05/11/2026 · Inicio: partidos semana a semana
+
+- **Carrusel por semana**: «Próximo enfrentamiento» solo enseña los partidos de la semana (lunes a domingo); si esta semana no queda ninguno, enseña la siguiente semana con partidos.
+- **«Pendiente» por páginas**: los vencidos se ven siempre arriba y el resto va en páginas de dos semanas, con el mismo selector de pastillas y flechas del carrusel. (PR #251)
+
 ## 03/11/2026 · Inicio: carrusel de próximos enfrentamientos
 
 - **Tarjeta «Próximo enfrentamiento»**: con más de un enfrentamiento abierto, el más cercano va delante y el siguiente (hasta tres en total) queda por debajo, asomando por el lado, más pequeño y difuminado. Sirve sobre todo cuando un fin de semana hay partido de SNP y de LAPI.

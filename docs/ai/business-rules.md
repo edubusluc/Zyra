@@ -27,6 +27,10 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
 - [V] Vistas unidas (`core/spaces.py`): con más de un espacio, Enfrentamientos, Calendario, Inicio (Pendiente y próximo
   enfrentamiento) juntan los espacios con el filtro «Todas · SNP · LAPI» (`?espacio=`, se recuerda en sesión, por defecto
   «Todas»). Cada tarjeta lleva la etiqueta de su competición y sus acciones según el rol en ese espacio.
+- [V] Inicio por semanas (`core/views.py` `home`, igual para todos los roles): el carrusel «Próximo enfrentamiento» solo
+  enseña los partidos abiertos de la semana natural (lunes a domingo) del más cercano desde hoy (la actual o, si en ella no
+  queda ninguno, la siguiente con partidos). «Pendiente» muestra siempre los vencidos aparte y el resto en páginas de dos
+  semanas naturales con partidos (`_home_pending_pages`), con el selector de `static/js/pending-pages.js`.
   Estadísticas nunca mezcla equipos: Equipo, Jugador, Parejas y Rivales son siempre de una competición (chips SNP · LAPI;
   Equipo recuerda la suya en `TEAM_SPACE_KEY`, la primera vez la del primer equipo que gestiona). Lo global es de la persona:
   con jugador enlazado en dos o más espacios (`spaces.linked_players`, `my_stats_available`) hay una primera pestaña
