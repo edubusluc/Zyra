@@ -130,8 +130,8 @@ def set_stats(games):
 def by_game_number(games):
     """
     Balance por número de partido (1 a 5): los partidos 1 y 2 valen 3 puntos y el resto 2.
-    Devuelve [{'n', 'value', 'played', 'wins', 'losses', 'pct', 'points', 'stake'}, ...]
-    con los cinco números aunque alguno no tenga partidos.
+    Devuelve [{'n', 'value', 'played', 'total', 'wins', 'losses', 'pct', 'points', 'stake'}, ...]
+    (``total`` repite ``played`` para reutilizar la fila de barra de los sets) con los cinco números aunque alguno no tenga partidos.
     """
     acc = {n: [0, 0] for n in GAME_NUMBERS}
     for g in games:
@@ -147,6 +147,7 @@ def by_game_number(games):
             'n': n,
             'value': value,
             'played': played,
+            'total': played,
             'wins': wins,
             'losses': played - wins,
             'pct': _pct(wins, played),

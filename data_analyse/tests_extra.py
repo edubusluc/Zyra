@@ -222,6 +222,15 @@ class ClubSetsTests(ClubDataMixin, TestCase):
         self.assertNotContains(response, "st-card-note")
         self.assertContains(response, 'data-level="deepen"')
 
+    def test_bars_show_visible_case_count(self):
+        """Las barras por número de partido y de sets indican «N de M» además del %, con la misma fila."""
+        response = self.client.get(reverse('team_statistics'))
+        rows = response.context['game_numbers']
+        played = next(r for r in rows if r['played'])
+        self.assertEqual(played['total'], played['played'])
+        self.assertContains(response, 'class="st-bar-count"')
+        self.assertContains(response, f'{played["wins"]} de {played["total"]}')
+
     def test_team_page_shows_new_sections(self):
         response = self.client.get(reverse('team_statistics'))
         self.assertContains(response, "Por número de partido")

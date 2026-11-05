@@ -97,7 +97,7 @@
             <h3 class="st-card-title">{% translate "Por número de partido" %}</h3>
             <div class="st-bars">
               {% for r in game_numbers %}
-              <div class="st-bar-row"><b>{% blocktranslate with n=r.n %}Partido {{ n }}{% endblocktranslate %}<small>{% blocktranslate with n=r.value %}{{ n }} pts{% endblocktranslate %}</small></b><div class="st-meter"><span style="width: {{ r.pct|default:0|unlocalize }}%"></span></div><em>{% if r.played %}{{ r.pct|floatformat:0 }}%{% else %}—{% endif %}</em></div>
+              {% blocktranslate with n=r.n asvar bar_label %}Partido {{ n }}{% endblocktranslate %}{% blocktranslate with n=r.value asvar bar_desc %}{{ n }} pts{% endblocktranslate %}{% include 'includes/stat_bar_row.html' with label=bar_label desc=bar_desc %}
               {% endfor %}
             </div>
           </article>
