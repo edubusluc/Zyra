@@ -410,3 +410,7 @@ msgstr "Away"
 
 msgid "%(n)s partidos"
 msgstr "%(n)s games"
+
+#, python-format
+msgid "%(n)s part."
+msgstr "%(n)s gm."

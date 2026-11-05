@@ -122,7 +122,7 @@
             <h3 class="st-card-title">{% translate "Por número de partido" %}{% include 'includes/stat_tip.html' with tip=tip_text %}</h3>
             <div class="st-bars">
               {% for r in game_numbers %}
-              <div class="st-bar-row"><b>{% blocktranslate with n=r.n %}Partido {{ n }}{% endblocktranslate %}<small>{% blocktranslate with n=r.value %}{{ n }} pts{% endblocktranslate %}</small></b><div class="st-meter"><span style="width: {{ r.pct|default:0|unlocalize }}%"></span></div><em>{% if r.played %}{{ r.pct|floatformat:0 }}%{% else %}—{% endif %}</em></div>
+              {% include 'includes/game_number_row.html' %}
               {% endfor %}
             </div>
           </article>
@@ -157,6 +157,7 @@
         <summary><span>{% translate "Asistencia a las convocatorias" %}{% if selected_season %} · {{ selected_season }}{% endif %}</span><small>{% blocktranslate with pct=attendance.average|floatformat:0 %}{{ pct }}% de media{% endblocktranslate %}</small></summary>
         <article class="st-card st-card--wide">
           <p class="st-big">{{ attendance.average|floatformat:0 }}% <small>{% if attendance.mode == 'calls' %}{% translate "de media en la temporada" %}{% else %}{% translate "de media en total" %}{% endif %}</small></p>
+          <p class="st-split-foot">{% blocktranslate count n=attendance.calls with s=attendance.signed e=attendance.eligible %}{{ s }} apuntados de {{ e }} posibles · {{ n }} convocatoria{% plural %}{{ s }} apuntados de {{ e }} posibles · {{ n }} convocatorias{% endblocktranslate %}</p>
           {% if attendance.rows|length > 1 %}<div class="st-chart st-chart--mine" role="img" aria-label="{% translate 'Asistencia a las convocatorias' %}"><canvas id="attendanceChart" aria-hidden="true"></canvas></div>{% endif %}
         </article>
         </details>

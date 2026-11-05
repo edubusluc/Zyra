@@ -27,7 +27,8 @@ class SetSituationTests(SimpleTestCase):
             third=_situation(1, 2), sets_won=10, sets_lost=6, bagels_for=2))
         self.assertEqual([str(label) for label, _hint, _r in rows],
                          ["Tras ganar el 1.er set", "Tras perder el 1.er set", "Tie-breaks", "Set decisivo", "Roscos a favor"])
-        self.assertEqual(rows[-1][2], {'wins': 2, 'losses': 14, 'total': 16, 'pct': 12})
+        self.assertEqual(rows[-1][2], {'wins': 2, 'losses': 14, 'total': 16, 'pct': 12, 'unit': 'sets'})
+        self.assertEqual([r['unit'] for _l, _h, r in rows], ['games', 'games', 'sets', 'games', 'sets'])
 
     def test_rows_without_cases_are_left_out(self):
         rows = comparison.set_situation_rows(self.stats(tiebreak=_situation(1, 1)))
@@ -97,3 +98,26 @@ class PartnerRowsTests(SimpleTestCase):
         self.assertEqual(flags['B'], (None, True))
         self.assertEqual(flags['D'], (None, None))
 
+
+
+class VisibleBaseTests(SimpleTestCase):
+    """Cada barra con % enseña, en texto visible, de dónde sale (no solo en el title)."""
+
+    def render(self, template, **ctx):
+        """Renderiza una plantilla incluida con el contexto dado."""
+        from django.template.loader import render_to_string
+        return render_to_string(template, ctx)
+
+    def test_set_bar_shows_n_of_m_with_unit(self):
+        html = self.render('includes/stat_bar_row.html', label='Tie-breaks', desc='x',
+                           r=dict(_situation(2, 1), unit='sets'))
+        self.assertIn('st-bar-base">2 de 3 sets<', html)
+        html = self.render('includes/stat_bar_row.html', label='Set decisivo', desc='x',
+                           r=dict(_situation(1, 0), unit='games'))
+        self.assertIn('1 de 1 partido<', html)
+
+    def test_game_number_row_shows_balance_and_games(self):
+        r = {'n': 1, 'value': 3, 'played': 3, 'wins': 2, 'losses': 1, 'pct': 67}
+        self.assertIn('2V – 1D · 3 partidos', self.render('includes/game_number_row.html', r=r))
+        empty = {'n': 2, 'value': 2, 'played': 0, 'wins': 0, 'losses': 0, 'pct': None}
+        self.assertIn('Sin partidos todavía', self.render('includes/game_number_row.html', r=empty))

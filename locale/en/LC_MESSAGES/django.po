@@ -15606,3 +15606,39 @@ msgstr "Previous fixture"
 #: core/templates/home.html
 msgid "Enfrentamiento siguiente"
 msgstr "Next fixture"
+
+#, python-format
+msgid "%(w)sV – %(l)sD · %(n)s partido"
+msgid_plural "%(w)sV – %(l)sD · %(n)s partidos"
+msgstr[0] "%(w)sW – %(l)sL · %(n)s game"
+msgstr[1] "%(w)sW – %(l)sL · %(n)s games"
+
+#, python-format
+msgid "%(w)s de %(n)s set"
+msgid_plural "%(w)s de %(n)s sets"
+msgstr[0] "%(w)s of %(n)s set"
+msgstr[1] "%(w)s of %(n)s sets"
+
+#, python-format
+msgid "%(w)s de %(n)s partido"
+msgid_plural "%(w)s de %(n)s partidos"
+msgstr[0] "%(w)s of %(n)s game"
+msgstr[1] "%(w)s of %(n)s games"
+
+#, python-format
+msgid "%(s)s de %(n)s convocatoria cerrada"
+msgid_plural "%(s)s de %(n)s convocatorias cerradas"
+msgstr[0] "%(s)s of %(n)s closed call-up"
+msgstr[1] "%(s)s of %(n)s closed call-ups"
+
+#, python-format
+msgid "%(a)s de %(n)s convocatoria a la que se apunta"
+msgid_plural "%(a)s de %(n)s convocatorias a las que se apunta"
+msgstr[0] "%(a)s of %(n)s call-up they sign up to"
+msgstr[1] "%(a)s of %(n)s call-ups they sign up to"
+
+#, python-format
+msgid "%(s)s apuntados de %(e)s posibles · %(n)s convocatoria"
+msgid_plural "%(s)s apuntados de %(e)s posibles · %(n)s convocatorias"
+msgstr[0] "%(s)s signed up out of %(e)s possible · %(n)s call-up"
+msgstr[1] "%(s)s signed up out of %(e)s possible · %(n)s call-ups"

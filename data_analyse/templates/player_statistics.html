@@ -97,7 +97,7 @@
             <h3 class="st-card-title">{% translate "Por número de partido" %}</h3>
             <div class="st-bars">
               {% for r in game_numbers %}
-              <div class="st-bar-row"><b>{% blocktranslate with n=r.n %}Partido {{ n }}{% endblocktranslate %}<small>{% blocktranslate with n=r.value %}{{ n }} pts{% endblocktranslate %}</small></b><div class="st-meter"><span style="width: {{ r.pct|default:0|unlocalize }}%"></span></div><em>{% if r.played %}{{ r.pct|floatformat:0 }}%{% else %}—{% endif %}</em></div>
+              {% include 'includes/game_number_row.html' %}
               {% endfor %}
             </div>
           </article>
@@ -127,10 +127,10 @@
           <article class="st-card">
             <h3 class="st-card-title">{% translate "Apuntado y alineado" %}</h3>
             {% if signup_rate.total %}
-              <div class="st-rate"><p class="st-rate-label">{% translate "Se apunta" %} · <span>{{ signup_rate.pct }}%</span></p><div class="st-meter st-meter--lg"><span style="width: {{ signup_rate.pct|unlocalize }}%"></span></div></div>
+              <div class="st-rate"><p class="st-rate-label">{% translate "Se apunta" %} · <span>{{ signup_rate.pct }}%</span></p><div class="st-meter st-meter--lg"><span style="width: {{ signup_rate.pct|unlocalize }}%"></span></div><p class="st-split-foot">{% blocktranslate count n=signup_rate.total with s=signup_rate.signed %}{{ s }} de {{ n }} convocatoria cerrada{% plural %}{{ s }} de {{ n }} convocatorias cerradas{% endblocktranslate %}</p></div>
             {% endif %}
             {% if lineup_rate.signed %}
-              <div class="st-rate"><p class="st-rate-label">{% translate "Juega cuando se apunta" %} · <span>{{ lineup_rate.pct }}%</span></p><div class="st-meter st-meter--lg"><span style="width: {{ lineup_rate.pct|unlocalize }}%"></span></div></div>
+              <div class="st-rate"><p class="st-rate-label">{% translate "Juega cuando se apunta" %} · <span>{{ lineup_rate.pct }}%</span></p><div class="st-meter st-meter--lg"><span style="width: {{ lineup_rate.pct|unlocalize }}%"></span></div><p class="st-split-foot">{% blocktranslate count n=lineup_rate.signed with a=lineup_rate.aligned %}{{ a }} de {{ n }} convocatoria a la que se apunta{% plural %}{{ a }} de {{ n }} convocatorias a las que se apunta{% endblocktranslate %}</p></div>
             {% else %}
               <p class="st-muted mt-3 mb-0">{% translate "Todavía no se ha apuntado a ninguna convocatoria cerrada." %}</p>
             {% endif %}
