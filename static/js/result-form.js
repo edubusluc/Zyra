@@ -97,6 +97,17 @@ document.querySelectorAll('[data-result]').forEach(function (form) {
 
   // «Pareja no presentada» (SNP): sin sets que rellenar; Zyra reparte los puntos al cerrar el acta.
   const noShow = form.querySelector('[data-pair-no-show]');
+  // «Una pareja no se presentó»: el desplegable de no presentados solo aparece al pedirlo.
+  const noShowToggle = form.querySelector('[data-noshow-toggle]');
+  const noShowBox = form.querySelector('[data-noshow-box]');
+  if (noShowToggle && noShowBox) {
+    noShowToggle.addEventListener('click', () => {
+      noShowBox.hidden = false;
+      noShowToggle.hidden = true;
+      noShowToggle.setAttribute('aria-expanded', 'true');
+      if (noShow) noShow.focus();
+    });
+  }
   const playedBox = form.querySelector('[data-played]');
 
   // El marcador vivo (más abajo) lee el ganador de cada partido: data-winner = 0 local, 1 visitante

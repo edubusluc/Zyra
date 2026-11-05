@@ -46,7 +46,7 @@
 
     {% if ordered %}
     <aside class="z-lineup-side pair-order-container" aria-labelledby="pair-order-title">
-        <div class="z-title-tip"><h2 id="pair-order-title">{% translate "Orden de juego" %}</h2>{% translate "Se ordena por la suma de puntos SNP: las dos parejas más fuertes juegan los partidos de 3 puntos." as order_tip %}{% include 'includes/stat_tip.html' with tip=order_tip %}</div>
+        <div class="z-title-tip"><h2 id="pair-order-title">{% translate "Orden de juego" %}</h2>{% translate "Se ordena por la suma de puntos SNP: las dos parejas más fuertes juegan los partidos de 3 puntos." as order_tip %}{% include 'includes/stat_tip.html' with tip=order_tip %}<button type="button" class="z-lineup-side-toggle" data-order-toggle aria-expanded="false" aria-controls="pair-order-list"><span class="visually-hidden">{% translate "Mostrar el orden de juego" %}</span><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button></div>
         <ol id="pair-order-list" aria-live="polite"></ol>
     </aside>
     {% endif %}

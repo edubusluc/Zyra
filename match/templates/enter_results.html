@@ -28,13 +28,14 @@
         <div class="alert-message warning">{% for e in row.errors %}<p>{{ e }}</p>{% endfor %}</div>
         {% endif %}
         {% if match.club.rules.pair_no_show %}
-        <div class="z-result-noshow mb-2">
+        <div class="z-result-noshow mb-2" data-noshow-box{% if not values.no_show %} hidden{% endif %}>
             <label class="form-label small" for="id_{{ row.prefix }}no_show">{% translate "¿Se presentaron las dos parejas?" %}</label>
             <select class="form-select form-select-sm" name="{{ row.prefix }}no_show" id="id_{{ row.prefix }}no_show" data-pair-no-show>
                 <option value="">{% translate "Sí, se jugó el partido" %}</option>
                 {% for value, label in no_show_choices %}<option value="{{ value }}"{% if values.no_show == value %} selected{% endif %}>{{ label }}</option>{% endfor %}
             </select>
         </div>
+        <button type="button" class="btn btn-link btn-sm z-noshow-link mb-2" data-noshow-toggle aria-expanded="{% if values.no_show %}true{% else %}false{% endif %}"{% if values.no_show %} hidden{% endif %}>{% translate "Una pareja no se presentó" %}</button>
         {% endif %}
         <div data-played>
         <div class="z-result-grid">
