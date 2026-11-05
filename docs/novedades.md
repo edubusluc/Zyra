@@ -3,6 +3,12 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 05/11/2026 · Convocatoria, parejas y resultados: coherencia (fase 4)
+
+- **Una sola marca de «Tu equipo»**: la etiqueta de siempre también al editar un resultado, en lugar de una estrella.
+- **Poner resultados**: el borde de cada partido se pone lima si tu equipo gana y rojo si pierde, en cuanto hay ganador.
+- **Editar un resultado**: los nombres largos de pareja o equipo ya no se cortan con puntos suspensivos.
+
 ## 05/11/2026 · Convocatoria, parejas y resultados: móvil (fase 3)
 
 - **Poner resultados**: en móvil el marcador y los botones Guardar quedan fijos abajo, sin la barra de navegación.

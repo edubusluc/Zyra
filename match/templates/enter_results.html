@@ -18,7 +18,7 @@
     <div class="z-results-all">
     {% for row in rows %}
     {% with game=row.game values=row.values %}
-    <fieldset class="z-card z-result-card" data-result data-score="{{ game.score|snp_points:"" }}" id="partido-{{ game.n_game }}">
+    <fieldset class="z-card z-result-card" data-result{% if match.local.is_own %} data-own-side="0"{% elif match.visiting.is_own %} data-own-side="1"{% endif %} data-score="{{ game.score|snp_points:"" }}" id="partido-{{ game.n_game }}">
         <legend class="z-result-legend">
             {% blocktranslate with n=game.n_game %}Partido {{ n }}{% endblocktranslate %}
             <span class="text-muted fw-semibold">· {% blocktranslate with score=game.score|snp_points:"" %}{{ score }} pts{% endblocktranslate %}</span>
