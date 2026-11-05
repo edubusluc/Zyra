@@ -6,6 +6,8 @@ from core.models import Membership
 from core.services import create_club
 from core.similarity import is_similar
 from players.models import Player
+from datetime import time
+
 from .models import Team
 
 User = get_user_model()
@@ -353,3 +355,54 @@ class TeamListPaginationTests(TestCase):
         })
         if response.status_code == 302:
             self.assertRedirects(response, reverse("club_home"), fetch_redirect_response=False)
+
+
+class DefaultTimeTests(TestCase):
+    """Hora habitual de juego del equipo propio: se guarda, se precarga y se puede cambiar."""
+
+    def setUp(self):
+        self.user = User.objects.create_user("admin", password="pass-12345")
+        self.club = create_club("Club A", "Sevilla", self.user, gender="F", country="ES", division="500")
+        self.own = self.club.own_team
+        self.client.force_login(self.user)
+        self.edit_url = reverse("edit_team", args=[self.own.public_id])
+        self.data = {"name": self.own.name, "location": "X", "gender": "F", "country": "ES", "division": "500"}
+
+    def test_existing_teams_start_empty(self):
+        self.assertIsNone(self.own.default_time)
+        self.assertContains(self.client.get(self.edit_url), 'name="default_time"')
+
+    def test_club_creation_stores_the_time(self):
+        club = create_club("Club B", "Madrid", self.user, competition="lapi", default_time=time(20, 30))
+        self.assertEqual(club.own_team.default_time, time(20, 30))
+
+    def test_edit_saves_and_clears_the_time(self):
+        self.client.post(self.edit_url, {**self.data, "default_time": "19:00"})
+        self.own.refresh_from_db()
+        self.assertEqual(self.own.default_time, time(19, 0))
+        self.client.post(self.edit_url, {**self.data, "default_time": ""})
+        self.own.refresh_from_db()
+        self.assertIsNone(self.own.default_time)
+
+    def test_invalid_time_is_rejected(self):
+        response = self.client.post(self.edit_url, {**self.data, "default_time": "25:99"})
+        self.assertContains(response, "Hora no válida")
+
+    def test_rivals_do_not_have_the_field(self):
+        rival = Team.objects.create(club=self.club, name="Tomares", location="X", division="500")
+        response = self.client.get(reverse("edit_team", args=[rival.public_id]))
+        self.assertNotContains(response, 'name="default_time"')
+
+    def test_match_form_preloads_the_time_and_stays_editable(self):
+        self.own.default_time = time(20, 30)
+        self.own.save()
+        rival = Team.objects.create(club=self.club, name="Tomares", location="X", division="500", in_group=True)
+        response = self.client.get(reverse("create_match"))
+        self.assertContains(response, 'value="20:30"')
+        self.assertContains(response, 'data-own-time="20:30"')
+        post = self.client.post(reverse("create_match"), {
+            "match_type": "enfrentamiento", "own_side": "local", "rival": rival.pk, "local": self.own.pk,
+            "visiting": rival.pk, "start_date": "2030-01-05", "start_time": "18:15"})
+        from match.models import Match
+        match = Match.objects.get(start_date="2030-01-05")
+        self.assertEqual(match.start_time, time(18, 15), post.status_code)

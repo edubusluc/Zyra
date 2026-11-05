@@ -7,6 +7,7 @@ from django.contrib.auth.password_validation import MinimumLengthValidator, get_
 from django.template.loader import render_to_string
 from django.utils.translation import gettext, gettext_lazy as _
 
+from team.forms import default_time_field
 from team.models import Team
 from .blocklist import is_blocked
 from .competitions import CHOICES as COMPETITION_CHOICES, COMPETITIONS, get_competition
@@ -67,6 +68,7 @@ class ClubForm(forms.Form):
         self.fields["competition"].choices = [(c.code, c.name) for c in competitions]
         self.fields["competition"].initial = competitions[0].code
         plain_text(self, "name", "location")
+        self.fields["default_time"] = default_time_field()
 
     @property
     def rules(self):

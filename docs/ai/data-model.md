@@ -42,8 +42,8 @@ entero sigue siendo la clave de los FK. Excepciones sin `public_id`: `backoffice
 ### team (`team/models.py`)
 
 - **Team**: `club`, `is_own` (máx. uno por club: `unique_own_team_per_club`), `in_group`,
-  `gender` (`M`/`F`), `country`, `division` (`future`/`500`/`1000`/`grand_slam`), `location`, `photo`.
-  `Team.save()` propaga `gender` a sus jugadores. La unicidad de nombre por división NO está en BD:
+  `gender` (`M`/`F`), `country`, `division` (`future`/`500`/`1000`/`grand_slam`), `location`, `photo`,
+  `default_time` (hora habitual en casa, nula; solo el equipo propio). `Team.save()` propaga `gender` a sus jugadores. La unicidad de nombre por división NO está en BD:
   la hace `team/forms.py` `Teamform.clean`.
 
 ### players (`players/models.py`)

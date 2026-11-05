@@ -50,7 +50,7 @@
           <div class="z-set-compare">
             {% for item in set_compare %}
             <div class="z-set-row">
-              <b>{{ item.label }}<small>{{ item.hint }}</small></b>
+              <b>{{ item.label }}<small>{{ item.hint }}</small><small class="st-bar-base">{% for c in item.comps %}{% if c.r.total %}{% if not forloop.first %} · {% endif %}{{ c.name }} {% blocktranslate with w=c.r.wins t=c.r.total %}{{ w }} de {{ t }}{% endblocktranslate %}{% endif %}{% endfor %}</small></b>
               <div class="z-set-bars">
                 {% for c in item.comps %}<div class="z-set-bar" title="{{ c.name }}: {% if c.r.total %}{% blocktranslate with w=c.r.wins t=c.r.total %}{{ w }} de {{ t }}{% endblocktranslate %}{% else %}—{% endif %}"><span class="z-set-bar--{{ c.code }}" style="width: {{ c.r.pct|default:0 }}%"></span></div>{% endfor %}
               </div>
@@ -64,9 +64,12 @@
         </article>
 
         {% if has_local or has_visiting %}
-        <section class="st-card">
+        <section class="st-card st-card--venue-mine">
           <h3 class="st-card-title">{% translate "Local y visitante" %}</h3>
           <div class="st-chart st-chart--mine" role="img" aria-label="{% translate 'Porcentaje de victorias en casa y fuera por competición' %}"><canvas id="spacesSidesChart" aria-hidden="true"></canvas></div>
+          <ul class="z-commit-list z-venue-notes">
+            {% for v in venue_notes %}<li><span><i class="z-dot z-dot--{{ v.code }}" aria-hidden="true"></i> {{ v.name }}</span><small>{% translate "Local" %} {{ v.local.won }}V – {{ v.local.lost }}D · {% translate "Visitante" %} {{ v.visiting.won }}V – {{ v.visiting.lost }}D</small></li>{% endfor %}
+          </ul>
         </section>
         {% endif %}
 

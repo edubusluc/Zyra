@@ -127,7 +127,8 @@ class CalculationTests(MyFormBase):
         for days, score in ((20, 412), (10, 420), (1, 436)):
             SnpScoreHistory.objects.create(player=self.me, date=self.day - datetime.timedelta(days=days), score=score)
         snp = my_form.my_form(self.club, self.me)["snp"]
-        self.assertEqual(snp["delta"], 24)
+        # Última actualización (436) menos la anterior (420), no menos la primera de los 30 días.
+        self.assertEqual(snp["delta"], 16)
         chart = snp["chart"]
         self.assertEqual(len(chart["line"].split()), 3)
         self.assertEqual((chart["high"], chart["low"]), (436, 412))

@@ -64,6 +64,19 @@
 })();
 </script>
 
+{% if hidden_far %}
+{# Lo programado más adelante, por mes: se ve que el calendario está generado aunque no se liste entero. #}
+<section class="z-ahead" aria-labelledby="ahead-title">
+    <div class="z-ahead-main">
+        <h2 id="ahead-title"><i class="fa-regular fa-calendar-check" aria-hidden="true"></i> {% blocktranslate trimmed count n=hidden_far %}{{ n }} enfrentamiento más programado{% plural %}{{ n }} enfrentamientos más programados{% endblocktranslate %}</h2>
+        <ul class="z-ahead-months">
+            {% for item in far_months %}<li><b>{{ item.month|date:"F"|capfirst }}{% if item.month.year != horizon_end.year %} {{ item.month.year }}{% endif %}</b> {{ item.n }}</li>{% endfor %}
+        </ul>
+    </div>
+    <a class="btn btn-secondary btn-sm" href="?{% if request.GET.season %}season={{ selected_season|urlencode }}&amp;{% endif %}{% if selected_match_type %}match_type={{ selected_match_type|urlencode }}&amp;{% endif %}ver=todo">{% translate "Ver el calendario completo" %}</a>
+</section>
+{% endif %}
+
 {% if matches %}
 {% comment %}Una fila por enfrentamiento: franja de la competición, fecha, competición y tipo, equipos,
 lugar y convocados, recorrido de cuatro pasos (convocatoria, parejas, resultados, acta) y resultado
@@ -165,5 +178,8 @@ o estado. Toda la tarjeta es pulsable.{% endcomment %}
 </div>
 {% endif %}
 
+{% if full_calendar %}
+<p class="z-horizon"><a href="?{% if request.GET.season %}season={{ selected_season|urlencode }}&amp;{% endif %}{% if selected_match_type %}match_type={{ selected_match_type|urlencode }}&amp;{% endif %}">{% translate "Ver solo las próximas semanas" %}</a></p>
+{% endif %}
 {% include 'includes/pagination.html' with page=matches extra=page_extra %}
 {% endblock %}

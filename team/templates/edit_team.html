@@ -52,6 +52,15 @@
                 <input type="text" id="location" name="location" class="form-control" value="{{ team.location }}" required>
             </div>
 
+            {% if team.is_own %}
+            <div class="mb-3">
+                <label for="{{ form.default_time.auto_id }}" class="form-label">{{ form.default_time.label }}</label>
+                {{ form.default_time }}
+                <small class="form-text text-muted">{{ form.default_time.help_text }}</small>
+                {% for error in form.default_time.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+            </div>
+            {% endif %}
+
             <div class="mb-3">
                 <label for="photo" class="form-label">{% translate "Foto" %}</label>
                 <div class="d-flex align-items-center gap-3">
@@ -70,4 +79,5 @@
             <button type="submit" class="btn btn-primary">{% translate "Guardar" %}</button>
         </form>
     </div>
+<script src="{% static 'js/time-24h.js' %}" defer></script>
 {% endblock %}
