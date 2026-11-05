@@ -188,6 +188,20 @@ class EnterResultsTests(UxBase):
         for n in range(1, 6):
             self.assertContains(page, f'name="g{n}_set1_local"')
 
+    def test_team_names_are_wrapped_so_the_winner_line_has_no_tag_or_pair(self):
+        page = self.client.get(self.url)
+        self.assertContains(page, "<span data-name>", count=10)  # dos equipos por cada uno de los 5 partidos
+
+    def test_rules_are_a_tooltip_not_a_visible_note(self):
+        page = self.client.get(self.url)
+        self.assertContains(page, "z-title-tip")
+        self.assertNotContains(page, '<p class="text-muted small">')
+
+    def test_lineup_page_explains_through_tooltips_only(self):
+        page = self.client.get(reverse("edit_games_match", args=[self.m.public_id]))
+        self.assertContains(page, "z-title-tip", count=2)  # buscador y orden de juego
+        self.assertNotContains(page, '<p class="text-muted small')
+
     def test_saves_filled_games_and_leaves_empty_ones(self):
         response = self.client.post(self.url, self.results_post(self.games, only={1, 3}))
         self.assertRedirects(response, reverse("call_for_match", args=[self.m.public_id]), fetch_redirect_response=False)

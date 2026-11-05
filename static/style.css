@@ -3747,6 +3747,8 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .z-set-bar--snp { background: var(--z-snp); }
 .z-set-bar--lapi { background: var(--z-lapi); }
 .st-chart--mine { height: 220px; }
+.z-title-tip { display: flex; align-items: center; gap: 4px; }
+.z-title-tip :is(h1, h2) { margin: 0; }
 .z-tip { position: relative; display: inline-flex; vertical-align: middle; margin-left: 6px; padding: 2px; font-size: var(--z-fs-sm); line-height: 1; color: var(--z-muted); background: none; border: 0; cursor: help; }
 .z-tip:hover, .z-tip:focus-visible, .z-tip.is-open { color: var(--z-lime); }
 .z-tip::after { content: attr(data-tip); position: absolute; z-index: 5; left: 50%; bottom: calc(100% + 8px); width: max-content; max-width: min(240px, 70vw); padding: 8px 12px; font-size: var(--z-fs-xs); font-weight: 600; line-height: 1.4; text-align: left; color: var(--z-text); background: var(--z-ink); border: 1px solid var(--z-border-strong); border-radius: var(--z-radius-sm); transform: translateX(-30%); opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .15s var(--z-ease); }

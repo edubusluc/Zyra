@@ -9,6 +9,8 @@
   const selects = Array.from(form.querySelectorAll('select[data-player]'));
   const list = document.getElementById('pair-order-list');
   const ordered = form.hasAttribute('data-lineup-ordered');
+  // Puntos SNP enteros con el separador de miles del idioma, igual que en el resto de Zyra («68 500»).
+  const groupThousands = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, typeof get_format === 'function' ? get_format('THOUSAND_SEPARATOR') : ' ');
 
   function refresh() {
     const chosen = selects.map((s) => s.value).filter(Boolean);
@@ -47,7 +49,7 @@
       top.appendChild(head);
       if (p) {
         const pts = document.createElement('b');
-        pts.textContent = interpolate(gettext('%(points)s pts'), { points: Math.round(p.points * 10) / 10 }, true);
+        pts.textContent = interpolate(gettext('%(points)s pts'), { points: groupThousands(Math.round(p.points)) }, true);
         top.appendChild(pts);
       }
       const name = document.createElement('span');
