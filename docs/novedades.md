@@ -3,10 +3,16 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
-## 05/11/2026 · Plantilla paginada en Estadísticas
+## 05/11/2026 · Estadísticas: de dónde sale cada porcentaje
 
-- **Tabla de plantilla de 15 en 15**: en Estadísticas › Equipo y Jugadores la plantilla se pagina de 15 en 15 jugadores. Cambiar de página, ordenar o elegir Local/Visitante solo actualiza la tabla, sin recargar toda la pantalla.
+- **Base visible bajo cada barra**, en texto pequeño como en «Local y visitante»: «2V – 1D · 3 partidos» en «Por número de partido» y «3 de 4 partidos» o «2 de 3 sets» en las situaciones de set (Equipo, Jugador, Pareja y Mis estadísticas). Ya no depende de pasar el ratón.
+- **Ficha del jugador**: «Se apunta» y «Juega cuando se apunta» dicen «N de M convocatorias».
+- **Mis estadísticas**: «Local y visitante» suma el balance en casa y fuera de cada competición bajo la gráfica, y «% de victorias por temporada» pone los partidos sobre cada barra.
+- **Equipo**: «Asistencia a las convocatorias» indica cuántos apuntados de cuántos posibles y en cuántas convocatorias.
 
+## 05/11/2026 · Estadísticas: plantilla paginada
+
+- **Tabla de plantilla**: en «Estadísticas · Equipo» y en la entrada de «Jugadores» se muestran 15 jugadores por página, con «Anterior» / «Siguiente» debajo. Cambiar de lado (Todos/Local/Visitante) o de orden vuelve a la primera página. Pasar de página, ordenar o cambiar de lado solo actualiza la tabla, sin recargar toda la pantalla. (Issue #256)
 ## 05/11/2026 · Inicio: partidos semana a semana
 
 - **Carrusel por semana**: «Próximo enfrentamiento» solo enseña los partidos de la semana (lunes a domingo); si esta semana no queda ninguno, enseña la siguiente semana con partidos.

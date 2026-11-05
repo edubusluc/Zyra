@@ -125,46 +125,7 @@ class RosterPagesTests(ClubDataMixin, TestCase):
         self.assertContains(page, 'id="sec-plantilla"')
         self.assertNotContains(page, "st-player-grid")
         self.assertNotContains(page, "Pulsa en un jugador")
-        self.assertEqual(page.context["roster"]["total"], Player.objects.filter(club=self.club, in_team=True).count())
-
-
-class RosterPaginationTests(ClubDataMixin, TestCase):
-    """La tabla de plantilla (Equipo y entrada de Jugadores) se pagina de 15 en 15."""
-
-    def setUp(self):
-        super().setUp()
-        for i in range(20):  # 5 + 20 = 25 jugadores
-            Player.objects.create(club=self.club, name=f"Extra{i:02d}", last_name="Prueba", joined_season="2020-2021")
-
-    def _get(self, name, **params):
-        return self.client.get(reverse(name), {"season": "all", "match_type": "todos", **params})
-
-    def test_both_pages_show_15_per_page_with_pager(self):
-        for name in ("team_statistics", "player_statistics"):
-            with self.subTest(name):
-                page = self._get(name)
-                roster = page.context["roster"]
-                self.assertEqual((len(roster["rows"]), roster["total"], roster["rows"].paginator.num_pages), (15, 25, 2))
-                self.assertContains(page, "page-link")
-                self.assertContains(page, "1 de 2")
-                self.assertEqual(len(self._get(name, page=2).context["roster"]["rows"]), 10)
-
-    def test_small_roster_has_no_pager(self):
-        Player.objects.filter(name__startswith="Extra").delete()
-        self.assertNotContains(self._get("team_statistics"), "page-link")
-
-    def test_pager_and_options_keep_filters_and_reset_page(self):
-        roster = self._get("team_statistics", page=2, orden="played").context["roster"]
-        self.assertEqual(roster["rows"].number, 2)
-        self.assertIn("orden=played", roster["page_extra"])
-        self.assertTrue(roster["page_extra"].endswith("#sec-plantilla"))
-        self.assertNotIn("page=", roster["page_extra"])
-        self.assertTrue(all("page=" not in url for _v, _l, url, _a in roster["sides"]))
-        self.assertTrue(all("page=" not in url for url in roster["sort_urls"].values()))
-        self.assertTrue(all("page=" not in r["url"] for r in roster["rows"]))
-
-    def test_summary_counts_the_whole_squad(self):
-        self.assertContains(self._get("team_statistics"), 'data-summary="25 jugadores"')
+        self.assertEqual(len(page.context["roster"]["rows"]), Player.objects.filter(club=self.club, in_team=True).count())
 
 
 class RosterSideAndMinimumTests(ClubDataMixin, TestCase):
@@ -229,3 +190,55 @@ class SnpEvolutionTests(ClubDataMixin, TestCase):
             SnpScoreHistory.objects.create(player=self.a, season=season, date=datetime.date(2025, 10, day), score=40)
         rows = {r["player"]: r for r in records.snp_ranking(self.club, season)["rows"]}
         self.assertEqual(rows[self.a]["delta"], 0)
+
+
+class RosterPaginationTests(ClubDataMixin, TestCase):
+    """La tabla de plantilla se pagina de 15 en 15 con ``?pagina=`` y conserva lado y orden."""
+
+    def setUp(self):
+        super().setUp()
+        for i in range(15):  # 5 de la plantilla base + 15 = 20 jugadores
+            Player.objects.create(club=self.club, name="Extra%02d" % i, last_name="X", joined_season="2020-2021")
+        self.client.login(username="admin", password="pass-12345")
+        self.params = dict(season="2025-2026", match_type="todos", orden="name")
+
+    def _roster(self, **extra):
+        return self.client.get(reverse("team_statistics"), dict(self.params, **extra)).context["roster"]
+
+    def test_first_page_has_fifteen_rows_and_next_link(self):
+        roster = self._roster()
+        self.assertEqual(len(roster["rows"]), 15)
+        self.assertEqual((roster["pages"]["number"], roster["pages"]["total"], roster["pages"]["count"]), (1, 2, 20))
+        self.assertIsNone(roster["pages"]["previous"])
+        self.assertIn("pagina=2", roster["pages"]["next"])
+        self.assertTrue(roster["pages"]["next"].endswith("#sec-plantilla"))
+        self.assertIn("orden=name", roster["pages"]["next"])
+
+    def test_second_page_has_the_rest_and_sheet_links_drop_the_page(self):
+        roster = self._roster(pagina=2)
+        self.assertEqual(len(roster["rows"]), 5)
+        self.assertIsNone(roster["pages"]["next"])
+        self.assertNotIn("pagina", roster["rows"][0]["url"])
+
+    def test_invalid_or_out_of_range_page_falls_back(self):
+        self.assertEqual(self._roster(pagina="x")["pages"]["number"], 1)
+        self.assertEqual(self._roster(pagina=99)["pages"]["number"], 2)
+
+    def test_changing_side_or_sort_goes_back_to_the_first_page(self):
+        roster = self._roster(pagina=2)
+        self.assertNotIn("pagina", roster["sides"][1][2])
+        self.assertNotIn("pagina", roster["sort_urls"]["played"])
+
+    def test_no_navigation_when_everything_fits(self):
+        Player.objects.filter(club=self.club, name__startswith="Extra").delete()
+        roster = self._roster()
+        self.assertIsNone(roster["pages"])
+        self.assertEqual(len(roster["rows"]), 5)
+
+
+class RosterSummaryTests(ClubDataMixin, TestCase):
+    def test_summary_counts_the_whole_squad_not_the_page(self):
+        for i in range(20):
+            Player.objects.create(club=self.club, name=f"Extra{i:02d}", last_name="Prueba", joined_season="2020-2021")
+        page = self.client.get(reverse("team_statistics"), {"season": "all", "match_type": "todos"})
+        self.assertContains(page, 'data-summary="25 jugadores"')
