@@ -1302,7 +1302,8 @@ a.z-card:hover, .z-card--link:hover {
 .z-coin-scene { --coin: clamp(64px, 22cqi, 150px); display: block; width: var(--coin); height: var(--coin); perspective: 700px; }
 .z-coin { position: relative; display: block; width: 100%; height: 100%; transform-style: preserve-3d; animation: z-coin-spin 6s cubic-bezier(.2, .6, .25, 1) both; }
 .z-coin--visiting { --dir: -1; }
-.z-coin > span { position: absolute; inset: 0; display: block; border-radius: 50%; }
+.z-coin-edge, .z-coin-face { position: absolute; inset: 0; border-radius: 50%; }
+.z-coin-edge { display: block; }
 .z-coin-edge { background: #6F9A00; transform: translateZ(calc((var(--i) - 4.5) * 2px)); }
 .z-coin-face { display: grid; place-items: center; overflow: hidden; background: var(--z-surface-3); border: 3px solid var(--z-lime); backface-visibility: hidden; }
 .z-coin-face img { width: 100%; height: 100%; object-fit: cover; }
