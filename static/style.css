@@ -3748,6 +3748,9 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .z-set-bar--snp { background: var(--z-snp); }
 .z-set-bar--lapi { background: var(--z-lapi); }
 .st-chart--mine { height: 220px; }
+.form-check.z-check-tip { display: flex; align-items: center; gap: 8px; padding-left: 0; }
+.form-check.z-check-tip .form-check-input { float: none; margin: 0; flex-shrink: 0; }
+.form-check.z-check-tip .z-tip { margin-left: 0; }
 .z-title-tip { display: flex; align-items: center; gap: 4px; }
 .z-title-tip :is(h1, h2) { margin: 0; }
 .z-tip { position: relative; display: inline-flex; vertical-align: middle; margin-left: 6px; padding: 2px; font-size: var(--z-fs-sm); line-height: 1; color: var(--z-muted); background: none; border: 0; cursor: help; }
