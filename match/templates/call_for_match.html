@@ -28,6 +28,7 @@
             {% if stage_view %}{% include 'includes/stage_card.html' %}{% endif %}
             <div class="z-versus-vs{% if outcome == 'D' %} is-loss{% elif outcome == 'E' %} is-draw{% endif %}">{% if score_local %}{{ score_local }}–{{ score_visiting }}{% else %}VS{% endif %}</div>
             {% if stage_view %}<span class="z-stage-sub{% if outcome == 'V' %} is-win{% elif outcome == 'D' %} is-loss{% endif %}">{% if outcome %}{{ outcome_label }}{% else %}{{ phase.label }}{% endif %}</span>{% endif %}
+            {% if stage_view and can_manage and not match.draft_mode %}{% include 'includes/ficha_closed_actions.html' %}{% endif %}
         </div>
         <div class="z-versus-team">{% if stage_view %}{% include 'includes/crest_3d.html' with team=match.visiting name=match.visiting_name side="visiting" %}<span class="z-versus-name">{{ match.visiting_name }}<small>{% translate "Visitante" %}{% if match.visiting.division %} · {{ match.visiting.get_division_display }}{% endif %}</small></span>{% else %}<span class="z-versus-name"><small>{% translate "Visitante" %}</small>{{ match.visiting_name }}</span>{% endif %}</div>
     </div>
@@ -71,7 +72,7 @@
 {% endif %}
 {% endif %}
 
-{% if my_status and not match.no_show and not stage_view or my_status and not match.no_show and stage_view and my_status.closed %}
+{% if my_status and not match.no_show and not stage_view or my_status and not match.no_show and stage_view and my_status.called and my_status.closed and match.draft_mode %}
 {# El jugador enlazado a esta cuenta ve si juega y con quién (H-06). #}
 <div class="z-mystatus {% if my_status.called %}is-in{% endif %}" role="status">
     <i class="fa-solid {% if my_status.called %}fa-circle-check{% else %}fa-circle-info{% endif %}" aria-hidden="true"></i>
@@ -127,19 +128,10 @@
 
 {% if stage_view and match.draft_mode %}<div class="z-stage-after">{% if preview %}{% include 'includes/rival_preview.html' %}{% else %}<aside class="z-first-meeting" aria-label="{% translate 'Previa del enfrentamiento' %}"><h2 class="z-h2h-title">{% translate "Previa" %}</h2><p>{% blocktranslate with rival=match.rival_label %}Primer enfrentamiento contra {{ rival }}.{% endblocktranslate %}</p></aside>{% endif %}</div>{% endif %}
 
-{% if can_manage and not match.draft_mode %}
+{% if can_manage and not match.draft_mode and not stage_view %}
 {# Acta cerrada: el estado ya está en la cabecera y en las fases (UX-019); aquí solo las acciones. #}
 <div class="z-closed {% if outcome == 'V' %}is-win{% elif outcome == 'D' %}is-loss{% else %}is-draw{% endif %}">
-    <div class="d-flex flex-wrap gap-2">
-        <a class="btn btn-primary btn-sm" href="https://wa.me/?text={{ share_text|urlencode }}" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp me-1" aria-hidden="true"></i> {% translate "Compartir resultado" %}</a>
-        <a class="btn btn-secondary btn-sm" href="{% url 'team_statistics' %}?season={{ match.season|urlencode }}"><i class="fa-solid fa-chart-simple me-1" aria-hidden="true"></i> {% translate "Ver estadísticas" %}</a>
-        {% if match.no_show %}
-        <form method="POST" action="{% url 'undo_no_show' match.public_id %}" data-confirm="{% translate 'El acta vuelve a estar abierta para poner las parejas y los resultados.' %}" data-confirm-title="{% translate 'Quitar no presentado' %}" data-confirm-action="{% translate 'Quitar' %}" data-loading-text="{% translate 'Guardando…' %}">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-secondary btn-sm"><i class="fa-solid fa-rotate-left me-1" aria-hidden="true"></i> {% translate "Quitar no presentado" %}</button>
-        </form>
-        {% endif %}
-    </div>
+    {% include 'includes/ficha_closed_actions.html' %}
 </div>
 {% endif %}
 

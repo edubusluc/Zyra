@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 05/11/2026 · Ficha del enfrentamiento: tarjeta de alto fijo y acta cerrada integrada
+
+- **Alto fijo**: la lista no cambia el tamaño de la tarjeta principal tengas más o menos jugadores; las parejas se alinean en dos columnas («Partido N» y la pareja).
+- **Acta cerrada**: «Compartir resultado», «Ver estadísticas» (y «Quitar no presentado») van dentro de la tarjeta principal, bajo el VS, y ya no sale «No estás convocado».
+
 ## 05/11/2026 · Ficha del enfrentamiento: lista en filas e iconos planos
 
 - **Lista sin tarjeta**: apuntados, convocados y parejas van en filas, una por nombre, y se paginan de 6 en 6 con un selector «‹ 1/2 ›» (se abre en la página donde está tu nombre).

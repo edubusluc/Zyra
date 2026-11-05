@@ -171,7 +171,7 @@ class MatchPageTests(UxBase):
         Membership.objects.create(user=other, club=self.club, role=Membership.MEMBER)
         outsider = Player.objects.create(club=self.club, name="Fuera", last_name="Y", user=other)
         self.client.force_login(other)
-        self.assertContains(self.client.get(reverse("call_for_match", args=[match.public_id])), "No estás convocado")
+        self.assertNotContains(self.client.get(reverse("call_for_match", args=[match.public_id])), "No estás convocado")
         self.assertTrue(games)
 
 
