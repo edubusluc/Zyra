@@ -290,14 +290,18 @@ def format_for_chart(dic):
 
 ROSTER_ANCHOR = "sec-plantilla"
 # Parámetros propios de la tabla de plantilla: no se arrastran al enlace de una ficha.
-ROSTER_PARAMS = ("lado", "orden")
+ROSTER_PARAMS = ("lado", "orden", "pagina")
+# Jugadores por página en la tabla de plantilla (``?pagina=``).
+ROSTER_PER_PAGE = 15
 
 
 def roster_context(request, players, log, season, match_type, snp=None):
     """
     Datos de la tabla de plantilla (``includes/roster_table.html``) con las opciones de ``?lado=`` y
     ``?orden=``: filas, enlaces de cada opción (siempre con el resto de filtros y con el ancla
-    de la tabla) y el enlace de la ficha de cada jugador.
+    de la tabla) y el enlace de la ficha de cada jugador. La tabla se pagina de ``ROSTER_PER_PAGE`` en
+    ``ROSTER_PER_PAGE`` con ``?pagina=`` (un número fuera de rango lleva a la página válida más cercana);
+    cambiar de lado o de orden vuelve a la primera página.
     """
     has_snp = request.club.rules.has_snp
     side, sort = roster_table.parse_options(request.GET, has_snp)
@@ -305,9 +309,18 @@ def roster_context(request, players, log, season, match_type, snp=None):
     rows = roster_table.roster_rows(players, log, roster_table.signup_by_player(request.club, players, season, match_type, side),
                                     side, sort, snp_rows)
 
+    paginator = Paginator(rows, ROSTER_PER_PAGE)
+    page = paginator.get_page(request.GET.get("pagina"))
+    rows = list(page.object_list)
+
     def url(**changes):
-        """Enlace a esta misma página con ``changes`` sobre los parámetros actuales y el ancla de la tabla."""
+        """
+        Enlace a esta misma página con ``changes`` sobre los parámetros actuales y el ancla de la tabla.
+        Salvo que ``changes`` indique la página, vuelve a la primera.
+        """
         params = request.GET.copy()
+        if "pagina" not in changes:
+            params.pop("pagina", None)
         for key, value in changes.items():
             params[key] = value
         return f"{request.path}?{params.urlencode()}#{ROSTER_ANCHOR}"
@@ -325,6 +338,12 @@ def roster_context(request, players, log, season, match_type, snp=None):
         "sides": [(value, side_labels[value], url(lado=value), value == side) for value in roster_table.SIDES],
         "sort_urls": {key: url(orden=key) for key in roster_table.SORTS},
         "anchor": ROSTER_ANCHOR,
+        # Paginación: None si todo cabe en una página.
+        "pages": {
+            "number": page.number, "total": paginator.num_pages, "count": paginator.count,
+            "previous": url(pagina=page.previous_page_number()) if page.has_previous() else None,
+            "next": url(pagina=page.next_page_number()) if page.has_next() else None,
+        } if paginator.num_pages > 1 else None,
         # Media del equipo y fecha de la última actualización de puntos SNP, sobre la tabla (None sin puntos).
         "snp": {"average": snp["average"], "updated": snp["updated"], "stale": snp["stale"]} if snp and snp["rows"] else None,
     }}
