@@ -18,7 +18,7 @@
         {% if stage_view %}
         <div class="z-stage-kicker">
             <p class="z-stage-kind"><a href="{% url 'list_match' %}" class="z-stage-back" aria-label="{% translate 'Volver a Enfrentamientos' %}"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i></a> <b>{{ kind.title }}</b> · {{ kind.subtitle }}</p>
-            <p class="z-stage-when">{{ match.start_date|date_short|capfirst }}{% if match.start_time %} · {{ match.start_time|time:"H:i" }}{% endif %}{% if can_manage and match.draft_mode %} <a href="{% url 'edit_match_date' match.public_id %}" class="z-edit-date" title="{% translate 'Cambiar fecha' %}"><i class="fa-solid fa-pen" aria-hidden="true"></i><span class="visually-hidden">{% translate "Cambiar fecha" %}</span></a>{% endif %}{% if match.location %} · <a class="z-location" href="{{ match.maps_url }}" target="_blank" rel="noopener"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>{{ match.location }}</span></a>{% endif %}
+            <p class="z-stage-when"><span class="z-stage-date">{{ match.start_date|date_short|capfirst }}{% if match.start_time %} · {{ match.start_time|time:"H:i" }}{% endif %}{% if can_manage and match.draft_mode %}<a href="{% url 'edit_match_date' match.public_id %}" class="z-edit-date" title="{% translate 'Cambiar fecha' %}"><i class="fa-solid fa-pen" aria-hidden="true"></i><span class="visually-hidden">{% translate "Cambiar fecha" %}</span></a>{% endif %}</span>{% if match.location %}<a class="z-location" href="{{ match.maps_url }}" target="_blank" rel="noopener"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>{{ match.location }}</span></a>{% endif %}
             {% if match.no_show %}<span class="z-tag">{% blocktranslate with team=match.no_show_team %}No presentado: {{ team }}{% endblocktranslate %}</span>{% endif %}
             {% if match.league_points is not None %}<span class="z-tag is-lime">{% blocktranslate count n=match.league_points %}{{ n }} punto de liga{% plural %}{{ n }} puntos de liga{% endblocktranslate %}</span>{% endif %}</p>
         </div>
@@ -28,6 +28,7 @@
             {% if stage_view %}{% include 'includes/stage_card.html' %}{% endif %}
             <div class="z-versus-vs{% if outcome == 'D' %} is-loss{% elif outcome == 'E' %} is-draw{% endif %}">{% if score_local %}{{ score_local }}–{{ score_visiting }}{% else %}VS{% endif %}</div>
             {% if stage_view %}<span class="z-stage-sub{% if outcome == 'V' %} is-win{% elif outcome == 'D' %} is-loss{% endif %}">{% if outcome %}{{ outcome_label }}{% else %}{{ phase.label }}{% endif %}</span>{% endif %}
+            {% if stage_view and my_status and match.draft_mode and not match.no_show %}{% include 'includes/stage_me.html' %}{% endif %}
             {% if stage_view and can_manage and not match.draft_mode %}{% include 'includes/ficha_closed_actions.html' %}{% endif %}
         </div>
         <div class="z-versus-team">{% if stage_view %}{% include 'includes/crest_3d.html' with team=match.visiting name=match.visiting_name side="visiting" %}<span class="z-versus-name">{{ match.visiting_name }}<small>{% translate "Visitante" %}{% if match.visiting.division %} · {{ match.visiting.get_division_display }}{% endif %}</small></span>{% else %}<span class="z-versus-name"><small>{% translate "Visitante" %}</small>{{ match.visiting_name }}</span>{% endif %}</div>
@@ -107,7 +108,7 @@
 
 {% if can_manage and phase.action != 'nothing' and not stage_view %}
 {# Un único botón principal «Siguiente: …» siempre en el mismo sitio; lo demás, en «Más». #}
-<div class="z-next{% if stage_view %} z-next--stage{% endif %}">
+<div class="z-next">
     <div class="z-next-main">
         {% if phase.action == 'create_call' %}
         <a href="{% url 'create_call' match_id %}" class="btn btn-primary z-next-get"><i class="fa-solid fa-plus me-1" aria-hidden="true"></i> {% translate "Siguiente: Crear convocatoria" %}</a>

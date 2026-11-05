@@ -15724,3 +15724,12 @@ msgstr "Date, report, delete"
 #, python-format
 msgid "Primer enfrentamiento contra %(rival)s."
 msgstr "First match against %(rival)s."
+
+msgid "Cierra antes la convocatoria"
+msgstr "Close the call-up first"
+
+msgid "Alinea antes las parejas"
+msgstr "Set the pairs first"
+
+msgid "Faltan los resultados"
+msgstr "The results are missing"
