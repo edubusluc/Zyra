@@ -334,7 +334,7 @@ def roster_context(request, players, log, season, match_type, snp=None):
     side_labels = {roster_table.SIDE_ALL: _("Todos"), roster_table.SIDE_LOCAL: _("Local"),
                    roster_table.SIDE_VISITING: _("Visitante")}
     return {"roster": {
-        "rows": rows, "side": side, "sort": sort, "has_snp": has_snp,
+        "rows": rows, "total": paginator.count, "side": side, "sort": sort, "has_snp": has_snp,
         "sides": [(value, side_labels[value], url(lado=value), value == side) for value in roster_table.SIDES],
         "sort_urls": {key: url(orden=key) for key in roster_table.SORTS},
         "anchor": ROSTER_ANCHOR,

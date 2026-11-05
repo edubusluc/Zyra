@@ -234,3 +234,11 @@ class RosterPaginationTests(ClubDataMixin, TestCase):
         roster = self._roster()
         self.assertIsNone(roster["pages"])
         self.assertEqual(len(roster["rows"]), 5)
+
+
+class RosterSummaryTests(ClubDataMixin, TestCase):
+    def test_summary_counts_the_whole_squad_not_the_page(self):
+        for i in range(20):
+            Player.objects.create(club=self.club, name=f"Extra{i:02d}", last_name="Prueba", joined_season="2020-2021")
+        page = self.client.get(reverse("team_statistics"), {"season": "all", "match_type": "todos"})
+        self.assertContains(page, 'data-summary="25 jugadores"')
