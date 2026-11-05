@@ -936,12 +936,15 @@ def my_profile(request):
     email_form = None
     is_captain = bool(request.membership and request.membership.is_admin)
     if request.method == "POST" and ("report_scope" in request.POST or "monthly_form" in request.POST
-                                  or "results_form" in request.POST):
+                                  or "results_form" in request.POST
+                                  or "stage_form" in request.POST):
         defaults = {}
         scope = request.POST.get("report_scope")
         # El informe de la convocatoria es del capitán: un miembro no lo ve ni puede cambiarlo.
         if is_captain and scope in dict(REPORT_SCOPES):
             defaults["report_scope"] = scope
+        if "stage_form" in request.POST:
+            defaults["match_stage_view"] = request.POST.get("match_stage_view") == "on"
         if "results_form" in request.POST:
             defaults["match_result_email"] = request.POST.get("match_result_email") == "on"
         if "monthly_form" in request.POST:
@@ -970,6 +973,7 @@ def my_profile(request):
         "monthly_report": UserPreference.monthly_for(user)[0],
         "monthly_scope": UserPreference.monthly_for(user)[1],
         "match_result_email": UserPreference.match_result_for(user),
+        "match_stage_view": UserPreference.match_stage_for(user),
         # Una fila por equipo de la cuenta (Mi perfil es de la cuenta, no del equipo activo).
         "sheets": _profile_sheets(request, user),
         "email_unverified": email_needs_confirmation(user),

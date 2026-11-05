@@ -6,7 +6,7 @@ Todas las vistas trabajan solo con datos del club activo (``request.club``).
 from . import outcomes
 from core.competitions import competition_for
 from core import spaces
-from core.models import Invitation
+from core.models import Invitation, UserPreference
 from core.season_choice import ALL_SEASONS, choose_season
 from django.shortcuts import render, redirect, get_object_or_404
 from core import ratelimit
@@ -798,7 +798,6 @@ def match_kind(match):
     return {"title": title, "subtitle": match.club.rules.name}
 
 
-STAGE_CARD_MAX = 12  # nombres visibles en la tarjeta central; el resto va como «y N más»
 
 
 def stage_card(match, call, convocados, games, rows, min_call):
@@ -812,23 +811,24 @@ def stage_card(match, call, convocados, games, rows, min_call):
         return None
     if rows:
         return {"kind": "pairs", "title": _("Parejas"), "meta": "", "rows": rows}
-    players = [{"name": p.short_name, "sub": p.is_sub} for p in convocados]
+    players = [{"name": p.short_name, "sub": p.is_sub, "me": getattr(p, "is_me", False)} for p in convocados]
     if call.draft_mode:
         return {"kind": "open", "title": _("Apuntados"),
                 "meta": _("%(n)s de %(total)s") % {"n": len(players), "total": min_call},
                 "pct": min(100, round(100 * len(players) / min_call)) if min_call else 0,
-                "players": players[:STAGE_CARD_MAX], "more": max(0, len(players) - STAGE_CARD_MAX)}
+                "players": players}
     subs = sum(1 for p in players if p["sub"])
     meta = _("%(n)s · %(s)s suplentes") % {"n": len(players), "s": subs} if subs else str(len(players))
     return {"kind": "called", "title": _("Convocados"), "meta": meta,
-            "players": players[:STAGE_CARD_MAX], "more": max(0, len(players) - STAGE_CARD_MAX)}
+            "players": players}
 
 
-def lineup_rows(match, games):
+def lineup_rows(match, games, me_id=None):
     """Parejas propias de cada partido alineado, para la previa de la ficha: [{"n", "label"}].
 
     Solo con el acta abierta (con ella cerrada, los resultados ya muestran las parejas) y sin
-    contar los partidos con pareja no presentada o sin jugadores propios.
+    contar los partidos con pareja no presentada o sin jugadores propios. ``state`` es «win»,
+    «loss» o vacío si el partido aún no tiene resultado.
     """
     if not match.draft_mode:
         return []
@@ -836,7 +836,10 @@ def lineup_rows(match, games):
     for game in games:
         label = game.local_pair_label if match.own_is_local else game.visiting_pair_label
         if label and not game.no_show:
-            rows.append({"n": game.n_game, "label": label})
+            own = outcomes.WINNER_LOCAL if match.own_is_local else outcomes.WINNER_VISITING
+            state = "" if not game.winner else ("win" if game.winner == own else "loss")
+            own_ids = (game.player_1_local_id, game.player_2_local_id) if match.own_is_local else (game.player_1_visiting_id, game.player_2_visiting_id)
+            rows.append({"n": game.n_game, "label": label, "state": state, "me": bool(me_id) and me_id in own_ids})
     return rows
 
 
@@ -893,7 +896,8 @@ def call_for_match(request, match_id):
         "score_local": split_points(match.result_points)[0] if outcome else None,
         "score_visiting": split_points(match.result_points)[1] if outcome else None,
         "is_future": match.start_date > today,
-        "stage_card": stage_card(match, call, convocados, games, lineup_rows(match, games),
+        "stage_view": UserPreference.match_stage_for(request.user),
+        "stage_card": stage_card(match, call, convocados, games, lineup_rows(match, games, me.id if me else None),
                                  competition_for(match).min_call_players),
         "my_status": my_status,
         "report_emails": ", ".join(admin_emails(request.club)) if call else "",

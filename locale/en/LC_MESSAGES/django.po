@@ -15701,3 +15701,22 @@ msgstr "SUB"
 #, python-format
 msgid "y %(n)s más"
 msgstr "and %(n)s more"
+
+msgid "Ver la ficha con escudos en 3D y la tarjeta de convocados"
+msgstr "Show the match page with 3D crests and the call-up card"
+
+msgid "Si lo desactivas, ves la ficha clásica. Es un ajuste tuyo."
+msgstr "If you turn it off, you see the classic match page. This setting is yours only."
+
+msgid "siguiente paso"
+msgstr "next step"
+
+msgid "Cerrar convocatoria"
+msgstr "Close the call-up"
+
+msgid "Fecha, informe, eliminar"
+msgstr "Date, report, delete"
+
+#, python-format
+msgid "Primer enfrentamiento contra %(rival)s."
+msgstr "First match against %(rival)s."

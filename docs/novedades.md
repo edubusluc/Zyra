@@ -3,6 +3,46 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 05/11/2026 · Ficha del enfrentamiento: tarjeta de alto fijo y acta cerrada integrada
+
+- **Alto fijo**: la lista no cambia el tamaño de la tarjeta principal tengas más o menos jugadores; las parejas se alinean en dos columnas («Partido N» y la pareja).
+- **Acta cerrada**: «Compartir resultado», «Ver estadísticas» (y «Quitar no presentado») van dentro de la tarjeta principal, bajo el VS, y ya no sale «No estás convocado».
+- **Tu pareja en lima**: en la ficha nueva ya no hay aviso «Estás convocado»; tu nombre (o tu pareja) sale resaltado en lima en la lista de apuntados, convocados o parejas.
+
+## 05/11/2026 · Ficha del enfrentamiento: lista en filas e iconos planos
+
+- **Lista sin tarjeta**: apuntados, convocados y parejas van en filas, una por nombre, y se paginan de 6 en 6 con un selector «‹ 1/2 ›» (se abre en la página donde está tu nombre).
+- **Acabado plano**: sin el destello blanco de los escudos, con el VS en color liso y los iconos de las tarjetas de acción como iconos planos (no emojis); las tarjetas son más grandes.
+
+## 05/11/2026 · Ficha del enfrentamiento: acabado premium
+
+- **Escenario de carbono** con foco de luz que sigue al puntero, borde biselado y franja lima; los escudos reciben luz de borde distinta (local lima, visitante acero), sombra en el suelo y un destello periódico, y se ladean ligeramente con el ratón.
+- **VS metálico** con relieve y tarjetas de acción con volumen: se elevan al pasar el ratón, se hunden al pulsar, brillan en el siguiente paso y tienen foco visible y estado desactivado claro.
+- **Entrada animada** de escudos, VS, tarjeta y acciones; con «reducir movimiento» no hay animación ni parallax.
+
+## 05/11/2026 · Ficha del enfrentamiento: tarjeta grande y fondo de escenario
+
+- **Tarjeta principal más grande** con los nombres en texto plano separados por puntos; tu nombre va resaltado en lima. Desaparece el aviso «Te has apuntado / Todavía no te has apuntado» mientras la convocatoria está abierta.
+- **Informe PDF**: el destinatario solo se muestra en el aviso al cerrar la convocatoria, no en la ficha.
+- **Fondo con franja lima**, escudos más grandes, tarjetas de acción con las mismas proporciones y la línea «Sáb 14 nov · 10:00 · Pista».
+
+## 05/11/2026 · Ficha del enfrentamiento: ajustes del escenario
+
+- **Sin título ni listas**: en la vista nueva desaparece el título de la página (queda para lectores de pantalla) y, con el acta abierta, las listas de convocatoria y partidos de debajo: lo cuenta la tarjeta central, que muestra el resto de nombres desplegando «y N más» y marca cada pareja con su resultado.
+- **«Local · categoría»** bajo el nombre de cada equipo.
+- **Cerrar convocatoria, cerrar acta y «Más»** son tarjetas de acción; el botón «Siguiente» ya no existe en la vista nueva.
+- **Cara a cara** siempre visible: sin historial, «Primer enfrentamiento contra…».
+
+## 05/11/2026 · Ficha del enfrentamiento: escenario completo
+
+- **Escenario a todo el ancho**: desaparece el panel lateral. La fecha, el lugar y las etiquetas suben a una línea sobre los escudos y el estado (p. ej. «Convocatoria abierta») queda bajo el VS.
+- **Tarjetas de acción**: Convocatoria, Parejas, Resultados y Acta pasan a tarjetas (hecho en lima, siguiente paso en ámbar) que llevan a su pantalla; cerrar convocatoria y acta siguen en el botón «Siguiente».
+- **Cara a cara bajo las tarjetas**, como sección propia.
+
+## 05/11/2026 · Ficha del enfrentamiento: interruptor de vista
+
+- **Vuelta a la ficha clásica**: en «Mi perfil» hay un ajuste, activado por defecto, para ver la ficha con escudos en 3D y la tarjeta de apuntados, convocados y parejas. Al desactivarlo cada usuario ve el marcador de siempre, sin escudos ni tarjeta.
+
 ## 05/11/2026 · Ficha del enfrentamiento: cara a cara en la previa
 
 - **Previa rediseñada**: victorias, empates y derrotas contra ese rival en cifras grandes, una barra con la proporción y los tres últimos enfrentamientos (fecha, desenlace y marcador, cada uno enlazado), más la mejor pareja contra ellos.
