@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
-{% load static i18n %}{% load zyra_format %}
+{% load static i18n %}{% load zyra_format match_strip %}
 {% block page_title %}{% translate "Poner resultados" %} · {% endblock %}
 
 {% block content %}
 {# Los 5 partidos del enfrentamiento en una pantalla: validación en vivo (static/js/result-form.js) y un solo guardado. #}
+{% match_strip match %}
 <div class="z-page-head">
     <div>
-        <a href="{% url 'call_for_match' match.public_id %}" class="z-eyebrow"><i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i> {{ match.local_name }} – {{ match.visiting_name }}</a>
         <div class="z-title-tip"><h1>{% translate "Resultados del enfrentamiento" %}</h1>{% translate "Rellena los partidos que ya se han jugado; los que dejes vacíos no se tocan. Un set se gana 6-0 a 6-4, 7-5 o 7-6. El set 3 solo se juega si cada pareja ha ganado un set; puede ser un set normal o un super tie-break a 10 (10-8, 11-9...)." as rules_tip %}{% include 'includes/stat_tip.html' with tip=rules_tip %}</div>
     </div>
 </div>

@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 05/11/2026 · Convocatoria, parejas y resultados: cabecera común (fase 2)
+
+- **Cabecera compacta** en crear y editar convocatoria, crear y editar parejas, poner resultados y editar un resultado: volver a la ficha, los dos escudos con el VS, y el tipo, la competición y la fecha del enfrentamiento. Ya no se pierde el contexto al salir de la ficha.
+- **Previa nueva** en crear y editar convocatoria: el mismo «Cara a cara» de la ficha en lugar de la caja antigua.
+
 ## 05/11/2026 · Convocatoria, parejas y resultados: arreglos (fase 1)
 
 - **Ganador del partido** en «Poner resultados»: la línea ya muestra solo el nombre del equipo, sin la etiqueta «Tu equipo» ni el nombre de la pareja pegados.

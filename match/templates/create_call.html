@@ -1,17 +1,17 @@
 {% extends 'base.html' %}
-{% load i18n rivals %}
+{% load i18n rivals match_strip %}
 {% block page_title %}{% translate "Crear convocatoria" %} · {% endblock %}
 
 {% block content %}
+{% match_strip match %}
 <div class="z-page-head">
     <div>
-        <a href="{% url 'call_for_match' match.public_id %}" class="z-eyebrow"><i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i> {{ match.local_name }} vs {{ match.visiting_name }}</a>
         <h1>{% translate "Crear convocatoria" %}</h1>
     </div>
 </div>
 
 {% rival_preview match as preview %}
-{% include 'includes/rival_preview.html' %}
+<div class="z-stage-after">{% include 'includes/face_to_face.html' %}</div>
 
 <form method="POST" data-loading-text="{% translate 'Creando la convocatoria…' %}">
     {% csrf_token %}

@@ -1,8 +1,8 @@
 {# Formulario de sets compartido por crear y editar resultado. Recibe: game, values, errors, title, submit #}
-{% load static i18n %}{% load zyra_format %}
+{% load static i18n %}{% load zyra_format match_strip %}
+{% match_strip game.match %}
 <div class="z-page-head">
     <div>
-        <a href="{% url 'call_for_match' game.match.public_id %}" class="z-eyebrow"><i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i> {{ game.match.local_name }} vs {{ game.match.visiting_name }}</a>
         <div class="z-title-tip"><h1>{{ title }}</h1>{% translate "Un set se gana 6-0 a 6-4, 7-5 o 7-6. El set 3 solo se juega si cada pareja ha ganado un set; puede ser un set normal o un super tie-break a 10 (10-8, 11-9...)." as rules_tip %}{% include 'includes/stat_tip.html' with tip=rules_tip %}</div>
         {% if game.pair_label %}
         <p class="z-result-pair">{% blocktranslate with n=game.n_game %}Pareja {{ n }}{% endblocktranslate %}: <strong>{{ game.pair_label }}</strong></p>
