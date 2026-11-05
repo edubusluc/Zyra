@@ -6331,6 +6331,10 @@ msgstr "Sign up"
 msgid "Información legal"
 msgstr "Legal information"
 
+#: core/templates/base.html:163
+msgid "Zyra en TikTok (se abre en una pestaña nueva)"
+msgstr "Zyra on TikTok (opens in a new tab)"
+
 #: core/templates/base.html:157
 msgid "Privacidad"
 msgstr "Privacy"
