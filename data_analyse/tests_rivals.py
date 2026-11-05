@@ -145,6 +145,8 @@ class RivalsTests(RivalsBase):
         preview = rivals.rival_preview(nxt)
         self.assertEqual((preview["won"], preview["lost"]), (2, 1))
         self.assertEqual(preview["last"]["outcome"], "D")
+        self.assertEqual(len(preview["recent"]), 3)  # tres cerrados contra el rival
+        self.assertEqual(preview["recent"][0]["match"].pk, preview["last"]["match"].pk)
         self.assertIsNotNone(preview["best_pair"])
         new_rival = Team.objects.create(club=self.club, name="Nuevo", location="X", in_group=True)
         fresh = Match.objects.create(club=self.club, local=self.own, visiting=new_rival, start_date=datetime.date(2026, 5, 8))
@@ -274,7 +276,8 @@ class RivalViewsTests(RivalsBase):
         nxt = Match.objects.create(club=self.club, local=self.own, visiting=self.norte, start_date=datetime.date(2026, 5, 1))
         last = rivals.rival_preview(nxt)["last"]["match"]
         html = self.client.get(reverse("call_for_match", args=[nxt.public_id])).content.decode()
-        self.assertIn('class="z-preview-last" href="%s"' % reverse("call_for_match", args=[last.public_id]), html)
+        list_html = html.split('class="z-h2h-last"')[1]
+        self.assertIn('<a href="%s"' % reverse("call_for_match", args=[last.public_id]), list_html.split("</li>")[0])
 
     def test_query_count_does_not_grow_with_rivals(self):
         from django.core.cache import cache

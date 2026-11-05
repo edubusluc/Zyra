@@ -212,4 +212,5 @@ def rival_preview(match):
     from players.models import Player
     best = _best_pairs(club, {m.pk for m in earlier}, list(Player.objects.filter(club=club)))
     entries = [_entry(m) for m in earlier]
-    return {**_tally(entries), "best_pair": best[0] if best else None}
+    # «recent»: los tres últimos, del más reciente al más antiguo (lista del cara a cara de la ficha).
+    return {**_tally(entries), "best_pair": best[0] if best else None, "recent": entries[-3:][::-1]}
