@@ -190,3 +190,47 @@ class SnpEvolutionTests(ClubDataMixin, TestCase):
             SnpScoreHistory.objects.create(player=self.a, season=season, date=datetime.date(2025, 10, day), score=40)
         rows = {r["player"]: r for r in records.snp_ranking(self.club, season)["rows"]}
         self.assertEqual(rows[self.a]["delta"], 0)
+
+
+class RosterPaginationTests(ClubDataMixin, TestCase):
+    """La tabla de plantilla se pagina de 15 en 15 con ``?pagina=`` y conserva lado y orden."""
+
+    def setUp(self):
+        super().setUp()
+        for i in range(15):  # 5 de la plantilla base + 15 = 20 jugadores
+            Player.objects.create(club=self.club, name="Extra%02d" % i, last_name="X", joined_season="2020-2021")
+        self.client.login(username="admin", password="pass-12345")
+        self.params = dict(season="2025-2026", match_type="todos", orden="name")
+
+    def _roster(self, **extra):
+        return self.client.get(reverse("team_statistics"), dict(self.params, **extra)).context["roster"]
+
+    def test_first_page_has_fifteen_rows_and_next_link(self):
+        roster = self._roster()
+        self.assertEqual(len(roster["rows"]), 15)
+        self.assertEqual((roster["pages"]["number"], roster["pages"]["total"], roster["pages"]["count"]), (1, 2, 20))
+        self.assertIsNone(roster["pages"]["previous"])
+        self.assertIn("pagina=2", roster["pages"]["next"])
+        self.assertTrue(roster["pages"]["next"].endswith("#sec-plantilla"))
+        self.assertIn("orden=name", roster["pages"]["next"])
+
+    def test_second_page_has_the_rest_and_sheet_links_drop_the_page(self):
+        roster = self._roster(pagina=2)
+        self.assertEqual(len(roster["rows"]), 5)
+        self.assertIsNone(roster["pages"]["next"])
+        self.assertNotIn("pagina", roster["rows"][0]["url"])
+
+    def test_invalid_or_out_of_range_page_falls_back(self):
+        self.assertEqual(self._roster(pagina="x")["pages"]["number"], 1)
+        self.assertEqual(self._roster(pagina=99)["pages"]["number"], 2)
+
+    def test_changing_side_or_sort_goes_back_to_the_first_page(self):
+        roster = self._roster(pagina=2)
+        self.assertNotIn("pagina", roster["sides"][1][2])
+        self.assertNotIn("pagina", roster["sort_urls"]["played"])
+
+    def test_no_navigation_when_everything_fits(self):
+        Player.objects.filter(club=self.club, name__startswith="Extra").delete()
+        roster = self._roster()
+        self.assertIsNone(roster["pages"])
+        self.assertEqual(len(roster["rows"]), 5)
