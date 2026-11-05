@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 05/11/2026 · Menú «Más» de la ficha en móvil
+
+- **Cabe en pantalla**: el menú de acciones del enfrentamiento (Reenviar, No se presenta…, Cambiar fecha, Eliminar) se alinea con el borde derecho del botón «Más», no supera el ancho de la pantalla y parte el texto en varias líneas en lugar de cortarlo. Lo mismo vale para el menú «⋯» del selector de jugadores.
+- **Teclado**: ambos menús se cierran con Escape (el foco vuelve al botón) y al pulsar fuera, y solo hay uno abierto a la vez.
+
 ## 02/11/2026 · Back-office: clubes por competición
 
 - **Dashboard**: una tarjeta de «Clubes SNP» y otra de «Clubes LAPI» con el total, los activos y las altas de 30 días. Cada club es un espacio de una sola competición y tiene un único equipo propio, así que cada uno cuenta una vez y las dos tarjetas suman el total de «Clubes».

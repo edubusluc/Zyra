@@ -125,7 +125,7 @@
             {% elif phase.action == 'close_match' %}{% blocktranslate with n=phase.total_games %}Están los {{ n }} resultados: cierra el acta.{% endblocktranslate %}{% endif %}
         </p>
     </div>
-    <details class="z-more">
+    <details class="z-more" data-filter-menu>
         <summary class="btn btn-secondary">{% translate "Más" %} <i class="fa-solid fa-ellipsis" aria-hidden="true"></i></summary>
         <ul>
             {% if call_for_match %}
