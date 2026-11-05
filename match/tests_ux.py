@@ -527,3 +527,21 @@ class FichaPreviewTests(UxBase):
         self.assertContains(self.ficha(m), "Te has apuntado")
         call.players.remove(self.players[0])
         self.assertContains(self.ficha(m), "Todavía no te has apuntado")
+
+    def test_stage_has_a_countdown_and_the_roster_sits_outside_the_stage(self):
+        import datetime
+        from django.utils import timezone
+        m = self.match(timezone.localdate() + datetime.timedelta(days=3))
+        call = Call.objects.create(match=m, draft_mode=True)
+        call.players.set(self.players[:4])
+        page = self.ficha(m)
+        self.assertContains(page, "Faltan 3 días")
+        html = page.content.decode()
+        stage_end = html.index("z-menu")
+        self.assertGreater(html.index('class="z-stage-card'), stage_end)  # la lista ya no va dentro del escenario
+        m.start_date = timezone.localdate()
+        m.save()
+        self.assertContains(self.ficha(m), 'class="z-stage-count">Hoy')
+
+    def test_no_countdown_for_a_played_match(self):
+        self.assertNotContains(self.ficha(self.match(PAST)), "z-stage-count")

@@ -25,9 +25,9 @@
         {% endif %}
         <div class="z-versus-team">{% if stage_view %}{% include 'includes/crest_3d.html' with team=match.local name=match.local_name side="local" %}<span class="z-versus-name">{{ match.local_name }}<small>{% translate "Local" %}{% if match.local.division %} · {{ match.local.get_division_display }}{% endif %}</small></span>{% else %}<span class="z-versus-name"><small>{% translate "Local" %}</small>{{ match.local_name }}</span>{% endif %}</div>
         <div class="z-versus-mid">
-            {% if stage_view %}{% include 'includes/stage_card.html' %}{% endif %}
-            <div class="z-versus-vs{% if outcome == 'D' %} is-loss{% elif outcome == 'E' %} is-draw{% endif %}">{% if score_local %}{{ score_local }}–{{ score_visiting }}{% else %}VS{% endif %}</div>
+                        <div class="z-versus-vs{% if outcome == 'D' %} is-loss{% elif outcome == 'E' %} is-draw{% endif %}">{% if score_local %}{{ score_local }}–{{ score_visiting }}{% else %}VS{% endif %}</div>
             {% if stage_view %}<span class="z-stage-sub{% if outcome == 'V' %} is-win{% elif outcome == 'D' %} is-loss{% endif %}">{% if outcome %}{{ outcome_label }}{% else %}{{ phase.label }}{% endif %}</span>{% endif %}
+            {% if stage_view and countdown %}<span class="z-stage-count">{{ countdown }}</span>{% endif %}
             {% if stage_view and my_status and match.draft_mode and not match.no_show %}{% include 'includes/stage_me.html' %}{% endif %}
             {% if stage_view and can_manage and not match.draft_mode %}{% include 'includes/ficha_closed_actions.html' %}{% endif %}
         </div>
@@ -126,6 +126,8 @@
     {% include 'includes/ficha_more.html' %}
 </div>
 {% endif %}
+
+{% if stage_view and match.draft_mode and stage_card %}<div class="z-stage-roster">{% include 'includes/stage_card.html' %}</div>{% endif %}
 
 {% if stage_view and match.draft_mode %}<div class="z-stage-after">{% if preview %}{% include 'includes/rival_preview.html' %}{% else %}<aside class="z-first-meeting" aria-label="{% translate 'Previa del enfrentamiento' %}"><h2 class="z-h2h-title">{% translate "Previa" %}</h2><p>{% blocktranslate with rival=match.rival_label %}Primer enfrentamiento contra {{ rival }}.{% endblocktranslate %}</p></aside>{% endif %}</div>{% endif %}
 

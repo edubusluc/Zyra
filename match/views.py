@@ -23,7 +23,7 @@ from .report_pdf import render_report
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_POST
-from django.utils.translation import gettext as _, gettext_lazy
+from django.utils.translation import gettext as _, gettext_lazy, ngettext
 import logging
 
 logger = logging.getLogger(__name__)
@@ -823,6 +823,18 @@ def stage_card(match, call, convocados, games, rows, min_call):
             "players": players}
 
 
+def stage_countdown(match, today):
+    """Texto de cuenta atrás bajo el VS («Hoy», «Mañana», «Faltan 3 días»); None si ya se jugó o el acta está cerrada."""
+    days = (match.start_date - today).days
+    if not match.draft_mode or days < 0:
+        return None
+    if days == 0:
+        return _("Hoy")
+    if days == 1:
+        return _("Mañana")
+    return ngettext("Falta %(n)s día", "Faltan %(n)s días", days) % {"n": days}
+
+
 def lineup_rows(match, games, me_id=None):
     """Parejas propias de cada partido alineado, para la previa de la ficha: [{"n", "label"}].
 
@@ -897,6 +909,7 @@ def call_for_match(request, match_id):
         "score_visiting": split_points(match.result_points)[1] if outcome else None,
         "is_future": match.start_date > today,
         "stage_view": UserPreference.match_stage_for(request.user),
+        "countdown": stage_countdown(match, today),
         "stage_card": stage_card(match, call, convocados, games, lineup_rows(match, games, me.id if me else None),
                                  competition_for(match).min_call_players),
         "my_status": my_status,

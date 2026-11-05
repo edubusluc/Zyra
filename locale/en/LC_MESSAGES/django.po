@@ -15733,3 +15733,9 @@ msgstr "Set the pairs first"
 
 msgid "Faltan los resultados"
 msgstr "The results are missing"
+
+#, python-format
+msgid "Falta %(n)s día"
+msgid_plural "Faltan %(n)s días"
+msgstr[0] "%(n)s day to go"
+msgstr[1] "%(n)s days to go"
