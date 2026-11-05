@@ -1,0 +1,8 @@
+{# Escudo del equipo extruido en 3D (CSS, sin JS): capas apiladas de la propia imagen, sin ficha. Recibe team (o None), name y side. #}
+<span class="z-crest-scene" aria-hidden="true">
+  <span class="z-crest z-crest--{{ side }}">
+    {% for i in "01234567891011" %}<span class="z-crest-layer z-crest-edge" style="--i: {{ forloop.counter0 }}">{% include 'includes/crest_art.html' %}</span>{% endfor %}
+    <span class="z-crest-layer z-crest-front">{% include 'includes/crest_art.html' %}</span>
+    <span class="z-crest-layer z-crest-back">{% include 'includes/crest_art.html' %}</span>
+  </span>
+</span>

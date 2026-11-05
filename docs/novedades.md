@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 05/11/2026 · Ficha del enfrentamiento: previa con escudos 3D
+
+- **Escudos en 3D**: los escudos de los dos equipos se muestran extruidos (sin ficha detrás) y giran despacio y sin parar, en sentidos opuestos; con «reducir animaciones» se quedan quietos. Sin foto, un escudo con las iniciales.
+- **Tarjeta sobre el VS**: muestra, según la fase, los apuntados (con barra de progreso), los convocados (con suplentes) y las parejas, y las sustituye una a otra. Con listas largas, enseña los 12 primeros y «y N más».
+
 ## 05/11/2026 · Menú «Más» de la ficha en móvil
 
 - **Cabe en pantalla**: el menú de acciones del enfrentamiento (Reenviar, No se presenta…, Cambiar fecha, Eliminar) se alinea con el borde derecho del botón «Más», no supera el ancho de la pantalla y parte el texto en varias líneas en lugar de cortarlo. Lo mismo vale para el menú «⋯» del selector de jugadores.
