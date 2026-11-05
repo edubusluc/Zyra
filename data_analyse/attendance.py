@@ -45,8 +45,10 @@ def signup_attendance(club, season=None, match_type=None):
             'ratio': len(signed) / len(eligible) * 100 if eligible else None,
         })
     average = round(sum(c['ratio'] or 0 for c in per_call) / len(per_call)) if per_call else None
+    totals = {'calls': len(per_call), 'signed': sum(c['signed'] for c in per_call),
+              'eligible': sum(c['eligible'] for c in per_call)}
     if season:
-        return {'mode': 'calls', 'rows': per_call, 'average': average}
+        return {'mode': 'calls', 'rows': per_call, 'average': average, **totals}
 
     by_season = {}
     for c in per_call:
@@ -58,4 +60,4 @@ def signup_attendance(club, season=None, match_type=None):
         'eligible': sum(c['eligible'] for c in cs),
         'pct': round(sum(c['ratio'] for c in cs) / len(cs)),
     } for s, cs in sorted(by_season.items()) if all(c['ratio'] is not None for c in cs)]
-    return {'mode': 'seasons', 'rows': rows, 'average': average}
+    return {'mode': 'seasons', 'rows': rows, 'average': average, **totals}

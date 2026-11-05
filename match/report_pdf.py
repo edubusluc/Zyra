@@ -110,7 +110,7 @@ def _register_fonts():
         return
     for name, file in (("Archivo", "Archivo-Regular.ttf"), ("Archivo-Bold", "Archivo-Bold.ttf"),
                        ("Archivo-Black", "Archivo-ExtraBold.ttf"), ("Syncopate", "Syncopate-Bold.ttf"),
-                       ("Syncopate-Italic", "Syncopate-BoldItalic.ttf")):
+                       ("Syncopate-Italic", "Syncopate-BoldItalic.ttf"), ("Anton", "Anton-Regular.ttf")):
         pdfmetrics.registerFont(TTFont(name, str(FONT_DIR / file)))
     _fonts_ready = True
 
@@ -120,9 +120,9 @@ def _styles(layout=Layout()):
     size, cell = layout.body_size, layout.cell_size
     base = dict(fontName="Archivo", fontSize=size, leading=size * 1.3, textColor=TEXT, alignment=TA_LEFT)
     return {
-        "title": ParagraphStyle("title", fontName="Syncopate-Italic", fontSize=17, leading=21, textColor=TEXT),
+        "title": ParagraphStyle("title", fontName="Anton", fontSize=19, leading=23, textColor=TEXT),
         "subtitle": ParagraphStyle("subtitle", **{**base, "fontSize": 11, "leading": 14, "textColor": MUTED}),
-        "section": ParagraphStyle("section", fontName="Archivo-Black", fontSize=11, leading=14,
+        "section": ParagraphStyle("section", fontName="Anton", fontSize=11, leading=14,
                                   textColor=TEXT, spaceAfter=layout.heading_gap),
         "subsection": ParagraphStyle("subsection", fontName="Archivo-Bold", fontSize=7.5, leading=9,
                                      textColor=MUTED, spaceAfter=1.5 * mm),
@@ -132,9 +132,9 @@ def _styles(layout=Layout()):
         "cell": ParagraphStyle("cell", **{**base, "fontSize": cell, "leading": cell * 1.25}),
         "cell_bold": ParagraphStyle("cell_bold", **{**base, "fontName": "Archivo-Bold", "fontSize": cell,
                                                     "leading": cell * 1.25}),
-        "kpi_value": ParagraphStyle("kpi_value", fontName="Archivo-Black", fontSize=17, leading=19, textColor=TEXT),
+        "kpi_value": ParagraphStyle("kpi_value", fontName="Anton", fontSize=17, leading=19, textColor=TEXT),
         "kpi_label": ParagraphStyle("kpi_label", fontName="Archivo-Bold", fontSize=7.5, leading=9, textColor=MUTED),
-        "lineup_title": ParagraphStyle("lineup_title", fontName="Archivo-Black", fontSize=11, leading=14,
+        "lineup_title": ParagraphStyle("lineup_title", fontName="Anton", fontSize=11, leading=14,
                                        textColor=LIME, spaceAfter=layout.heading_gap),
     }
 

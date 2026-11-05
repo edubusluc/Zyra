@@ -7131,6 +7131,14 @@ msgid ""
 msgstr ""
 "Members, invitations and the SNP account are still managed by the captain."
 
+#: core/templates/home.html:90
+msgid "Gestionar los jugadores del equipo y recibir el informe PDF de la convocatoria."
+msgstr "Manage the team's players and receive the call-up PDF report."
+
+#: core/templates/home.html:94
+msgid "Los miembros y las invitaciones los sigue gestionando el capitán."
+msgstr "Members and invitations are still managed by the captain."
+
 #: core/templates/home.html:87
 msgid "Crear un enfrentamiento"
 msgstr "Create a fixture"
@@ -7495,8 +7503,8 @@ msgid "últimos 30 días"
 msgstr "last 30 days"
 
 #: core/templates/home.html:345
-msgid "en los últimos 30 días"
-msgstr "in the last 30 days"
+msgid "respecto a la actualización anterior"
+msgstr "compared with the previous update"
 
 #: core/templates/home.html:349
 #, python-format
@@ -15303,9 +15311,6 @@ msgstr "Last round points"
 msgid "Racha: %(n)s%(k)s"
 msgstr "Streak: %(n)s%(k)s"
 
-msgid "Equipo: %(pct)s%%"
-msgstr "Team: %(pct)s%%"
-
 msgid "Todavía sin partidos jugados"
 msgstr "No matches played yet"
 
@@ -15576,3 +15581,112 @@ msgstr "Usual playing time (optional)"
 
 msgid "Se propondrá al crear tus enfrentamientos como local; podrás cambiarla en cada uno."
 msgstr "It will be suggested when you create your home matches; you can change it in each one."
+
+msgid "%(team)s aún no tiene enfrentamientos cerrados"
+msgstr "%(team)s has no closed matches yet"
+
+msgid "Tus otros equipos sí tienen estadísticas."
+msgstr "Your other teams do have statistics."
+
+msgid "Ver estadísticas de %(team)s"
+msgstr "See %(team)s statistics"
+
+#: core/templates/home.html
+msgid "carrusel"
+msgstr "carousel"
+
+#: core/templates/home.html
+msgid "diapositiva"
+msgstr "slide"
+
+#: core/templates/home.html
+msgid "Próximos enfrentamientos"
+msgstr "Upcoming fixtures"
+
+#: core/templates/home.html
+#, python-format
+msgid "Ver el enfrentamiento %(n)s de %(total)s · %(comp)s · %(date)s"
+msgstr "Show fixture %(n)s of %(total)s · %(comp)s · %(date)s"
+
+#: core/templates/home.html
+msgid "Enfrentamiento anterior"
+msgstr "Previous fixture"
+
+#: core/templates/home.html
+msgid "Enfrentamiento siguiente"
+msgstr "Next fixture"
+
+#, python-format
+msgid "%(w)sV – %(l)sD · %(n)s partido"
+msgid_plural "%(w)sV – %(l)sD · %(n)s partidos"
+msgstr[0] "%(w)sW – %(l)sL · %(n)s game"
+msgstr[1] "%(w)sW – %(l)sL · %(n)s games"
+
+#, python-format
+msgid "%(w)s de %(n)s set"
+msgid_plural "%(w)s de %(n)s sets"
+msgstr[0] "%(w)s of %(n)s set"
+msgstr[1] "%(w)s of %(n)s sets"
+
+#, python-format
+msgid "%(w)s de %(n)s partido"
+msgid_plural "%(w)s de %(n)s partidos"
+msgstr[0] "%(w)s of %(n)s game"
+msgstr[1] "%(w)s of %(n)s games"
+
+#, python-format
+msgid "%(s)s de %(n)s convocatoria cerrada"
+msgid_plural "%(s)s de %(n)s convocatorias cerradas"
+msgstr[0] "%(s)s of %(n)s closed call-up"
+msgstr[1] "%(s)s of %(n)s closed call-ups"
+
+#, python-format
+msgid "%(a)s de %(n)s convocatoria a la que se apunta"
+msgid_plural "%(a)s de %(n)s convocatorias a las que se apunta"
+msgstr[0] "%(a)s of %(n)s call-up they sign up to"
+msgstr[1] "%(a)s of %(n)s call-ups they sign up to"
+
+#, python-format
+msgid "%(s)s apuntados de %(e)s posibles · %(n)s convocatoria"
+msgid_plural "%(s)s apuntados de %(e)s posibles · %(n)s convocatorias"
+msgstr[0] "%(s)s signed up out of %(e)s possible · %(n)s call-up"
+msgstr[1] "%(s)s signed up out of %(e)s possible · %(n)s call-ups"
+
+#: core/templates/home.html
+#, python-format
+msgid "Ver el calendario completo (%(n)s enfrentamiento más adelante)"
+msgid_plural "Ver el calendario completo (%(n)s enfrentamientos más adelante)"
+msgstr[0] "See the full calendar (%(n)s later match)"
+msgstr[1] "See the full calendar (%(n)s later matches)"
+
+#: core/templates/home.html
+#, python-format
+msgid "Ver la página %(n)s de %(total)s"
+msgstr "Go to page %(n)s of %(total)s"
+
+#: match/templates/list_match.html
+#, python-format
+msgid "Se muestran los enfrentamientos hasta el %(date)s."
+msgstr "Showing matches up to %(date)s."
+
+#: match/templates/list_match.html
+#, python-format
+msgid "Ver el calendario completo (%(n)s más)"
+msgid_plural "Ver el calendario completo (%(n)s más)"
+msgstr[0] "See the full calendar (%(n)s more)"
+msgstr[1] "See the full calendar (%(n)s more)"
+
+#: match/templates/list_match.html
+msgid "Ver solo las próximas semanas"
+msgstr "Show only the coming weeks"
+
+#: match/templates/list_match.html
+#, python-format
+msgid "%(n)s enfrentamiento más programado"
+msgid_plural "%(n)s enfrentamientos más programados"
+msgstr[0] "%(n)s more match scheduled"
+msgstr[1] "%(n)s more matches scheduled"
+
+#: match/templates/list_match.html
+msgid "Ver el calendario completo"
+msgstr "See the full calendar"

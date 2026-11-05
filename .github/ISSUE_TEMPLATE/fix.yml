@@ -1,0 +1,11 @@
+name: Fix
+description: Un error o arreglo pendiente. Pon la etiqueta «analizar» para que Claude lo estudie.
+labels: ["fix"]
+body:
+  - type: textarea
+    id: fix
+    attributes:
+      label: Qué falla
+      description: Qué ocurre, dónde (pantalla/rol) y qué esperabas. Si lo recuerdas, cómo reproducirlo.
+    validations:
+      required: true

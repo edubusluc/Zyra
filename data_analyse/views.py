@@ -42,9 +42,15 @@ def _zero_state(request, title):
     club = request.club
     if Match.objects.filter(club=club, draft_mode=False).exists():
         return None
+    # Con varios espacios, si otro equipo del usuario sí tiene enfrentamientos cerrados la página lo dice
+    # y ofrece cambiar a él (sin cambiarlo sola): si no, parecería que no hay nada guardado.
+    others = [c for c in spaces.user_clubs(request) if c.id != club.id
+              and Match.objects.filter(club=c, draft_mode=False).exists()] if spaces.is_multi_space(request) else []
     return render(request, 'stats_empty.html', {
         'zero_title': title,
         'has_open_matches': Match.objects.filter(club=club, draft_mode=True).exists(),
+        'other_with_matches': [{"club": c, "url": f"{request.path}?{spaces.SWITCH_PARAM}={c.competition}"}
+                               for c in others],
     })
 
 
@@ -284,14 +290,18 @@ def format_for_chart(dic):
 
 ROSTER_ANCHOR = "sec-plantilla"
 # Parámetros propios de la tabla de plantilla: no se arrastran al enlace de una ficha.
-ROSTER_PARAMS = ("lado", "orden")
+ROSTER_PARAMS = ("lado", "orden", "pagina")
+# Jugadores por página en la tabla de plantilla (``?pagina=``).
+ROSTER_PER_PAGE = 15
 
 
 def roster_context(request, players, log, season, match_type, snp=None):
     """
     Datos de la tabla de plantilla (``includes/roster_table.html``) con las opciones de ``?lado=`` y
     ``?orden=``: filas, enlaces de cada opción (siempre con el resto de filtros y con el ancla
-    de la tabla) y el enlace de la ficha de cada jugador.
+    de la tabla) y el enlace de la ficha de cada jugador. La tabla se pagina de ``ROSTER_PER_PAGE`` en
+    ``ROSTER_PER_PAGE`` con ``?pagina=`` (un número fuera de rango lleva a la página válida más cercana);
+    cambiar de lado o de orden vuelve a la primera página.
     """
     has_snp = request.club.rules.has_snp
     side, sort = roster_table.parse_options(request.GET, has_snp)
@@ -299,9 +309,18 @@ def roster_context(request, players, log, season, match_type, snp=None):
     rows = roster_table.roster_rows(players, log, roster_table.signup_by_player(request.club, players, season, match_type, side),
                                     side, sort, snp_rows)
 
+    paginator = Paginator(rows, ROSTER_PER_PAGE)
+    page = paginator.get_page(request.GET.get("pagina"))
+    rows = list(page.object_list)
+
     def url(**changes):
-        """Enlace a esta misma página con ``changes`` sobre los parámetros actuales y el ancla de la tabla."""
+        """
+        Enlace a esta misma página con ``changes`` sobre los parámetros actuales y el ancla de la tabla.
+        Salvo que ``changes`` indique la página, vuelve a la primera.
+        """
         params = request.GET.copy()
+        if "pagina" not in changes:
+            params.pop("pagina", None)
         for key, value in changes.items():
             params[key] = value
         return f"{request.path}?{params.urlencode()}#{ROSTER_ANCHOR}"
@@ -315,10 +334,16 @@ def roster_context(request, players, log, season, match_type, snp=None):
     side_labels = {roster_table.SIDE_ALL: _("Todos"), roster_table.SIDE_LOCAL: _("Local"),
                    roster_table.SIDE_VISITING: _("Visitante")}
     return {"roster": {
-        "rows": rows, "side": side, "sort": sort, "has_snp": has_snp,
+        "rows": rows, "total": paginator.count, "side": side, "sort": sort, "has_snp": has_snp,
         "sides": [(value, side_labels[value], url(lado=value), value == side) for value in roster_table.SIDES],
         "sort_urls": {key: url(orden=key) for key in roster_table.SORTS},
         "anchor": ROSTER_ANCHOR,
+        # Paginación: None si todo cabe en una página.
+        "pages": {
+            "number": page.number, "total": paginator.num_pages, "count": paginator.count,
+            "previous": url(pagina=page.previous_page_number()) if page.has_previous() else None,
+            "next": url(pagina=page.next_page_number()) if page.has_next() else None,
+        } if paginator.num_pages > 1 else None,
         # Media del equipo y fecha de la última actualización de puntos SNP, sobre la tabla (None sin puntos).
         "snp": {"average": snp["average"], "updated": snp["updated"], "stale": snp["stale"]} if snp and snp["rows"] else None,
     }}
@@ -495,7 +520,8 @@ def players_charts(players, logs, season, match_type):
     set_rows = [{
         "key": key, "label": label, "hint": hint,
         "comps": [{"code": c["code"], "name": c["name"],
-                   "r": comparison.bagels_situation(st) if key == "bagels" else st[key]}
+                   "r": dict(comparison.bagels_situation(st) if key == "bagels" else st[key],
+                             unit=comparison.SET_UNITS[key])}
                   for c, st in zip(comps, sets_by_comp)],
     } for key, label, hint in comparison.SET_ROWS]
     # Las filas sin ningún caso en ninguna competición no se enseñan.
@@ -507,6 +533,10 @@ def players_charts(players, logs, season, match_type):
                "pct_local": pct(a), "pct_visiting": pct(b)}
               for a, b in zip(local, visiting)]
 
+    # Una línea por competición con su balance en casa y fuera, para el texto bajo la gráfica.
+    venue_notes = [{"code": c["code"], "name": c["name"], "local": a, "visiting": b}
+                   for c, a, b in zip(comps, local, visiting) if a["won"] + a["lost"] + b["won"] + b["lost"]]
+
     by_start = lambda s: int(s.split('-')[0])
     labels = sorted({y for per in years for y in per}, key=by_start)
     att_labels = sorted({s for per in attendance for s in per}, key=by_start)
@@ -514,6 +544,7 @@ def players_charts(players, logs, season, match_type):
         "set_rows": set_rows,
         "set_compare": set_compare,
         "sets_played": any(st["played"] for st in sets_by_comp),
+        "venue_notes": venue_notes,
         "has_local": any(r["won"] or r["lost"] for r in local),
         "has_visiting": any(r["won"] or r["lost"] for r in visiting),
         "spaces_chart": {
@@ -933,15 +964,6 @@ def summarize_by_season(log, calls_present, calls_total):
     return rows
 
 
-def team_win_pct(club, season, match_type):
-    """
-    % de partidos ganados por todo el club en la misma competición, temporada y tipo de partido que se
-    consulta (``club_game_log``), para situar el % de un jugador. None si el club no tiene partidos.
-    """
-    log = pair_stats.club_game_log(club, season, match_type)
-    return round(100 * sum(g['won'] for g in log) / len(log)) if log else None
-
-
 @spaces.consult_view
 @club_required
 @require_GET
@@ -1024,7 +1046,6 @@ def statistics_per_player(request):
     clutch = set_stats(season_log)
     affinity = degree_of_affinity(player, match_type, selected_season)
     snp_updated = player.snp_history.order_by('-date').values_list('date', flat=True).first()
-    team_pct = team_win_pct(request.club, selected_season, match_type)
     is_me = bool(player.user_id and player.user_id == request.user.id)
     context = {
         'hero': {
@@ -1034,7 +1055,6 @@ def statistics_per_player(request):
             'snp_rank': player_card.snp_rank(player),
             'snp_updated': snp_updated,
             'snp_stale': records.snp_is_stale(snp_updated),
-            'team_pct': team_pct,
             'is_me': is_me,
             # Advertencias: solo las ve quien gestiona el equipo.
             'warnings': player.penalties.count() if request.membership.can_manage else 0,

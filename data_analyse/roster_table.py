@@ -64,7 +64,7 @@ def roster_rows(players, log, signup, side=SIDE_ALL, sort=DEFAULT_SORT, snp=None
 
     Cada fila: ``player``, ``played``, ``wins``, ``losses``, ``pct`` (None sin partidos), ``enough`` (ha
     jugado alguno), ``signed``, ``calls``, ``signup`` y, con SNP, ``snp``, ``delta`` (puntos), ``rank_delta``
-    (puestos), ``rank_moved`` y ``spark``. No hay mínimo de partidos: cuenta el % de todo el que ha jugado. Quien
+    (puestos) y ``rank_moved``. No hay mínimo de partidos: cuenta el % de todo el que ha jugado. Quien
     no ha jugado ninguno va al final del orden por %; el resto, por la columna elegida.
     """
     counts = {}
@@ -82,11 +82,11 @@ def roster_rows(players, log, signup, side=SIDE_ALL, sort=DEFAULT_SORT, snp=None
             "player": p, "played": played, "wins": wins, "losses": played - wins,
             "pct": round(100 * wins / played) if played else None, "enough": played > 0,
             "signed": sign["signed"], "calls": sign["total"], "signup": sign["pct"],
-            "snp": None, "delta": None, "rank_delta": None, "spark": None,
+            "snp": None, "delta": None, "rank_delta": None,
         }
         if snp and p.id in snp:
             row["snp"], row["delta"] = snp[p.id]["score"], snp[p.id]["delta"]
-            row["rank_delta"], row["spark"] = snp[p.id]["rank_delta"], snp[p.id]["spark"]
+            row["rank_delta"] = snp[p.id]["rank_delta"]
             row["rank_moved"] = abs(row["rank_delta"] or 0)
         rows.append(row)
 

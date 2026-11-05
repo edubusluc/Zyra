@@ -1444,10 +1444,10 @@ a.z-card:hover, .z-card--link:hover {
 /* ---------- Inicio: enfrentamiento protagonista ---------- */
 .z-home-grid { display: grid; gap: 18px; margin-top: 24px; }
 @media (min-width: 1100px) {
-    .z-home-grid:not(.z-home-grid--both) .z-next-match { max-width: 820px; }
+    .z-home-grid:not(.z-home-grid--both) .z-next-deck { max-width: 820px; }
     .z-home-grid--both { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); align-items: start; }
-    /* La altura de la fila la marca la pista (2:1); «Pendiente» se estira hasta ella y recorta lo que sobre. */
-    .z-home-grid--both .z-home-pending { align-self: stretch; contain: size; overflow: hidden; }
+    /* La altura de la fila la marca la pista (2:1); «Pendiente» crece con sus filas sin recortarlas. */
+    .z-home-grid--both .z-home-pending { align-self: start; }
 }
 .z-next-match {
     container-type: inline-size;
@@ -1521,6 +1521,49 @@ a.z-card:hover, .z-card--link:hover {
     .z-home-grid .z-next-match-team > span { font-size: clamp(1.4rem, 5.2cqw, 2.9rem); }
     .z-home-grid .z-next-match .z-versus-vs, .z-home-grid .z-versus-vs { display: block; padding: 4px 12px; font-size: clamp(1rem, 3cqw, 1.5rem); color: var(--z-ink); background: var(--z-lime); border-radius: 999px; }
     .z-home-grid .z-next-match-team + .z-versus-vs + .z-next-match-team > span::before { content: none; }
+}
+
+/* Carrusel de «Próximo enfrentamiento»: el más cercano delante y el siguiente por detrás, asomando y
+   difuminado. La tarjeta mide siempre lo mismo (ancho − --p) y todo el movimiento es transform, así que
+   no hay saltos de maquetación. Sin JS solo se ve el primero. */
+.z-next-deck { --p: 32px; --s: 0px; --ease-deck: cubic-bezier(.32, .72, 0, 1); display: grid; gap: 14px; min-width: 0; }
+.z-next-deck[data-pos="mid"] { --s: calc(var(--p) / 2); }
+.z-next-deck[data-pos="last"] { --s: var(--p); }
+.z-next-deck-track { display: grid; min-width: 0; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+.z-next-deck--multi .z-next-deck-track { width: calc(100% - var(--p)); transform: translateX(var(--s)); transition: transform .55s var(--ease-deck); }
+.z-next-slide { grid-area: 1 / 1; display: grid; min-width: 0; transition: transform .55s var(--ease-deck); will-change: transform; }
+.z-next-slide .z-next-match { transition: opacity .55s var(--ease-deck), filter .55s var(--ease-deck), box-shadow .55s var(--ease-deck); }
+.z-next-slide.is-front { z-index: 3; }
+.z-next-slide.is-front .z-next-match { box-shadow: 0 14px 32px -14px rgba(0, 0, 0, .75); }
+.z-next-slide.is-next, .z-next-slide.is-prev { z-index: 1; cursor: pointer; }
+.z-next-slide.is-next { transform: translateX(calc(var(--p) - var(--s))) scale(.94); transform-origin: right center; }
+.z-next-slide.is-prev { transform: translateX(calc(var(--s) * -1)) scale(.94); transform-origin: left center; }
+.z-next-slide.is-next .z-next-match, .z-next-slide.is-prev .z-next-match { opacity: .55; filter: blur(4px); }
+.z-next-slide.is-next a, .z-next-slide.is-prev a, .z-next-slide.is-next button, .z-next-slide.is-prev button { pointer-events: none; }
+.z-next-slide:not(.is-front):not(.is-next):not(.is-prev) { visibility: hidden; }
+.z-next-deck.is-dragging .z-next-slide.is-front { transition: none; }
+
+/* Selector: una pastilla por tarjeta con su competición y su día, para saber qué hay antes de pulsar. */
+.z-next-picker { display: flex; align-items: stretch; gap: 8px; }
+.z-next-picker[hidden] { display: none; }
+.z-next-chips { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 8px; flex: 1; min-width: 0; }
+.z-next-chip { display: grid; justify-items: center; align-content: center; gap: 2px; min-height: 52px; padding: 6px 10px; color: var(--z-text); background: var(--z-surface-2); border: 1px solid var(--z-border-control); border-radius: var(--z-radius-sm); cursor: pointer; transition: background .25s ease, border-color .25s ease, color .25s ease; }
+.z-next-chip:hover { border-color: var(--z-border-control-hover); background: var(--z-surface-3); }
+.z-next-chip-comp { display: inline-flex; align-items: center; gap: 6px; font-size: var(--z-fs-xs); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--z-muted); }
+.z-next-chip-comp::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--z-lime); }
+.z-next-chip--snp .z-next-chip-comp::before { background: var(--z-snp); }
+.z-next-chip--lapi .z-next-chip-comp::before { background: var(--z-lapi); }
+.z-next-chip-date { font-size: var(--z-fs-md); font-weight: 800; text-transform: uppercase; white-space: nowrap; }
+.z-next-chip[aria-current="true"] { color: var(--z-ink); background: var(--z-lime); border-color: var(--z-lime); }
+.z-next-chip[aria-current="true"] .z-next-chip-comp { color: var(--z-ink); }
+.z-next-chip[aria-current="true"] .z-next-chip-comp::before { background: var(--z-ink); }
+.z-next-arrow { display: none; flex: none; width: 52px; color: var(--z-text); background: var(--z-surface-2); border: 1px solid var(--z-border-control); border-radius: var(--z-radius-sm); cursor: pointer; }
+.z-next-arrow:hover:not(:disabled) { border-color: var(--z-lime); color: var(--z-lime); }
+.z-next-arrow:disabled { opacity: .4; cursor: default; }
+@media (min-width: 768px) { .z-next-arrow { display: grid; place-items: center; } }
+.z-next-chip:focus-visible, .z-next-arrow:focus-visible { outline: 2px solid var(--z-text); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) {
+    .z-next-deck--multi .z-next-deck-track, .z-next-slide, .z-next-slide .z-next-match, .z-next-chip { transition: none; }
 }
 
 /* Panel «Pendiente» */
@@ -3537,9 +3580,17 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
     .st-table--cards .st-c-played, .st-table--cards .st-c-record, .st-table--cards .st-c-points { grid-row: 2; font-size: var(--z-fs-sm); color: var(--z-muted); }
     .st-table--cards td[data-label]::before { content: attr(data-label) ": "; }
 }
-.z-player-todos { margin: 0 0 16px; }
-.z-player-todos .z-pending { margin: 8px 0 0; }
-.z-player-todos .z-pending-main strong { text-transform: none; }
+/* «Pendiente» de un jugador: las filas de tareas, en minúsculas, igual que el componente del capitán. */
+.z-pending-row--todo .z-pending-main strong { text-transform: none; }
+/* Selector de páginas de «Pendiente»: flechas y números, caben en cualquier ancho. */
+.z-pending-picker { display: flex; align-items: stretch; justify-content: center; gap: 8px; margin-top: 10px; }
+.z-pending-picker[hidden] { display: none; }
+.z-pending-pages { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; min-width: 0; }
+.z-pending-page { min-width: 44px; min-height: 44px; padding: 0 10px; font-weight: 800; color: var(--z-text); background: var(--z-surface-2); border: 1px solid var(--z-border-control); border-radius: var(--z-radius-sm); cursor: pointer; }
+.z-pending-page:hover { border-color: var(--z-border-control-hover); background: var(--z-surface-3); }
+.z-pending-page[aria-current="true"] { color: var(--z-ink); background: var(--z-lime); border-color: var(--z-lime); }
+.z-pending-page:focus-visible { outline: 2px solid var(--z-text); outline-offset: 2px; }
+.z-pending-picker .z-next-arrow { width: 44px; min-height: 44px; display: grid; place-items: center; }
 
 /* Portada: ejemplo del producto y funciones en carrusel en móvil (UX-028) */
 .z-landing-preview { display: grid; gap: 20px; align-items: center; }
@@ -3582,8 +3633,6 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .z-role strong { color: var(--z-text); }
 .z-role .z-badge { justify-self: start; }
 @media (max-width: 480px) { .z-role { grid-template-columns: 1fr; gap: 6px; } }
-/* «Tus pendientes» no va pegada a la tarjeta de enfrentamientos */
-.z-player-todos { margin-top: 24px; }
 /* Portada: la tilde de «Sáb» no choca con el texto de encima */
 .z-preview-date { margin-top: 14px; padding-top: .12em; line-height: 1.1; }
 .z-auth-lead { text-align: center; }
@@ -3731,6 +3780,7 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .st-bar-row { display: grid; grid-template-columns: minmax(6rem, 9rem) 1fr 3.4rem; align-items: center; gap: 12px; }
 .st-bar-row b { font-size: var(--z-fs-sm); font-weight: 700; color: #FFFFFF; }
 .st-bar-row b small { display: block; font-size: var(--z-fs-xs); font-weight: 600; color: var(--st-muted); }
+.st-bar-row b small.st-bar-base, .z-set-row b small.st-bar-base { font-weight: 400; }
 .st-bars--desc .st-bar-row { grid-template-columns: minmax(7rem, 44%) 1fr 3.4rem; }
 .st-bar-row em { font-family: var(--z-display); font-style: normal; font-size: var(--z-fs-xl); text-align: right; color: #FFFFFF; font-variant-numeric: tabular-nums; }
 .st-bar-row .st-meter { margin-top: 0; height: 14px; }
@@ -3816,7 +3866,6 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 @media (max-width: 575.98px) { .z-space-kpis--four { grid-template-columns: repeat(2, minmax(0, 1fr)); } .st-balance-streak { margin-left: 0; } }
 .z-space-rows li.z-comp-frame .z-space-rows-calls { grid-column: 1; display: flex; align-items: baseline; gap: 6px; font-size: var(--z-fs-sm); }
 .z-space-rows-calls small { color: var(--st-muted); }
-.st-hero-team { display: block; font-size: var(--z-fs-xs); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .st-hero-updated { font-weight: 700; }
 .st-hero-updated.is-stale { color: var(--z-ink); text-decoration: underline wavy; }
 .st-hero-caps { display: flex; flex-direction: column; gap: 2px; }
@@ -3846,9 +3895,9 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
   .st-roster-table tbody th { max-width: 6.8rem; white-space: normal; line-height: 1.2; }
 }
 .st-roster-evo { white-space: nowrap; }
-.st-spark { display: inline-block; vertical-align: middle; color: var(--z-lime); }
-.st-rankmove { margin-left: 6px; font-size: var(--z-fs-xs); font-weight: 800; }
-@media (max-width: 575.98px) { .st-roster-evo { display: none; } }
+.st-roster-table .st-roster-evo b { font-family: inherit; font-size: inherit; font-weight: 800; }
+.st-roster-table .st-roster-evo b.st-up { color: var(--st-win); }
+.st-roster-table .st-roster-evo b.st-down { color: var(--st-loss); }
 
 /* Fase 6 · comparar: Local y visitante común, tabla de sets de «Mis estadísticas», compañeros y convocatorias. */
 .st-venue-split { display: flex; flex-direction: column; gap: 14px; margin-top: 12px; }
@@ -3859,6 +3908,13 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .z-commit-list { display: flex; flex-direction: column; gap: 10px; margin: 12px 0 0; padding: 0; list-style: none; }
 .z-commit-list li { display: grid; grid-template-columns: 1fr auto auto; align-items: baseline; gap: 12px; }
 .z-commit-list b { font-family: var(--z-display); font-size: var(--z-fs-xl); font-weight: 400; color: #FFFFFF; }
+.z-commit-list.z-venue-notes small { min-width: 0; }
+/* «Local y visitante» de Mis estadísticas: si la tarjeta se estira a la altura de su vecina, el gráfico crece y centra las barras y el balance queda abajo, sin hueco vacío. */
+.st-card--venue-mine { display: flex; flex-direction: column; }
+.st-card--venue-mine .st-chart--mine { flex: 1 1 220px; min-height: 220px; height: auto; width: 100%; }
+.st-card--venue-mine .z-venue-notes { margin-top: 16px; }
+.z-commit-list.z-venue-notes li { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; }
+.z-commit-list.z-venue-notes small { text-align: right; }
 .z-commit-list small { min-width: 3.4rem; text-align: right; color: var(--st-muted); }
 
 /* Fase 7 · ficha de rival: resumen en una línea. */
@@ -3911,3 +3967,20 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 }
 .z-rival-history { margin: 0 0 16px; }
 .z-rival-history a { display: inline-flex; align-items: center; gap: 8px; font-size: var(--z-fs-sm); font-weight: 800; color: var(--z-lime); text-decoration: none; }
+
+/* Listado de enfrentamientos: aviso del horizonte y enlace al calendario completo */
+/* Resumen de lo programado más adelante: una franja con los meses y el acceso al calendario completo */
+.z-ahead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; margin: 0 0 16px; padding: 12px 16px; background: var(--z-surface-2); border: 1px dashed var(--z-border-control); border-radius: var(--z-radius); }
+.z-ahead-main { display: grid; gap: 6px; min-width: 0; }
+.z-ahead h2 { margin: 0; font-family: inherit; font-size: var(--z-fs-md); font-weight: 800; letter-spacing: 0; text-transform: none; }
+.z-ahead h2 i { margin-right: 6px; color: var(--z-lime); }
+.z-ahead-months { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0; padding: 0; list-style: none; color: var(--z-muted); font-size: var(--z-fs-sm); }
+.z-ahead-months b { color: var(--z-text); }
+.z-horizon { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 12px; margin: 16px 0; color: var(--z-muted); font-size: var(--z-fs-sm); text-align: center; }
+.z-horizon a { font-weight: 800; }
+
+/* «Pendiente»: con JS las páginas se apilan en la misma celda, así la tarjeta mide siempre lo de la más alta y el selector queda anclado abajo */
+[data-pending-pages].is-paged { display: grid; grid-template-rows: 1fr auto; }
+[data-pending-pages].is-paged > [data-pending-page] { grid-area: 1 / 1; }
+[data-pending-pages].is-paged > [data-pending-page].is-inactive { visibility: hidden; pointer-events: none; }
+[data-pending-pages].is-paged > .z-pending-picker { grid-area: 2 / 1; align-self: end; }

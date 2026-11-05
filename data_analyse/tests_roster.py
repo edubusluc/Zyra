@@ -154,15 +154,6 @@ class RosterSideAndMinimumTests(ClubDataMixin, TestCase):
 class SnpEvolutionTests(ClubDataMixin, TestCase):
     """«Evolución»: mini gráfico de cada jugador y puestos que sube o baja en el ranking SNP."""
 
-    def test_sparkline_needs_two_updates_and_is_flat_without_changes(self):
-        self.assertIsNone(records.sparkline([40]))
-        flat = records.sparkline([40, 40, 40])
-        self.assertEqual(flat["values"], [40, 40, 40])
-        self.assertEqual({p.split(",")[1] for p in flat["points"].split()}, {"10.0"})
-        rising = records.sparkline([10, 20])
-        ys = [float(p.split(",")[1]) for p in rising["points"].split()]
-        self.assertGreater(ys[0], ys[1])  # en SVG, más arriba es una y menor
-
     def test_rank_movement_between_the_last_two_updates(self):
         season = "2025-2026"
         for pid, first, second in ((self.a, 40, 20), (self.b, 30, 35), (self.c, 20, 50)):
@@ -171,7 +162,7 @@ class SnpEvolutionTests(ClubDataMixin, TestCase):
         rows = {r["player"]: r for r in records.snp_ranking(self.club, season)["rows"]}
         # Antes: A, B, C. Ahora: C, B, A.
         self.assertEqual((rows[self.c]["rank_delta"], rows[self.b]["rank_delta"], rows[self.a]["rank_delta"]), (2, 0, -2))
-        self.assertEqual(rows[self.a]["spark"]["values"], [40, 20])
+        self.assertEqual(rows[self.a]["delta"], -20)
         self.assertIsNone(rows[self.e]["rank_delta"])  # sin histórico
 
     def test_table_shows_the_trend_column_only_for_snp(self):
@@ -179,4 +170,75 @@ class SnpEvolutionTests(ClubDataMixin, TestCase):
         SnpScoreHistory.objects.create(player=self.a, season="2025-2026", date=datetime.date(2025, 10, 8), score=45)
         page = self.client.get(reverse("team_statistics"), {"season": "2025-2026", "match_type": "todos"})
         self.assertContains(page, "st-roster-evo")
-        self.assertContains(page, "<polyline")
+        self.assertNotContains(page, "<polyline")
+        self.assertContains(page, "▲ +5")
+
+    def test_unchanged_last_update_keeps_the_last_real_change(self):
+        season = "2025-2026"
+        for pid, scores in ((self.a, (40, 45, 45)), (self.b, (30, 30, 30))):
+            for day, score in zip((1, 8, 15), scores):
+                SnpScoreHistory.objects.create(player=pid, season=season, date=datetime.date(2025, 10, day), score=score)
+        rows = {r["player"]: r for r in records.snp_ranking(self.club, season)["rows"]}
+        self.assertEqual((rows[self.a]["delta"], rows[self.b]["delta"]), (5, 0))
+        self.assertIsNone(rows[self.e]["delta"])
+        page = self.client.get(reverse("team_statistics"), {"season": season, "match_type": "todos"})
+        self.assertContains(page, "▲ +5")
+
+    def test_nothing_ever_changed_shows_equal(self):
+        season = "2025-2026"
+        for day in (1, 8):
+            SnpScoreHistory.objects.create(player=self.a, season=season, date=datetime.date(2025, 10, day), score=40)
+        rows = {r["player"]: r for r in records.snp_ranking(self.club, season)["rows"]}
+        self.assertEqual(rows[self.a]["delta"], 0)
+
+
+class RosterPaginationTests(ClubDataMixin, TestCase):
+    """La tabla de plantilla se pagina de 15 en 15 con ``?pagina=`` y conserva lado y orden."""
+
+    def setUp(self):
+        super().setUp()
+        for i in range(15):  # 5 de la plantilla base + 15 = 20 jugadores
+            Player.objects.create(club=self.club, name="Extra%02d" % i, last_name="X", joined_season="2020-2021")
+        self.client.login(username="admin", password="pass-12345")
+        self.params = dict(season="2025-2026", match_type="todos", orden="name")
+
+    def _roster(self, **extra):
+        return self.client.get(reverse("team_statistics"), dict(self.params, **extra)).context["roster"]
+
+    def test_first_page_has_fifteen_rows_and_next_link(self):
+        roster = self._roster()
+        self.assertEqual(len(roster["rows"]), 15)
+        self.assertEqual((roster["pages"]["number"], roster["pages"]["total"], roster["pages"]["count"]), (1, 2, 20))
+        self.assertIsNone(roster["pages"]["previous"])
+        self.assertIn("pagina=2", roster["pages"]["next"])
+        self.assertTrue(roster["pages"]["next"].endswith("#sec-plantilla"))
+        self.assertIn("orden=name", roster["pages"]["next"])
+
+    def test_second_page_has_the_rest_and_sheet_links_drop_the_page(self):
+        roster = self._roster(pagina=2)
+        self.assertEqual(len(roster["rows"]), 5)
+        self.assertIsNone(roster["pages"]["next"])
+        self.assertNotIn("pagina", roster["rows"][0]["url"])
+
+    def test_invalid_or_out_of_range_page_falls_back(self):
+        self.assertEqual(self._roster(pagina="x")["pages"]["number"], 1)
+        self.assertEqual(self._roster(pagina=99)["pages"]["number"], 2)
+
+    def test_changing_side_or_sort_goes_back_to_the_first_page(self):
+        roster = self._roster(pagina=2)
+        self.assertNotIn("pagina", roster["sides"][1][2])
+        self.assertNotIn("pagina", roster["sort_urls"]["played"])
+
+    def test_no_navigation_when_everything_fits(self):
+        Player.objects.filter(club=self.club, name__startswith="Extra").delete()
+        roster = self._roster()
+        self.assertIsNone(roster["pages"])
+        self.assertEqual(len(roster["rows"]), 5)
+
+
+class RosterSummaryTests(ClubDataMixin, TestCase):
+    def test_summary_counts_the_whole_squad_not_the_page(self):
+        for i in range(20):
+            Player.objects.create(club=self.club, name=f"Extra{i:02d}", last_name="Prueba", joined_season="2020-2021")
+        page = self.client.get(reverse("team_statistics"), {"season": "all", "match_type": "todos"})
+        self.assertContains(page, 'data-summary="25 jugadores"')

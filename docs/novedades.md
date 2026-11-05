@@ -8,6 +8,58 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 - **Campo nuevo y opcional** en el alta del club y en «Editar equipo» (solo el equipo propio): la hora a la que suele jugar en casa. Los equipos ya creados lo tienen vacío para que el capitán lo complete.
 - **Enfrentamiento como local**: el formulario llega con esa hora ya escrita; sigue siendo editable y, si el equipo juega de visitante, se deja en blanco. El día no se propone: se elige siempre.
 
+## 05/11/2026 · Local y visitante centrado
+
+- **Mis estadísticas · Local y visitante**: el gráfico de barras ocupa toda la altura de la tarjeta y queda centrado, con el balance (V – D) alineado debajo, sin hueco vacío cuando la tarjeta se estira a la altura de su vecina, en escritorio y móvil.
+
+## 05/11/2026 · Pendiente fijo y calendario a la vista
+
+- **Inicio · Pendiente**: con varias páginas, la tarjeta mide siempre lo mismo (la de la página más alta) y el selector queda anclado abajo, tenga la página 1, 2 o 3 filas.
+- **Enfrentamientos**: el aviso de «hasta el …» se sustituye por una franja «N enfrentamientos más programados» con los meses (p. ej. «Noviembre 3 · Diciembre 5») y el botón «Ver el calendario completo», para que se vea que el calendario está generado.
+
+## 05/11/2026 · Calendario completo sin abrumar
+
+- **Inicio · Pendiente**: solo enseña lo vencido y lo que cae en los próximos 14 días, de 3 en 3 filas, con un selector de páginas de flechas y números que cabe en cualquier ancho (antes las pastillas con fechas se cortaban). Lo más lejano queda a un enlace: «Ver el calendario completo».
+- **Inicio de jugadores**: lo que depende de ellos (enlazar la ficha, subir la foto, quién es su pareja) va en la misma tarjeta «Pendiente» que ven capitanes y gestores, junto a la tarjeta del enfrentamiento.
+- **Enfrentamientos**: por defecto se ven las actas vencidas, los próximos 14 días y los jugados; el resto del calendario, con «Ver el calendario completo» (`?ver=todo`). Al buscar o filtrar por rival se ven todos.
+
+## 05/11/2026 · Estadísticas: de dónde sale cada porcentaje
+
+- **Base visible bajo cada barra**, en texto pequeño como en «Local y visitante»: «2V – 1D · 3 partidos» en «Por número de partido» y «3 de 4 partidos» o «2 de 3 sets» en las situaciones de set (Equipo, Jugador, Pareja y Mis estadísticas). Ya no depende de pasar el ratón.
+- **Ficha del jugador**: «Se apunta» y «Juega cuando se apunta» dicen «N de M convocatorias».
+- **Mis estadísticas**: «Local y visitante» suma el balance en casa y fuera de cada competición bajo la gráfica, y «% de victorias por temporada» pone los partidos sobre cada barra.
+- **Equipo**: «Asistencia a las convocatorias» indica cuántos apuntados de cuántos posibles y en cuántas convocatorias.
+
+## 05/11/2026 · Estadísticas: plantilla paginada
+
+- **Tabla de plantilla**: en «Estadísticas · Equipo» y en la entrada de «Jugadores» se muestran 15 jugadores por página, con «Anterior» / «Siguiente» debajo. Cambiar de lado (Todos/Local/Visitante) o de orden vuelve a la primera página. Pasar de página, ordenar o cambiar de lado solo actualiza la tabla, sin recargar toda la pantalla. (Issue #256)
+## 05/11/2026 · Inicio: partidos semana a semana
+
+- **Carrusel por semana**: «Próximo enfrentamiento» solo enseña los partidos de la semana (lunes a domingo); si esta semana no queda ninguno, enseña la siguiente semana con partidos.
+- **«Pendiente» por páginas**: los vencidos se ven siempre arriba y el resto va en páginas de dos semanas, con el mismo selector de pastillas y flechas del carrusel. (PR #251)
+## 05/11/2026 · Informes PDF con la fuente actual de la web
+
+- **Títulos y cifras de los PDF** (convocatoria e informe mensual) pasan a Anton, la fuente de títulos de la web, en lugar de Syncopate en cursiva. El logotipo «ZYRA» de la cabecera conserva Syncopate. (Issue #254)
+
+## 03/11/2026 · Inicio: carrusel de próximos enfrentamientos
+
+- **Tarjeta «Próximo enfrentamiento»**: con más de un enfrentamiento abierto, el más cercano va delante y el siguiente (hasta tres en total) queda por debajo, asomando por el lado, más pequeño y difuminado. Sirve sobre todo cuando un fin de semana hay partido de SNP y de LAPI.
+- **Cambiar de tarjeta**: selector debajo con una pastilla por enfrentamiento (competición y día) y flechas en escritorio; también arrastrando (la tarjeta sigue al dedo), tocando la que asoma o con las flechas del teclado. El movimiento es más suave y no hay saltos. Con un solo enfrentamiento todo queda como antes. (PR #246)
+
+## 03/11/2026 · Ficha del jugador sin «Equipo: X %»
+
+- **Más espacio en la cabecera**: se quita la comparación «Equipo: X %» junto al anillo de victorias (confundía con pocos partidos y no decía con qué se comparaba); el anillo y el balance ocupan ese hueco.
+## 03/11/2026 · Plantilla: subida o bajada de puntos SNP
+
+- **Evolución en puntos**: la columna «Evolución» de la tabla de plantilla muestra cuántos puntos SNP ha subido o bajado cada jugador (▲ +N / ▼ -N) en lugar de la mini línea. Si la última actualización no cambió ningún valor del equipo, se mantiene la subida o bajada de la última en la que sí hubo cambios, en vez de poner «=» a todos.
+
+## 03/11/2026 · Estadísticas: equipo sin enfrentamientos cerrados
+
+- **Sin callejón**: si el equipo activo no tiene enfrentamientos cerrados y otro equipo de la cuenta sí, la tarjeta vacía lleva el selector de competición, dice qué equipo está vacío y ofrece un botón para ver el otro. Nunca cambia de equipo por sí sola.
+## 03/11/2026 · Aviso de nuevo gestor según competición
+
+- La tarjeta «Ahora eres gestor del equipo» ya no menciona la cuenta SNP ni «equipos» en los clubes LAPI: allí dice que el capitán sigue gestionando los miembros y las invitaciones.
+
 ## 02/11/2026 · Back-office: clubes por competición
 
 - **Dashboard**: una tarjeta de «Clubes SNP» y otra de «Clubes LAPI» con el total, los activos y las altas de 30 días. Cada club es un espacio de una sola competición y tiene un único equipo propio, así que cada uno cuenta una vez y las dos tarjetas suman el total de «Clubes».

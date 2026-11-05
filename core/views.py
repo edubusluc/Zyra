@@ -58,7 +58,9 @@ from .services import (
 INVITATIONS_PER_PAGE = 10
 # Un segundo envío igual dentro de este margen se toma por doble clic y no crea otra invitación.
 DOUBLE_SUBMIT_WINDOW = datetime.timedelta(seconds=30)
-# Filas del bloque «Pendiente» del inicio: el resto se ve en el listado de enfrentamientos.
+# «Pendiente» del inicio: solo lo vencido y lo que cae en los próximos 14 días, en páginas de
+# HOME_PENDING_ROWS filas (el calendario lejano no tapa lo urgente).
+HOME_PENDING_DAYS = 14
 HOME_PENDING_ROWS = 3
 
 # Invitación pendiente de aceptar mientras el visitante inicia sesión con Google
@@ -90,6 +92,34 @@ def email_needs_confirmation(user):
     return bool(user.email) and user.has_usable_password() and not email_verification.is_verified(user)
 
 
+def _week_start(day):
+    """Lunes de la semana natural que contiene ``day``."""
+    return day - datetime.timedelta(days=day.weekday())
+
+
+def _home_pending_pages(rows, today):
+    """
+    Páginas de «Pendiente» del inicio: primero lo vencido y después lo que cae dentro de
+    ``HOME_PENDING_DAYS`` días desde hoy (``rows`` ya viene ordenado por fecha), de ``HOME_PENDING_ROWS`` en
+    ``HOME_PENDING_ROWS``. Devuelve las páginas y cuántas filas quedan fuera por estar más lejos.
+    """
+    limit = today + datetime.timedelta(days=HOME_PENDING_DAYS)
+    shown = [r for r in rows if r["match"].start_date <= limit]
+    pages = [shown[i:i + HOME_PENDING_ROWS] for i in range(0, len(shown), HOME_PENDING_ROWS)]
+    return [{"rows": chunk} for chunk in pages], len(rows) - len(shown)
+
+
+def _home_upcoming(user, match, my_player, club, today):
+    """Datos de una tarjeta del carrusel del inicio: enfrentamiento, estado del jugador y días que faltan."""
+    player = my_player if match.club_id == club.id else Player.objects.filter(club=match.club, user=user).first()
+    status = None
+    if player:
+        games = list(match.games.select_related('player_1_local', 'player_2_local',
+                                                'player_1_visiting', 'player_2_visiting'))
+        status = player_status(player, Call.objects.filter(match=match).first(), games)
+    return {"match": match, "status": status, "player": player, "days_left": (match.start_date - today).days}
+
+
 @require_safe
 def home(request):
     """Portada del club: logo, próximo partido y jugador/pareja en racha."""
@@ -109,21 +139,22 @@ def home(request):
     clubs = spaces.user_clubs(request) or [club]
     # Actas abiertas, las más antiguas primero: las pasadas son lo que se quedó a medias (H-02).
     open_matches = list(Match.objects.filter(club__in=clubs, draft_mode=True)
-                        .select_related('local', 'visiting', 'club').order_by('start_date', 'id')[:30])
+                        .select_related('local', 'visiting', 'club').order_by('start_date', 'id')[:200])
     phases = phases_for(open_matches)
     next_match = next((m for m in open_matches if m.start_date >= today), None)
     managed = spaces.managed_clubs(request, clubs)
     pending = [{"match": m, "phase": phases[m.id], "overdue": m.start_date < today}
                for m in open_matches if m.club in managed]
-    my_status = None
     my_player = Player.objects.filter(club=club, user=request.user).first()
-    next_player = my_player if next_match is None or next_match.club_id == club.id else (
-        Player.objects.filter(club=next_match.club, user=request.user).first())
-    if next_match and next_player:
-        games = list(next_match.games.select_related('player_1_local', 'player_2_local',
-                                                     'player_1_visiting', 'player_2_visiting'))
-        call = Call.objects.filter(match=next_match).first()
-        my_status = player_status(next_player, call, games)
+    # «Pendiente»: los vencidos siempre y lo de los próximos 14 días, en páginas; lo más lejano queda fuera.
+    pending_pages, pending_far = _home_pending_pages(pending, today)
+    # Carrusel «Próximo enfrentamiento»: solo la semana natural del más cercano (la actual o, si no
+    # queda nada en ella, la siguiente con partidos); el más cercano va delante y el siguiente asoma.
+    future = [m for m in open_matches if m.start_date >= today]
+    week_end = _week_start(future[0].start_date) + datetime.timedelta(days=6) if future else None
+    upcoming = [_home_upcoming(request.user, m, my_player, club, today)
+                for m in future if m.start_date <= week_end]
+    my_status = upcoming[0]["status"] if upcoming else None
     # Banner: con varios equipos, todos (en el orden de las competiciones), no el del espacio activo.
     home_teams = [{"club": c, "team": c.own_team, "membership": spaces.membership_for(request, c)}
                   for c in clubs] if len(clubs) > 1 else []
@@ -168,8 +199,12 @@ def home(request):
         'own_team': club.own_team,
         'season': current_season(),
         'next_match': next_match,
-        'pending': pending[:HOME_PENDING_ROWS],
-        'pending_total': len(pending),
+        'upcoming': upcoming,
+        'pending': pending,
+        'pending_pages': pending_pages,
+        'pending_far': pending_far,
+        'pending_total': len(pending) - pending_far,
+        'pending_count': len(pending) - pending_far + len(player_todos),
         'pending_overdue': sum(1 for p in pending if p['overdue']),
         'multi_space': spaces.is_multi_space(request),
         'my_player': my_player,

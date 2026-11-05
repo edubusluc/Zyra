@@ -77,6 +77,28 @@ class MatchesAndCallsTests(TestCase):
         response = self.client.get(reverse("list_match"), {"season": "all"})
         self.assertEqual(len(response.context["matches"]), 2)
 
+    def test_match_list_hides_far_future_unless_full_calendar(self):
+        """Con el calendario cargado entero, el listado enseña vencidos y las próximas 2 semanas; el resto, con ?ver=todo."""
+        today = datetime.date.today()
+        near = Match.objects.create(club=self.club, local=self.club.own_team, visiting=self.rival,
+                                    start_date=today + datetime.timedelta(days=10))
+        far = Match.objects.create(club=self.club, local=self.club.own_team, visiting=self.rival,
+                                   start_date=today + datetime.timedelta(days=80))
+        response = self.client.get(reverse("list_match"), {"season": "all"})
+        ids = [m.id for m in response.context["matches"]]
+        self.assertIn(near.id, ids)
+        self.assertNotIn(far.id, ids)
+        self.assertEqual(response.context["hidden_far"], 1)
+        self.assertEqual([m["n"] for m in response.context["far_months"]], [1])
+        self.assertContains(response, "1 enfrentamiento más programado")
+        self.assertContains(response, "Ver el calendario completo")
+        full = self.client.get(reverse("list_match"), {"season": "all", "ver": "todo"})
+        self.assertIn(far.id, [m.id for m in full.context["matches"]])
+        self.assertContains(full, "Ver solo las próximas semanas")
+        # Al buscar por rival se ve todo
+        found = self.client.get(reverse("list_match"), {"rival": "Rival"})
+        self.assertIn(far.id, [m.id for m in found.context["matches"]])
+
     def test_match_list_season_selector_and_draws(self):
         """Chips con la temporada actual activa, «Todas» con ?season=all, la temporada de cada
         partido a la vista y los empates en el resumen."""
