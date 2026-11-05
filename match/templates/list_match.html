@@ -165,5 +165,13 @@ o estado. Toda la tarjeta es pulsable.{% endcomment %}
 </div>
 {% endif %}
 
+{% if hidden_far %}
+<p class="z-horizon">
+    <span>{% blocktranslate with date=horizon_end|date_short %}Se muestran los enfrentamientos hasta el {{ date }}.{% endblocktranslate %}</span>
+    <a href="?{% if request.GET.season %}season={{ selected_season|urlencode }}&amp;{% endif %}{% if selected_match_type %}match_type={{ selected_match_type|urlencode }}&amp;{% endif %}ver=todo">{% blocktranslate trimmed count n=hidden_far %}Ver el calendario completo ({{ n }} más){% plural %}Ver el calendario completo ({{ n }} más){% endblocktranslate %}</a>
+</p>
+{% elif full_calendar %}
+<p class="z-horizon"><a href="?{% if request.GET.season %}season={{ selected_season|urlencode }}&amp;{% endif %}{% if selected_match_type %}match_type={{ selected_match_type|urlencode }}&amp;{% endif %}">{% translate "Ver solo las próximas semanas" %}</a></p>
+{% endif %}
 {% include 'includes/pagination.html' with page=matches extra=page_extra %}
 {% endblock %}

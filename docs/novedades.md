@@ -3,6 +3,12 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 05/11/2026 · Calendario completo sin abrumar
+
+- **Inicio · Pendiente**: solo enseña lo vencido y lo que cae en los próximos 14 días, de 3 en 3 filas, con un selector de páginas de flechas y números que cabe en cualquier ancho (antes las pastillas con fechas se cortaban). Lo más lejano queda a un enlace: «Ver el calendario completo».
+- **Inicio de jugadores**: lo que depende de ellos (enlazar la ficha, subir la foto, quién es su pareja) va en la misma tarjeta «Pendiente» que ven capitanes y gestores, junto a la tarjeta del enfrentamiento.
+- **Enfrentamientos**: por defecto se ven las actas vencidas, los próximos 14 días y los jugados; el resto del calendario, con «Ver el calendario completo» (`?ver=todo`). Al buscar o filtrar por rival se ven todos.
+
 ## 05/11/2026 · Estadísticas: de dónde sale cada porcentaje
 
 - **Base visible bajo cada barra**, en texto pequeño como en «Local y visitante»: «2V – 1D · 3 partidos» en «Por número de partido» y «3 de 4 partidos» o «2 de 3 sets» en las situaciones de set (Equipo, Jugador, Pareja y Mis estadísticas). Ya no depende de pasar el ratón.

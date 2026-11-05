@@ -208,7 +208,7 @@
 {% endif %}
 
 
-<div class="z-home-grid{% if upcoming and pending or upcoming and can_manage and not onboarding %} z-home-grid--both{% endif %}">
+<div class="z-home-grid{% if upcoming and pending_pages or upcoming and player_todos or upcoming and can_manage and not onboarding %} z-home-grid--both{% endif %}">
 {% if upcoming %}
 {# Enfrentamiento protagonista: bloque lima; en escritorio es una pista de pádel de proporción 2:1 (la red separa local y visitante). #}
 {# Con más de uno, el más cercano va delante y el siguiente asoma por detrás, difuminado; los puntos y el gesto de deslizar cambian de tarjeta (static/js/next-match-deck.js). #}
@@ -249,22 +249,15 @@
 </div>
 {% endif %}
 
-{% if pending or can_manage and not onboarding %}
-{# Lo que se ha quedado a medias, con la siguiente acción de cada enfrentamiento (H-02). #}
+{% if pending or player_todos or can_manage and not onboarding %}
+{# Lo que se ha quedado a medias (H-02): para quien gestiona, los enfrentamientos vencidos y los de los próximos 14 días; para un jugador, lo que depende de él (UX-055). Mismo componente para todos. #}
 <section class="z-card z-home-pending" aria-labelledby="pending-title">
     <div class="z-home-pending-head">
-        <h2 id="pending-title" class="z-panel-title">{% translate "Pendiente" %}{% if pending_total %} <span>· {{ pending_total }}</span>{% endif %}</h2>
+        <h2 id="pending-title" class="z-panel-title">{% translate "Pendiente" %}{% if pending_count %} <span>· {{ pending_count }}</span>{% endif %}</h2>
         {% if can_manage %}<a class="btn btn-primary btn-sm" href="{% url 'create_match' %}">+ {% translate "Nuevo" %}</a>{% endif %}
     </div>
-{% if pending %}
-{% if pending_overdue_rows %}
-<ul class="z-pending">
-    {% for row in pending_overdue_rows %}
-    <li>{% include 'includes/pending_row.html' %}</li>
-    {% endfor %}
-</ul>
-{% endif %}
-{# Páginas de dos semanas: sin JS se ven todas; static/js/pending-pages.js enseña una y el selector cambia de página. #}
+{% if pending_pages or player_todos %}
+{# Páginas de pocas filas: sin JS se ven todas; static/js/pending-pages.js enseña una y el selector cambia de página. #}
 <div data-pending-pages>
     {% for page in pending_pages %}
     <div data-pending-page role="group" aria-label="{% blocktranslate with n=forloop.counter total=pending_pages|length %}Página {{ n }} de {{ total }}{% endblocktranslate %}">
@@ -275,14 +268,19 @@
         </ul>
     </div>
     {% endfor %}
+    {% if player_todos %}
+    <ul class="z-pending">
+        {% for todo in player_todos %}
+        <li><a href="{{ todo.url }}" class="z-pending-row z-pending-row--todo"><span class="z-pending-main"><strong><i class="fa-solid {{ todo.icon }} me-2" aria-hidden="true"></i>{{ todo.text }}</strong></span><span class="z-pending-action"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></span></a></li>
+        {% endfor %}
+    </ul>
+    {% endif %}
     {% if pending_pages|length > 1 %}
-    <div class="z-next-picker" data-pending-picker hidden>
+    <div class="z-pending-picker" data-pending-picker hidden>
         <button type="button" class="z-next-arrow" data-pending-prev aria-label="{% translate 'Página anterior' %}"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
-        <div class="z-next-chips">
+        <div class="z-pending-pages">
             {% for page in pending_pages %}
-            <button type="button" class="z-next-chip" data-pending-dot aria-label="{% blocktranslate with n=forloop.counter total=pending_pages|length start=page.start|date_short end=page.end|date_short %}Ver la página {{ n }} de {{ total }} · del {{ start }} al {{ end }}{% endblocktranslate %}"{% if forloop.first %} aria-current="true"{% endif %}>
-                <span class="z-next-chip-date">{{ page.start|date_short }} – {{ page.end|date_short }}</span>
-            </button>
+            <button type="button" class="z-pending-page" data-pending-dot aria-label="{% blocktranslate with n=forloop.counter total=pending_pages|length %}Ver la página {{ n }} de {{ total }}{% endblocktranslate %}"{% if forloop.first %} aria-current="true"{% endif %}>{{ forloop.counter }}</button>
             {% endfor %}
         </div>
         <button type="button" class="z-next-arrow" data-pending-next aria-label="{% translate 'Página siguiente' %}"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
@@ -292,21 +290,12 @@
 {% else %}
 <div class="z-empty"><i class="fa-solid fa-circle-check" aria-hidden="true"></i>{% translate "Todo al día" %}</div>
 {% endif %}
+{% if pending_far %}
+<p><a href="{% url 'list_match' %}">{% blocktranslate trimmed count n=pending_far %}Ver el calendario completo ({{ n }} enfrentamiento más adelante){% plural %}Ver el calendario completo ({{ n }} enfrentamientos más adelante){% endblocktranslate %}</a></p>
+{% endif %}
 </section>
 {% endif %}
 </div>
-
-{% if player_todos %}
-{# «Tus pendientes» del jugador (UX-055): lo que depende de él, con el dato que ya existe hoy. #}
-<section class="z-card z-player-todos" aria-labelledby="todos-title">
-    <h2 id="todos-title" class="z-panel-title">{% translate "Tus pendientes" %}</h2>
-    <ul class="z-pending">
-        {% for todo in player_todos %}
-        <li><a href="{{ todo.url }}" class="z-pending-row"><span class="z-pending-main"><strong><i class="fa-solid {{ todo.icon }} me-2" aria-hidden="true"></i>{{ todo.text }}</strong></span><span class="z-pending-action"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></span></a></li>
-        {% endfor %}
-    </ul>
-</section>
-{% endif %}
 
 {% if my_form %}
 {# «Mi forma» (data_analyse.my_form): solo para quien tiene su cuenta enlazada a un jugador; se puede ocultar y volver a mostrar. #}

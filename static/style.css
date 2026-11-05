@@ -1446,8 +1446,8 @@ a.z-card:hover, .z-card--link:hover {
 @media (min-width: 1100px) {
     .z-home-grid:not(.z-home-grid--both) .z-next-deck { max-width: 820px; }
     .z-home-grid--both { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); align-items: start; }
-    /* La altura de la fila la marca la pista (2:1); «Pendiente» se estira hasta ella y recorta lo que sobre. */
-    .z-home-grid--both .z-home-pending { align-self: stretch; contain: size; overflow: hidden; }
+    /* La altura de la fila la marca la pista (2:1); «Pendiente» crece con sus filas sin recortarlas. */
+    .z-home-grid--both .z-home-pending { align-self: start; }
 }
 .z-next-match {
     container-type: inline-size;
@@ -3580,9 +3580,17 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
     .st-table--cards .st-c-played, .st-table--cards .st-c-record, .st-table--cards .st-c-points { grid-row: 2; font-size: var(--z-fs-sm); color: var(--z-muted); }
     .st-table--cards td[data-label]::before { content: attr(data-label) ": "; }
 }
-.z-player-todos { margin: 0 0 16px; }
-.z-player-todos .z-pending { margin: 8px 0 0; }
-.z-player-todos .z-pending-main strong { text-transform: none; }
+/* «Pendiente» de un jugador: las filas de tareas, en minúsculas, igual que el componente del capitán. */
+.z-pending-row--todo .z-pending-main strong { text-transform: none; }
+/* Selector de páginas de «Pendiente»: flechas y números, caben en cualquier ancho. */
+.z-pending-picker { display: flex; align-items: stretch; justify-content: center; gap: 8px; margin-top: 10px; }
+.z-pending-picker[hidden] { display: none; }
+.z-pending-pages { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; min-width: 0; }
+.z-pending-page { min-width: 44px; min-height: 44px; padding: 0 10px; font-weight: 800; color: var(--z-text); background: var(--z-surface-2); border: 1px solid var(--z-border-control); border-radius: var(--z-radius-sm); cursor: pointer; }
+.z-pending-page:hover { border-color: var(--z-border-control-hover); background: var(--z-surface-3); }
+.z-pending-page[aria-current="true"] { color: var(--z-ink); background: var(--z-lime); border-color: var(--z-lime); }
+.z-pending-page:focus-visible { outline: 2px solid var(--z-text); outline-offset: 2px; }
+.z-pending-picker .z-next-arrow { width: 44px; min-height: 44px; display: grid; place-items: center; }
 
 /* Portada: ejemplo del producto y funciones en carrusel en móvil (UX-028) */
 .z-landing-preview { display: grid; gap: 20px; align-items: center; }
@@ -3625,8 +3633,6 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .z-role strong { color: var(--z-text); }
 .z-role .z-badge { justify-self: start; }
 @media (max-width: 480px) { .z-role { grid-template-columns: 1fr; gap: 6px; } }
-/* «Tus pendientes» no va pegada a la tarjeta de enfrentamientos */
-.z-player-todos { margin-top: 24px; }
 /* Portada: la tilde de «Sáb» no choca con el texto de encima */
 .z-preview-date { margin-top: 14px; padding-top: .12em; line-height: 1.1; }
 .z-auth-lead { text-align: center; }
@@ -3955,3 +3961,7 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 }
 .z-rival-history { margin: 0 0 16px; }
 .z-rival-history a { display: inline-flex; align-items: center; gap: 8px; font-size: var(--z-fs-sm); font-weight: 800; color: var(--z-lime); text-decoration: none; }
+
+/* Listado de enfrentamientos: aviso del horizonte y enlace al calendario completo */
+.z-horizon { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 12px; margin: 16px 0; color: var(--z-muted); font-size: var(--z-fs-sm); text-align: center; }
+.z-horizon a { font-weight: 800; }

@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 from players.models import Player, current_season
 from call.models import Call
 from team.models import Team
-from datetime import datetime
+from datetime import datetime, timedelta
 from callLog.models import CallLog
 from penalty.models import Penalty
 import json
@@ -80,6 +80,9 @@ def club_players(request, ids):
 
 
 MATCHES_PER_PAGE = 12
+# Por defecto el listado no enseña lo programado más allá de estos días (calendario completo con ?ver=todo).
+LIST_HORIZON_DAYS = 14
+FULL_CALENDAR = "todo"
 
 
 def match_outcome(match):
@@ -202,6 +205,10 @@ def list_match(request):
     fecha de hoy en adelante) y si solo le falta cerrar el acta (``pending_close``: 5 o más partidos,
     todos con resultado) para pintar su tarjeta.
 
+    Por defecto no enseña los enfrentamientos abiertos que quedan a más de ``LIST_HORIZON_DAYS`` días
+    (``hidden_far``, con enlace a ``?ver=todo``, el calendario completo); al buscar o filtrar por rival
+    se ven todos. No cambia el resumen.
+
     Con varios espacios junta los enfrentamientos de todos (``?espacio=``, core.spaces): cada
     tarjeta lleva la etiqueta de su competición y sus acciones según el rol en ese espacio, y
     «Nuevo enfrentamiento» dice dónde se crea o pregunta la competición.
@@ -246,8 +253,16 @@ def list_match(request):
     # más reciente primero). Se pagina ya ordenado, así los grupos no se parten entre páginas distintas.
     today = timezone.localdate()
     open_matches = matches.filter(draft_mode=True)
+    # Con muchos enfrentamientos programados (calendario de liga cargado entero) se ocultan los que quedan a más
+    # de LIST_HORIZON_DAYS días; al buscar, filtrar por rival o pedir el calendario completo se ven todos.
+    horizon_end = today + timedelta(days=LIST_HORIZON_DAYS)
+    show_all = request.GET.get('ver') == FULL_CALENDAR or bool(search or rival)
+    upcoming_open = open_matches.filter(start_date__gte=today)
+    hidden_far = 0 if show_all else upcoming_open.filter(start_date__gt=horizon_end).count()
+    if hidden_far:
+        upcoming_open = upcoming_open.filter(start_date__lte=horizon_end)
     matches = [*open_matches.filter(start_date__lt=today).order_by('start_date', 'id'),
-               *open_matches.filter(start_date__gte=today).order_by('start_date', 'id'),
+               *upcoming_open.order_by('start_date', 'id'),
                *matches.filter(draft_mode=False).order_by('-start_date', '-id')]
     # Los enfrentamientos abiertos con fecha pasada («Requieren acción») solo van aparte para quien gestiona
     # su equipo; para los jugadores son «Próximos». Orden estable: los grupos no se repiten con varios equipos.
@@ -296,13 +311,17 @@ def list_match(request):
         m.group = ('played' if not m.draft_mode else 'action' if m.start_date < today and m.can_manage else 'upcoming')
 
     # Resto de filtros para la paginación y para los formularios de búsqueda.
-    keep = {'season': season, 'q': search, 'rival': rival, 'match_type': match_type}
+    keep = {'season': season, 'q': search, 'rival': rival, 'match_type': match_type,
+            'ver': FULL_CALENDAR if request.GET.get('ver') == FULL_CALENDAR else ''}
     return render(request, "list_match.html", {
         'matches': matches,
         'seasons': seasons,
         'selected_season': season,
         'all_seasons': ALL_SEASONS,
         'summary': summary,
+        'hidden_far': hidden_far,
+        'horizon_end': horizon_end,
+        'full_calendar': request.GET.get('ver') == FULL_CALENDAR and not (search or rival),
         'has_draws': any(c.rules.has_draws for c in clubs),
         'search': search,
         'rival': rival,

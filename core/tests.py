@@ -473,23 +473,29 @@ class HomeTests(TestCase):
         self.assertEqual(dates, [monday + datetime.timedelta(days=15), monday + datetime.timedelta(days=17)])
         self.assertEqual(response.context["next_match"].start_date, dates[0])
 
-    def test_home_pending_overdue_always_and_pages_of_two_weeks(self):
-        # «Pendiente»: vencidos aparte y el resto en páginas de dos semanas naturales con partidos.
-        monday = self.today + datetime.timedelta(days=7 - self.today.weekday())
+    def test_home_pending_overdue_and_next_two_weeks_only(self):
+        # «Pendiente»: lo vencido y lo de los próximos 14 días, de 3 en 3; lo más lejano queda fuera.
         Match.objects.create(club=self.club, local=self.own, visiting=self.rival,
                              start_date=self.today - datetime.timedelta(days=30))
-        for weeks in (0, 1, 2, 5):
+        for days in (1, 5, 10, 14, 15, 60):
             Match.objects.create(club=self.club, local=self.own, visiting=self.rival,
-                                 start_date=monday + datetime.timedelta(weeks=weeks))
+                                 start_date=self.today + datetime.timedelta(days=days))
         response = self.client.get(reverse("home"))
-        self.assertEqual(len(response.context["pending_overdue_rows"]), 1)
         pages = response.context["pending_pages"]
-        self.assertEqual([len(p["rows"]) for p in pages], [2, 2])
-        self.assertEqual(pages[0]["start"], monday)
-        self.assertEqual(pages[0]["end"], monday + datetime.timedelta(days=13))
+        self.assertEqual([len(p["rows"]) for p in pages], [3, 2])
+        self.assertTrue(pages[0]["rows"][0]["overdue"])
         self.assertEqual(response.context["pending_total"], 5)
+        self.assertEqual(response.context["pending_far"], 2)
         self.assertContains(response, "data-pending-dot", count=2)
         self.assertContains(response, "js/pending-pages.js")
+        self.assertContains(response, "Ver el calendario completo")
+
+    def test_home_pending_far_matches_hidden_but_overdue_kept(self):
+        Match.objects.create(club=self.club, local=self.own, visiting=self.rival,
+                             start_date=self.today + datetime.timedelta(days=90))
+        response = self.client.get(reverse("home"))
+        self.assertEqual(response.context["pending_pages"], [])
+        self.assertContains(response, "Todo al día")
 
     def test_home_pending_single_page_has_no_selector(self):
         Match.objects.create(club=self.club, local=self.own, visiting=self.rival,
@@ -497,6 +503,19 @@ class HomeTests(TestCase):
         response = self.client.get(reverse("home"))
         self.assertEqual(len(response.context["pending_pages"]), 1)
         self.assertNotContains(response, "data-pending-dot")
+
+    def test_player_pending_uses_same_card_next_to_deck(self):
+        """El jugador ve «Pendiente» con el mismo componente que el capitán, junto a la tarjeta del enfrentamiento."""
+        member = User.objects.create_user("jugador", password="pass-12345")
+        Membership.objects.create(user=member, club=self.club, role=Membership.MEMBER)
+        Match.objects.create(club=self.club, local=self.own, visiting=self.rival,
+                             start_date=self.today + datetime.timedelta(days=2))
+        self.client.login(username="jugador", password="pass-12345")
+        response = self.client.get(reverse("home"))
+        self.assertContains(response, 'class="z-card z-home-pending"')
+        self.assertContains(response, "z-home-grid--both")
+        self.assertContains(response, "Enlaza tu cuenta con tu ficha de jugador")
+        self.assertNotContains(response, "Tus pendientes")
 
     def test_home_deck_single_match_has_no_dots(self):
         Match.objects.create(club=self.club, local=self.own, visiting=self.rival,
