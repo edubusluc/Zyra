@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 05/11/2026 · Local y visitante centrado
+
+- **Mis estadísticas · Local y visitante**: el gráfico de barras ocupa toda la altura de la tarjeta y queda centrado, con el balance (V – D) alineado debajo, sin hueco vacío cuando la tarjeta se estira a la altura de su vecina, en escritorio y móvil.
+
 ## 05/11/2026 · Pendiente fijo y calendario a la vista
 
 - **Inicio · Pendiente**: con varias páginas, la tarjeta mide siempre lo mismo (la de la página más alta) y el selector queda anclado abajo, tenga la página 1, 2 o 3 filas.

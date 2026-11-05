@@ -3909,6 +3909,12 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .z-commit-list li { display: grid; grid-template-columns: 1fr auto auto; align-items: baseline; gap: 12px; }
 .z-commit-list b { font-family: var(--z-display); font-size: var(--z-fs-xl); font-weight: 400; color: #FFFFFF; }
 .z-commit-list.z-venue-notes small { min-width: 0; }
+/* «Local y visitante» de Mis estadísticas: si la tarjeta se estira a la altura de su vecina, el gráfico crece y centra las barras y el balance queda abajo, sin hueco vacío. */
+.st-card--venue-mine { display: flex; flex-direction: column; }
+.st-card--venue-mine .st-chart--mine { flex: 1 1 220px; min-height: 220px; height: auto; width: 100%; }
+.st-card--venue-mine .z-venue-notes { margin-top: 16px; }
+.z-commit-list.z-venue-notes li { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; }
+.z-commit-list.z-venue-notes small { text-align: right; }
 .z-commit-list small { min-width: 3.4rem; text-align: right; color: var(--st-muted); }
 
 /* Fase 7 · ficha de rival: resumen en una línea. */
