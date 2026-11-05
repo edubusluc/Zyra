@@ -502,6 +502,29 @@ class FichaPreviewTests(UxBase):
         self.client.post(url, {"stage_form": "1", "match_stage_view": "on"})
         self.assertTrue(UserPreference.match_stage_for(self.user))
 
+    def test_ficha_toggle_saves_the_choice_per_user_and_switches_the_view(self):
+        from core.models import UserPreference
+        m = self.match(FUTURE)
+        url = reverse("set_stage_view", args=[m.public_id])
+        self.assertContains(self.ficha(m), 'name="stage" value="off"')  # con 3D, el botón lo apaga
+        response = self.client.post(url, {"stage": "off"})
+        self.assertRedirects(response, reverse("call_for_match", args=[m.public_id]), fetch_redirect_response=False)
+        self.assertFalse(UserPreference.match_stage_for(self.user))
+        classic = self.ficha(m)
+        self.assertNotContains(classic, "z-versus--stage")
+        self.assertContains(classic, 'name="stage" value="on"')
+        self.client.post(url, {"stage": "on"})
+        self.assertTrue(UserPreference.match_stage_for(self.user))
+        self.assertEqual(self.client.get(url).status_code, 405)
+
+    def test_classic_ficha_keeps_the_old_preview_block(self):
+        from core.models import UserPreference
+        UserPreference.objects.update_or_create(user=self.user, defaults={"match_stage_view": False})
+        self._past_meeting("7/5", "Local", datetime.date(2025, 1, 10))
+        page = self.ficha(self.match(FUTURE))
+        self.assertContains(page, 'class="z-preview"')
+        self.assertNotContains(page, "z-f2f")
+
     def test_action_cards_link_to_the_next_steps(self):
         m = self.match(FUTURE)
         page = self.ficha(m)

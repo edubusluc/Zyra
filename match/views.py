@@ -856,6 +856,20 @@ def lineup_rows(match, games, me_id=None):
 
 
 @club_required
+@require_POST
+def set_stage_view(request, match_id):
+    """Guarda si el usuario quiere la ficha con escudos 3D o la clásica y vuelve a la ficha.
+
+    Es el mismo ajuste que «Mi perfil»; ``on`` activa el 3D y cualquier otro valor lo desactiva.
+    Solo cambia la preferencia de quien lo pide.
+    """
+    match = club_match(request, match_id)
+    UserPreference.objects.update_or_create(
+        user=request.user, defaults={"match_stage_view": request.POST.get("stage") == "on"})
+    return redirect('call_for_match', match_id=match.public_id)
+
+
+@club_required
 def call_for_match(request, match_id):
     """Página de un enfrentamiento: convocatoria, partidos y resultados.
 
