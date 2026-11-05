@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static i18n %}
+{% load static i18n l10n %}
 {% block page_title %}{% translate "Estadísticas" %} · {% endblock %}
 
 {% block content %}
@@ -51,10 +51,16 @@
             {% for item in set_compare %}
             <div class="z-set-row">
               <b>{{ item.label }}<small>{{ item.hint }}</small></b>
-              <div class="z-set-bars">
-                {% for c in item.comps %}<div class="z-set-bar" title="{{ c.name }}: {% if c.r.total %}{% blocktranslate with w=c.r.wins t=c.r.total %}{{ w }} de {{ t }}{% endblocktranslate %}{% else %}—{% endif %}"><span class="z-set-bar--{{ c.code }}" style="width: {{ c.r.pct|default:0 }}%"></span></div>{% endfor %}
-              </div>
-              <em>{% for c in item.comps %}{% if not forloop.first %} / {% endif %}{% if c.r.pct is None %}—{% else %}{{ c.r.pct }}%{% endif %}{% endfor %}</em>
+              <ul class="z-set-bars">
+                {% for c in item.comps %}
+                <li class="z-set-line">
+                  <span class="z-set-name"><i class="z-dot z-dot--{{ c.code }}" aria-hidden="true"></i>{{ c.name }}</span>
+                  <span class="z-set-bar"><span class="z-set-bar--{{ c.code }}" style="width: {{ c.r.pct|default:0|unlocalize }}%"></span></span>
+                  <strong class="z-set-pct">{% if c.r.pct is None %}—{% else %}{{ c.r.pct }}%{% endif %}</strong>
+                  <small class="z-set-count">{% if c.r.total %}{% blocktranslate with w=c.r.wins t=c.r.total %}{{ w }} de {{ t }}{% endblocktranslate %}{% else %}{% translate "Sin casos" %}{% endif %}</small>
+                </li>
+                {% endfor %}
+              </ul>
             </div>
             {% endfor %}
           </div>

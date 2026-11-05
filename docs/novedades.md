@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 05/11/2026 · Estadísticas: sets con «N de M» visible
+
+- **Mis estadísticas · Todas**: en la tarjeta «Sets» cada competición tiene su propia línea con su nombre, la barra, el % y «N de M» (partidos o sets ganados sobre los jugados), sin tener que poner el cursor encima. En Equipo y Jugador las barras de sets y de «Por número de partido» también enseñan «N de M» bajo el nombre.
+
 ## 03/11/2026 · Inicio: carrusel de próximos enfrentamientos
 
 - **Tarjeta «Próximo enfrentamiento»**: con más de un enfrentamiento abierto, el más cercano va delante y el siguiente (hasta tres en total) queda por debajo, asomando por el lado, más pequeño y difuminado. Sirve sobre todo cuando un fin de semana hay partido de SNP y de LAPI.

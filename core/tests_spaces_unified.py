@@ -295,6 +295,19 @@ class UnifiedSpacesTests(TestCase):
         self.assertContains(chosen, "z-commit-list")
         self.assertEqual(chosen.context["spaces_chart"]["attendance"]["labels"], [season])
 
+    def test_my_statistics_set_bars_show_visible_count(self):
+        """Cada barra de sets de «Todas» lleva su competición, el % y «N de M» visibles, sin depender del cursor."""
+        from django.template.loader import render_to_string
+        comps = [{"code": "snp", "name": "SNP", "r": {"wins": 3, "total": 4, "pct": 75}},
+                 {"code": "lapi", "name": "LAPI", "r": {"wins": 0, "total": 0, "pct": None}}]
+        html = render_to_string("stats_mine.html", {
+            "set_compare": [{"label": "Set decisivo", "hint": "Tercer set.", "comps": comps}],
+            "rows": [], "mine_chips": [], "me": {}, "spaces_chart": {},
+        })
+        self.assertIn("3 de 4", html)
+        self.assertIn('class="z-set-count"', html)
+        self.assertIn("Sin casos", html)
+
     def test_my_statistics_of_one_competition_opens_own_sheet(self):
         me_snp, me_lapi = self._me()
         page = self.client.get(reverse("my_statistics") + "?espacio=lapi&season=all")
