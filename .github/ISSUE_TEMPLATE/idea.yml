@@ -1,0 +1,11 @@
+name: Idea
+description: Una idea o funcionalidad nueva. Pon la etiqueta «analizar» para que Claude haga el estudio.
+labels: ["idea"]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: Idea
+      description: Cuéntala como te salga, aunque esté incompleta. Puedes añadir preguntas (¿aporta valor?, ¿riesgos?...).
+    validations:
+      required: true
