@@ -120,6 +120,9 @@ class MatchForm(forms.ModelForm):
         # Lugar prerrellenado con el del equipo propio (juega en casa por defecto).
         if not self.is_bound and not self.initial.get('location') and self.own_team:
             self.initial['location'] = self.own_team.location
+        # Hora prerrellenada con la habitual del equipo propio (editable); en visitante la elige quien crea el partido.
+        if not self.is_bound and not self.instance.pk and not self.initial.get('start_time') and self.own_team:
+            self.initial['start_time'] = self.own_team.default_time
         for name in ('local', 'visiting'):
             field = self.fields[name]
             field.queryset = teams

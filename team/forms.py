@@ -9,6 +9,21 @@ from .models import Team, divisions_for
 GROUP_FIELDS = ('gender', 'country', 'division')
 
 
+def default_time_field():
+    """
+    Campo opcional «Hora habitual de juego» (24 h, HH:MM) del equipo propio. Lo comparten el alta del
+    club y la edición del equipo; el JS ``static/js/time-24h.js`` da formato a lo que se escribe.
+    """
+    return forms.TimeField(
+        label=_("Hora habitual de juego (opcional)"), required=False, input_formats=['%H:%M'],
+        error_messages={"invalid": _("Hora no válida. Usa el formato HH:MM.")},
+        help_text=_("Se propondrá al crear tus enfrentamientos como local; podrás cambiarla en cada uno."),
+        widget=forms.TimeInput(format='%H:%M', attrs={
+            'type': 'text', 'inputmode': 'numeric', 'placeholder': '20:30', 'maxlength': 5, 'autocomplete': 'off',
+            'class': 'form-control', 'pattern': '([01][0-9]|2[0-3]):[0-5][0-9]', 'data-time-24h': '',
+            'title': _('Hora en formato 24 h, por ejemplo 20:30')}))
+
+
 class Teamform (forms.ModelForm):
     """
     Alta y edición de un equipo. Categoría, nacionalidad y división son obligatorias, y el
@@ -17,7 +32,7 @@ class Teamform (forms.ModelForm):
     """
     class Meta:
         model = Team
-        fields = ['name', 'gender', 'country', 'division', 'location', 'photo', 'in_group']
+        fields = ['name', 'gender', 'country', 'division', 'location', 'photo', 'in_group', 'default_time']
 
     def __init__(self, *args, club=None, **kwargs):
         """
@@ -39,6 +54,11 @@ class Teamform (forms.ModelForm):
                     if getattr(own, name):
                         self.initial.setdefault(name, getattr(own, name))
         plain_text(self, 'name', 'location')
+        # La hora habitual solo tiene sentido en el equipo propio (juega en casa); los rivales no la llevan.
+        if self.instance.is_own:
+            self.fields['default_time'] = default_time_field()
+        else:
+            del self.fields['default_time']
         # Obligatorios en el formulario aunque los equipos antiguos los tengan vacíos.
         for name in ('gender', 'country', 'division'):
             self.fields[name].required = True

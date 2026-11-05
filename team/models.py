@@ -48,6 +48,9 @@ class Team(PublicIdModel):
     gender = models.CharField(_("Categoría"), max_length=1, choices=GENDERS, blank=True, default="")
     country = models.CharField(_("Nacionalidad del equipo"), max_length=2, choices=COUNTRIES, blank=True, default="")
     division = models.CharField(_("División"), max_length=10, choices=DIVISIONS, blank=True, default="")
+    # Hora a la que suele jugar el equipo propio en casa; precarga la hora de sus enfrentamientos como local.
+    # Vacía en los equipos creados antes de existir el campo y en los rivales.
+    default_time = models.TimeField(_("Hora habitual de juego"), null=True, blank=True)
 
     class Meta:
         constraints = [

@@ -433,7 +433,8 @@ def register_club(request):
                     player = {} if use_snp else player_form.cleaned_data
                     club = create_club(data["name"], data["location"], user, gender=data["gender"], country=data["country"],
                                        division=data["division"], player_name=player.get("name", ""),
-                                       player_last_name=player.get("last_name", ""), competition=data["competition"])
+                                       player_last_name=player.get("last_name", ""), competition=data["competition"],
+                                       default_time=data.get("default_time"))
                     # La cuenta se queda con el nombre del jugador si no tenía uno.
                     if player and not (user.first_name or user.last_name):
                         user.first_name, user.last_name = player["name"], player["last_name"]
