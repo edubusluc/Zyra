@@ -183,7 +183,14 @@ jobs:
                secciones: `## Idea original` (texto de Edu literal, sin tocar), `## Causa raíz`,
                `## Solución propuesta`, `## Riesgos`, `## Criterios de aceptación`, `## Dudas pendientes`.
                Responde en un comentario a cada pregunta que Edu haya hecho.
-            3. Decide si el arreglo es seguro y acotado. SI LO ES:
+            3. Regla obligatoria sobre las dudas: si la sección `## Dudas pendientes` contiene CUALQUIER
+               duda (decisión de producto, dato que falta o algo que no puedas comprobar en el código),
+               NO crees rama ni PR ni cambies ningún archivo. Escribe en un comentario las preguntas que
+               Edu debe responder, añade la etiqueta `needs-human` y termina. Solo si escribes
+               literalmente «Ninguna» en esa sección puedes continuar. Edu responderá comentando con
+               `@claude` y entonces se vuelve a ejecutar este análisis: quita `needs-human` al empezar si
+               la tiene (`gh issue edit N --remove-label needs-human`).
+               Si no hay dudas, decide además si el arreglo es seguro y acotado. SI LO ES:
                - Crea la rama `ai-fix/${{ github.event.issue.number || inputs.issue }}` desde la actual.
                - Implementa el cambio más pequeño razonable, siguiendo `CLAUDE.md` (docstrings en español,
                  recetas, `ZYRA_CONTEXT.md`/`docs/ai` si procede, novedades si es visible).
@@ -193,10 +200,11 @@ jobs:
                  `gh pr create --base main --reviewer edubusluc --assignee edubusluc`. La descripción debe
                  empezar con `Closes #${{ github.event.issue.number || inputs.issue }}` e incluir causa raíz, cambios,
                  tests ejecutados con su resultado real y limitaciones.
-               SI NO LO ES (ambigüedad, causa distinta de la esperada, cambio grande, o toca algo
+               SI NO ES SEGURO O ACOTADO (causa distinta de la esperada, cambio grande, o toca algo
                restringido): no crees rama ni PR; explica por qué en un comentario y añade la etiqueta
                `needs-human`.
-            4. Cambia las etiquetas: `gh issue edit N --remove-label analizar --add-label analizada`.
+            4. Cambia las etiquetas: `gh issue edit N --remove-label analizar --add-label analizada`
+               (también si has dejado `needs-human`, para que la cola de reintentos no lo repita).
 
             Restricciones: no modifiques `main` ni hagas merge. No toques autenticación/autorización,
             pagos, secretos, migraciones de datos ni dependencias (`requirements*.txt`). No toques código
