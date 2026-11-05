@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 05/11/2026 · Ficha del enfrentamiento: Previa y acta cerrada (fase 4)
+
+- **Previa en el idioma de la ficha**: victorias, empates y derrotas contra el rival con barra de proporción, forma de los últimos enfrentamientos, partidos a favor y en contra, mejor pareja y los marcadores de los últimos cruces con su resultado (Ganado, Perdido, Empatado). Los puntos de liga solo aparecen en competiciones de liga.
+- **Acta cerrada con el mismo escenario**: la convocatoria y los partidos jugados usan las mismas tarjetas con degradado que el resto de la ficha, el partido ganado se resalta en lima y los sets se leen más grandes.
+
 ## 05/11/2026 · Ficha del enfrentamiento: tarjeta enfocada (fase 3)
 
 - **Tarjeta enfocada**: la fase que tiene lista (Convocatoria con apuntados o convocados, Parejas con los partidos) ocupa el doble de ancho y de alto en escritorio y lleva la lista dentro; las demás fases se reparten a su lado. En móvil y tablet va primero, a todo el ancho.

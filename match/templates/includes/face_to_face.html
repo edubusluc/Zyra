@@ -1,0 +1,35 @@
+{% load i18n %}
+{# «Cara a cara» de la ficha (vista «previa»): balance con barra, forma, partidos y últimos enfrentamientos como marcadores. Recibe preview (data_analyse.rivals.rival_preview). #}
+{% if preview %}
+<aside class="z-f2f" aria-label="{% translate 'Previa del enfrentamiento' %}">
+  <h2 class="z-h2h-title">{% translate "Previa" %} <span>{{ match.rival_label }}</span></h2>
+  <div class="z-f2f-grid">
+    <div class="z-f2f-main">
+      <div class="z-h2h">
+        <p class="z-h2h-n is-win"><b>{{ preview.won }}</b><span>{% translate "Victorias" %}</span></p>
+        <p class="z-h2h-n"><b>{{ preview.drawn }}</b><span>{% translate "Empates" %}</span></p>
+        <p class="z-h2h-n is-loss"><b>{{ preview.lost }}</b><span>{% translate "Derrotas" %}</span></p>
+      </div>
+      <div class="z-h2h-bar" aria-hidden="true">{% if preview.won %}<i class="is-win" style="flex: {{ preview.won }}"></i>{% endif %}{% if preview.drawn %}<i class="is-draw" style="flex: {{ preview.drawn }}"></i>{% endif %}{% if preview.lost %}<i class="is-loss" style="flex: {{ preview.lost }}"></i>{% endif %}</div>
+      {% if preview.form %}
+      <p class="z-f2f-row"><span>{% translate "Últimos enfrentamientos" %}</span>
+        <span class="z-f2f-form" role="img" aria-label="{% for o in preview.form %}{% if o == 'V' %}{% translate 'ganado' %}{% elif o == 'D' %}{% translate 'perdido' %}{% else %}{% translate 'empatado' %}{% endif %}{% if not forloop.last %}, {% endif %}{% endfor %}">{% for o in preview.form %}<i class="{% if o == 'V' %}is-win{% elif o == 'D' %}is-loss{% endif %}"></i>{% endfor %}</span></p>
+      {% endif %}
+      {% if preview.points_for or preview.points_against %}
+      <p class="z-f2f-row"><span>{% translate "Partidos" %}</span><b><em class="is-win">{{ preview.points_for }}</em> · <em class="is-loss">{{ preview.points_against }}</em></b></p>
+      {% endif %}
+      {% if match.club.rules.league_type and preview.league_points %}
+      <p class="z-f2f-row"><span>{% translate "Puntos de liga" %}</span><b>{{ preview.league_points }}</b></p>
+      {% endif %}
+      {% if preview.best_pair %}<p class="z-h2h-best">{% translate "Mejor pareja contra ellos" %}: <strong>{{ preview.best_pair.p1.short_name }} + {{ preview.best_pair.p2.short_name }}</strong> ({% blocktranslate with w=preview.best_pair.wins n=preview.best_pair.played %}{{ w }} de {{ n }}{% endblocktranslate %})</p>{% endif %}
+    </div>
+    <ul class="z-h2h-last">
+      {% for e in preview.recent %}<li><a href="{% url 'call_for_match' e.match.public_id %}" title="{% translate 'Ver ese enfrentamiento' %}">
+        <small>{{ e.date|date:"d/m/Y" }}</small>
+        <b class="{% if e.outcome == 'V' %}is-win{% elif e.outcome == 'D' %}is-loss{% endif %}">{% if e.own is not None %}{{ e.own }}–{{ e.other }}{% else %}–{% endif %}</b>
+        <span class="{% if e.outcome == 'V' %}is-win{% elif e.outcome == 'D' %}is-loss{% endif %}">{% if e.outcome == 'V' %}{% translate "Ganado" %}{% elif e.outcome == 'D' %}{% translate "Perdido" %}{% else %}{% translate "Empatado" %}{% endif %}</span>
+      </a></li>{% endfor %}
+    </ul>
+  </div>
+</aside>
+{% endif %}

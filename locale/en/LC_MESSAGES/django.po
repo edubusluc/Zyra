@@ -15739,3 +15739,12 @@ msgid "Falta %(n)s día"
 msgid_plural "Faltan %(n)s días"
 msgstr[0] "%(n)s day to go"
 msgstr[1] "%(n)s days to go"
+
+msgid "Ganado"
+msgstr "Won"
+
+msgid "Perdido"
+msgstr "Lost"
+
+msgid "Empatado"
+msgstr "Drawn"

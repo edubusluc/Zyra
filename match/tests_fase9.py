@@ -85,7 +85,7 @@ class ListAndActaTests(UxBase):
         for login in (lambda: None, self.as_player):
             login()
             page = self.client.get(reverse("call_for_match", args=[open_match.public_id]))
-            self.assertContains(page, "z-preview")
+            self.assertContains(page, "z-f2f")
             self.assertContains(page, "Fases del enfrentamiento")
             self.assertNotContains(page, "Historial contra")
         self.assertEqual(Match.objects.count(), 2)
