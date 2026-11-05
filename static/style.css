@@ -2958,7 +2958,8 @@ a.z-hub-card:hover, a.z-hub-card:focus-visible { border-color: var(--z-lime); co
 .z-results-all .z-result-team { overflow: visible; text-overflow: clip; white-space: normal; overflow-wrap: anywhere; }
 .z-results-all .z-result-team small { overflow: visible; text-overflow: clip; white-space: normal; }
 .z-result-card { margin: 0; padding: 14px 16px; }
-.z-result-legend { float: none; width: auto; margin: 0 0 8px; padding: 0; font-size: var(--z-fs-sm); font-weight: 800; letter-spacing: .01em; }
+.z-result-legend { float: left; width: 100%; margin: 0 0 12px; padding: 0; font-size: var(--z-fs-sm); font-weight: 800; letter-spacing: .01em; }
+.z-result-legend + * { clear: both; }
 
 @media (max-width: 575.98px) {
 }

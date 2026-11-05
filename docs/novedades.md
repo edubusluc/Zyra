@@ -8,6 +8,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 - **Ganador del partido** en «Poner resultados»: la línea ya muestra solo el nombre del equipo, sin la etiqueta «Tu equipo» ni el nombre de la pareja pegados.
 - **Orden de juego**: los puntos SNP salen enteros y con el separador de miles de cada idioma (126 094 pts), igual que en el resto de Zyra.
 - **Sin notas visibles**: las reglas del set, la ayuda de la búsqueda de parejas, la explicación de la alineación sugerida, la del orden de juego y la de la lesión pasan a un «i» (al pasar el ratón o pulsar en móvil).
+- **Título del partido dentro de la tarjeta**: en «Poner resultados» el «Partido N · pts» y la etiqueta «Guardado» ya no se montan sobre el borde superior de la tarjeta.
 
 ## 05/11/2026 · Ficha del enfrentamiento: pulido final (fase 6)
 
