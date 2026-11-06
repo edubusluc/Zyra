@@ -3,6 +3,12 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 06/11/2026 · Escudo 3D más limpio con logos fragmentados
+
+- **El canto del escudo toma los colores del logo** (el mismo logo oscurecido) en lugar de una silueta gris, y es continuo de cara a dorso.
+- **El dorso ya no asoma por los huecos** entre las piezas de un logo fragmentado, que antes parecía un bloque; el grosor total baja un poco.
+- **Margen alrededor del logo** para que uno recortado al borde de la imagen no se vea como un bloque.
+
 ## 05/11/2026 · Ficha del enfrentamiento: interruptor «Vista 3D»
 
 - **Interruptor en la propia ficha** para pasar de la vista con escudos 3D a la vista clásica (la de antes del 3D) y volver. El ajuste se guarda por usuario y es el mismo que ya existía en «Mi perfil».

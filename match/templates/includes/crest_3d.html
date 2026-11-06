@@ -1,7 +1,7 @@
-{# Escudo del equipo extruido en 3D (CSS): 6 capas de canto (solo la silueta) entre la cara y el dorso. Recibe team (o None), name y side. #}
+{# Escudo del equipo extruido en 3D (CSS): 10 capas de canto (solo la silueta, tintada con los colores del escudo) entre la cara y el dorso. Recibe team (o None), name y side. #}
 <span class="z-crest-scene" aria-hidden="true">
   <span class="z-crest z-crest--{{ side }}">
-    {% for i in "012345" %}<span class="z-crest-layer z-crest-edge{% if team and team.photo %} is-photo{% endif %}" style="--i: {{ forloop.counter0 }}">{% if team and team.photo %}<img src="{{ team.photo.url }}" alt="" decoding="async">{% else %}<svg viewBox="0 0 100 104" focusable="false"><path d="M50 3 94 17V52C94 77 76 93 50 101 24 93 6 77 6 52V17Z"/></svg>{% endif %}</span>{% endfor %}
+    {% for i in "0123456789" %}<span class="z-crest-layer z-crest-edge{% if team and team.photo %} is-photo{% endif %}" style="--i: {{ forloop.counter0 }}">{% if team and team.photo %}<img src="{{ team.photo.url }}" alt="" decoding="async">{% else %}<svg viewBox="0 0 100 104" focusable="false"><path d="M50 3 94 17V52C94 77 76 93 50 101 24 93 6 77 6 52V17Z"/></svg>{% endif %}</span>{% endfor %}
     <span class="z-crest-layer z-crest-front">{% include 'includes/crest_art.html' %}</span>
     <span class="z-crest-layer z-crest-back">{% include 'includes/crest_art.html' %}</span>
   </span>
