@@ -19,7 +19,7 @@ TEAMS_PER_PAGE = 30
 BACK_TO_MATCH = "enfrentamiento"
 
 
-@spaces.management_view
+@spaces.consult_view
 @club_required
 @require_GET
 def list_team(request):

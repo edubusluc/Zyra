@@ -572,7 +572,7 @@ def switch_club(request):
     return redirect("home")
 
 
-@spaces.management_view
+@spaces.consult_view
 @club_required
 @require_safe
 def club_home(request):

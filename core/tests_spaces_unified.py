@@ -527,3 +527,30 @@ class StatsEmptySpaceTests(TestCase):
         page = self.client.get(reverse("team_statistics") + "?en=lapi")
         self.assertContains(page, "Cierra tu primer enfrentamiento y verás esto")
         self.assertNotContains(page, "aún no tiene")
+
+
+class CaptainAndPlayerClubTabTests(UnifiedSpacesTests):
+    """Pestaña Equipo del capitán en un club y jugador en otro: ve y puede dejar los dos."""
+
+    def test_club_tab_offers_both_clubs(self):
+        page = self.client.get(reverse("club_home"))
+        self.assertContains(page, "z-space-switcher")
+        self.assertContains(page, "Gladiadores LAPI")
+        self.assertEqual(self.client.session[SESSION_KEY], self.snp.id)
+
+    def test_club_tab_of_player_club_is_reachable(self):
+        page = self.client.get(reverse("club_home") + "?en=lapi")
+        self.assertEqual(self.client.session[SESSION_KEY], self.lapi.id)
+        self.assertContains(page, "Abandonar Gladiadores LAPI")
+        self.assertNotContains(page, "Miembros e invitaciones")
+
+    def test_rivals_of_player_club_are_not_redirected_to_managed_club(self):
+        page = self.client.get(reverse("list_teams") + "?en=lapi")
+        self.assertEqual(self.client.session[SESSION_KEY], self.lapi.id)
+        self.assertContains(page, "Padel Norte")
+
+    def test_can_leave_club_where_is_player(self):
+        self.client.get(reverse("club_home") + "?en=lapi")
+        self.client.post(reverse("leave_club"))
+        self.assertFalse(Membership.objects.filter(user=self.user, club=self.lapi).exists())
+        self.assertTrue(Membership.objects.filter(user=self.user, club=self.snp).exists())
