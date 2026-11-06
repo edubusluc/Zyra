@@ -31,6 +31,14 @@ def season_field(form, club, current=None):
     form.clean_joined_season = lambda: form.cleaned_data.get('joined_season') or current_season()
 
 
+def _photo_attrs(player):
+    """Atributos del campo de foto; con foto guardada, el recorte ofrece «Editar foto actual»."""
+    attrs = {"class": "form-control", "accept": "image/*"}
+    if player is not None and player.photo:
+        attrs["data-current-photo"] = player.photo.url
+    return attrs
+
+
 class PlayerForm (forms.ModelForm):
     """Alta de un jugador por el capitán: nombre, apellidos, posición, mano hábil, temporada de incorporación y foto."""
     class Meta:
@@ -66,7 +74,7 @@ class PlayerEditForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['position'].choices = with_placeholder(Player.POSITIONS)
         self.fields['skillfull_hand'].choices = with_placeholder(Player.HAND)
-        self.fields['photo'].widget = forms.FileInput(attrs={"class": "form-control", "accept": "image/*"})
+        self.fields['photo'].widget = forms.FileInput(attrs=_photo_attrs(self.instance))
         season_field(self, self.instance.club, self.instance.joined_season)
         player_name(self, 'name', 'last_name')
 
@@ -88,7 +96,7 @@ class OwnPlayerForm(forms.ModelForm):
         self.fields['skillfull_hand'].choices = with_placeholder(Player.HAND)
         for name, f in self.fields.items():
             f.widget.attrs["class"] = "form-control" if name == "photo" else "form-select"
-        self.fields['photo'].widget = forms.FileInput(attrs={"class": "form-control", "accept": "image/*"})
+        self.fields['photo'].widget = forms.FileInput(attrs=_photo_attrs(self.instance))
 
     def clean_photo(self):
         """Valida, reduce y pasa a WebP la foto antes de guardarla (core/images.py)."""
