@@ -2086,7 +2086,9 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 .z-pfx-vs { padding: 3px 12px; font: 400 1.2rem/1.2 var(--z-display); color: var(--z-ink); background: var(--z-lime); border-radius: 999px; white-space: nowrap; }
 .z-pfx-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: var(--z-fs-sm); color: var(--z-muted); }
 .z-pfx-open { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; font-size: var(--z-fs-sm); font-weight: 800; color: var(--z-lime); text-decoration: none; }
-@media (min-width: 992px) { .z-fixtures:has(.is-player) { grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr)); } }
+@media (min-width: 992px) { .z-fixtures:has(.is-player) { grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr)); }
+  /* Con tarjetas de jugador en columnas, las de capitán (fila de cuatro bloques) ocupan la fila entera. */
+  .z-fixtures:has(.is-player) > .z-fixture:not(.is-player) { grid-column: 1 / -1; } }
 @media (min-width: 992px) {
     .z-fixture { grid-template-columns: 64px minmax(0, 1fr) 320px 190px; grid-template-areas: "date main flow result"; gap: 18px; padding-right: 22px; }
     .z-fixture-result { flex-direction: column; align-items: flex-end; }
