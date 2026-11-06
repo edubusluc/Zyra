@@ -248,6 +248,9 @@
       el.className = 'z-avatar z-avatar--sm';
       el.dataset.photoPreview = '';
       el.hidden = true;
+    }
+    // La plantilla puede traer ya su propia vista previa (equipo con foto): aun así se monta el campo.
+    if (!input.closest('.z-crop-field')) {
       const row = document.createElement('div');
       row.className = 'z-crop-field';
       input.parentNode.insertBefore(row, input);
