@@ -4174,10 +4174,6 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
     .z-versus--stage .z-versus-team:nth-child(4) .z-crest-edge path { fill: #8FA0B5; }
     /* Canto de foto: el mismo logo oscurecido (lima oscuro en el de Zyra), no una silueta gris que ensucia. */
     .z-crest-edge.is-photo { filter: brightness(.55) saturate(1.1); }
-    /* Con foto el canto repite el logo entero: un grosor grande duplica los detalles finos (cresta, plumas) al girar, así que es mucho más fino. */
-    .z-crest--photo .z-crest-edge { --step: .8px; }
-    .z-crest--photo .z-crest-front { transform: translateZ(4.4px); }
-    .z-crest--photo .z-crest-back { transform: rotateY(180deg) translateZ(4.4px); }
     .z-crest.is-paused { animation-play-state: paused; }
     .z-crest-front { transform: translateZ(6px); backface-visibility: hidden; -webkit-backface-visibility: hidden; }
     /* Con backface-visibility oculta, el dorso no asoma por los huecos entre piezas de logos fragmentados. */
