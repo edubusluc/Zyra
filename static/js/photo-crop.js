@@ -260,7 +260,19 @@
       button.addEventListener('click', () => input.click());
       input.classList.add('z-file-native');
       input.tabIndex = -1;
-      row.append(el, button, input);
+      row.append(el, button);
+      // Con foto ya guardada (data-current-photo) se puede reabrir el encuadre sin subir otro archivo.
+      if (input.dataset.currentPhoto) {
+        const edit = document.createElement('button');
+        edit.type = 'button';
+        edit.className = 'btn btn-outline-secondary btn-sm';
+        edit.dataset.photoEdit = '';
+        edit.innerHTML = '<i class="fa-solid fa-crop-simple me-1" aria-hidden="true"></i>';
+        edit.append(gettext('Editar foto actual'));
+        edit.addEventListener('click', () => editCurrent(input));
+        row.append(edit);
+      }
+      row.append(input);
     }
     if (!('original' in el.dataset)) el.dataset.original = el.hidden ? '' : el.src;
     return el;
@@ -268,6 +280,9 @@
 
   function showPreview(input, file) {
     const el = preview(input);
+    // Con una foto nueva ya elegida, «Editar foto actual» deja de tener sentido.
+    const edit = (input.form || document).querySelector('[data-photo-edit]');
+    if (edit) edit.hidden = Boolean(file);
     if (el.dataset.objectUrl) URL.revokeObjectURL(el.dataset.objectUrl);
     delete el.dataset.objectUrl;
     if (file) {
@@ -291,6 +306,17 @@
     };
     loaded.onerror = () => URL.revokeObjectURL(loaded.src); // no es una imagen: lo dirá el servidor
     loaded.src = URL.createObjectURL(file);
+  }
+
+  // Descarga la foto guardada (mismo origen) y la abre en el popup como si se acabara de elegir.
+  function editCurrent(input) {
+    fetch(input.dataset.currentPhoto, { credentials: 'same-origin' })
+      .then((r) => (r.ok ? r.blob() : Promise.reject(new Error(String(r.status)))))
+      .then((blob) => {
+        const name = decodeURIComponent(input.dataset.currentPhoto.split('/').pop().split('?')[0]) || 'foto';
+        open(input, new File([blob], name, { type: blob.type || 'image/webp' }));
+      })
+      .catch(() => { /* sin red: no pasa nada, se puede subir otra foto */ });
   }
 
   inputs.forEach((input) => {

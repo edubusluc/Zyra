@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 06/11/2026 · Editar la foto actual del equipo
+
+- **Botón «Editar foto actual»** en los ajustes del equipo: reabre el popup de encuadre y zoom sobre la foto ya guardada, sin subir otro archivo.
+
 ## 06/11/2026 · Escudo 3D más limpio con logos fragmentados
 
 - **El canto del escudo toma los colores del logo** (el mismo logo oscurecido) en lugar de una silueta gris, y es continuo de cara a dorso.
