@@ -6,7 +6,7 @@ Todas las vistas trabajan solo con datos del club activo (``request.club``).
 from . import outcomes
 from core.competitions import competition_for
 from core import spaces
-from core.models import Invitation
+from core.models import Invitation, UserPreference
 from core.season_choice import ALL_SEASONS, choose_season
 from django.shortcuts import render, redirect, get_object_or_404
 from core import ratelimit
@@ -23,7 +23,7 @@ from .report_pdf import render_report
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_POST
-from django.utils.translation import gettext as _, gettext_lazy
+from django.utils.translation import gettext as _, gettext_lazy, ngettext
 import logging
 
 logger = logging.getLogger(__name__)
@@ -798,6 +798,77 @@ def match_kind(match):
     return {"title": title, "subtitle": match.club.rules.name}
 
 
+
+
+def stage_card(match, call, convocados, games, rows, min_call):
+    """Contenido de la tarjeta sobre el VS de la ficha: apuntados, convocados o parejas.
+
+    Sin convocatoria o con el acta cerrada no hay tarjeta (devuelve None): el marcador ya cuenta
+    el desenlace. ``rows`` son las parejas propias (``lineup_rows``) y ``min_call`` los apuntados
+    que pide la competición.
+    """
+    if not call or not match.draft_mode:
+        return None
+    if rows:
+        return {"kind": "pairs", "title": _("Parejas"), "meta": "", "rows": rows}
+    players = [{"name": p.short_name, "sub": p.is_sub, "me": getattr(p, "is_me", False)} for p in convocados]
+    if call.draft_mode:
+        return {"kind": "open", "title": _("Apuntados"),
+                "meta": _("%(n)s de %(total)s") % {"n": len(players), "total": min_call},
+                "pct": min(100, round(100 * len(players) / min_call)) if min_call else 0,
+                "players": players}
+    subs = sum(1 for p in players if p["sub"])
+    meta = _("%(n)s · %(s)s suplentes") % {"n": len(players), "s": subs} if subs else str(len(players))
+    return {"kind": "called", "title": _("Convocados"), "meta": meta,
+            "players": players}
+
+
+def stage_countdown(match, today):
+    """Texto de cuenta atrás bajo el VS («Hoy», «Mañana», «Faltan 3 días»); None si ya se jugó o el acta está cerrada."""
+    days = (match.start_date - today).days
+    if not match.draft_mode or days < 0:
+        return None
+    if days == 0:
+        return _("Hoy")
+    if days == 1:
+        return _("Mañana")
+    return ngettext("Falta %(n)s día", "Faltan %(n)s días", days) % {"n": days}
+
+
+def lineup_rows(match, games, me_id=None):
+    """Parejas propias de cada partido alineado, para la previa de la ficha: [{"n", "label"}].
+
+    Solo con el acta abierta (con ella cerrada, los resultados ya muestran las parejas) y sin
+    contar los partidos con pareja no presentada o sin jugadores propios. ``state`` es «win»,
+    «loss» o vacío si el partido aún no tiene resultado.
+    """
+    if not match.draft_mode:
+        return []
+    rows = []
+    for game in games:
+        label = game.local_pair_label if match.own_is_local else game.visiting_pair_label
+        if label and not game.no_show:
+            own = outcomes.WINNER_LOCAL if match.own_is_local else outcomes.WINNER_VISITING
+            state = "" if not game.winner else ("win" if game.winner == own else "loss")
+            own_ids = (game.player_1_local_id, game.player_2_local_id) if match.own_is_local else (game.player_1_visiting_id, game.player_2_visiting_id)
+            rows.append({"n": game.n_game, "label": label, "state": state, "me": bool(me_id) and me_id in own_ids})
+    return rows
+
+
+@club_required
+@require_POST
+def set_stage_view(request, match_id):
+    """Guarda si el usuario quiere la ficha con escudos 3D o la clásica y vuelve a la ficha.
+
+    Es el mismo ajuste que «Mi perfil»; ``on`` activa el 3D y cualquier otro valor lo desactiva.
+    Solo cambia la preferencia de quien lo pide.
+    """
+    match = club_match(request, match_id)
+    UserPreference.objects.update_or_create(
+        user=request.user, defaults={"match_stage_view": request.POST.get("stage") == "on"})
+    return redirect('call_for_match', match_id=match.public_id)
+
+
 @club_required
 def call_for_match(request, match_id):
     """Página de un enfrentamiento: convocatoria, partidos y resultados.
@@ -851,6 +922,10 @@ def call_for_match(request, match_id):
         "score_local": split_points(match.result_points)[0] if outcome else None,
         "score_visiting": split_points(match.result_points)[1] if outcome else None,
         "is_future": match.start_date > today,
+        "stage_view": UserPreference.match_stage_for(request.user),
+        "countdown": stage_countdown(match, today),
+        "stage_card": stage_card(match, call, convocados, games, lineup_rows(match, games, me.id if me else None),
+                                 competition_for(match).min_call_players),
         "my_status": my_status,
         "report_emails": ", ".join(admin_emails(request.club)) if call else "",
         "share_text": share_text(match, games) if not match.draft_mode else "",

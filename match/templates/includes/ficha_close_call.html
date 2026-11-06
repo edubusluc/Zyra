@@ -1,0 +1,8 @@
+{% load i18n %}
+{# Formulario de cerrar convocatoria; con card=True el botón es una tarjeta de acción. #}
+<form action="{% url 'close_call' match.public_id %}" method="post" data-loading-text="{% translate 'Cerrando la convocatoria…' %}"
+              data-confirm-title="{% translate 'Cerrar la convocatoria' %}" data-confirm-action="{% translate 'Cerrar y enviar' %}"{% if finals_call_short %} data-confirm-check="{% translate 'Convocarlos igualmente (la organización lo ha autorizado)' %}" data-confirm-check-name="force_finals"{% endif %}
+              data-confirm="{% blocktranslate count n=players_count %}Se cierra la convocatoria con {{ n }} convocado: ya no se podrá apuntar ni quitar a nadie.{% plural %}Se cierra la convocatoria con {{ n }} convocados: ya no se podrá apuntar ni quitar a nadie.{% endblocktranslate %} {% if report_emails %}{% blocktranslate with emails=report_emails %}Se enviará el informe PDF a: {{ emails }}{% endblocktranslate %}{% else %}{% translate 'Ningún capitán tiene email: no se enviará el informe.' %}{% endif %}">
+            {% csrf_token %}
+            {% if card %}<button type="submit" class="z-menu-card is-next"{% if phase.missing_players %} disabled aria-describedby="next-hint"{% endif %}><i class="z-menu-ic fa-solid fa-lock" aria-hidden="true"></i><b>{% translate "Cerrar convocatoria" %}</b><small>{{ figure }} · {% translate "siguiente paso" %}</small></button>{% else %}<button type="submit" class="btn btn-primary"{% if phase.missing_players %} disabled aria-describedby="next-hint"{% endif %}><i class="fa-solid fa-lock me-1" aria-hidden="true"></i> {% translate "Siguiente: Cerrar convocatoria" %}</button>{% endif %}
+        </form>

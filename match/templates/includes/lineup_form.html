@@ -6,7 +6,6 @@
 <form method="post" data-lineup class="z-lineup{% if not ordered %} z-lineup--unordered{% endif %}" {% if ordered %}data-lineup-ordered{% endif %} data-loading-text="{% translate 'Guardando las parejas…' %}">
     {% csrf_token %}
     <div class="z-lineup-main">
-        <p class="text-muted small mb-3">{% translate "Escribe para buscar un jugador o abre la lista con la flecha. Solo aparecen los convocados que aún no están en otra pareja." %}</p>
         <div class="z-lineup-suggest" data-suggest-url="{% url 'suggested_lineup' match.public_id %}">
             <div class="z-lineup-suggest-actions">
                 <button type="button" class="btn btn-primary btn-sm" data-suggest="A" {% if players|length < players_per_lineup %}disabled{% endif %}>
@@ -15,8 +14,10 @@
                 <button type="button" class="btn btn-outline-secondary btn-sm" data-suggest="B" hidden>
                     {% translate "Ver la alternativa" %}
                 </button>
+                {% blocktranslate with n=slots|length asvar suggest_tip %}Completa las {{ n }} parejas con la alineación que más opciones tiene de ganar según el historial del club. Después puedes cambiar cualquier pareja.{% endblocktranslate %}
+                {% include 'includes/stat_tip.html' with tip=suggest_tip %}
             </div>
-            <p class="small mb-0" data-suggest-info aria-live="polite">{% if players|length < players_per_lineup %}{% blocktranslate with n=players_per_lineup %}Hacen falta al menos {{ n }} convocados para sugerir una alineación.{% endblocktranslate %}{% else %}{% blocktranslate with n=slots|length %}Completa las {{ n }} parejas con la alineación que más opciones tiene de ganar según el historial del club. Después puedes cambiar cualquier pareja.{% endblocktranslate %}{% endif %}</p>
+            <p class="small mb-0" data-suggest-info aria-live="polite">{% if players|length < players_per_lineup %}{% blocktranslate with n=players_per_lineup %}Hacen falta al menos {{ n }} convocados para sugerir una alineación.{% endblocktranslate %}{% endif %}</p>
         </div>
         <div class="z-lineup-pairs">
             {% for slot in slots %}
@@ -45,8 +46,7 @@
 
     {% if ordered %}
     <aside class="z-lineup-side pair-order-container" aria-labelledby="pair-order-title">
-        <h2 id="pair-order-title">{% translate "Orden de juego" %}</h2>
-        <p class="text-muted small mb-2">{% translate "Se ordena por la suma de puntos SNP: las dos parejas más fuertes juegan los partidos de 3 puntos." %}</p>
+        <div class="z-title-tip"><h2 id="pair-order-title">{% translate "Orden de juego" %}</h2>{% translate "Se ordena por la suma de puntos SNP: las dos parejas más fuertes juegan los partidos de 3 puntos." as order_tip %}{% include 'includes/stat_tip.html' with tip=order_tip %}<button type="button" class="z-lineup-side-toggle" data-order-toggle aria-expanded="false" aria-controls="pair-order-list"><span class="visually-hidden">{% translate "Mostrar el orden de juego" %}</span><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button></div>
         <ol id="pair-order-list" aria-live="polite"></ol>
     </aside>
     {% endif %}
@@ -60,3 +60,4 @@
 {% endwith %}
 <script src="{% static 'js/player-picker.js' %}" defer></script>
 <script src="{% static 'js/lineup.js' %}" defer></script>
+<script src="{% static 'js/stats-tips.js' %}" defer></script>

@@ -1,0 +1,32 @@
+{% load i18n %}
+{# Menú «Más» de la ficha (fecha, informe, no presentado, eliminar); con card=True es la última tarjeta de acción. #}
+<details class="z-more" data-filter-menu>
+        {% if card %}<summary class="z-menu-card"><i class="z-menu-ic fa-solid fa-ellipsis" aria-hidden="true"></i><b>{% translate "Más" %}</b><small>{% translate "Fecha, informe, eliminar" %}</small></summary>{% else %}<summary class="btn btn-secondary">{% translate "Más" %} <i class="fa-solid fa-ellipsis" aria-hidden="true"></i></summary>{% endif %}
+        <ul>
+            {% if call_for_match %}
+            <li class="z-more-title" role="presentation">{% translate "Convocatoria" %}</li>
+            {% if match.draft_mode %}<li><a href="{% url 'edit_call' call_for_match.public_id %}"><i class="fa-solid fa-pen" aria-hidden="true"></i> {% translate "Editar convocatoria" %}</a></li>{% endif %}
+            {% if match.draft_mode and game_for_match %}<li><a href="{% url 'edit_games_match' match.public_id %}"><i class="fa-solid fa-shuffle" aria-hidden="true"></i> {% translate "Editar parejas" %}</a></li>{% endif %}
+            <li><a href="{% url 'view_call_log' call_for_match.public_id %}"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> {% translate "Advertencias y cambios" %}</a></li>
+            <li><a href="{% url 'call_report' match.public_id %}" target="_blank" rel="noopener"><i class="fa-solid fa-file-pdf" aria-hidden="true"></i> {% translate "Informe PDF" %}</a></li>
+            {% if not call_for_match.draft_mode %}
+            <li><form action="{% url 'resend_call_report' match.public_id %}" method="post" data-loading-text="{% translate 'Enviando el informe…' %}"
+                      data-confirm-title="{% translate 'Reenviar el informe' %}" data-confirm-action="{% translate 'Reenviar' %}"
+                      data-confirm="{% if report_emails %}{% blocktranslate with emails=report_emails %}Se enviará de nuevo el informe PDF a: {{ emails }}{% endblocktranslate %}{% else %}{% translate 'Ningún capitán tiene email: no se enviará el informe. Añádelo en «Mi perfil».' %}{% endif %}">{% csrf_token %}<button type="submit"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i> {% translate "Reenviar informe" %}</button></form></li>
+            {% endif %}
+            {% endif %}
+            {% if match.draft_mode and match.club.rules.no_show and not match.is_friendly %}
+            <li class="z-more-title" role="presentation">{% translate "Resultado especial" %}</li>
+            {% blocktranslate asvar t_games %}Se borrarán las parejas y los resultados apuntados.{% endblocktranslate %}
+            <li><form action="{% url 'mark_no_show' match.public_id %}" method="post" data-confirm-title="{% translate 'No se presentó el rival' %}" data-confirm-action="{% translate 'Marcar no presentado' %}"
+                      data-confirm="{% if match.club.rules.league_type %}{% blocktranslate with team=match.rival_label %}{{ team }} no se presentó: el acta se cierra, ganáis todos los partidos (3-0) y sumáis los puntos de liga de ganar sin ceder partidos. No cuenta para jugadores, parejas ni asistencia.{% endblocktranslate %}{% else %}{% blocktranslate with team=match.rival_label %}{{ team }} no se presentó: el acta se cierra y ganáis todos los partidos (12-0). No cuenta para jugadores, parejas ni asistencia.{% endblocktranslate %}{% endif %}{% if games_count %} {{ t_games }}{% endif %}" data-loading-text="{% translate 'Guardando…' %}">{% csrf_token %}<input type="hidden" name="side" value="rival"><button type="submit"><i class="fa-solid fa-user-slash" aria-hidden="true"></i> {% translate "No se presentó el rival" %}</button></form></li>
+            <li><form action="{% url 'mark_no_show' match.public_id %}" method="post" data-confirm-title="{% translate 'No nos presentamos' %}" data-confirm-action="{% translate 'Marcar no presentado' %}" data-confirm-danger
+                      data-confirm="{% if match.club.rules.league_type %}{% translate 'Tu equipo no se presentó: el acta se cierra, el rival gana todos los partidos (3-0) y tu equipo suma 0 puntos de liga. No cuenta para jugadores, parejas ni asistencia.' %}{% else %}{% translate 'Tu equipo no se presentó: el acta se cierra y el rival gana todos los partidos (12-0). No cuenta para jugadores, parejas ni asistencia.' %}{% endif %}{% if games_count %} {{ t_games }}{% endif %}" data-loading-text="{% translate 'Guardando…' %}">{% csrf_token %}<input type="hidden" name="side" value="own"><button type="submit"><i class="fa-solid fa-user-slash" aria-hidden="true"></i> {% translate "No nos presentamos" %}</button></form></li>
+            {% endif %}
+            {% if match.draft_mode %}
+            <li class="z-more-title" role="presentation">{% translate "Enfrentamiento" %}</li>
+            <li><a href="{% url 'edit_match_date' match.public_id %}"><i class="fa-regular fa-calendar" aria-hidden="true"></i> {% translate "Cambiar fecha" %}</a></li>
+            <li class="z-more-danger"><a href="{% url 'delete_match' match.public_id %}?desde=ficha" class="is-danger"><i class="fa-solid fa-trash" aria-hidden="true"></i> {% translate "Eliminar enfrentamiento" %}</a></li>
+            {% endif %}
+        </ul>
+    </details>
