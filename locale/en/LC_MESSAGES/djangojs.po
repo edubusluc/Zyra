@@ -171,6 +171,10 @@ msgstr "Photo preview"
 msgid "Subir foto"
 msgstr "Upload photo"
 
+#: static/js/photo-crop.js
+msgid "Editar foto actual"
+msgstr "Edit current photo"
+
 #: static/js/player-picker.js:44
 msgid "Buscar..."
 msgstr "Search..."

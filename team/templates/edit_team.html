@@ -65,7 +65,7 @@
                 <label for="photo" class="form-label">{% translate "Foto" %}</label>
                 <div class="d-flex align-items-center gap-3">
                     <img src="{% if team.photo %}{{ team.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="{% translate 'Escudo actual del equipo' %}" class="z-avatar z-avatar--sm" data-photo-preview>
-                    <input type="file" id="photo" name="photo" class="form-control" accept="image/*">
+                    <input type="file" id="photo" name="photo" class="form-control" accept="image/*"{% if team.photo %} data-current-photo="{{ team.photo.url }}"{% endif %}>
                 </div>
                 <small class="form-text text-muted">{% translate "Dejar vacío si no deseas cambiar la foto." %}</small>
             </div>
