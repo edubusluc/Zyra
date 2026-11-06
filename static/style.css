@@ -4161,15 +4161,19 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
     .z-crest { position: relative; display: block; width: 100%; height: 100%; transform-style: preserve-3d; animation: z-crest-spin 26s linear infinite; }
     .z-crest--visiting { animation-direction: reverse; }
     .z-crest-layer { position: absolute; inset: 0; display: grid; place-items: center; }
-    .z-crest-layer img, .z-crest-layer svg { width: 100%; height: 100%; object-fit: contain; overflow: visible; }
-    .z-crest-edge { transform: translateZ(calc((var(--i) - 2.5) * 1.7px)); }
+    .z-crest-layer svg { width: 100%; height: 100%; object-fit: contain; overflow: visible; }
+    /* Las fotos de escudo dejan un margen para que un logo recortado al borde no parezca un bloque. */
+    .z-crest-layer img { width: 92%; height: 92%; object-fit: contain; }
+    /* Canto continuo de dorso a cara (±5,4px entre dorso -6px y cara +6px), sin huecos entre capas. */
+    .z-crest-edge { transform: translateZ(calc((var(--i) - 4.5) * 1.2px)); }
     .z-crest-edge path { fill: #9FA39A; }
     .z-versus--stage .z-versus-team:nth-child(4) .z-crest-edge path { fill: #8FA0B5; }
-    .z-crest-edge.is-photo { filter: brightness(0) invert(.62); }
-    .z-versus--stage .z-versus-team:nth-child(4) .z-crest-edge.is-photo { filter: brightness(0) invert(.78) sepia(.2) hue-rotate(180deg); }
+    /* Canto de foto: el mismo logo oscurecido (lima oscuro en el de Zyra), no una silueta gris que ensucia. */
+    .z-crest-edge.is-photo { filter: brightness(.5) saturate(.9); }
     .z-crest.is-paused { animation-play-state: paused; }
-    .z-crest-front { transform: translateZ(8px); }
-    .z-crest-back { transform: rotateY(180deg) translateZ(8px); }
+    .z-crest-front { transform: translateZ(6px); backface-visibility: hidden; }
+    /* Con backface-visibility oculta, el dorso no asoma por los huecos entre piezas de logos fragmentados. */
+    .z-crest-back { transform: rotateY(180deg) translateZ(6px); backface-visibility: hidden; }
     /* Escudo de reserva (equipo sin foto): tono propio derivado del nombre, siglas en blanco */
     .z-crest-shield { fill: hsl(var(--h, 90) 24% 22%); stroke: hsl(var(--h, 90) 30% 72%); stroke-width: 3; }
     .z-crest-initials { font: 400 34px var(--z-display); fill: #FFFFFF; }
