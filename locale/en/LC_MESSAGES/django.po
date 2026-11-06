@@ -14742,8 +14742,8 @@ msgid "¿En qué equipo quieres crear el jugador?"
 msgstr "Which team do you want to create the player in?"
 
 #: match/templates/list_match.html
-msgid "Requieren acción"
-msgstr "Need action"
+msgid "Pendientes de acción"
+msgstr "Pending action"
 
 #: match/templates/list_match.html
 msgid "Próximos"

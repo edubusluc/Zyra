@@ -461,7 +461,7 @@ class CreationInSpaceTests(TestCase):
         order = [m.id for m in page.context["matches"]]
         self.assertEqual(order, [overdue.id, soon.id, later.id, played.id])
         self.assertEqual([m.group for m in page.context["matches"]], ["action", "upcoming", "upcoming", "played"])
-        for heading in ("Requieren acción", "Próximos", "Jugados"):
+        for heading in ("Pendientes de acción", "Próximos", "Jugados"):
             self.assertContains(page, heading)
 
     def test_players_do_not_see_the_action_group(self):
@@ -554,3 +554,18 @@ class CaptainAndPlayerClubTabTests(UnifiedSpacesTests):
         self.client.post(reverse("leave_club"))
         self.assertFalse(Membership.objects.filter(user=self.user, club=self.lapi).exists())
         self.assertTrue(Membership.objects.filter(user=self.user, club=self.snp).exists())
+
+
+class DualRoleMatchListGroupsTests(UnifiedSpacesTests):
+    """Capitán en SNP y jugador en LAPI: lo que gestiona queda pendiente hasta cerrar el acta; lo de jugador es «Próximos»."""
+
+    def test_open_managed_matches_stay_pending_until_closed(self):
+        today = datetime.date.today()
+        closed = Match.objects.create(club=self.snp, local=self.snp.own_team, visiting=self.snp_match.visiting,
+                                      draft_mode=False, start_date=today - datetime.timedelta(days=9))
+        page = self.client.get(reverse("list_match") + "?season=all")
+        groups = {m.id: m.group for m in page.context["matches"]}
+        self.assertEqual(groups[self.snp_match.id], "action")    # gestiona, fecha futura
+        self.assertEqual(groups[self.lapi_match.id], "upcoming")  # solo juega
+        self.assertEqual(groups[closed.id], "played")
+        self.assertContains(page, "Pendientes de acción")

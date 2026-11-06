@@ -83,7 +83,7 @@ lugar y convocados, recorrido de cuatro pasos (convocatoria, parejas, resultados
 o estado. Toda la tarjeta es pulsable.{% endcomment %}
 <ol class="z-fixtures">
     {% for m in matches %}
-    {% ifchanged m.group %}<li class="z-fixtures-head z-fixtures-head--{{ m.group }}"><h2>{% if m.group == 'action' %}{% translate "Requieren acción" %}{% elif m.group == 'upcoming' %}{% translate "Próximos" %}{% else %}{% translate "Jugados" %}{% endif %}</h2></li>{% endifchanged %}
+    {% ifchanged m.group %}<li class="z-fixtures-head z-fixtures-head--{{ m.group }}"><h2>{% if m.group == 'action' %}{% translate "Pendientes de acción" %}{% elif m.group == 'upcoming' %}{% translate "Próximos" %}{% else %}{% translate "Jugados" %}{% endif %}</h2></li>{% endifchanged %}
     <li class="z-fixture{% if m.outcome %} z-fixture--closed{% elif not m.can_manage %} is-player{% endif %} {% if m.outcome == 'V' %}is-win{% elif m.outcome == 'D' %}is-loss{% elif m.outcome == 'E' %}is-draw{% else %}is-pending{% endif %}" data-comp="{{ m.club.competition }}">
         {% if m.outcome %}
         {# EST-038: el enfrentamiento cerrado, en una línea y con el resultado desde nuestro equipo (igual para capitán y jugador). #}
