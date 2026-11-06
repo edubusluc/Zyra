@@ -5,7 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 06/11/2026 · Editar la foto actual del equipo
 
-- **Botón «Editar foto actual»** en los ajustes del equipo: reabre el popup de encuadre y zoom sobre la foto ya guardada, sin subir otro archivo.
+- **Botón «Editar foto actual»** en los ajustes del equipo: reabre el popup de encuadre y zoom sobre la foto ya guardada, sin subir otro archivo. Corregido: el formulario de equipo no montaba el campo de foto con «Subir foto» (el selector nativo seguía a la vista) y ahora sí.
 
 ## 06/11/2026 · Escudo 3D más limpio con logos fragmentados
 
