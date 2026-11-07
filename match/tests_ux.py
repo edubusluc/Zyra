@@ -440,6 +440,17 @@ class FichaPreviewTests(UxBase):
         self.assertContains(page, "z-crest-edge", count=20)
         self.assertNotContains(page, "z-crest-edge\" style=\"--i: 10")
 
+    def test_stage_teams_share_rows_so_crests_names_and_roles_align(self):
+        """Escudo, nombre y cinta de rol de local y visitante comparten filas (subgrid) y el escudo con foto
+        y el de iniciales ocupan el mismo hueco, sea cual sea la longitud del nombre o del rol."""
+        css = (Path(settings.BASE_DIR) / "static" / "style.css").read_text(encoding="utf-8")
+        self.assertRegex(css, r"\.z-versus--stage \.z-versus-team,\s*\.z-versus--stage \.z-versus-team:last-child \{[^}]*grid-template-rows: subgrid")
+        self.assertRegex(css, r"\.z-versus--stage \.z-versus-name \{[^}]*grid-template-rows: subgrid")
+        self.assertRegex(css, r"\.z-crest-layer svg \{ width: 92%; height: 92%")
+        self.assertRegex(css, r"\.z-crest-layer img \{ width: 92%; height: 92%")
+        page = self.ficha(self.match(FUTURE))
+        self.assertContains(page, "z-versus-name", count=2)
+
     def test_no_card_without_a_call(self):
         self.assertNotContains(self.ficha(self.match(FUTURE)), "z-stage-card")
 

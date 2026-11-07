@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 07/11/2026 · Escudos y nombres alineados en la ficha del móvil
+
+- **Corregido:** en la cabecera de la ficha (vista 3D), escudos, nombres y cintas «Local · división» / «Visitante · división» ya no se desalinean entre sí: cada pieza ocupa la misma fila para los dos equipos, aunque uno tenga logo y otro iniciales, el nombre ocupe 1, 2 o más líneas o la división sea larga. El escudo con foto y el de iniciales miden lo mismo.
+
 ## 07/11/2026 · Editar la hora del enfrentamiento
 
 - **Corregido:** el formulario «Cambiar fecha» solo permitía cambiar el día. Ahora es «Cambiar fecha y hora»: se puede modificar o vaciar la hora (HH:MM, opcional) además de la fecha, mientras el acta siga abierta.

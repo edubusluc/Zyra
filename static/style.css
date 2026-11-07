@@ -4108,27 +4108,31 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
         linear-gradient(90deg, transparent 6%, rgba(var(--z-lime-rgb), .7) 50%, transparent 94%) top / 100% 1px no-repeat,
         linear-gradient(180deg, transparent, rgba(255, 255, 255, .5) 30%, rgba(255, 255, 255, .22)) center / 3px 100% no-repeat,
         linear-gradient(90deg, transparent, rgba(var(--z-lime-rgb), .07), transparent) center / 56px 100% no-repeat; }
+    /* Alineación local/visitante: cada equipo ocupa tres filas de la rejilla del escenario (escudo, nombre,
+       cinta de rol) y las comparte con el otro mediante subgrid, así que la fila de cada pieza mide lo que
+       mida la más alta de las dos (nombre de 1 o 3 líneas, rol en 1 o 2 líneas) y escudos, nombres y
+       cintas quedan a la misma altura en cualquier combinación. */
     .z-versus--stage .z-versus-team,
-    .z-versus--stage .z-versus-team:last-child { display: grid; justify-items: center; gap: 10px; text-align: center; }
-    .z-versus--stage .z-versus-name { display: block; text-align: center; text-shadow: 0 2px 0 rgba(0, 0, 0, .6), 0 0 18px rgba(0, 0, 0, .8); }
+    .z-versus--stage .z-versus-team:last-child { display: grid; grid-template-rows: subgrid; grid-row: span 3; row-gap: 0; justify-items: center; text-align: center; min-width: 0; }
+    .z-versus--stage .z-crest-scene { align-self: center; margin-bottom: 10px; }
+    .z-versus--stage .z-versus-name { display: grid; grid-template-rows: subgrid; grid-row: span 2; justify-items: stretch; align-items: end; text-align: center; min-width: 0; text-shadow: 0 2px 0 rgba(0, 0, 0, .6), 0 0 18px rgba(0, 0, 0, .8); }
     /* «Local» y «Visitante» como cinta bajo el nombre: lima el local, acero el visitante */
-    .z-versus--stage .z-versus-name small { display: table; margin: 8px auto 0; padding: 3px 12px; font-size: var(--z-fs-xs); color: var(--z-text); background: rgba(0, 0, 0, .4); border-top: 2px solid var(--z-lime); text-shadow: none; }
+    .z-versus--stage .z-versus-name small { display: flex; align-items: center; justify-content: center; align-self: stretch; justify-self: center; box-sizing: border-box; max-width: 100%; margin: 8px 0 0; padding: 3px 12px; font-size: var(--z-fs-xs); color: var(--z-text); background: rgba(0, 0, 0, .4); border-top: 2px solid var(--z-lime); text-shadow: none; }
     .z-versus--stage .z-versus-team:nth-child(4) .z-versus-name small { border-top-color: var(--z-stage-steel); }
     .z-versus--stage .z-versus-vs { color: var(--z-lime); }
     .z-versus--stage .z-versus-vs.is-loss { color: var(--z-danger); }
     .z-versus--stage .z-versus-vs.is-draw { color: #FFFFFF; }
     .z-versus--stage .z-versus-mid { grid-column: 1 / -1; grid-row: 2; }
-    .z-versus--stage > .z-versus-team:nth-child(2) { grid-column: 1; grid-row: 3; }
-    .z-versus--stage > .z-versus-team:nth-child(4) { grid-column: 2; grid-row: 3; }
+    .z-versus--stage > .z-versus-team:nth-child(2) { grid-column: 1; grid-row: 3 / span 3; }
+    .z-versus--stage > .z-versus-team:nth-child(4) { grid-column: 2; grid-row: 3 / span 3; }
     .z-ficha-top.z-ficha-top--stage { grid-template-columns: minmax(0, 1fr); }
     @media (min-width: 768px) {
         .z-versus--stage { grid-template-columns: minmax(0, 1fr) minmax(150px, 260px) minmax(0, 1fr); aspect-ratio: auto; padding: 22px 4% 34px; align-items: center; }
-        .z-versus--stage .z-versus-mid { position: static; transform: none; padding: 0; background: none; display: grid; justify-items: center; grid-column: 2; grid-row: 2; }
-        .z-versus--stage > .z-versus-team:nth-child(2) { grid-column: 1; grid-row: 2; }
-        .z-versus--stage > .z-versus-team:nth-child(4) { grid-column: 3; grid-row: 2; }
+        .z-versus--stage .z-versus-mid { position: static; transform: none; padding: 0; background: none; display: grid; justify-items: center; grid-column: 2; }
+        .z-versus--stage .z-versus-mid { grid-row: 2 / span 3; align-self: center; }
+        .z-versus--stage > .z-versus-team:nth-child(2) { grid-column: 1; grid-row: 2 / span 3; }
+        .z-versus--stage > .z-versus-team:nth-child(4) { grid-column: 3; grid-row: 2 / span 3; }
         .z-versus--stage .z-versus-team:first-child, .z-versus--stage .z-versus-team:last-child { padding: 0; }
-        .z-versus--stage .z-versus-team { align-content: start; }
-        .z-versus--stage .z-versus-name { min-height: calc(2.04em + 30px); }
     }
     @media (min-width: 768px) and (max-width: 991px) {
         .z-versus--stage .z-crest-scene { --crest: clamp(120px, 23cqi, 190px); }
@@ -4163,7 +4167,7 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
     .z-crest { position: relative; display: block; width: 100%; height: 100%; transform-style: preserve-3d; animation: z-crest-spin 26s linear infinite; }
     .z-crest--visiting { animation-direction: reverse; }
     .z-crest-layer { position: absolute; inset: 0; display: grid; place-items: center; }
-    .z-crest-layer svg { width: 100%; height: 100%; object-fit: contain; overflow: visible; }
+    .z-crest-layer svg { width: 92%; height: 92%; object-fit: contain; overflow: visible; }
     /* Las fotos de escudo dejan un margen para que un logo recortado al borde no parezca un bloque. */
     .z-crest-layer img { width: 92%; height: 92%; object-fit: contain; }
     /* Canto continuo de dorso a cara (±5,4px entre dorso -6px y cara +6px), sin huecos entre capas. */
