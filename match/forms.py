@@ -295,16 +295,17 @@ class MatchForm(forms.ModelForm):
         return match
 
 class MatchDateForm(forms.ModelForm):
-    """Cambio de la fecha de un partido ya creado (mismo campo, formato y mensajes que el alta).
+    """Cambio de la fecha y la hora de un partido ya creado (mismos campos, formato y mensajes que el alta).
 
-    Al cambiar la fecha se recalcula la temporada, que se deriva de ella.
+    Al cambiar la fecha se recalcula la temporada, que se deriva de ella. La hora es opcional.
     """
 
     class Meta:
         model = Match
-        fields = ['start_date']
-        labels = {'start_date': _('Fecha')}
-        widgets = {'start_date': MatchForm.Meta.widgets['start_date']}
+        fields = ['start_date', 'start_time']
+        labels = {'start_date': _('Fecha'), 'start_time': _('Hora (opcional)')}
+        widgets = {'start_date': MatchForm.Meta.widgets['start_date'],
+                   'start_time': MatchForm.Meta.widgets['start_time']}
 
     def __init__(self, *args, **kwargs):
         """Fija el formato ISO y el mensaje de fecha no válida, como en ``MatchForm``."""
@@ -312,9 +313,12 @@ class MatchDateForm(forms.ModelForm):
         date_error = _("Fecha no válida. Usa el formato AAAA-MM-DD.")
         self.fields['start_date'].input_formats = ['%Y-%m-%d']
         self.fields['start_date'].error_messages.update(required=date_error, invalid=date_error)
+        self.fields['start_time'].required = False
+        self.fields['start_time'].input_formats = ['%H:%M']
+        self.fields['start_time'].error_messages.update(invalid=_("Hora no válida. Usa el formato HH:MM."))
 
     def save(self, commit=True):
-        """Guarda la fecha y, si cambió, deja que ``Match.save`` recalcule la temporada."""
+        """Guarda la fecha y la hora y, si cambió, deja que ``Match.save`` recalcule la temporada."""
         match = super().save(commit=False)
         if 'start_date' in self.changed_data:
             match.season = ""

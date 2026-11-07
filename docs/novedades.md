@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 07/11/2026 · Editar la hora del enfrentamiento
+
+- **Corregido:** el formulario «Cambiar fecha» solo permitía cambiar el día. Ahora es «Cambiar fecha y hora»: se puede modificar o vaciar la hora (HH:MM, opcional) además de la fecha, mientras el acta siga abierta.
+
 ## 07/11/2026 · Abrir enfrentamientos jugados en el móvil
 
 - **Corregido:** en la lista de Enfrentamientos, al pulsar un enfrentamiento ya jugado desde el móvil no se abría la ficha (el enlace de la fila estaba oculto). Ahora toda la fila es pulsable, igual que en ordenador, donde ya funcionaba.

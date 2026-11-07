@@ -683,6 +683,29 @@ class EditMatchDateTests(TestCase):
         self.assertEqual(self.match.start_date, datetime.date(2026, 11, 15))
         self.assertEqual(self.match.season, "2026-2027")
 
+    def test_form_shows_time_field_with_current_value(self):
+        Match.objects.filter(pk=self.match.pk).update(start_time=datetime.time(20, 30))
+        self.assertContains(self.client.get(self.url), 'name="start_time"')
+        self.assertContains(self.client.get(self.url), 'value="20:30"')
+
+    def test_changes_time_keeping_date(self):
+        self.client.post(self.url, {"start_date": "2026-03-01", "start_time": "19:15"})
+        self.match.refresh_from_db()
+        self.assertEqual(self.match.start_time, datetime.time(19, 15))
+        self.assertEqual(self.match.start_date, datetime.date(2026, 3, 1))
+
+    def test_time_can_be_cleared(self):
+        Match.objects.filter(pk=self.match.pk).update(start_time=datetime.time(20, 30))
+        self.client.post(self.url, {"start_date": "2026-03-01", "start_time": ""})
+        self.match.refresh_from_db()
+        self.assertIsNone(self.match.start_time)
+
+    def test_invalid_time_shows_error(self):
+        response = self.client.post(self.url, {"start_date": "2026-03-01", "start_time": "25:99"})
+        self.assertContains(response, "Hora no válida")
+        self.match.refresh_from_db()
+        self.assertIsNone(self.match.start_time)
+
     def test_invalid_date_shows_error(self):
         response = self.client.post(self.url, {"start_date": "15/11/2026"})
         self.assertContains(response, "Fecha no válida")

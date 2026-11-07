@@ -11561,8 +11561,8 @@ msgstr[1] "%(n)s league points"
 #: match/templates/call_for_match.html:140
 #: match/templates/edit_match_date.html:3
 #: match/templates/edit_match_date.html:7
-msgid "Cambiar fecha"
-msgstr "Change date"
+msgid "Cambiar fecha y hora"
+msgstr "Change date and time"
 
 #: match/templates/call_for_match.html:36
 msgid "Fases del enfrentamiento"
@@ -12154,8 +12154,8 @@ msgstr ""
 "<strong>%(visiting)s</strong>."
 
 #: match/templates/edit_match_date.html:10
-msgid "Guardando la fecha…"
-msgstr "Saving the date…"
+msgid "Guardando los cambios…"
+msgstr "Saving changes…"
 
 #: match/templates/edit_match_date.html:14
 msgid ""
@@ -12166,8 +12166,8 @@ msgstr ""
 "up report, resend it so it shows the right date."
 
 #: match/templates/edit_match_date.html:16
-msgid "Guardar fecha"
-msgstr "Save date"
+msgid "Guardar cambios"
+msgstr "Save changes"
 
 #: match/templates/edit_result.html:6
 msgid "Actualizar resultado"
@@ -12741,12 +12741,12 @@ msgid "Enfrentamiento creado."
 msgstr "Fixture created."
 
 #: match/views.py:387
-msgid "Reabre el acta para cambiar la fecha del enfrentamiento."
-msgstr "Reopen the match sheet to change the fixture date."
+msgid "Reabre el acta para cambiar la fecha y la hora del enfrentamiento."
+msgstr "Reopen the match sheet to change the fixture date and time."
 
 #: match/views.py:392
-msgid "Fecha del enfrentamiento actualizada."
-msgstr "Fixture date updated."
+msgid "Fecha y hora del enfrentamiento actualizadas."
+msgstr "Fixture date and time updated."
 
 #: match/views.py:413
 msgid "Enfrentamiento eliminado."
