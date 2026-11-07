@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 07/11/2026 · Abrir enfrentamientos jugados en el móvil
+
+- **Corregido:** en la lista de Enfrentamientos, al pulsar un enfrentamiento ya jugado desde el móvil no se abría la ficha (el enlace de la fila estaba oculto). Ahora toda la fila es pulsable, igual que en ordenador, donde ya funcionaba.
+
 ## 06/11/2026 · Editar la foto actual del equipo
 
 - **Botón «Editar foto actual»** en los ajustes del equipo y en la edición de jugadores (y en «Mi perfil» del jugador enlazado): reabre el popup de encuadre y zoom sobre la foto ya guardada, sin subir otro archivo. Corregido: el formulario de equipo no montaba el campo de foto con «Subir foto» (el selector nativo seguía a la vista) y ahora sí.

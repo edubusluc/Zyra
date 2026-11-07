@@ -1,4 +1,5 @@
 """Fase 9 de la auditoría de estadísticas (EST-037 a EST-040): lista de enfrentamientos y acta, para capitán y jugador."""
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 
@@ -47,6 +48,15 @@ class ListAndActaTests(UxBase):
             self.assertIn("vs Rival", html)
             self.assertIn("4–8", html)  # nuestro equipo primero (juega de local)
             self.assertNotIn("z-flow4", html)  # el recorrido de cuatro pasos solo en los pendientes
+
+    def test_closed_match_link_is_never_hidden_on_mobile(self):
+        """El cerrado se abre pulsando la fila: su enlace extendido no puede ocultarse con display:none en móvil."""
+        match = self.closed_match()
+        html = self.client.get(reverse("list_match") + "?season=all").content.decode()
+        self.assertIn('class="z-closed-open stretched-link"', html)
+        self.assertIn(reverse("call_for_match", args=[match.public_id]), html)
+        css = (settings.BASE_DIR / "static" / "style.css").read_text(encoding="utf-8")
+        self.assertNotRegex(css, r"\.z-closed-open\s*\{[^}]*display:\s*none")
 
     def test_result_is_read_from_our_side_when_we_are_visiting(self):
         match = self.closed_match()
