@@ -414,19 +414,19 @@ def create_match(request):
 @spaces.follow_match
 @club_manager_required
 def edit_match_date(request, match_id):
-    """Cambia la fecha de un partido que aún no está cerrado.
+    """Cambia la fecha y la hora de un partido que aún no está cerrado.
 
     Solo para administradores del club. Con el acta cerrada hay que reabrirla antes (el acta
     cerrada es inmutable). Recalcula la temporada y vuelve a la página del partido.
     """
     match = club_match(request, match_id)
     if not match.draft_mode:
-        messages.error(request, _("Reabre el acta para cambiar la fecha del enfrentamiento."))
+        messages.error(request, _("Reabre el acta para cambiar la fecha y la hora del enfrentamiento."))
         return redirect("call_for_match", match.public_id)
     form = MatchDateForm(request.POST or None, instance=match)
     if request.method == "POST" and form.is_valid():
         form.save()
-        messages.success(request, _("Fecha del enfrentamiento actualizada."))
+        messages.success(request, _("Fecha y hora del enfrentamiento actualizadas."))
         return redirect("call_for_match", match.public_id)
     return render(request, "edit_match_date.html", {"form": form, "match": match})
 
