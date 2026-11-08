@@ -15,11 +15,13 @@ from django.core.cache import cache
 from django.core.mail import get_connection
 from django.db.models import Q
 from django.urls import reverse
+from django.utils.formats import date_format
 from django.utils.html import escape
 from django.utils.translation import gettext as _
 from urllib.parse import quote
 
 from core import ratelimit
+from core.competitions import competition_for
 from core.emails import build_email
 from players.models import Player
 
@@ -58,11 +60,25 @@ def link_url(request, match):
 
 
 def share_text(match, url):
-    """Texto prefabricado para pegar en el grupo de WhatsApp junto con el enlace."""
-    when = f"{match.start_date:%d/%m/%Y}" + (f" {match.start_time:%H:%M}" if match.start_time else "")
-    text = _("¡Convocatoria! %(local)s – %(visiting)s, el %(when)s.\n¿Puedes jugar? Respóndelo aquí:") % {
-        "local": match.local_name, "visiting": match.visiting_name, "when": when}
-    return f"{text} {url}"
+    """
+    Texto prefabricado para pegar en el grupo de WhatsApp: rival, competición, fase y jornada,
+    fecha, hora y lugar (las líneas sin dato se omiten) y el enlace para responder.
+    """
+    lines = [_("Rival: %(rival)s") % {"rival": match.rival_label}]
+    if match.match_type == match.AMISTOSO:
+        lines.append(_("Amistoso"))
+    else:
+        lines.append(_("Competición: %(name)s") % {"name": competition_for(match).name})
+        phase = match.get_match_type_display()
+        if match.round_number:
+            phase += " - " + _("Jornada %(n)s") % {"n": match.round_number}
+        lines.append(_("Fase: %(phase)s") % {"phase": phase})
+    lines.append("🗓️ " + _("Fecha: %(date)s") % {"date": date_format(match.start_date, format=_("l j \\d\\e F \\d\\e Y"))})
+    if match.start_time:
+        lines.append("⏰ " + _("Hora del partido: %(time)s") % {"time": f"{match.start_time:%H:%M}h"})
+    if match.location:
+        lines.append("📍 " + _("Lugar: %(place)s") % {"place": match.location})
+    return "\n".join(lines) + "\n\n" + _("Responde aquí con tu disponibilidad:") + f"\n{url}"
 
 
 def whatsapp_url(text):

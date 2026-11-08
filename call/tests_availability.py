@@ -203,7 +203,10 @@ class AvailabilityTests(TestCase):
         """El texto prefabricado lleva el partido y el enlace."""
         text = availability.share_text(self.match, "https://zyra.test/x")
         self.assertIn("https://zyra.test/x", text)
-        self.assertIn("Rival", text)
+        self.assertIn("Rival: Rival", text)
+        self.assertIn("Competición: SNP", text)
+        self.assertIn("🗓️ Fecha:", text)
+        self.assertTrue(text.endswith("Responde aquí con tu disponibilidad:\nhttps://zyra.test/x"))
 
     @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
     def test_reminder_only_to_pending_and_limited(self):
