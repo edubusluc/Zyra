@@ -7,6 +7,9 @@
             <li class="z-more-title" role="presentation">{% translate "Convocatoria" %}</li>
             {% if match.draft_mode %}<li><a href="{% url 'edit_call' call_for_match.public_id %}"><i class="fa-solid fa-pen" aria-hidden="true"></i> {% translate "Editar convocatoria" %}</a></li>{% endif %}
             {% if match.draft_mode and game_for_match %}<li><a href="{% url 'edit_games_match' match.public_id %}"><i class="fa-solid fa-shuffle" aria-hidden="true"></i> {% translate "Editar parejas" %}</a></li>{% endif %}
+            {% if match.draft_mode and not call_for_match.draft_mode and not game_for_match %}<li><form action="{% url 'reopen_call' match.public_id %}" method="post" data-loading-text="{% translate 'Reabriendo la convocatoria…' %}"
+                      data-confirm-title="{% translate 'Reabrir la convocatoria' %}" data-confirm-action="{% translate 'Reabrir' %}"
+                      data-confirm="{% translate 'La convocatoria vuelve a estar abierta: podrás cambiar los apuntados y el enlace de disponibilidad volverá a funcionar. Tendrás que cerrarla de nuevo.' %}">{% csrf_token %}<button type="submit"><i class="fa-solid fa-lock-open" aria-hidden="true"></i> {% translate "Reabrir convocatoria" %}</button></form></li>{% endif %}
             <li><a href="{% url 'view_call_log' call_for_match.public_id %}"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> {% translate "Advertencias y cambios" %}</a></li>
             <li><a href="{% url 'call_report' match.public_id %}" target="_blank" rel="noopener"><i class="fa-solid fa-file-pdf" aria-hidden="true"></i> {% translate "Informe PDF" %}</a></li>
             {% if not call_for_match.draft_mode %}

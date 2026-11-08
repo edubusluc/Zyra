@@ -16154,3 +16154,31 @@ msgstr "Availability answers"
 
 msgid "Nadie"
 msgstr "Nobody"
+
+msgid "Reabriendo la convocatoria…"
+msgstr "Reopening the call-up…"
+
+msgid "Reabrir la convocatoria"
+msgstr "Reopen the call-up"
+
+msgid ""
+"La convocatoria vuelve a estar abierta: podrás cambiar los apuntados y el "
+"enlace de disponibilidad volverá a funcionar. Tendrás que cerrarla de nuevo."
+msgstr ""
+"The call-up is open again: you can change who is signed up and the "
+"availability link works again. You will have to close it again."
+
+msgid "Reabrir convocatoria"
+msgstr "Reopen call-up"
+
+msgid "El acta está cerrada: reábrela primero."
+msgstr "The match record is closed: reopen it first."
+
+msgid "La convocatoria ya estaba abierta."
+msgstr "The call-up was already open."
+
+msgid "Ya hay parejas alineadas: elimínalas antes de reabrir la convocatoria."
+msgstr "Pairs are already lined up: remove them before reopening the call-up."
+
+msgid "Convocatoria reabierta."
+msgstr "Call-up reopened."

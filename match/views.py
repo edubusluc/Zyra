@@ -633,6 +633,32 @@ def close_call(request, match_id):
     return redirect('call_for_match', call.match.public_id)
 
 
+@spaces.follow_match
+@club_manager_required
+@require_POST
+def reopen_call(request, match_id):
+    """
+    Reabre una convocatoria cerrada para poder cambiar los apuntados (y que el enlace de disponibilidad
+    vuelva a estar activo). Solo POST, capitán o gestor, con el acta abierta y sin parejas alineadas
+    (si las hay, habría que rehacerlas). Queda anotado en el registro de la convocatoria.
+    """
+    call = club_call(request, match__public_id=match_id)
+    if not call.match.draft_mode:
+        messages.error(request, _("El acta está cerrada: reábrela primero."))
+    elif call.draft_mode:
+        messages.info(request, _("La convocatoria ya estaba abierta."))
+    elif call.match.games.exists():
+        messages.error(request, _("Ya hay parejas alineadas: elimínalas antes de reabrir la convocatoria."))
+    else:
+        call.draft_mode = True
+        call.save()
+        log, _created = CallLog.objects.get_or_create(call=call, defaults={"text": ""})
+        log.text += f"Convocatoria reabierta por {request.user.username} el día {datetime.now():%d-%m-%Y %H:%M:%S};"
+        log.save()
+        messages.success(request, _("Convocatoria reabierta."))
+    return redirect("call_for_match", call.match.public_id)
+
+
 def _send_report(request, call, done):
     """
     Informe PDF a los capitanes: se intenta al momento y lo que falle se reintenta
@@ -940,7 +966,7 @@ def call_for_match(request, match_id):
     return render(request, "call_for_match.html", {
         "my_availability": Availability.objects.filter(match=match, player=me).first() if me else None,
         "can_answer": bool(me and match.draft_mode and call_availability.is_open(match)),
-        "availability": availability_context(request, match) if request.membership.can_manage and call_availability.is_open(match) else None,
+        "availability": availability_context(request, match) if request.membership.can_manage else None,
         "call_for_match": call,
         "match_id": match.public_id,
         "game_for_match": games,
@@ -979,7 +1005,8 @@ def availability_context(request, match):
     """Datos de la tarjeta «Disponibilidad» de la ficha: enlace, texto de WhatsApp, respuestas y opciones."""
     url = call_availability.link_url(request, match)
     return {"url": url, "whatsapp": call_availability.whatsapp_url(call_availability.share_text(match, url)),
-            "board": call_availability.board(match), "answers": Availability.ANSWERS}
+            "board": call_availability.board(match), "answers": Availability.ANSWERS,
+            "open": call_availability.is_open(match)}
 
 
 def validate_game_for_match(call):

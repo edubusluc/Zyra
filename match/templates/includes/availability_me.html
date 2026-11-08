@@ -2,7 +2,10 @@
 {% load i18n %}
 <section class="z-av-me" aria-labelledby="av-me-title">
     <h2 class="z-section-title mt-0" id="av-me-title">{% translate "¿Puedes jugar?" %}</h2>
-    {% if my_availability %}<p class="z-av-me-now" role="status">{% blocktranslate with answer=my_availability.get_answer_display %}Has respondido: {{ answer }}{% endblocktranslate %}{% if my_availability.comment %} · “{{ my_availability.comment }}”{% endif %}</p>{% endif %}
+    {% if my_availability %}
+    <details class="z-av-change">
+        <summary class="z-av-me-now"><span role="status">{% blocktranslate with answer=my_availability.get_answer_display %}Has respondido: {{ answer }}{% endblocktranslate %}{% if my_availability.comment %} · “{{ my_availability.comment }}”{% endif %}</span> <span class="z-av-change-link">{% translate "Cambiar respuesta" %}</span></summary>
+    {% endif %}
     <form method="post" action="{% url 'availability' match.availability_token %}" data-loading-text="{% translate 'Guardando…' %}" class="z-av-form">
         {% csrf_token %}
         <input type="hidden" name="action" value="answer">
@@ -20,4 +23,5 @@
             <button type="submit" name="answer" value="maybe" class="btn btn-primary btn-lg">{% translate "Enviar como pendiente" %}</button>
         </details>
     </form>
+    {% if my_availability %}</details>{% endif %}
 </section>

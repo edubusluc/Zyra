@@ -24,6 +24,7 @@ urlpatterns = (
     path('no_show/<pid:match_id>/undo/', undo_no_show, name='undo_no_show'),
     path('delete_call/<pid:match_id>/', delete_call, name='delete_call'),
     path('close_call/<pid:match_id>/', close_call, name='close_call'),
+    path('reopen_call/<pid:match_id>/', reopen_call, name='reopen_call'),
     path('edit_game_match/<pid:match_id>/', edit_game_match, name='edit_games_match'),
     path('suggested_lineup/<pid:match_id>/', suggested_lineup, name='suggested_lineup'),
     path('delete_match/<pid:match_id>/', delete_match, name='delete_match'),

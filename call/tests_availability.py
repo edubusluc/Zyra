@@ -267,3 +267,44 @@ class AvailabilityTests(TestCase):
         response = self.client.get(reverse("call_for_match", args=[self.match.public_id]))
         self.assertContains(response, "availabilityModal")
         self.assertContains(response, "No responde")
+
+    def test_reopen_closed_call_brings_the_link_back(self):
+        """Reabrir la convocatoria cerrada devuelve el enlace al capitán y deja responder otra vez."""
+        call = Call.objects.create(match=self.match, draft_mode=False)
+        call.players.add(self.ana)
+        ficha = reverse("call_for_match", args=[self.match.public_id])
+        self.client.force_login(self.captain)
+        self.assertNotContains(self.client.get(ficha), "availability-url")
+        self.client.post(reverse("reopen_call", args=[self.match.public_id]))
+        call.refresh_from_db()
+        self.assertTrue(call.draft_mode)
+        self.assertContains(self.client.get(ficha), "availability-url")
+        self.assertTrue(availability.is_open(self.match))
+
+    def test_reopen_call_requires_manager(self):
+        """Un jugador normal no reabre convocatorias."""
+        call = Call.objects.create(match=self.match, draft_mode=False)
+        self.client.force_login(self.user)
+        response = self.client.post(reverse("reopen_call", args=[self.match.public_id]))
+        self.assertEqual(response.status_code, 403)
+        call.refresh_from_db()
+        self.assertFalse(call.draft_mode)
+
+    def test_closed_call_shows_answers_read_only(self):
+        """Con la convocatoria cerrada el listado de respuestas no ofrece cambiar ninguna."""
+        call = Call.objects.create(match=self.match, draft_mode=False)
+        call.players.add(self.ana)
+        self.client.force_login(self.captain)
+        response = self.client.get(reverse("call_for_match", args=[self.match.public_id]))
+        self.assertContains(response, "availabilityModal")
+        self.assertNotContains(response, "availability_set")
+        self.assertNotContains(response, "/availability/%s/set/" % self.match.public_id)
+        self.assertNotContains(response, "availability-url")
+
+    def test_answered_form_is_folded(self):
+        """Tras responder, el formulario de la ficha queda plegado con «Cambiar respuesta»."""
+        self.client.force_login(self.user)
+        ficha = reverse("call_for_match", args=[self.match.public_id])
+        self.assertNotContains(self.client.get(ficha), "Cambiar respuesta")
+        availability.set_answer(self.match, self.ana, "yes")
+        self.assertContains(self.client.get(ficha), "Cambiar respuesta")

@@ -4409,3 +4409,8 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .z-av-group--maybe .z-av-group-title { color: var(--z-warning); }
 .z-availability-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .z-availability-list li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px; background: var(--z-surface-2); border: 1px solid var(--z-border); border-radius: var(--z-radius-sm); }
+
+/* «¿Puedes jugar?» plegado una vez respondido: se despliega para cambiar la respuesta. */
+.z-av-change > summary { cursor: pointer; list-style: none; display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin-bottom: .5rem; }
+.z-av-change > summary::-webkit-details-marker { display: none; }
+.z-av-change-link { color: var(--z-lime, #B4F100); text-decoration: underline; font-weight: 600; }
