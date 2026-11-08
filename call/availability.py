@@ -99,6 +99,26 @@ def squad(match):
     return Player.objects.filter(club=match.club).filter(Q(in_team=True) | Q(id__in=answered))
 
 
+def unanswered(players, matches):
+    """
+    Enfrentamientos de ``matches`` en los que alguno de ``players`` (sus fichas de un usuario, una por
+    club) puede responder y aún no lo ha hecho: abiertos, de su club, con la convocatoria sin cerrar,
+    sin respuesta suya y sin estar ya apuntado por el capitán. Devuelve ``(enfrentamiento, jugador)``.
+    """
+    by_club = {p.club_id: p for p in players if p.in_team}
+    open_matches = [m for m in matches if m.club_id in by_club and m.draft_mode]
+    if not open_matches:
+        return []
+    ids = [m.id for m in open_matches]
+    answered = set(Availability.objects.filter(match_id__in=ids, player__in=by_club.values())
+                   .values_list("match_id", "player_id"))
+    called = set(Call.objects.filter(match_id__in=ids, players__in=by_club.values())
+                 .values_list("match_id", "players"))
+    closed = set(Call.objects.filter(match_id__in=ids, draft_mode=False).values_list("match_id", flat=True))
+    return [(m, by_club[m.club_id]) for m in open_matches
+            if m.id not in closed and (m.id, by_club[m.club_id].id) not in answered | called]
+
+
 def valid_answer(answer):
     """True si ``answer`` es una de las respuestas posibles (Sí, No, Pendiente)."""
     return answer in dict(Availability.ANSWERS)

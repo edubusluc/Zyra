@@ -16400,3 +16400,6 @@ msgstr "Venue: %(place)s"
 
 msgid "Responde aquí con tu disponibilidad:"
 msgstr "Reply here with your availability:"
+
+msgid "Responde si puedes jugar: %(rival)s, %(date)s"
+msgstr "Say if you can play: %(rival)s, %(date)s"

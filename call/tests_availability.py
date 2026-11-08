@@ -381,3 +381,42 @@ class ShortLineupTests(TestCase):
                  {"player1Id": players[2].id, "player2Id": players[3].id}]
         self.client.post(reverse("create_game", args=[match.public_id]), {"ordered_games": json.dumps(pairs)})
         self.assertFalse(match.games.exists())
+
+
+class HomePendingAvailabilityTests(TestCase):
+    """El Inicio avisa al jugador de las convocatorias en las que aún no ha dicho si puede jugar."""
+
+    def setUp(self):
+        """Capitán que también juega, un jugador y un enfrentamiento abierto de esta semana."""
+        self.captain = User.objects.create_user("capi", "c@example.com", "pass-12345")
+        self.club = create_club("Club", "Sevilla", self.captain)
+        self.team = self.club.own_team
+        rival = Team.objects.create(club=self.club, name="Rival", location="Huelva")
+        self.match = Match.objects.create(club=self.club, local=self.team, visiting=rival,
+                                          start_date=datetime.date.today() + datetime.timedelta(days=2))
+        self.user = User.objects.create_user("ana", "ana@example.com", "pass-12345")
+        Membership.objects.create(user=self.user, club=self.club, role=Membership.MEMBER)
+        self.ana = Player.objects.create(club=self.club, team=self.team, name="Ana", last_name="Gil", user=self.user)
+        self.own = Player.objects.create(club=self.club, team=self.team, name="Capi", last_name="Tan", user=self.captain)
+
+    def test_player_sees_unanswered_call(self):
+        """Sin responder sale la entrada; al responder desaparece."""
+        self.client.force_login(self.user)
+        self.assertContains(self.client.get("/"), "Responde si puedes jugar")
+        availability.set_answer(self.match, self.ana, "yes")
+        self.assertNotContains(self.client.get("/"), "Responde si puedes jugar")
+
+    def test_captain_who_plays_also_sees_it(self):
+        """El capitán con ficha también la ve, además de lo que gestiona."""
+        self.client.force_login(self.captain)
+        self.assertContains(self.client.get("/"), "Responde si puedes jugar")
+
+    def test_not_shown_without_a_player_or_with_call_closed(self):
+        """Sin ficha enlazada, o con la convocatoria cerrada, no hay entrada."""
+        stranger = User.objects.create_user("sin", "s@example.com", "pass-12345")
+        Membership.objects.create(user=stranger, club=self.club, role=Membership.MEMBER)
+        self.client.force_login(stranger)
+        self.assertNotContains(self.client.get("/"), "Responde si puedes jugar")
+        Call.objects.create(match=self.match, draft_mode=False)
+        self.client.force_login(self.user)
+        self.assertNotContains(self.client.get("/"), "Responde si puedes jugar")

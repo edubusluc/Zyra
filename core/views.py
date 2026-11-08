@@ -31,6 +31,7 @@ from core.templatetags.zyra_format import date_short
 from django.views.decorators.http import require_http_methods, require_POST, require_safe
 
 from data_analyse import my_form as my_form_stats
+from call import availability as availability_logic
 from call.models import Call
 from match.models import Match
 from match.phase import phases_for, player_status
@@ -183,6 +184,15 @@ def home(request):
                                  "text": _("Tu pareja el %(date)s: %(partner)s") % {
                                      "date": date_short(next_match.start_date),
                                      "partner": my_status["partner"].short_name}})
+
+    # Convocatorias sin responder: una entrada por enfrentamiento próximo en el que su ficha aún no ha
+    # dicho si puede jugar (también para quien gestiona y juega); lleva a la ficha, donde responde.
+    horizon = today + datetime.timedelta(days=HOME_PENDING_DAYS)
+    for m, _player in availability_logic.unanswered(
+            form_players, [m for m in open_matches if today <= m.start_date <= horizon]):
+        player_todos.append({"icon": "fa-circle-question", "url": reverse('call_for_match', args=[m.public_id]),
+                             "text": _("Responde si puedes jugar: %(rival)s, %(date)s") % {
+                                 "rival": m.rival_label, "date": date_short(m.start_date)}})
 
     onboarding = onboarding_for(request.membership)
     # «Prepara la temporada» (julio-octubre) lleva dentro el paso de SNP: no se repite la tarea suelta.
