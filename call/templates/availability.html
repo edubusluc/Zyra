@@ -1,10 +1,11 @@
 {% extends 'base.html' %}
 {% load i18n static %}
-{% block page_title %}{% translate "Disponibilidad" %} · {{ match.local_name }} – {{ match.visiting_name }} · {% endblock %}
+{% block page_title %}{% translate "Disponibilidad" %} · {% if match %}{{ match.local_name }} – {{ match.visiting_name }} · {% endif %}{% endblock %}
 
 {% block content %}
 <div class="z-auth">
     <div class="z-auth-card z-av">
+        {% if match %}
         <p class="z-av-kicker">{% translate "Disponibilidad" %}{% if match.type_label %} · {{ match.type_label }}{% endif %}</p>
         <h1 class="z-av-vs">
             <span class="z-av-team{% if match.own_is_local %} is-own{% endif %}">{{ match.local_name }}</span>
@@ -26,10 +27,23 @@
             <span class="visually-hidden">{% translate "Abrir en el mapa" %}</span>
         </a>
         {% endif %}
+        {% endif %}
 
-        {% if state == "not_member" %}
+        {% if state == "invalid" %}
         <div class="z-empty">
-            <p>{% blocktranslate with user=request.user.username team=team.name %}Has iniciado sesión como «{{ user }}», que no pertenece a {{ team }}. Entra con la cuenta con la que te uniste al equipo o pídele una invitación a tu capitán.{% endblocktranslate %}</p>
+            <i class="fa-solid fa-link-slash" aria-hidden="true"></i>
+            <p><b>{% translate "Este enlace ya no es válido" %}</b></p>
+            <p>{% translate "Puede que tu capitán haya creado uno nuevo. Pídeselo para poder responder." %}</p>
+        </div>
+
+        {% elif state == "suspended" %}
+        <div class="z-empty">
+            <p>{% blocktranslate with team=team.name %}El equipo {{ team }} está suspendido en Zyra y no se puede responder ahora. Habla con tu capitán.{% endblocktranslate %}</p>
+        </div>
+
+        {% elif state == "not_member" %}
+        <div class="z-empty">
+            <p>{% blocktranslate with user=request.user.username team=team.name %}Has iniciado sesión como «{{ user }}», que no pertenece a {{ team }}. Entra con la cuenta con la que te uniste al equipo, o pídele una invitación a tu capitán si todavía no tienes cuenta en el equipo.{% endblocktranslate %}</p>
             <form action="{% url 'logout' %}" method="post" data-loading-text="{% translate 'Cerrando sesión…' %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button type="submit" class="btn btn-secondary">{% translate "Cambiar de cuenta" %}</button></form>
         </div>
 
@@ -60,12 +74,13 @@
         {% endif %}
 
         {% elif mine and not editing %}
-        <div class="z-av-done z-av-done--{{ mine.answer }}" role="status">
+        <div class="z-av-done z-av-done--{{ mine.answer }}">
             <p class="z-av-done-title">
                 <i class="fa-solid {% if mine.answer == 'yes' %}fa-circle-check{% elif mine.answer == 'no' %}fa-circle-xmark{% else %}fa-clock{% endif %}" aria-hidden="true"></i>
                 {% blocktranslate with answer=mine.get_answer_display %}Has respondido: {{ answer }}{% endblocktranslate %}
             </p>
             {% if mine.comment %}<p class="z-av-done-note">“{{ mine.comment }}”</p>{% endif %}
+            {% if mine.set_by_manager %}<p class="z-av-by-captain"><i class="fa-solid fa-user-shield" aria-hidden="true"></i> {% translate "Respuesta puesta por tu capitán" %}</p>{% endif %}
             <p class="z-av-done-ask">{% translate "¿Quieres cambiar la respuesta?" %}</p>
             <a class="btn btn-secondary btn-lg" href="?cambiar=1">{% translate "Cambiar respuesta" %}</a>
         </div>
@@ -83,7 +98,8 @@
                 <summary class="z-av-btn is-maybe"><i class="fa-regular fa-clock" aria-hidden="true"></i> {% translate "Pendiente" %}</summary>
                 <p>
                     <label for="availability-comment">{% translate "Observaciones (opcional)" %}</label>
-                    <input type="text" name="comment" id="availability-comment" maxlength="{{ max_comment }}" value="{{ mine.comment }}" placeholder="{% translate 'Ej.: confirmo el jueves' %}">
+                    <input type="text" name="comment" id="availability-comment" maxlength="{{ max_comment }}" value="{{ mine.comment }}" placeholder="{% translate 'Ej.: confirmo el jueves' %}" aria-describedby="availability-comment-privacy">
+                    <small id="availability-comment-privacy" class="form-text">{% translate "Solo lo verán tu capitán y los gestores. No escribas datos de salud. Se borra al cerrar el acta." %}</small>
                 </p>
                 <button type="submit" name="answer" value="maybe" class="btn btn-primary btn-lg">{% translate "Enviar como pendiente" %}</button>
             </details>

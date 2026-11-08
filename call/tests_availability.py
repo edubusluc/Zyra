@@ -253,12 +253,12 @@ class AvailabilityTests(TestCase):
         ficha = reverse("call_for_match", args=[self.match.public_id])
         self.client.force_login(self.user)
         self.assertContains(self.client.get(ficha), "¿Puedes jugar?")
-        response = self.client.post(self.url, {"action": "answer", "answer": "yes", "next": "ficha"})
+        response = self.client.post(reverse("availability_answer", args=[self.match.public_id]), {"answer": "yes"})
         self.assertRedirects(response, ficha)
         self.assertContains(self.client.get(ficha), "Has respondido: Sí")
 
     def test_board_groups_follow_yes_no_pending_no_answer(self):
-        """La ventana «Ver respuestas» agrupa en Sí, No, Pendiente y No responde."""
+        """La ventana «Ver respuestas» agrupa en Sí, No, Pendiente y Sin respuesta."""
         availability.set_answer(self.match, self.ana, "maybe")
         groups = availability.board(self.match)["groups"]
         self.assertEqual([g["key"] for g in groups], ["yes", "no", "maybe", "none"])
@@ -267,7 +267,7 @@ class AvailabilityTests(TestCase):
         self.client.force_login(self.captain)
         response = self.client.get(reverse("call_for_match", args=[self.match.public_id]))
         self.assertContains(response, "availabilityModal")
-        self.assertContains(response, "No responde")
+        self.assertContains(response, "Sin respuesta")
 
     def test_reopen_closed_call_brings_the_link_back(self):
         """Reabrir la convocatoria cerrada devuelve el enlace al capitán y deja responder otra vez."""

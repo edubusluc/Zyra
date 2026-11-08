@@ -2,35 +2,35 @@
 {% load i18n static %}
 <section class="z-availability" aria-labelledby="availability-title">
     <h2 class="z-section-title mt-0" id="availability-title">{% translate "Disponibilidad" %}
-        <span class="z-info" tabindex="0" role="note" title="{% translate 'Comparte el enlace con la plantilla: cada jugador responde Sí, No o Pendiente. Solo tú y los gestores veis las respuestas; la convocatoria la sigues haciendo tú.' %}"><i class="fa-solid fa-circle-info" aria-hidden="true"></i></span>
+        {% translate 'Comparte el enlace con la plantilla: cada jugador responde Sí, No o Pendiente. Solo tú y los gestores veis las respuestas; la convocatoria la sigues haciendo tú.' as av_tip %}
+        {% include 'includes/stat_tip.html' with tip=av_tip %}
     </h2>
     {% if availability.open %}
     <div class="d-flex flex-wrap gap-2 align-items-center">
         <input type="text" id="availability-url" class="form-control" style="max-width: 28rem;" readonly value="{{ availability.url }}" aria-label="{% translate 'Enlace de disponibilidad' %}">
-        <button type="button" class="btn btn-secondary btn-sm" data-availability-copy="availability-url" data-copied="{% translate 'Copiado' %}"><i class="fa-regular fa-copy me-1" aria-hidden="true"></i>{% translate "Copiar enlace" %}</button>
+        <button type="button" class="btn btn-secondary btn-sm" data-availability-copy="availability-url" data-copied="{% translate 'Copiado' %}" data-failed="{% translate 'No se pudo copiar: cópialo a mano' %}"><i class="fa-regular fa-copy me-1" aria-hidden="true"></i><span data-availability-copy-label>{% translate "Copiar enlace" %}</span></button>
+        <span class="visually-hidden" role="status" aria-live="polite" data-availability-copy-status></span>
         <a class="btn btn-primary btn-sm" href="{{ availability.whatsapp }}" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp me-1" aria-hidden="true"></i> {% translate "Enviar por WhatsApp" %}</a>
     </div>
     {% endif %}
     <p class="z-tags mt-2">
-        <span class="z-tag is-lime">{% blocktranslate with n=availability.board.counts.yes %}Sí · {{ n }}{% endblocktranslate %}</span>
-        <span class="z-tag">{% blocktranslate with n=availability.board.counts.maybe %}Pendiente · {{ n }}{% endblocktranslate %}</span>
-        <span class="z-tag">{% blocktranslate with n=availability.board.counts.no %}No · {{ n }}{% endblocktranslate %}</span>
-        <span class="z-tag">{% blocktranslate with n=availability.board.counts.captain %}Apuntados por el capitán · {{ n }}{% endblocktranslate %}</span>
-        <span class="z-tag">{% blocktranslate with n=availability.board.counts.none %}Sin respuesta · {{ n }}{% endblocktranslate %}</span>
+        {% for tag in availability.board.tags %}<span class="z-tag{% if tag.key == 'yes' %} is-lime{% endif %}">{{ tag.label }} · {{ tag.n }}</span>{% endfor %}
     </p>
-    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#availabilityModal"><i class="fa-solid fa-list-check me-1" aria-hidden="true"></i> {% translate "Ver respuestas" %}</button>
-    {% if availability.open %}
-    <div class="d-flex flex-wrap gap-2 mt-2">
+    <div class="z-av-actions">
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#availabilityModal"><i class="fa-solid fa-list-check me-1" aria-hidden="true"></i> {% translate "Ver respuestas" %}</button>
+        {% if availability.open and availability.can_remind and availability.pending %}
         <form method="post" action="{% url 'availability_remind' match.public_id %}" data-loading-text="{% translate 'Enviando…' %}"
-              data-confirm="{% translate 'Se enviará un correo con el enlace a quienes aún no han respondido.' %}">
-            {% csrf_token %}<button type="submit" class="btn btn-secondary btn-sm"><i class="fa-solid fa-bell me-1" aria-hidden="true"></i> {% translate "Recordar a quien no ha respondido" %}</button>
+              data-confirm="{% blocktranslate count n=availability.pending %}Se enviará un correo con el enlace a {{ n }} jugador que aún no ha respondido.{% plural %}Se enviará un correo con el enlace a {{ n }} jugadores que aún no han respondido.{% endblocktranslate %}">
+            {% csrf_token %}<button type="submit" class="btn btn-secondary btn-sm"><i class="fa-solid fa-bell me-1" aria-hidden="true"></i> {% blocktranslate with n=availability.pending %}Recordar · {{ n }}{% endblocktranslate %}</button>
         </form>
+        {% endif %}
+        {% if availability.open %}
         <form method="post" action="{% url 'availability_regenerate' match.public_id %}" data-loading-text="{% translate 'Guardando…' %}"
               data-confirm="{% translate 'El enlace anterior dejará de funcionar y tendrás que compartir el nuevo.' %}">
-            {% csrf_token %}<button type="submit" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-rotate me-1" aria-hidden="true"></i> {% translate "Crear enlace nuevo" %}</button>
+            {% csrf_token %}<button type="submit" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-rotate me-1" aria-hidden="true"></i> {% translate "Enlace nuevo" %}</button>
         </form>
+        {% endif %}
     </div>
-    {% endif %}
 </section>
 <div class="modal fade" id="availabilityModal" tabindex="-1" aria-labelledby="availabilityModalTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
@@ -39,30 +39,26 @@
                 <h2 class="modal-title h5" id="availabilityModalTitle">{% translate "Respuestas de disponibilidad" %}</h2>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% translate 'Cerrar' %}"></button>
             </div>
-            <div class="modal-body">
+            {% if availability.open %}<form method="post" action="{% url 'availability_set' match.public_id %}" data-loading-text="{% translate 'Guardando…' %}" class="modal-body">
+                {% csrf_token %}{% else %}<div class="modal-body">{% endif %}
                 {% for group in availability.board.groups %}
                 <section class="z-av-group z-av-group--{{ group.key }}" aria-label="{{ group.label }}">
                     <h3 class="z-av-group-title">{{ group.label }} <span class="z-badge">{{ group.rows|length }}</span></h3>
                     <ul class="z-availability-list">
                         {% for row in group.rows %}
                         <li>
-                            <span><b>{{ row.player.short_name }}</b>{% if row.state == "captain" %} · <small>{% translate "Apuntado por el capitán" %}</small>{% endif %}{% if row.comment %} · <small>{{ row.comment }}</small>{% endif %}</span>
-                            {% if availability.open %}<form method="post" action="{% url 'availability_set' match.public_id %}" class="d-flex gap-1" data-loading-text="{% translate 'Guardando…' %}">
-                                {% csrf_token %}
-                                <input type="hidden" name="player" value="{{ row.player.public_id }}">
-                                <select name="answer" aria-label="{% blocktranslate with name=row.player.short_name %}Respuesta de {{ name }}{% endblocktranslate %}">
-                                    {% if group.key == "none" %}<option value="" selected disabled>{% translate "No responde" %}</option>{% endif %}
-                                    {% for value, label in availability.answers %}<option value="{{ value }}" {% if row.state == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
-                                </select>
-                                <button type="submit" class="btn btn-secondary btn-sm">{% translate "Cambiar" %}</button>
-                            </form>{% endif %}
+                            <span><b>{{ row.player.short_name }}</b>{% if row.state == "captain" %} · <small>{% translate "Apuntado por el capitán" %}</small>{% endif %}{% if row.by_manager %} · <small class="z-av-by-captain-note">{% translate "puesta por el capitán" %}</small>{% endif %}{% if row.comment %} · <small>{{ row.comment }}</small>{% endif %}</span>
+                            {% if availability.open %}<span class="z-av-set" role="group" aria-label="{% blocktranslate with name=row.player.short_name %}Respuesta de {{ name }}{% endblocktranslate %}">
+                                {% for value, label in availability.answers %}<button type="submit" name="set" value="{{ row.player.public_id }}:{{ value }}" class="btn btn-sm z-av-set-btn{% if row.state == value %} is-current{% endif %}"{% if row.state == value %} aria-current="true"{% endif %} aria-label="{% blocktranslate with answer=label name=row.player.short_name %}Poner {{ answer }} a {{ name }}{% endblocktranslate %}">{{ label }}</button>{% endfor %}
+                            </span>{% endif %}
                         </li>
                         {% empty %}<li class="text-muted">{% translate "Nadie" %}</li>{% endfor %}
                     </ul>
                 </section>
                 {% endfor %}
-            </div>
+            {% if availability.open %}</form>{% else %}</div>{% endif %}
         </div>
     </div>
 </div>
 <script src="{% static 'js/availability.js' %}" defer></script>
+<script src="{% static 'js/stats-tips.js' %}" defer></script>

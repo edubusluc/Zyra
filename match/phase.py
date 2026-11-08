@@ -53,6 +53,7 @@ class MatchPhase:
     results: int
     min_call: int
     total_games: int
+    pair_no_show: bool = False
 
     @property
     def label(self):
@@ -72,6 +73,11 @@ class MatchPhase:
     def missing_players(self):
         """Convocados que faltan para poder cerrar la convocatoria (0 si ya hay suficientes)."""
         return max(self.min_call - self.called, 0)
+
+    @property
+    def blocked_by_min(self):
+        """True si faltan convocados y la competición no deja cerrar corta (sin «pareja no presentada» o con menos de dos)."""
+        return bool(self.missing_players) and not (self.pair_no_show and self.called >= 2)
 
     @property
     def pending_label(self):
@@ -106,7 +112,8 @@ def phase_of(match, *, has_call, call_closed, called, games, results, competitio
     ``competition`` es la ficha de su competición; si no se da, se pide a ``competition_for``.
     """
     competition = competition or competition_for(match)
-    counts = (has_call, called, games, results, competition.min_call_players, competition.games)
+    counts = (has_call, called, games, results, competition.min_call_players, competition.games,
+              competition.pair_no_show)
     if not match.draft_mode:
         return MatchPhase(CLOSED, 4, NOTHING, *counts)
     if games >= competition.games and results >= competition.games:

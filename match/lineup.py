@@ -27,6 +27,14 @@ def game_points(index, competition=None):
     return (competition or competition_for()).points_for(index)
 
 
+def short_call_allowed(rules, count):
+    """
+    True si una convocatoria de ``count`` jugadores puede cerrarse por debajo del mínimo: la competición
+    admite «pareja no presentada» (``rules.pair_no_show``) y hay al menos una pareja que formar.
+    """
+    return bool(rules.pair_no_show and count >= 2)
+
+
 def required_pairs(call):
     """
     Parejas que hay que alinear: todas las de la competición o, si la convocatoria se cerró con menos
@@ -127,12 +135,20 @@ def _missing_game(match, n):
 
 @transaction.atomic
 def update_games(match, lineup):
-    """Reasigna parejas y orden de los partidos existentes según la alineación validada."""
+    """
+    Reasigna parejas y orden de los partidos existentes según la alineación validada. Si algún partido
+    con resultado se quedaría sin pareja (pasaría a «no presentada») no cambia nada y lanza ``LineupError``:
+    un resultado ya introducido no se borra sin que el capitán lo haga a propósito.
+    """
     games = [g for g, _p1, _p2 in lineup]
+    others = [g for g in Game.objects.filter(match=match).order_by("n_game") if g.pk not in {x.pk for x in games}]
+    with_result = [g for g in others if g.results.exists()]
+    if with_result:
+        raise LineupError(_("No se pueden quitar de las parejas partidos que ya tienen resultado "
+                            "(partido %(n)s): bórralo primero.") % {"n": with_result[0].n_game})
     # Primero se libera el número de cada partido para poder reordenarlos sin
     # chocar con la restricción de número único por enfrentamiento.
     Game.objects.filter(pk__in=[g.pk for g in games]).update(n_game=None)
-    others = [g for g in Game.objects.filter(match=match).order_by("n_game") if g.pk not in {x.pk for x in games}]
     Game.objects.filter(pk__in=[g.pk for g in others]).update(n_game=None)
     for n, (game, p1, p2) in enumerate(lineup, start=1):
         _assign(game, match, n, p1, p2)

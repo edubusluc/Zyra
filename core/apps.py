@@ -19,3 +19,7 @@ class CoreConfig(AppConfig):
                 form.label_suffix = ''
 
         BaseForm.__init__ = init
+
+        from django.contrib.auth.signals import user_logged_in
+        from .sessions import limit_staff_session
+        user_logged_in.connect(limit_staff_session, dispatch_uid="core-limit-staff-session")

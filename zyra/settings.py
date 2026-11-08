@@ -94,9 +94,10 @@ if not DEBUG and ADMIN_URL in ('/', 'admin/'):
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 LOGIN_URL = 'login'
-# Sesión persistente (30 días desde el inicio de sesión): quien responde al enlace de disponibilidad
-# desde el móvil no tiene que iniciar sesión cada vez.
-SESSION_COOKIE_AGE = 60 * 60 * 24 * 30
+# Sesión que se mantiene mientras se use la cuenta (un año desde la última visita, renovada en cada petición);
+# sin la casilla del login dura hasta cerrar el navegador y el personal solo 12 horas: ver core/sessions.py.
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 365
+SESSION_SAVE_EVERY_REQUEST = True
 # Formularios rechazados por CSRF: misma página «Sin permiso» que el resto de la web.
 CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
 

@@ -4,21 +4,20 @@
     <h2 class="z-section-title mt-0" id="av-me-title">{% translate "¿Puedes jugar?" %}</h2>
     {% if my_availability %}
     <details class="z-av-change">
-        <summary class="z-av-me-now"><span role="status">{% blocktranslate with answer=my_availability.get_answer_display %}Has respondido: {{ answer }}{% endblocktranslate %}{% if my_availability.comment %} · “{{ my_availability.comment }}”{% endif %}</span> <span class="z-av-change-link">{% translate "Cambiar respuesta" %}</span></summary>
+        <summary class="z-av-me-now"><span>{% blocktranslate with answer=my_availability.get_answer_display %}Has respondido: {{ answer }}{% endblocktranslate %}{% if my_availability.comment %} · “{{ my_availability.comment }}”{% endif %}{% if my_availability.set_by_manager %} · <em>{% translate "Respuesta puesta por tu capitán" %}</em>{% endif %}</span> <span class="z-av-change-link">{% translate "Cambiar respuesta" %}</span></summary>
     {% endif %}
-    <form method="post" action="{% url 'availability' match.availability_token %}" data-loading-text="{% translate 'Guardando…' %}" class="z-av-form">
+    <form method="post" action="{% url 'availability_answer' match.public_id %}" data-loading-text="{% translate 'Guardando…' %}" class="z-av-form">
         {% csrf_token %}
-        <input type="hidden" name="action" value="answer">
-        <input type="hidden" name="next" value="ficha">
         <div class="z-av-choices">
-            <button type="submit" name="answer" value="yes" class="z-av-btn is-yes{% if my_availability.answer == 'yes' %} is-current{% endif %}"{% if my_availability.answer == 'yes' %} aria-pressed="true"{% endif %}><i class="fa-solid fa-check" aria-hidden="true"></i> {% translate "Sí" %}</button>
-            <button type="submit" name="answer" value="no" class="z-av-btn is-no{% if my_availability.answer == 'no' %} is-current{% endif %}"{% if my_availability.answer == 'no' %} aria-pressed="true"{% endif %}><i class="fa-solid fa-xmark" aria-hidden="true"></i> {% translate "No" %}</button>
+            <button type="submit" name="answer" value="yes" class="z-av-btn is-yes{% if my_availability.answer == 'yes' %} is-current{% endif %}"><i class="fa-solid fa-check" aria-hidden="true"></i> {% translate "Sí" %}{% if my_availability.answer == 'yes' %}<span class="visually-hidden"> ({% translate "tu respuesta actual" %})</span>{% endif %}</button>
+            <button type="submit" name="answer" value="no" class="z-av-btn is-no{% if my_availability.answer == 'no' %} is-current{% endif %}"><i class="fa-solid fa-xmark" aria-hidden="true"></i> {% translate "No" %}{% if my_availability.answer == 'no' %}<span class="visually-hidden"> ({% translate "tu respuesta actual" %})</span>{% endif %}</button>
         </div>
         <details class="z-av-maybe"{% if my_availability.answer == "maybe" %} open{% endif %}>
-            <summary class="z-av-btn is-maybe{% if my_availability.answer == 'maybe' %} is-current{% endif %}"><i class="fa-regular fa-clock" aria-hidden="true"></i> {% translate "Pendiente" %}</summary>
+            <summary class="z-av-btn is-maybe{% if my_availability.answer == 'maybe' %} is-current{% endif %}"><i class="fa-regular fa-clock" aria-hidden="true"></i> {% translate "Pendiente" %}{% if my_availability.answer == 'maybe' %}<span class="visually-hidden"> ({% translate "tu respuesta actual" %})</span>{% endif %}</summary>
             <p>
                 <label for="av-me-comment">{% translate "Observaciones (opcional)" %}</label>
-                <input type="text" name="comment" id="av-me-comment" maxlength="200" value="{{ my_availability.comment }}" placeholder="{% translate 'Ej.: confirmo el jueves' %}">
+                <input type="text" name="comment" id="av-me-comment" maxlength="200" value="{{ my_availability.comment }}" placeholder="{% translate 'Ej.: confirmo el jueves' %}" aria-describedby="av-me-privacy">
+                <small id="av-me-privacy" class="form-text">{% translate "Solo lo verán tu capitán y los gestores. No escribas datos de salud. Se borra al cerrar el acta." %}</small>
             </p>
             <button type="submit" name="answer" value="maybe" class="btn btn-primary btn-lg">{% translate "Enviar como pendiente" %}</button>
         </details>

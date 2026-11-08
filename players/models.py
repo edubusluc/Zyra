@@ -116,6 +116,8 @@ class Player(PublicIdModel):
     )
     snp_score = models.FloatField(null=True)
     in_team = models.BooleanField(default=True)
+    # El capitán puede dejar de enviar a este jugador los recordatorios del club (enlace de disponibilidad).
+    emails_muted = models.BooleanField(default=False)
     # Ficha de otro equipo (de otra competición) de la que se copió con «Copiar jugadores»: solo se
     # copian nombre, apellidos, foto, posición y mano; las estadísticas se quedan en cada equipo.
     copied_from = models.ForeignKey(
