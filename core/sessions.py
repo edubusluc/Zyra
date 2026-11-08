@@ -1,7 +1,8 @@
 """
-Duración de las sesiones. Por defecto una sesión dura 14 días (``SESSION_COOKIE_AGE``); quien marca «Mantener la
-sesión iniciada» en el login la tiene 30 días (para responder desde el móvil sin entrar cada vez), quien no la marca
-la pierde al cerrar el navegador y el personal de Zyra (``is_staff``) solo 12 horas. «Cerrar sesión en todos los
+Duración de las sesiones, como en Amazon: la sesión se mantiene mientras se use la cuenta. Dura un año
+desde la última visita (``SESSION_SAVE_EVERY_REQUEST`` la renueva en cada petición), tanto con «Mantener la sesión
+iniciada» como con Google; quien desmarca la casilla la pierde al cerrar el navegador y el personal de Zyra
+(``is_staff``) solo tiene 12 horas. Cambiar el email o la contraseña sigue pidiendo la contraseña actual. «Cerrar sesión en todos los
 dispositivos» (Mi perfil) borra las demás sesiones de la cuenta.
 """
 from django.conf import settings
@@ -9,7 +10,7 @@ from django.contrib.auth import SESSION_KEY
 from django.contrib.sessions.models import Session
 from django.utils import timezone
 
-REMEMBER_SESSION_AGE = 60 * 60 * 24 * 30
+REMEMBER_SESSION_AGE = 60 * 60 * 24 * 365
 STAFF_SESSION_AGE = 60 * 60 * 12
 
 

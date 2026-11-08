@@ -308,7 +308,7 @@ class SecurityTests(ReviewBase):
         self.assertEqual(response.status_code, 403)
 
     def test_s03_login_remember_and_staff_sessions(self):
-        """Con «Mantener la sesión» 30 días, sin ella hasta cerrar el navegador y el personal 12 horas."""
+        """Con «Mantener la sesión» un año (renovable), sin ella hasta cerrar el navegador y el personal 12 horas."""
         login = reverse("login")
         self.client.post(login, {"username": "ana", "password": "pass-12345", "remember": "on"})
         self.assertEqual(self.client.session.get_expiry_age(), sessions.REMEMBER_SESSION_AGE)
