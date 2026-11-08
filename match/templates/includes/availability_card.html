@@ -1,7 +1,7 @@
 {# Enlace de disponibilidad del enfrentamiento (capitán y gestores). Recibe: availability (enlace, texto, resumen). #}
 {% load i18n static %}
-<section class="z-availability" aria-labelledby="availability-title">
-    <h2 class="z-section-title mt-0" id="availability-title">{% translate "Disponibilidad" %}
+<section class="z-card z-availability" aria-labelledby="availability-title">
+    <h2 class="z-panel-title" id="availability-title">{% translate "Disponibilidad" %}
         {% translate 'Comparte el enlace con la plantilla: cada jugador responde Sí, No o Pendiente. Solo tú y los gestores veis las respuestas; la convocatoria la sigues haciendo tú.' as av_tip %}
         {% include 'includes/stat_tip.html' with tip=av_tip %}
     </h2>
@@ -13,11 +13,8 @@
         <a class="btn btn-primary btn-sm" href="{{ availability.whatsapp }}" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp me-1" aria-hidden="true"></i> {% translate "Enviar por WhatsApp" %}</a>
     </div>
     {% endif %}
-    <p class="z-tags mt-2">
-        {% for tag in availability.board.tags %}<span class="z-tag{% if tag.key == 'yes' %} is-lime{% endif %}">{{ tag.label }} · {{ tag.n }}</span>{% endfor %}
-    </p>
     <div class="z-av-actions">
-        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#availabilityModal"><i class="fa-solid fa-list-check me-1" aria-hidden="true"></i> {% translate "Ver respuestas" %}</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm mt-2" data-bs-toggle="modal" data-bs-target="#availabilityModal"><i class="fa-solid fa-list-check me-1" aria-hidden="true"></i> {% translate "Ver respuestas" %}</button>
         {% if availability.open and availability.can_remind and availability.pending %}
         <form method="post" action="{% url 'availability_remind' match.public_id %}" data-loading-text="{% translate 'Enviando…' %}"
               data-confirm="{% blocktranslate count n=availability.pending %}Se enviará un correo con el enlace a {{ n }} jugador que aún no ha respondido.{% plural %}Se enviará un correo con el enlace a {{ n }} jugadores que aún no han respondido.{% endblocktranslate %}">

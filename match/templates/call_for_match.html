@@ -49,23 +49,6 @@
     {% endif %}
 </div>
 
-{# «¿Puedes jugar?» y, para el capitán, «Disponibilidad» (enlace y respuestas): arriba, antes de la «Previa»; en dos columnas si salen las dos. #}
-{% if can_answer or availability %}
-<div class="z-av-row{% if can_answer and availability %} is-two{% endif %}">
-    {% if can_answer %}{% include 'includes/availability_me.html' %}{% endif %}
-    {% if availability %}{% include 'includes/availability_card.html' %}{% endif %}
-</div>
-{% endif %}
-
-{# EST-040: la «Previa» ayuda a decidir antes de jugar; con el acta cerrada solo queda el enlace al historial (capitán y jugador). #}
-{% if match.draft_mode %}
-{% rival_preview match as preview %}
-{% if not stage_view %}{% include 'includes/rival_preview.html' %}{% endif %}
-{% else %}
-{% rival_history_url match as history_url %}
-{% if history_url %}<p class="z-rival-history"><a href="{{ history_url }}"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> {% blocktranslate with rival=match.rival_label %}Historial contra {{ rival }}{% endblocktranslate %} <i class="fa-solid fa-chevron-right" aria-hidden="true"></i></a></p>{% endif %}
-{% endif %}
-
 {# Estado de cada fase: cifra y barra (match/phase.py). EST-039: con el acta cerrada el estado ya está junto al marcador. #}
 {% if match.draft_mode %}
 {% if stage_view %}{% include 'includes/action_cards.html' %}{% else %}
@@ -81,6 +64,23 @@
     {% endif %}{% endfor %}
 </ol>
 {% endif %}
+{% endif %}
+
+{# «¿Puedes jugar?» y, para el capitán, «Disponibilidad» (enlace y respuestas): debajo de las tarjetas de acción y antes de la «Previa»; en dos columnas si salen las dos. #}
+{% if can_answer or availability %}
+<div class="z-av-row{% if can_answer and availability %} is-two{% endif %}">
+    {% if can_answer %}{% include 'includes/availability_me.html' %}{% endif %}
+    {% if availability %}{% include 'includes/availability_card.html' %}{% endif %}
+</div>
+{% endif %}
+
+{# EST-040: la «Previa» ayuda a decidir antes de jugar; con el acta cerrada solo queda el enlace al historial (capitán y jugador). #}
+{% if match.draft_mode %}
+{% rival_preview match as preview %}
+{% if not stage_view %}{% include 'includes/rival_preview.html' %}{% endif %}
+{% else %}
+{% rival_history_url match as history_url %}
+{% if history_url %}<p class="z-rival-history"><a href="{{ history_url }}"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> {% blocktranslate with rival=match.rival_label %}Historial contra {{ rival }}{% endblocktranslate %} <i class="fa-solid fa-chevron-right" aria-hidden="true"></i></a></p>{% endif %}
 {% endif %}
 
 {% if my_status and not match.no_show and not stage_view %}
