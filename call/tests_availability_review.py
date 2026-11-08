@@ -63,21 +63,14 @@ class UsabilityTests(ReviewBase):
         self.assertNotContains(response, "Apuntados por el capitán ·")
         self.assertNotContains(response, "No responde")
 
-    def test_u02_invalid_answer_is_not_reported_as_closed(self):
-        """Elegir nada en la ventana da «Elige Sí, No o Pendiente», no «cerrada»."""
+    def test_modal_is_informative_only(self):
+        """La ventana «Ver respuestas» lista las respuestas sin botones para cambiarlas."""
+        availability.set_answer(self.match, self.luis, "yes")
         self.client.force_login(self.captain)
-        response = self.client.post(reverse("availability_set", args=[self.match.public_id]),
-                                    {"set": f"{self.luis.public_id}:"}, follow=True)
-        self.assertContains(response, "Elige Sí, No o Pendiente")
-        self.assertNotContains(response, "está cerrada")
-
-    def test_u02_buttons_set_the_answer(self):
-        """El botón de la fila guarda la respuesta como la pone el capitán."""
-        self.client.force_login(self.captain)
-        self.client.post(reverse("availability_set", args=[self.match.public_id]),
-                         {"set": f"{self.luis.public_id}:yes"})
-        row = Availability.objects.get(player=self.luis)
-        self.assertEqual((row.answer, row.set_by_manager), ("yes", True))
+        response = self.client.get(self.ficha)
+        self.assertContains(response, "availabilityModal")
+        self.assertNotContains(response, "z-av-set")
+        self.assertNotContains(response, "/set/")
 
     def test_u04_reminder_is_captain_only(self):
         """Un gestor no envía el recordatorio ni ve el botón; el capitán sí."""
@@ -156,15 +149,6 @@ class UsabilityTests(ReviewBase):
         ReportDelivery.objects.create(call=call, email="c@example.com", status=ReportDelivery.SENT)
         self.assertContains(self.client.get(self.ficha), "Volver a enviar el informe")
 
-    def test_u07_player_sees_the_captain_changed_the_answer(self):
-        """Si el capitán cambió la respuesta, el jugador lo ve en el enlace y en la ficha; el capitán, en la ventana."""
-        availability.set_answer(self.match, self.ana, "no", by_manager=True)
-        self.client.force_login(self.user)
-        self.assertContains(self.client.get(self.url), "Respuesta puesta por tu capitán")
-        self.assertContains(self.client.get(self.ficha), "Respuesta puesta por tu capitán")
-        self.client.force_login(self.captain)
-        self.assertContains(self.client.get(self.ficha), "puesta por el capitán")
-
     def test_u08_suspended_club_has_its_own_message(self):
         """Un club suspendido no dice «no perteneces»."""
         from django.utils import timezone
@@ -201,10 +185,8 @@ class UsabilityTests(ReviewBase):
         self.client.post(reverse("availability_answer", args=[self.match.public_id]), {"answer": "yes"})
         self.assertEqual(Availability.objects.get(player=self.ana).answer, "yes")
 
-    def test_u10_buttons_have_names_and_no_aria_pressed(self):
-        """Cada botón de la ventana dice a quién cambia; la ficha del jugador no usa aria-pressed."""
-        self.client.force_login(self.captain)
-        self.assertContains(self.client.get(self.ficha), "Poner Sí a")
+    def test_u10_player_sheet_has_no_aria_pressed(self):
+        """La ficha del jugador no usa aria-pressed."""
         availability.set_answer(self.match, self.ana, "yes")
         self.client.force_login(self.user)
         self.assertNotContains(self.client.get(self.ficha), "aria-pressed")

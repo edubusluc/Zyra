@@ -15872,15 +15872,6 @@ msgstr "The call-up is closed: the answer can no longer be changed."
 msgid "Respuesta guardada."
 msgstr "Answer saved."
 
-#: call/views.py:103
-#, python-format
-msgid "Respuesta de %(player)s actualizada."
-msgstr "%(player)s's answer updated."
-
-#: call/views.py:105
-msgid "No se puede cambiar la respuesta: la convocatoria está cerrada."
-msgstr "The answer cannot be changed: the call-up is closed."
-
 #: call/views.py:116
 msgid "Enlace nuevo creado. El anterior ya no funciona."
 msgstr "New link created. The old one no longer works."
@@ -15959,11 +15950,6 @@ msgstr "No answer · %(n)s"
 #: match/templates/includes/availability_card.html:20
 msgid "Ver respuestas"
 msgstr "See answers"
-
-#: match/templates/includes/availability_card.html:28
-#, python-format
-msgid "Respuesta de %(name)s"
-msgstr "%(name)s's answer"
 
 #: match/templates/includes/availability_card.html:29
 msgid "Apuntado por el capitán"
@@ -16270,9 +16256,6 @@ msgstr ""
 "with the account you joined the team with, or ask your captain for an "
 "invitation if you do not have an account in the team yet."
 
-msgid "Respuesta puesta por tu capitán"
-msgstr "Answer set by your captain"
-
 msgid ""
 "Solo lo verán tu capitán y los gestores. No escribas datos de salud. Se "
 "borra al cerrar el acta."
@@ -16291,12 +16274,6 @@ msgstr "New link"
 
 msgid "No se pudo copiar: cópialo a mano"
 msgstr "Could not copy: copy it by hand"
-
-msgid "puesta por el capitán"
-msgstr "set by the captain"
-
-msgid "Poner %(answer)s a %(name)s"
-msgstr "Set %(answer)s for %(name)s"
 
 msgid "Volver a enviar el informe"
 msgstr "Send the report again"

@@ -91,7 +91,7 @@ entero sigue siendo la clave de los FK. Excepciones sin `public_id`: `backoffice
 
 - **Call** (`call/models.py`): una por `Match` (`unique_together`), M2M `players`, `draft_mode`
   (True = abierta).
-- **Availability** (`call/models.py`): respuesta de un jugador al enlace de disponibilidad, única por (`match`, `player`); `answer` yes/no/maybe, `comment` (≤200, solo con «Pendiente»; se borra al cerrar el acta), `set_by_manager`. Cambiar fecha u hora del `Match` no la borra. El enlace usa `Match.availability_token` (impredecible; migración `match/0018` lo crea para los enfrentamientos abiertos).
+- **Availability** (`call/models.py`): respuesta de un jugador al enlace de disponibilidad, única por (`match`, `player`); `answer` yes/no/maybe, `comment` (≤200, solo con «Pendiente»; se borra al cerrar el acta). Cambiar fecha u hora del `Match` no la borra. El enlace usa `Match.availability_token` (impredecible; migración `match/0018` lo crea para los enfrentamientos abiertos).
 - **ReportDelivery**: cola de envío del PDF, única por (`call`, `email`); `status`
   pending/sent/failed, `attempts`, `next_attempt_at`.
 - **CallLog** (`callLog/models.py`): `text` con líneas separadas por `;`.

@@ -7,7 +7,7 @@ from django.utils.translation import gettext as _, ngettext
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 from core import spaces
-from core.decorators import club_admin_required, club_manager_required, club_required
+from core.decorators import club_admin_required, club_required
 from match.models import Match
 from players.models import Player
 from . import availability as availability_logic
@@ -115,28 +115,6 @@ def availability_answer(request, match_id):
     player = Player.objects.filter(club=match.club, user=request.user).first()
     if player is not None:
         _save_own_answer(request, match, player)
-    return redirect("call_for_match", match.public_id)
-
-
-@spaces.follow_match
-@club_manager_required
-@require_POST
-def availability_set(request, match_id):
-    """
-    El capitán o un gestor cambia la respuesta de un jugador. Los botones de la ventana de respuestas envían
-    ``set`` con ``<id del jugador>:<respuesta>``; también vale ``player`` y ``answer`` por separado.
-    """
-    match = get_object_or_404(Match, public_id=match_id, club=request.club)
-    player_id, answer = request.POST.get("player", ""), request.POST.get("answer", "")
-    if request.POST.get("set"):
-        player_id, _sep, answer = request.POST["set"].rpartition(":")
-    player = get_object_or_404(Player, public_id=player_id, club=request.club)
-    if not availability_logic.is_open(match):
-        messages.error(request, _("No se puede cambiar la respuesta: la convocatoria está cerrada."))
-    elif availability_logic.set_answer(match, player, answer, request.POST.get("comment", ""), by_manager=True):
-        messages.success(request, _("Respuesta de %(player)s actualizada.") % {"player": player.short_name})
-    else:
-        messages.error(request, _("Elige Sí, No o Pendiente."))
     return redirect("call_for_match", match.public_id)
 
 

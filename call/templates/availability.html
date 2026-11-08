@@ -80,7 +80,6 @@
                 {% blocktranslate with answer=mine.get_answer_display %}Has respondido: {{ answer }}{% endblocktranslate %}
             </p>
             {% if mine.comment %}<p class="z-av-done-note">“{{ mine.comment }}”</p>{% endif %}
-            {% if mine.set_by_manager %}<p class="z-av-by-captain"><i class="fa-solid fa-user-shield" aria-hidden="true"></i> {% translate "Respuesta puesta por tu capitán" %}</p>{% endif %}
             <p class="z-av-done-ask">{% translate "¿Quieres cambiar la respuesta?" %}</p>
             <a class="btn btn-secondary btn-lg" href="?cambiar=1">{% translate "Cambiar respuesta" %}</a>
         </div>
