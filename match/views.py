@@ -28,7 +28,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 from players.models import Player, current_season
-from call.models import Call
+from call.models import Call, Availability
+from call import availability as call_availability
 from team.models import Team
 from datetime import datetime, timedelta
 from callLog.models import CallLog
@@ -487,6 +488,14 @@ def selectable_players(club, include_ids=()):
     return players
 
 
+def annotate_availability(match, players):
+    """Pone en cada jugador su respuesta al enlace de disponibilidad (``availability``: respuesta, comentario)."""
+    badges = call_availability.availability_badges(match)
+    for p in players:
+        p.availability = badges.get(p.id)
+    return bool(badges)
+
+
 MIN_CALL_ERROR = gettext_lazy("La convocatoria necesita al menos %(n)s jugadores.")
 
 
@@ -505,6 +514,7 @@ def create_call(request, match_id):
 
     selected_ids = []
     players = selectable_players(request.club)
+    has_availability = annotate_availability(match, players)
     if request.method == 'POST':
         chosen = club_players(request, request.POST.getlist('players'))
         selected_ids = list(chosen.values_list('id', flat=True))
@@ -520,8 +530,14 @@ def create_call(request, match_id):
             messages.success(request, _("Convocatoria creada con %(n)s jugadores.") % {"n": len(selected_ids)})
             return redirect('call_for_match', match.public_id)
 
+    else:
+        # Los «Sí» del enlace de disponibilidad llegan marcados; el capitán decide.
+        listed = {p.id for p in players}
+        selected_ids = [i for i in call_availability.yes_player_ids(match) if i in listed]
+
     return render(request, "create_call.html", {
         "players": players,
+        "has_availability": has_availability,
         "selected_players": selected_ids,
         "match": match,
         "min_call_players": competition_for(match).min_call_players,
@@ -666,6 +682,7 @@ def edit_call(request, call_id):
     call = club_call(request, public_id=call_id)
     selected_players = list(call.players.values_list('id', flat=True))
     all_players = selectable_players(request.club, include_ids=selected_players)
+    has_availability = annotate_availability(call.match, all_players)
     call_log, _created = CallLog.objects.get_or_create(call=call, defaults={'text': ''})
     
     current_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
@@ -683,6 +700,7 @@ def edit_call(request, call_id):
                     messages.error(request, MIN_CALL_ERROR % {"n": min_call})
                 return render(request, 'edit_call.html', {
                     'call': call, 'all_players': all_players, 'selected_players': list(selected_set),
+                    'has_availability': has_availability,
                     'min_call_players': min_call, **_finals_context(call.match, all_players, list(selected_set)),
                 })
 
@@ -721,6 +739,7 @@ def edit_call(request, call_id):
     context = {
         'call': call,
         'all_players': all_players,
+        'has_availability': has_availability,
         'selected_players': selected_players,
         'min_call_players': competition_for(call.match).min_call_players,
         **_finals_context(call.match, all_players, selected_players),
@@ -831,6 +850,7 @@ def call_for_match(request, match_id):
             p.is_me = p.id == me.id
 
     return render(request, "call_for_match.html", {
+        "availability": availability_context(request, match) if request.membership.can_manage and call_availability.is_open(match) else None,
         "call_for_match": call,
         "match_id": match.public_id,
         "game_for_match": games,
@@ -859,6 +879,13 @@ def call_for_match(request, match_id):
         "finals_minimum": match.club.rules.finals_min_regular if league.applies_finals_rule(match) else 0,
         "finals_call_short": league.finals_shortfall(match, call.players.all()) if call and match.draft_mode and request.membership.can_manage else [],
     })
+
+
+def availability_context(request, match):
+    """Datos de la tarjeta «Disponibilidad» de la ficha: enlace, texto de WhatsApp, respuestas y opciones."""
+    url = call_availability.link_url(request, match)
+    return {"url": url, "whatsapp": call_availability.whatsapp_url(call_availability.share_text(match, url)),
+            "board": call_availability.board(match), "answers": Availability.ANSWERS}
 
 
 def validate_game_for_match(call):

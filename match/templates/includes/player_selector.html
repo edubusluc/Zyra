@@ -18,6 +18,7 @@
                 <summary class="btn btn-outline-secondary btn-sm" aria-label="{% translate 'Más acciones' %}"><i class="fa-solid fa-ellipsis" aria-hidden="true"></i></summary>
                 <ul>
                     <li><button type="button" data-selector-all title="{% translate 'Marca todos los jugadores que se ven con el filtro y la búsqueda actuales' %}"><i class="fa-regular fa-square-check" aria-hidden="true"></i> {% translate "Marcar todos los de la lista" %}</button></li>
+                    {% if has_availability %}<li><button type="button" data-selector-yes title="{% translate 'Marca a quienes han respondido Sí en el enlace de disponibilidad, sin quitar a nadie' %}"><i class="fa-solid fa-thumbs-up" aria-hidden="true"></i> {% translate "Marcar los que dicen Sí" %}</button></li>{% endif %}
                     <li><button type="button" data-selector-none><i class="fa-regular fa-square" aria-hidden="true"></i> {% translate "Quitar todos" %}</button></li>
                 </ul>
             </details>
@@ -26,7 +27,7 @@
 
     <div class="z-selector-grid">
         {% for player in players %}
-        <label class="z-pick" data-name="{{ player.full_name }}" data-position="{{ player.position }}">
+        <label class="z-pick" data-name="{{ player.full_name }}" data-position="{{ player.position }}"{% if player.availability %} data-answer="{{ player.availability.0 }}"{% endif %}>
             <input type="checkbox" name="players" value="{{ player.id }}" {% if player.id in selected %}checked{% endif %}>
             <span class="z-pick-check" aria-hidden="true"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
             <span class="z-pick-body">
@@ -35,6 +36,7 @@
                     {{ player.get_position_display|default:"—" }}{% if request.club.rules.has_snp %} · SNP {{ player.snp_score|snp_points }}{% endif %}{% if player.season_total %} · <span title="{% blocktranslate with n=player.played total=player.season_total %}Jugó {{ n }} de {{ total }} enfrentamientos esta temporada{% endblocktranslate %}">{% blocktranslate with n=player.played total=player.season_total %}Jugó {{ n }}/{{ total }}{% endblocktranslate %}</span>{% endif %}{% if not player.in_team %} · {% translate "fuera del equipo" %}{% endif %}
                 </span>
                 {# Jugó n/m va en la misma línea que la posición y los puntos (UX-034); las advertencias, aparte y a la vista #}
+                {% if player.availability %}<span class="z-pick-meta{% if player.availability.0 == 'yes' %} is-yes{% endif %}"{% if player.availability.1 %} title="{{ player.availability.1 }}"{% endif %}><i class="fa-solid {% if player.availability.0 == 'yes' %}fa-thumbs-up{% elif player.availability.0 == 'no' %}fa-thumbs-down{% else %}fa-circle-question{% endif %}" aria-hidden="true"></i> {% if player.availability.0 == 'yes' %}{% translate "Dice que sí" %}{% elif player.availability.0 == 'no' %}{% translate "Dice que no" %}{% else %}{% translate "Aún no sabe" %}{% endif %}</span>{% endif %}
                 {% if player.finals_short %}<span class="z-pick-meta z-pick-warn-text"><i class="fa-solid fa-flag" aria-hidden="true"></i> {% blocktranslate with n=player.finals_played need=finals_minimum %}Liga: {{ n }} de {{ need }} necesarios{% endblocktranslate %}</span>{% endif %}
                 {% if player.copy_pending %}<span class="z-pick-meta" title="{% translate 'Esta persona aún no ha aceptado la invitación al equipo: no recibe correos hasta que acepte.' %}"><i class="fa-solid fa-hourglass-half" aria-hidden="true"></i> {% translate "Pendiente de aceptar" %}</span>{% endif %}
                 {% if player.penalty_reasons %}

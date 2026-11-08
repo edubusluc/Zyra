@@ -607,7 +607,12 @@ msgstr "News in Zyra"
 
 #: backoffice/mass_email.py:48
 #, python-brace-format
-msgid "Hola {nombre},\n\nHemos sacado mejoras nuevas en Zyra y creo que os vendrán bien en {club}. Échales un ojo y, si algo no te cuadra, respóndeme a este correo.\n\nUn saludo."
+msgid ""
+"Hola {nombre},\n"
+"\n"
+"Hemos sacado mejoras nuevas en Zyra y creo que os vendrán bien en {club}. Échales un ojo y, si algo no te cuadra, respóndeme a este correo.\n"
+"\n"
+"Un saludo."
 msgstr ""
 "Hi {nombre},\n"
 "\n"
@@ -6236,7 +6241,9 @@ msgstr ""
 "Google."
 
 #: core/templates/base.html:8
-msgid "Zyra: gestión de equipos de pádel. Jugadores, convocatorias, partidos y estadísticas."
+msgid ""
+"Zyra: gestión de equipos de pádel. Jugadores, convocatorias, partidos y "
+"estadísticas."
 msgstr ""
 "Zyra: padel team management — players, call-ups, matches and statistics."
 
@@ -6922,7 +6929,10 @@ msgstr "Welcome to Zyra, %(username)s!"
 
 #: core/templates/emails/welcome.html:3
 #, python-format
-msgid "Ya estás dentro: has creado el equipo <strong>%(club)s</strong>. Como capitán puedes gestionar jugadores, partidos, convocatorias y estadísticas, e invitar al resto del equipo desde <em>Miembros del club</em>."
+msgid ""
+"Ya estás dentro: has creado el equipo <strong>%(club)s</strong>. Como "
+"capitán puedes gestionar jugadores, partidos, convocatorias y estadísticas, "
+"e invitar al resto del equipo desde <em>Miembros del club</em>."
 msgstr ""
 "Your registration is complete and you have created the team "
 "<strong>%(club)s</strong>. As a captain you can manage players, matches, "
@@ -6931,7 +6941,10 @@ msgstr ""
 
 #: core/templates/emails/welcome.html:5
 #, python-format
-msgid "Ya estás dentro: formas parte de <strong>%(club)s</strong>. Desde ahora puedes consultar los partidos, las convocatorias y las estadísticas del equipo."
+msgid ""
+"Ya estás dentro: formas parte de <strong>%(club)s</strong>. Desde ahora "
+"puedes consultar los partidos, las convocatorias y las estadísticas del "
+"equipo."
 msgstr ""
 "Your registration is complete and you are now part of "
 "<strong>%(club)s</strong>. From now on you can view the team's matches, "
@@ -6947,7 +6960,10 @@ msgstr "Captains"
 
 #: core/templates/emails/welcome.txt:3
 #, python-format
-msgid "Ya estás dentro: has creado el equipo %(club)s. Como capitán puedes gestionar jugadores, partidos, convocatorias y estadísticas, e invitar al resto del equipo desde \"Miembros del club\"."
+msgid ""
+"Ya estás dentro: has creado el equipo %(club)s. Como capitán puedes "
+"gestionar jugadores, partidos, convocatorias y estadísticas, e invitar al "
+"resto del equipo desde \"Miembros del club\"."
 msgstr ""
 "Your registration is complete and you have created the team %(club)s. As a "
 "captain you can manage players, matches, call-ups and statistics, and invite"
@@ -6955,7 +6971,9 @@ msgstr ""
 
 #: core/templates/emails/welcome.txt:3
 #, python-format
-msgid "Ya estás dentro: formas parte de %(club)s. Desde ahora puedes consultar los partidos, las convocatorias y las estadísticas del equipo."
+msgid ""
+"Ya estás dentro: formas parte de %(club)s. Desde ahora puedes consultar los "
+"partidos, las convocatorias y las estadísticas del equipo."
 msgstr ""
 "Your registration is complete and you are now part of %(club)s. From now on "
 "you can view the team's matches, call-ups and statistics."
@@ -7136,7 +7154,9 @@ msgstr ""
 "Members, invitations and the SNP account are still managed by the captain."
 
 #: core/templates/home.html:90
-msgid "Gestionar los jugadores del equipo y recibir el informe PDF de la convocatoria."
+msgid ""
+"Gestionar los jugadores del equipo y recibir el informe PDF de la "
+"convocatoria."
 msgstr "Manage the team's players and receive the call-up PDF report."
 
 #: core/templates/home.html:94
@@ -7541,7 +7561,9 @@ msgid "Registra tu cuenta de SNP"
 msgstr "Register your SNP account"
 
 #: core/templates/home.html:385
-msgid "Mantén al día los puntos SNP de tus jugadores sin hacer nada: se actualizan solos cada semana."
+msgid ""
+"Mantén al día los puntos SNP de tus jugadores sin hacer nada: se actualizan "
+"solos cada semana."
 msgstr ""
 "Keep your players' SNP points updated every week and load their data "
 "automatically to save time and keep everything up to date."
@@ -8582,7 +8604,9 @@ msgstr ""
 " you."
 
 #: core/templates/register_club.html:118
-msgid "No hemos podido leer tu nombre y apellidos de tu cuenta de Google. Escríbelos para crear tu jugador."
+msgid ""
+"No hemos podido leer tu nombre y apellidos de tu cuenta de Google. "
+"Escríbelos para crear tu jugador."
 msgstr ""
 "We couldn't get your first name and last name from your Google account. "
 "Please enter them to create your player."
@@ -13790,7 +13814,10 @@ msgstr ""
 "they will get the points."
 
 #: players/templates/list_players.html:203
-msgid "SNP no indica en qué lado de la pista juega cada uno, así que los jugadores nuevos llegarán sin posición. Edítalos después y elige la de cada uno: te ayudará a montar mejor las parejas y las alineaciones."
+msgid ""
+"SNP no indica en qué lado de la pista juega cada uno, así que los jugadores "
+"nuevos llegarán sin posición. Edítalos después y elige la de cada uno: te "
+"ayudará a montar mejor las parejas y las alineaciones."
 msgstr ""
 "One thing: SNP doesn't say which side of the court each player plays on, so "
 "new players will arrive without a position. Afterwards, edit each one and "
@@ -14092,7 +14119,10 @@ msgid "Cuenta SNP borrada."
 msgstr "SNP account deleted."
 
 #: players/views.py:323
-msgid "Jugadores añadidos. SNP no indica en qué lado juega cada uno, así que su posición ha quedado vacía. Cuando puedas, edítalos y elige la de cada uno: así las parejas y las alineaciones te saldrán mejor."
+msgid ""
+"Jugadores añadidos. SNP no indica en qué lado juega cada uno, así que su "
+"posición ha quedado vacía. Cuando puedas, edítalos y elige la de cada uno: "
+"así las parejas y las alineaciones te saldrán mejor."
 msgstr ""
 "Your players are here! SNP doesn't say which side each one plays on, so "
 "their court position is empty. When you can, edit each player and choose "
@@ -14687,7 +14717,9 @@ msgid "Algo ha fallado"
 msgstr "Something went wrong"
 
 #: core/templates/500.html:24
-msgid "Ha fallado algo por nuestra parte. Ya nos ha llegado el aviso; prueba de nuevo en un minuto."
+msgid ""
+"Ha fallado algo por nuestra parte. Ya nos ha llegado el aviso; prueba de "
+"nuevo en un minuto."
 msgstr ""
 "It's not your fault. We've already been notified: please try again in a "
 "minute."
@@ -15583,8 +15615,12 @@ msgstr "Usual playing time"
 msgid "Hora habitual de juego (opcional)"
 msgstr "Usual playing time (optional)"
 
-msgid "Se propondrá al crear tus enfrentamientos como local; podrás cambiarla en cada uno."
-msgstr "It will be suggested when you create your home matches; you can change it in each one."
+msgid ""
+"Se propondrá al crear tus enfrentamientos como local; podrás cambiarla en "
+"cada uno."
+msgstr ""
+"It will be suggested when you create your home matches; you can change it in"
+" each one."
 
 msgid "%(team)s aún no tiene enfrentamientos cerrados"
 msgstr "%(team)s has no closed matches yet"
@@ -15694,3 +15730,232 @@ msgstr[1] "%(n)s more matches scheduled"
 #: match/templates/list_match.html
 msgid "Ver el calendario completo"
 msgstr "See the full calendar"
+
+#: call/availability.py:53
+#, python-format
+msgid ""
+"¡Convocatoria! %(local)s – %(visiting)s, el %(when)s.\n"
+"¿Puedes jugar? Respóndelo aquí:"
+msgstr ""
+"Call-up! %(local)s – %(visiting)s, on %(when)s.\n"
+"Can you play? Answer here:"
+
+#: call/availability.py:160
+#, python-format
+msgid "¿Puedes jugar? %(local)s – %(visiting)s"
+msgstr "Can you play? %(local)s – %(visiting)s"
+
+#: call/availability.py:164
+#, python-format
+msgid ""
+"Hola %(name)s: el capitán te recuerda que falta tu respuesta para %(local)s – %(visiting)s (%(when)s). Dile si puedes jugar aquí:\n"
+"%(url)s"
+msgstr ""
+"Hi %(name)s: your captain reminds you that your answer is missing for %(local)s – %(visiting)s (%(when)s). Say whether you can play here:\n"
+"%(url)s"
+
+#: call/models.py:66
+msgid "Aún no sé"
+msgstr "Not sure yet"
+
+#: call/templates/availability.html:17
+msgid ""
+"Esta cuenta no pertenece al equipo de este enfrentamiento. Pídele a tu "
+"capitán una invitación."
+msgstr ""
+"This account is not part of the team for this match. Ask your captain for an"
+" invitation."
+
+#: call/templates/availability.html:24
+#, python-format
+msgid "Tu última respuesta: %(answer)s"
+msgstr "Your last answer: %(answer)s"
+
+#: call/templates/availability.html:28
+msgid "¿Quién eres?"
+msgstr "Who are you?"
+
+#: call/templates/availability.html:34
+msgid "Elige tu nombre en la plantilla"
+msgstr "Pick your name in the squad"
+
+#: call/templates/availability.html:43
+msgid "No hay jugadores libres en la plantilla. Habla con tu capitán."
+msgstr "There are no free players in the squad. Talk to your captain."
+
+#: call/templates/availability.html:47
+#, python-format
+msgid "%(name)s, ¿puedes jugar?"
+msgstr "%(name)s, can you play?"
+
+#: call/templates/availability.html:51
+msgid "Tu respuesta"
+msgstr "Your answer"
+
+#: call/templates/availability.html:59
+msgid "Comentario (opcional)"
+msgstr "Comment (optional)"
+
+#: call/templates/availability.html:62
+msgid "Enviar respuesta"
+msgstr "Send answer"
+
+#: call/templates/availability.html:66
+msgid "Ver el enfrentamiento y las respuestas"
+msgstr "See the match and the answers"
+
+#: call/views.py:77
+msgid "La convocatoria está cerrada: ya no se puede cambiar la respuesta."
+msgstr "The call-up is closed: the answer can no longer be changed."
+
+#: call/views.py:79
+msgid "Respuesta guardada."
+msgstr "Answer saved."
+
+#: call/views.py:103
+#, python-format
+msgid "Respuesta de %(player)s actualizada."
+msgstr "%(player)s's answer updated."
+
+#: call/views.py:105
+msgid "No se puede cambiar la respuesta: la convocatoria está cerrada."
+msgstr "The answer cannot be changed: the call-up is closed."
+
+#: call/views.py:116
+msgid "Enlace nuevo creado. El anterior ya no funciona."
+msgstr "New link created. The old one no longer works."
+
+#: call/views.py:130
+msgid "La convocatoria está cerrada."
+msgstr "The call-up is closed."
+
+#: call/views.py:132
+msgid ""
+"Ya enviaste un recordatorio hace poco. Espera un rato antes de enviar otro."
+msgstr ""
+"You sent a reminder a moment ago. Wait a while before sending another."
+
+#: call/views.py:135
+#, python-format
+msgid "Recordatorio enviado a %(n)s jugador."
+msgid_plural "Recordatorio enviado a %(n)s jugadores."
+msgstr[0] "Reminder sent to %(n)s player."
+msgstr[1] "Reminder sent to %(n)s players."
+
+#: call/views.py:137
+msgid "Nadie tiene pendiente responder."
+msgstr "Nobody has an answer pending."
+
+#: match/templates/includes/availability_card.html:4
+msgid "Disponibilidad"
+msgstr "Availability"
+
+#: match/templates/includes/availability_card.html:5
+msgid ""
+"Comparte el enlace con la plantilla: cada jugador responde Sí, No o Aún no "
+"sé. Solo tú y los gestores veis las respuestas; la convocatoria la sigues "
+"haciendo tú."
+msgstr ""
+"Share the link with the squad: each player answers Yes, No or Not sure yet. "
+"Only you and the managers see the answers; you still make the call-up."
+
+#: match/templates/includes/availability_card.html:8
+msgid "Enlace de disponibilidad"
+msgstr "Availability link"
+
+#: match/templates/includes/availability_card.html:9
+msgid "Copiar enlace"
+msgstr "Copy link"
+
+#: match/templates/includes/availability_card.html:10
+msgid "Enviar por WhatsApp"
+msgstr "Send via WhatsApp"
+
+#: match/templates/includes/availability_card.html:13
+#, python-format
+msgid "Sí · %(n)s"
+msgstr "Yes · %(n)s"
+
+#: match/templates/includes/availability_card.html:14
+#, python-format
+msgid "Aún no sé · %(n)s"
+msgstr "Not sure yet · %(n)s"
+
+#: match/templates/includes/availability_card.html:15
+#, python-format
+msgid "No · %(n)s"
+msgstr "No · %(n)s"
+
+#: match/templates/includes/availability_card.html:16
+#, python-format
+msgid "Apuntados por el capitán · %(n)s"
+msgstr "Signed up by the captain · %(n)s"
+
+#: match/templates/includes/availability_card.html:17
+#, python-format
+msgid "Sin respuesta · %(n)s"
+msgstr "No answer · %(n)s"
+
+#: match/templates/includes/availability_card.html:20
+msgid "Ver respuestas"
+msgstr "See answers"
+
+#: match/templates/includes/availability_card.html:28
+#, python-format
+msgid "Respuesta de %(name)s"
+msgstr "%(name)s's answer"
+
+#: match/templates/includes/availability_card.html:29
+msgid "Apuntado por el capitán"
+msgstr "Signed up by the captain"
+
+#: match/templates/includes/availability_card.html:30
+msgid "Sin respuesta"
+msgstr "No answer"
+
+#: match/templates/includes/availability_card.html:36
+msgid "No hay jugadores en la plantilla."
+msgstr "There are no players in the squad."
+
+#: match/templates/includes/availability_card.html:41
+msgid "Se enviará un correo con el enlace a quienes aún no han respondido."
+msgstr ""
+"An email with the link will be sent to those who have not answered yet."
+
+#: match/templates/includes/availability_card.html:42
+msgid "Recordar a quien no ha respondido"
+msgstr "Remind those who have not answered"
+
+#: match/templates/includes/availability_card.html:45
+msgid ""
+"El enlace anterior dejará de funcionar y tendrás que compartir el nuevo."
+msgstr ""
+"The old link will stop working and you will have to share the new one."
+
+#: match/templates/includes/availability_card.html:46
+msgid "Crear enlace nuevo"
+msgstr "Create new link"
+
+#: match/templates/includes/player_selector.html:21
+msgid ""
+"Marca a quienes han respondido Sí en el enlace de disponibilidad, sin quitar"
+" a nadie"
+msgstr ""
+"Ticks those who answered Yes on the availability link, without unticking "
+"anyone"
+
+#: match/templates/includes/player_selector.html:21
+msgid "Marcar los que dicen Sí"
+msgstr "Tick those who say Yes"
+
+#: match/templates/includes/player_selector.html:39
+msgid "Dice que sí"
+msgstr "Says yes"
+
+#: match/templates/includes/player_selector.html:39
+msgid "Dice que no"
+msgstr "Says no"
+
+#: match/templates/includes/player_selector.html:39
+msgid "Aún no sabe"
+msgstr "Not sure yet"

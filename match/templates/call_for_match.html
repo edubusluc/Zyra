@@ -174,6 +174,8 @@
 </div>
 {% endif %}
 
+{% if availability %}{% include 'includes/availability_card.html' %}{% endif %}
+
 <h2 class="z-section-title mt-0">{% translate "Convocatoria" %}</h2>
 
 {% if can_manage and report_deliveries %}

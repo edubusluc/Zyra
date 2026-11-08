@@ -1,0 +1,50 @@
+{# Enlace de disponibilidad del enfrentamiento (capitán y gestores). Recibe: availability (enlace, texto, resumen). #}
+{% load i18n static %}
+<section class="z-availability" aria-labelledby="availability-title">
+    <h2 class="z-section-title mt-0" id="availability-title">{% translate "Disponibilidad" %}
+        <span class="z-info" tabindex="0" role="note" title="{% translate 'Comparte el enlace con la plantilla: cada jugador responde Sí, No o Aún no sé. Solo tú y los gestores veis las respuestas; la convocatoria la sigues haciendo tú.' %}"><i class="fa-solid fa-circle-info" aria-hidden="true"></i></span>
+    </h2>
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+        <input type="text" id="availability-url" class="form-control" style="max-width: 28rem;" readonly value="{{ availability.url }}" aria-label="{% translate 'Enlace de disponibilidad' %}">
+        <button type="button" class="btn btn-secondary btn-sm" data-availability-copy="availability-url" data-copied="{% translate 'Copiado' %}"><i class="fa-regular fa-copy me-1" aria-hidden="true"></i>{% translate "Copiar enlace" %}</button>
+        <a class="btn btn-primary btn-sm" href="{{ availability.whatsapp }}" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp me-1" aria-hidden="true"></i> {% translate "Enviar por WhatsApp" %}</a>
+    </div>
+    <p class="z-tags mt-2">
+        <span class="z-tag is-lime">{% blocktranslate with n=availability.board.counts.yes %}Sí · {{ n }}{% endblocktranslate %}</span>
+        <span class="z-tag">{% blocktranslate with n=availability.board.counts.maybe %}Aún no sé · {{ n }}{% endblocktranslate %}</span>
+        <span class="z-tag">{% blocktranslate with n=availability.board.counts.no %}No · {{ n }}{% endblocktranslate %}</span>
+        <span class="z-tag">{% blocktranslate with n=availability.board.counts.captain %}Apuntados por el capitán · {{ n }}{% endblocktranslate %}</span>
+        <span class="z-tag">{% blocktranslate with n=availability.board.counts.none %}Sin respuesta · {{ n }}{% endblocktranslate %}</span>
+    </p>
+    <details class="z-more">
+        <summary class="btn btn-outline-secondary btn-sm">{% translate "Ver respuestas" %}</summary>
+        <ul class="z-availability-list">
+            {% for row in availability.board.rows %}
+            <li>
+                <span><b>{{ row.player.short_name }}</b>{% if row.comment %} · <small>{{ row.comment }}</small>{% endif %}</span>
+                <form method="post" action="{% url 'availability_set' match.public_id %}" class="d-flex gap-1" data-loading-text="{% translate 'Guardando…' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="player" value="{{ row.player.public_id }}">
+                    <select name="answer" aria-label="{% blocktranslate with name=row.player.short_name %}Respuesta de {{ name }}{% endblocktranslate %}">
+                        {% if row.state == "captain" %}<option value="" selected disabled>{% translate "Apuntado por el capitán" %}</option>
+                        {% elif row.state == "none" %}<option value="" selected disabled>{% translate "Sin respuesta" %}</option>{% endif %}
+                        {% for value, label in availability.answers %}<option value="{{ value }}" {% if row.state == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+                    </select>
+                    <button type="submit" class="btn btn-secondary btn-sm">{% translate "Cambiar" %}</button>
+                </form>
+            </li>
+            {% empty %}<li>{% translate "No hay jugadores en la plantilla." %}</li>{% endfor %}
+        </ul>
+    </details>
+    <div class="d-flex flex-wrap gap-2 mt-2">
+        <form method="post" action="{% url 'availability_remind' match.public_id %}" data-loading-text="{% translate 'Enviando…' %}"
+              data-confirm="{% translate 'Se enviará un correo con el enlace a quienes aún no han respondido.' %}">
+            {% csrf_token %}<button type="submit" class="btn btn-secondary btn-sm"><i class="fa-solid fa-bell me-1" aria-hidden="true"></i> {% translate "Recordar a quien no ha respondido" %}</button>
+        </form>
+        <form method="post" action="{% url 'availability_regenerate' match.public_id %}" data-loading-text="{% translate 'Guardando…' %}"
+              data-confirm="{% translate 'El enlace anterior dejará de funcionar y tendrás que compartir el nuevo.' %}">
+            {% csrf_token %}<button type="submit" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-rotate me-1" aria-hidden="true"></i> {% translate "Crear enlace nuevo" %}</button>
+        </form>
+    </div>
+</section>
+<script src="{% static 'js/availability.js' %}" defer></script>
