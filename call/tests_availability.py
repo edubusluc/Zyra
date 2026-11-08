@@ -1,6 +1,7 @@
 """Tests del enlace de disponibilidad de un enfrentamiento."""
 import datetime
 import json
+from urllib.parse import quote
 
 from django.contrib.auth import get_user_model
 from django.core import mail
@@ -207,6 +208,16 @@ class AvailabilityTests(TestCase):
         self.assertIn("Competición: SNP", text)
         self.assertIn("🗓️ Fecha:", text)
         self.assertTrue(text.endswith("Responde aquí con tu disponibilidad:\nhttps://zyra.test/x"))
+
+    def test_share_text_ends_with_the_bare_link(self):
+        """El enlace va solo en la última línea, con https:// y sin nada detrás, para que WhatsApp lo convierta en enlace."""
+        self.client.force_login(self.captain)
+        url = availability.link_url(self.client.get("/").wsgi_request, self.match)
+        text = availability.share_text(self.match, url)
+        last = text.split("\n")[-1]
+        self.assertEqual(last, url)
+        self.assertRegex(url, r"^https?://\S+/$")
+        self.assertTrue(availability.whatsapp_url(text).endswith("%0A" + quote(url)))
 
     @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
     def test_reminder_only_to_pending_and_limited(self):
