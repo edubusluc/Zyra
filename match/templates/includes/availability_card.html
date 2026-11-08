@@ -14,7 +14,7 @@
     </div>
     {% endif %}
     <div class="z-av-actions">
-        <button type="button" class="btn btn-outline-secondary btn-sm mt-2" data-bs-toggle="modal" data-bs-target="#availabilityModal"><i class="fa-solid fa-list-check me-1" aria-hidden="true"></i> {% translate "Ver respuestas" %}</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#availabilityModal"><i class="fa-solid fa-list-check me-1" aria-hidden="true"></i> {% translate "Ver respuestas" %}</button>
         {% if availability.open and availability.can_remind and availability.pending %}
         <form method="post" action="{% url 'availability_remind' match.public_id %}" data-loading-text="{% translate 'Enviando…' %}"
               data-confirm="{% blocktranslate count n=availability.pending %}Se enviará un correo con el enlace a {{ n }} jugador que aún no ha respondido.{% plural %}Se enviará un correo con el enlace a {{ n }} jugadores que aún no han respondido.{% endblocktranslate %}">
