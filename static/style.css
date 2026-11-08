@@ -4178,6 +4178,8 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
     .z-versus--stage .z-versus-team:nth-child(4) .z-crest-edge path { fill: #8FA0B5; }
     /* Canto de foto: el mismo logo oscurecido (lima oscuro en el de Zyra), no una silueta gris que ensucia. */
     .z-crest-edge.is-photo { filter: brightness(.55) saturate(1.1); }
+    .z-crest-scene.is-loading { opacity: 0; }
+    .z-crest-scene.is-loaded { transition: opacity .5s ease; }
     .z-crest.is-paused { animation-play-state: paused; }
     .z-crest-front { transform: translateZ(6px); backface-visibility: hidden; -webkit-backface-visibility: hidden; }
     /* Con backface-visibility oculta, el dorso no asoma por los huecos entre piezas de logos fragmentados. */
@@ -4188,7 +4190,7 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
     @keyframes z-crest-spin { to { transform: rotateY(360deg); } }
     @keyframes z-stage-rise { from { opacity: 0; transform: translateY(18px) scale(.96); } }
     @keyframes z-stage-fade { from { opacity: 0; } }
-    @keyframes z-crest-in { from { opacity: 0; transform: translateY(-26px) scale(.82); filter: blur(6px); } }
+    @keyframes z-crest-in { from { opacity: 0; transform: translateY(-26px) scale(.82); } }
 
     /* Tarjeta de datos sobre el VS: lista en filas, sin caja */
     .z-stage-card { display: flex; flex: 1; flex-direction: column; min-height: 0; width: 100%; margin: 0; padding: 0; text-align: left; }
