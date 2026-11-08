@@ -1,12 +1,12 @@
 """
-Imagen del resultado de un enfrentamiento para compartir por WhatsApp (botón «Compartir resultado»).
+Imagen del resultado de un enfrentamiento para compartir por WhatsApp (JPEG: iOS la muestra con miniatura en el menú de compartir) (botón «Compartir resultado»).
 
 Formato vertical 4:5 (1080×1350 px) con el estilo de la web: fondo oscuro de pista con la red en el
 centro, marcador en Anton (lima si se gana, rojo si se pierde, ámbar si se empata), insignia de la
 competición, escudos de local y visitante y una fila por partido con la pareja propia, los sets y los
 puntos que valía. Solo se guardan los jugadores del lado propio, así que la pareja rival no aparece.
 
-``build_result_png`` dibuja al doble de tamaño y reduce al final para que los bordes salgan suaves.
+``build_result_jpeg`` dibuja al doble de tamaño y reduce al final para que los bordes salgan suaves.
 """
 import io
 from pathlib import Path
@@ -216,19 +216,23 @@ def _rows(canvas, draw, match, games, own_is_local, rules):
             _text(draw, ((col_sets[0] + col_sets[1]) / 2, cy), sets, _fit(draw, sets, "Archivo-ExtraBold.ttf", 32, 240), TEXT, "mm")
         elif not missing:
             _text(draw, ((col_sets[0] + col_sets[1]) / 2, cy), "—", _font("Archivo-ExtraBold.ttf", 32), MUTED, "mm")
-        # Puntos en juego (solo en las competiciones con valor distinto por partido): chip junto al ganador.
+        # Puntos en juego (solo en las competiciones con valor distinto por partido): «+3» para quien
+        # gana y «0» para quien pierde, en los dos lados para que no se preste a confusión.
         if rules.ordered_pairs and game.score:
-            label = f"+{game.score}"
             font = _font("Archivo-ExtraBold.ttf", 22)
-            tw = draw.textlength(label, font=font) / SCALE + 24
-            cx = 192 if winner_local else 950
-            _pill(canvas, [cx - tw / 2, cy - 15, cx + tw / 2, cy + 15], LIME if own_won else (42, 44, 39))
-            _text(draw, (cx, cy + 1), label, font, INK if own_won else MUTED, "mm")
+            for local_side in (True, False):
+                won = winner_local == local_side
+                label = f"+{game.score}" if won else "0"
+                tw = max(draw.textlength(label, font=font) / SCALE + 24, 54)
+                cx = 192 if local_side else 950
+                gain = won and own_won  # solo lima el «+N» de nuestra pareja
+                _pill(canvas, [cx - tw / 2, cy - 15, cx + tw / 2, cy + 15], LIME if gain else (42, 44, 39))
+                _text(draw, (cx, cy + 1), label, font, INK if gain else MUTED, "mm")
     return panel[3]
 
 
-def build_result_png(match, games, outcome):
-    """PNG (bytes) de 1080×1350 con el resultado de ``match``; ``games`` son sus partidos ordenados por número
+def build_result_jpeg(match, games, outcome):
+    """JPEG (bytes) de 1080×1350 con el resultado de ``match``; ``games`` son sus partidos ordenados por número
     y ``outcome`` el desenlace del equipo propio (``match.views.match_outcome``: «V», «D», «E» o None).
 
     Los marcadores van en orden local-visitante, igual que la ficha. El color del marcador y la etiqueta
@@ -280,5 +284,5 @@ def build_result_png(match, games, outcome):
     _text(draw, (W - 64, 1285), "zyrapadel.com", _font("Archivo-ExtraBold.ttf", 26), LIME, "rm", spacing=1)
 
     out = io.BytesIO()
-    canvas.convert("RGB").resize((W, H), Image.LANCZOS).save(out, "PNG", optimize=True)
+    canvas.convert("RGB").resize((W, H), Image.LANCZOS).save(out, "JPEG", quality=92, optimize=True, subsampling=0)
     return out.getvalue()
