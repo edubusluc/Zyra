@@ -4422,3 +4422,11 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .z-av-set-btn.is-current { background: var(--z-lime); border-color: var(--z-lime); color: var(--z-ink); font-weight: 800; }
 .z-av-by-captain { margin: 8px 0 0; color: var(--z-muted); font-size: var(--z-fs-sm); }
 .z-av-by-captain-note { color: var(--z-muted); }
+
+/* «¿Puedes jugar?» + «Disponibilidad» arriba de la ficha: dos columnas en escritorio, apiladas en móvil. */
+.z-av-row { margin-bottom: 18px; }
+.z-av-row > section { min-width: 0; }
+@media (min-width: 768px) {
+    .z-av-row.is-two { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
+}
+.z-av-row .z-av-me { margin-bottom: 0; }

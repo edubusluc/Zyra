@@ -49,6 +49,14 @@
     {% endif %}
 </div>
 
+{# «¿Puedes jugar?» y, para el capitán, «Disponibilidad» (enlace y respuestas): arriba, antes de la «Previa»; en dos columnas si salen las dos. #}
+{% if can_answer or availability %}
+<div class="z-av-row{% if can_answer and availability %} is-two{% endif %}">
+    {% if can_answer %}{% include 'includes/availability_me.html' %}{% endif %}
+    {% if availability %}{% include 'includes/availability_card.html' %}{% endif %}
+</div>
+{% endif %}
+
 {# EST-040: la «Previa» ayuda a decidir antes de jugar; con el acta cerrada solo queda el enlace al historial (capitán y jugador). #}
 {% if match.draft_mode %}
 {% rival_preview match as preview %}
@@ -138,9 +146,6 @@
     {% include 'includes/ficha_closed_actions.html' %}
 </div>
 {% endif %}
-
-{% if can_answer %}{% include 'includes/availability_me.html' %}{% endif %}
-{% if availability %}{% include 'includes/availability_card.html' %}{% endif %}
 
 {% if stage_view and not match.draft_mode %}<div class="z-stage-closed">{% endif %}
 {% if not stage_view or not match.draft_mode %}<h2 class="z-section-title mt-0">{% translate "Convocatoria" %}</h2>{% endif %}
