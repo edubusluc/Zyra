@@ -61,6 +61,9 @@ class AvailabilityTests(TestCase):
         self.client.force_login(stranger)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 403)
+        self.assertContains(response, "no pertenece a", status_code=403)
+        self.assertContains(response, "Cambiar de cuenta", status_code=403)
+        self.assertNotContains(response, "Ver el enfrentamiento y las respuestas", status_code=403)
         self.client.post(self.url, {"action": "answer", "answer": "yes"})
         self.assertFalse(Availability.objects.exists())
 

@@ -16087,3 +16087,15 @@ msgstr "Can you play?"
 
 msgid "Añadir observaciones"
 msgstr "Add remarks"
+
+#, python-format
+msgid ""
+"Has iniciado sesión como «%(user)s», que no pertenece a %(team)s. Entra con "
+"la cuenta con la que te uniste al equipo o pídele una invitación a tu "
+"capitán."
+msgstr ""
+"You are signed in as “%(user)s”, which is not part of %(team)s. Sign in with"
+" the account you joined the team with or ask your captain for an invitation."
+
+msgid "Cambiar de cuenta"
+msgstr "Switch account"

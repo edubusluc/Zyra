@@ -29,7 +29,8 @@
 
         {% if state == "not_member" %}
         <div class="z-empty">
-            <p>{% translate "Esta cuenta no pertenece al equipo de este enfrentamiento. Pídele a tu capitán una invitación." %}</p>
+            <p>{% blocktranslate with user=request.user.username team=team.name %}Has iniciado sesión como «{{ user }}», que no pertenece a {{ team }}. Entra con la cuenta con la que te uniste al equipo o pídele una invitación a tu capitán.{% endblocktranslate %}</p>
+            <form action="{% url 'logout' %}" method="post">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button type="submit" class="btn btn-secondary">{% translate "Cambiar de cuenta" %}</button></form>
         </div>
 
         {% elif state == "closed" %}

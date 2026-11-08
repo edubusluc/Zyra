@@ -64,7 +64,7 @@ def availability(request, token):
     match = _match_by_token(token)
     membership = spaces.membership_for(request, match.club)
     if membership is None:
-        return render(request, "availability.html", {"match": match, "state": "not_member"}, status=403)
+        return render(request, "availability.html", {"match": match, "state": "not_member", "can_manage": False, "team": match.club}, status=403)
     spaces.switch_to(request, match.club)
     player = Player.objects.filter(club=match.club, user=request.user).first()
     is_open = availability_logic.is_open(match)
