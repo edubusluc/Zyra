@@ -135,7 +135,7 @@ class ShareTextTests(UxBase):
 class ResultImageTests(ShareTextTests):
     """Imagen vertical del resultado (botón «Compartir resultado»)."""
 
-    def test_closed_match_returns_png_1080x1350(self):
+    def test_closed_match_returns_jpeg_1080x1350(self):
         from io import BytesIO
         from PIL import Image
         match = self.closed_match()
@@ -143,7 +143,7 @@ class ResultImageTests(ShareTextTests):
         self.assertContains(page, reverse("result_image", args=[match.public_id]))
         response = self.client.get(reverse("result_image", args=[match.public_id]))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response["Content-Type"], "image/png")
+        self.assertEqual(response["Content-Type"], "image/jpeg")
         self.assertEqual(Image.open(BytesIO(response.content)).size, (1080, 1350))
 
     def test_open_match_has_no_image(self):

@@ -5,6 +5,9 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 08/11/2026 · Imagen de «Compartir resultado»
 
+- **Puntos por partido**: en la imagen, los dos lados de cada partido llevan sus puntos («+3» para quien gana, «0» para quien pierde), para que no se confunda quién se los llevó.
+- **Formato**: la imagen se envía como JPEG (antes PNG) para que el menú de compartir del iPhone la muestre con miniatura en vez del icono genérico.
+
 - **Ficha del enfrentamiento · acta cerrada**: «Compartir resultado» envía una imagen vertical (4:5) con el estilo de la web: insignia de la competición, local y visitante con escudo, marcador (lima, rojo o ámbar según el resultado), y una fila por partido con la pareja propia, los sets y los puntos en juego; las parejas no presentadas salen marcadas. En el móvil abre el menú de compartir del sistema con la imagen y el texto; en el ordenador descarga la imagen y abre WhatsApp con el texto.
 
 ## 08/11/2026 · Revisión del enlace de disponibilidad

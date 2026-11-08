@@ -20,7 +20,7 @@ from .result_email import notify_match_closed
 from call.models import ReportDelivery
 from .report import build_report, suggested_lineups
 from .report_pdf import render_report
-from .result_image import build_result_png
+from .result_image import build_result_jpeg
 from django.core.exceptions import PermissionDenied
 from django.http import Http404, HttpResponse, JsonResponse
 from django.views.decorators.http import require_GET
@@ -1043,7 +1043,7 @@ def call_for_match(request, match_id):
 
 @club_required
 def result_image(request, match_id):
-    """PNG vertical con el resultado de un enfrentamiento cerrado, para compartirlo por WhatsApp.
+    """imagen vertical (JPEG) con el resultado de un enfrentamiento cerrado, para compartirlo por WhatsApp.
 
     Solo capitán o gestor (como el botón «Compartir resultado»). 404 si el acta sigue abierta.
     """
@@ -1057,8 +1057,8 @@ def result_image(request, match_id):
         .select_related("player_1_local", "player_2_local", "player_1_visiting", "player_2_visiting")
         .prefetch_related("results")
     )
-    response = HttpResponse(build_result_png(match, games, match_outcome(match)), content_type="image/png")
-    response["Content-Disposition"] = 'inline; filename="resultado-zyra.png"'
+    response = HttpResponse(build_result_jpeg(match, games, match_outcome(match)), content_type="image/jpeg")
+    response["Content-Disposition"] = 'inline; filename="resultado-zyra.jpg"'
     response["Cache-Control"] = "private, no-store"
     return response
 

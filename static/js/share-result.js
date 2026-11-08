@@ -11,7 +11,7 @@
         var url = URL.createObjectURL(blob);
         var link = document.createElement('a');
         link.href = url;
-        link.download = 'resultado-zyra.png';
+        link.download = 'resultado-zyra.jpg';
         document.body.appendChild(link);
         link.click();
         link.remove();
@@ -37,7 +37,7 @@
         }
         event.preventDefault();
         fetchImage(url).then(function (blob) {
-            var file = new File([blob], 'resultado-zyra.png', { type: 'image/png' });
+            var file = new File([blob], 'resultado-zyra.jpg', { type: 'image/jpeg' });
             if (!navigator.canShare({ files: [file] })) {
                 download(blob);
                 window.open(button.href, '_blank', 'noopener');
