@@ -4,7 +4,7 @@
     <h2 class="z-panel-title" id="av-me-title">{% translate "¿Puedes jugar?" %}</h2>
     {% if my_availability %}
     <details class="z-av-change">
-        <summary class="z-av-me-now"><span>{% blocktranslate with answer=my_availability.get_answer_display %}Has respondido: {{ answer }}{% endblocktranslate %}{% if my_availability.comment %} · “{{ my_availability.comment }}”{% endif %}{% if my_availability.set_by_manager %} · <em>{% translate "Respuesta puesta por tu capitán" %}</em>{% endif %}</span> <span class="z-av-change-link">{% translate "Cambiar respuesta" %}</span></summary>
+        <summary class="z-av-me-now"><span>{% blocktranslate with answer=my_availability.get_answer_display %}Has respondido: {{ answer }}{% endblocktranslate %}{% if my_availability.comment %} · “{{ my_availability.comment }}”{% endif %}</span> <span class="z-av-change-link">{% translate "Cambiar respuesta" %}</span></summary>
     {% endif %}
     <form method="post" action="{% url 'availability_answer' match.public_id %}" data-loading-text="{% translate 'Guardando…' %}" class="z-av-form">
         {% csrf_token %}
