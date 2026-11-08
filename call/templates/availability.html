@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% load i18n static %}
+{% block page_title %}{% translate "Disponibilidad" %} · {% if match %}{{ match.local_name }} – {{ match.visiting_name }} · {% endif %}{% endblock %}
+
+{% block content %}
+<div class="z-auth">
+    <div class="z-auth-card z-av">
+        {% if match %}
+        <p class="z-av-kicker">{% translate "Disponibilidad" %}{% if match.type_label %} · {{ match.type_label }}{% endif %}</p>
+        <h1 class="z-av-vs">
+            <span class="z-av-team{% if match.own_is_local %} is-own{% endif %}">{{ match.local_name }}</span>
+            <span class="z-av-sep" aria-hidden="true">VS</span>
+            <span class="z-av-team{% if match.own_is_visiting %} is-own{% endif %}">{{ match.visiting_name }}</span>
+        </h1>
+        <p class="z-av-side {% if match.own_is_local %}is-home{% else %}is-away{% endif %}">
+            {% if match.own_is_local %}<i class="fa-solid fa-house" aria-hidden="true"></i> {% translate "Juegas de local" %}{% else %}<i class="fa-solid fa-van-shuttle" aria-hidden="true"></i> {% translate "Juegas de visitante" %}{% endif %}
+        </p>
+        <div class="z-av-when">
+            <span class="z-av-date"><i class="fa-regular fa-calendar" aria-hidden="true"></i> {{ match.start_date|date:"l j F Y" }}</span>
+            <span class="z-av-time"><i class="fa-regular fa-clock" aria-hidden="true"></i> {% if match.start_time %}{{ match.start_time|time:"H:i" }}{% else %}{% translate "Hora por confirmar" %}{% endif %}</span>
+        </div>
+        {% if match.location %}
+        <a class="z-av-place" href="{{ match.maps_url }}" target="_blank" rel="noopener">
+            <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
+            <span>{{ match.location }}</span>
+            <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+            <span class="visually-hidden">{% translate "Abrir en el mapa" %}</span>
+        </a>
+        {% endif %}
+        {% endif %}
+
+        {% if state == "invalid" %}
+        <div class="z-empty">
+            <i class="fa-solid fa-link-slash" aria-hidden="true"></i>
+            <p><b>{% translate "Este enlace ya no es válido" %}</b></p>
+            <p>{% translate "Puede que tu capitán haya creado uno nuevo. Pídeselo para poder responder." %}</p>
+        </div>
+
+        {% elif state == "suspended" %}
+        <div class="z-empty">
+            <p>{% blocktranslate with team=team.name %}El equipo {{ team }} está suspendido en Zyra y no se puede responder ahora. Habla con tu capitán.{% endblocktranslate %}</p>
+        </div>
+
+        {% elif state == "not_member" %}
+        <div class="z-empty">
+            <p>{% blocktranslate with user=request.user.username team=team.name %}Has iniciado sesión como «{{ user }}», que no pertenece a {{ team }}. Entra con la cuenta con la que te uniste al equipo, o pídele una invitación a tu capitán si todavía no tienes cuenta en el equipo.{% endblocktranslate %}</p>
+            <form action="{% url 'logout' %}" method="post" data-loading-text="{% translate 'Cerrando sesión…' %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button type="submit" class="btn btn-secondary">{% translate "Cambiar de cuenta" %}</button></form>
+        </div>
+
+        {% elif state == "closed" %}
+        <div class="z-empty">
+            <i class="fa-solid fa-lock" aria-hidden="true"></i>
+            <p><b>{% translate "Convocatoria cerrada" %}</b></p>
+            {% if mine %}<p>{% blocktranslate with answer=mine.get_answer_display %}Tu última respuesta: {{ answer }}{% endblocktranslate %}</p>{% endif %}
+        </div>
+
+        {% elif state == "link" %}
+        <h2 class="z-av-ask">{% translate "¿Quién eres?" %}</h2>
+        {% if free_players %}
+        <form method="post" data-loading-text="{% translate 'Guardando…' %}">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="link">
+            <p>
+                <label for="availability-player">{% translate "Elige tu nombre en la plantilla" %}</label>
+                <select name="player" id="availability-player" required>
+                    <option value="" disabled selected>{% translate "Elige un jugador" %}</option>
+                    {% for p in free_players %}<option value="{{ p.public_id }}">{{ p.full_name }}</option>{% endfor %}
+                </select>
+            </p>
+            <button type="submit" class="btn btn-primary btn-lg">{% translate "Soy yo" %}</button>
+        </form>
+        {% else %}
+        <div class="z-empty"><p>{% translate "No hay jugadores libres en la plantilla. Habla con tu capitán." %}</p></div>
+        {% endif %}
+
+        {% elif mine and not editing %}
+        <div class="z-av-done z-av-done--{{ mine.answer }}">
+            <p class="z-av-done-title">
+                <i class="fa-solid {% if mine.answer == 'yes' %}fa-circle-check{% elif mine.answer == 'no' %}fa-circle-xmark{% else %}fa-clock{% endif %}" aria-hidden="true"></i>
+                {% blocktranslate with answer=mine.get_answer_display %}Has respondido: {{ answer }}{% endblocktranslate %}
+            </p>
+            {% if mine.comment %}<p class="z-av-done-note">“{{ mine.comment }}”</p>{% endif %}
+            {% if mine.set_by_manager %}<p class="z-av-by-captain"><i class="fa-solid fa-user-shield" aria-hidden="true"></i> {% translate "Respuesta puesta por tu capitán" %}</p>{% endif %}
+            <p class="z-av-done-ask">{% translate "¿Quieres cambiar la respuesta?" %}</p>
+            <a class="btn btn-secondary btn-lg" href="?cambiar=1">{% translate "Cambiar respuesta" %}</a>
+        </div>
+
+        {% else %}
+        <h2 class="z-av-ask">{% blocktranslate with name=player.short_name %}{{ name }}, ¿puedes jugar?{% endblocktranslate %}</h2>
+        <form method="post" data-loading-text="{% translate 'Guardando…' %}" class="z-av-form">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="answer">
+            <div class="z-av-choices">
+                <button type="submit" name="answer" value="yes" class="z-av-btn is-yes"><i class="fa-solid fa-check" aria-hidden="true"></i> {% translate "Sí" %}</button>
+                <button type="submit" name="answer" value="no" class="z-av-btn is-no"><i class="fa-solid fa-xmark" aria-hidden="true"></i> {% translate "No" %}</button>
+            </div>
+            <details class="z-av-maybe"{% if mine.answer == "maybe" %} open{% endif %}>
+                <summary class="z-av-btn is-maybe"><i class="fa-regular fa-clock" aria-hidden="true"></i> {% translate "Pendiente" %}</summary>
+                <p>
+                    <label for="availability-comment">{% translate "Observaciones (opcional)" %}</label>
+                    <input type="text" name="comment" id="availability-comment" maxlength="{{ max_comment }}" value="{{ mine.comment }}" placeholder="{% translate 'Ej.: confirmo el jueves' %}" aria-describedby="availability-comment-privacy">
+                    <small id="availability-comment-privacy" class="form-text">{% translate "Solo lo verán tu capitán y los gestores. No escribas datos de salud. Se borra al cerrar el acta." %}</small>
+                </p>
+                <button type="submit" name="answer" value="maybe" class="btn btn-primary btn-lg">{% translate "Enviar como pendiente" %}</button>
+            </details>
+        </form>
+        {% if mine %}<p class="z-av-back"><a href="?">{% translate "Volver" %}</a></p>{% endif %}
+        {% endif %}
+
+        {% if can_manage %}<p class="mt-3"><a href="{% url 'call_for_match' match.public_id %}">{% translate "Ver el enfrentamiento y las respuestas" %}</a></p>{% endif %}
+    </div>
+</div>
+<script src="{% static 'js/availability.js' %}" defer></script>
+{% endblock %}

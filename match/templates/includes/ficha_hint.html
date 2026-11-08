@@ -1,6 +1,6 @@
 {% load i18n %}
 {# Texto de ayuda del siguiente paso (finales de la convocatoria, informe PDF…). #}
-<p class="z-next-hint{% if phase.action == 'close_call' and phase.missing_players %} is-blocking{% endif %}" id="next-hint">
+<p class="z-next-hint{% if phase.action == 'close_call' and phase.blocked_by_min %} is-blocking{% endif %}" id="next-hint">
             {% if phase.action == 'create_call' %}{% translate "Primero crea la convocatoria." %}
             {% elif phase.action == 'close_call' %}
                 {% if phase.missing_players %}{% blocktranslate trimmed with called=phase.called total=phase.min_call count n=phase.missing_players %}Falta {{ n }} apuntado para cerrar la convocatoria ({{ called }} de {{ total }}).{% plural %}Faltan {{ n }} apuntados para cerrar la convocatoria ({{ called }} de {{ total }}).{% endblocktranslate %} <a href="{% url 'edit_call' call_for_match.public_id %}">{% translate "Editar convocatoria" %}</a>

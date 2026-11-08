@@ -53,3 +53,30 @@ class ReportDelivery(PublicIdModel):
     def __str__(self):
         """Convocatoria, destinatario y estado del envío."""
         return f"Informe de {self.call} a {self.email} ({self.get_status_display()})"
+
+
+class Availability(models.Model):
+    """
+    Respuesta de un jugador al enlace de disponibilidad de un enfrentamiento: Sí, No o Aún no sé
+    (con un comentario opcional solo en «Aún no sé»). Es solo disponibilidad: la alineación la hace
+    el capitán o un gestor. Una fila por enfrentamiento y jugador; cambiar la fecha o la hora del
+    enfrentamiento no la borra.
+    """
+    YES, NO, MAYBE = "yes", "no", "maybe"
+    ANSWERS = [(YES, _("Sí")), (NO, _("No")), (MAYBE, _("Pendiente"))]
+    MAX_COMMENT = 200
+
+    match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name="availabilities")
+    player = models.ForeignKey(Player, on_delete=models.CASCADE, related_name="availabilities")
+    answer = models.CharField(max_length=5, choices=ANSWERS)
+    comment = models.CharField(max_length=MAX_COMMENT, blank=True, default="")
+    # True si la respuesta la ha puesto el capitán o un gestor por el jugador.
+    set_by_manager = models.BooleanField(default=False)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["match", "player"], name="unique_availability_match_player")]
+
+    def __str__(self):
+        """Jugador, enfrentamiento y respuesta."""
+        return f"{self.player} · {self.match} · {self.get_answer_display()}"

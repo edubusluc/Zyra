@@ -4355,3 +4355,82 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
         .z-menu-card::after { display: none; }
     }
 }
+/* ---- Enlace de disponibilidad (call/templates/availability.html) ---- */
+.z-av { max-width: 480px; }
+.z-av-kicker { margin: 0 0 10px; text-align: center; font-size: var(--z-fs-sm); letter-spacing: .08em; text-transform: uppercase; color: var(--z-muted); }
+.z-av-vs { display: grid; gap: 6px; text-align: center; }
+.z-av-team { font-family: var(--z-display); font-size: var(--z-fs-2xl); line-height: 1.1; text-transform: uppercase; color: var(--z-muted); overflow-wrap: anywhere; }
+.z-av-team.is-own { color: var(--z-text); }
+.z-av-sep { font-family: var(--z-brand); font-size: var(--z-fs-sm); color: var(--z-lime); }
+.z-av-side { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 14px auto 0; padding: 6px 14px; width: fit-content; border-radius: 999px; font-weight: 800; font-size: var(--z-fs-md); }
+.z-av-side.is-home { background: rgba(var(--z-lime-rgb), .16); color: var(--z-lime); }
+.z-av-side.is-away { background: var(--z-surface-3); color: var(--z-text); border: 1px solid var(--z-border-strong); }
+.z-av-when { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; margin-top: 16px; padding: 12px 14px; background: var(--z-surface-2); border: 1px solid var(--z-border); border-radius: var(--z-radius-sm); }
+.z-av-date { font-weight: 700; text-transform: capitalize; }
+.z-av-time { font-family: var(--z-display); font-size: var(--z-fs-2xl); line-height: 1; color: var(--z-lime); }
+.z-av-date i, .z-av-time i { margin-right: 6px; color: var(--z-muted); font-size: .8em; }
+.z-av-place { display: flex; align-items: center; gap: 10px; margin-top: 8px; padding: 12px 14px; background: var(--z-surface-2); border: 1px solid var(--z-border); border-radius: var(--z-radius-sm); color: var(--z-text); text-decoration: none; font-weight: 600; }
+.z-av-place span { flex: 1; }
+.z-av-place i:first-child { color: var(--z-lime); }
+.z-av-place i:last-child { color: var(--z-muted); font-size: .8em; }
+.z-av-ask { margin: 22px 0 12px; text-align: center; font-size: var(--z-fs-lg); }
+.z-av-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.z-av-btn { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 56px; padding: 10px 14px; border: 2px solid var(--z-border-control); border-radius: var(--z-radius-sm); background: var(--z-surface-2); color: var(--z-text); font: inherit; font-weight: 800; font-size: var(--z-fs-lg); cursor: pointer; list-style: none; }
+.z-av-btn::-webkit-details-marker { display: none; }
+.z-av-btn.is-yes { background: var(--z-lime); border-color: var(--z-lime); color: var(--z-ink); }
+.z-av-btn.is-yes:hover { background: var(--z-lime-hover); }
+.z-av-btn.is-no { border-color: var(--z-danger); color: var(--z-danger); }
+.z-av-btn.is-no:hover { background: rgba(255, 92, 99, .12); }
+.z-av-btn.is-maybe:hover { border-color: var(--z-border-control-hover); }
+.z-av-maybe { margin-top: 10px; }
+.z-av-maybe[open] > .z-av-btn { border-color: var(--z-warning); color: var(--z-warning); }
+.z-av-maybe p { margin: 12px 0 8px; }
+.z-av-done { margin-top: 20px; padding: 18px; text-align: center; background: var(--z-surface-2); border: 1px solid var(--z-border); border-radius: var(--z-radius-sm); }
+.z-av-done-title { margin: 0; font-size: var(--z-fs-xl); font-weight: 800; }
+.z-av-done--yes .z-av-done-title i { color: var(--z-lime); }
+.z-av-done--no .z-av-done-title i { color: var(--z-danger); }
+.z-av-done--maybe .z-av-done-title i { color: var(--z-warning); }
+.z-av-done-note { margin: 6px 0 0; color: var(--z-muted); }
+.z-av-done-ask { margin: 14px 0 10px; color: var(--z-muted); }
+.z-av-back { margin: 12px 0 0; text-align: center; }
+.z-auth-card h1.z-av-vs { margin: 0; font-size: inherit; }
+.z-av-me { margin-bottom: 18px; }
+.z-av-me-now { margin: 0 0 10px; color: var(--z-muted); }
+.z-av-choices--3 { grid-template-columns: repeat(3, 1fr); }
+.z-av-choices--3 .z-av-btn { font-size: var(--z-fs-base); }
+.z-av-btn.is-current { outline: 3px solid var(--z-text); outline-offset: 2px; }
+@media (max-width: 480px) { .z-av-choices--3 .z-av-btn { flex-direction: column; gap: 2px; min-height: 64px; } }
+.z-av-group + .z-av-group { margin-top: 16px; }
+.z-av-group-title { margin: 0 0 6px; font-size: var(--z-fs-md); text-transform: uppercase; letter-spacing: .06em; color: var(--z-muted); }
+.z-av-group--yes .z-av-group-title { color: var(--z-lime); }
+.z-av-group--no .z-av-group-title { color: var(--z-danger); }
+.z-av-group--maybe .z-av-group-title { color: var(--z-warning); }
+.z-availability-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.z-availability-list li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px; background: var(--z-surface-2); border: 1px solid var(--z-border); border-radius: var(--z-radius-sm); }
+
+/* «¿Puedes jugar?» plegado una vez respondido: se despliega para cambiar la respuesta. */
+.z-av-change > summary { cursor: pointer; list-style: none; display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin-bottom: .5rem; }
+.z-av-change > summary::-webkit-details-marker { display: none; }
+.z-av-change-link { color: var(--z-lime, #B4F100); text-decoration: underline; font-weight: 600; }
+
+/* Botones de la tarjeta de disponibilidad: todos en una línea (en pantallas muy estrechas pasan a la siguiente). */
+.z-av-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; }
+.z-av-actions form { margin: 0; }
+.z-av-actions .btn { white-space: nowrap; padding-inline: .6rem; }
+@media (max-width: 359px) { .z-av-actions { flex-wrap: wrap; } }
+.z-av-set { display: inline-flex; gap: 4px; }
+.z-av-set-btn { border: 1px solid var(--z-border-control); background: var(--z-surface-2); color: var(--z-text); min-height: 32px; }
+.z-av-set-btn.is-current { background: var(--z-lime); border-color: var(--z-lime); color: var(--z-ink); font-weight: 800; }
+.z-av-by-captain { margin: 8px 0 0; color: var(--z-muted); font-size: var(--z-fs-sm); }
+.z-av-by-captain-note { color: var(--z-muted); }
+
+/* «¿Puedes jugar?» + «Disponibilidad» arriba de la ficha: dos columnas en escritorio, apiladas en móvil. */
+.z-av-row { margin: 16px 0 18px; }
+.z-av-row > section { min-width: 0; }
+@media (min-width: 768px) {
+    .z-av-row.is-two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: stretch; }
+}
+.z-av-row .z-av-me { margin-bottom: 0; }
+.z-av-row .z-panel-title { margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.z-av-row > section + section { margin-top: 16px; }
+@media (min-width: 768px) { .z-av-row > section + section { margin-top: 0; } }

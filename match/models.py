@@ -15,8 +15,14 @@ from players.models import Player, SEASON_START_MONTH, proper_name
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext, gettext_lazy as _
 from . import outcomes, scoring
+import secrets
 from datetime import datetime
 from urllib.parse import quote
+
+def new_availability_token():
+    """Token impredecible (256 bits) para el enlace de disponibilidad de un enfrentamiento."""
+    return secrets.token_urlsafe(32)
+
 
 # Create your models here.
 
@@ -98,7 +104,9 @@ class Match(PublicIdModel):
     reopened_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+",
     )
-    
+    # Token impredecible del enlace de disponibilidad (``call.availability``); el capitán lo regenera.
+    availability_token = models.CharField(max_length=64, unique=True, null=True, blank=True, editable=False)
+
     class Meta:
         indexes = [
             models.Index(fields=["club", "season", "start_date"], name="match_club_season_idx"),
@@ -123,6 +131,9 @@ class Match(PublicIdModel):
 
         if not self.location and self.local_id:
             self.location = self.local.location
+
+        if not self.availability_token:
+            self.availability_token = new_availability_token()
 
         # Llama al método de guardado del padre
         super().save(*args, **kwargs)

@@ -22,6 +22,7 @@ urlpatterns = (
     path('manager-tip/dismiss/', views.dismiss_manager_tip, name='dismiss_manager_tip'),
     path('welcome/', views.member_welcome, name='member_welcome'),
     path('profile/', views.my_profile, name='my_profile'),
+    path('profile/logout-everywhere/', views.logout_everywhere, name='logout_everywhere'),
     path('profile/sheets/<int:pk>/link/', views.link_related_sheet, name='link_related_sheet'),
     path('profile/sheets/<int:pk>/not-mine/', views.reject_related_sheet, name='reject_related_sheet'),
     path('profile/verify-email/', views.resend_verification, name='resend_verification'),

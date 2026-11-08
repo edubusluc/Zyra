@@ -28,7 +28,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 from players.models import Player, current_season
-from call.models import Call
+from call.models import Call, Availability
+from call import availability as call_availability
 from team.models import Team
 from datetime import datetime, timedelta
 from callLog.models import CallLog
@@ -494,7 +495,15 @@ def selectable_players(club, include_ids=()):
     return players
 
 
-MIN_CALL_ERROR = gettext_lazy("La convocatoria necesita al menos %(n)s jugadores.")
+def annotate_availability(match, players):
+    """Pone en cada jugador su respuesta al enlace de disponibilidad (``availability``: respuesta, comentario)."""
+    badges = call_availability.availability_badges(match)
+    for p in players:
+        p.availability = badges.get(p.id)
+    return bool(badges)
+
+
+EMPTY_CALL_ERROR = gettext_lazy("Apunta al menos a un jugador.")
 
 
 @spaces.follow_match
@@ -512,12 +521,12 @@ def create_call(request, match_id):
 
     selected_ids = []
     players = selectable_players(request.club)
+    has_availability = annotate_availability(match, players)
     if request.method == 'POST':
         chosen = club_players(request, request.POST.getlist('players'))
         selected_ids = list(chosen.values_list('id', flat=True))
-        min_call = competition_for(match).min_call_players
-        if len(selected_ids) < min_call:
-            messages.error(request, MIN_CALL_ERROR % {"n": min_call})
+        if not selected_ids:
+            messages.error(request, EMPTY_CALL_ERROR)
         elif not _finals_rule_ok(request, match, chosen):
             pass
         else:
@@ -527,8 +536,14 @@ def create_call(request, match_id):
             messages.success(request, _("Convocatoria creada con %(n)s jugadores.") % {"n": len(selected_ids)})
             return redirect('call_for_match', match.public_id)
 
+    else:
+        # Los «Sí» del enlace de disponibilidad llegan marcados; el capitán decide.
+        listed = {p.id for p in players}
+        selected_ids = [i for i in call_availability.yes_player_ids(match) if i in listed]
+
     return render(request, "create_call.html", {
         "players": players,
+        "has_availability": has_availability,
         "selected_players": selected_ids,
         "match": match,
         "min_call_players": competition_for(match).min_call_players,
@@ -569,11 +584,26 @@ def _finals_rule_ok(request, match, chosen):
     return False
 
 
-def validate_call(call):
-    """Comprueba si la convocatoria se puede cerrar: (True, None) o (False, mensaje de error)."""
+def validate_call(call, allow_short=False):
+    """
+    Comprueba si la convocatoria se puede cerrar: (True, None) o (False, mensaje de error). Hace falta al
+    menos un apuntado; por debajo del mínimo de la competición solo se cierra con ``allow_short`` (el aviso
+    de la ficha, por ejemplo cuando hay bajas por lesión) y solo si la competición admite «pareja no
+    presentada» y hay al menos una pareja que formar (``lineup.short_call_allowed``): el servidor lo vuelve a
+    comprobar, no se fía del formulario.
+    """
     min_call = competition_for(call.match).min_call_players
-    if call.players.all().count() < min_call:
-        return False, _("Para cerrar la convocatoria hacen falta al menos %(n)s jugadores") % {"n": min_call}
+    count = call.players.all().count()
+    if not count:
+        return False, EMPTY_CALL_ERROR
+    if count < min_call:
+        if not lineup.short_call_allowed(call.match.club.rules, count):
+            return False, _("Para cerrar la convocatoria hacen falta al menos %(n)s jugadores") % {"n": min_call}
+        if not allow_short:
+            return False, ngettext(
+                "Falta %(n)s jugador para el mínimo de la competición: confirma el aviso para cerrar igualmente.",
+                "Faltan %(n)s jugadores para el mínimo de la competición: confirma el aviso para cerrar igualmente.",
+                min_call - count) % {"n": min_call - count}
     if call.draft_mode == False:
         return False, _("Esta convocatoria está cerrada")
     
@@ -584,11 +614,12 @@ def validate_call(call):
 def close_call(request, match_id):
     """Cierra la convocatoria de un enfrentamiento y envía el informe a los capitanes.
 
-    Solo para administradores del club. Exige los convocados mínimos de la competición y que siga
-    abierta. Solo cierra en POST; siempre vuelve a la página de la convocatoria.
+    Solo para administradores del club. Por debajo del mínimo de la competición solo cierra si el aviso
+    de la ficha se ha confirmado (``allow_short``) y siempre hace falta que siga abierta. Solo cierra en
+    POST; siempre vuelve a la página de la convocatoria.
     """
     call = club_call(request, match__public_id=match_id)
-    is_valid, error_message = validate_call(call)
+    is_valid, error_message = validate_call(call, allow_short=request.POST.get("allow_short") == "1")
 
     if not is_valid:
         messages.error(request, error_message)
@@ -599,12 +630,46 @@ def close_call(request, match_id):
         return redirect(call_for_match, match_id=match_id)
 
     if request.method == "POST":
+        # Tras reabrir y volver a cerrar no se repite el informe salvo que el capitán marque «Volver a enviar el
+        # informe» (o la casilla de las fases finales, que ocupa su lugar en el aviso).
+        already_sent = call.report_deliveries.filter(status=ReportDelivery.SENT).exists()
+        resend = request.POST.get("resend_report") == "1" or bool(request.POST.get("force_finals"))
         call.draft_mode = False
         call.save()
-        _send_report(request, call, _("Convocatoria cerrada"))
+        if already_sent and not resend:
+            messages.success(request, _("Convocatoria cerrada. El informe no se ha vuelto a enviar."))
+        else:
+            _send_report(request, call, _("Convocatoria cerrada"))
         return redirect('call_for_match', call.match.public_id)
 
     return redirect('call_for_match', call.match.public_id)
+
+
+@spaces.follow_match
+@club_manager_required
+@require_POST
+def reopen_call(request, match_id):
+    """
+    Reabre una convocatoria cerrada para poder cambiar los apuntados (y que el enlace de disponibilidad
+    vuelva a estar activo). Solo POST, capitán o gestor, con el acta abierta y sin parejas alineadas
+    (si las hay, habría que rehacerlas). Queda anotado en el registro de la convocatoria.
+    """
+    call = club_call(request, match__public_id=match_id)
+    if not call.match.draft_mode:
+        messages.error(request, _("El acta está cerrada: reábrela primero."))
+    elif call.draft_mode:
+        messages.info(request, _("La convocatoria ya estaba abierta."))
+    elif call.match.games.exists():
+        messages.error(request, _("Ya hay parejas alineadas: elimínalas antes de reabrir la convocatoria."))
+    else:
+        call.draft_mode = True
+        call.save()
+        log, _created = CallLog.objects.get_or_create(call=call, defaults={"text": ""})
+        log.text += _("Convocatoria reabierta por %(user)s el día %(when)s;") % {
+            "user": request.user.username, "when": f"{datetime.now():%d-%m-%Y %H:%M:%S}"}
+        log.save()
+        messages.success(request, _("Convocatoria reabierta."))
+    return redirect("call_for_match", call.match.public_id)
 
 
 def _send_report(request, call, done):
@@ -661,6 +726,29 @@ def call_report_pdf(request, match_id):
     response["Content-Disposition"] = f'inline; filename="{report_filename(call.match)}"'
     return response
 
+def _edit_call_problem(call, selected, current, min_call):
+    """
+    Motivo por el que no se puede guardar la convocatoria editada (``selected`` jugadores nuevos, ``current`` los
+    de ahora), o ``""``. Siempre hace falta alguien. Con la convocatoria ya cerrada no se pueden dejar por
+    debajo del mínimo (salvo que se cerrara corta y no se reduzca) ni quitar a quien ya está en una pareja:
+    primero hay que cambiar las parejas.
+    """
+    if not selected:
+        return EMPTY_CALL_ERROR
+    if call.draft_mode:
+        return ""
+    if len(selected) < min_call and not (
+            lineup.short_call_allowed(call.match.club.rules, len(selected)) and len(selected) >= len(current)):
+        return _("La convocatoria está cerrada: no puede quedarse por debajo de %(n)s jugadores.") % {"n": min_call}
+    in_games = set()
+    for game in call.match.games.all():
+        in_games.update(i for i in (game.player_1_local_id, game.player_2_local_id,
+                                    game.player_1_visiting_id, game.player_2_visiting_id) if i)
+    if (current - selected) & in_games:
+        return _("Hay jugadores quitados que están en una pareja: cámbialos primero en «Editar parejas».")
+    return ""
+
+
 @spaces.follow_call
 @club_manager_required
 def edit_call(request, call_id):
@@ -673,6 +761,7 @@ def edit_call(request, call_id):
     call = club_call(request, public_id=call_id)
     selected_players = list(call.players.values_list('id', flat=True))
     all_players = selectable_players(request.club, include_ids=selected_players)
+    has_availability = annotate_availability(call.match, all_players)
     call_log, _created = CallLog.objects.get_or_create(call=call, defaults={'text': ''})
     
     current_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
@@ -684,12 +773,14 @@ def edit_call(request, call_id):
             selected_set = set(selected_players_ids)
             call_set = set(selected_players)
             min_call = competition_for(call.match).min_call_players
-            if len(selected_set) < min_call or not _finals_rule_ok(
+            problem = _edit_call_problem(call, selected_set, call_set, min_call)
+            if problem or not _finals_rule_ok(
                     request, call.match, Player.objects.filter(id__in=selected_set - call_set)):
-                if len(selected_set) < min_call:
-                    messages.error(request, MIN_CALL_ERROR % {"n": min_call})
+                if problem:
+                    messages.error(request, problem)
                 return render(request, 'edit_call.html', {
                     'call': call, 'all_players': all_players, 'selected_players': list(selected_set),
+                    'has_availability': has_availability,
                     'min_call_players': min_call, **_finals_context(call.match, all_players, list(selected_set)),
                 })
 
@@ -728,6 +819,7 @@ def edit_call(request, call_id):
     context = {
         'call': call,
         'all_players': all_players,
+        'has_availability': has_availability,
         'selected_players': selected_players,
         'min_call_players': competition_for(call.match).min_call_players,
         **_finals_context(call.match, all_players, selected_players),
@@ -909,6 +1001,9 @@ def call_for_match(request, match_id):
             p.is_me = p.id == me.id
 
     return render(request, "call_for_match.html", {
+        "my_availability": Availability.objects.filter(match=match, player=me).first() if me else None,
+        "can_answer": bool(me and match.draft_mode and call_availability.is_open(match)),
+        "availability": availability_context(request, match) if request.membership.can_manage else None,
         "call_for_match": call,
         "match_id": match.public_id,
         "game_for_match": games,
@@ -935,12 +1030,22 @@ def call_for_match(request, match_id):
                                  competition_for(match).min_call_players),
         "my_status": my_status,
         "report_emails": ", ".join(admin_emails(request.club)) if call else "",
+        "report_already_sent": bool(call and call.report_deliveries.filter(status=ReportDelivery.SENT).exists()),
         "share_text": share_text(match, games) if not match.draft_mode else "",
         "min_call_players": competition_for(match).min_call_players,
         # Regla de fases finales (LAPI 8.2) a la vista donde se decide: apuntados que no la cumplen.
         "finals_minimum": match.club.rules.finals_min_regular if league.applies_finals_rule(match) else 0,
         "finals_call_short": league.finals_shortfall(match, call.players.all()) if call and match.draft_mode and request.membership.can_manage else [],
     })
+
+
+def availability_context(request, match):
+    """Datos de la tarjeta «Disponibilidad» de la ficha: enlace, texto de WhatsApp, respuestas y opciones."""
+    url = call_availability.link_url(request, match)
+    return {"url": url, "whatsapp": call_availability.whatsapp_url(call_availability.share_text(match, url)),
+            "board": call_availability.board(match), "answers": Availability.ANSWERS,
+            "open": call_availability.is_open(match), "can_remind": request.membership.is_admin,
+            "pending": len(call_availability.pending_players(match))}
 
 
 def validate_game_for_match(call):
@@ -950,7 +1055,11 @@ def validate_game_for_match(call):
     if not call:
         return False, _("No hay convocatoria, así que no se pueden alinear parejas.")
     min_call = competition_for(call.match).min_call_players
-    if call.players.all().count() < min_call:
+    count = call.players.all().count()
+    # Con la convocatoria cerrada por debajo del mínimo se alinean las parejas que se puedan formar
+    # y el resto queda como «pareja no presentada» (si la competición lo admite).
+    short_ok = call.match.club.rules.pair_no_show and count >= 2
+    if count < min_call and not short_ok:
         return False, _("Para alinear las parejas hacen falta al menos %(n)s jugadores") % {"n": min_call}
     if call.draft_mode != False:
         return False, _("Cierra la convocatoria para poder alinear las parejas")
@@ -993,6 +1102,7 @@ def create_game_for_match(request, match_id):
         "match": match,
         "players": call.players.order_by('name', 'last_name'),
         "lineup_slots": range(1, competition_for(match).games + 1),
+        "required_pairs": lineup.required_pairs(call),
         "players_per_lineup": competition_for(match).players_per_lineup,
     })
 
@@ -1299,6 +1409,8 @@ def do_close_match(request, match):
         match.result_points = f"{points_local}/{points_visiting}"
         match.draft_mode = False
         match.save()
+        # Las observaciones del enlace de disponibilidad son texto libre (pueden hablar de salud): al cerrar el acta se borran.
+        Availability.objects.filter(match=match).exclude(comment="").update(comment="")
 
     # Aviso del resultado a los miembros del club; si falla, el acta sigue cerrada y el envío se reintenta.
     notify_match_closed(match, resend=bool(request.POST.get("resend_email")))
@@ -1449,6 +1561,7 @@ def edit_game_match(request, match_id):
         "games": games_data,
         "match": match,
         "call": call,
+        "required_pairs": lineup.required_pairs(call),
         "players": call.players.order_by('name', 'last_name'),
         "players_per_lineup": competition_for(match).players_per_lineup,
     })

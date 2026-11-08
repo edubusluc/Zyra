@@ -27,6 +27,7 @@
   // Puntos SNP enteros con el separador de miles del idioma, igual que en el resto de Zyra («68 500»).
   const groupThousands = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, typeof get_format === 'function' ? get_format('THOUSAND_SEPARATOR') : ' ');
 
+  const required = parseInt(form.dataset.requiredPairs || slots.length, 10);
   function refresh() {
     const chosen = selects.map((s) => s.value).filter(Boolean);
     selects.forEach(function (s) {
@@ -68,13 +69,13 @@
         top.appendChild(pts);
       }
       const name = document.createElement('span');
-      name.textContent = p ? p.label : gettext('Pareja sin completar');
+      name.textContent = p ? p.label : (i >= required ? gettext('Pareja no presentada') : gettext('Pareja sin completar'));
       body.append(top, name);
       li.appendChild(body);
       list.appendChild(li);
     });
 
-    const complete = pairs.length === slots.length;
+    const complete = pairs.length === required;
     form.querySelector('[data-lineup-output]').value = JSON.stringify(
       pairs.map((p) => ({ gameId: p.gameId, player1Id: p.player1Id, player2Id: p.player2Id }))
     );

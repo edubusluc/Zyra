@@ -23,6 +23,10 @@
                 <label for="{{ form.password.id_for_label }}">{% translate "Contraseña" %}</label>
                 <input type="password" name="password" id="{{ form.password.id_for_label }}" autocomplete="current-password" required>
             </p>
+            <p class="form-check">
+                <input type="checkbox" class="form-check-input" name="remember" id="login-remember"{% if request.method != 'POST' or request.POST.remember %} checked{% endif %}>
+                <label for="login-remember" class="form-check-label">{% translate "Mantener la sesión iniciada" %}</label>
+            </p>
             <p class="mb-0"><a href="{% url 'account_reset_password' %}">{% translate "¿Has olvidado tu contraseña?" %}</a></p>
             <button type="submit" class="btn btn-primary btn-lg mt-2">{% translate "Entrar" %}</button>
         </form>

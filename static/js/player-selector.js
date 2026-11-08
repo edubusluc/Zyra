@@ -83,6 +83,13 @@
       closeMenu();
       refresh();
     });
+    // «Marcar los que dicen Sí» (enlace de disponibilidad): añade a los que respondieron Sí sin quitar a nadie
+    const yes = root.querySelector('[data-selector-yes]');
+    if (yes) yes.addEventListener('click', function () {
+      picks.forEach((p) => { if (p.dataset.answer === 'yes') box(p).checked = true; });
+      closeMenu();
+      refresh();
+    });
     if (none) none.addEventListener('click', function () {
       picks.forEach((p) => { box(p).checked = false; });
       closeMenu();

@@ -604,6 +604,21 @@ def unlink_player(request, player_id):
     return redirect("edit_player", player_id=player.public_id)
 
 
+@spaces.follow_player
+@club_admin_required
+@require_POST
+def toggle_player_emails(request, player_id):
+    """El capitán silencia (o vuelve a activar) los recordatorios del club a un jugador desde su ficha."""
+    player = get_object_or_404(Player, public_id=player_id, club=request.club)
+    player.emails_muted = not player.emails_muted
+    player.save(update_fields=["emails_muted"])
+    if player.emails_muted:
+        messages.success(request, _("%(player)s ya no recibirá los recordatorios del club por correo.") % {"player": player.short_name})
+    else:
+        messages.success(request, _("%(player)s vuelve a recibir los recordatorios del club por correo.") % {"player": player.short_name})
+    return redirect("edit_player", player_id=player.public_id)
+
+
 @club_manager_required
 def copy_players(request):
     """

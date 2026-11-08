@@ -3,7 +3,7 @@
 {# En las competiciones sin puntos SNP (LAPI) las parejas se cruzan por sorteo: no hay puntos ni orden de juego. #}
 {% load static i18n l10n zyra_format %}
 {% with ordered=current_club.rules.has_snp %}
-<form method="post" data-lineup class="z-lineup{% if not ordered %} z-lineup--unordered{% endif %}" {% if ordered %}data-lineup-ordered{% endif %} data-loading-text="{% translate 'Guardando las parejas…' %}">
+<form method="post" data-lineup data-required-pairs="{{ required_pairs }}" class="z-lineup{% if not ordered %} z-lineup--unordered{% endif %}" {% if ordered %}data-lineup-ordered{% endif %} data-loading-text="{% translate 'Guardando las parejas…' %}">
     {% csrf_token %}
     <div class="z-lineup-main">
         <div class="z-lineup-suggest" data-suggest-url="{% url 'suggested_lineup' match.public_id %}">
@@ -53,7 +53,7 @@
 
     <input type="hidden" name="ordered_games" data-lineup-output>
     <div class="z-selector-bar">
-        <div>{% blocktranslate with total=slots|length %}<b data-lineup-count>0</b> de {{ total }} parejas{% endblocktranslate %} <small data-lineup-hint></small></div>
+        <div>{% blocktranslate with total=slots|length %}<b data-lineup-count>0</b> de {{ total }} parejas{% endblocktranslate %}{% if required_pairs and required_pairs < slots|length %}{% blocktranslate with n=required_pairs asvar short_tip %}Con estos convocados solo se pueden formar {{ n }} parejas: las demás se marcan como no presentadas. En la SNP, una pareja sin presentar reparte los puntos como indica la normativa (20.2); dos o más hacen perder el enfrentamiento 0-12.{% endblocktranslate %}{% include 'includes/stat_tip.html' with tip=short_tip %}{% endif %} <small data-lineup-hint></small></div>
         <button type="submit" class="btn btn-primary" data-lineup-save disabled>{{ submit_label }}</button>
     </div>
 </form>

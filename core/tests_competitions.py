@@ -111,9 +111,11 @@ class SnpCycleUnchangedTests(TestCase):
     def test_snp_needs_ten_and_five_pairs(self):
         self.client.post(reverse("create_call", args=[self.match.public_id]),
                          {"players": [p.id for p in self.players[:9]]})
-        self.assertFalse(Call.objects.filter(match=self.match).exists())
-        self.client.post(reverse("create_call", args=[self.match.public_id]),
-                         {"players": [p.id for p in self.players]})
+        call = Call.objects.get(match=self.match)
+        self.client.post(reverse("close_call", args=[self.match.public_id]))
+        call.refresh_from_db()
+        self.assertTrue(call.draft_mode)
+        call.players.set(self.players)
         self.client.post(reverse("close_call", args=[self.match.public_id]))
         response = self.client.get(reverse("create_game", args=[self.match.public_id]))
         self.assertEqual(response.content.decode().count("data-slot "), 5)

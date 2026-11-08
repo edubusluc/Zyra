@@ -25,12 +25,13 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext as _, ngettext
 
 from core.templatetags.zyra_format import date_short
 from django.views.decorators.http import require_http_methods, require_POST, require_safe
 
 from data_analyse import my_form as my_form_stats
+from call import availability as availability_logic
 from call.models import Call
 from match.models import Match
 from match.phase import phases_for, player_status
@@ -45,7 +46,7 @@ from .forms import CaptainPlayerForm, CaptainSnpForm, ClubForm, EmailChangeForm,
 from .middleware import SESSION_KEY
 from .models import REPORT_SCOPES, Club, Invitation, Membership, UserPreference
 from .onboarding import onboarding_for
-from . import email_verification, ratelimit, seo
+from . import email_verification, ratelimit, seo, sessions
 from players import copy as player_copy, snp_service
 from .unsubscribe import user_from_result_token, user_from_token
 from .services import (
@@ -183,6 +184,15 @@ def home(request):
                                  "text": _("Tu pareja el %(date)s: %(partner)s") % {
                                      "date": date_short(next_match.start_date),
                                      "partner": my_status["partner"].short_name}})
+
+    # Convocatorias sin responder: una entrada por enfrentamiento próximo en el que su ficha aún no ha
+    # dicho si puede jugar (también para quien gestiona y juega); lleva a la ficha, donde responde.
+    horizon = today + datetime.timedelta(days=HOME_PENDING_DAYS)
+    for m, _player in availability_logic.unanswered(
+            form_players, [m for m in open_matches if today <= m.start_date <= horizon]):
+        player_todos.append({"icon": "fa-circle-question", "url": reverse('call_for_match', args=[m.public_id]),
+                             "text": _("Responde si puedes jugar: %(rival)s, %(date)s") % {
+                                 "rival": m.rival_label, "date": date_short(m.start_date)}})
 
     onboarding = onboarding_for(request.membership)
     # «Prepara la temporada» (julio-octubre) lleva dentro el paso de SNP: no se repite la tarea suelta.
@@ -322,7 +332,9 @@ class ThrottledLoginView(LoginView):
     def form_valid(self, form):
         """Inicio de sesión correcto: pone a cero el contador de fallos."""
         ratelimit.clear(self._key())
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        sessions.apply_login_expiry(self.request, form.get_user(), self.request.POST.get("remember") == "on")
+        return response
 
 
 def error_404_view(request, exception):
@@ -919,6 +931,17 @@ def _change_own_email(request, user, email):
     EmailAddress.objects.filter(user=user).exclude(email__iexact=email).delete()
     email_verification.start_verification(request, user)
     return None
+
+
+@login_required
+@require_POST
+def logout_everywhere(request):
+    """«Cerrar sesión en todos los dispositivos»: borra las demás sesiones de la cuenta y deja la actual."""
+    closed = sessions.end_other_sessions(request.user, request.session.session_key)
+    messages.success(request, ngettext("Se cerró la sesión en %(n)s dispositivo más.",
+                                       "Se cerró la sesión en %(n)s dispositivos más.", closed) % {"n": closed}
+                     if closed else _("No había más sesiones abiertas."))
+    return redirect("my_profile")
 
 
 @login_required

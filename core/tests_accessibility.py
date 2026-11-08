@@ -208,6 +208,7 @@ class AccessibilityTests(TestCase):
         titles = self._assert_accessible([
             reverse("home"), reverse("list_match"), reverse("create_match"),
             reverse("call_for_match", args=[self.match.public_id]),
+            reverse("availability", args=[self.match.availability_token]),
             reverse("edit_match_date", args=[self.match.public_id]),
             reverse("edit_call", args=[self.call.public_id]),
             reverse("view_call_log", args=[self.call.public_id]),
