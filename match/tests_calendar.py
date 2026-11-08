@@ -130,3 +130,30 @@ class ShareTextTests(UxBase):
         Match.objects.filter(pk=match.pk).update(match_type=Match.AMISTOSO)
         match.refresh_from_db()
         self.assertIn("Amistoso", self.share(match).split("\n")[1])
+
+
+class ResultImageTests(ShareTextTests):
+    """Imagen vertical del resultado (botón «Compartir resultado»)."""
+
+    def test_closed_match_returns_png_1080x1350(self):
+        from io import BytesIO
+        from PIL import Image
+        match = self.closed_match()
+        page = self.client.get(reverse("call_for_match", args=[match.public_id]))
+        self.assertContains(page, reverse("result_image", args=[match.public_id]))
+        response = self.client.get(reverse("result_image", args=[match.public_id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "image/png")
+        self.assertEqual(Image.open(BytesIO(response.content)).size, (1080, 1350))
+
+    def test_open_match_has_no_image(self):
+        match = self.match()
+        self.assertEqual(self.client.get(reverse("result_image", args=[match.public_id])).status_code, 404)
+
+    def test_other_club_cannot_see_it(self):
+        match = self.closed_match()
+        other = User.objects.create_user("otro", email="otro@example.com", password="pass-12345")
+        create_club("Club B", "Madrid", other)
+        self.client.logout()
+        self.client.login(username="otro", password="pass-12345")
+        self.assertEqual(self.client.get(reverse("result_image", args=[match.public_id])).status_code, 404)

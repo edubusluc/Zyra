@@ -86,7 +86,7 @@ Del 1 de julio al 31 de octubre, el Inicio del capitán y de los gestores (en lo
 
 ## Calendario de enfrentamientos
 
-En Enfrentamientos hay dos vistas: **Lista** y **Calendario**. El calendario (`match/month_view.py`, vista `calendar_match`) enseña un mes (`?month=AAAA-MM`, por defecto el actual) con todos los enfrentamientos del club: próximos, jugados con su marcador, con el acta abierta y amistosos. Es de solo lectura para todos los miembros, no envía correos ni crea avisos, y en móvil se pinta como agenda por días. «Compartir resultado» genera un texto pensado para WhatsApp (negrita, emojis y una línea por partido).
+En Enfrentamientos hay dos vistas: **Lista** y **Calendario**. El calendario (`match/month_view.py`, vista `calendar_match`) enseña un mes (`?month=AAAA-MM`, por defecto el actual) con todos los enfrentamientos del club: próximos, jugados con su marcador, con el acta abierta y amistosos. Es de solo lectura para todos los miembros, no envía correos ni crea avisos, y en móvil se pinta como agenda por días. «Compartir resultado» (capitán y gestores, acta cerrada) genera una imagen vertical 1080×1350 con el estilo de la web (local y visitante, marcador, resultado y puntos de cada partido con la pareja propia; «No presentada» cuando falta una pareja) y la comparte desde el menú del móvil; en el ordenador la descarga y abre WhatsApp con el texto (negrita, emojis y una línea por partido).
 
 ## Jugadores
 
