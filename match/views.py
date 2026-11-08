@@ -928,6 +928,8 @@ def call_for_match(request, match_id):
             p.is_me = p.id == me.id
 
     return render(request, "call_for_match.html", {
+        "my_availability": Availability.objects.filter(match=match, player=me).first() if me else None,
+        "can_answer": bool(me and match.draft_mode and call_availability.is_open(match)),
         "availability": availability_context(request, match) if request.membership.can_manage and call_availability.is_open(match) else None,
         "call_for_match": call,
         "match_id": match.public_id,

@@ -1,0 +1,15 @@
+{# «Apuntarse» desde la ficha: el jugador enlazado responde Sí / No / Pendiente sin salir de la página. Recibe: my_availability, match. #}
+{% load i18n %}
+<section class="z-av-me" aria-labelledby="av-me-title">
+    <h2 class="z-section-title mt-0" id="av-me-title">{% translate "¿Puedes jugar?" %}</h2>
+    {% if my_availability %}<p class="z-av-me-now" role="status">{% blocktranslate with answer=my_availability.get_answer_display %}Has respondido: {{ answer }}{% endblocktranslate %}{% if my_availability.comment %} · “{{ my_availability.comment }}”{% endif %}</p>{% endif %}
+    <form method="post" action="{% url 'availability' match.availability_token %}" data-loading-text="{% translate 'Guardando…' %}" class="z-av-choices z-av-choices--3">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="answer">
+        <input type="hidden" name="next" value="ficha">
+        <button type="submit" name="answer" value="yes" class="z-av-btn is-yes{% if my_availability.answer == 'yes' %} is-current{% endif %}" {% if my_availability.answer == 'yes' %}aria-pressed="true"{% endif %}><i class="fa-solid fa-check" aria-hidden="true"></i> {% translate "Sí" %}</button>
+        <button type="submit" name="answer" value="no" class="z-av-btn is-no{% if my_availability.answer == 'no' %} is-current{% endif %}" {% if my_availability.answer == 'no' %}aria-pressed="true"{% endif %}><i class="fa-solid fa-xmark" aria-hidden="true"></i> {% translate "No" %}</button>
+        <button type="submit" name="answer" value="maybe" class="z-av-btn is-maybe{% if my_availability.answer == 'maybe' %} is-current{% endif %}" {% if my_availability.answer == 'maybe' %}aria-pressed="true"{% endif %}><i class="fa-regular fa-clock" aria-hidden="true"></i> {% translate "Pendiente" %}</button>
+    </form>
+    {% if my_availability.answer == 'maybe' %}<p class="mt-2"><a href="{% url 'availability' match.availability_token %}?cambiar=1">{% translate "Añadir observaciones" %}</a></p>{% endif %}
+</section>

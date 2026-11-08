@@ -193,7 +193,7 @@ class AvailabilityTests(TestCase):
         self.client.force_login(self.captain)
         self.assertContains(self.client.get(url), self.match.availability_token)
         self.client.force_login(self.user)
-        self.assertNotContains(self.client.get(url), self.match.availability_token)
+        self.assertNotContains(self.client.get(url), "availability-url")
 
     def test_share_text_has_link(self):
         """El texto prefabricado lleva el partido y el enlace."""
@@ -243,3 +243,12 @@ class AvailabilityTests(TestCase):
         self.assertContains(response, "Cambiar respuesta")
         self.assertNotContains(response, 'value="no"')
         self.assertContains(self.client.get(self.url + "?cambiar=1"), 'value="no"')
+
+    def test_player_answers_from_the_ficha(self):
+        """Desde la ficha el jugador ve los botones, responde y vuelve a la ficha."""
+        ficha = reverse("call_for_match", args=[self.match.public_id])
+        self.client.force_login(self.user)
+        self.assertContains(self.client.get(ficha), "¿Puedes jugar?")
+        response = self.client.post(self.url, {"action": "answer", "answer": "yes", "next": "ficha"})
+        self.assertRedirects(response, ficha)
+        self.assertContains(self.client.get(ficha), "Has respondido: Sí")

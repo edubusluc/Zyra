@@ -139,6 +139,7 @@
 </div>
 {% endif %}
 
+{% if can_answer %}{% include 'includes/availability_me.html' %}{% endif %}
 {% if availability %}{% include 'includes/availability_card.html' %}{% endif %}
 
 {% if stage_view and not match.draft_mode %}<div class="z-stage-closed">{% endif %}

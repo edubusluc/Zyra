@@ -77,6 +77,8 @@ def availability(request, token):
                 messages.error(request, _("La convocatoria está cerrada: ya no se puede cambiar la respuesta."))
             elif availability_logic.set_answer(match, player, request.POST.get("answer", ""), request.POST.get("comment", "")):
                 messages.success(request, _("Respuesta guardada."))
+        if request.POST.get("next") == "ficha":
+            return redirect("call_for_match", match.public_id)
         return redirect("availability", token=token)
 
     mine = Availability.objects.filter(match=match, player=player).first() if player else None

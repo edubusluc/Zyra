@@ -16081,3 +16081,9 @@ msgstr "Has not answered yet"
 #, python-format
 msgid "Pendiente · %(n)s"
 msgstr "Pending · %(n)s"
+
+msgid "¿Puedes jugar?"
+msgstr "Can you play?"
+
+msgid "Añadir observaciones"
+msgstr "Add remarks"
