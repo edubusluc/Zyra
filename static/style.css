@@ -4402,3 +4402,10 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 @media (max-width: 480px) { .z-av-choices--3 .z-av-btn { flex-direction: column; gap: 2px; min-height: 64px; } }
 .z-pick-hint { cursor: help; text-decoration: underline dotted; text-underline-offset: 3px; width: fit-content; border-radius: var(--z-radius-xs); transition: background-color .15s var(--z-ease), color .15s var(--z-ease); }
 .z-pick-hint:hover, .z-pick-hint:focus-visible { background: var(--z-surface-3); color: var(--z-text); text-decoration-style: solid; }
+.z-av-group + .z-av-group { margin-top: 16px; }
+.z-av-group-title { margin: 0 0 6px; font-size: var(--z-fs-md); text-transform: uppercase; letter-spacing: .06em; color: var(--z-muted); }
+.z-av-group--yes .z-av-group-title { color: var(--z-lime); }
+.z-av-group--no .z-av-group-title { color: var(--z-danger); }
+.z-av-group--maybe .z-av-group-title { color: var(--z-warning); }
+.z-availability-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.z-availability-list li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px; background: var(--z-surface-2); border: 1px solid var(--z-border); border-radius: var(--z-radius-sm); }

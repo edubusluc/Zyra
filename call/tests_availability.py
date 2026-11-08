@@ -255,3 +255,15 @@ class AvailabilityTests(TestCase):
         response = self.client.post(self.url, {"action": "answer", "answer": "yes", "next": "ficha"})
         self.assertRedirects(response, ficha)
         self.assertContains(self.client.get(ficha), "Has respondido: Sí")
+
+    def test_board_groups_follow_yes_no_pending_no_answer(self):
+        """La ventana «Ver respuestas» agrupa en Sí, No, Pendiente y No responde."""
+        availability.set_answer(self.match, self.ana, "maybe")
+        groups = availability.board(self.match)["groups"]
+        self.assertEqual([g["key"] for g in groups], ["yes", "no", "maybe", "none"])
+        self.assertEqual([r["player"].id for r in groups[2]["rows"]], [self.ana.id])
+        self.assertEqual([r["player"].id for r in groups[3]["rows"]], [self.luis.id])
+        self.client.force_login(self.captain)
+        response = self.client.get(reverse("call_for_match", args=[self.match.public_id]))
+        self.assertContains(response, "availabilityModal")
+        self.assertContains(response, "No responde")

@@ -97,7 +97,8 @@ def board(match):
     """
     Resumen para el capitán o los gestores: ``{"rows", "counts"}``. Cada fila lleva el jugador
     (``player``), su estado (``state``: «yes», «no», «maybe», «captain» si el capitán lo apuntó
-    sin respuesta, o «none»), el comentario y si lo puso un gestor. ``counts`` cuenta cada estado.
+    sin respuesta, o «none»), el comentario y si lo puso un gestor. ``counts`` cuenta cada estado y
+    ``groups`` agrupa las filas en Sí, No, Pendiente y No responde.
     """
     answers = answers_by_player(match)
     call = Call.objects.filter(match=match).first()
@@ -116,7 +117,16 @@ def board(match):
     order = {Availability.YES: 0, Availability.MAYBE: 1, Availability.NO: 2, BY_CAPTAIN: 3, NO_ANSWER: 4}
     rows.sort(key=lambda r: order[r["state"]])
     counts = {key: sum(1 for r in rows if r["state"] == key) for key in order}
-    return {"rows": rows, "counts": counts}
+    # Listado de la ventana «Ver respuestas»: Sí, No, Pendiente y No responde (con los apuntados por el capitán).
+    groups = [
+        {"key": Availability.YES, "label": _("Sí"), "rows": [r for r in rows if r["state"] == Availability.YES]},
+        {"key": Availability.NO, "label": _("No"), "rows": [r for r in rows if r["state"] == Availability.NO]},
+        {"key": Availability.MAYBE, "label": _("Pendiente"),
+         "rows": [r for r in rows if r["state"] == Availability.MAYBE]},
+        {"key": NO_ANSWER, "label": _("No responde"),
+         "rows": [r for r in rows if r["state"] in (NO_ANSWER, BY_CAPTAIN)]},
+    ]
+    return {"rows": rows, "counts": counts, "groups": groups}
 
 
 def yes_player_ids(match):

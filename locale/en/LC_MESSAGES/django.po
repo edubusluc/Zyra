@@ -16145,3 +16145,12 @@ msgstr "Answered Pending on the availability link"
 #, python-format
 msgid "Observaciones: %(text)s"
 msgstr "Remarks: %(text)s"
+
+msgid "No responde"
+msgstr "No answer"
+
+msgid "Respuestas de disponibilidad"
+msgstr "Availability answers"
+
+msgid "Nadie"
+msgstr "Nobody"
