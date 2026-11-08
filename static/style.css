@@ -4398,10 +4398,8 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .z-av-me-now { margin: 0 0 10px; color: var(--z-muted); }
 .z-av-choices--3 { grid-template-columns: repeat(3, 1fr); }
 .z-av-choices--3 .z-av-btn { font-size: var(--z-fs-base); }
-.z-av-btn.is-current { box-shadow: 0 0 0 3px rgba(255, 255, 255, .35); }
+.z-av-btn.is-current { outline: 3px solid var(--z-text); outline-offset: 2px; }
 @media (max-width: 480px) { .z-av-choices--3 .z-av-btn { flex-direction: column; gap: 2px; min-height: 64px; } }
-.z-pick-hint { cursor: help; text-decoration: underline dotted; text-underline-offset: 3px; width: fit-content; border-radius: var(--z-radius-xs); transition: background-color .15s var(--z-ease), color .15s var(--z-ease); }
-.z-pick-hint:hover, .z-pick-hint:focus-visible { background: var(--z-surface-3); color: var(--z-text); text-decoration-style: solid; }
 .z-av-group + .z-av-group { margin-top: 16px; }
 .z-av-group-title { margin: 0 0 6px; font-size: var(--z-fs-md); text-transform: uppercase; letter-spacing: .06em; color: var(--z-muted); }
 .z-av-group--yes .z-av-group-title { color: var(--z-lime); }
@@ -4414,3 +4412,13 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .z-av-change > summary { cursor: pointer; list-style: none; display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin-bottom: .5rem; }
 .z-av-change > summary::-webkit-details-marker { display: none; }
 .z-av-change-link { color: var(--z-lime, #B4F100); text-decoration: underline; font-weight: 600; }
+
+/* Botones de la tarjeta de disponibilidad: todos en una línea (en pantallas muy estrechas pasan a la siguiente). */
+.z-av-actions { display: flex; flex-wrap: nowrap; gap: 8px; align-items: center; }
+.z-av-actions .btn { white-space: nowrap; padding-inline: .6rem; }
+@media (max-width: 359px) { .z-av-actions { flex-wrap: wrap; } }
+.z-av-set { display: inline-flex; gap: 4px; }
+.z-av-set-btn { border: 1px solid var(--z-border-control); background: var(--z-surface-2); color: var(--z-text); min-height: 32px; }
+.z-av-set-btn.is-current { background: var(--z-lime); border-color: var(--z-lime); color: var(--z-ink); font-weight: 800; }
+.z-av-by-captain { margin: 8px 0 0; color: var(--z-muted); font-size: var(--z-fs-sm); }
+.z-av-by-captain-note { color: var(--z-muted); }

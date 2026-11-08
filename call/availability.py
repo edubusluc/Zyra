@@ -7,8 +7,11 @@ Aquí vive la lógica (enlace, texto prefabricado, respuestas, resumen para el c
 las vistas están en ``call/views.py``.
 """
 import logging
+import math
+import time
 
 from django.conf import settings
+from django.core.cache import cache
 from django.core.mail import get_connection
 from django.db.models import Q
 from django.urls import reverse
@@ -26,6 +29,8 @@ logger = logging.getLogger(__name__)
 
 # Entre dos recordatorios manuales del mismo enfrentamiento tiene que pasar este tiempo.
 REMINDER_COOLDOWN_SECONDS = 60 * 60
+# Tope de recordatorios al día por club (suma de todos sus enfrentamientos): protege la cuenta que envía los correos.
+REMINDERS_PER_CLUB_PER_DAY = 10
 
 NO_ANSWER = "none"
 BY_CAPTAIN = "captain"
@@ -43,7 +48,12 @@ def link_path(match):
 
 
 def link_url(request, match):
-    """Enlace de disponibilidad completo, con el dominio desde el que se está usando Zyra."""
+    """
+    Enlace de disponibilidad completo. Con ``SITE_URL`` configurado usa siempre el dominio oficial (los
+    correos y el texto de WhatsApp no dependen de por dónde haya entrado quien los genera); sin él, el de la petición.
+    """
+    if settings.SITE_URL:
+        return settings.SITE_URL + link_path(match)
     return request.build_absolute_uri(link_path(match))
 
 
@@ -73,13 +83,18 @@ def squad(match):
     return Player.objects.filter(club=match.club).filter(Q(in_team=True) | Q(id__in=answered))
 
 
+def valid_answer(answer):
+    """True si ``answer`` es una de las respuestas posibles (Sí, No, Pendiente)."""
+    return answer in dict(Availability.ANSWERS)
+
+
 def set_answer(match, player, answer, comment="", by_manager=False):
     """
     Guarda la respuesta de ``player`` (la sustituye si ya había una). El comentario solo se
     conserva con «Pendiente» y se recorta a ``Availability.MAX_COMMENT``. Devuelve la fila, o ``None`` si
     la respuesta no es válida o ya no se puede responder.
     """
-    if answer not in dict(Availability.ANSWERS) or not is_open(match):
+    if not valid_answer(answer) or not is_open(match):
         return None
     comment = " ".join((comment or "").split())[:Availability.MAX_COMMENT] if answer == Availability.MAYBE else ""
     row, _created = Availability.objects.update_or_create(
@@ -98,7 +113,8 @@ def board(match):
     Resumen para el capitán o los gestores: ``{"rows", "counts"}``. Cada fila lleva el jugador
     (``player``), su estado (``state``: «yes», «no», «maybe», «captain» si el capitán lo apuntó
     sin respuesta, o «none»), el comentario y si lo puso un gestor. ``counts`` cuenta cada estado y
-    ``groups`` agrupa las filas en Sí, No, Pendiente y No responde.
+    ``groups`` agrupa las filas en Sí, No, Pendiente y Sin respuesta (con los apuntados por el capitán) y
+    ``tags`` da esos mismos cuatro contadores, en el mismo orden, para la tarjeta de la ficha.
     """
     answers = answers_by_player(match)
     call = Call.objects.filter(match=match).first()
@@ -117,16 +133,17 @@ def board(match):
     order = {Availability.YES: 0, Availability.MAYBE: 1, Availability.NO: 2, BY_CAPTAIN: 3, NO_ANSWER: 4}
     rows.sort(key=lambda r: order[r["state"]])
     counts = {key: sum(1 for r in rows if r["state"] == key) for key in order}
-    # Listado de la ventana «Ver respuestas»: Sí, No, Pendiente y No responde (con los apuntados por el capitán).
+    # Listado de la ventana «Ver respuestas»: Sí, No, Pendiente y Sin respuesta (con los apuntados por el capitán).
     groups = [
         {"key": Availability.YES, "label": _("Sí"), "rows": [r for r in rows if r["state"] == Availability.YES]},
         {"key": Availability.NO, "label": _("No"), "rows": [r for r in rows if r["state"] == Availability.NO]},
         {"key": Availability.MAYBE, "label": _("Pendiente"),
          "rows": [r for r in rows if r["state"] == Availability.MAYBE]},
-        {"key": NO_ANSWER, "label": _("No responde"),
+        {"key": NO_ANSWER, "label": _("Sin respuesta"),
          "rows": [r for r in rows if r["state"] in (NO_ANSWER, BY_CAPTAIN)]},
     ]
-    return {"rows": rows, "counts": counts, "groups": groups}
+    tags = [{"key": g["key"], "label": g["label"], "n": len(g["rows"])} for g in groups]
+    return {"rows": rows, "counts": counts, "groups": groups, "tags": tags}
 
 
 def yes_player_ids(match):
@@ -140,12 +157,16 @@ def availability_badges(match):
 
 
 def pending_players(match):
-    """Jugadores de la plantilla con cuenta y email que no han respondido ni están apuntados por el capitán."""
+    """
+    Jugadores de la plantilla con cuenta y email que no han respondido ni están apuntados por el capitán
+    y a quienes el capitán no ha silenciado los correos (``Player.emails_muted``).
+    """
     answered = set(Availability.objects.filter(match=match).values_list("player_id", flat=True))
     call = Call.objects.filter(match=match).first()
     called = set(call.players.values_list("id", flat=True)) if call else set()
     return [p for p in squad(match).select_related("user").order_by("name", "last_name")
-            if p.user_id and p.user.is_active and p.user.email and p.id not in answered | called]
+            if p.user_id and p.user.is_active and p.user.email and not p.emails_muted
+            and p.id not in answered | called]
 
 
 def reminder_key(match):
@@ -153,15 +174,53 @@ def reminder_key(match):
     return f"availability-reminder:{match.pk}"
 
 
+def reminder_minutes_left(match):
+    """Minutos que faltan para poder enviar otro recordatorio de ``match`` (0 si ya se puede)."""
+    try:
+        sent_at = cache.get(reminder_key(match))
+    except Exception:
+        logger.exception("Caché no disponible al leer la espera del recordatorio")
+        return 1
+    if not sent_at:
+        return 0
+    left = sent_at + REMINDER_COOLDOWN_SECONDS - time.time()
+    return max(math.ceil(left / 60), 1) if left > 0 else 0
+
+
 def reminder_blocked(match):
     """True si ya se envió un recordatorio de este enfrentamiento hace menos de ``REMINDER_COOLDOWN_SECONDS``."""
-    return ratelimit.get_count(reminder_key(match)) > 0
+    return reminder_minutes_left(match) > 0
+
+
+def claim_reminder(match):
+    """
+    Reserva el recordatorio de ``match`` de forma atómica antes de enviar (dos peticiones a la vez no pasan las
+    dos). Devuelve False si ya hay uno reciente o si la caché falla: aquí es mejor no enviar que enviar sin límite.
+    """
+    try:
+        return bool(cache.add(reminder_key(match), time.time(), REMINDER_COOLDOWN_SECONDS))
+    except Exception:
+        logger.exception("Caché no disponible: no se envía el recordatorio")
+        return False
+
+
+def release_reminder(match):
+    """Devuelve la reserva de ``claim_reminder`` (si no salió ningún correo, se puede reintentar enseguida)."""
+    ratelimit.clear(reminder_key(match))
+
+
+def club_over_daily_limit(club):
+    """Cuenta un recordatorio del club y devuelve True si ya pasó de ``REMINDERS_PER_CLUB_PER_DAY`` hoy."""
+    if not settings.RATE_LIMITS_ENABLED:
+        return False
+    return ratelimit.add_hit(f"availability-reminder-day:{club.pk}", 24 * 60 * 60) > REMINDERS_PER_CLUB_PER_DAY
 
 
 def send_reminder(request, match):
     """
     Recordatorio manual del capitán: un correo con el enlace a cada jugador que aún no ha respondido.
-    Devuelve cuántos salieron. Un fallo con un destinatario se anota y no corta a los demás.
+    Devuelve cuántos salieron. Un fallo con un destinatario se anota y no corta a los demás. La espera entre
+    recordatorios la reserva y la libera la vista (``claim_reminder`` / ``release_reminder``).
     """
     url = link_url(request, match)
     sent = 0
@@ -183,5 +242,4 @@ def send_reminder(request, match):
             sent += 1
         except Exception:
             logger.exception("No se pudo enviar el recordatorio de disponibilidad a %s", player.user.email)
-    ratelimit.add_hit(reminder_key(match), REMINDER_COOLDOWN_SECONDS)
     return sent

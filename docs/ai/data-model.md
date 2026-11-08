@@ -52,7 +52,7 @@ entero sigue siendo la clave de los FK. Excepciones sin `public_id`: `backoffice
 
 - `club` y `team` (siempre el equipo propio; `save()` lo asigna si falta y copia `gender`).
 - `user` (enlace a la cuenta, `SET_NULL`); única por (`club`, `user`) cuando no es nulo.
-- `in_team` (False = ya no está en la plantilla, se conserva para estadísticas), `snp_score`,
+- `emails_muted` (el capitán silencia los recordatorios del club a ese jugador), `in_team` (False = ya no está en la plantilla, se conserva para estadísticas), `snp_score`,
   `joined_season` (`AAAA-AAAA`, selector con las de `season_choices`; las convocatorias anteriores no cuentan en sus estadísticas, `joined_by`), `position`, `skillfull_hand` (sic).
 - Mostrar siempre `full_name` / `short_name` (caja de título; mayúsculas solo en titulares por CSS); lo guardado no se toca.
 - `copied_from` (FK a sí mismo, `SET_NULL`, `related_name="copies"`): ficha de la que se copió con
@@ -91,7 +91,7 @@ entero sigue siendo la clave de los FK. Excepciones sin `public_id`: `backoffice
 
 - **Call** (`call/models.py`): una por `Match` (`unique_together`), M2M `players`, `draft_mode`
   (True = abierta).
-- **Availability** (`call/models.py`): respuesta de un jugador al enlace de disponibilidad, única por (`match`, `player`); `answer` yes/no/maybe, `comment` (≤200, solo con «Aún no sé»), `set_by_manager`. Cambiar fecha u hora del `Match` no la borra. El enlace usa `Match.availability_token` (impredecible, regenerable; migración `match/0018` lo crea para los enfrentamientos abiertos).
+- **Availability** (`call/models.py`): respuesta de un jugador al enlace de disponibilidad, única por (`match`, `player`); `answer` yes/no/maybe, `comment` (≤200, solo con «Pendiente»; se borra al cerrar el acta), `set_by_manager`. Cambiar fecha u hora del `Match` no la borra. El enlace usa `Match.availability_token` (impredecible, regenerable; migración `match/0018` lo crea para los enfrentamientos abiertos).
 - **ReportDelivery**: cola de envío del PDF, única por (`call`, `email`); `status`
   pending/sent/failed, `attempts`, `next_attempt_at`.
 - **CallLog** (`callLog/models.py`): `text` con líneas separadas por `;`.

@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 08/11/2026 · Revisión del enlace de disponibilidad
+
+- **Usabilidad**: la tarjeta de la ficha cuenta Sí · No · Pendiente · Sin respuesta (igual que la ventana «Ver respuestas», con botones Sí / No / Pendiente por jugador) y sus tres botones caben en una línea. «Recordar» solo lo envía el capitán, enseña a cuántos escribe, no gasta la espera si no sale ningún correo y dice cuánto falta si hay que esperar. El jugador ve «Respuesta puesta por tu capitán». Un enlace sustituido, un club suspendido o una cuenta de fuera tienen su propio mensaje (y sin datos del partido). La ficha responde sin depender del token. Al volver a cerrar una convocatoria reabierta, el informe solo se reenvía con la casilla «Volver a enviar el informe». El ⓘ usa el mismo componente que las estadísticas.
+- **Seguridad**: login con «Mantener la sesión iniciada 30 días» (14 días por defecto, 12 h para el personal) y «Cerrar sesión en los demás dispositivos» en Mi perfil; el servidor comprueba el cierre corto (solo con «pareja no presentada» y ≥2 jugadores), la convocatoria cerrada ya no puede quedarse por debajo del mínimo ni quitar a quien está en una pareja y editar parejas no borra resultados; recordatorios con reserva atómica, tope de 10 al día por club y enlaces con `SITE_URL`; observaciones con aviso de privacidad que se borran al cerrar el acta. El capitán puede bloquear los correos del club a un jugador desde su ficha.
+
 ## 08/11/2026 · Convocatoria con menos del mínimo
 
 - **Convocatoria**: se puede crear y editar con menos jugadores que el mínimo de la competición. Al cerrarla por debajo del mínimo la ficha avisa con un popup («se va a cerrar la convocatoria con X jugadores menos») y solo cierra si se confirma, para bajas por lesión u otros motivos.

@@ -16199,3 +16199,123 @@ msgstr ""
 "With these players only %(n)s pairs can be formed: the rest are marked as "
 "no-show. In the SNP, one missing pair splits the points as the rules say "
 "(20.2); two or more lose the match 0-12."
+
+msgid "Elige Sí, No o Pendiente."
+msgstr "Choose Yes, No or Pending."
+
+msgid "Has enviado muchos recordatorios hoy. Prueba de nuevo mañana."
+msgstr "You have sent a lot of reminders today. Try again tomorrow."
+
+msgid "No se pudo enviar ningún correo. Inténtalo de nuevo en unos minutos."
+msgstr "No email could be sent. Try again in a few minutes."
+
+msgid "No se pueden quitar de las parejas partidos que ya tienen resultado (partido %(n)s): bórralo primero."
+msgstr "Games that already have a result cannot be taken out of the pairs (game %(n)s): delete the result first."
+
+msgid "La convocatoria está cerrada: no puede quedarse por debajo de %(n)s jugadores."
+msgstr "The call-up is closed: it cannot drop below %(n)s players."
+
+msgid "Hay jugadores quitados que están en una pareja: cámbialos primero en «Editar parejas»."
+msgstr "Some of the removed players are in a pair: change them first in «Edit pairs»."
+
+msgid "Convocatoria cerrada. El informe no se ha vuelto a enviar."
+msgstr "Call-up closed. The report was not sent again."
+
+msgid "Convocatoria reabierta por %(user)s el día %(when)s;"
+msgstr "Call reopened by %(user)s on %(when)s;"
+
+msgid "%(player)s ya no recibirá los recordatorios del club por correo."
+msgstr "%(player)s will no longer receive the club's reminder emails."
+
+msgid "%(player)s vuelve a recibir los recordatorios del club por correo."
+msgstr "%(player)s receives the club's reminder emails again."
+
+msgid "Volver a enviarle correos"
+msgstr "Send emails to them again"
+
+msgid "Bloquear correos del club"
+msgstr "Block club emails"
+
+msgid "Este enlace ya no es válido"
+msgstr "This link is no longer valid"
+
+msgid "Puede que tu capitán haya creado uno nuevo. Pídeselo para poder responder."
+msgstr "Your captain may have created a new one. Ask for it to be able to answer."
+
+msgid "El equipo %(team)s está suspendido en Zyra y no se puede responder ahora. Habla con tu capitán."
+msgstr "The team %(team)s is suspended on Zyra and answers are not possible right now. Talk to your captain."
+
+msgid "Has iniciado sesión como «%(user)s», que no pertenece a %(team)s. Entra con la cuenta con la que te uniste al equipo, o pídele una invitación a tu capitán si todavía no tienes cuenta en el equipo."
+msgstr "You are signed in as «%(user)s», which does not belong to %(team)s. Sign in with the account you joined the team with, or ask your captain for an invitation if you do not have an account in the team yet."
+
+msgid "Respuesta puesta por tu capitán"
+msgstr "Answer set by your captain"
+
+msgid "Solo lo verán tu capitán y los gestores. No escribas datos de salud. Se borra al cerrar el acta."
+msgstr "Only your captain and the managers will see it. Do not write health data. It is deleted when the match record is closed."
+
+msgid "tu respuesta actual"
+msgstr "your current answer"
+
+msgid "Recordar · %(n)s"
+msgstr "Remind · %(n)s"
+
+msgid "Enlace nuevo"
+msgstr "New link"
+
+msgid "No se pudo copiar: cópialo a mano"
+msgstr "Could not copy: copy it by hand"
+
+msgid "puesta por el capitán"
+msgstr "set by the captain"
+
+msgid "Poner %(answer)s a %(name)s"
+msgstr "Set %(answer)s for %(name)s"
+
+msgid "Volver a enviar el informe"
+msgstr "Send the report again"
+
+msgid "El informe de esta convocatoria ya se envió a los capitanes. Márcalo solo si ha cambiado algo que deban saber."
+msgstr "This call-up's report was already sent to the captains. Tick it only if something they should know has changed."
+
+msgid "El informe ya se envió a los capitanes: marca la casilla si quieres enviarlo otra vez."
+msgstr "The report was already sent to the captains: tick the box if you want to send it again."
+
+msgid "La convocatoria vuelve a estar abierta: podrás cambiar los apuntados y el enlace de disponibilidad volverá a funcionar. Tendrás que cerrarla de nuevo; al cerrarla podrás elegir si se vuelve a enviar el informe a los capitanes."
+msgstr "The call-up is open again: you can change who is signed up and the availability link will work again. You will have to close it again; when you do, you can choose whether the report is sent to the captains again."
+
+msgid "Mantener la sesión iniciada 30 días"
+msgstr "Keep me signed in for 30 days"
+
+msgid "Sesiones"
+msgstr "Sessions"
+
+msgid "Si has entrado en un ordenador que no es tuyo, cierra la sesión en los demás dispositivos."
+msgstr "If you signed in on a computer that is not yours, sign out on your other devices."
+
+msgid "Se cerrará la sesión en todos los demás dispositivos. Esta seguirá abierta."
+msgstr "You will be signed out on all your other devices. This one stays signed in."
+
+msgid "Cerrar sesión en los demás dispositivos"
+msgstr "Sign out on other devices"
+
+msgid "Cerrando sesiones…"
+msgstr "Signing out…"
+
+msgid "No había más sesiones abiertas."
+msgstr "There were no other open sessions."
+
+msgid "Ya enviaste un recordatorio hace poco. Podrás enviar otro en %(n)s minuto."
+msgid_plural "Ya enviaste un recordatorio hace poco. Podrás enviar otro en %(n)s minutos."
+msgstr[0] "You sent a reminder a moment ago. You can send another in %(n)s minute."
+msgstr[1] "You sent a reminder a moment ago. You can send another in %(n)s minutes."
+
+msgid "Se enviará un correo con el enlace a %(n)s jugador que aún no ha respondido."
+msgid_plural "Se enviará un correo con el enlace a %(n)s jugadores que aún no han respondido."
+msgstr[0] "An email with the link will be sent to %(n)s player who has not answered yet."
+msgstr[1] "An email with the link will be sent to %(n)s players who have not answered yet."
+
+msgid "Se cerró la sesión en %(n)s dispositivo más."
+msgid_plural "Se cerró la sesión en %(n)s dispositivos más."
+msgstr[0] "Signed out on %(n)s more device."
+msgstr[1] "Signed out on %(n)s more devices."

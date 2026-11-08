@@ -25,7 +25,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext as _, ngettext
 
 from core.templatetags.zyra_format import date_short
 from django.views.decorators.http import require_http_methods, require_POST, require_safe
@@ -45,7 +45,7 @@ from .forms import CaptainPlayerForm, CaptainSnpForm, ClubForm, EmailChangeForm,
 from .middleware import SESSION_KEY
 from .models import REPORT_SCOPES, Club, Invitation, Membership, UserPreference
 from .onboarding import onboarding_for
-from . import email_verification, ratelimit, seo
+from . import email_verification, ratelimit, seo, sessions
 from players import copy as player_copy, snp_service
 from .unsubscribe import user_from_result_token, user_from_token
 from .services import (
@@ -322,7 +322,9 @@ class ThrottledLoginView(LoginView):
     def form_valid(self, form):
         """Inicio de sesión correcto: pone a cero el contador de fallos."""
         ratelimit.clear(self._key())
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        sessions.apply_login_expiry(self.request, form.get_user(), self.request.POST.get("remember") == "on")
+        return response
 
 
 def error_404_view(request, exception):
@@ -919,6 +921,17 @@ def _change_own_email(request, user, email):
     EmailAddress.objects.filter(user=user).exclude(email__iexact=email).delete()
     email_verification.start_verification(request, user)
     return None
+
+
+@login_required
+@require_POST
+def logout_everywhere(request):
+    """«Cerrar sesión en todos los dispositivos»: borra las demás sesiones de la cuenta y deja la actual."""
+    closed = sessions.end_other_sessions(request.user, request.session.session_key)
+    messages.success(request, ngettext("Se cerró la sesión en %(n)s dispositivo más.",
+                                       "Se cerró la sesión en %(n)s dispositivos más.", closed) % {"n": closed}
+                     if closed else _("No había más sesiones abiertas."))
+    return redirect("my_profile")
 
 
 @login_required

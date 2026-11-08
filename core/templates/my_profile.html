@@ -84,6 +84,19 @@
     </div>
     {% endif %}
     {% endif %}
+    <div class="z-account-row">
+        <i class="fa-solid fa-laptop" aria-hidden="true"></i>
+        <div class="z-account-body">
+            <span class="z-account-label">{% translate "Sesiones" %}</span>
+            <span class="z-account-note">{% translate "Si has entrado en un ordenador que no es tuyo, cierra la sesión en los demás dispositivos." %}</span>
+            <div class="z-account-actions">
+                <form method="post" action="{% url 'logout_everywhere' %}" data-loading-text="{% translate 'Cerrando sesiones…' %}"
+                      data-confirm="{% translate 'Se cerrará la sesión en todos los demás dispositivos. Esta seguirá abierta.' %}">
+                    {% csrf_token %}<button type="submit" class="btn btn-outline-secondary btn-sm">{% translate "Cerrar sesión en los demás dispositivos" %}</button>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 
 {% if sheets %}

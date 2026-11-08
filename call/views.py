@@ -4,9 +4,10 @@ from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.shortcuts import redirect, render, get_object_or_404
 from django.utils.translation import gettext as _, ngettext
+from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 from core import spaces
-from core.decorators import club_admin_required, club_manager_required
+from core.decorators import club_admin_required, club_manager_required, club_required
 from match.models import Match
 from players.models import Player
 from . import availability as availability_logic
@@ -30,8 +31,8 @@ def delete_call(request, match_id):
 
 
 def _match_by_token(token):
-    """Enfrentamiento del enlace de disponibilidad o 404 (el token es impredecible)."""
-    return get_object_or_404(Match.objects.select_related("club", "local", "visiting"), availability_token=token)
+    """Enfrentamiento del enlace de disponibilidad, o ``None`` si el enlace no existe o ya se sustituyó por otro."""
+    return Match.objects.select_related("club", "local", "visiting").filter(availability_token=token).first()
 
 
 def _link_player(request, match):
@@ -52,19 +53,36 @@ def _link_player(request, match):
         messages.success(request, _("Tu cuenta está enlazada a %(player)s.") % {"player": player.short_name})
 
 
+def _save_own_answer(request, match, player):
+    """Guarda la respuesta del propio jugador (POST ``answer`` y ``comment``) y avisa del resultado."""
+    answer = request.POST.get("answer", "")
+    if not availability_logic.is_open(match):
+        messages.error(request, _("La convocatoria está cerrada: ya no se puede cambiar la respuesta."))
+    elif availability_logic.set_answer(match, player, answer, request.POST.get("comment", "")):
+        messages.success(request, _("Respuesta guardada."))
+    else:
+        messages.error(request, _("Elige Sí, No o Pendiente."))
+
+
+@never_cache
 @login_required
 def availability(request, token):
     """
     Página del enlace de disponibilidad (solo datos del enfrentamiento, nunca otros jugadores). Pide
-    iniciar sesión y pertenecer al equipo. Si la cuenta no está enlazada a un jugador, ofrece enlazarla antes
-    de responder. En POST (``action``: «link» o «answer») enlaza o guarda Sí / No / Aún no sé (con
-    comentario solo en «Aún no sé»), hasta que se cierra la convocatoria. Capitán y gestores ven además
-    el resumen de respuestas.
+    iniciar sesión y pertenecer al equipo; a quien no pertenece no se le enseña ningún dato del
+    enfrentamiento. Si la cuenta no está enlazada a un jugador, ofrece enlazarla antes de responder. En POST
+    (``action``: «link» o «answer») enlaza o guarda Sí / No / Pendiente (con comentario solo en «Pendiente»),
+    hasta que se cierra la convocatoria. Capitán y gestores ven además el resumen de respuestas. Un enlace
+    que no existe o que el capitán sustituyó por otro da la misma página «enlace no válido» (404).
     """
     match = _match_by_token(token)
+    if match is None:
+        return render(request, "availability.html", {"state": "invalid", "can_manage": False}, status=404)
     membership = spaces.membership_for(request, match.club)
     if membership is None:
-        return render(request, "availability.html", {"match": match, "state": "not_member", "can_manage": False, "team": match.club}, status=403)
+        suspended = any(c.id == match.club_id for c in getattr(request, "suspended_clubs", []))
+        return render(request, "availability.html", {
+            "state": "suspended" if suspended else "not_member", "can_manage": False, "team": match.club}, status=403)
     spaces.switch_to(request, match.club)
     player = Player.objects.filter(club=match.club, user=request.user).first()
     is_open = availability_logic.is_open(match)
@@ -73,12 +91,7 @@ def availability(request, token):
         if request.POST.get("action") == "link" and player is None:
             _link_player(request, match)
         elif request.POST.get("action") == "answer" and player is not None:
-            if not is_open:
-                messages.error(request, _("La convocatoria está cerrada: ya no se puede cambiar la respuesta."))
-            elif availability_logic.set_answer(match, player, request.POST.get("answer", ""), request.POST.get("comment", "")):
-                messages.success(request, _("Respuesta guardada."))
-        if request.POST.get("next") == "ficha":
-            return redirect("call_for_match", match.public_id)
+            _save_own_answer(request, match, player)
         return redirect("availability", token=token)
 
     mine = Availability.objects.filter(match=match, player=player).first() if player else None
@@ -94,17 +107,36 @@ def availability(request, token):
 
 
 @spaces.follow_match
+@club_required
+@require_POST
+def availability_answer(request, match_id):
+    """El jugador responde desde la ficha del enfrentamiento (no depende del token del enlace)."""
+    match = get_object_or_404(Match, public_id=match_id, club=request.club)
+    player = Player.objects.filter(club=match.club, user=request.user).first()
+    if player is not None:
+        _save_own_answer(request, match, player)
+    return redirect("call_for_match", match.public_id)
+
+
+@spaces.follow_match
 @club_manager_required
 @require_POST
 def availability_set(request, match_id):
-    """El capitán o un gestor cambia la respuesta de un jugador (POST ``player``, ``answer``, ``comment``)."""
+    """
+    El capitán o un gestor cambia la respuesta de un jugador. Los botones de la ventana de respuestas envían
+    ``set`` con ``<id del jugador>:<respuesta>``; también vale ``player`` y ``answer`` por separado.
+    """
     match = get_object_or_404(Match, public_id=match_id, club=request.club)
-    player = get_object_or_404(Player, public_id=request.POST.get("player", ""), club=request.club)
-    if availability_logic.set_answer(match, player, request.POST.get("answer", ""), request.POST.get("comment", ""),
-                               by_manager=True):
+    player_id, answer = request.POST.get("player", ""), request.POST.get("answer", "")
+    if request.POST.get("set"):
+        player_id, _sep, answer = request.POST["set"].rpartition(":")
+    player = get_object_or_404(Player, public_id=player_id, club=request.club)
+    if not availability_logic.is_open(match):
+        messages.error(request, _("No se puede cambiar la respuesta: la convocatoria está cerrada."))
+    elif availability_logic.set_answer(match, player, answer, request.POST.get("comment", ""), by_manager=True):
         messages.success(request, _("Respuesta de %(player)s actualizada.") % {"player": player.short_name})
     else:
-        messages.error(request, _("No se puede cambiar la respuesta: la convocatoria está cerrada."))
+        messages.error(request, _("Elige Sí, No o Pendiente."))
     return redirect("call_for_match", match.public_id)
 
 
@@ -120,21 +152,33 @@ def availability_regenerate(request, match_id):
 
 
 @spaces.follow_match
-@club_manager_required
+@club_admin_required
 @require_POST
 def availability_remind(request, match_id):
     """
-    Recordatorio manual: correo a quienes aún no han respondido, como mucho uno por hora y
-    enfrentamiento (solo POST, capitán o gestor, y mientras se pueda responder).
+    Recordatorio manual, solo del capitán: correo con el enlace a quienes aún no han respondido, como mucho
+    uno por hora y enfrentamiento y diez al día por club (solo POST y mientras se pueda responder). La espera
+    se reserva antes de enviar y se devuelve si no salió ningún correo.
     """
     match = get_object_or_404(Match, public_id=match_id, club=request.club)
     if not availability_logic.is_open(match):
         messages.error(request, _("La convocatoria está cerrada."))
-    elif availability_logic.reminder_blocked(match):
-        messages.error(request, _("Ya enviaste un recordatorio hace poco. Espera un rato antes de enviar otro."))
+    elif not availability_logic.pending_players(match):
+        messages.info(request, _("Nadie tiene pendiente responder."))
+    elif not availability_logic.claim_reminder(match):
+        minutes = availability_logic.reminder_minutes_left(match) or 1
+        messages.error(request, ngettext(
+            "Ya enviaste un recordatorio hace poco. Podrás enviar otro en %(n)s minuto.",
+            "Ya enviaste un recordatorio hace poco. Podrás enviar otro en %(n)s minutos.", minutes) % {"n": minutes})
+    elif availability_logic.club_over_daily_limit(request.club):
+        availability_logic.release_reminder(match)
+        messages.error(request, _("Has enviado muchos recordatorios hoy. Prueba de nuevo mañana."))
     else:
         n = availability_logic.send_reminder(request, match)
-        messages.success(request, ngettext("Recordatorio enviado a %(n)s jugador.",
-                                           "Recordatorio enviado a %(n)s jugadores.", n) % {"n": n} if n
-                         else _("Nadie tiene pendiente responder."))
+        if n:
+            messages.success(request, ngettext("Recordatorio enviado a %(n)s jugador.",
+                                               "Recordatorio enviado a %(n)s jugadores.", n) % {"n": n})
+        else:
+            availability_logic.release_reminder(match)
+            messages.error(request, _("No se pudo enviar ningún correo. Inténtalo de nuevo en unos minutos."))
     return redirect("call_for_match", match.public_id)
