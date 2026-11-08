@@ -1016,7 +1016,11 @@ def validate_game_for_match(call):
     if not call:
         return False, _("No hay convocatoria, así que no se pueden alinear parejas.")
     min_call = competition_for(call.match).min_call_players
-    if call.players.all().count() < min_call:
+    count = call.players.all().count()
+    # Con la convocatoria cerrada por debajo del mínimo se alinean las parejas que se puedan formar
+    # y el resto queda como «pareja no presentada» (si la competición lo admite).
+    short_ok = call.match.club.rules.pair_no_show and count >= 2
+    if count < min_call and not short_ok:
         return False, _("Para alinear las parejas hacen falta al menos %(n)s jugadores") % {"n": min_call}
     if call.draft_mode != False:
         return False, _("Cierra la convocatoria para poder alinear las parejas")
@@ -1059,6 +1063,7 @@ def create_game_for_match(request, match_id):
         "match": match,
         "players": call.players.order_by('name', 'last_name'),
         "lineup_slots": range(1, competition_for(match).games + 1),
+        "required_pairs": lineup.required_pairs(call),
         "players_per_lineup": competition_for(match).players_per_lineup,
     })
 
@@ -1515,6 +1520,7 @@ def edit_game_match(request, match_id):
         "games": games_data,
         "match": match,
         "call": call,
+        "required_pairs": lineup.required_pairs(call),
         "players": call.players.order_by('name', 'last_name'),
         "players_per_lineup": competition_for(match).players_per_lineup,
     })

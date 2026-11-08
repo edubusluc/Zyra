@@ -27,6 +27,18 @@ def game_points(index, competition=None):
     return (competition or competition_for()).points_for(index)
 
 
+def required_pairs(call):
+    """
+    Parejas que hay que alinear: todas las de la competición o, si la convocatoria se cerró con menos
+    jugadores de los que hacen falta y la competición admite «pareja no presentada», solo las que
+    se pueden formar (de dos en dos); las demás parejas quedan como no presentadas.
+    """
+    games = competition_for(call.match).games
+    if call.match.club.rules.pair_no_show and call.players.count() < 2 * games:
+        return call.players.count() // 2
+    return games
+
+
 def parse_lineup(raw, call, match_games=None):
     """
     Convierte el JSON del formulario en una lista ordenada de
@@ -36,9 +48,9 @@ def parse_lineup(raw, call, match_games=None):
         data = json.loads(raw or "[]")
     except (TypeError, ValueError):
         raise LineupError(_("Los datos de la alineación no son válidos."))
-    games_per_match = competition_for(call.match).games
-    if not isinstance(data, list) or len(data) != games_per_match:
-        raise LineupError(_("Hay que completar las %(n)s parejas antes de guardar.") % {"n": games_per_match})
+    needed = required_pairs(call)
+    if not isinstance(data, list) or len(data) != needed:
+        raise LineupError(_("Hay que completar las %(n)s parejas antes de guardar.") % {"n": needed})
 
     called = {p.id: p for p in call.players.all()}
     games_by_id = {g.id: g for g in (match_games or [])}
@@ -99,8 +111,18 @@ def create_games(match, lineup):
         game = Game(match=match, draft_mode=True, winner=None)
         _assign(game, match, n, p1, p2)
         games.append(game)
+    for n in range(len(games) + 1, competition_for(match).games + 1):
+        games.append(_missing_game(match, n))
     Game.objects.bulk_create(games)
     return games
+
+
+def _missing_game(match, n):
+    """Partido sin jugadores: la pareja del club no se presenta porque no hay jugadores para formarla."""
+    game = Game(match=match, draft_mode=True, winner=None, no_show=Game.NO_SHOW_OWN)
+    game.n_game = n
+    game.score = game_points(n, competition_for(match))
+    return game
 
 
 @transaction.atomic
@@ -110,7 +132,23 @@ def update_games(match, lineup):
     # Primero se libera el número de cada partido para poder reordenarlos sin
     # chocar con la restricción de número único por enfrentamiento.
     Game.objects.filter(pk__in=[g.pk for g in games]).update(n_game=None)
+    others = [g for g in Game.objects.filter(match=match).order_by("n_game") if g.pk not in {x.pk for x in games}]
+    Game.objects.filter(pk__in=[g.pk for g in others]).update(n_game=None)
     for n, (game, p1, p2) in enumerate(lineup, start=1):
         _assign(game, match, n, p1, p2)
+        if game.no_show == Game.NO_SHOW_OWN:
+            game.no_show = ""
+        game.save()
+    # Los partidos que quedan sin pareja pasan al final como «no presentada» (sin resultado ni jugadores).
+    for n, game in enumerate(others, start=len(lineup) + 1):
+        game.results.all().delete()
+        _assign_none(game, n, competition_for(match))
         game.save()
     return games
+
+
+def _assign_none(game, n, competition):
+    """Deja el partido sin jugadores y con la pareja del club no presentada, con su número y puntos."""
+    game.player_1_local = game.player_2_local = game.player_1_visiting = game.player_2_visiting = None
+    game.no_show, game.winner, game.n_game = Game.NO_SHOW_OWN, None, n
+    game.score = game_points(n, competition)

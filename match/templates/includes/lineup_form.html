@@ -3,7 +3,7 @@
 {# En las competiciones sin puntos SNP (LAPI) las parejas se cruzan por sorteo: no hay puntos ni orden de juego. #}
 {% load static i18n l10n zyra_format %}
 {% with ordered=current_club.rules.has_snp %}
-<form method="post" data-lineup class="z-lineup{% if not ordered %} z-lineup--unordered{% endif %}" {% if ordered %}data-lineup-ordered{% endif %} data-loading-text="{% translate 'Guardando las parejas…' %}">
+<form method="post" data-lineup data-required-pairs="{{ required_pairs }}" class="z-lineup{% if not ordered %} z-lineup--unordered{% endif %}" {% if ordered %}data-lineup-ordered{% endif %} data-loading-text="{% translate 'Guardando las parejas…' %}">
     {% csrf_token %}
     <div class="z-lineup-main">
         <div class="z-lineup-suggest" data-suggest-url="{% url 'suggested_lineup' match.public_id %}">
@@ -53,7 +53,7 @@
 
     <input type="hidden" name="ordered_games" data-lineup-output>
     <div class="z-selector-bar">
-        <div>{% blocktranslate with total=slots|length %}<b data-lineup-count>0</b> de {{ total }} parejas{% endblocktranslate %} <small data-lineup-hint></small></div>
+        <div>{% blocktranslate with total=slots|length %}<b data-lineup-count>0</b> de {{ total }} parejas{% endblocktranslate %}{% if required_pairs and required_pairs < slots|length %} <span class="z-lineup-short">{% blocktranslate with n=required_pairs %}Con estos convocados se pueden formar {{ n }}; las demás parejas se marcarán como no presentadas.{% endblocktranslate %}</span>{% endif %} <small data-lineup-hint></small></div>
         <button type="submit" class="btn btn-primary" data-lineup-save disabled>{{ submit_label }}</button>
     </div>
 </form>

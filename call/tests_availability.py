@@ -1,5 +1,6 @@
 """Tests del enlace de disponibilidad de un enfrentamiento."""
 import datetime
+import json
 
 from django.contrib.auth import get_user_model
 from django.core import mail
@@ -9,7 +10,7 @@ from django.urls import reverse
 
 from core.models import Membership
 from core.services import create_club
-from match.models import Match
+from match.models import Game, Match
 from players.models import Player
 from team.models import Team
 
@@ -308,3 +309,45 @@ class AvailabilityTests(TestCase):
         self.assertNotContains(self.client.get(ficha), "Cambiar respuesta")
         availability.set_answer(self.match, self.ana, "yes")
         self.assertContains(self.client.get(ficha), "Cambiar respuesta")
+
+
+class ShortLineupTests(TestCase):
+    """Con la convocatoria cerrada por debajo del mínimo se alinean las parejas posibles y el resto no se presenta."""
+
+    def setUp(self):
+        self.user = User.objects.create_user("capi2", email="capi2@example.com", password="pass-12345")
+        self.club = create_club("Club B", "Sevilla", self.user)
+        self.rival = Team.objects.create(club=self.club, name="Rival", location="X", in_group=True)
+        self.players = [Player.objects.create(club=self.club, name=f"Jug{i:02d}", last_name="X") for i in range(7)]
+        self.match = Match.objects.create(club=self.club, local=self.club.own_team, visiting=self.rival,
+                                          start_date=datetime.date(2026, 1, 10))
+        call = Call.objects.create(match=self.match, draft_mode=False)
+        call.players.set(self.players)
+        self.client.login(username="capi2", password="pass-12345")
+        self.url = reverse("create_game", args=[self.match.public_id])
+
+    def pairs(self, n):
+        return json.dumps([{"player1Id": self.players[2 * i].id, "player2Id": self.players[2 * i + 1].id}
+                           for i in range(n)])
+
+    def test_three_pairs_with_seven_players(self):
+        """7 convocados forman 3 parejas: los partidos 4 y 5 quedan como no presentados por el club."""
+        self.assertContains(self.client.get(self.url), 'data-required-pairs="3"')
+        self.client.post(self.url, {"ordered_games": self.pairs(3)})
+        games = list(self.match.games.order_by("n_game"))
+        self.assertEqual([g.n_game for g in games], [1, 2, 3, 4, 5])
+        self.assertEqual([g.no_show for g in games], ["", "", "", Game.NO_SHOW_OWN, Game.NO_SHOW_OWN])
+
+    def test_more_pairs_than_possible_rejected(self):
+        """No se aceptan parejas de menos ni de más de las que se pueden formar."""
+        self.client.post(self.url, {"ordered_games": self.pairs(2)})
+        self.assertFalse(self.match.games.exists())
+
+    def test_edit_moves_unfilled_games_to_the_end(self):
+        """Al editar, los partidos sin pareja pasan al final como no presentados."""
+        self.client.post(self.url, {"ordered_games": self.pairs(3)})
+        games = list(self.match.games.order_by("n_game"))
+        data = [{"gameId": g.id, "player1Id": self.players[2 * i].id, "player2Id": self.players[2 * i + 1].id}
+                for i, g in enumerate(games[:3])]
+        self.client.post(reverse("edit_games_match", args=[self.match.public_id]), {"ordered_games": json.dumps(data)})
+        self.assertEqual(self.match.games.filter(no_show=Game.NO_SHOW_OWN).count(), 2)

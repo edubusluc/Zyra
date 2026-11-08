@@ -16182,3 +16182,10 @@ msgstr "Pairs are already lined up: remove them before reopening the call-up."
 
 msgid "Convocatoria reabierta."
 msgstr "Call-up reopened."
+
+msgid ""
+"Con estos convocados se pueden formar %(n)s; las demás parejas se marcarán "
+"como no presentadas."
+msgstr ""
+"With these players %(n)s pairs can be formed; the remaining pairs will be "
+"marked as no-show."
