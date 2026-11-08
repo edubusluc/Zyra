@@ -7,6 +7,98 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 - **Ficha del enfrentamiento · Disponibilidad**: el capitán y los gestores comparten un enlace (con texto para WhatsApp) para que la plantilla responda Sí, No o Aún no sé. Hay que iniciar sesión (la sesión dura ahora 30 días) y, si la cuenta no está enlazada a un jugador, se ofrece enlazarla antes de responder. Solo capitán y gestores ven y pueden cambiar las respuestas; los «Sí» llegan marcados al crear la convocatoria. Recordatorio manual por correo, enlace regenerable y, con la convocatoria cerrada, el enlace avisa de que ya está cerrada.
 
+## 07/11/2026 · Escudos y nombres alineados en la ficha del móvil
+
+- **Corregido:** en la cabecera de la ficha (vista 3D), escudos, nombres y cintas «Local · división» / «Visitante · división» ya no se desalinean entre sí: cada pieza ocupa la misma fila para los dos equipos, aunque uno tenga logo y otro iniciales, el nombre ocupe 1, 2 o más líneas o la división sea larga. El escudo con foto y el de iniciales miden lo mismo.
+
+## 07/11/2026 · Editar la hora del enfrentamiento
+
+- **Corregido:** el formulario «Cambiar fecha» solo permitía cambiar el día. Ahora es «Cambiar fecha y hora»: se puede modificar o vaciar la hora (HH:MM, opcional) además de la fecha, mientras el acta siga abierta.
+
+## 07/11/2026 · Abrir enfrentamientos jugados en el móvil
+
+- **Corregido:** en la lista de Enfrentamientos, al pulsar un enfrentamiento ya jugado desde el móvil no se abría la ficha (el enlace de la fila estaba oculto). Ahora toda la fila es pulsable, igual que en ordenador, donde ya funcionaba.
+
+## 06/11/2026 · Editar la foto actual del equipo
+
+- **Botón «Editar foto actual»** en los ajustes del equipo y en la edición de jugadores (y en «Mi perfil» del jugador enlazado): reabre el popup de encuadre y zoom sobre la foto ya guardada, sin subir otro archivo. Corregido: el formulario de equipo no montaba el campo de foto con «Subir foto» (el selector nativo seguía a la vista) y ahora sí.
+
+## 06/11/2026 · Escudo 3D más limpio con logos fragmentados
+
+- **El canto del escudo toma los colores del logo** (el mismo logo oscurecido) en lugar de una silueta gris, y es continuo de cara a dorso.
+- **El dorso ya no asoma por los huecos** entre las piezas de un logo fragmentado, que antes parecía un bloque; el grosor total baja un poco.
+- **Margen alrededor del logo** para que uno recortado al borde de la imagen no se vea como un bloque.
+
+## 05/11/2026 · Ficha del enfrentamiento: interruptor «Vista 3D»
+
+- **Interruptor en la propia ficha** para pasar de la vista con escudos 3D a la vista clásica (la de antes del 3D) y volver. El ajuste se guarda por usuario y es el mismo que ya existía en «Mi perfil».
+- **Vista clásica como la de antes**: vuelve el bloque «Previa» de siempre (balance, último y mejor pareja). Las mejoras de funcionamiento siguen en las dos vistas.
+
+## 05/11/2026 · Convocatoria, parejas y resultados: coherencia (fase 4)
+
+- **Una sola marca de «Tu equipo»**: la etiqueta de siempre también al editar un resultado, en lugar de una estrella.
+- **Poner resultados**: el borde de cada partido se pone lima si tu equipo gana y rojo si pierde, en cuanto hay ganador.
+- **Editar un resultado**: los nombres largos de pareja o equipo ya no se cortan con puntos suspensivos.
+
+## 05/11/2026 · Convocatoria, parejas y resultados: móvil (fase 3)
+
+- **Poner resultados**: en móvil el marcador y los botones Guardar quedan fijos abajo, sin la barra de navegación.
+- **Crear y editar parejas**: el orden de juego se pliega en móvil y se despliega con un botón.
+- **«Una pareja no se presentó»**: el selector queda tras un enlace y solo aparece si lo necesitas.
+
+## 05/11/2026 · Convocatoria, parejas y resultados: cabecera común (fase 2)
+
+- **Cabecera compacta** en crear y editar convocatoria, crear y editar parejas, poner resultados y editar un resultado: volver a la ficha, los dos escudos con el VS, y el tipo, la competición y la fecha del enfrentamiento. Ya no se pierde el contexto al salir de la ficha.
+- **Sin Previa** en crear y editar convocatoria: ya no se repite el balance contra el rival, que está en la ficha.
+
+## 05/11/2026 · Convocatoria, parejas y resultados: arreglos (fase 1)
+
+- **Ganador del partido** en «Poner resultados»: la línea ya muestra solo el nombre del equipo, sin la etiqueta «Tu equipo» ni el nombre de la pareja pegados.
+- **Orden de juego**: los puntos SNP salen enteros y con el separador de miles de cada idioma (126 094 pts), igual que en el resto de Zyra.
+- **Sin notas visibles**: las reglas del set, la ayuda de la búsqueda de parejas, la explicación de la alineación sugerida, la del orden de juego y la de la lesión pasan a un «i» (al pasar el ratón o pulsar en móvil).
+- **Título del partido dentro de la tarjeta**: en «Poner resultados» el «Partido N · pts» y la etiqueta «Guardado» ya no se montan sobre el borde superior de la tarjeta.
+
+## 05/11/2026 · Ficha del enfrentamiento: pulido final (fase 6)
+
+- **Tablet**: los dos escudos quedan a la misma altura aunque un nombre ocupe dos líneas, y el escudo ya no se sale de su columna.
+- **Previa en móvil**: los tres últimos marcadores caben en una sola fila.
+- **Fechas de la Previa** con el mes localizado (11 ene 2026 / 11 Jan 2026) en lugar de dd/mm/aaaa.
+- Revisión de accesibilidad con axe-core en escritorio, tablet y móvil (acta abierta, con parejas y cerrada): sin incidencias. Textos de la ficha revisados en inglés.
+
+## 05/11/2026 · Ficha del enfrentamiento: escudos 3D más ligeros (fase 5)
+
+- **Mismo volumen con menos coste**: el canto de cada escudo pasa de 14 copias completas a 6 capas con solo la silueta y sin filtros, así que la ficha dibuja la mitad de capas 3D y pesa menos en el móvil.
+- **El giro se pausa** cuando el escenario sale de la pantalla y en dispositivos táctiles los escudos quedan quietos y ligeramente girados.
+- Se elimina la reserva permanente de capa de GPU de los escudos.
+
+## 05/11/2026 · Ficha del enfrentamiento: Previa y acta cerrada (fase 4)
+
+- **Previa en el idioma de la ficha**: victorias, empates y derrotas contra el rival con barra de proporción, forma de los últimos enfrentamientos, partidos a favor y en contra, mejor pareja y los marcadores de los últimos cruces con su resultado (Ganado, Perdido, Empatado). Los puntos de liga solo aparecen en competiciones de liga.
+- **Acta cerrada con el mismo escenario**: la convocatoria y los partidos jugados usan las mismas tarjetas con degradado que el resto de la ficha, el partido ganado se resalta en lima y los sets se leen más grandes.
+
+## 05/11/2026 · Ficha del enfrentamiento: tarjeta enfocada (fase 3)
+
+- **Tarjeta enfocada**: la fase que tiene lista (Convocatoria con apuntados o convocados, Parejas con los partidos) ocupa el doble de ancho y de alto en escritorio y lleva la lista dentro; las demás fases se reparten a su lado. En móvil y tablet va primero, a todo el ancho.
+- **Sin páginas ocultas**: desaparece el selector «‹ 1/3 ›». La lista se desplaza por dentro, se puede recorrer con el teclado y se abre ya con tu nombre a la vista.
+- **Parejas para los jugadores**: quien no gestiona también ve la tarjeta de parejas cuando están alineadas.
+- Cerrar convocatoria y cerrar acta siguen siendo formularios con confirmación, ahora en la cabecera de la tarjeta enfocada.
+
+## 05/11/2026 · Ficha del enfrentamiento: escenario «Pista» (fase 2)
+
+- **Pista como escenario**: el fondo es una pista de pádel inclinada con sus líneas y la red como divisor entre local y visitante; el VS (o el marcador) queda sobre la red y los escudos de pie sobre el suelo.
+- **Datos en chips**: fecha y hora, y lugar, como chips sobre el escenario; «Local» y «Visitante» como cinta bajo cada nombre (lima el local, acero el visitante).
+- **Cuenta atrás**: bajo el VS, «Hoy», «Mañana» o «Faltan N días» mientras el acta está abierta.
+- **La lista sale del escenario**: apuntados, convocados o parejas van ahora bajo las tarjetas de acción, así que el escenario mide lo mismo con 3 o con 17 jugadores y los escudos se ven siempre en la primera pantalla del móvil.
+- **Tablet**: el escenario usa el diseño de tres columnas desde 768 px.
+
+## 05/11/2026 · Ficha del enfrentamiento: cimientos (fase 1)
+
+- **Escudo de reserva**: un equipo sin foto muestra un escudo con tono propio derivado de su nombre y las siglas de sus dos primeras palabras («AI», «NO»), en vez del escudo lima igual para todos.
+- **Fases como lista**: las tarjetas de acción vuelven a ser una lista ordenada con el paso actual marcado; las fases todavía no disponibles (parejas, resultados, acta) salen con candado, sin relieve y con el motivo para lectores de pantalla y como ayuda al pasar el ratón.
+- **Aviso personal**: bajo el VS, una pastilla dice si te has apuntado, si estás convocado (con tu partido y tu pareja) o si no lo estás, solo mientras el acta está abierta.
+- **Tamaños y fecha**: ningún texto de la ficha baja de 12 px, los controles (paginador, lápiz de fecha, volver) miden 44 px y desaparece el punto suelto entre fecha y lugar en móvil.
+- **Por dentro**: todo el CSS de la ficha vive ahora en un solo bloque dentro de las capas del sistema de diseño y usa tokens `--z-stage-*`; se elimina lo que se anulaba (degradado del VS, barra de apuntados oculta, fondo de la tarjeta).
+
 ## 05/11/2026 · Inicio con tarjetas del mismo alto
 
 - **Inicio · Próximo enfrentamiento y Pendiente**: en escritorio las dos tarjetas miden siempre lo mismo, la de la más alta. Con un único enfrentamiento (sin selector) la pista ocupa también el hueco que reservaría el selector, y entonces los nombres de los equipos y la ubicación se muestran más grandes. En móvil se apilan con su altura natural.
@@ -14,6 +106,55 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 ## 05/11/2026 · TikTok en el pie de página
 
 - **Pie de página**: icono discreto de TikTok junto a los enlaces legales, en todas las pantallas, que abre @zyrapadel en una pestaña nueva. Tiene nombre accesible traducido (es/en).
+
+## 05/11/2026 · Ficha del enfrentamiento: tarjeta de alto fijo y acta cerrada integrada
+
+- **Alto fijo**: la lista no cambia el tamaño de la tarjeta principal tengas más o menos jugadores; las parejas se alinean en dos columnas («Partido N» y la pareja).
+- **Acta cerrada**: «Compartir resultado», «Ver estadísticas» (y «Quitar no presentado») van dentro de la tarjeta principal, bajo el VS, y ya no sale «No estás convocado».
+- **Tu pareja en lima**: en la ficha nueva ya no hay aviso «Estás convocado»; tu nombre (o tu pareja) sale resaltado en lima en la lista de apuntados, convocados o parejas.
+
+## 05/11/2026 · Ficha del enfrentamiento: lista en filas e iconos planos
+
+- **Lista sin tarjeta**: apuntados, convocados y parejas van en filas, una por nombre, y se paginan de 6 en 6 con un selector «‹ 1/2 ›» (se abre en la página donde está tu nombre).
+- **Acabado plano**: sin el destello blanco de los escudos, con el VS en color liso y los iconos de las tarjetas de acción como iconos planos (no emojis); las tarjetas son más grandes.
+
+## 05/11/2026 · Ficha del enfrentamiento: acabado premium
+
+- **Escenario de carbono** con foco de luz que sigue al puntero, borde biselado y franja lima; los escudos reciben luz de borde distinta (local lima, visitante acero), sombra en el suelo y un destello periódico, y se ladean ligeramente con el ratón.
+- **VS metálico** con relieve y tarjetas de acción con volumen: se elevan al pasar el ratón, se hunden al pulsar, brillan en el siguiente paso y tienen foco visible y estado desactivado claro.
+- **Entrada animada** de escudos, VS, tarjeta y acciones; con «reducir movimiento» no hay animación ni parallax.
+
+## 05/11/2026 · Ficha del enfrentamiento: tarjeta grande y fondo de escenario
+
+- **Tarjeta principal más grande** con los nombres en texto plano separados por puntos; tu nombre va resaltado en lima. Desaparece el aviso «Te has apuntado / Todavía no te has apuntado» mientras la convocatoria está abierta.
+- **Informe PDF**: el destinatario solo se muestra en el aviso al cerrar la convocatoria, no en la ficha.
+- **Fondo con franja lima**, escudos más grandes, tarjetas de acción con las mismas proporciones y la línea «Sáb 14 nov · 10:00 · Pista».
+
+## 05/11/2026 · Ficha del enfrentamiento: ajustes del escenario
+
+- **Sin título ni listas**: en la vista nueva desaparece el título de la página (queda para lectores de pantalla) y, con el acta abierta, las listas de convocatoria y partidos de debajo: lo cuenta la tarjeta central, que muestra el resto de nombres desplegando «y N más» y marca cada pareja con su resultado.
+- **«Local · categoría»** bajo el nombre de cada equipo.
+- **Cerrar convocatoria, cerrar acta y «Más»** son tarjetas de acción; el botón «Siguiente» ya no existe en la vista nueva.
+- **Cara a cara** siempre visible: sin historial, «Primer enfrentamiento contra…».
+
+## 05/11/2026 · Ficha del enfrentamiento: escenario completo
+
+- **Escenario a todo el ancho**: desaparece el panel lateral. La fecha, el lugar y las etiquetas suben a una línea sobre los escudos y el estado (p. ej. «Convocatoria abierta») queda bajo el VS.
+- **Tarjetas de acción**: Convocatoria, Parejas, Resultados y Acta pasan a tarjetas (hecho en lima, siguiente paso en ámbar) que llevan a su pantalla; cerrar convocatoria y acta siguen en el botón «Siguiente».
+- **Cara a cara bajo las tarjetas**, como sección propia.
+
+## 05/11/2026 · Ficha del enfrentamiento: interruptor de vista
+
+- **Vuelta a la ficha clásica**: en «Mi perfil» hay un ajuste, activado por defecto, para ver la ficha con escudos en 3D y la tarjeta de apuntados, convocados y parejas. Al desactivarlo cada usuario ve el marcador de siempre, sin escudos ni tarjeta.
+
+## 05/11/2026 · Ficha del enfrentamiento: cara a cara en la previa
+
+- **Previa rediseñada**: victorias, empates y derrotas contra ese rival en cifras grandes, una barra con la proporción y los tres últimos enfrentamientos (fecha, desenlace y marcador, cada uno enlazado), más la mejor pareja contra ellos.
+
+## 05/11/2026 · Ficha del enfrentamiento: previa con escudos 3D
+
+- **Escudos en 3D**: los escudos de los dos equipos se muestran extruidos (sin ficha detrás) y giran despacio y sin parar, en sentidos opuestos; con «reducir animaciones» se quedan quietos. Sin foto, un escudo con las iniciales.
+- **Tarjeta sobre el VS**: muestra, según la fase, los apuntados (con barra de progreso), los convocados (con suplentes) y las parejas, y las sustituye una a otra. Con listas largas, enseña los 12 primeros y «y N más».
 
 ## 05/11/2026 · Menú «Más» de la ficha en móvil
 

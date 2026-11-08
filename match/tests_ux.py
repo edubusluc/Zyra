@@ -21,6 +21,7 @@ from team.models import Team
 
 User = get_user_model()
 PAST = datetime.date(2026, 10, 10)
+FUTURE = datetime.date(2027, 3, 1)
 
 
 def texts(response):
@@ -116,6 +117,8 @@ class CallMinimumTests(UxBase):
 
 class MatchPageTests(UxBase):
     def test_next_step_button_follows_the_phase(self):
+        from core.models import UserPreference
+        UserPreference.objects.update_or_create(user=self.user, defaults={"match_stage_view": False})
         match = self.match()
         page = self.client.get(reverse("call_for_match", args=[match.public_id]))
         self.assertContains(page, "Siguiente: Crear convocatoria")
@@ -135,6 +138,8 @@ class MatchPageTests(UxBase):
         self.assertNotContains(page, 'class="btn btn-danger btn-sm"')
 
     def test_title_shows_teams_and_closed_page_shows_outcome_and_share(self):
+        from core.models import UserPreference
+        UserPreference.objects.update_or_create(user=self.user, defaults={"match_stage_view": False})
         match = self.match()
         self.closed_call(match)
         games = self.lineup(match)
@@ -157,8 +162,8 @@ class MatchPageTests(UxBase):
         self.players[2].save()
         self.client.force_login(member)
         page = self.client.get(reverse("call_for_match", args=[match.public_id]))
-        self.assertContains(page, "Estás convocado")
-        self.assertContains(page, "Partido 2")
+        self.assertContains(page, "Estás convocado · Partido 2 · con %s" % self.players[3].short_name)
+        self.assertContains(page, '<li class="is-me"><span>Partido 2')
         self.assertContains(page, self.players[3].full_name)
         self.assertNotContains(page, "Siguiente:")
         # un jugador no convocado
@@ -182,6 +187,51 @@ class EnterResultsTests(UxBase):
         page = self.client.get(self.url)
         for n in range(1, 6):
             self.assertContains(page, f'name="g{n}_set1_local"')
+
+    def test_action_screens_share_the_compact_stage_header(self):
+        call = Call.objects.get(match=self.m)
+        game = Game.objects.filter(match=self.m).first()
+        for url in (self.url, reverse("edit_games_match", args=[self.m.public_id]),
+                    reverse("edit_call", args=[call.public_id]), reverse("create_result", args=[game.public_id])):
+            page = self.client.get(url)
+            self.assertContains(page, 'class="z-strip"', msg_prefix=url)
+            self.assertContains(page, "z-mini-crest", count=2, msg_prefix=url)
+
+    def test_call_screens_do_not_repeat_the_preview(self):
+        call = Call.objects.get(match=self.m)
+        page = self.client.get(reverse("edit_call", args=[call.public_id]))
+        self.assertNotContains(page, "z-preview")
+        self.assertNotContains(page, "z-f2f")
+
+    def test_no_show_select_hides_behind_a_link_and_order_panel_collapses_on_mobile(self):
+        page = self.client.get(self.url)
+        self.assertContains(page, "data-noshow-toggle")
+        self.assertContains(page, "data-noshow-box hidden")
+        lineup = self.client.get(reverse("edit_games_match", args=[self.m.public_id]))
+        self.assertContains(lineup, "data-order-toggle")
+
+    def test_own_team_is_marked_the_same_way_everywhere_and_cards_know_the_side(self):
+        page = self.client.get(self.url)
+        self.assertContains(page, "data-own-side=")
+        self.assertContains(page, "z-own-tag")
+        game = Game.objects.filter(match=self.m).first()
+        single = self.client.get(reverse("create_result", args=[game.public_id]))
+        self.assertContains(single, "z-own-tag")
+        self.assertNotContains(single, "fa-star")
+
+    def test_team_names_are_wrapped_so_the_winner_line_has_no_tag_or_pair(self):
+        page = self.client.get(self.url)
+        self.assertContains(page, "<span data-name>", count=10)  # dos equipos por cada uno de los 5 partidos
+
+    def test_rules_are_a_tooltip_not_a_visible_note(self):
+        page = self.client.get(self.url)
+        self.assertContains(page, "z-title-tip")
+        self.assertNotContains(page, '<p class="text-muted small">')
+
+    def test_lineup_page_explains_through_tooltips_only(self):
+        page = self.client.get(reverse("edit_games_match", args=[self.m.public_id]))
+        self.assertContains(page, "z-title-tip", count=2)  # buscador y orden de juego
+        self.assertNotContains(page, '<p class="text-muted small')
 
     def test_saves_filled_games_and_leaves_empty_ones(self):
         response = self.client.post(self.url, self.results_post(self.games, only={1, 3}))
@@ -321,7 +371,7 @@ class MoreMenuMobileTests(SimpleTestCase):
         self.assertIn("max-width: calc(100vw", rule)
 
     def test_more_menus_close_with_escape(self):
-        for name in ("match/templates/call_for_match.html", "match/templates/includes/player_selector.html"):
+        for name in ("match/templates/includes/ficha_more.html", "match/templates/includes/player_selector.html"):
             html = (Path(settings.BASE_DIR) / name).read_text(encoding="utf-8")
             self.assertIn('class="z-more', html)
             self.assertRegex(html, r'<details class="z-more[^"]*" data-filter-menu>')
@@ -370,3 +420,267 @@ class ClubAndSharedPiecesTests(UxBase):
         response = self.client.get(reverse("team_statistics"), {"season": "all"})
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, "myPieChart")
+
+
+class FichaPreviewTests(UxBase):
+    """Previa de la ficha: escudos 3D y tarjeta central según la fase."""
+
+    def ficha(self, m):
+        return self.client.get(reverse("call_for_match", args=[m.public_id]))
+
+    def test_crests_render_for_both_teams_with_initials_without_photo(self):
+        page = self.ficha(self.match(FUTURE))
+        self.assertContains(page, "z-crest-front", count=2)
+        self.assertContains(page, "z-crest-back", count=2)
+        self.assertContains(page, ">RI<")  # el rival sin foto muestra sus iniciales
+
+    def test_crest_depth_uses_ten_light_edge_layers_per_team(self):
+        """El canto del escudo son 10 capas con solo la silueta, sin copias completas con filtro."""
+        page = self.ficha(self.match(FUTURE))
+        self.assertContains(page, "z-crest-edge", count=20)
+        self.assertNotContains(page, "z-crest-edge\" style=\"--i: 10")
+
+    def test_stage_teams_share_rows_so_crests_names_and_roles_align(self):
+        """Escudo, nombre y cinta de rol de local y visitante comparten filas (subgrid) y el escudo con foto
+        y el de iniciales ocupan el mismo hueco, sea cual sea la longitud del nombre o del rol."""
+        css = (Path(settings.BASE_DIR) / "static" / "style.css").read_text(encoding="utf-8")
+        self.assertRegex(css, r"\.z-versus--stage \.z-versus-team,\s*\.z-versus--stage \.z-versus-team:last-child \{[^}]*grid-template-rows: subgrid")
+        self.assertRegex(css, r"\.z-versus--stage \.z-versus-name \{[^}]*grid-template-rows: subgrid")
+        self.assertRegex(css, r"\.z-crest-layer svg \{ width: 92%; height: 92%")
+        self.assertRegex(css, r"\.z-crest-layer img \{ width: 92%; height: 92%")
+        page = self.ficha(self.match(FUTURE))
+        self.assertContains(page, "z-versus-name", count=2)
+
+    def test_no_card_without_a_call(self):
+        self.assertNotContains(self.ficha(self.match(FUTURE)), "z-stage-card")
+
+    def test_open_call_shows_signed_up_players(self):
+        m = self.match(FUTURE)
+        call = Call.objects.create(match=m, draft_mode=True)
+        call.players.set(self.players[:3])
+        page = self.ficha(m)
+        self.assertContains(page, "is-open")
+        self.assertContains(page, "Jug00")
+
+    def test_closed_call_lists_called_players(self):
+        m = self.match(FUTURE)
+        self.closed_call(m)
+        page = self.ficha(m)
+        self.assertContains(page, "is-called")
+
+    def test_lineup_replaces_the_call_with_pairs(self):
+        m = self.match(FUTURE)
+        self.closed_call(m)
+        self.lineup(m)
+        page = self.ficha(m)
+        self.assertContains(page, "is-pairs")
+        self.assertContains(page, "Jug00 X / Jug01 X")
+        self.assertNotContains(page, "is-called")
+
+    def test_long_call_lists_every_name_for_paging(self):
+        m = self.match(FUTURE)
+        call = Call.objects.create(match=m, draft_mode=True)
+        extra = [Player.objects.create(club=self.club, name=f"Extra{i}", last_name="Z", snp_score=10 + i) for i in range(5)]
+        call.players.set(self.players + extra)
+        page = self.ficha(m)
+        self.assertContains(page, "data-stage-list")
+        self.assertContains(page, "Extra4")
+
+    def test_own_name_is_highlighted_and_the_status_pill_says_you_signed_up(self):
+        m = self.match(FUTURE)
+        Call.objects.create(match=m, draft_mode=True).players.set(self.players[:3])
+        Player.objects.filter(id=self.players[0].id).update(user=self.user)
+        page = self.ficha(m)
+        self.assertContains(page, 'class="is-me"')
+        self.assertContains(page, "z-stage-me is-in")
+        self.assertContains(page, "Te has apuntado")
+
+    def test_classic_view_without_crests_or_card_when_the_switch_is_off(self):
+        from core.models import UserPreference
+        m = self.match(FUTURE)
+        self.closed_call(m)
+        UserPreference.objects.update_or_create(user=self.user, defaults={"match_stage_view": False})
+        page = self.ficha(m)
+        self.assertNotContains(page, "z-crest-front")
+        self.assertNotContains(page, "z-stage-card")
+        self.assertNotContains(page, "z-versus--stage")
+
+    def test_profile_switch_turns_the_stage_view_off_and_on(self):
+        from core.models import UserPreference
+        url = reverse("my_profile")
+        self.client.post(url, {"stage_form": "1"})  # casilla sin marcar
+        self.assertFalse(UserPreference.match_stage_for(self.user))
+        self.client.post(url, {"stage_form": "1", "match_stage_view": "on"})
+        self.assertTrue(UserPreference.match_stage_for(self.user))
+
+    def test_ficha_toggle_saves_the_choice_per_user_and_switches_the_view(self):
+        from core.models import UserPreference
+        m = self.match(FUTURE)
+        url = reverse("set_stage_view", args=[m.public_id])
+        self.assertContains(self.ficha(m), 'name="stage" value="off"')  # con 3D, el botón lo apaga
+        response = self.client.post(url, {"stage": "off"})
+        self.assertRedirects(response, reverse("call_for_match", args=[m.public_id]), fetch_redirect_response=False)
+        self.assertFalse(UserPreference.match_stage_for(self.user))
+        classic = self.ficha(m)
+        self.assertNotContains(classic, "z-versus--stage")
+        self.assertContains(classic, 'name="stage" value="on"')
+        self.client.post(url, {"stage": "on"})
+        self.assertTrue(UserPreference.match_stage_for(self.user))
+        self.assertEqual(self.client.get(url).status_code, 405)
+
+    def test_classic_ficha_keeps_the_old_preview_block(self):
+        from core.models import UserPreference
+        UserPreference.objects.update_or_create(user=self.user, defaults={"match_stage_view": False})
+        self._past_meeting("7/5", "Local", datetime.date(2025, 1, 10))
+        page = self.ficha(self.match(FUTURE))
+        self.assertContains(page, 'class="z-preview"')
+        self.assertNotContains(page, "z-f2f")
+
+    def test_action_cards_link_to_the_next_steps(self):
+        m = self.match(FUTURE)
+        page = self.ficha(m)
+        self.assertContains(page, "z-menu-card", count=5)  # cuatro fases y «Más»
+        self.assertContains(page, 'href="%s"' % reverse("create_call", args=[m.public_id]))
+        self.assertContains(page, "siguiente paso")
+
+    def test_stage_view_drops_the_side_panel_and_keeps_the_preview_below_the_cards(self):
+        m = self.match(FUTURE)
+        page = self.ficha(m)
+        self.assertNotContains(page, "z-ficha-side")
+        self.assertContains(page, "z-stage-kicker")
+
+    def test_classic_view_keeps_the_side_panel_and_phase_bar(self):
+        from core.models import UserPreference
+        UserPreference.objects.update_or_create(user=self.user, defaults={"match_stage_view": False})
+        page = self.ficha(self.match(FUTURE))
+        self.assertContains(page, "z-ficha-side")
+        self.assertContains(page, "z-status4")
+        self.assertNotContains(page, "z-menu-card")
+
+    def test_close_call_is_a_card_with_the_confirmation_form(self):
+        m = self.match(FUTURE)
+        call = Call.objects.create(match=m, draft_mode=True)
+        call.players.set(self.players[:10])
+        page = self.ficha(m)
+        self.assertContains(page, reverse("close_call", args=[m.public_id]))
+        self.assertContains(page, "Cerrar convocatoria")
+        self.assertNotContains(page, "z-next-main")  # el botón «Siguiente» ya no existe en la vista nueva
+
+    def test_stage_view_hides_the_page_title_and_the_lists_below(self):
+        m = self.match(FUTURE)
+        self.closed_call(m)
+        self.lineup(m)
+        page = self.ficha(m)
+        self.assertNotContains(page, "z-page-head")
+        self.assertContains(page, '<h1 class="visually-hidden">')
+        self.assertNotContains(page, "z-call-head")
+        self.assertNotContains(page, "z-game-head")
+
+    def test_head_to_head_shows_a_first_meeting_line_without_history(self):
+        page = self.ficha(self.match(FUTURE))
+        self.assertContains(page, "z-first-meeting")
+        self.assertContains(page, "Primer enfrentamiento contra Rival")
+
+    def test_category_is_shown_under_each_team_name(self):
+        self.own.division = "1000"
+        self.own.save()
+        page = self.ficha(self.match(FUTURE))
+        self.assertContains(page, "Local · 1000")
+
+    def test_fallback_crest_uses_word_initials_and_a_team_hue(self):
+        from core.templatetags.zyra_format import crest_hue, crest_initials
+        self.assertEqual(crest_initials("Atlético Isleño"), "AI")
+        self.assertEqual(crest_initials("NorthPadel"), "NO")
+        self.assertEqual(crest_initials(""), "")
+        self.assertEqual(crest_hue("Rival"), crest_hue("rival"))
+        self.assertNotEqual(crest_hue("Rival"), crest_hue("Otro club"))
+        self.assertContains(self.ficha(self.match(FUTURE)), "--h: ")
+
+    def test_phases_are_an_ordered_list_and_unavailable_ones_are_locked(self):
+        page = self.ficha(self.match(FUTURE))
+        self.assertContains(page, '<ol class="z-menu">')
+        self.assertContains(page, 'aria-current="step"')
+        self.assertContains(page, "is-locked", count=3)  # parejas, resultados y acta aún no están disponibles
+        self.assertContains(page, 'aria-disabled="true"', count=3)
+        self.assertContains(page, "Cierra antes la convocatoria")
+
+    def test_signed_up_player_sees_their_own_status_pill(self):
+        m = self.match(FUTURE)
+        call = Call.objects.create(match=m, draft_mode=True)
+        call.players.set(self.players[:2])
+        Player.objects.filter(id=self.players[0].id).update(user=self.user)
+        self.assertContains(self.ficha(m), "Te has apuntado")
+        call.players.remove(self.players[0])
+        self.assertContains(self.ficha(m), "Todavía no te has apuntado")
+
+    def test_stage_has_a_countdown_and_the_roster_sits_outside_the_stage(self):
+        import datetime
+        from django.utils import timezone
+        m = self.match(timezone.localdate() + datetime.timedelta(days=3))
+        call = Call.objects.create(match=m, draft_mode=True)
+        call.players.set(self.players[:4])
+        page = self.ficha(m)
+        self.assertContains(page, "Faltan 3 días")
+        html = page.content.decode()
+        stage_end = html.index("z-menu")
+        self.assertGreater(html.index('class="z-stage-card'), stage_end)  # la lista ya no va dentro del escenario
+        m.start_date = timezone.localdate()
+        m.save()
+        self.assertContains(self.ficha(m), 'class="z-stage-count">Hoy')
+
+    def test_no_countdown_for_a_played_match(self):
+        self.assertNotContains(self.ficha(self.match(PAST)), "z-stage-count")
+
+    def test_the_list_lives_inside_the_focused_card_of_its_phase(self):
+        m = self.match(FUTURE)
+        call = Call.objects.create(match=m, draft_mode=True)
+        call.players.set(self.players[:4])
+        html = self.ficha(m).content.decode()
+        self.assertIn("has-focus", html)
+        focus = html.index('<li class="is-focus">')
+        self.assertLess(focus, html.index("z-stage-card"))
+        self.assertLess(html.index("z-stage-card"), html.index("</li>", focus))  # la lista va dentro de esa tarjeta
+        self.assertEqual(html.count('<div class="z-menu-focus">'), 1)
+
+    def test_pairs_focus_the_pairs_card_and_players_see_it_too(self):
+        m = self.match(FUTURE)
+        self.closed_call(m)
+        self.lineup(m)
+        page = self.ficha(m)
+        self.assertContains(page, '<li class="is-focus">')
+        self.assertContains(page, "z-stage-card is-pairs")
+        member = User.objects.create_user("socio2", password="pass-12345")
+        Membership.objects.create(user=member, club=self.club, role=Membership.MEMBER)
+        self.client.force_login(member)
+        self.assertContains(self.ficha(m), "z-stage-card is-pairs")
+
+    def test_no_focused_card_without_a_call(self):
+        self.assertNotContains(self.ficha(self.match(FUTURE)), "has-focus")
+
+    def _past_meeting(self, points="7/5", result="Local", date=PAST):
+        return Match.objects.create(club=self.club, local=self.own, visiting=self.rival, start_date=date,
+                                    draft_mode=False, result=result, result_points=points)
+
+    def test_face_to_face_shows_balance_form_points_and_last_scores(self):
+        self._past_meeting("7/5", "Local", datetime.date(2025, 1, 10))
+        self._past_meeting("4/8", "Visitante", datetime.date(2025, 3, 10))
+        page = self.ficha(self.match(FUTURE))
+        self.assertContains(page, 'class="z-f2f"')
+        self.assertContains(page, "z-f2f-form")
+        self.assertContains(page, "Últimos enfrentamientos")
+        self.assertContains(page, "7–5")
+        self.assertContains(page, "4–8")
+
+    def test_face_to_face_hides_league_points_outside_a_league(self):
+        self._past_meeting()
+        self.assertNotContains(self.ficha(self.match(FUTURE)), "Puntos de liga")
+
+    def test_closed_match_wraps_call_and_games_in_the_stage_language(self):
+        m = self.match(PAST)
+        self.closed_call(m)
+        self.lineup(m)
+        m.draft_mode = False
+        m.save()
+        page = self.ficha(m)
+        self.assertContains(page, "z-stage-closed")
+        self.assertContains(page, "z-game-head")

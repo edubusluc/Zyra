@@ -1,0 +1,8 @@
+{# La mitad del canto cercana al dorso va girada 180° y todas ocultan su reverso, para que desde cada lado solo se vea el logo en su orientación y no un segundo logo reflejado. Escudo del equipo extruido en 3D (CSS): 10 capas de canto (silueta tintada; con foto, el logo oscurecido) entre la cara y el dorso. Recibe team (o None), name y side. #}
+<span class="z-crest-scene" aria-hidden="true">
+  <span class="z-crest z-crest--{{ side }}">
+    {% for i in "0123456789" %}<span class="z-crest-layer z-crest-edge{% if forloop.counter0 < 5 %} is-back{% endif %}{% if team and team.photo %} is-photo{% endif %}" style="--i: {{ forloop.counter0 }}">{% if team and team.photo %}<img src="{{ team.photo.url }}" alt="" decoding="async">{% else %}<svg viewBox="0 0 100 104" focusable="false"><path d="M50 3 94 17V52C94 77 76 93 50 101 24 93 6 77 6 52V17Z"/></svg>{% endif %}</span>{% endfor %}
+    <span class="z-crest-layer z-crest-front">{% include 'includes/crest_art.html' %}</span>
+    <span class="z-crest-layer z-crest-back">{% include 'includes/crest_art.html' %}</span>
+  </span>
+</span>

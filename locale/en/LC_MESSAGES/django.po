@@ -11585,8 +11585,8 @@ msgstr[1] "%(n)s league points"
 #: match/templates/call_for_match.html:140
 #: match/templates/edit_match_date.html:3
 #: match/templates/edit_match_date.html:7
-msgid "Cambiar fecha"
-msgstr "Change date"
+msgid "Cambiar fecha y hora"
+msgstr "Change date and time"
 
 #: match/templates/call_for_match.html:36
 msgid "Fases del enfrentamiento"
@@ -12177,10 +12177,6 @@ msgstr ""
 "Fixture between <strong>%(local)s</strong> and "
 "<strong>%(visiting)s</strong>."
 
-#: match/templates/edit_match_date.html:10
-msgid "Guardando la fecha…"
-msgstr "Saving the date…"
-
 #: match/templates/edit_match_date.html:14
 msgid ""
 "La temporada se recalcula con la nueva fecha. Si ya enviaste el informe de "
@@ -12188,10 +12184,6 @@ msgid ""
 msgstr ""
 "The season is recalculated from the new date. If you already sent the call-"
 "up report, resend it so it shows the right date."
-
-#: match/templates/edit_match_date.html:16
-msgid "Guardar fecha"
-msgstr "Save date"
 
 #: match/templates/edit_result.html:6
 msgid "Actualizar resultado"
@@ -12765,12 +12757,12 @@ msgid "Enfrentamiento creado."
 msgstr "Fixture created."
 
 #: match/views.py:387
-msgid "Reabre el acta para cambiar la fecha del enfrentamiento."
-msgstr "Reopen the match sheet to change the fixture date."
+msgid "Reabre el acta para cambiar la fecha y la hora del enfrentamiento."
+msgstr "Reopen the match sheet to change the fixture date and time."
 
 #: match/views.py:392
-msgid "Fecha del enfrentamiento actualizada."
-msgstr "Fixture date updated."
+msgid "Fecha y hora del enfrentamiento actualizadas."
+msgstr "Fixture date and time updated."
 
 #: match/views.py:413
 msgid "Enfrentamiento eliminado."
@@ -14774,8 +14766,8 @@ msgid "¿En qué equipo quieres crear el jugador?"
 msgstr "Which team do you want to create the player in?"
 
 #: match/templates/list_match.html
-msgid "Requieren acción"
-msgstr "Need action"
+msgid "Pendientes de acción"
+msgstr "Pending action"
 
 #: match/templates/list_match.html
 msgid "Próximos"
@@ -15730,6 +15722,74 @@ msgstr[1] "%(n)s more matches scheduled"
 #: match/templates/list_match.html
 msgid "Ver el calendario completo"
 msgstr "See the full calendar"
+
+#, python-format
+msgid "%(n)s · %(s)s suplentes"
+msgstr "%(n)s · %(s)s substitutes"
+
+msgid "SUP"
+msgstr "SUB"
+
+#, python-format
+msgid "y %(n)s más"
+msgstr "and %(n)s more"
+
+msgid "Ver la ficha con escudos en 3D y la tarjeta de convocados"
+msgstr "Show the match page with 3D crests and the call-up card"
+
+msgid "Si lo desactivas, ves la ficha clásica. Es un ajuste tuyo."
+msgstr ""
+"If you turn it off, you see the classic match page. This setting is yours "
+"only."
+
+msgid "siguiente paso"
+msgstr "next step"
+
+msgid "Cerrar convocatoria"
+msgstr "Close the call-up"
+
+msgid "Fecha, informe, eliminar"
+msgstr "Date, report, delete"
+
+#, python-format
+msgid "Primer enfrentamiento contra %(rival)s."
+msgstr "First match against %(rival)s."
+
+msgid "Cierra antes la convocatoria"
+msgstr "Close the call-up first"
+
+msgid "Alinea antes las parejas"
+msgstr "Set the pairs first"
+
+msgid "Faltan los resultados"
+msgstr "The results are missing"
+
+#, python-format
+msgid "Falta %(n)s día"
+msgid_plural "Faltan %(n)s días"
+msgstr[0] "%(n)s day to go"
+msgstr[1] "%(n)s days to go"
+
+msgid "Ganado"
+msgstr "Won"
+
+msgid "Perdido"
+msgstr "Lost"
+
+msgid "Empatado"
+msgstr "Drawn"
+
+msgid "Una pareja no se presentó"
+msgstr "A pair did not show up"
+
+msgid "Mostrar el orden de juego"
+msgstr "Show the playing order"
+
+msgid "Vista 3D"
+msgstr "3D view"
+
+msgid "Cambiando la vista…"
+msgstr "Switching the view…"
 
 #: call/availability.py:53
 #, python-format

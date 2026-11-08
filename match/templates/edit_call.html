@@ -1,17 +1,14 @@
 {% extends 'base.html' %}
-{% load i18n rivals %}
+{% load i18n match_strip %}
 {% block page_title %}{% translate "Editar convocatoria" %} · {% endblock %}
 
 {% block content %}
+{% match_strip call.match %}
 <div class="z-page-head">
     <div>
-        <a href="{% url 'call_for_match' call.match.public_id %}" class="z-eyebrow"><i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i> {{ call.match.local_name }} vs {{ call.match.visiting_name }}</a>
         <h1>{% translate "Editar convocatoria" %}</h1>
     </div>
 </div>
-
-{% rival_preview call.match as preview %}
-{% include 'includes/rival_preview.html' %}
 
 {% if not call.draft_mode %}
 <p class="warning">{% translate "La convocatoria está cerrada: cualquier cambio quedará registrado." %}</p>

@@ -214,6 +214,8 @@ class MatchesAndCallsTests(TestCase):
 
     def test_call_roster_shows_pairs_and_substitutes(self):
         """La ficha lista a los convocados con su pareja (P1, P2...) y marca como suplentes a los demás."""
+        from core.models import UserPreference
+        UserPreference.objects.update_or_create(user=self.user, defaults={"match_stage_view": False})
         players = [Player.objects.create(club=self.club, name=f"P{i}", last_name="X") for i in range(3)]
         call = Call.objects.create(match=self.current, draft_mode=False)
         call.players.set(players)
@@ -224,7 +226,7 @@ class MatchesAndCallsTests(TestCase):
         self.assertEqual(roster["P0"].partner, players[1])
         self.assertIsNone(roster["P2"].pair_n)
         self.assertContains(response, "Suplente")
-        self.assertContains(response, "z-status4")
+        self.assertContains(response, "Fases del enfrentamiento")
 
     def test_call_players_are_alphabetical_and_current(self):
         response = self.client.get(reverse("create_call", args=[self.current.public_id]))
@@ -394,6 +396,8 @@ class LineupTests(TestCase):
 
 
     def test_retired_flag_saves_incomplete_result(self):
+        from core.models import UserPreference
+        UserPreference.objects.update_or_create(user=self.user, defaults={"match_stage_view": False})
         self.client.post(reverse("create_game", args=[self.match.public_id]), {"ordered_games": self.lineup()})
         game = self.match.games.get(n_game=1)
         url = reverse("create_result", args=[game.public_id])
@@ -678,6 +682,29 @@ class EditMatchDateTests(TestCase):
         self.match.refresh_from_db()
         self.assertEqual(self.match.start_date, datetime.date(2026, 11, 15))
         self.assertEqual(self.match.season, "2026-2027")
+
+    def test_form_shows_time_field_with_current_value(self):
+        Match.objects.filter(pk=self.match.pk).update(start_time=datetime.time(20, 30))
+        self.assertContains(self.client.get(self.url), 'name="start_time"')
+        self.assertContains(self.client.get(self.url), 'value="20:30"')
+
+    def test_changes_time_keeping_date(self):
+        self.client.post(self.url, {"start_date": "2026-03-01", "start_time": "19:15"})
+        self.match.refresh_from_db()
+        self.assertEqual(self.match.start_time, datetime.time(19, 15))
+        self.assertEqual(self.match.start_date, datetime.date(2026, 3, 1))
+
+    def test_time_can_be_cleared(self):
+        Match.objects.filter(pk=self.match.pk).update(start_time=datetime.time(20, 30))
+        self.client.post(self.url, {"start_date": "2026-03-01", "start_time": ""})
+        self.match.refresh_from_db()
+        self.assertIsNone(self.match.start_time)
+
+    def test_invalid_time_shows_error(self):
+        response = self.client.post(self.url, {"start_date": "2026-03-01", "start_time": "25:99"})
+        self.assertContains(response, "Hora no válida")
+        self.match.refresh_from_db()
+        self.assertIsNone(self.match.start_time)
 
     def test_invalid_date_shows_error(self):
         response = self.client.post(self.url, {"start_date": "15/11/2026"})

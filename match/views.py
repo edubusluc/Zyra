@@ -6,7 +6,7 @@ Todas las vistas trabajan solo con datos del club activo (``request.club``).
 from . import outcomes
 from core.competitions import competition_for
 from core import spaces
-from core.models import Invitation
+from core.models import Invitation, UserPreference
 from core.season_choice import ALL_SEASONS, choose_season
 from django.shortcuts import render, redirect, get_object_or_404
 from core import ratelimit
@@ -23,7 +23,7 @@ from .report_pdf import render_report
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_POST
-from django.utils.translation import gettext as _, gettext_lazy
+from django.utils.translation import gettext as _, gettext_lazy, ngettext
 import logging
 
 logger = logging.getLogger(__name__)
@@ -270,9 +270,15 @@ def list_match(request):
     matches = [*open_matches.filter(start_date__lt=today).order_by('start_date', 'id'),
                *upcoming_open.order_by('start_date', 'id'),
                *matches.filter(draft_mode=False).order_by('-start_date', '-id')]
-    # Los enfrentamientos abiertos con fecha pasada («Requieren acción») solo van aparte para quien gestiona
+    # Los enfrentamientos abiertos con fecha pasada («Pendientes de acción») solo van aparte para quien gestiona
     # su equipo; para los jugadores son «Próximos». Orden estable: los grupos no se repiten con varios equipos.
-    matches.sort(key=lambda m: 2 if not m.draft_mode else 0 if m.start_date < today and m.club in managed else 1)
+    # Quien es capitán en un equipo y jugador en otro: en los que gestiona, todo enfrentamiento sin acta cerrada
+    # queda en «Pendientes de acción» (aunque su fecha sea futura) y los de jugador van en «Próximos».
+    all_clubs = spaces.user_clubs(request)
+    n_managed = len(spaces.managed_clubs(request, all_clubs))
+    dual_role = 0 < n_managed < len(all_clubs)
+    matches.sort(key=lambda m: 2 if not m.draft_mode else
+                 0 if m.club in managed and (dual_role or m.start_date < today) else 1)
     paginator = Paginator(matches, MATCHES_PER_PAGE)
     page = request.GET.get('page')
     try:
@@ -313,8 +319,9 @@ def list_match(request):
         m.own_points, m.rival_points = club_score(m) if m.outcome else (None, None)
         m.called = called.get(m.id)
         m.upcoming = m.outcome is None and not m.pending_close and m.start_date >= today
-        # «Requieren acción» es solo para quien gestiona ese equipo; los jugadores ven Próximos y Jugados.
-        m.group = ('played' if not m.draft_mode else 'action' if m.start_date < today and m.can_manage else 'upcoming')
+        # «Pendientes de acción» es solo para quien gestiona ese equipo; los jugadores ven Próximos y Jugados.
+        m.group = ('played' if not m.draft_mode else
+                   'action' if m.can_manage and (dual_role or m.start_date < today) else 'upcoming')
 
     # Resto de filtros para la paginación y para los formularios de búsqueda.
     keep = {'season': season, 'q': search, 'rival': rival, 'match_type': match_type,
@@ -408,19 +415,19 @@ def create_match(request):
 @spaces.follow_match
 @club_manager_required
 def edit_match_date(request, match_id):
-    """Cambia la fecha de un partido que aún no está cerrado.
+    """Cambia la fecha y la hora de un partido que aún no está cerrado.
 
     Solo para administradores del club. Con el acta cerrada hay que reabrirla antes (el acta
     cerrada es inmutable). Recalcula la temporada y vuelve a la página del partido.
     """
     match = club_match(request, match_id)
     if not match.draft_mode:
-        messages.error(request, _("Reabre el acta para cambiar la fecha del enfrentamiento."))
+        messages.error(request, _("Reabre el acta para cambiar la fecha y la hora del enfrentamiento."))
         return redirect("call_for_match", match.public_id)
     form = MatchDateForm(request.POST or None, instance=match)
     if request.method == "POST" and form.is_valid():
         form.save()
-        messages.success(request, _("Fecha del enfrentamiento actualizada."))
+        messages.success(request, _("Fecha y hora del enfrentamiento actualizadas."))
         return redirect("call_for_match", match.public_id)
     return render(request, "edit_match_date.html", {"form": form, "match": match})
 
@@ -817,6 +824,77 @@ def match_kind(match):
     return {"title": title, "subtitle": match.club.rules.name}
 
 
+
+
+def stage_card(match, call, convocados, games, rows, min_call):
+    """Contenido de la tarjeta sobre el VS de la ficha: apuntados, convocados o parejas.
+
+    Sin convocatoria o con el acta cerrada no hay tarjeta (devuelve None): el marcador ya cuenta
+    el desenlace. ``rows`` son las parejas propias (``lineup_rows``) y ``min_call`` los apuntados
+    que pide la competición.
+    """
+    if not call or not match.draft_mode:
+        return None
+    if rows:
+        return {"kind": "pairs", "title": _("Parejas"), "meta": "", "rows": rows}
+    players = [{"name": p.short_name, "sub": p.is_sub, "me": getattr(p, "is_me", False)} for p in convocados]
+    if call.draft_mode:
+        return {"kind": "open", "title": _("Apuntados"),
+                "meta": _("%(n)s de %(total)s") % {"n": len(players), "total": min_call},
+                "pct": min(100, round(100 * len(players) / min_call)) if min_call else 0,
+                "players": players}
+    subs = sum(1 for p in players if p["sub"])
+    meta = _("%(n)s · %(s)s suplentes") % {"n": len(players), "s": subs} if subs else str(len(players))
+    return {"kind": "called", "title": _("Convocados"), "meta": meta,
+            "players": players}
+
+
+def stage_countdown(match, today):
+    """Texto de cuenta atrás bajo el VS («Hoy», «Mañana», «Faltan 3 días»); None si ya se jugó o el acta está cerrada."""
+    days = (match.start_date - today).days
+    if not match.draft_mode or days < 0:
+        return None
+    if days == 0:
+        return _("Hoy")
+    if days == 1:
+        return _("Mañana")
+    return ngettext("Falta %(n)s día", "Faltan %(n)s días", days) % {"n": days}
+
+
+def lineup_rows(match, games, me_id=None):
+    """Parejas propias de cada partido alineado, para la previa de la ficha: [{"n", "label"}].
+
+    Solo con el acta abierta (con ella cerrada, los resultados ya muestran las parejas) y sin
+    contar los partidos con pareja no presentada o sin jugadores propios. ``state`` es «win»,
+    «loss» o vacío si el partido aún no tiene resultado.
+    """
+    if not match.draft_mode:
+        return []
+    rows = []
+    for game in games:
+        label = game.local_pair_label if match.own_is_local else game.visiting_pair_label
+        if label and not game.no_show:
+            own = outcomes.WINNER_LOCAL if match.own_is_local else outcomes.WINNER_VISITING
+            state = "" if not game.winner else ("win" if game.winner == own else "loss")
+            own_ids = (game.player_1_local_id, game.player_2_local_id) if match.own_is_local else (game.player_1_visiting_id, game.player_2_visiting_id)
+            rows.append({"n": game.n_game, "label": label, "state": state, "me": bool(me_id) and me_id in own_ids})
+    return rows
+
+
+@club_required
+@require_POST
+def set_stage_view(request, match_id):
+    """Guarda si el usuario quiere la ficha con escudos 3D o la clásica y vuelve a la ficha.
+
+    Es el mismo ajuste que «Mi perfil»; ``on`` activa el 3D y cualquier otro valor lo desactiva.
+    Solo cambia la preferencia de quien lo pide.
+    """
+    match = club_match(request, match_id)
+    UserPreference.objects.update_or_create(
+        user=request.user, defaults={"match_stage_view": request.POST.get("stage") == "on"})
+    return redirect('call_for_match', match_id=match.public_id)
+
+
 @club_required
 def call_for_match(request, match_id):
     """Página de un enfrentamiento: convocatoria, partidos y resultados.
@@ -871,6 +949,10 @@ def call_for_match(request, match_id):
         "score_local": split_points(match.result_points)[0] if outcome else None,
         "score_visiting": split_points(match.result_points)[1] if outcome else None,
         "is_future": match.start_date > today,
+        "stage_view": UserPreference.match_stage_for(request.user),
+        "countdown": stage_countdown(match, today),
+        "stage_card": stage_card(match, call, convocados, games, lineup_rows(match, games, me.id if me else None),
+                                 competition_for(match).min_call_players),
         "my_status": my_status,
         "report_emails": ", ".join(admin_emails(request.club)) if call else "",
         "share_text": share_text(match, games) if not match.draft_mode else "",

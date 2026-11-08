@@ -1,0 +1,11 @@
+{% load i18n zyra_format %}
+{# Cabecera compacta del enfrentamiento: volver a la ficha, los dos escudos con el VS y el tipo y la fecha. Recibe match y kind (etiqueta match_strip). #}
+<header class="z-strip">
+  <a href="{% url 'call_for_match' match.public_id %}" class="z-strip-back" aria-label="{% translate 'Volver al enfrentamiento' %}"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i></a>
+  <div class="z-strip-teams">
+    <span class="z-strip-team"><span class="z-mini-crest" aria-hidden="true">{% include 'includes/crest_art.html' with team=match.local name=match.local_name %}</span><b>{{ match.local_name }}</b></span>
+    <span class="z-strip-vs" aria-hidden="true">VS</span>
+    <span class="z-strip-team z-strip-team--visiting"><b>{{ match.visiting_name }}</b><span class="z-mini-crest" aria-hidden="true">{% include 'includes/crest_art.html' with team=match.visiting name=match.visiting_name %}</span></span>
+  </div>
+  <p class="z-strip-meta"><b>{{ kind.title }}</b> · {{ kind.subtitle }} · {{ match.start_date|date_short|capfirst }}</p>
+</header>

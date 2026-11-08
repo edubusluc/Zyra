@@ -9,7 +9,8 @@ document.querySelectorAll('[data-result]').forEach(function (form) {
   const validTB = (a, b) => { const h = Math.max(a, b), l = Math.min(a, b); return h >= 10 && (h === 10 ? h - l >= 2 : h - l === 2); };
   const checks = form.querySelector('[data-result-checks]');
   const teams = Array.from(form.querySelectorAll('.z-result-team'));
-  const names = teams.map((e) => e.textContent.trim());
+  // Solo el nombre del equipo, sin la etiqueta «Tu equipo» ni la pareja que van en la misma celda.
+  const names = teams.map((e) => (e.querySelector('[data-name]') || e).textContent.trim());
   // Lado del equipo propio (0 local, 1 visitante; -1 si no se sabe): el ganador solo va en lima
   // cuando gana el equipo propio; si gana el rival, en neutro (UX-005).
   const ownSide = teams.findIndex((e) => e.hasAttribute('data-own'));
@@ -96,6 +97,17 @@ document.querySelectorAll('[data-result]').forEach(function (form) {
 
   // «Pareja no presentada» (SNP): sin sets que rellenar; Zyra reparte los puntos al cerrar el acta.
   const noShow = form.querySelector('[data-pair-no-show]');
+  // «Una pareja no se presentó»: el desplegable de no presentados solo aparece al pedirlo.
+  const noShowToggle = form.querySelector('[data-noshow-toggle]');
+  const noShowBox = form.querySelector('[data-noshow-box]');
+  if (noShowToggle && noShowBox) {
+    noShowToggle.addEventListener('click', () => {
+      noShowBox.hidden = false;
+      noShowToggle.hidden = true;
+      noShowToggle.setAttribute('aria-expanded', 'true');
+      if (noShow) noShow.focus();
+    });
+  }
   const playedBox = form.querySelector('[data-played]');
 
   // El marcador vivo (más abajo) lee el ganador de cada partido: data-winner = 0 local, 1 visitante

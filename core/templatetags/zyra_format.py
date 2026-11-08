@@ -50,3 +50,21 @@ def date_day(value):
 def date_day_time(value):
     """Día, mes, año y hora: «4 oct 2026 12:20»."""
     return _date(value, "j M Y H:i")
+
+
+@register.filter
+def crest_initials(name):
+    """
+    Siglas del escudo de reserva: la inicial de las dos primeras palabras («Atlético Isleño» → «AI»)
+    o, con una sola palabra, sus dos primeras letras («NorthPadel» → «NO»). En mayúsculas.
+    """
+    words = [w for w in str(name or "").replace("-", " ").split() if w[:1].isalnum()]
+    if len(words) >= 2:
+        return (words[0][0] + words[1][0]).upper()
+    return (words[0][:2] if words else "").upper()
+
+
+@register.filter
+def crest_hue(name):
+    """Tono (0-359) derivado del nombre del equipo para el escudo de reserva: el mismo nombre, el mismo tono."""
+    return sum((i + 1) * ord(c) for i, c in enumerate(str(name or "").lower())) % 360

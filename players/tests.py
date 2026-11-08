@@ -839,6 +839,12 @@ class CompleteTeamTests(TestCase):
         spec = get_spec("complete_snp_team")
         self.assertEqual((spec.schedule, [p.name for p in spec.params]), ("", ["team_id"]))
 
+    def test_edit_player_offers_to_edit_the_current_photo(self):
+        url = reverse("edit_player", args=[self.ana.public_id])
+        self.assertNotContains(self.client.get(url), "data-current-photo")
+        Player.objects.filter(pk=self.ana.pk).update(photo="players/ana.webp")
+        self.assertContains(self.client.get(url), 'data-current-photo="/media/players/ana.webp"')
+
     def test_edit_player_saves_name_and_last_name(self):
         response = self.client.post(reverse("edit_player", args=[self.ana.public_id]), {
             "name": "Ana María", "last_name": "Álvarez Ruiz", "position": "Revés", "skillfull_hand": "Diestro",

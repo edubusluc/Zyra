@@ -406,3 +406,23 @@ class DefaultTimeTests(TestCase):
         from match.models import Match
         match = Match.objects.get(start_date="2030-01-05")
         self.assertEqual(match.start_time, time(18, 15), post.status_code)
+
+
+class EditCurrentPhotoTests(TestCase):
+    """El formulario de equipo ofrece reabrir el encuadre de la foto ya guardada."""
+
+    def setUp(self):
+        self.user = User.objects.create_user("admin", password="pass-12345")
+        self.club = create_club("Club A", "Sevilla", self.user)
+        self.team = self.club.own_team
+        self.client.force_login(self.user)
+
+    def test_input_carries_the_saved_photo_url(self):
+        Team.objects.filter(pk=self.team.pk).update(photo="teams/escudo.webp")
+        self.team.refresh_from_db()
+        response = self.client.get(reverse("edit_team", args=[self.team.public_id]))
+        self.assertContains(response, f'data-current-photo="{self.team.photo.url}"')
+
+    def test_no_attribute_without_saved_photo(self):
+        response = self.client.get(reverse("edit_team", args=[self.team.public_id]))
+        self.assertNotContains(response, "data-current-photo")
