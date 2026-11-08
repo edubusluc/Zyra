@@ -63,8 +63,11 @@ class LapiMatchCycleTests(TestCase):
     def test_full_cycle(self):
         pid = self.match.public_id
         self.client.post(reverse("create_call", args=[pid]), {"players": [p.id for p in self.players[:5]]})
-        self.assertFalse(Call.objects.filter(match=self.match).exists())
-        self.client.post(reverse("create_call", args=[pid]), {"players": [p.id for p in self.players[:6]]})
+        call = Call.objects.get(match=self.match)
+        self.client.post(reverse("close_call", args=[pid]))
+        call.refresh_from_db()
+        self.assertTrue(call.draft_mode)
+        call.players.set(self.players[:6])
         self.client.post(reverse("close_call", args=[pid]))
         self.assertFalse(Call.objects.get(match=self.match).draft_mode)
 

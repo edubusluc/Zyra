@@ -142,7 +142,7 @@ El ciclo de un enfrentamiento ([`match.views`](referencia/match/views.md)):
 2. **Convocatoria**: elegir jugadores (con sus sanciones a la vista); se puede editar y cada
    cambio queda en el **registro de convocatoria** ([`callLog`](referencia/callLog/index.md)).
    **Disponibilidad**: en la ficha, el capitán y los gestores tienen un enlace por enfrentamiento (con texto listo para WhatsApp). Cada jugador inicia sesión (la sesión dura 30 días), enlaza su cuenta con su jugador si aún no lo estaba y responde Sí, No o Aún no sé (con un comentario opcional en «Aún no sé»), y puede cambiarlo hasta que se cierra la convocatoria. Solo capitán y gestores ven las respuestas y pueden cambiarlas; los «Sí» llegan marcados al crear la convocatoria. Hay botones para enviar un recordatorio por correo a quien no ha respondido y para crear un enlace nuevo.
-3. **Cerrar convocatoria** (mínimo 10 jugadores): envía el **informe PDF** a los capitanes; lo que
+3. **Cerrar convocatoria** (mínimo 10 jugadores; con menos, la ficha avisa de cuántos faltan antes de cerrar igualmente): envía el **informe PDF** a los capitanes; lo que
    falle se reintenta solo cada 5 minutos. El informe recomienda cómo formar las parejas según el
    historial del club ([`match.advisor`](referencia/match/advisor.md)) y cabe en dos páginas aunque la
    convocatoria sea grande: se compacta solo y, si aun así no cabe, sigue sin dejar huecos. También se puede descargar o

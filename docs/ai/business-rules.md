@@ -156,10 +156,10 @@ Orden obligatorio del ciclo (`match/views.py`) [V], cubierto por `match/tests_fl
    muestran nunca). «Quitar no presentado» (`undo_no_show`) reabre el acta; reabrirla también lo quita.
    Amistoso: `match_type="amistoso"`; puede tener rival escrito a mano (`rival_name`, sin crear
    `Team`, ese lado `NULL`) que no puede llamarse como el equipo propio.
-2. **Convocatoria** (mínimo `min_call_players` de la competición al crearla y al editarla: 10 SNP, 6 LAPI): una por partido; si ya existe o el acta está cerrada → `existing_call`.
+2. **Convocatoria** (se crea y se edita con cualquier número de apuntados ≥ 1; el mínimo `min_call_players` de la competición, 10 SNP y 6 LAPI, solo cuenta al cerrarla): una por partido; si ya existe o el acta está cerrada → `existing_call`.
    Se edita mientras el acta siga abierta (`edit_call` mira `match.draft_mode`); cada cambio se anota en `CallLog`.
    **Enlace de disponibilidad** (`call/availability.py`, `/match/disponibilidad/<token>/`): el capitán o gestor lo comparte (texto de WhatsApp prefabricado); exige sesión (30 días, `SESSION_COOKIE_AGE`) y ser miembro del equipo; si la cuenta no tiene jugador enlazado se ofrece «Soy yo» antes de responder. Respuestas Sí / No / Aún no sé (comentario solo con «Aún no sé»); es solo disponibilidad, la alineación la hace el capitán o gestor y los «Sí» llegan preseleccionados al crear la convocatoria («Marcar los que dicen Sí» al editarla). Solo capitán y gestores ven las respuestas y pueden cambiarlas; ya apuntados sin respuesta salen «Apuntado por el capitán». Se puede responder hasta cerrar la convocatoria o el acta; después el enlace dice «Convocatoria cerrada». Sin correos al capitán por cambios; recordatorio manual por correo a quien no ha respondido (máx. uno por hora y enfrentamiento). Tests: `call/tests_availability.py`.
-3. **Cerrar convocatoria** (`close_call`, POST): ≥10 jugadores y abierta. Siempre se cierra aunque
+3. **Cerrar convocatoria** (`close_call`, POST): abierta y con ≥1 apuntado; por debajo del mínimo de la competición solo cierra si el POST lleva `allow_short=1`, que añade la ficha tras un aviso «se va a cerrar con X jugadores menos» (bajas por lesión, etc.). Siempre se cierra aunque
    falle el envío del informe.
 4. **Partidos** (`create_game_for_match`): requiere convocatoria cerrada con ≥10. Alineación
    (`match/lineup.py`): 5 parejas completas, jugadores de la convocatoria, dos distintos por pareja,

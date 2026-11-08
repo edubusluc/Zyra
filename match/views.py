@@ -503,7 +503,7 @@ def annotate_availability(match, players):
     return bool(badges)
 
 
-MIN_CALL_ERROR = gettext_lazy("La convocatoria necesita al menos %(n)s jugadores.")
+EMPTY_CALL_ERROR = gettext_lazy("Apunta al menos a un jugador.")
 
 
 @spaces.follow_match
@@ -525,9 +525,8 @@ def create_call(request, match_id):
     if request.method == 'POST':
         chosen = club_players(request, request.POST.getlist('players'))
         selected_ids = list(chosen.values_list('id', flat=True))
-        min_call = competition_for(match).min_call_players
-        if len(selected_ids) < min_call:
-            messages.error(request, MIN_CALL_ERROR % {"n": min_call})
+        if not selected_ids:
+            messages.error(request, EMPTY_CALL_ERROR)
         elif not _finals_rule_ok(request, match, chosen):
             pass
         else:
@@ -585,11 +584,21 @@ def _finals_rule_ok(request, match, chosen):
     return False
 
 
-def validate_call(call):
-    """Comprueba si la convocatoria se puede cerrar: (True, None) o (False, mensaje de error)."""
+def validate_call(call, allow_short=False):
+    """
+    Comprueba si la convocatoria se puede cerrar: (True, None) o (False, mensaje de error). Hace falta al
+    menos un apuntado; por debajo del mínimo de la competición solo se cierra con ``allow_short``
+    (el aviso de la ficha), por ejemplo cuando hay bajas por lesión.
+    """
     min_call = competition_for(call.match).min_call_players
-    if call.players.all().count() < min_call:
-        return False, _("Para cerrar la convocatoria hacen falta al menos %(n)s jugadores") % {"n": min_call}
+    count = call.players.all().count()
+    if not count:
+        return False, EMPTY_CALL_ERROR
+    if count < min_call and not allow_short:
+        return False, ngettext(
+            "Falta %(n)s jugador para el mínimo de la competición: confirma el aviso para cerrar igualmente.",
+            "Faltan %(n)s jugadores para el mínimo de la competición: confirma el aviso para cerrar igualmente.",
+            min_call - count) % {"n": min_call - count}
     if call.draft_mode == False:
         return False, _("Esta convocatoria está cerrada")
     
@@ -600,11 +609,12 @@ def validate_call(call):
 def close_call(request, match_id):
     """Cierra la convocatoria de un enfrentamiento y envía el informe a los capitanes.
 
-    Solo para administradores del club. Exige los convocados mínimos de la competición y que siga
-    abierta. Solo cierra en POST; siempre vuelve a la página de la convocatoria.
+    Solo para administradores del club. Por debajo del mínimo de la competición solo cierra si el aviso
+    de la ficha se ha confirmado (``allow_short``) y siempre hace falta que siga abierta. Solo cierra en
+    POST; siempre vuelve a la página de la convocatoria.
     """
     call = club_call(request, match__public_id=match_id)
-    is_valid, error_message = validate_call(call)
+    is_valid, error_message = validate_call(call, allow_short=request.POST.get("allow_short") == "1")
 
     if not is_valid:
         messages.error(request, error_message)
@@ -701,10 +711,10 @@ def edit_call(request, call_id):
             selected_set = set(selected_players_ids)
             call_set = set(selected_players)
             min_call = competition_for(call.match).min_call_players
-            if len(selected_set) < min_call or not _finals_rule_ok(
+            if not selected_set or not _finals_rule_ok(
                     request, call.match, Player.objects.filter(id__in=selected_set - call_set)):
-                if len(selected_set) < min_call:
-                    messages.error(request, MIN_CALL_ERROR % {"n": min_call})
+                if not selected_set:
+                    messages.error(request, EMPTY_CALL_ERROR)
                 return render(request, 'edit_call.html', {
                     'call': call, 'all_players': all_players, 'selected_players': list(selected_set),
                     'has_availability': has_availability,

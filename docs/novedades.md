@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 08/11/2026 · Convocatoria con menos del mínimo
+
+- **Convocatoria**: se puede crear y editar con menos jugadores que el mínimo de la competición. Al cerrarla por debajo del mínimo la ficha avisa con un popup («se va a cerrar la convocatoria con X jugadores menos») y solo cierra si se confirma, para bajas por lesión u otros motivos.
+
 ## 08/11/2026 · Enlace de disponibilidad
 
 - **Ficha del enfrentamiento · Disponibilidad**: el capitán y los gestores comparten un enlace (con texto para WhatsApp) para que la plantilla responda Sí, No o Aún no sé. Hay que iniciar sesión (la sesión dura ahora 30 días) y, si la cuenta no está enlazada a un jugador, se ofrece enlazarla antes de responder. Solo capitán y gestores ven y pueden cambiar las respuestas; los «Sí» llegan marcados al crear la convocatoria. Los jugadores también responden desde la ficha del enfrentamiento («¿Puedes jugar?»). Página del enlace con local VS visitante, hora y lugar destacados y botones Sí / No / Pendiente (Pendiente admite observaciones); tras responder muestra «Has respondido: X» con opción de cambiarla. Recordatorio manual por correo, enlace regenerable y, con la convocatoria cerrada, el enlace avisa de que ya está cerrada.

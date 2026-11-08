@@ -93,26 +93,49 @@ class PhaseTests(UxBase):
 
 
 class CallMinimumTests(UxBase):
-    def test_call_needs_at_least_ten_players(self):
+    def test_call_can_be_created_below_the_minimum_but_not_empty(self):
         match = self.match()
         url = reverse("create_call", args=[match.public_id])
-        response = self.client.post(url, {"players": [p.id for p in self.players[:9]]})
+        response = self.client.post(url, {"players": []})
         self.assertEqual(response.status_code, 200)
         self.assertFalse(Call.objects.filter(match=match).exists())
-        self.assertIn("al menos 10", " ".join(texts(response)))
-        response = self.client.post(url, {"players": [p.id for p in self.players[:10]]})
+        response = self.client.post(url, {"players": [p.id for p in self.players[:9]]})
         self.assertRedirects(response, reverse("call_for_match", args=[match.public_id]), fetch_redirect_response=False)
-        self.assertIn("Convocatoria creada", " ".join(texts(response)))
+        self.assertEqual(Call.objects.get(match=match).players.count(), 9)
 
-    def test_editing_a_call_cannot_go_below_ten(self):
+    def test_closing_below_the_minimum_needs_the_warning_confirmed(self):
+        match = self.match()
+        call = Call.objects.create(match=match)
+        call.players.set(self.players[:8])
+        url = reverse("close_call", args=[match.public_id])
+        response = self.client.post(url, follow=True)
+        call.refresh_from_db()
+        self.assertTrue(call.draft_mode)
+        self.assertIn("Faltan 2 jugadores", " ".join(texts(response)))
+        self.client.post(url, {"allow_short": "1"})
+        call.refresh_from_db()
+        self.assertFalse(call.draft_mode)
+
+    def test_close_warning_says_how_many_players_are_missing(self):
+        from core.models import UserPreference
+        UserPreference.objects.update_or_create(user=self.user, defaults={"match_stage_view": False})
+        match = self.match()
+        call = Call.objects.create(match=match)
+        call.players.set(self.players[:9])
+        page = self.client.get(reverse("call_for_match", args=[match.public_id]))
+        self.assertContains(page, "con 1 jugador menos del mínimo (9 de 10)")
+        self.assertContains(page, 'name="allow_short"')
+
+    def test_editing_a_call_can_go_below_the_minimum_but_not_empty(self):
         match = self.match()
         call = self.closed_call(match, 10)
         call.draft_mode = True
         call.save()
-        response = self.client.post(reverse("edit_call", args=[call.public_id]),
-                                    {"players": [p.id for p in self.players[:9]]})
-        self.assertEqual(response.status_code, 200)
+        url = reverse("edit_call", args=[call.public_id])
+        self.assertEqual(self.client.post(url, {"players": []}).status_code, 200)
         self.assertEqual(call.players.count(), 10)
+        self.client.post(url, {"players": [p.id for p in self.players[:9]]})
+        self.assertEqual(call.players.count(), 9)
 
 
 class MatchPageTests(UxBase):
