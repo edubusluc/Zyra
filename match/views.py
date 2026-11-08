@@ -1067,7 +1067,7 @@ def availability_context(request, match):
     """Datos de la tarjeta «Disponibilidad» de la ficha: enlace, texto de WhatsApp, respuestas y opciones."""
     url = call_availability.link_url(request, match)
     return {"url": url, "whatsapp": call_availability.whatsapp_url(call_availability.share_text(match, url)),
-            "board": call_availability.board(match), "answers": Availability.ANSWERS,
+            "board": call_availability.board(match),
             "open": call_availability.is_open(match), "can_remind": request.membership.is_admin,
             "pending": len(call_availability.pending_players(match))}
 

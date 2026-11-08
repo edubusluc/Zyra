@@ -1,7 +1,7 @@
 """Rutas de la app de partidos (enfrentamientos, convocatorias, partidos y resultados)."""
 from django.urls import path
 from .views import *
-from call.views import delete_call, availability, availability_answer, availability_set, availability_remind
+from call.views import delete_call, availability, availability_answer, availability_remind
 
 urlpatterns = (
     path("create_match",create_match, name='create_match'),
@@ -31,7 +31,6 @@ urlpatterns = (
     path('delete_match/<pid:match_id>/', delete_match, name='delete_match'),
     path('disponibilidad/<str:token>/', availability, name='availability'),
     path('availability/<pid:match_id>/answer/', availability_answer, name='availability_answer'),
-    path('availability/<pid:match_id>/set/', availability_set, name='availability_set'),
     path('availability/<pid:match_id>/remind/', availability_remind, name='availability_remind'),
     path('call_report/<pid:match_id>/', call_report_pdf, name='call_report'),
     path('call_report/<pid:match_id>/resend/', resend_call_report, name='resend_call_report'),

@@ -124,7 +124,7 @@ def valid_answer(answer):
     return answer in dict(Availability.ANSWERS)
 
 
-def set_answer(match, player, answer, comment="", by_manager=False):
+def set_answer(match, player, answer, comment=""):
     """
     Guarda la respuesta de ``player`` (la sustituye si ya había una). El comentario solo se
     conserva con «Pendiente» y se recorta a ``Availability.MAX_COMMENT``. Devuelve la fila, o ``None`` si
@@ -135,7 +135,7 @@ def set_answer(match, player, answer, comment="", by_manager=False):
     comment = " ".join((comment or "").split())[:Availability.MAX_COMMENT] if answer == Availability.MAYBE else ""
     row, _created = Availability.objects.update_or_create(
         match=match, player=player,
-        defaults={"answer": answer, "comment": comment, "set_by_manager": by_manager})
+        defaults={"answer": answer, "comment": comment})
     return row
 
 
@@ -148,7 +148,7 @@ def board(match):
     """
     Resumen para el capitán o los gestores: ``{"rows", "counts"}``. Cada fila lleva el jugador
     (``player``), su estado (``state``: «yes», «no», «maybe», «captain» si el capitán lo apuntó
-    sin respuesta, o «none»), el comentario y si lo puso un gestor. ``counts`` cuenta cada estado y
+    sin respuesta, o «none»), y el comentario. ``counts`` cuenta cada estado y
     ``groups`` agrupa las filas en Sí, No, Pendiente y Sin respuesta (con los apuntados por el capitán) y
     ``tags`` da esos mismos cuatro contadores, en el mismo orden, para la tarjeta de la ficha.
     """
@@ -165,7 +165,7 @@ def board(match):
         else:
             state = NO_ANSWER
         rows.append({"player": player, "state": state, "comment": answer.comment if answer else "",
-                     "by_manager": bool(answer and answer.set_by_manager), "called": player.id in called})
+                     "called": player.id in called})
     order = {Availability.YES: 0, Availability.MAYBE: 1, Availability.NO: 2, BY_CAPTAIN: 3, NO_ANSWER: 4}
     rows.sort(key=lambda r: order[r["state"]])
     counts = {key: sum(1 for r in rows if r["state"] == key) for key in order}

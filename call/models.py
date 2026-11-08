@@ -71,7 +71,6 @@ class Availability(models.Model):
     answer = models.CharField(max_length=5, choices=ANSWERS)
     comment = models.CharField(max_length=MAX_COMMENT, blank=True, default="")
     # True si la respuesta la ha puesto el capitán o un gestor por el jugador.
-    set_by_manager = models.BooleanField(default=False)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:

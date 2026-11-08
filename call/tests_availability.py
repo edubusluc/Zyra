@@ -141,22 +141,17 @@ class AvailabilityTests(TestCase):
 
     def test_regular_player_sees_no_board_or_other_players(self):
         """La página del jugador no enseña a nadie más ni el resumen."""
-        availability.set_answer(self.match, self.luis, "no", by_manager=True)
+        availability.set_answer(self.match, self.luis, "no")
         self.client.force_login(self.user)
         response = self.client.get(self.url)
         self.assertNotContains(response, "Luis")
         self.assertNotContains(response, "Ver el enfrentamiento y las respuestas")
 
-    def test_manager_sets_answer_and_player_cannot(self):
-        """El capitán cambia la respuesta de un jugador; un jugador normal no puede."""
-        set_url = reverse("availability_set", args=[self.match.public_id])
-        self.client.force_login(self.user)
-        self.assertEqual(self.client.post(set_url, {"player": self.luis.public_id, "answer": "yes"}).status_code, 403)
-        self.client.force_login(self.captain)
-        self.client.post(set_url, {"player": self.luis.public_id, "answer": "yes"})
-        row = Availability.objects.get(player=self.luis)
-        self.assertEqual(row.answer, "yes")
-        self.assertTrue(row.set_by_manager)
+    def test_captain_cannot_set_other_players_answer(self):
+        """«Ver respuestas» es solo informativo: no hay ruta para poner la respuesta de otro jugador."""
+        from django.urls import NoReverseMatch
+        with self.assertRaises(NoReverseMatch):
+            reverse("availability_set", args=[self.match.public_id])
 
     def test_board_states_and_captain_signed_up(self):
         """Los ya apuntados sin respuesta salen «apuntado por el capitán»."""
@@ -297,7 +292,6 @@ class AvailabilityTests(TestCase):
         self.client.force_login(self.captain)
         response = self.client.get(reverse("call_for_match", args=[self.match.public_id]))
         self.assertContains(response, "availabilityModal")
-        self.assertNotContains(response, "availability_set")
         self.assertNotContains(response, "/availability/%s/set/" % self.match.public_id)
         self.assertNotContains(response, "availability-url")
 
