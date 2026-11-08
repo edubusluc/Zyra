@@ -20,7 +20,9 @@ from .result_email import notify_match_closed
 from call.models import ReportDelivery
 from .report import build_report, suggested_lineups
 from .report_pdf import render_report
-from django.http import HttpResponse, JsonResponse
+from .result_image import build_result_png
+from django.core.exceptions import PermissionDenied
+from django.http import Http404, HttpResponse, JsonResponse
 from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_POST
 from django.utils.translation import gettext as _, gettext_lazy, ngettext
@@ -1037,6 +1039,28 @@ def call_for_match(request, match_id):
         "finals_minimum": match.club.rules.finals_min_regular if league.applies_finals_rule(match) else 0,
         "finals_call_short": league.finals_shortfall(match, call.players.all()) if call and match.draft_mode and request.membership.can_manage else [],
     })
+
+
+@club_required
+def result_image(request, match_id):
+    """PNG vertical con el resultado de un enfrentamiento cerrado, para compartirlo por WhatsApp.
+
+    Solo capitán o gestor (como el botón «Compartir resultado»). 404 si el acta sigue abierta.
+    """
+    match = space_match(request, match_id)
+    if not request.membership.can_manage:
+        raise PermissionDenied
+    if match.draft_mode:
+        raise Http404
+    games = list(
+        Game.objects.filter(match=match).order_by("n_game")
+        .select_related("player_1_local", "player_2_local", "player_1_visiting", "player_2_visiting")
+        .prefetch_related("results")
+    )
+    response = HttpResponse(build_result_png(match, games, match_outcome(match)), content_type="image/png")
+    response["Content-Disposition"] = 'inline; filename="resultado-zyra.png"'
+    response["Cache-Control"] = "private, no-store"
+    return response
 
 
 def availability_context(request, match):

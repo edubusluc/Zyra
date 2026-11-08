@@ -1,7 +1,7 @@
-{% load i18n %}
+{% load i18n static %}
 {# Acta cerrada: compartir el resultado, ver estadísticas y quitar «no presentado». En la vista nueva va dentro de la tarjeta principal. #}
 <div class="d-flex flex-wrap gap-2 z-closed-actions">
-    <a class="btn btn-primary btn-sm" href="https://wa.me/?text={{ share_text|urlencode }}" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp me-1" aria-hidden="true"></i> {% translate "Compartir resultado" %}</a>
+    <a class="btn btn-primary btn-sm" href="https://wa.me/?text={{ share_text|urlencode }}" target="_blank" rel="noopener" data-share-image="{% url 'result_image' match.public_id %}" data-share-text="{{ share_text }}"><i class="fa-brands fa-whatsapp me-1" aria-hidden="true"></i> {% translate "Compartir resultado" %}</a>
     <a class="btn btn-secondary btn-sm" href="{% url 'team_statistics' %}?season={{ match.season|urlencode }}"><i class="fa-solid fa-chart-simple me-1" aria-hidden="true"></i> {% translate "Ver estadísticas" %}</a>
     {% if match.no_show %}
     <form method="POST" action="{% url 'undo_no_show' match.public_id %}" data-confirm="{% translate 'El acta vuelve a estar abierta para poner las parejas y los resultados.' %}" data-confirm-title="{% translate 'Quitar no presentado' %}" data-confirm-action="{% translate 'Quitar' %}" data-loading-text="{% translate 'Guardando…' %}">
@@ -10,3 +10,4 @@
     </form>
     {% endif %}
 </div>
+<script src="{% static 'js/share-result.js' %}" defer></script>

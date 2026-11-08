@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 08/11/2026 · Imagen de «Compartir resultado»
+
+- **Ficha del enfrentamiento · acta cerrada**: «Compartir resultado» envía una imagen vertical (4:5) con el estilo de la web: insignia de la competición, local y visitante con escudo, marcador (lima, rojo o ámbar según el resultado), y una fila por partido con la pareja propia, los sets y los puntos en juego; las parejas no presentadas salen marcadas. En el móvil abre el menú de compartir del sistema con la imagen y el texto; en el ordenador descarga la imagen y abre WhatsApp con el texto.
+
 ## 08/11/2026 · Revisión del enlace de disponibilidad
 
 - **Usabilidad**: la tarjeta de la ficha cuenta Sí · No · Pendiente · Sin respuesta (igual que la ventana «Ver respuestas», que es solo informativa) y sus tres botones caben en una línea. «Recordar» solo lo envía el capitán, enseña a cuántos escribe, no gasta la espera si no sale ningún correo y dice cuánto falta si hay que esperar. Un enlace sustituido, un club suspendido o una cuenta de fuera tienen su propio mensaje (y sin datos del partido). La ficha responde sin depender del token. Al volver a cerrar una convocatoria reabierta, el informe solo se reenvía con la casilla «Volver a enviar el informe». El ⓘ usa el mismo componente que las estadísticas.
