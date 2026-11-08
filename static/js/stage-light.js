@@ -4,6 +4,20 @@
 (function () {
     var stage = document.querySelector('.z-versus--stage');
     if (!stage || !window.matchMedia) { return; }
+    // Con logo subido, el escudo espera a que la imagen esté cargada y aparece con un fundido (sin saltos, sobre todo en móvil).
+    stage.querySelectorAll('.z-crest-scene').forEach(function (scene) {
+        var imgs = Array.prototype.filter.call(scene.querySelectorAll('img'), function (i) { return !i.complete; });
+        if (!imgs.length) { return; }
+        var left = imgs.length;
+        scene.classList.add('is-loading');
+        function done() {
+            left -= 1;
+            if (left > 0) { return; }
+            scene.classList.add('is-loaded');
+            scene.classList.remove('is-loading');
+        }
+        imgs.forEach(function (i) { i.addEventListener('load', done, { once: true }); i.addEventListener('error', done, { once: true }); });
+    });
     if ('IntersectionObserver' in window) {
         // El giro de los escudos se pausa cuando el escenario sale de la pantalla.
         new IntersectionObserver(function (entries) {
