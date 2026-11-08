@@ -141,17 +141,6 @@ def availability_set(request, match_id):
 
 
 @spaces.follow_match
-@club_manager_required
-@require_POST
-def availability_regenerate(request, match_id):
-    """Genera un enlace nuevo: el anterior deja de funcionar (solo POST, capitán o gestor)."""
-    match = get_object_or_404(Match, public_id=match_id, club=request.club)
-    availability_logic.regenerate_token(match)
-    messages.success(request, _("Enlace nuevo creado. El anterior ya no funciona."))
-    return redirect("call_for_match", match.public_id)
-
-
-@spaces.follow_match
 @club_admin_required
 @require_POST
 def availability_remind(request, match_id):

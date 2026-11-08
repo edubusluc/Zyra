@@ -21,12 +21,6 @@
             {% csrf_token %}<button type="submit" class="btn btn-secondary btn-sm"><i class="fa-solid fa-bell me-1" aria-hidden="true"></i> {% blocktranslate with n=availability.pending %}Recordar · {{ n }}{% endblocktranslate %}</button>
         </form>
         {% endif %}
-        {% if availability.open %}
-        <form method="post" action="{% url 'availability_regenerate' match.public_id %}" data-loading-text="{% translate 'Guardando…' %}"
-              data-confirm="{% translate 'El enlace anterior dejará de funcionar y tendrás que compartir el nuevo.' %}">
-            {% csrf_token %}<button type="submit" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-rotate me-1" aria-hidden="true"></i> {% translate "Enlace nuevo" %}</button>
-        </form>
-        {% endif %}
     </div>
 </section>
 <div class="modal fade" id="availabilityModal" tabindex="-1" aria-labelledby="availabilityModalTitle" aria-hidden="true">

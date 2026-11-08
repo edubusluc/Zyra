@@ -158,21 +158,6 @@ class AvailabilityTests(TestCase):
         self.assertEqual(row.answer, "yes")
         self.assertTrue(row.set_by_manager)
 
-    def test_regenerate_invalidates_old_link(self):
-        """Un enlace nuevo deja el anterior sin efecto."""
-        old = self.match.availability_token
-        self.client.force_login(self.captain)
-        self.client.post(reverse("availability_regenerate", args=[self.match.public_id]))
-        self.match.refresh_from_db()
-        self.assertNotEqual(old, self.match.availability_token)
-        self.assertEqual(self.client.get(reverse("availability", args=[old])).status_code, 404)
-
-    def test_regenerate_requires_manager(self):
-        """Un jugador normal no regenera el enlace."""
-        self.client.force_login(self.user)
-        response = self.client.post(reverse("availability_regenerate", args=[self.match.public_id]))
-        self.assertEqual(response.status_code, 403)
-
     def test_board_states_and_captain_signed_up(self):
         """Los ya apuntados sin respuesta salen «apuntado por el capitán»."""
         call = Call.objects.create(match=self.match)
