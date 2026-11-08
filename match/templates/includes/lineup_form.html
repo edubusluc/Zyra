@@ -53,7 +53,7 @@
 
     <input type="hidden" name="ordered_games" data-lineup-output>
     <div class="z-selector-bar">
-        <div>{% blocktranslate with total=slots|length %}<b data-lineup-count>0</b> de {{ total }} parejas{% endblocktranslate %}{% if required_pairs and required_pairs < slots|length %} <span class="z-lineup-short">{% blocktranslate with n=required_pairs %}Con estos convocados se pueden formar {{ n }}; las demás parejas se marcarán como no presentadas.{% endblocktranslate %}</span>{% endif %} <small data-lineup-hint></small></div>
+        <div>{% blocktranslate with total=slots|length %}<b data-lineup-count>0</b> de {{ total }} parejas{% endblocktranslate %}{% if required_pairs and required_pairs < slots|length %}{% blocktranslate with n=required_pairs asvar short_tip %}Con estos convocados solo se pueden formar {{ n }} parejas: las demás se marcan como no presentadas. En la SNP, una pareja sin presentar reparte los puntos como indica la normativa (20.2); dos o más hacen perder el enfrentamiento 0-12.{% endblocktranslate %}{% include 'includes/stat_tip.html' with tip=short_tip %}{% endif %} <small data-lineup-hint></small></div>
         <button type="submit" class="btn btn-primary" data-lineup-save disabled>{{ submit_label }}</button>
     </div>
 </form>

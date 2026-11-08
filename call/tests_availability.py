@@ -351,3 +351,19 @@ class ShortLineupTests(TestCase):
                 for i, g in enumerate(games[:3])]
         self.client.post(reverse("edit_games_match", args=[self.match.public_id]), {"ordered_games": json.dumps(data)})
         self.assertEqual(self.match.games.filter(no_show=Game.NO_SHOW_OWN).count(), 2)
+
+    def test_lapi_has_no_pair_no_show(self):
+        """La LAPI no tiene «pareja no presentada»: con menos de 6 convocados no se alinean parejas."""
+        user = User.objects.create_user("capi3", email="capi3@example.com", password="pass-12345")
+        club = create_club("Club L", "Sevilla", user, competition="lapi")
+        rival = Team.objects.create(club=club, name="Rival", location="X", in_group=True)
+        players = [Player.objects.create(club=club, name=f"L{i}", last_name="X") for i in range(4)]
+        match = Match.objects.create(club=club, local=club.own_team, visiting=rival, start_date=datetime.date(2026, 1, 10))
+        call = Call.objects.create(match=match, draft_mode=False)
+        call.players.set(players)
+        self.client.login(username="capi3", password="pass-12345")
+        self.client.get(reverse("create_game", args=[match.public_id]))
+        pairs = [{"player1Id": players[0].id, "player2Id": players[1].id},
+                 {"player1Id": players[2].id, "player2Id": players[3].id}]
+        self.client.post(reverse("create_game", args=[match.public_id]), {"ordered_games": json.dumps(pairs)})
+        self.assertFalse(match.games.exists())
