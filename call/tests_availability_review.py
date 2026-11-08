@@ -367,7 +367,7 @@ class SecurityTests(ReviewBase):
         self.assertEqual(response.status_code, 403)
         self.assertNotContains(response, "Calle Secreta", status_code=403)
         self.assertNotContains(response, "Rival", status_code=403)
-        self.assertNotContains(response, "VS", status_code=403)
+        self.assertNotContains(response, "z-av-sep", status_code=403)
 
     def test_s06_page_is_not_cached(self):
         """La página del enlace lleva cabeceras que impiden guardarla."""
