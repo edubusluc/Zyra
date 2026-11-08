@@ -3998,3 +3998,43 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 [data-pending-pages].is-paged > [data-pending-page] { grid-area: 1 / 1; }
 [data-pending-pages].is-paged > [data-pending-page].is-inactive { visibility: hidden; pointer-events: none; }
 [data-pending-pages].is-paged > .z-pending-picker { grid-area: 2 / 1; align-self: end; }
+
+/* ---- Enlace de disponibilidad (call/templates/availability.html) ---- */
+.z-av { max-width: 480px; }
+.z-av-kicker { margin: 0 0 10px; text-align: center; font-size: var(--z-fs-sm); letter-spacing: .08em; text-transform: uppercase; color: var(--z-muted); }
+.z-av-vs { display: grid; gap: 6px; text-align: center; }
+.z-av-team { font-family: var(--z-display); font-size: var(--z-fs-2xl); line-height: 1.1; text-transform: uppercase; color: var(--z-muted); overflow-wrap: anywhere; }
+.z-av-team.is-own { color: var(--z-text); }
+.z-av-sep { font-family: var(--z-brand); font-size: var(--z-fs-sm); color: var(--z-lime); }
+.z-av-side { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 14px auto 0; padding: 6px 14px; width: fit-content; border-radius: 999px; font-weight: 800; font-size: var(--z-fs-md); }
+.z-av-side.is-home { background: rgba(var(--z-lime-rgb), .16); color: var(--z-lime); }
+.z-av-side.is-away { background: var(--z-surface-3); color: var(--z-text); border: 1px solid var(--z-border-strong); }
+.z-av-when { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; margin-top: 16px; padding: 12px 14px; background: var(--z-surface-2); border: 1px solid var(--z-border); border-radius: var(--z-radius-sm); }
+.z-av-date { font-weight: 700; text-transform: capitalize; }
+.z-av-time { font-family: var(--z-display); font-size: var(--z-fs-2xl); line-height: 1; color: var(--z-lime); }
+.z-av-date i, .z-av-time i { margin-right: 6px; color: var(--z-muted); font-size: .8em; }
+.z-av-place { display: flex; align-items: center; gap: 10px; margin-top: 8px; padding: 12px 14px; background: var(--z-surface-2); border: 1px solid var(--z-border); border-radius: var(--z-radius-sm); color: var(--z-text); text-decoration: none; font-weight: 600; }
+.z-av-place span { flex: 1; }
+.z-av-place i:first-child { color: var(--z-lime); }
+.z-av-place i:last-child { color: var(--z-muted); font-size: .8em; }
+.z-av-ask { margin: 22px 0 12px; text-align: center; font-size: var(--z-fs-lg); }
+.z-av-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.z-av-btn { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 56px; padding: 10px 14px; border: 2px solid var(--z-border-control); border-radius: var(--z-radius-sm); background: var(--z-surface-2); color: var(--z-text); font: inherit; font-weight: 800; font-size: var(--z-fs-lg); cursor: pointer; list-style: none; }
+.z-av-btn::-webkit-details-marker { display: none; }
+.z-av-btn.is-yes { background: var(--z-lime); border-color: var(--z-lime); color: var(--z-ink); }
+.z-av-btn.is-yes:hover { background: var(--z-lime-hover); }
+.z-av-btn.is-no { border-color: var(--z-danger); color: var(--z-danger); }
+.z-av-btn.is-no:hover { background: rgba(255, 92, 99, .12); }
+.z-av-btn.is-maybe:hover { border-color: var(--z-border-control-hover); }
+.z-av-maybe { margin-top: 10px; }
+.z-av-maybe[open] > .z-av-btn { border-color: var(--z-warning); color: var(--z-warning); }
+.z-av-maybe p { margin: 12px 0 8px; }
+.z-av-done { margin-top: 20px; padding: 18px; text-align: center; background: var(--z-surface-2); border: 1px solid var(--z-border); border-radius: var(--z-radius-sm); }
+.z-av-done-title { margin: 0; font-size: var(--z-fs-xl); font-weight: 800; }
+.z-av-done--yes .z-av-done-title i { color: var(--z-lime); }
+.z-av-done--no .z-av-done-title i { color: var(--z-danger); }
+.z-av-done--maybe .z-av-done-title i { color: var(--z-warning); }
+.z-av-done-note { margin: 6px 0 0; color: var(--z-muted); }
+.z-av-done-ask { margin: 14px 0 10px; color: var(--z-muted); }
+.z-av-back { margin: 12px 0 0; text-align: center; }
+.z-auth-card h1.z-av-vs { margin: 0; font-size: inherit; }

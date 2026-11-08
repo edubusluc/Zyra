@@ -221,3 +221,25 @@ class AvailabilityTests(TestCase):
         response = self.client.post(reverse("availability_remind", args=[self.match.public_id]))
         self.assertEqual(response.status_code, 403)
         self.assertEqual(len(mail.outbox), 0)
+
+    def test_page_shows_vs_side_and_time(self):
+        """La página enseña local VS visitante, si se juega de local y la hora."""
+        self.match.start_time = datetime.time(12, 30)
+        self.match.location = "Calle Mayor 1"
+        self.match.save()
+        self.client.force_login(self.user)
+        response = self.client.get(self.url)
+        self.assertContains(response, "VS")
+        self.assertContains(response, "Juegas de local")
+        self.assertContains(response, "12:30")
+        self.assertContains(response, "Calle Mayor 1")
+
+    def test_after_answering_page_confirms_and_offers_change(self):
+        """Tras responder se ve «Has respondido: X» y se puede cambiar la respuesta."""
+        self.client.force_login(self.user)
+        self.client.post(self.url, {"action": "answer", "answer": "yes"})
+        response = self.client.get(self.url)
+        self.assertContains(response, "Has respondido: Sí")
+        self.assertContains(response, "Cambiar respuesta")
+        self.assertNotContains(response, 'value="no"')
+        self.assertContains(self.client.get(self.url + "?cambiar=1"), 'value="no"')

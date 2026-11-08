@@ -1,4 +1,4 @@
-/* Enlace de disponibilidad: botón «Copiar enlace» del capitán y comentario de «Aún no sé» en la respuesta del jugador. */
+/* Enlace de disponibilidad: botón «Copiar enlace» del capitán. */
 (function () {
     "use strict";
 
@@ -18,18 +18,6 @@
                 document.execCommand("copy");
                 done();
             }
-        });
-    });
-
-    document.querySelectorAll("[data-availability]").forEach(function (form) {
-        var box = form.querySelector("[data-availability-comment]");
-        form.addEventListener("change", function () {
-            var checked = form.querySelector("input[name=answer]:checked");
-            box.hidden = !(checked && checked.value === "maybe");
-            form.querySelectorAll(".z-segmented .btn").forEach(function (label) {
-                var input = label.querySelector("input");
-                label.classList.toggle("active", input.checked);
-            });
         });
     });
 })();

@@ -63,7 +63,7 @@ class Availability(models.Model):
     enfrentamiento no la borra.
     """
     YES, NO, MAYBE = "yes", "no", "maybe"
-    ANSWERS = [(YES, _("Sí")), (NO, _("No")), (MAYBE, _("Aún no sé"))]
+    ANSWERS = [(YES, _("Sí")), (NO, _("No")), (MAYBE, _("Pendiente"))]
     MAX_COMMENT = 200
 
     match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name="availabilities")

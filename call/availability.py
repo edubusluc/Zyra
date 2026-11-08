@@ -1,6 +1,6 @@
 """
 Enlace de disponibilidad de un enfrentamiento: el capitán lo comparte (por WhatsApp, por ejemplo) y
-cada jugador de la plantilla responde Sí, No o Aún no sé. Es solo disponibilidad: la alineación la
+cada jugador de la plantilla responde Sí, No o Pendiente. Es solo disponibilidad: la alineación la
 hacen el capitán o los gestores, y los «Sí» alimentan el selector de la convocatoria.
 
 Aquí vive la lógica (enlace, texto prefabricado, respuestas, resumen para el capitán y recordatorio);
@@ -76,7 +76,7 @@ def squad(match):
 def set_answer(match, player, answer, comment="", by_manager=False):
     """
     Guarda la respuesta de ``player`` (la sustituye si ya había una). El comentario solo se
-    conserva con «Aún no sé» y se recorta a ``Availability.MAX_COMMENT``. Devuelve la fila, o ``None`` si
+    conserva con «Pendiente» y se recorta a ``Availability.MAX_COMMENT``. Devuelve la fila, o ``None`` si
     la respuesta no es válida o ya no se puede responder.
     """
     if answer not in dict(Availability.ANSWERS) or not is_open(match):

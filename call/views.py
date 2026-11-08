@@ -82,7 +82,7 @@ def availability(request, token):
     mine = Availability.objects.filter(match=match, player=player).first() if player else None
     context = {
         "match": match, "is_open": is_open, "player": player, "mine": mine,
-        "can_manage": membership.can_manage, "answers": Availability.ANSWERS,
+        "editing": bool(request.GET.get("cambiar")), "can_manage": membership.can_manage, "answers": Availability.ANSWERS,
         "max_comment": Availability.MAX_COMMENT,
         "state": "closed" if not is_open else "link" if player is None else "answer",
     }

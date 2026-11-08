@@ -15959,3 +15959,65 @@ msgstr "Says no"
 #: match/templates/includes/player_selector.html:39
 msgid "Aún no sabe"
 msgstr "Not sure yet"
+
+#: call/templates/availability.html:15
+msgid "Juegas de local"
+msgstr "You play at home"
+
+#: call/templates/availability.html:15
+msgid "Juegas de visitante"
+msgstr "You play away"
+
+#: call/templates/availability.html:19
+msgid "Hora por confirmar"
+msgstr "Time to be confirmed"
+
+#: call/templates/availability.html:26
+msgid "Abrir en el mapa"
+msgstr "Open in the map"
+
+#: call/templates/availability.html:65
+#, python-format
+msgid "Has respondido: %(answer)s"
+msgstr "You answered: %(answer)s"
+
+#: call/templates/availability.html:68
+msgid "¿Quieres cambiar la respuesta?"
+msgstr "Do you want to change your answer?"
+
+#: call/templates/availability.html:69
+msgid "Cambiar respuesta"
+msgstr "Change answer"
+
+#: call/templates/availability.html:84
+msgid "Observaciones (opcional)"
+msgstr "Remarks (optional)"
+
+#: call/templates/availability.html:85
+msgid "Ej.: confirmo el jueves"
+msgstr "E.g. I'll confirm on Thursday"
+
+#: call/templates/availability.html:87
+msgid "Enviar como pendiente"
+msgstr "Send as pending"
+
+#: call/templates/availability.html:90
+msgid "Volver"
+msgstr "Back"
+
+#: match/templates/includes/availability_card.html:5
+msgid ""
+"Comparte el enlace con la plantilla: cada jugador responde Sí, No o "
+"Pendiente. Solo tú y los gestores veis las respuestas; la convocatoria la "
+"sigues haciendo tú."
+msgstr ""
+"Share the link with the squad: each player answers Yes, No or Pending. Only "
+"you and the managers see the answers; you still make the call-up."
+
+#: match/templates/includes/player_selector.html:39
+msgid "Pendiente de responder"
+msgstr "Has not answered yet"
+
+#, python-format
+msgid "Pendiente · %(n)s"
+msgstr "Pending · %(n)s"

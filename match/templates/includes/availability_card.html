@@ -2,7 +2,7 @@
 {% load i18n static %}
 <section class="z-availability" aria-labelledby="availability-title">
     <h2 class="z-section-title mt-0" id="availability-title">{% translate "Disponibilidad" %}
-        <span class="z-info" tabindex="0" role="note" title="{% translate 'Comparte el enlace con la plantilla: cada jugador responde Sí, No o Aún no sé. Solo tú y los gestores veis las respuestas; la convocatoria la sigues haciendo tú.' %}"><i class="fa-solid fa-circle-info" aria-hidden="true"></i></span>
+        <span class="z-info" tabindex="0" role="note" title="{% translate 'Comparte el enlace con la plantilla: cada jugador responde Sí, No o Pendiente. Solo tú y los gestores veis las respuestas; la convocatoria la sigues haciendo tú.' %}"><i class="fa-solid fa-circle-info" aria-hidden="true"></i></span>
     </h2>
     <div class="d-flex flex-wrap gap-2 align-items-center">
         <input type="text" id="availability-url" class="form-control" style="max-width: 28rem;" readonly value="{{ availability.url }}" aria-label="{% translate 'Enlace de disponibilidad' %}">
@@ -11,7 +11,7 @@
     </div>
     <p class="z-tags mt-2">
         <span class="z-tag is-lime">{% blocktranslate with n=availability.board.counts.yes %}Sí · {{ n }}{% endblocktranslate %}</span>
-        <span class="z-tag">{% blocktranslate with n=availability.board.counts.maybe %}Aún no sé · {{ n }}{% endblocktranslate %}</span>
+        <span class="z-tag">{% blocktranslate with n=availability.board.counts.maybe %}Pendiente · {{ n }}{% endblocktranslate %}</span>
         <span class="z-tag">{% blocktranslate with n=availability.board.counts.no %}No · {{ n }}{% endblocktranslate %}</span>
         <span class="z-tag">{% blocktranslate with n=availability.board.counts.captain %}Apuntados por el capitán · {{ n }}{% endblocktranslate %}</span>
         <span class="z-tag">{% blocktranslate with n=availability.board.counts.none %}Sin respuesta · {{ n }}{% endblocktranslate %}</span>
