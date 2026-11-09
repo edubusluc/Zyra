@@ -10,6 +10,8 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 - **Aviso al capitán**: al guardar una baja sale un popup que dice cuántos jugadores salen y qué cuentas dejan de ver el equipo. El capitán no se puede dar de baja: antes traspasa la capitanía.
 - **Correo al jugador** dado de baja (no si abandona él, no tiene email o tiene los correos del club bloqueados).
 - **Abandonar el club** ahora también es baja de plantilla.
+- **Permisos**: solo el capitán da de baja a jugadores con cuenta; un gestor solo a fichas sin cuenta, y nadie se da de baja a sí mismo (se usa «Abandonar el club»).
+- **Invitación de vuelta**: solo la acepta la cuenta que dejó el equipo, y se ve y se responde también en la pantalla «Sin equipo».
 - **Dar de alta de nuevo** a alguien que salió envía una invitación por email a su cuenta; al aceptar recupera su ficha y sus estadísticas. No se puede si ese email ya tiene equipo en la competición.
 
 ## 09/11/2026 · Asistencia a las convocatorias legible

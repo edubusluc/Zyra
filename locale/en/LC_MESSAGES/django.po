@@ -16695,3 +16695,21 @@ msgid ""
 msgstr ""
 "When you accept you get your sheet (%(player)s) back with all your "
 "statistics, and you can see the team, matches and call-ups again."
+
+#, python-format
+msgid "Solo el capitán puede dar de baja a %(player)s: tiene una cuenta enlazada y saldría del equipo."
+msgstr "Only the captain can remove %(player)s: they have a linked account and would leave the team."
+
+msgid "No puedes darte de baja a ti mismo desde aquí: usa «Abandonar el club» en el menú."
+msgstr "You can't remove yourself from here: use «Leave the club» in the menu."
+
+msgid "Esta invitación es para otra cuenta."
+msgstr "This invitation is for another account."
+
+#, python-format
+msgid "Tu ficha allí: %(player)s. Si aceptas, vuelves a la plantilla y recuperas tu histórico."
+msgstr "Your sheet there: %(player)s. If you accept, you rejoin the squad and get your history back."
+
+#, python-format
+msgid "No volverás a %(club)s; tu ficha seguirá como histórico sin enlazar a tu cuenta."
+msgstr "You won't return to %(club)s; your sheet will stay as history, unlinked from your account."

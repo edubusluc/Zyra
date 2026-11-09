@@ -170,7 +170,7 @@ def edit_player(request, player_id):
             was_in_team = Player.objects.filter(pk=player.pk, in_team=True).exists()
             leaving = was_in_team and not form.cleaned_data.get('in_team')
             joining = not was_in_team and form.cleaned_data.get('in_team')
-            blocker = removal_blocker(player) if leaving else (alta_blocker(player) if joining else None)
+            blocker = removal_blocker(player, request.user) if leaving else (alta_blocker(player) if joining else None)
             if blocker:
                 form.add_error('in_team', blocker)
                 player.in_team = was_in_team  # el formulario ya lo había cambiado en memoria; no se ha guardado
@@ -277,7 +277,7 @@ def manage_roster(request):
                 left += 1
             except RemovalError as exc:
                 messages.error(request, str(exc))
-        players.exclude(id__in=in_team_ids).filter(left_on__isnull=True).update(left_on=timezone.localdate())
+        players.exclude(id__in=in_team_ids).filter(in_team=False, left_on__isnull=True).update(left_on=timezone.localdate())
         if joined or left:
             joined_text = ngettext("%(n)s alta", "%(n)s altas", joined) % {"n": joined}
             left_text = ngettext("%(n)s baja", "%(n)s bajas", left) % {"n": left}
