@@ -10,6 +10,14 @@
     </div>
 </div>
 
+<section class="bo-kpis" aria-label="{% translate 'Cupo diario de correos' %}">
+    <div class="bo-kpi {% if email_quota.state != 'ok' %}bo-kpi--alert{% endif %}">
+        <span class="bo-kpi-label">{% translate "Correos hoy" %} <span tabindex="0" title="{% translate 'Destinatarios con correo enviado hoy sobre el cupo diario del proveedor. Se avisa al personal cuando quedan pocos.' %}" aria-label="{% translate 'Más información' %}"><i class="fa-solid fa-circle-info" aria-hidden="true"></i></span></span>
+        <b>{{ email_quota.used }} / {{ email_quota.limit }}</b>
+        <small>{% blocktranslate trimmed with n=email_quota.remaining %}{{ n }} restantes{% endblocktranslate %}</small>
+    </div>
+</section>
+
 <p class="text-muted">{% translate "Todos los correos que la web intenta enviar (bienvenida, invitaciones, informes, avisos), con el resultado. Sirve para contestar «no me ha llegado». Se guardan seis meses." %}</p>
 
 <form method="get" class="bo-filters" role="search">

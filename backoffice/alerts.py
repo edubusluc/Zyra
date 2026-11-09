@@ -14,7 +14,7 @@ from django.utils.html import format_html
 from core.emails import build_email
 from players import snp_requests
 
-from .metrics import attention_counts
+from .metrics import attention_counts, email_quota
 from .models import AlertState, RequestMetric, ScheduledJob
 
 REMIND_EVERY = datetime.timedelta(hours=24)
@@ -38,6 +38,9 @@ def current_problems(now=None):
         problems["snp_requests"] = _("Hay %(n)s peticiones de actualización desde SNP esperando.") % {"n": counts["snp_requests"]}
     if counts["snp_failing"] >= SNP_FAILING_CLUBS:
         problems["snp"] = _("%(n)s clubes tienen la sincronización de SNP fallando.") % {"n": counts["snp_failing"]}
+    quota = email_quota(now)
+    if quota["state"] != "ok":
+        problems["email_quota"] = _("Quedan %(n)s correos de %(limit)s hoy.") % {"n": quota["remaining"], "limit": quota["limit"]}
     errors = RequestMetric.objects.filter(minute__gte=now - datetime.timedelta(hours=1)).aggregate(n=Sum("errors"))["n"] or 0
     if errors >= ERRORS_PER_HOUR:
         problems["web_errors"] = _("%(n)s errores 500 en la última hora.") % {"n": errors}

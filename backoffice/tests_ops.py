@@ -588,6 +588,25 @@ class AlertTests(StaffTestCase):
         job.delete()
         self.assertNotIn("jobs", alerts.current_problems())
 
+    def test_email_quota_counts_recipients_sent_today(self):
+        from backoffice.metrics import email_quota
+        EmailLog.objects.create(to="a@b.c, d@e.f", subject="s", status="sent")
+        EmailLog.objects.create(to="a@b.c", subject="s", status="failed")
+        old = EmailLog.objects.create(to="a@b.c", subject="s", status="sent")
+        EmailLog.objects.filter(pk=old.pk).update(created_at=timezone.now() - datetime.timedelta(days=2))
+        with self.settings(EMAIL_DAILY_LIMIT=300, EMAIL_DAILY_WARN_REMAINING=60):
+            quota = email_quota()
+        self.assertEqual((quota["used"], quota["remaining"], quota["state"]), (2, 298, "ok"))
+
+    def test_email_quota_alert_when_low(self):
+        EmailLog.objects.bulk_create(EmailLog(to="a@b.c", subject="s", status="sent") for _ in range(245))
+        with self.settings(EMAIL_DAILY_LIMIT=300, EMAIL_DAILY_WARN_REMAINING=60):
+            self.assertIn("email_quota", alerts.current_problems())
+            self.client.force_login(self.staff)
+            page = self.client.get(reverse("backoffice:dashboard"))
+        self.assertContains(page, "245 / 300")
+        self.assertContains(page, "Quedan 55 correos de 300 hoy.")
+
     def test_digest_command(self):
         from io import StringIO
         out = StringIO()

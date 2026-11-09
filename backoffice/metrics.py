@@ -19,7 +19,7 @@ from match.models import Game, Match, MatchResultDelivery, Result
 from players.models import Player, SnpAccount, SnpUpdateRequest
 
 from .models import (
-    AccountNoticeLog, DailyActivity, DailyMetric, ErrorEvent, FollowUpTask, JobRun, RequestMetric, ScheduledJob,
+    AccountNoticeLog, DailyActivity, DailyMetric, EmailLog, ErrorEvent, FollowUpTask, JobRun, RequestMetric, ScheduledJob,
     UserActivity,
 )
 from .scheduler import scheduler_status
@@ -468,6 +468,25 @@ def attention_counts():
     }
 
 
+def email_quota(now=None):
+    """
+    Cupo diario de correos (día local de Madrid): ``used`` destinatarios con correo enviado hoy,
+    ``limit``, ``remaining`` y ``state`` (``ok``, ``low`` si quedan ``EMAIL_DAILY_WARN_REMAINING``
+    o menos, ``exhausted`` si no queda ninguno). Cuenta destinatarios, no mensajes, como los proveedores.
+    """
+    from django.conf import settings
+    now = timezone.localtime(now or timezone.now())
+    start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    used = 0
+    for to in EmailLog.objects.filter(status=EmailLog.SENT, created_at__gte=start).values_list("to", flat=True):
+        used += len([a for a in to.split(",") if a.strip()]) or 1
+    limit = settings.EMAIL_DAILY_LIMIT
+    remaining = max(limit - used, 0)
+    state = "exhausted" if remaining == 0 else "low" if remaining <= settings.EMAIL_DAILY_WARN_REMAINING else "ok"
+    return {"used": used, "limit": limit, "remaining": remaining, "state": state,
+            "pct": min(round(100 * used / limit), 100) if limit else 100}
+
+
 def attention_items(counts=None):
     """
     Bandeja de atención del dashboard: una línea por asunto pendiente (``text`` ya traducido,
@@ -481,6 +500,10 @@ def attention_items(counts=None):
         """Añade una línea a la bandeja."""
         items.append({"level": level, "text": text, "url": url})
 
+    quota = email_quota()
+    if quota["state"] != "ok":
+        add("danger" if quota["state"] == "exhausted" else "warning",
+            _("Quedan %(n)s correos de %(limit)s hoy.") % {"n": quota["remaining"], "limit": quota["limit"]}, reverse("backoffice:email_log"))
     if c["jobs_failed"]:
         add("danger", _("%(n)s ejecuciones de procesos con error en 24 h.") % {"n": c["jobs_failed"]}, reverse("backoffice:run_list") + "?status=error")
     if c["results_failed"]:

@@ -417,6 +417,10 @@ CONTACT_EMAIL = config('CONTACT_EMAIL', default=ZYRA_SENDER)
 # reintenta con esperas crecientes. Como mucho EMAIL_MAX_PER_RUN correos por pasada,
 # para no pasar del límite del proveedor (Gmail: unos 500 al día).
 EMAIL_MAX_PER_RUN = config('EMAIL_MAX_PER_RUN', default=100, cast=int)
+# Cupo diario de correos del proveedor y cuántos restantes bastan para avisar al personal
+# (control del back-office: se cuentan los destinatarios de EmailLog enviados hoy).
+EMAIL_DAILY_LIMIT = config('EMAIL_DAILY_LIMIT', default=300, cast=int)
+EMAIL_DAILY_WARN_REMAINING = config('EMAIL_DAILY_WARN_REMAINING', default=60, cast=int)
 
 # Actualización de los puntos SNP (update_snp_scores): clubes por lote, pausa aleatoria
 # entre club y club, pausa entre lotes (en segundos) y cuántos fallos de red seguidos

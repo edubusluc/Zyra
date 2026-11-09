@@ -26,6 +26,11 @@
 </section>
 
 <section class="bo-kpis" aria-label="{% translate 'Indicadores principales' %}">
+    <a class="bo-kpi {% if email_quota.state != 'ok' %}bo-kpi--alert{% endif %}" href="{% url 'backoffice:email_log' %}">
+        <span class="bo-kpi-label">{% translate "Correos hoy" %} <span tabindex="0" title="{% translate 'Destinatarios con correo enviado hoy sobre el cupo diario del proveedor. Se avisa al personal cuando quedan pocos.' %}" aria-label="{% translate 'Más información' %}"><i class="fa-solid fa-circle-info" aria-hidden="true"></i></span></span>
+        <b>{{ email_quota.used }} / {{ email_quota.limit }}</b>
+        <small>{% blocktranslate trimmed with n=email_quota.remaining %}{{ n }} restantes{% endblocktranslate %}</small>
+    </a>
     <a class="bo-kpi" href="{% url 'backoffice:load' %}">
         <span class="bo-kpi-label">{% translate "Conectados ahora" %}</span>
         <b>{{ kpis.users.online }}</b>
