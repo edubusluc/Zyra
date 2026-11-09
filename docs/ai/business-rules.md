@@ -76,7 +76,14 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
   (`club_name_matches`, `archive_club`): se quitan miembros, invitaciones y cuenta SNP, las fichas enlazadas pasan a `past_user` y se
   borran las fotos de las fichas sin cuenta; jugadores, partidos y resultados se conservan. Solo el personal lo borra de verdad
   (`delete_club`, back-office). Tests: `core/tests_delete_club.py`.
-- [V] Quitar o abandonar desenlaza su `Player` (`remove_membership`); el jugador y sus estadísticas quedan.
+- [V] Quitar o abandonar desenlaza su `Player` (`remove_membership`); el jugador y sus estadísticas quedan. Salir del club es una baja de
+  plantilla: la ficha pasa a `in_team=False` y el jugador sale de las convocatorias y alineaciones sin resultado de los enfrentamientos
+  abiertos (`leave_open_matches`); lo ya jugado y los enfrentamientos cerrados no se tocan.
+- [V] Baja de plantilla = salir del equipo (`dar_de_baja`, usado por `edit_player` al desmarcar «En el equipo» y por `manage_roster`): con
+  cuenta enlazada quita la membresía (`remove_membership`; un gestor pierde también el rol) y queda libre para otro equipo de esa
+  competición; sin cuenta solo sale de la plantilla y de las convocatorias abiertas. El capitán no se puede dar de baja
+  (`removal_blocker`, `RemovalError`): antes traspasa la capitanía. Volver a su ficha anterior con «Soy yo» (`link_player`) es un alta
+  (`in_team=True`). Tests: `core/tests_baja.py`.
 - [V] Alta de club: crea equipo propio (`is_own=True`, `in_group=True`) y membresía de capitán;
   el jugador del capitán se crea escribiendo su nombre o eligiéndolo del equipo traído de SNP (`CaptainSnpForm`).
 - [V] Login con usuario o email (`ACCOUNT_LOGIN_METHODS`); verificación de email opcional
