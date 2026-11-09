@@ -181,7 +181,7 @@ def edit_player(request, player_id):
                         # Una baja con cuenta enlazada es echar del equipo (membresía y convocatorias abiertas).
                         dar_de_baja(form.instance, request.user, request.build_absolute_uri('/'))
                     elif joining and dar_de_alta(form.instance, request.user, request.build_absolute_uri('/')):
-                        messages.success(request, _("Hemos enviado una invitación a %(player)s para que vuelva al equipo.")
+                        messages.success(request, _("%(player)s vuelve a la plantilla y le hemos enviado una invitación para que recupere su acceso al equipo.")
                                          % {"player": form.instance.short_name})
                 if leaving:
                     _warn_if_roster_empty(request)
@@ -263,7 +263,7 @@ def manage_roster(request):
         for joining in players.filter(id__in=in_team_ids, in_team=False):
             try:
                 if dar_de_alta(joining, request.user, request.build_absolute_uri('/')):
-                    messages.success(request, _("Hemos enviado una invitación a %(player)s para que vuelva al equipo.")
+                    messages.success(request, _("%(player)s vuelve a la plantilla y le hemos enviado una invitación para que recupere su acceso al equipo.")
                                      % {"player": joining.short_name})
                 joined += 1
             except AltaError as exc:

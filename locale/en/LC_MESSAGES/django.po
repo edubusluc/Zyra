@@ -16657,8 +16657,8 @@ msgstr ""
 "competition is allowed."
 
 #, python-format
-msgid "Hemos enviado una invitación a %(player)s para que vuelva al equipo."
-msgstr "We have sent %(player)s an invitation to return to the team."
+msgid "%(player)s vuelve a la plantilla y le hemos enviado una invitación para que recupere su acceso al equipo."
+msgstr "%(player)s is back in the squad and we have sent them an invitation to regain access to the team."
 
 #, python-format
 msgid "Te han dado de alta de nuevo en %(club)s en Zyra"
@@ -16713,3 +16713,7 @@ msgstr "Your sheet there: %(player)s. If you accept, you rejoin the squad and ge
 #, python-format
 msgid "No volverás a %(club)s; tu ficha seguirá como histórico sin enlazar a tu cuenta."
 msgstr "You won't return to %(club)s; your sheet will stay as history, unlinked from your account."
+
+#, python-format
+msgid "No hemos podido enlazarte a tu ficha de %(club)s. Avisa al capitán para que la revise."
+msgstr "We couldn't link you to your sheet at %(club)s. Ask the captain to check it."
