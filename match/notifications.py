@@ -27,15 +27,20 @@ from .report_pdf import render_report
 logger = logging.getLogger(__name__)
 
 
-# Un enfrentamiento con más de estos días de antigüedad no envía correos al cerrar la convocatoria ni el acta
-# (salvo que el capitán marque la casilla): así dar de alta partidos de una temporada pasada no inunda
-# las bandejas ni gasta el cupo diario de correos.
+# El informe de convocatoria no se envía si la fecha del enfrentamiento ya pasó, y el aviso de resultado tampoco
+# si pasaron más de estos días (salvo que el capitán marque la casilla): así dar de alta partidos de una
+# temporada pasada no inunda las bandejas ni gasta el cupo diario de correos.
 OLD_MATCH_DAYS = 14
 
 
 def is_old_match(match):
     """True si la fecha del enfrentamiento es de hace más de ``OLD_MATCH_DAYS`` días."""
     return match.start_date < timezone.localdate() - datetime.timedelta(days=OLD_MATCH_DAYS)
+
+
+def is_past_match(match):
+    """True si la fecha del enfrentamiento ya pasó (el informe de convocatoria solo sirve antes de jugarlo)."""
+    return match.start_date < timezone.localdate()
 
 
 def report_filename(match):

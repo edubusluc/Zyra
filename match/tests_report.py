@@ -47,7 +47,7 @@ class AdvisorTests(TestCase):
 class ReportTests(TestCase):
     def setUp(self):
         # Las fechas de estas pruebas son fijas (antiguas): el corte de «partido antiguo» solo se prueba aparte.
-        patcher = mock.patch("match.notifications.OLD_MATCH_DAYS", 100000)
+        patcher = mock.patch("match.views.is_past_match", return_value=False)
         patcher.start()
         self.addCleanup(patcher.stop)
         self.admin = User.objects.create_user("admin", password="pass-12345", email="capitan@example.com")
@@ -254,9 +254,9 @@ class ReportTests(TestCase):
         self.assertEqual(parts[-1], "application/pdf")
 
     def test_old_match_does_not_email_the_report_unless_ticked(self):
-        """Un enfrentamiento de hace más de 14 días cierra sin correo; con la casilla marcada sí se envía."""
+        """Con la fecha ya pasada se cierra sin correo; con la casilla marcada sí se envía."""
         Match.objects.filter(pk=self.match.pk).update(start_date=datetime.date.today() - datetime.timedelta(days=60))
-        patcher = mock.patch("match.notifications.OLD_MATCH_DAYS", 14)
+        patcher = mock.patch("match.views.is_past_match", return_value=True)
         patcher.start()
         self.addCleanup(patcher.stop)
         self.client.post(reverse("close_call", args=[self.match.public_id]))

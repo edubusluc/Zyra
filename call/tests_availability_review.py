@@ -128,7 +128,7 @@ class UsabilityTests(ReviewBase):
         close = reverse("close_call", args=[self.match.public_id])
         reopen = reverse("reopen_call", args=[self.match.public_id])
         self.client.force_login(self.captain)
-        with mock.patch("match.views._send_report") as send, mock.patch("match.views.is_old_match", return_value=False):
+        with mock.patch("match.views._send_report") as send, mock.patch("match.views.is_past_match", return_value=False):
             self.client.post(close)
             self.assertEqual(send.call_count, 1)
             ReportDelivery.objects.create(call=call, email="c@example.com", status=ReportDelivery.SENT)
