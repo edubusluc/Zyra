@@ -57,6 +57,35 @@ class UnifiedSpacesTests(TestCase):
         # Se recuerda la elección.
         self.assertNotContains(self.client.get(reverse("list_match") + "?season=all"), "Iconico")
 
+    def test_new_session_starts_in_the_managed_team_not_the_first_by_name(self):
+        """UC-05: sin espacio activo en la sesión se usa el que gestiona (SNP antes que LAPI), no el primero por nombre."""
+        session = self.client.session
+        del session[SESSION_KEY]
+        session.save()
+        # «Gladiadores LAPI» va después de «Gladiadores» por nombre: el cambio se ve si el nombre manda al revés.
+        Membership.objects.filter(user=self.user, club=self.lapi).update(role=Membership.MANAGER)
+        self.lapi.name = "A primero"
+        self.lapi.save()
+        page = self.client.get(reverse("list_players"))
+        self.assertEqual(page.wsgi_request.club, self.snp)
+        # Si solo gestiona uno, ese manda aunque el otro vaya antes por nombre.
+        Membership.objects.filter(user=self.user, club=self.lapi).update(role=Membership.MEMBER)
+        session = self.client.session
+        session.pop(SESSION_KEY, None)
+        session.save()
+        page = self.client.get(reverse("list_players"))
+        self.assertEqual(page.wsgi_request.club, self.snp)
+
+    def test_title_names_no_team_when_all_teams_are_joined(self):
+        """UC-05: con el filtro «Todas» el título de la pestaña no nombra un equipo; con una competición, sí."""
+        joined = self.client.get(reverse("list_match") + "?espacio=todas")
+        self.assertContains(joined, "<title>Enfrentamientos · Zyra</title>", html=False)
+        one = self.client.get(reverse("list_match") + "?espacio=snp")
+        self.assertContains(one, "<title>Enfrentamientos · Gladiadores · Zyra</title>", html=False)
+        # Con el filtro de otra competición, el título nombra ese equipo aunque el activo sea otro.
+        lapi = self.client.get(reverse("list_match") + "?espacio=lapi")
+        self.assertContains(lapi, "<title>Enfrentamientos · Gladiadores LAPI · Zyra</title>", html=False)
+
     def test_single_space_has_no_filter(self):
         Membership.objects.filter(user=self.user, club=self.lapi).delete()
         page = self.client.get(reverse("list_match") + "?season=all")

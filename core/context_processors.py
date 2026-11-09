@@ -27,6 +27,9 @@ def club(request):
                    if m.club.competition in order else len(order))
     return {
         "current_club": getattr(request, "club", None),
+        # Equipo del título de la pestaña: el filtrado, ninguno con «Todas» o, si no hay filtro, el activo.
+        "title_club": None if getattr(request, "title_all_spaces", False)
+        else getattr(request, "title_space_club", None) or getattr(request, "club", None),
         "user_memberships": memberships,
         "user_teams": teams,
         "is_club_admin": bool(membership and membership.is_admin),

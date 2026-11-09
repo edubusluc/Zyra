@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 09/11/2026 · Equipo activo más claro
+
+- **Primer acceso**: cuando la sesión aún no tiene equipo activo (primer acceso, otro dispositivo, tras cerrar sesión) se abre el que gestionas, SNP antes que LAPI. Antes era el primero por orden alfabético del nombre.
+- **Título de la pestaña**: en Enfrentamientos y las demás páginas con filtro de competición, el título no nombra un equipo con «Todas» y nombra el filtrado con una competición concreta (antes decía siempre el equipo activo).
+
 ## 09/11/2026 · Pulido de Inicio, avisos y disponibilidad
 
 - **Inicio**: para el capitán y el gestor, el próximo enfrentamiento y «Pendiente» van ahora antes que los avisos de configuración (nombrar gestor, cuenta SNP, Primeros pasos), que quedan debajo.
