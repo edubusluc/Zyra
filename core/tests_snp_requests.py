@@ -71,6 +71,23 @@ class RequestFlowTests(SeasonPrepBase):
                                      status=SnpTeamImport.DONE)
         self.assertNotContains(self.client.get(reverse("list_players")), "¿Han llegado jugadores nuevos?")
 
+    def test_players_page_hides_the_offer_once_zyra_fulfilled_the_request(self):
+        self.client.login(username="captain", password=PASSWORD)
+        request, _created = snp_requests.create_request(self.club, self.captain)
+        self.assertContains(self.client.get(reverse("list_players")), "¿Han llegado jugadores nuevos?")
+        snp_requests.finish(request, self.captain)
+        self.assertNotContains(self.client.get(reverse("list_players")), "¿Han llegado jugadores nuevos?")
+
+    def test_captain_can_close_the_offer_and_it_stays_closed(self):
+        self.client.login(username="captain", password=PASSWORD)
+        self.assertContains(self.client.get(reverse("list_players")), "¿Han llegado jugadores nuevos?")
+        self.client.post(reverse("dismiss_snp_update_tip"))
+        self.assertNotContains(self.client.get(reverse("list_players")), "¿Han llegado jugadores nuevos?")
+        self.client.login(username="manager", password=PASSWORD)
+        self.assertEqual(self.client.post(reverse("dismiss_snp_update_tip")).status_code, 403)
+        self.client.login(username="captain", password=PASSWORD)
+        self.assertEqual(self.client.get(reverse("dismiss_snp_update_tip")).status_code, 405)
+
     def test_done_request_completes_the_snp_step_for_the_season(self):
         request, _created = snp_requests.create_request(self.club, self.captain)
         steps = {s["key"]: s for s in self.prep(self.captain_membership)["steps"]}

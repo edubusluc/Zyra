@@ -6,6 +6,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 ## 09/11/2026 · Jugadores: aviso de jugadores nuevos solo al inicio de temporada
 
 - **«¿Han llegado jugadores nuevos?»**: en Jugadores el aviso con «Pedir actualización a Zyra» deja de salir cuando el «Completar equipo» de la temporada ya se ha hecho bien (desde el 1 de julio); vuelve a salir al empezar la siguiente.
+- **También desaparece** cuando Zyra da por atendida tu petición, y el capitán puede cerrarlo con la ✕ (vuelve en la temporada siguiente).
 
 ## 09/11/2026 · «Yo» conserva tus estadísticas al cambiar de equipo
 
