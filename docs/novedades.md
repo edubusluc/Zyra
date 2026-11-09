@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 09/11/2026 · Resultados sin tocar casilla entre partidos
+
+- **Poner resultados**: al decidirse un partido (2-0 en sets, o con el set 3) el cursor pasa solo a la primera casilla del siguiente partido, así que se pueden teclear los cinco seguidos. Los partidos con «pareja no presentada» se saltan. En el set 3 (que puede ser un supertiebreak a 10) el cursor pasa del local al visitante al llegar a 2 cifras o con una cifra distinta de 1 (con un 1 espera unos instantes por si es el principio de un 10 o más), y al completarse el set 3 salta al siguiente partido.
+
 ## 09/11/2026 · Límite en «¿Has olvidado tu contraseña?»
 
 - **Seguridad**: como máximo 5 solicitudes por IP y 3 por dirección de email cada hora. Pasado el límite no se envía el correo (ni el de «Cambia tu contraseña» ni el de «No hay ninguna cuenta de Zyra con este email»), pero la pantalla de confirmación es la misma, así que no se revela si la cuenta existe.
