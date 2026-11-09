@@ -44,6 +44,8 @@
     .z-user-menu .dropdown-toggle { gap: 0 !important; }
     .z-lang-menu .dropdown-toggle { gap: 6px !important; }
     .st-tabs.z-segmented .btn i { margin: 0 !important; }
+    /* UC-10: en móvil el aviso de confirmación se pinta sobre la cabecera (logo e iconos), no sobre los controles de la página */
+    .z-toasts { top: env(safe-area-inset-top, 0px) !important; margin-top: 0 !important; padding-top: 4px !important; }
 }
 }
 
@@ -4369,10 +4371,12 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .z-av-side { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 14px auto 0; padding: 6px 14px; width: fit-content; border-radius: 999px; font-weight: 800; font-size: var(--z-fs-md); }
 .z-av-side.is-home { background: rgba(var(--z-lime-rgb), .16); color: var(--z-lime); }
 .z-av-side.is-away { background: var(--z-surface-3); color: var(--z-text); border: 1px solid var(--z-border-strong); }
-.z-av-when { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; margin-top: 16px; padding: 12px 14px; background: var(--z-surface-2); border: 1px solid var(--z-border); border-radius: var(--z-radius-sm); }
+.z-av-when { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 14px; align-items: center; margin-top: 16px; padding: 12px 14px; background: var(--z-surface-2); border: 1px solid var(--z-border); border-radius: var(--z-radius-sm); }
 .z-av-date { font-weight: 700; text-transform: capitalize; }
 .z-av-time { font-family: var(--z-display); font-size: var(--z-fs-2xl); line-height: 1; color: var(--z-lime); }
 .z-av-date i, .z-av-time i { margin-right: 6px; color: var(--z-muted); font-size: .8em; }
+/* UC-11: sin hora, el texto va con el mismo tamaño que la fecha y apagado, no como titular */
+.z-av-time.is-tbc { font-family: inherit; font-size: inherit; font-weight: 700; line-height: inherit; color: var(--z-muted); }
 .z-av-place { display: flex; align-items: center; gap: 10px; margin-top: 8px; padding: 12px 14px; background: var(--z-surface-2); border: 1px solid var(--z-border); border-radius: var(--z-radius-sm); color: var(--z-text); text-decoration: none; font-weight: 600; }
 .z-av-place span { flex: 1; }
 .z-av-place i:first-child { color: var(--z-lime); }
