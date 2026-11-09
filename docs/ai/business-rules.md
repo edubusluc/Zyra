@@ -89,7 +89,7 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
   plantilla; si dejó una cuenta (`past_user`) esa cuenta recibe una invitación por email vinculada a la ficha (`Invitation.player`, 30 días,
   `send_rejoin_email`, plantillas `emails/rejoin.*`) y al aceptar recupera ficha y estadísticas (`players.copy.link_player`; la ficha vuelve a
   `in_team=True`). No se puede (`alta_blocker`, `AltaError`) si el email no existe, está bloqueado, ya es miembro o ya tiene equipo en esa
-  competición (comprobado por email). Rechazar la invitación deja la ficha fuera (`players.copy.decline`). Tests: `core/tests_baja.py`.
+  competición (comprobado por email). Rechazar la invitación deja la ficha fuera (`players.copy.decline`). Solo el capitán da de baja a fichas con cuenta (un gestor solo a fichas sin cuenta) y nadie se da de baja a sí mismo por ahí (`removal_blocker(player, by)`); la invitación de vuelta solo la acepta la cuenta titular de la ficha (`past_user`), y se ve y se responde también en «Sin equipo» (`core/templates/includes/copy_invitations.html`). Tests: `core/tests_baja.py`.
 - [V] Alta de club: crea equipo propio (`is_own=True`, `in_group=True`) y membresía de capitán;
   el jugador del capitán se crea escribiendo su nombre o eligiéndolo del equipo traído de SNP (`CaptainSnpForm`).
 - [V] Login con usuario o email (`ACCOUNT_LOGIN_METHODS`); verificación de email opcional

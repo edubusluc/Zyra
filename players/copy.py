@@ -182,7 +182,8 @@ def _link(sheet, user):
     if current is not None:
         sheet.name, sheet.last_name, sheet.photo = current.name, current.last_name, current.photo.name or None
     sheet.user = user
-    sheet.in_team = True  # entrar en el equipo es un alta (también al volver a una ficha que estaba de baja)
+    if sheet.past_user_id == user.pk:
+        sheet.in_team = True  # volver a su ficha anterior (de baja) es un alta
     sheet.save(update_fields=["user", "name", "last_name", "photo", "in_team"])
 
 
@@ -190,6 +191,7 @@ def link_player(invitation, user):
     """Tras aceptar la invitación de una ficha copiada, enlaza la ficha a ``user`` si sigue libre."""
     player = invitation.player
     if player is not None and player.user_id is None and player.club_id == invitation.club_id \
+            and player.past_user_id in (None, user.pk) \
             and not Player.objects.filter(club=invitation.club, user=user).exists():
         _link(player, user)
 

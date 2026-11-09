@@ -575,6 +575,7 @@ def no_club(request):
     if request.club is not None:
         return redirect("home")
     return render(request, "no_club.html", {"suspended_clubs": request.suspended_clubs,
+                                           "copy_invitations": player_copy.pending_for(request.user),
                                            "has_history": bool(spaces.my_players(request))})
 
 

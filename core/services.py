@@ -103,6 +103,9 @@ def accept_invitation(invitation, user):
         raise InvitationError(_("Esta invitación ya se ha usado o ha caducado."))
     if invitation.club.is_suspended:
         raise InvitationError(_("Este club está suspendido y no admite nuevos miembros."))
+    if invitation.player_id and invitation.player.past_user_id not in (None, user.pk):
+        # Invitación para volver: es de la cuenta que fue titular de la ficha, no de quien tenga el enlace.
+        raise InvitationError(_("Esta invitación es para otra cuenta."))
     if is_user_blocked(user):
         raise InvitationError(_("Tu email está bloqueado en Zyra y no puede unirse a clubes."))
     if Membership.objects.filter(user=user, club=invitation.club).exists():
@@ -348,10 +351,22 @@ class RemovalError(Exception):
     pass
 
 
-def removal_blocker(player):
-    """Motivo por el que ``player`` no se puede dar de baja (es el capitán del equipo), o None si se puede."""
-    if player.user_id and Membership.objects.filter(club=player.club, user_id=player.user_id, role=Membership.ADMIN).exists():
+def removal_blocker(player, by=None):
+    """
+    Motivo por el que ``player`` no se puede dar de baja, o None si se puede. El capitán no se puede dar de baja
+    (antes traspasa la capitanía). Si se indica quién la hace (``by``): dar de baja a una ficha con cuenta es echar
+    a esa persona del equipo y solo lo hace el capitán (un gestor solo da de baja fichas sin cuenta), y nadie se
+    da de baja a sí mismo por aquí (se sale con «Abandonar el club»).
+    """
+    if not player.user_id:
+        return None
+    if Membership.objects.filter(club=player.club, user_id=player.user_id, role=Membership.ADMIN).exists():
         return _("%(player)s es el capitán del equipo: traspasa antes la capitanía para darlo de baja.") % {"player": player.short_name}
+    if by is not None:
+        if by.pk == player.user_id:
+            return _("No puedes darte de baja a ti mismo desde aquí: usa «Abandonar el club» en el menú.")
+        if not Membership.objects.filter(club=player.club, user=by, role=Membership.ADMIN).exists():
+            return _("Solo el capitán puede dar de baja a %(player)s: tiene una cuenta enlazada y saldría del equipo.") % {"player": player.short_name}
     return None
 
 
@@ -366,7 +381,7 @@ def dar_de_baja(player, by=None, site_url=""):
     tiene que traspasar la capitanía (``RemovalError``). Devuelve la membresía quitada, o None si la
     ficha no tenía cuenta. Con cuenta, avisa al jugador por correo (``notify_removal``; ``by`` es quien lo da de baja).
     """
-    blocker = removal_blocker(player)
+    blocker = removal_blocker(player, by)
     if blocker:
         raise RemovalError(blocker)
     membership = None

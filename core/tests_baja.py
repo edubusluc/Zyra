@@ -325,3 +325,39 @@ class AltaTests(BajaFixture):
             self.client.post(reverse("manage_roster"), {"in_team": [self.sheet.pk, self.free.pk, self.captain_sheet.pk]})
         self.assertEqual(Invitation.objects.filter(player=self.sheet).count(), 1)
         self.assertEqual(len(mail.outbox), 1)
+
+
+class AuditPhaseATests(BajaFixture):
+    """Fase A de la auditoría: permisos de la baja, invitación solo para la cuenta titular y «Sin equipo»."""
+
+    def test_manager_cannot_give_baja_to_a_sheet_with_account(self):
+        manager = User.objects.create_user("man", password=PASSWORD, email="man@example.com")
+        Membership.objects.create(user=manager, club=self.club, role=Membership.MANAGER)
+        with self.assertRaises(RemovalError):
+            dar_de_baja(self.sheet, manager)
+        self.assertTrue(Membership.objects.filter(user=self.user, club=self.club).exists())
+        self.assertIsNone(dar_de_baja(self.free, manager))
+
+    def test_nobody_gives_baja_to_themselves(self):
+        with self.assertRaises(RemovalError):
+            dar_de_baja(self.sheet, self.user)
+
+    def test_rejoin_invitation_is_refused_to_another_account(self):
+        from core.services import accept_invitation
+        dar_de_baja(self.sheet, self.captain)
+        self.sheet.refresh_from_db()
+        invitation = dar_de_alta(self.sheet, self.captain, "https://zyra.test/")
+        other = User.objects.create_user("otro", password=PASSWORD, email="otro@example.com")
+        with self.assertRaises(Exception):
+            accept_invitation(invitation, other)
+        self.sheet.refresh_from_db()
+        self.assertIsNone(self.sheet.user)
+
+    def test_no_club_page_shows_the_pending_invitation(self):
+        dar_de_baja(self.sheet, self.captain)
+        self.sheet.refresh_from_db()
+        invitation = dar_de_alta(self.sheet, self.captain, "https://zyra.test/")
+        self.client.login(username="edu", password=PASSWORD)
+        response = self.client.get(reverse("no_club"))
+        self.assertContains(response, reverse("respond_copy_invitation", args=[invitation.token]))
+        self.assertContains(response, "recuperas tu histórico")
