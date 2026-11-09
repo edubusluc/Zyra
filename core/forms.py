@@ -1,6 +1,7 @@
 """Formularios de alta de club, registro de usuario, invitación de miembros y contraseñas."""
-from allauth.account.forms import ChangePasswordForm, ResetPasswordKeyForm, SetPasswordForm
+from allauth.account.forms import ChangePasswordForm, ResetPasswordForm, ResetPasswordKeyForm, SetPasswordForm
 from django import forms
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.password_validation import MinimumLengthValidator, get_default_password_validators
@@ -11,6 +12,7 @@ from team.forms import default_time_field
 from team.models import Team
 from .blocklist import is_blocked
 from .competitions import CHOICES as COMPETITION_CHOICES, COMPETITIONS, get_competition
+from . import ratelimit
 from .models import Membership
 from .services import club_of
 from .validators import plain_text, player_name
@@ -308,6 +310,29 @@ class PasswordRulesMixin:
         password2.label = _("Repite la contraseña nueva")
         password2.help_text = ""
         password2.widget.attrs.pop("placeholder", None)
+
+
+# Límites de «¿Has olvidado tu contraseña?» por hora: solicitudes por IP y por dirección de email.
+RESET_IP_LIMIT, RESET_EMAIL_LIMIT, RESET_WINDOW = 5, 3, 60 * 60
+
+
+class ZyraResetPasswordForm(ResetPasswordForm):
+    """
+    «¿Has olvidado tu contraseña?» con freno de envíos contra el spam y el acoso por correo.
+
+    Pasado el límite (por IP o por dirección) no se envía nada, pero la respuesta es la misma
+    pantalla de confirmación: así el freno no revela si la cuenta existe.
+    """
+
+    def save(self, request, **kwargs):
+        """Envía el correo salvo que la IP o la dirección hayan superado su límite en la última hora."""
+        email = self.cleaned_data["email"]
+        if settings.RATE_LIMITS_ENABLED:
+            by_ip = ratelimit.too_many(request, "password-reset", RESET_IP_LIMIT, RESET_WINDOW)
+            by_email = ratelimit.add_hit(f"rl:password-reset-email:{email.strip().lower()}", RESET_WINDOW) > RESET_EMAIL_LIMIT
+            if by_ip or by_email:
+                return email
+        return super().save(request, **kwargs)
 
 
 class ZyraResetPasswordKeyForm(PasswordRulesMixin, ResetPasswordKeyForm):

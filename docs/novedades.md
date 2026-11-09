@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 09/11/2026 · Límite en «¿Has olvidado tu contraseña?»
+
+- **Seguridad**: como máximo 5 solicitudes por IP y 3 por dirección de email cada hora. Pasado el límite no se envía el correo (ni el de «Cambia tu contraseña» ni el de «No hay ninguna cuenta de Zyra con este email»), pero la pantalla de confirmación es la misma, así que no se revela si la cuenta existe.
+
 ## 08/11/2026 · Imagen de «Compartir resultado»
 
 - **Puntos por partido**: en la imagen, los dos lados de cada partido llevan sus puntos («+3» para quien gana, «0» para quien pierde), para que no se confunda quién se los llevó.
