@@ -4,6 +4,7 @@
 
 {% block content %}
     <script src="{% static 'js/player-picker.js' %}" defer></script>
+    <script src="{% static 'js/baja-confirm.js' %}" defer></script>
     <div class="table-container">
     <h1>{% translate "Editar jugador" %}</h1>
 
@@ -17,7 +18,7 @@
     </div>
     {% endif %}
     
-    <form method="POST" action="{% url 'edit_player' player.public_id %}" enctype="multipart/form-data" data-loading-text="{% translate 'Guardando el jugador…' %}">
+    <form method="POST" action="{% url 'edit_player' player.public_id %}" enctype="multipart/form-data" data-loading-text="{% translate 'Guardando el jugador…' %}" data-baja-confirm data-confirm-title="{% translate 'Dar de baja del equipo' %}" data-confirm-action="{% translate 'Dar de baja' %}" data-confirm-danger data-baja-one="{% translate 'Vas a dar de baja a 1 jugador: saldrá de la plantilla y de las convocatorias abiertas.' %}" data-baja-many="{% translate 'Vas a dar de baja a {n} jugadores: saldrán de la plantilla y de las convocatorias abiertas.' %}" data-baja-accounts="{% translate 'Con cuenta en Zyra ({names}): dejan de ver el equipo (enfrentamientos, convocatorias y estadísticas del equipo), se les avisará por correo y conservan sus estadísticas en «Mis estadísticas». Para volver tendrás que invitarlos.' %}">
         {% csrf_token %}
         
         <div>
@@ -64,7 +65,7 @@
         </div>
 
         <div>
-            <input type="checkbox" id="in_team" name="in_team" {% if player.in_team %}checked{% endif %}>
+            <input type="checkbox" id="in_team" name="in_team" {% if player.in_team %}checked{% endif %} data-initial="{% if player.in_team %}1{% else %}0{% endif %}" data-linked="{% if player.user_id %}1{% else %}0{% endif %}" data-name="{{ player.full_name }}">
             <label for="in_team">{% translate "¿Se encuentra en el equipo?" %}</label>
         </div>
         

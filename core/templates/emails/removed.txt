@@ -1,0 +1,12 @@
+{% load i18n %}{% autoescape off %}{% blocktranslate with username=user.username %}Hola, {{ username }}:{% endblocktranslate %}
+
+{% if removed_by %}{% blocktranslate trimmed with club=club.name by=removed_by %}{{ by }} te ha dado de baja del equipo {{ club }}.{% endblocktranslate %}{% else %}{% blocktranslate trimmed with club=club.name %}Te han dado de baja del equipo {{ club }}.{% endblocktranslate %}{% endif %} {% translate "Ya no ves los enfrentamientos, las convocatorias ni las estadísticas del equipo, y has salido de las convocatorias que estaban abiertas." %}
+
+{% translate "Tus estadísticas no se pierden: siguen en «Mis estadísticas». Puedes unirte a otro equipo cuando quieras." %}
+
+{% translate "Si crees que es un error, habla con el capitán" %}: {% for admin in admins %}{{ admin.get_full_name|default:admin.username }}{% if not forloop.last %}, {% endif %}{% empty %}-{% endfor %}.
+{% if site_url %}
+{% translate "Entra en Zyra" %}: {{ site_url }}
+{% endif %}
+{% translate "Un saludo," %}
+{% translate "El equipo de Zyra" %}{% endautoescape %}

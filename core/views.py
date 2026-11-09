@@ -53,7 +53,7 @@ from .services import (
     CaptaincyError, InvitationError, accept_invitation, account_delete_blocker, club_name_matches, club_of,
     ensure_space_free, free_competitions, one_space_message, SpaceTaken,
     archive_club, create_club, delete_account, eligible_successors, is_last_admin, is_only_member,
-    ManagerError, remove_membership, set_manager, transfer_captaincy,
+    ManagerError, notify_removal, remove_membership, set_manager, transfer_captaincy,
 )
 
 INVITATIONS_PER_PAGE = 10
@@ -575,6 +575,7 @@ def no_club(request):
     if request.club is not None:
         return redirect("home")
     return render(request, "no_club.html", {"suspended_clubs": request.suspended_clubs,
+                                           "copy_invitations": player_copy.pending_for(request.user),
                                            "has_history": bool(spaces.my_players(request))})
 
 
@@ -755,6 +756,9 @@ def _join(request, invitation, user):
     request.session[SESSION_KEY] = membership.club_id
     send_welcome_email(user, membership.club, site_url=_site_url(request))
     messages.success(request, _("¡Bienvenido a %(club)s!") % {"club": membership.club.name})
+    if invitation.player_id and not Player.objects.filter(pk=invitation.player_id, user=user).exists():
+        messages.warning(request, _("No hemos podido enlazarte a tu ficha de %(club)s. Avisa al capitán para que la revise.")
+                         % {"club": membership.club.name})
     return True
 
 
@@ -1166,7 +1170,9 @@ def remove_member(request, membership_id):
         # Quitarse a uno mismo es abandonar el club: se hace desde el menú, con su aviso.
         return leave_club(request)
     else:
-        remove_membership(membership)
+        with transaction.atomic():
+            notify_removal(membership, request.user, _site_url(request))
+            remove_membership(membership)
         messages.success(request, _("%(username)s ya no es miembro del equipo.") % {"username": membership.user.username})
     return redirect("club_members")
 
