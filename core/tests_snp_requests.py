@@ -13,7 +13,7 @@ from core.services import create_club
 from core.tests_season_prep import OCT, SeasonPrepBase, at
 from core.tests_security import PASSWORD
 from players import snp_requests
-from players.models import SnpAccount, SnpUpdateRequest
+from players.models import SnpAccount, SnpTeamImport, SnpUpdateRequest
 
 User = get_user_model()
 
@@ -64,6 +64,12 @@ class RequestFlowTests(SeasonPrepBase):
         self.assertContains(self.client.get(reverse("list_players")), "Pedir actualización a Zyra")
         self.client.login(username="manager", password=PASSWORD)
         self.assertNotContains(self.client.get(reverse("list_players")), "Pedir actualización a Zyra")
+
+    def test_players_page_hides_the_offer_once_the_team_was_completed_this_season(self):
+        self.client.login(username="captain", password=PASSWORD)
+        SnpTeamImport.objects.create(club=self.club, started_by=self.captain, source=SnpTeamImport.WEB,
+                                     status=SnpTeamImport.DONE)
+        self.assertNotContains(self.client.get(reverse("list_players")), "¿Han llegado jugadores nuevos?")
 
     def test_done_request_completes_the_snp_step_for_the_season(self):
         request, _created = snp_requests.create_request(self.club, self.captain)

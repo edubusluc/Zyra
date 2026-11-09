@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 09/11/2026 · Jugadores: aviso de jugadores nuevos solo al inicio de temporada
+
+- **«¿Han llegado jugadores nuevos?»**: en Jugadores el aviso con «Pedir actualización a Zyra» deja de salir cuando el «Completar equipo» de la temporada ya se ha hecho bien (desde el 1 de julio); vuelve a salir al empezar la siguiente.
+
 ## 09/11/2026 · «Yo» conserva tus estadísticas al cambiar de equipo
 
 - **Equipo anterior**: al salir de un club (o si te saca el capitán) tu ficha y sus partidos siguen en «Yo». Una fila por ficha, marcada como «Equipo anterior»; los gráficos juntan por competición los equipos de la misma. Si te quedas sin equipo, «Sin equipo» enlaza a tus estadísticas.
