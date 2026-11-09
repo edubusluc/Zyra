@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 09/11/2026 · Registro desde el enlace de disponibilidad
+
+- **Cuenta nueva sin perder el enlace**: el inicio de sesión que viene de un enlace de disponibilidad ofrece «Crear mi cuenta» y, al crearla (también con Google), se vuelve al enlace en lugar de a la página de espera. Si aún no eres del equipo, el enlace te dice que pidas la invitación al capitán y vuelvas a abrirlo.
+
 ## 09/11/2026 · Equipo activo más claro
 
 - **Primer acceso**: cuando la sesión aún no tiene equipo activo (primer acceso, otro dispositivo, tras cerrar sesión) se abre el que gestionas, SNP antes que LAPI. Antes era el primero por orden alfabético del nombre.

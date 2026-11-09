@@ -31,6 +31,7 @@
             <button type="submit" class="btn btn-primary btn-lg mt-2">{% translate "Entrar" %}</button>
         </form>
         {% include 'includes/google_button.html' with next=next %}
+        {% if next %}<p class="z-auth-foot">{% url 'register_account' as account_url %}{% with next_q=next|urlencode:'' %}{% with account_url=account_url|add:'?next='|add:next_q %}{% blocktranslate trimmed %}¿Aún no tienes cuenta? <a href="{{ account_url }}">Crear mi cuenta</a>{% endblocktranslate %}{% endwith %}{% endwith %}</p>{% endif %}
         <p class="z-auth-foot">{% url 'register_club' as register_url %}{% blocktranslate trimmed %}¿Tu club aún no está en Zyra? <a href="{{ register_url }}">Regístralo</a>{% endblocktranslate %}</p>
     </div>
 </div>
