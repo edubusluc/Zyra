@@ -16388,3 +16388,30 @@ msgstr "Say if you can play: %(rival)s, %(date)s"
 
 msgid "NO PRESENTADA"
 msgstr "NO-SHOW"
+
+#: core/templates/club_members.html:22
+msgid "Ya tienes un enlace activo"
+msgstr "You already have an active link"
+
+#: core/templates/club_members.html:22
+#, python-format
+msgid ""
+"Tu enlace actual vale hasta el %(date)s a las %(time)s y se ha unido %(n)s "
+"persona. Si creas uno nuevo, el actual dejará de funcionar."
+msgid_plural ""
+"Tu enlace actual vale hasta el %(date)s a las %(time)s y se han unido %(n)s "
+"personas. Si creas uno nuevo, el actual dejará de funcionar."
+msgstr[0] ""
+"Your current link is valid until %(date)s at %(time)s and %(n)s person has "
+"joined. If you create a new one, the current one will stop working."
+msgstr[1] ""
+"Your current link is valid until %(date)s at %(time)s and %(n)s people have "
+"joined. If you create a new one, the current one will stop working."
+
+#: backoffice/templates/backoffice/club_detail.html:137
+msgid "Sustituida"
+msgstr "Replaced"
+
+#: core/templates/invitation_invalid.html:13
+msgid "Este enlace ya no vale: el capitán ha creado uno nuevo."
+msgstr "This link no longer works: the captain has created a new one."
