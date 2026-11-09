@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 09/11/2026 · «Pendiente» del Inicio va directo al paso
+
+- **Inicio**: en «Pendiente», quien gestiona (capitán y gestor) abre directamente el paso que toca: «Convocar» lleva al formulario de convocatoria, «Alinear parejas» a las parejas y «Poner resultados» o «Cerrar acta» a la pantalla de resultados. Un clic menos en cada uno. «Cerrar convocatoria» sigue abriendo la ficha (se confirma allí) y los jugadores también.
+
 ## 09/11/2026 · Resultados sin tocar casilla entre partidos
 
 - **Poner resultados**: al decidirse un partido (2-0 en sets, o con el set 3) el cursor pasa solo a la primera casilla del siguiente partido, así que se pueden teclear los cinco seguidos. Los partidos con «pareja no presentada» se saltan. En el set 3 (que puede ser un supertiebreak a 10) el cursor pasa del local al visitante al llegar a 2 cifras o con una cifra distinta de 1 (con un 1 espera unos instantes por si es el principio de un 10 o más), y al completarse el set 3 salta al siguiente partido.

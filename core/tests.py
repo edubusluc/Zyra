@@ -504,6 +504,18 @@ class HomeTests(TestCase):
         self.assertEqual(len(response.context["pending_pages"]), 1)
         self.assertNotContains(response, "data-pending-dot")
 
+    def test_home_pending_row_goes_straight_to_next_step_for_managers(self):
+        """«Convocar» del Inicio abre el formulario de convocatoria (no la ficha); un miembro sigue yendo a la ficha."""
+        match = Match.objects.create(club=self.club, local=self.own, visiting=self.rival,
+                                     start_date=self.today + datetime.timedelta(days=2))
+        response = self.client.get(reverse("home"))
+        self.assertContains(response, 'href="%s" class="z-pending-row' % reverse("create_call", args=[match.public_id]))
+        member = User.objects.create_user("miembro", password="pass-12345")
+        Membership.objects.create(user=member, club=self.club, role=Membership.MEMBER)
+        self.client.login(username="miembro", password="pass-12345")
+        response = self.client.get(reverse("home"))
+        self.assertNotContains(response, reverse("create_call", args=[match.public_id]))
+
     def test_player_pending_uses_same_card_next_to_deck(self):
         """El jugador ve «Pendiente» con el mismo componente que el capitán, junto a la tarjeta del enfrentamiento."""
         member = User.objects.create_user("jugador", password="pass-12345")

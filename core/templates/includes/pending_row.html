@@ -1,6 +1,7 @@
 {# Fila de «Pendiente» del Inicio (core/templates/home.html); recibe `row`. #}
 {% load i18n zyra_format %}
-<a href="{% url 'call_for_match' row.match.public_id %}" class="z-pending-row{% if row.overdue %} is-overdue{% endif %}">
+{# Quien gestiona va directo al paso que toca (convocar, alinear, resultados); el resto y «Cerrar convocatoria» (que se confirma en la ficha) abren la ficha. #}
+<a href="{% if can_manage and row.phase.action == 'create_call' %}{% url 'create_call' row.match.public_id %}{% elif can_manage and row.phase.action == 'create_games' %}{% url 'create_game' row.match.public_id %}{% elif can_manage and row.phase.action == 'enter_results' or can_manage and row.phase.action == 'close_match' %}{% url 'enter_results' row.match.public_id %}{% else %}{% url 'call_for_match' row.match.public_id %}{% endif %}" class="z-pending-row{% if row.overdue %} is-overdue{% endif %}">
     <span class="z-pending-main">
         <strong>{% include 'includes/competition_badge.html' with code=row.match.club.competition name=row.match.club.rules.name short=True %} {{ row.match.rival_label }}</strong>
         <span class="z-pending-line">
