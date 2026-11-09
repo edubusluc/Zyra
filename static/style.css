@@ -4381,9 +4381,9 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
     .z-team-stage::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, transparent 6%, rgba(var(--z-lime-rgb), .7) 50%, transparent 94%) top / 100% 1px no-repeat; }
     .z-team-stage > * { position: relative; z-index: 1; }
     .z-team-stage .z-crest-scene { --crest: clamp(150px, 26vw, 250px); margin-bottom: 12px; filter: drop-shadow(0 0 22px rgba(var(--z-lime-rgb), .28)); }
-    .z-crest--sway { animation: z-crest-sway 9s ease-in-out infinite; }
-    /* Oscila ±34° alrededor del frente: nunca llega de canto ni enseña el dorso. */
-    @keyframes z-crest-sway { 0%, 100% { transform: rotateY(-34deg); } 50% { transform: rotateY(34deg); } }
+    .z-crest--sway { animation: z-crest-sway 14s ease-in-out infinite; }
+    /* Oscila ±55° despacio (14 s por ciclo) alrededor del frente: nunca llega de canto ni enseña el dorso. */
+    @keyframes z-crest-sway { 0%, 100% { transform: rotateY(-55deg); } 50% { transform: rotateY(55deg); } }
     .z-team-stage-name { margin: 0; text-align: center; font: 400 clamp(1.5rem, 4vw, 2.2rem)/1.05 var(--z-display); letter-spacing: .03em; text-transform: uppercase; text-shadow: 0 2px 0 rgba(0, 0, 0, .6), 0 0 18px rgba(0, 0, 0, .8); overflow-wrap: anywhere; }
     .z-team-stage-role { display: inline-block; margin-top: 10px; padding: 3px 14px; font-size: var(--z-fs-xs); font-weight: 800; letter-spacing: .1em; text-transform: uppercase; background: rgba(0, 0, 0, .4); border-top: 2px solid var(--z-lime); }
     .z-team-stage-role.is-rival { border-top-color: var(--z-stage-steel); }
