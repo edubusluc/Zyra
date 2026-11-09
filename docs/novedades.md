@@ -3,6 +3,16 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 09/11/2026 · Back-office más legible
+
+- **Usuarios activos por día**: las 30 barras caben en una fila, con el máximo arriba y la fecha cada 5 días (el valor de cada día, al pasar el ratón).
+- **Auditoría por días**: una fila por día (acciones y personas); al pulsarla se abre el registro detallado de ese día, con los mismos filtros.
+- **Fotos**: ya no aparecen las fotos que «ya no se usan», ni cuentan como pendientes.
+
+## 09/11/2026 · Editar equipo con escudo 3D
+
+- **Editar equipo**: formulario a la izquierda y, a la derecha, el escudo del equipo en 3D (como en la ficha del enfrentamiento) oscilando sin dar la vuelta. Nombre, siglas, chips de datos y escudo nuevo se ven al momento. En móvil el escudo va arriba, compacto, y con movimiento reducido queda quieto. Las ayudas de los campos pasan a tooltips «i» y «Foto» se llama «Escudo».
+
 ## 09/11/2026 · Control de correos del día
 
 - **Cupo diario en el back-office**: el dashboard y «Correos enviados» muestran los correos de hoy sobre el límite del proveedor (300 por defecto, `EMAIL_DAILY_LIMIT`) y los que quedan.

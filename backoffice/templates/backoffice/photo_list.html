@@ -36,7 +36,7 @@
     <tbody>
     {% for c in page %}
         <tr>
-            <td>{% if c.in_use %}<a href="{{ c.subject.photo.url }}" target="_blank" rel="noopener" title="{% translate 'Ver a tamaño completo' %}"><img src="{{ c.subject.photo.url }}" alt="{% blocktranslate with subject=c.subject_label %}Ver la foto de {{ subject }} a tamaño completo{% endblocktranslate %}" width="96" height="96" style="object-fit:cover;border-radius:8px;"></a>{% elif c.photo %}<span class="text-muted">{% translate "Ya no se usa" %}</span>{% else %}—{% endif %}</td>
+            <td>{% if c.in_use %}<a href="{{ c.subject.photo.url }}" target="_blank" rel="noopener" title="{% translate 'Ver a tamaño completo' %}"><img src="{{ c.subject.photo.url }}" alt="{% blocktranslate with subject=c.subject_label %}Ver la foto de {{ subject }} a tamaño completo{% endblocktranslate %}" width="96" height="96" style="object-fit:cover;border-radius:8px;"></a>{% else %}—{% endif %}</td>
             <td>{{ c.subject_label }}</td>
             <td>{% if c.club %}<a href="{% url 'backoffice:club_detail' c.club.public_id %}">{{ c.club.name }}</a>{% else %}—{% endif %}</td>
             <td>{% if c.owner %}<a href="{% url 'backoffice:user_detail' c.owner.id %}">{{ c.owner.username }}</a>{% if not c.owner.email %} <span class="z-badge z-badge--danger">{% translate "sin email" %}</span>{% endif %}{% else %}—{% endif %}</td>
@@ -52,7 +52,7 @@
                 </form>
                 {% endif %}
                 {% if c.status == 'unchecked' %}
-                <form method="post" action="{% url 'backoffice:photo_approve' c.public_id %}" data-loading-text="{% translate 'Validando la foto…' %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn btn-outline-light btn-sm"><i class="fa-solid fa-check" aria-hidden="true"></i> {% if c.in_use %}{% translate "Correcta" %}{% else %}{% translate "Quitar de pendientes" %}{% endif %}</button></form>
+                <form method="post" action="{% url 'backoffice:photo_approve' c.public_id %}" data-loading-text="{% translate 'Validando la foto…' %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn btn-outline-light btn-sm"><i class="fa-solid fa-check" aria-hidden="true"></i> {% translate "Correcta" %}</button></form>
                 {% endif %}
             </td>
         </tr>

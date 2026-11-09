@@ -12,7 +12,9 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.core.validators import validate_email
-from django.db.models import Q
+from django.db.models import Count, Max, Q
+from django.db.models.functions import TruncDate
+from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.templatetags.static import static
 from django.urls import reverse
@@ -52,9 +54,8 @@ def _extra(request, *keys):
 
 # ---------- Auditoría y registro de correos ----------
 
-@staff_required
-def audit_list(request):
-    """Auditoría de las acciones del personal (solo personal), filtrable por ``q`` (persona u objeto) y ``action``."""
+def _audit_filtered(request):
+    """Registros de auditoría filtrados por ``q`` (persona u objeto) y ``action``; devuelve (queryset, q, action)."""
     q = request.GET.get("q", "").strip()
     action = request.GET.get("action", "")
     logs = AuditLog.objects.all()
@@ -62,10 +63,42 @@ def audit_list(request):
         logs = logs.filter(Q(username__icontains=q) | Q(object_label__icontains=q) | Q(object_id__icontains=q))
     if action in ACTIONS:
         logs = logs.filter(action=action)
+    else:
+        action = ""
+    return logs, q, action
+
+
+@staff_required
+def audit_list(request):
+    """
+    Auditoría del personal (solo personal): una fila por día con el número de acciones y de personas,
+    filtrable por ``q`` (persona u objeto) y ``action``. Cada día enlaza a su registro detallado.
+    """
+    logs, q, action = _audit_filtered(request)
+    days = (
+        logs.annotate(day=TruncDate("created_at"))
+        .values("day").annotate(n=Count("id"), people=Count("username", distinct=True), last=Max("created_at"))
+        .order_by("-day")
+    )
     return render(request, "backoffice/audit_list.html", {
-        "section": "audit", "page": _page(request, logs), "q": q, "action": action,
-        "actions": sorted((k, _(v)) for k, v in ACTIONS.items()), "labels": {k: _(v) for k, v in ACTIONS.items()},
-        "extra": _extra(request, "q", "action"),
+        "section": "audit", "page": _page(request, days), "q": q, "action": action,
+        "actions": sorted((k, _(v)) for k, v in ACTIONS.items()), "extra": _extra(request, "q", "action"),
+        "filters": _extra(request, "q", "action").lstrip("&"),
+    })
+
+
+@staff_required
+def audit_day(request, day):
+    """Registro detallado de las acciones del personal de un día (``AAAA-MM-DD``), con los mismos filtros que la lista."""
+    try:
+        date = datetime.date.fromisoformat(day)
+    except ValueError:
+        raise Http404
+    logs, q, action = _audit_filtered(request)
+    logs = logs.annotate(day=TruncDate("created_at")).filter(day=date).order_by("-created_at", "-id")
+    return render(request, "backoffice/audit_day.html", {
+        "section": "audit", "day": date, "logs": logs, "q": q, "action": action,
+        "labels": {k: _(v) for k, v in ACTIONS.items()}, "filters": _extra(request, "q", "action").lstrip("&"),
     })
 
 

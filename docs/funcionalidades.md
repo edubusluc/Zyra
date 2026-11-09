@@ -125,6 +125,7 @@ En Enfrentamientos hay dos vistas: **Lista** y **Calendario**. El calendario (`m
   de nombres parecidos ([`team`](referencia/team/index.md), [`core.similarity`](referencia/core/similarity.md)).
 - Un equipo nuevo sale relleno con los datos del propio.
 - El equipo propio guarda su **hora habitual de juego** (opcional): se pide al crear el club y en «Editar equipo», y llega escrita al crear un enfrentamiento como local (editable).
+- «Editar equipo» muestra, junto al formulario, el escudo del equipo en 3D (el mismo de la ficha del enfrentamiento) que oscila de lado a lado sin dar la vuelta, con el nombre, la etiqueta «Tu equipo» o «Rival» y la división, categoría, país y ubicación. Se actualiza al escribir y al elegir un escudo nuevo; con movimiento reducido queda quieto. En móvil va arriba, compacto. Las ayudas de los campos son tooltips «i».
 - **Gestionar equipos**: editar varios a la vez (en el grupo, división...).
 
 ## Partidos

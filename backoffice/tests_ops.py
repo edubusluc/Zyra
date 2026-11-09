@@ -161,6 +161,20 @@ class SchedulerStatusTests(StaffTestCase):
         self.assertFalse(scheduler_status()["stale"])
 
 
+class PhotoListTests(StaffTestCase):
+    def test_photos_no_longer_in_use_are_hidden(self):
+        from core.models import PhotoCheck
+        player = Player.objects.filter(club=self.club).first()
+        player.photo = "players/actual.jpg"
+        player.save()
+        used = PhotoCheck.objects.create(club=self.club, player=player, photo="players/actual.jpg", status=PhotoCheck.UNCHECKED)
+        PhotoCheck.objects.create(club=self.club, player=player, photo="players/vieja.jpg", status=PhotoCheck.UNCHECKED)
+        self.assertEqual(list(PhotoCheck.objects.in_use()), [used])
+        page = self.client.get(reverse("backoffice:photo_list"))
+        self.assertNotContains(page, "Ya no se usa")
+        self.assertEqual(len(page.context["page"]), 1)
+
+
 class TeamParamTests(StaffTestCase):
     def test_team_public_id_is_accepted(self):
         import re
@@ -201,8 +215,13 @@ class AuditTests(StaffTestCase):
         audit(None, "club.edit", label="Club Z")
         audit(None, "job.toggle", label="otro")
         page = self.client.get(reverse("backoffice:audit_list"), {"action": "club.edit"})
-        self.assertContains(page, "Club Z")
-        self.assertNotContains(page, "otro")
+        day = timezone.localdate().isoformat()
+        self.assertContains(page, reverse("backoffice:audit_day", args=[day]))
+        self.assertNotContains(page, "Club Z")  # la lista es un resumen por día
+        detail = self.client.get(reverse("backoffice:audit_day", args=[day]), {"action": "club.edit"})
+        self.assertContains(detail, "Club Z")
+        self.assertNotContains(detail, "otro")
+        self.assertEqual(self.client.get(reverse("backoffice:audit_day", args=["no-es-fecha"])).status_code, 404)
 
     def test_audit_records_the_impersonator_not_the_viewed_user(self):
         request = mock.Mock(user=self.captain, impersonator=self.staff, META={})
