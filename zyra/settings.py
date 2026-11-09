@@ -458,6 +458,7 @@ ACCOUNT_ADAPTER = 'core.adapters.AccountAdapter'
 # Contraseña nueva (olvidada, cambio o primera de una cuenta de Google) con la lista de
 # requisitos del registro.
 ACCOUNT_FORMS = {
+    'reset_password': 'core.forms.ZyraResetPasswordForm',
     'reset_password_from_key': 'core.forms.ZyraResetPasswordKeyForm',
     'change_password': 'core.forms.ZyraChangePasswordForm',
     'set_password': 'core.forms.ZyraSetPasswordForm',
