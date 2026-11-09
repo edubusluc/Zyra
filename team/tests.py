@@ -426,3 +426,41 @@ class EditCurrentPhotoTests(TestCase):
     def test_no_attribute_without_saved_photo(self):
         response = self.client.get(reverse("edit_team", args=[self.team.public_id]))
         self.assertNotContains(response, "data-current-photo")
+
+
+class EditTeamCrestStageTests(TestCase):
+    """El formulario de edición lleva el escudo 3D oscilante a su lado y las ayudas como «i»."""
+
+    def setUp(self):
+        self.user = User.objects.create_user("admin", password="pass-12345")
+        self.club = create_club("Club A", "Sevilla", self.user)
+        self.own = self.club.own_team
+        self.rival = Team.objects.create(club=self.club, name="Tomares", location="Tomares", division="500", in_group=True)
+        self.client.force_login(self.user)
+
+    def get(self, team):
+        return self.client.get(reverse("edit_team", args=[team.public_id]))
+
+    def test_stage_with_swaying_crest(self):
+        response = self.get(self.own)
+        self.assertContains(response, "data-team-crest")
+        self.assertContains(response, "z-crest--sway")
+        self.assertContains(response, "js/team-crest-preview.js")
+        self.assertContains(response, "Tu equipo")
+
+    def test_rival_is_labelled_rival(self):
+        response = self.get(self.rival)
+        self.assertContains(response, "z-team-stage-role is-rival")
+        self.assertNotContains(response, "Tu equipo</span>")
+
+    def test_hidden_preview_without_photo_and_logo_with_photo(self):
+        self.assertContains(self.get(self.rival), "hidden alt=")
+        Team.objects.filter(pk=self.rival.pk).update(photo="teams/escudo.webp")
+        self.rival.refresh_from_db()
+        response = self.get(self.rival)
+        self.assertContains(response, 'class="z-crest-layer z-crest-edge is-back is-photo"')
+
+    def test_help_texts_are_tooltips_not_visible_notes(self):
+        response = self.get(self.own)
+        self.assertNotContains(response, "form-text")
+        self.assertContains(response, 'data-tip="Tu equipo siempre está en tu grupo')
