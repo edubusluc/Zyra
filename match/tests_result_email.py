@@ -7,6 +7,7 @@ from django.core import mail
 from django.core.management import CommandError, call_command
 from django.test import TestCase, override_settings
 from django.urls import reverse
+from django.utils import timezone
 
 from backoffice.metrics import attention_counts, health_metrics
 from core.models import Membership, UserPreference
@@ -41,10 +42,10 @@ class ResultEmailFixture(TestCase):
         Membership.objects.create(user=user, club=self.club, role=Membership.MEMBER)
         return user
 
-    def _match(self, wins=(1, 2, 4), match_type=Match.ENFRENTAMIENTO):
+    def _match(self, wins=(1, 2, 4), match_type=Match.ENFRENTAMIENTO, start_date=None):
         """Enfrentamiento del club como local con 5 partidos con resultado; el club gana los de ``wins``."""
         match = Match.objects.create(club=self.club, local=self.club.own_team, visiting=self.rival,
-                                     start_date=datetime.date(2020, 1, 1), match_type=match_type)
+                                     start_date=start_date or timezone.localdate() - datetime.timedelta(days=1), match_type=match_type)
         for n in range(1, 6):
             game = Game.objects.create(match=match, n_game=n, score=3 if n < 3 else 2,
                                        player_1_local=self.players[2 * n - 2], player_2_local=self.players[2 * n - 1])
@@ -68,7 +69,7 @@ class MatchResultEmailTests(ResultEmailFixture):
         self._close(match)
         self.assertEqual(sorted(m.to[0] for m in mail.outbox), ["ana@example.com", "capi@example.com"])
         message = next(m for m in mail.outbox if m.to == ["ana@example.com"])
-        self.assertEqual(message.subject, "Victoria 8-4 · Club A vs CD Tomares (01/01/2020)"
+        self.assertEqual(message.subject, "Victoria 8-4 · Club A vs CD Tomares (%s)" % f"{match.start_date:%d/%m/%Y}"
                          .replace("Club A", match.local_name))
         self.assertIn("Tu partido:", message.alternatives[0][0])        # Ana jugó el partido 1
         self.assertIn("Ganaste tu partido 1", message.body)
@@ -120,6 +121,22 @@ class MatchResultEmailTests(ResultEmailFixture):
         self.client.post(reverse("close_match", args=[match.public_id]), {"resend_email": "1"})
         self.assertEqual(len(mail.outbox), 4)                # casilla marcada: se reenvía
         self.assertTrue(MatchResultDelivery.objects.get(user=self.member).correction)
+
+    def test_old_match_sends_nothing_unless_the_captain_ticks_the_checkbox(self):
+        old = timezone.localdate() - datetime.timedelta(days=60)
+        match = self._match(start_date=old)
+        url = reverse("call_for_match", args=[match.public_id])
+        self.assertContains(self.client.get(url), 'data-confirm-check-name="resend_email"')
+        self._close(match)
+        self.assertEqual(mail.outbox, [])
+        self.assertFalse(MatchResultDelivery.objects.exists())
+        self.client.post(reverse("reopen_match", args=[match.public_id]))
+        self.client.post(reverse("close_match", args=[match.public_id]), {"resend_email": "1"})
+        self.assertEqual(len(mail.outbox), 2)
+
+    def test_match_from_two_weeks_ago_still_sends(self):
+        self._close(self._match(start_date=timezone.localdate() - datetime.timedelta(days=14)))
+        self.assertEqual(len(mail.outbox), 2)
 
     def test_first_close_ignores_the_resend_flag_and_sends_once(self):
         match = self._match()

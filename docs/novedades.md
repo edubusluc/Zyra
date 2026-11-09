@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 09/11/2026 · Sin correos de partidos antiguos
+
+- **Enfrentamientos de hace más de 14 días**: al cerrar la convocatoria o el acta no se envía el informe ni el aviso de resultado por correo (así dar de alta la temporada pasada no llena las bandejas ni gasta el cupo diario). La confirmación trae una casilla, desmarcada, para enviarlo igualmente; el informe sigue descargable.
+
 ## 09/11/2026 · «Yo» conserva tus estadísticas al cambiar de equipo
 
 - **Equipo anterior**: al salir de un club (o si te saca el capitán) tu ficha y sus partidos siguen en «Yo». Una fila por ficha, marcada como «Equipo anterior»; los gráficos juntan por competición los equipos de la misma. Si te quedas sin equipo, «Sin equipo» enlaza a tus estadísticas.
