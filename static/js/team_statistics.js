@@ -28,25 +28,41 @@
     });
   }
 
-  // Asistencia a las convocatorias: % de la plantilla que se apunta. Con «Todas» es la media por temporada;
-  // con una temporada, una barra por convocatoria (la etiqueta lleva fecha y rival).
+  // Asistencia a las convocatorias: % de la plantilla que se apunta. Con «Todas» es la media por temporada
+  // (barras verticales, etiquetas cortas); con una temporada, una barra horizontal por convocatoria con la
+  // etiqueta en dos líneas (fecha y rival recortado; el nombre completo va en el tooltip), sin giros ni solapes.
   const attCanvas = document.getElementById('attendanceChart');
   const att = read('attendance-data');
   if (attCanvas && att && att.rows.length > 1) {
     const rows = att.rows;
+    const byCall = att.mode === 'calls';
+    const ROW_H = 48;
+    if (byCall) attCanvas.parentElement.style.height = `${rows.length * ROW_H + 16}px`;
+    const splitLabel = (label) => {
+      const i = label.indexOf(' · ');
+      return i < 0 ? ['', label] : [label.slice(0, i), label.slice(i + 3)];
+    };
+    const tickLabel = function (value) {
+      const [day, rival] = splitLabel(String(this.getLabelForValue(value)));
+      const max = this.chart.width < 480 ? 20 : 30;
+      const short = rival.length > max ? `${rival.slice(0, max - 1).trimEnd()}…` : rival;
+      return day ? [day, short] : short;
+    };
     new Chart(attCanvas, {
       type: 'bar',
       data: {
         labels: rows.map((r) => r.label),
-        datasets: [{ label: gettext('Asistencia'), data: rows.map((r) => r.pct), backgroundColor: LIME, borderRadius: 14, minBarLength: 32, borderSkipped: false, maxBarThickness: 64 }],
+        datasets: [{ label: gettext('Asistencia'), data: rows.map((r) => r.pct), backgroundColor: LIME, borderRadius: 14, minBarLength: 32, borderSkipped: false, maxBarThickness: byCall ? 30 : 64 }],
       },
       options: {
+        indexAxis: byCall ? 'y' : 'x',
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
           legend: { display: false },
           tooltip: {
             callbacks: {
+              title: (items) => (byCall ? rows[items[0].dataIndex].label : items[0].label),
               label: (c) => ` ${rows[c.dataIndex].pct} % · ${rows[c.dataIndex].signed}/${rows[c.dataIndex].eligible}`,
               afterLabel: (c) => (rows[c.dataIndex].calls
                 ? interpolate(ngettext('%s convocatoria', '%s convocatorias', rows[c.dataIndex].calls), [rows[c.dataIndex].calls])
@@ -54,7 +70,9 @@
             },
           },
         },
-        scales: { x: { grid: { display: false }, ticks: { autoSkip: false, maxRotation: 45, font: { size: 11 } } }, y: { display: false, beginAtZero: true, max: 100 } },
+        scales: byCall
+          ? { x: { display: false, beginAtZero: true, max: 100 }, y: { grid: { display: false }, ticks: { autoSkip: false, callback: tickLabel, font: { size: 11 } } } }
+          : { x: { grid: { display: false }, ticks: { autoSkip: false, font: { size: 11 } } }, y: { display: false, beginAtZero: true, max: 100 } },
       },
     });
   }

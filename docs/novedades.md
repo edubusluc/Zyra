@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 09/11/2026 · Asistencia a las convocatorias legible
+
+- **Barras horizontales** con una fila por convocatoria: fecha y rival en dos líneas (rival recortado, nombre completo al pasar el ratón o tocar), sin giros ni solapes, en móvil y escritorio.
+
 ## 09/11/2026 · Jugadores: aviso de jugadores nuevos solo al inicio de temporada
 
 - **«¿Han llegado jugadores nuevos?»**: en Jugadores el aviso con «Pedir actualización a Zyra» deja de salir cuando el «Completar equipo» de la temporada ya se ha hecho bien (desde el 1 de julio); vuelve a salir al empezar la siguiente.
