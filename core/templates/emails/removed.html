@@ -1,0 +1,9 @@
+{% load i18n %}{% include "emails/_title_start.html" %}{% blocktranslate with club=club.name %}Te han dado de baja de {{ club }}{% endblocktranslate %}</h1>
+<p style="margin:0 0 12px;">{% blocktranslate with username=user.username %}Hola, {{ username }}:{% endblocktranslate %}</p>
+<p style="margin:0 0 12px;">{% if removed_by %}{% blocktranslate trimmed with club=club.name by=removed_by %}<strong>{{ by }}</strong> te ha dado de baja del equipo <strong>{{ club }}</strong>.{% endblocktranslate %}{% else %}{% blocktranslate trimmed with club=club.name %}Te han dado de baja del equipo <strong>{{ club }}</strong>.{% endblocktranslate %}{% endif %} {% translate "Ya no ves los enfrentamientos, las convocatorias ni las estadísticas del equipo, y has salido de las convocatorias que estaban abiertas." %}</p>
+<p style="margin:0 0 12px;">{% translate "Tus estadísticas no se pierden: siguen en «Mis estadísticas». Puedes unirte a otro equipo cuando quieras." %}</p>
+<p style="margin:0 0 16px;">{% translate "Si crees que es un error, habla con el capitán" %}: {% for admin in admins %}<strong>{{ admin.get_full_name|default:admin.username }}</strong>{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}.</p>
+{% if site_url %}
+<p style="margin:0 0 16px;"><a href="{{ site_url }}" style="display:inline-block; background-color:#B4F100; color:#0A0A0A; font-weight:bold; text-decoration:none; padding:10px 20px; border-radius:8px;">{% translate "Entrar en Zyra" %}</a></p>
+{% endif %}
+<p style="margin:0;">{% translate "Un saludo," %}<br>{% translate "El equipo de Zyra" %}</p>
