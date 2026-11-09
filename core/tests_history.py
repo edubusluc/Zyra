@@ -145,3 +145,91 @@ class TeamChangeStatsTests(TestCase):
         other.refresh_from_db()
         self.assertTrue(other.in_team)
         self.assertIsNone(other.left_on)
+
+
+class HistoricSheetAndMatchTests(TeamChangeStatsTests):
+    """Fichas y enfrentamientos de un equipo anterior (solo lectura), liberar fichas y cerrar clubes."""
+
+    def test_baja_then_leave_keeps_the_baja_day(self):
+        old = timezone.localdate() - datetime.timedelta(days=20)
+        Player.objects.filter(pk=self.sheet_a.pk).update(in_team=False, left_on=old)
+        self._leave(self.club_a)
+        self.sheet_a.refresh_from_db()
+        self.assertEqual(self.sheet_a.left_on, old)
+
+    def test_unrelated_save_does_not_stamp_left_on(self):
+        Player.objects.filter(pk=self.sheet_a.pk).update(in_team=False)
+        sheet = Player.objects.get(pk=self.sheet_a.pk)
+        sheet.name = "Edu2"
+        sheet.save()
+        sheet.refresh_from_db()
+        self.assertIsNone(sheet.left_on)
+
+    def test_other_account_cannot_claim_a_sheet_with_past_user(self):
+        self._leave(self.club_a)
+        other = User.objects.create_user("otra", password=PASSWORD, email="otra@example.com")
+        self.assertFalse(Player.objects.get(pk=self.sheet_a.pk).is_claimable_by(other))
+        self.assertTrue(Player.objects.get(pk=self.sheet_a.pk).is_claimable_by(self.user))
+
+    def test_captain_releases_a_former_sheet(self):
+        self._leave(self.club_a)
+        self.client.logout()
+        self.client.login(username="capa", password=PASSWORD)
+        self.client.post(reverse("release_player", args=[self.sheet_a.public_id]))
+        self.sheet_a.refresh_from_db()
+        self.assertIsNone(self.sheet_a.past_user)
+        self.assertTrue(self.sheet_a.is_claimable_by(User.objects.create_user("otra", password=PASSWORD)))
+
+    def test_delete_player_blocked_for_sheets_with_an_account(self):
+        self.client.logout()
+        self.client.login(username="capa", password=PASSWORD)
+        self.client.post(reverse("delete_player", args=[self.sheet_a.public_id]))
+        self.assertTrue(Player.objects.filter(pk=self.sheet_a.pk).exists())
+        self._leave(self.club_a)
+        self.client.post(reverse("delete_player", args=[self.sheet_a.public_id]))
+        self.assertTrue(Player.objects.filter(pk=self.sheet_a.pk).exists())
+
+    def test_archive_club_keeps_history_and_removes_the_live_parts(self):
+        from core.services import archive_club
+        archive_club(self.club_a)
+        self.club_a.refresh_from_db()
+        self.assertIsNotNone(self.club_a.archived_at)
+        self.assertFalse(self.club_a.memberships.exists())
+        self.sheet_a.refresh_from_db()
+        self.assertEqual((self.sheet_a.user, self.sheet_a.past_user), (None, self.user))
+        self.assertTrue(Match.objects.filter(pk=self.match_a.pk).exists())
+        self.assertEqual(self.client.get(reverse("my_statistics") + "?season=all").status_code, 200)
+
+    def test_history_sheet_is_read_only_and_404_for_others(self):
+        self._leave(self.club_a)
+        url = reverse("my_history_player", args=[self.sheet_a.public_id])
+        page = self.client.get(url)
+        self.assertEqual(page.status_code, 200)
+        self.assertNotContains(page, reverse("team_statistics"))
+        mate = Player.objects.filter(club=self.club_a, name="Mate").first()
+        self.assertEqual(self.client.get(reverse("my_history_player", args=[mate.public_id])).status_code, 404)
+
+    def test_history_sheet_redirects_when_still_current(self):
+        url = reverse("my_history_player", args=[self.sheet_a.public_id])
+        self.assertEqual(self.client.get(url).status_code, 302)
+
+    def test_history_match_only_if_played_and_toggle_works(self):
+        self._leave(self.club_a)
+        url = reverse("history_match", args=[self.match_a.public_id])
+        page = self.client.get(url)
+        self.assertEqual(page.status_code, 200)
+        self.assertTrue(page.context["history_view"])
+        self.assertNotContains(page, "Poner resultados")
+        toggle = self.client.post(reverse("set_stage_view_history", args=[self.match_a.public_id]), {"stage": "on"})
+        self.assertRedirects(toggle, url, fetch_redirect_response=False)
+        self.assertContains(self.client.get(url), "z-stage")
+        # Quien no jugó recibe 404.
+        stranger = User.objects.create_user("otra", password=PASSWORD, email="otra@example.com")
+        self.client.logout()
+        self.client.force_login(stranger)
+        self.assertEqual(self.client.get(url).status_code, 404)
+
+    def test_history_match_redirects_while_member(self):
+        url = reverse("history_match", args=[self.match_a.public_id])
+        self.assertRedirects(self.client.get(url), reverse("call_for_match", args=[self.match_a.public_id]),
+                             fetch_redirect_response=False)

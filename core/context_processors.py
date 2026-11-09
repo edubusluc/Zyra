@@ -8,7 +8,7 @@ from django.utils.translation import gettext as _
 
 from . import seo
 from .competitions import COMPETITIONS
-from .spaces import my_players, my_stats_page, plays_only
+from .spaces import linked_players, my_players, plays_only
 from .services import is_last_admin, is_only_member
 
 
@@ -21,15 +21,18 @@ def club(request):
     si la plantilla los usa, igual que ``my_stats_available`` (tiene «Mis estadísticas»).
     """
     membership = getattr(request, "membership", None)
+    current = getattr(request, "club", None)
+    if getattr(request, "history_view", False):  # consulta de un equipo anterior: la cabecera es la del espacio real
+        current, membership = getattr(request, "history_chrome", (None, None))
     memberships = getattr(request, "user_memberships", [])
     order = list(COMPETITIONS)
     teams = sorted(memberships, key=lambda m: order.index(m.club.competition)
                    if m.club.competition in order else len(order))
     return {
-        "current_club": getattr(request, "club", None),
+        "current_club": current,
         # Equipo del título de la pestaña: el filtrado, ninguno con «Todas» o, si no hay filtro, el activo.
         "title_club": None if getattr(request, "title_all_spaces", False)
-        else getattr(request, "title_space_club", None) or getattr(request, "club", None),
+        else getattr(request, "title_space_club", None) or current,
         "user_memberships": memberships,
         "user_teams": teams,
         "is_club_admin": bool(membership and membership.is_admin),
@@ -44,11 +47,12 @@ def club(request):
         # Jugador en todos sus equipos (y tiene varios): Plantilla y el listado de jugadores de
         # Estadísticas no le aportan nada y salen del menú.
         "hide_roster_nav": plays_only(request),
-        # «Mis estadísticas» (y Estadísticas abre en ella) con jugador enlazado en dos o más equipos.
+        # «Mis estadísticas» (y Estadísticas abre en ella) con jugador enlazado en dos o más equipos actuales: las fichas
+        # de equipos anteriores no cambian a dónde lleva el menú (se llega a ellas con la pestaña «Yo»).
         # La pestaña «Yo» se ve con jugador enlazado en algún equipo o con dos o más equipos (sin ficha enlazada
         # explica cómo enlazarla, Z-05).
         "my_stats_tab": lambda: len(memberships) > 1 or bool(my_players(request)),
-        "my_stats_available": lambda: my_stats_page(request),
+        "my_stats_available": lambda: len(memberships) > 1 and len(linked_players(request)) > 1,
         "leaving_deletes_club": lambda: bool(membership and is_last_admin(membership) and is_only_member(membership)),
     }
 

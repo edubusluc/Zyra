@@ -171,8 +171,16 @@ def edit_player(request, player_id):
 @spaces.follow_player
 @club_manager_required
 def delete_player(request, player_id):
-    """Elimina un jugador tras avisar de que se borran sus estadísticas. Los partidos se conservan."""
+    """
+    Elimina un jugador tras avisar de que se borran sus estadísticas. Los partidos se conservan. Una ficha de una
+    cuenta (``user`` o ``past_user``) no se puede eliminar: se da de baja (``in_team``).
+    """
     player = get_object_or_404(Player, public_id=player_id, club=request.club)
+    if player.user_id or player.past_user_id:
+        # Una ficha de una cuenta (actual o anterior) lleva sus estadísticas: se da de baja, no se elimina.
+        messages.error(request, _("Esta ficha es de una cuenta y no se puede eliminar para no borrar sus estadísticas. "
+                                  "Desmarca «En el equipo» para sacarla de la plantilla."))
+        return redirect("edit_player", player_id=player.public_id)
     if request.method == "POST":
         name = str(player)
         player.delete()
@@ -559,7 +567,8 @@ def my_player(request):
     search = request.GET.get("q", "").strip()
     candidates = (
         Player.objects.filter(club=request.club)
-        .annotate(linked=ExpressionWrapper(Q(user__isnull=False), output_field=BooleanField()),
+        .annotate(linked=ExpressionWrapper(Q(user__isnull=False) | (Q(past_user__isnull=False) & ~Q(past_user=request.user)),
+                                           output_field=BooleanField()),
                   previous=ExpressionWrapper(Q(past_user=request.user), output_field=BooleanField()))
         .order_by("linked", "-previous", "-in_team", "name", "last_name")
     )
@@ -582,7 +591,7 @@ def link_player(request, player_id):
         player = get_object_or_404(Player.objects.select_for_update(), public_id=player_id, club=request.club)
         if own_player(request):
             messages.info(request, _("Tu cuenta ya está enlazada a un jugador."))
-        elif player.user_id:
+        elif not player.is_claimable_by(request.user):
             messages.error(request, _("Ese jugador ya está enlazado a otra cuenta. Si eres tú, habla con tu capitán."))
             return redirect("my_player")
         else:
@@ -605,6 +614,22 @@ def unlink_player(request, player_id):
     player.user = None
     player.save(update_fields=["user"])
     messages.success(request, _("%(player)s ya no está enlazado a ninguna cuenta.") % {"player": player.short_name})
+    return redirect("edit_player", player_id=player.public_id)
+
+
+@spaces.follow_player
+@club_admin_required
+@require_POST
+def release_player(request, player_id):
+    """
+    El capitán libera una ficha que dejó otra cuenta (``past_user``): deja de ser de esa persona para que otra la
+    pueda enlazar. Quien la tuvo pierde ese historial en «Yo», por eso solo lo hace el capitán y tras avisar.
+    """
+    player = get_object_or_404(Player, public_id=player_id, club=request.club)
+    if player.past_user_id:
+        player.past_user = None
+        player.save(update_fields=["past_user"])
+        messages.success(request, _("%(player)s queda libre para enlazarla con otra cuenta.") % {"player": player.short_name})
     return redirect("edit_player", player_id=player.public_id)
 
 

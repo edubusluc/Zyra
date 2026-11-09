@@ -2,6 +2,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
+from django.db.models import Q
 from django.shortcuts import redirect, render, get_object_or_404
 from django.utils.translation import gettext as _, ngettext
 from django.views.decorators.cache import never_cache
@@ -42,7 +43,7 @@ def _link_player(request, match):
             public_id=request.POST.get("player", ""), club=match.club).first()
         if player is None or Player.objects.filter(club=match.club, user=request.user).exists():
             return
-        if player.user_id:
+        if not player.is_claimable_by(request.user):
             messages.error(request, _("Ese jugador ya está enlazado a otra cuenta. Si eres tú, habla con tu capitán."))
             return
         player.user = request.user
@@ -102,7 +103,8 @@ def availability(request, token):
         "state": "closed" if not is_open else "link" if player is None else "answer",
     }
     if player is None and is_open:
-        context["free_players"] = Player.objects.filter(club=match.club, user__isnull=True, in_team=True).order_by("name", "last_name")
+        context["free_players"] = Player.objects.filter(club=match.club, user__isnull=True, in_team=True).filter(
+            Q(past_user__isnull=True) | Q(past_user=request.user)).order_by("name", "last_name")
     return render(request, "availability.html", context)
 
 

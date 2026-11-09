@@ -129,7 +129,8 @@ Renombrarlos exige migración y tocar vistas, estadísticas, plantillas y `popul
 
 ## Borrados en cascada (qué se pierde)
 
-- Borrar **Club** (`core.services.delete_club`) borra equipos, jugadores, partidos, convocatorias,
+- Cerrar un **Club** (`core.services.archive_club`, `Club.archived_at`) no borra nada del historial; borrarlo del todo
+  (`core.services.delete_club`, solo personal) borra equipos, jugadores, partidos, convocatorias,
   advertencias, cuenta SNP, invitaciones y membresías; las cuentas de usuario se conservan. [V]
 - Borrar **Player**: los `Game` se conservan (`SET_NULL` + señal `keep_name_in_games` en
   `match/models.py`); se pierden sus `Penalty`, `SnpScoreHistory` y su presencia en convocatorias. [V]

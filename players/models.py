@@ -161,21 +161,41 @@ class Player(PublicIdModel):
         if update_fields is not None and touched:
             kwargs["update_fields"] = list({*update_fields, *touched})
         super().save(*args, **kwargs)
+        self._loaded_in_team = self.in_team
+
+    @classmethod
+    def from_db(cls, db, field_names, values):
+        """Recuerda el ``in_team`` con el que se cargó la ficha, para saber si un guardado es una baja o un alta."""
+        instance = super().from_db(db, field_names, values)
+        instance._loaded_in_team = instance.__dict__.get("in_team")
+        return instance
+
+    def is_claimable_by(self, user):
+        """
+        True si ``user`` puede enlazar esta ficha con «Soy yo»: sin cuenta y, si la tuvo, que fuera la suya.
+        Una ficha que dejó otra cuenta (``past_user``) solo la libera el capitán (``release_player``).
+        """
+        return self.user_id is None and self.past_user_id in (None, user.id)
 
     def _sync_membership_dates(self):
         """
         Mantiene ``left_on`` y ``past_user`` coherentes con ``in_team`` y ``user`` antes de guardar y
-        devuelve los campos que ha tocado. Una baja pone la fecha de hoy; un alta (sin haber salido del
-        club con la cuenta) la quita; volver a enlazar la misma cuenta vacía ``past_user``.
+        devuelve los campos que ha tocado. Una baja (paso de ``in_team`` a False) pone la fecha de hoy; un
+        alta (paso a True) la quita salvo en quien salió del club con su cuenta; volver a enlazar la misma
+        cuenta vacía ``past_user`` y la fecha. Un guardado que no cambia ``in_team`` nunca toca la fecha.
         """
         touched = []
+        was_in_team = getattr(self, "_loaded_in_team", None)
         if self.user_id and self.past_user_id == self.user_id:
             self.past_user = None
             touched.append("past_user")
-        if not self.in_team and self.left_on is None:
+            if self.in_team and self.left_on is not None:
+                self.left_on = None
+                touched.append("left_on")
+        if not self.in_team and self.left_on is None and (self._state.adding or was_in_team is True):
             self.left_on = timezone.localdate()
             touched.append("left_on")
-        elif self.in_team and self.left_on is not None and not self.past_user_id:
+        elif self.in_team and was_in_team is False and self.left_on is not None and not self.past_user_id:
             self.left_on = None
             touched.append("left_on")
         return touched

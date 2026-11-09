@@ -22,6 +22,7 @@ from .report import build_report, suggested_lineups
 from .report_pdf import render_report
 from .result_image import build_result_jpeg
 from django.core.exceptions import PermissionDenied
+from django.contrib.auth.decorators import login_required
 from django.http import Http404, HttpResponse, JsonResponse
 from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_POST
@@ -970,6 +971,42 @@ def set_stage_view(request, match_id):
     return redirect('call_for_match', match_id=match.public_id)
 
 
+@login_required
+@require_POST
+def set_stage_view_history(request, match_id):
+    """Igual que ``set_stage_view`` desde la ficha histórica: vuelve a ella (solo si jugó en el enfrentamiento)."""
+    match = _history_match_or_404(request, match_id)
+    UserPreference.objects.update_or_create(
+        user=request.user, defaults={"match_stage_view": request.POST.get("stage") == "on"})
+    return redirect('history_match', match_id=match.public_id)
+
+
+def _history_match_or_404(request, match_id):
+    """Enfrentamiento de un club anterior en el que alguna ficha de la persona jugó algún partido, o 404."""
+    match = get_object_or_404(Match.objects.select_related("club"), public_id=match_id)
+    ids = [p.id for p in spaces.my_players(request) if p.club_id == match.club_id]
+    played = ids and Game.objects.filter(match=match).filter(
+        Q(player_1_local__in=ids) | Q(player_2_local__in=ids)
+        | Q(player_1_visiting__in=ids) | Q(player_2_visiting__in=ids)).exists()
+    if not played:
+        raise Http404
+    return match
+
+
+@login_required
+def my_history_match(request, match_id):
+    """Ficha de un enfrentamiento de un equipo anterior, de solo lectura y con la misma vista (3D o clásica) que la actual.
+
+    Solo la ve quien jugó en él con una ficha suya (con cuenta enlazada o anterior). Si el club sigue siendo
+    suyo, vuelve a la ficha normal.
+    """
+    match = _history_match_or_404(request, match_id)
+    if spaces.membership_for(request, match.club) is not None:
+        return redirect('call_for_match', match_id=match.public_id)
+    spaces.history_request(request, match.club)
+    return _ficha_page(request, match, history=True)
+
+
 @club_required
 def call_for_match(request, match_id):
     """Página de un enfrentamiento: convocatoria, partidos y resultados.
@@ -980,6 +1017,11 @@ def call_for_match(request, match_id):
     ese espacio (space_match). Renderiza call_for_match.html.
     """
     match = space_match(request, match_id)
+    return _ficha_page(request, match)
+
+
+def _ficha_page(request, match, history=False):
+    """Cuerpo de la ficha del enfrentamiento; con ``history`` es la consulta de solo lectura de un equipo anterior."""
     call = Call.objects.filter(match=match).first()
     games = list(
         Game.objects.filter(match=match).order_by("n_game")
@@ -996,15 +1038,17 @@ def call_for_match(request, match_id):
     outcome = match_outcome(match)
     own_points, rival_points = club_score(match)
     # Qué le toca a quien mira la página, tenga o no jugador enlazado (H-06).
-    me = Player.objects.filter(club=request.club, user=request.user).first()
+    me_filter = Q(user=request.user) | Q(past_user=request.user) if history else Q(user=request.user)
+    me = Player.objects.filter(me_filter, club=request.club).first()
     my_status = match_phase.player_status(me, call, games) if me else None
     if me:
         for p in convocados:
             p.is_me = p.id == me.id
 
     return render(request, "call_for_match.html", {
+        "history_view": history,
         "my_availability": Availability.objects.filter(match=match, player=me).first() if me else None,
-        "can_answer": bool(me and match.draft_mode and call_availability.is_open(match)),
+        "can_answer": bool(me and not history and match.draft_mode and call_availability.is_open(match)),
         "availability": availability_context(request, match) if request.membership.can_manage else None,
         "call_for_match": call,
         "match_id": match.public_id,

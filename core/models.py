@@ -114,6 +114,14 @@ class MonthlyReportDelivery(models.Model):
         return f"{self.user} · {self.month:%Y-%m}"
 
 
+class ClubQuerySet(models.QuerySet):
+    """Consultas de clubes: ``live()`` deja fuera los archivados (cerrados, sin miembros, solo con historial)."""
+
+    def live(self):
+        """Clubes que no están archivados."""
+        return self.filter(archived_at__isnull=True)
+
+
 class Club(PublicIdModel):
     """
     Cada club es un "inquilino" de la aplicación: tiene sus propios jugadores,
@@ -132,6 +140,10 @@ class Club(PublicIdModel):
     # hasta que se reactive. No se borra nada.
     suspended_at = models.DateTimeField(null=True, blank=True)
     suspension_reason = models.CharField(max_length=500, blank=True)
+    # Club cerrado (``core.services.archive_club``): el último miembro lo abandonó. Ya no tiene miembros,
+    # invitaciones ni cuenta SNP y no aparece en ningún sitio, pero conserva jugadores, partidos y convocatorias para que
+    # las personas que jugaron en él sigan viendo sus estadísticas en «Yo». Solo el personal lo borra del todo.
+    archived_at = models.DateTimeField(null=True, blank=True)
     # El capitán cerró la lista de «Primeros pasos» de la portada (core.onboarding). Los
     # clubes que ya existían cuando se añadió la lista la tienen cerrada.
     onboarding_dismissed_at = models.DateTimeField(null=True, blank=True)
@@ -150,6 +162,13 @@ class Club(PublicIdModel):
         """Ficha de reglas de su competición (``core.competitions.Competition``)."""
         from .competitions import get_competition
         return get_competition(self.competition)
+
+    objects = ClubQuerySet.as_manager()
+
+    @property
+    def is_archived(self):
+        """True si el club está archivado (cerrado, solo con historial)."""
+        return self.archived_at is not None
 
     @property
     def is_suspended(self):

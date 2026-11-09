@@ -6,7 +6,7 @@
     <tbody>
     {% for c in clubs %}
         <tr>
-            <td><a href="{% url 'backoffice:club_detail' c.public_id %}">{{ c.name }}</a>{% if c.is_suspended %} <span class="z-badge z-badge--danger">{% translate "Suspendido" %}</span>{% endif %}</td>
+            <td><a href="{% url 'backoffice:club_detail' c.public_id %}">{{ c.name }}</a>{% if c.is_suspended %} <span class="z-badge z-badge--danger">{% translate "Suspendido" %}</span>{% endif %}{% if c.is_archived %} <span class="z-badge">{% translate "Archivado" %}</span>{% endif %}</td>
             <td>{{ c.get_competition_display }}</td>
             <td class="text-end">{{ c.n_members|default:0 }}</td>
             <td class="text-end">{{ c.n_players|default:0 }}</td>

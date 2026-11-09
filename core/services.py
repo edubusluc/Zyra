@@ -200,7 +200,7 @@ def account_delete_blocker(user):
     """
     Motivo (texto para el usuario) por el que ``user`` aún no puede eliminar su cuenta, o None si
     puede. Un capitán tiene que traspasar antes la capitanía a otro jugador enlazado; si es el
-    único miembro, abandonar el club (que se elimina con sus datos). Las cuentas del personal
+    único miembro, abandonar el club (que se cierra y conserva tus estadísticas). Las cuentas del personal
     de Zyra no se eliminan desde la web.
     """
     if user.is_staff or user.is_superuser:
@@ -208,8 +208,8 @@ def account_delete_blocker(user):
     captaincies = Membership.objects.filter(user=user, role=Membership.ADMIN).select_related("club")
     for membership in captaincies:
         if is_only_member(membership):
-            return _("Eres el único miembro de %(club)s. Abandona el club desde el menú (se eliminará con todos "
-                     "sus datos) y después podrás eliminar tu cuenta.") % {"club": membership.club.name}
+            return _("Eres el único miembro de %(club)s. Abandona el club desde el menú (se cerrará y tus "
+                     "estadísticas se conservan) y después podrás eliminar tu cuenta.") % {"club": membership.club.name}
         return _("Eres el capitán de %(club)s. Traspasa antes la capitanía a otro jugador enlazado desde "
                  "«Miembros»; si quieres cerrar el club, quita antes a todos los miembros.") % {"club": membership.club.name}
     return None
@@ -250,11 +250,34 @@ def club_name_matches(club, typed):
 @transaction.atomic
 def delete_club(club):
     """
-    Borra el club y todo lo que cuelga de él: equipo propio y rivales, jugadores, partidos,
+    Borra para siempre el club y todo lo que cuelga de él: equipo propio y rivales, jugadores, partidos,
     convocatorias, sanciones, cuenta SNP, invitaciones y miembros. Las fotos se borran del
-    almacenamiento con las señales de core.images. Las cuentas de usuario se conservan.
+    almacenamiento con las señales de core.images. Las cuentas de usuario se conservan. Solo lo usa el
+    personal (back-office); al abandonar el último miembro el club se archiva (``archive_club``).
     """
     club.delete()
+
+
+@transaction.atomic
+def archive_club(club):
+    """
+    Cierra el club sin perder el historial de las personas que jugaron en él. Quita lo vivo (miembros,
+    invitaciones y cuenta SNP, que lleva credenciales cifradas), deja las fichas enlazadas como fichas
+    anteriores de su cuenta (``past_user``, ``left_on``) y borra las fotos de las fichas sin cuenta. Se
+    conservan jugadores, partidos, convocatorias y resultados. Ya no puede entrar nadie: para borrarlo del
+    todo está ``delete_club`` (solo el personal, desde el back-office).
+    """
+    today = timezone.localdate()
+    for player in Player.objects.filter(club=club, user__isnull=False):
+        Player.objects.filter(pk=player.pk).update(user=None, past_user=player.user_id, left_on=player.left_on or today)
+    for player in Player.objects.filter(club=club, user__isnull=True, past_user__isnull=True).exclude(photo="").exclude(photo__isnull=True):
+        player.photo = None
+        player.save(update_fields=["photo"])
+    club.invitations.all().delete()
+    SnpAccount.objects.filter(club=club).delete()
+    club.memberships.all().delete()
+    club.archived_at = timezone.now()
+    club.save(update_fields=["archived_at"])
 
 
 @transaction.atomic
@@ -268,6 +291,8 @@ def remove_membership(membership):
     """
     from players.models import Player
 
-    Player.objects.filter(club=membership.club, user=membership.user).update(
-        user=None, past_user=membership.user, left_on=timezone.localdate())
+    today = timezone.localdate()
+    Player.objects.filter(club=membership.club, user=membership.user).update(user=None, past_user=membership.user)
+    # Una baja anterior (``left_on`` ya puesto) manda: salir del club después no vuelve a contar las convocatorias intermedias.
+    Player.objects.filter(club=membership.club, past_user=membership.user, left_on__isnull=True).update(left_on=today)
     membership.delete()

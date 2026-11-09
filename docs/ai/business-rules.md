@@ -72,8 +72,10 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
   solo puede eliminar el club tras desvincular todas las demás cuentas. Tests: `core/tests_account_lifecycle.py`.
 - [V] Un jugador solo puede jugar en clubes de una categoría; la pertenencia a un club es única por cuenta (regla anterior).
 - [V] No hay aprobación del capitán al unirse por enlace de invitación (decisión de producto).
-- [V] Si el único miembro abandona, el club se borra entero tras escribir su nombre exacto
-  (`club_name_matches`, `delete_club`). Tests: `core/tests_delete_club.py`.
+- [V] Si el único miembro abandona, el club se **archiva** tras escribir su nombre exacto
+  (`club_name_matches`, `archive_club`): se quitan miembros, invitaciones y cuenta SNP, las fichas enlazadas pasan a `past_user` y se
+  borran las fotos de las fichas sin cuenta; jugadores, partidos y resultados se conservan. Solo el personal lo borra de verdad
+  (`delete_club`, back-office). Tests: `core/tests_delete_club.py`.
 - [V] Quitar o abandonar desenlaza su `Player` (`remove_membership`); el jugador y sus estadísticas quedan.
 - [V] Alta de club: crea equipo propio (`is_own=True`, `in_group=True`) y membresía de capitán;
   el jugador del capitán se crea escribiendo su nombre o eligiéndolo del equipo traído de SNP (`CaptainSnpForm`).
@@ -266,7 +268,10 @@ ni se editan parejas (`edit_game_match`).
   «Yo» (`my_statistics`, solo `login_required`: funciona sin ningún club) muestra una fila por ficha, con la etiqueta «Equipo anterior» y sin
   enlace a ficha propia, y los gráficos juntan por competición las fichas de la misma (varios clubes); los puntos no se suman entre
   competiciones. Quien vuelve a un club ve «Tu ficha anterior» en `my_player` y, al enlazarla, se limpian `past_user` y `left_on`.
-  Tests: `core/tests_history.py`. Pendiente (en otros PR): archivar el club en vez de borrarlo, ficha y enfrentamiento históricos en solo lectura.
+  Una ficha con cuenta (`user` o `past_user`) no se elimina (`delete_player`), solo se da de baja; el capitán puede «Liberar ficha»
+  (`release_player`) y solo entonces otra cuenta puede reclamarla (`Player.is_claimable_by`). Desde «Yo» se abren la ficha
+  (`my_history_player`) y el enfrentamiento (`my_history_match`, solo si jugó en él; mismo 3D/clásico) de un equipo anterior, de solo
+  lectura (`spaces.history_request`: membresía sin guardar, sin gestión ni enlaces a otros jugadores). Tests: `core/tests_history.py`.
 
 - Un jugador solo cuenta convocatorias (apuntado, alineado, no apuntado; informe mensual incluido) desde su `joined_season`: `players.models.joined_by`. Los partidos jugados son hechos y no se filtran. El selector de convocatoria solo muestra las advertencias de la temporada actual (`call__match__season`); las estadísticas de advertencias siguen el selector de temporada.
 - [V] Solo cuentan partidos con el acta cerrada (`pairs.club_game_log`, `calculate_match_statistics`). Las consultas de `Game`/`Call` filtran también `match__draft_mode=False`.

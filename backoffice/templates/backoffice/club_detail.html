@@ -6,7 +6,7 @@
 <div class="z-page-head">
     <div>
         <span class="z-eyebrow"><a href="{% url 'backoffice:club_list' %}">{% translate "Clubes" %}</a> · {% with created=club.created_at|date_day %}{% blocktranslate %}alta el {{ created }}{% endblocktranslate %}{% endwith %}{% with team=club.own_team %}{% if team %} · {% blocktranslate with team_id=team.public_id %}id del equipo: {{ team_id }}{% endblocktranslate %}{% endif %}{% endwith %}</span>
-        <h1>{{ club.name }}{% if club.is_suspended %} <span class="z-badge z-badge--danger">{% translate "Suspendido" %}</span>{% endif %}</h1>
+        <h1>{{ club.name }}{% if club.is_suspended %} <span class="z-badge z-badge--danger">{% translate "Suspendido" %}</span>{% endif %}{% if club.is_archived %} <span class="z-badge">{% translate "Archivado" %}</span>{% endif %}</h1>
     </div>
     <div class="z-actions">
         {% if club.is_suspended %}
@@ -286,7 +286,7 @@
         <summary class="text-danger">{% translate "Eliminar el club" %}</summary>
         <form method="post" action="{% url 'backoffice:club_delete' club.public_id %}" class="mt-2" data-loading-text="{% translate 'Eliminando el club…' %}">
             {% csrf_token %}
-            <p class="text-muted">{% translate "Borra el club y todo lo suyo (jugadores, partidos, convocatorias, cuenta SNP…). Las cuentas de usuario se conservan. No se puede deshacer." %}</p>
+            <p class="text-muted">{% if club.is_archived %}{% translate "El club está archivado: conserva el historial de quienes jugaron en él. Borrarlo lo elimina también de sus estadísticas." %} {% endif %}{% translate "Borra el club y todo lo suyo (jugadores, partidos, convocatorias, cuenta SNP…). Las cuentas de usuario se conservan. No se puede deshacer." %}</p>
             <input class="form-control mb-2" name="confirm" required placeholder="{% translate 'Escribe el nombre del club' %}" aria-label="{% translate 'Nombre del club para confirmar' %}">
             <button class="btn btn-danger btn-sm">{% translate "Eliminar para siempre" %}</button>
         </form>

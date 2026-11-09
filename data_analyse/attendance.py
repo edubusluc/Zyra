@@ -14,7 +14,7 @@ def signup_attendance(club, season=None, match_type=None):
     % de jugadores que se apuntan a las convocatorias cerradas del club.
 
     En cada convocatoria, apuntados / jugadores que podían apuntarse: los de la plantilla actual
-    (``in_team``) que ya estaban en el equipo esa temporada (``joined_by``) más los que se apuntaron
+    (``in_team``) que ya estaban en el equipo esa temporada (``joined_by``) y todavía no se habían ido (``left_on``) más los que se apuntaron
     aunque hoy ya no estén. No se guarda quién estaba en la plantilla en cada fecha, así que las bajas
     que no se apuntaron no cuentan.
 
@@ -29,12 +29,13 @@ def signup_attendance(club, season=None, match_type=None):
         calls = calls.filter(match__season=season)
     calls = calls.select_related('match', 'match__local', 'match__visiting').prefetch_related('players') \
         .order_by('match__start_date', 'match_id')
-    squad = list(Player.objects.filter(club=club, in_team=True).values_list('id', 'joined_season'))
+    squad = list(Player.objects.filter(club=club, in_team=True).values_list('id', 'joined_season', 'left_on'))
 
     per_call = []
     for call in calls:
         signed = {p.id for p in call.players.all()}
-        eligible = {pid for pid, joined in squad if joined_by(joined, call.match.season)} | signed
+        eligible = {pid for pid, joined, left in squad
+                    if joined_by(joined, call.match.season) and (left is None or call.match.start_date <= left)} | signed
         per_call.append({
             'season': call.match.season,
             'label': f"{call.match.start_date:%d/%m} · {call.match.rival_label}",
