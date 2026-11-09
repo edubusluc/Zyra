@@ -6619,9 +6619,6 @@ msgid "Invita por email o comparte un enlace. Caduca a las 24 horas."
 msgstr "Invite by email or share a link. It expires after 24 hours."
 
 #: core/templates/club_members.html:61
-msgid "Más información"
-msgstr "More information"
-
 #: core/templates/club_members.html:62
 msgid ""
 "Podrá registrarse con usuario, email y contraseña o con Google, o unirse con"
@@ -16415,3 +16412,22 @@ msgstr "Replaced"
 #: core/templates/invitation_invalid.html:13
 msgid "Este enlace ya no vale: el capitán ha creado uno nuevo."
 msgstr "This link no longer works: the captain has created a new one."
+
+msgid "Quedan %(n)s correos de %(limit)s hoy."
+msgstr "%(n)s of %(limit)s emails left today."
+
+msgid "Correos hoy"
+msgstr "Emails today"
+
+msgid "Cupo diario de correos"
+msgstr "Daily email quota"
+
+msgid "Destinatarios con correo enviado hoy sobre el cupo diario del proveedor. Se avisa al personal cuando quedan pocos."
+msgstr "Recipients emailed today out of the provider's daily quota. Staff are alerted when few are left."
+
+msgid "Más información"
+msgstr "More information"
+
+#, python-format
+msgid "%(n)s restantes"
+msgstr "%(n)s left"

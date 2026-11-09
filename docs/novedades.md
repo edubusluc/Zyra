@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 09/11/2026 · Control de correos del día
+
+- **Cupo diario en el back-office**: el dashboard y «Correos enviados» muestran los correos de hoy sobre el límite del proveedor (300 por defecto, `EMAIL_DAILY_LIMIT`) y los que quedan.
+- **Aviso al personal**: cuando quedan 60 o menos (`EMAIL_DAILY_WARN_REMAINING`) aparece en «Qué atender» y se manda un correo de alerta (uno al día como mucho).
+
 ## 09/11/2026 · Aviso al sustituir el enlace de invitación
 
 - **Aviso antes de crear otro enlace**: si ya hay un enlace compartido activo, «Generar enlace de invitación» pide confirmación y explica que el actual dejará de funcionar (hasta cuándo valía y cuántas personas se han unido).

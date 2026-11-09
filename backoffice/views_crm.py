@@ -28,6 +28,7 @@ from players.models import Player
 from team.models import Team
 
 from . import impersonation, mass_email
+from .metrics import email_quota
 from .audit import ACTIONS, audit
 from .decorators import staff_required, superuser_required
 from .richtext import html_to_text, sanitize_html
@@ -80,7 +81,7 @@ def email_log(request):
         emails = emails.filter(status=status)
     return render(request, "backoffice/email_log.html", {
         "section": "emails", "page": _page(request, emails), "q": q, "status": status,
-        "statuses": EmailLog.STATUSES, "extra": _extra(request, "q", "status"),
+        "statuses": EmailLog.STATUSES, "extra": _extra(request, "q", "status"), "email_quota": email_quota(),
     })
 
 

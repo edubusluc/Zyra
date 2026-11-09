@@ -39,7 +39,7 @@ from .audit import audit
 from .csvsafe import csv_safe
 from .decorators import staff_required, superuser_required
 from .metrics import (
-    AT_RISK_DAYS, ONLINE_MINUTES, accounts_without_club, annotate_clubs, attention_counts, attention_items, daily_trend, dashboard_kpis,
+    AT_RISK_DAYS, ONLINE_MINUTES, accounts_without_club, annotate_clubs, attention_counts, attention_items, daily_trend, dashboard_kpis, email_quota,
     error_summary, funnel, google_user_ids, health_metrics, load_metrics, online_users, usage_metrics,
 )
 from .middleware import SLOW_MS, flush_metrics
@@ -74,7 +74,7 @@ def dashboard(request):
     return render(request, "backoffice/dashboard.html", {
         "section": "dashboard", "kpis": dashboard_kpis(), "at_risk_days": AT_RISK_DAYS,
         "attention": attention_items(counts), "trend": daily_trend(30),
-        "scheduler": scheduler_status(),
+        "scheduler": scheduler_status(), "email_quota": email_quota(),
     })
 
 
