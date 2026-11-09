@@ -6,6 +6,7 @@ darse de baja; las estadísticas y la otra competición se conservan.
 import datetime
 
 from django.contrib.auth import get_user_model
+from django.core import mail
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -21,8 +22,8 @@ User = get_user_model()
 PASSWORD = "pass-12345-x"
 
 
-class BajaTests(TestCase):
-    """Un capitán, un jugador con cuenta y otro sin cuenta en el mismo club SNP."""
+class BajaFixture(TestCase):
+    """Un capitán, un jugador con cuenta y otro sin cuenta en el mismo club SNP, con un enfrentamiento abierto y uno cerrado."""
 
     def setUp(self):
         self.captain = User.objects.create_user("cap", password=PASSWORD, email="cap@example.com")
@@ -44,6 +45,10 @@ class BajaTests(TestCase):
         call = Call.objects.create(match=match, draft_mode=draft_mode)
         call.players.add(self.sheet, self.free, self.captain_sheet)
         return match, call
+
+
+class BajaTests(BajaFixture):
+    """Efectos de la baja de plantilla."""
 
     def test_baja_with_account_removes_membership_and_keeps_history(self):
         dar_de_baja(self.sheet)
@@ -158,3 +163,67 @@ class BajaTests(TestCase):
         self.assertEqual(self.sheet.user, self.user)
         self.assertTrue(self.sheet.in_team)
         self.assertIsNone(self.sheet.left_on)
+
+
+class BajaEmailAndPopupTests(BajaFixture):
+    """Correo al jugador dado de baja y datos del popup de confirmación."""
+
+    def _baja(self, player, by=None):
+        """Da de baja ``player`` ejecutando los correos que quedan para después de confirmar la transacción."""
+        with self.captureOnCommitCallbacks(execute=True):
+            dar_de_baja(player, by or self.captain)
+
+    def test_baja_with_account_emails_the_player(self):
+        self._baja(self.sheet)
+        self.assertEqual(len(mail.outbox), 1)
+        message = mail.outbox[0]
+        self.assertEqual(message.to, ["edu@example.com"])
+        self.assertIn("Club A", message.subject)
+        self.assertIn("Mis estadísticas", message.body)
+
+    def test_baja_without_account_sends_nothing(self):
+        self._baja(self.free)
+        self.assertEqual(mail.outbox, [])
+
+    def test_baja_without_email_or_with_muted_club_emails_sends_nothing(self):
+        User.objects.filter(pk=self.user.pk).update(email="")
+        self.sheet.refresh_from_db()
+        self.sheet.user.refresh_from_db()
+        self._baja(self.sheet)
+        self.assertEqual(mail.outbox, [])
+        other = User.objects.create_user("ana", password=PASSWORD, email="ana@example.com")
+        Membership.objects.create(user=other, club=self.club, role=Membership.MEMBER)
+        muted = Player.objects.create(club=self.club, user=other, name="Ana", last_name="C", emails_muted=True)
+        self._baja(muted)
+        self.assertEqual(mail.outbox, [])
+
+    def test_leaving_the_club_yourself_sends_nothing(self):
+        self.client.login(username="edu", password=PASSWORD)
+        with self.captureOnCommitCallbacks(execute=True):
+            self.client.post(reverse("leave_club"))
+        self.assertEqual(mail.outbox, [])
+
+    def test_captain_removing_a_member_emails_them(self):
+        self.client.login(username="cap", password=PASSWORD)
+        membership = Membership.objects.get(user=self.user, club=self.club)
+        with self.captureOnCommitCallbacks(execute=True):
+            self.client.post(reverse("remove_member", args=[membership.public_id]))
+        self.assertEqual([m.to for m in mail.outbox], [["edu@example.com"]])
+
+    def test_edit_player_baja_via_the_form_emails_the_player(self):
+        self.client.login(username="cap", password=PASSWORD)
+        data = {"name": "Edu", "last_name": "B", "position": "NONE", "skillfull_hand": "NONE",
+                "joined_season": self.sheet.joined_season or ""}
+        with self.captureOnCommitCallbacks(execute=True):
+            self.client.post(reverse("edit_player", args=[self.sheet.public_id]), data)
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_pages_carry_the_confirmation_data(self):
+        self.client.login(username="cap", password=PASSWORD)
+        page = self.client.get(reverse("edit_player", args=[self.sheet.public_id]))
+        self.assertContains(page, "data-baja-confirm")
+        self.assertContains(page, 'data-linked="1"')
+        self.assertContains(page, "baja-confirm.js")
+        roster = self.client.get(reverse("manage_roster"))
+        self.assertContains(roster, "data-baja-confirm")
+        self.assertContains(roster, 'data-linked="0"')

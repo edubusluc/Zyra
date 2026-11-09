@@ -83,7 +83,9 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
   cuenta enlazada quita la membresía (`remove_membership`; un gestor pierde también el rol) y queda libre para otro equipo de esa
   competición; sin cuenta solo sale de la plantilla y de las convocatorias abiertas. El capitán no se puede dar de baja
   (`removal_blocker`, `RemovalError`): antes traspasa la capitanía. Volver a su ficha anterior con «Soy yo» (`link_player`) es un alta
-  (`in_team=True`). Tests: `core/tests_baja.py`.
+  (`in_team=True`). Al guardar una baja el capitán confirma en un popup (`static/js/baja-confirm.js`, sobre `static/js/confirm-modal.js`, que avisa de las
+  cuentas afectadas) y el jugador con cuenta recibe un correo (`notify_removal` → `send_removed_email`, plantillas `emails/removed.*`, al confirmar
+  la transacción; no sale si abandona él, si no tiene email o si el capitán le bloqueó los correos del club). Tests: `core/tests_baja.py`.
 - [V] Alta de club: crea equipo propio (`is_own=True`, `in_group=True`) y membresía de capitán;
   el jugador del capitán se crea escribiendo su nombre o eligiéndolo del equipo traído de SNP (`CaptainSnpForm`).
 - [V] Login con usuario o email (`ACCOUNT_LOGIN_METHODS`); verificación de email opcional

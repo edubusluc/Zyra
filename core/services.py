@@ -16,6 +16,7 @@ from players.models import Player, SnpAccount
 from team.models import Team
 from .blocklist import is_user_blocked
 from .competitions import COMPETITIONS
+from .emails import send_removed_email
 from .models import Club, Invitation, Membership
 
 User = get_user_model()
@@ -325,6 +326,20 @@ def remove_membership(membership):
     membership.delete()
 
 
+def notify_removal(membership, by=None, site_url=""):
+    """
+    Avisa por correo al jugador de que lo han dado de baja del equipo (lo hace el capitán o un gestor; quien
+    abandona él mismo no recibe nada). No sale si la cuenta no tiene email o si el capitán le bloqueó los correos
+    del club. Se envía al confirmar la transacción, así una baja que se deshace no avisa de nada.
+    """
+    user, club = membership.user, membership.club
+    if not user.email:
+        return
+    if Player.objects.filter(club=club, user=user, emails_muted=True).exists():
+        return
+    transaction.on_commit(lambda: send_removed_email(user, club, by, site_url=site_url))
+
+
 class RemovalError(Exception):
     """La baja no se puede hacer; el mensaje explica el motivo al usuario."""
     pass
@@ -338,7 +353,7 @@ def removal_blocker(player):
 
 
 @transaction.atomic
-def dar_de_baja(player):
+def dar_de_baja(player, by=None, site_url=""):
     """
     Baja de la plantilla de ``player`` (la hace el capitán o un gestor). Dar de baja a un jugador con cuenta
     enlazada es echarlo del equipo: se le quita la membresía (``remove_membership``), así que deja de ver
@@ -346,7 +361,7 @@ def dar_de_baja(player):
     estadísticas». Sea con cuenta o sin ella, desaparece de las convocatorias y alineaciones por jugar y
     la ficha queda fuera de la plantilla con el día de baja. El capitán no puede darse de baja: antes
     tiene que traspasar la capitanía (``RemovalError``). Devuelve la membresía quitada, o None si la
-    ficha no tenía cuenta.
+    ficha no tenía cuenta. Con cuenta, avisa al jugador por correo (``notify_removal``; ``by`` es quien lo da de baja).
     """
     blocker = removal_blocker(player)
     if blocker:
@@ -355,6 +370,7 @@ def dar_de_baja(player):
     if player.user_id:
         membership = Membership.objects.select_related("user", "club").filter(club=player.club, user_id=player.user_id).first()
     if membership is not None:
+        notify_removal(membership, by, site_url)
         remove_membership(membership)
     else:
         leave_open_matches([player.pk])
