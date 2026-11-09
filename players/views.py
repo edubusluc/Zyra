@@ -8,7 +8,7 @@ from django.contrib import messages
 from match.models import Game
 from players.models import Player, SnpAccount, SnpTeamImport
 from core.crypto import DecryptionError
-from core.services import AltaError, RemovalError, alta_blocker, dar_de_alta, dar_de_baja, removal_blocker
+from core.services import AltaError, RemovalError, alta_blocker, dar_de_alta, dar_de_baja, open_matches_with, removal_blocker
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET, require_POST
 from django.urls import reverse
@@ -155,6 +155,15 @@ def _complete_team_context(club):
         'same_options': snp_import.same_player_options(club) if active and active.to_add else [],
     }
 
+def _warn_open_matches(request, match_ids):
+    """Avisa de cuántos enfrentamientos abiertos se quedan con huecos en la convocatoria o la alineación tras una baja."""
+    if match_ids:
+        messages.warning(request, ngettext(
+            "La baja deja huecos en %(n)s enfrentamiento abierto: revisa su convocatoria y su alineación.",
+            "La baja deja huecos en %(n)s enfrentamientos abiertos: revisa sus convocatorias y alineaciones.",
+            len(match_ids)) % {"n": len(match_ids)})
+
+
 @spaces.follow_player
 @club_manager_required
 def edit_player(request, player_id):
@@ -175,6 +184,7 @@ def edit_player(request, player_id):
                 form.add_error('in_team', blocker)
                 player.in_team = was_in_team  # el formulario ya lo había cambiado en memoria; no se ha guardado
             else:
+                affected = open_matches_with([player.pk]) if leaving else set()
                 with transaction.atomic():
                     form.save()
                     if leaving:
@@ -184,6 +194,7 @@ def edit_player(request, player_id):
                         messages.success(request, _("%(player)s vuelve a la plantilla y le hemos enviado una invitación para que recupere su acceso al equipo.")
                                          % {"player": form.instance.short_name})
                 if leaving:
+                    _warn_open_matches(request, affected)
                     _warn_if_roster_empty(request)
                 return redirect('list_players')
 
@@ -270,9 +281,11 @@ def manage_roster(request):
                 messages.error(request, str(exc))
         players.filter(id__in=in_team_ids, past_user__isnull=True).update(left_on=None)
         left = 0
+        affected = set()
         # Dar de baja a quien tiene cuenta es echarlo del equipo; el capitán no se puede dar de baja.
         for leaving in players.exclude(id__in=in_team_ids).filter(in_team=True):
             try:
+                affected |= open_matches_with([leaving.pk])
                 dar_de_baja(leaving, request.user, request.build_absolute_uri('/'))
                 left += 1
             except RemovalError as exc:
@@ -283,6 +296,7 @@ def manage_roster(request):
             left_text = ngettext("%(n)s baja", "%(n)s bajas", left) % {"n": left}
             messages.success(request, _("Plantilla actualizada: %(joined)s y %(left)s.") % {"joined": joined_text, "left": left_text})
             if left:
+                _warn_open_matches(request, affected)
                 _warn_if_roster_empty(request)
         else:
             messages.info(request, _("No había cambios que guardar."))
