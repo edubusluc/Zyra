@@ -16213,6 +16213,24 @@ msgstr ""
 msgid "Convocatoria cerrada. El informe no se ha vuelto a enviar."
 msgstr "Call-up closed. The report was not sent again."
 
+msgid "Convocatoria cerrada. La fecha del enfrentamiento ya pasó: no se ha enviado el informe por email, pero puedes descargarlo desde esta página."
+msgstr "Call-up closed. The match date has passed: the report was not emailed, but you can download it from this page."
+
+msgid "Enviar el informe por email"
+msgstr "Email the report"
+
+msgid "La fecha del enfrentamiento ya pasó: por defecto no se envía el informe. Márcalo solo si lo necesitas."
+msgstr "The match date has passed: by default the report is not sent. Tick it only if you need it."
+
+msgid "La fecha del enfrentamiento ya pasó: no se enviará el informe salvo que marques la casilla."
+msgstr "The match date has passed: the report will not be sent unless you tick the box."
+
+msgid "Enviar el correo con los resultados"
+msgstr "Send the results email"
+
+msgid "Es un enfrentamiento antiguo: por defecto no se avisa del resultado por correo. Márcalo solo si quieres avisar al club."
+msgstr "This is an old match: by default the result is not emailed. Tick it only if you want to notify the club."
+
 msgid "Convocatoria reabierta por %(user)s el día %(when)s;"
 msgstr "Call reopened by %(user)s on %(when)s;"
 

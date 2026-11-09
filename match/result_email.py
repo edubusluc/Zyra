@@ -26,7 +26,7 @@ from players.models import Player
 
 from . import outcomes
 from .models import MatchResultDelivery
-from .notifications import LEASE, MAX_ATTEMPTS, RETRY_DELAYS, _close
+from .notifications import LEASE, MAX_ATTEMPTS, RETRY_DELAYS, _close, is_old_match
 
 logger = logging.getLogger(__name__)
 
@@ -224,11 +224,13 @@ def deliver(deliveries, now=None):
 def notify_match_closed(match, resend=False):
     """
     Avisa del resultado al cerrarse el acta: encola y envía al momento. Si el acta ya se cerró antes
-    (``reopened_at``) solo lo hace con ``resend``. Nunca lanza: si algo falla
+    (``reopened_at``) o es un enfrentamiento antiguo (``is_old_match``) solo lo hace con ``resend``. Nunca lanza: si algo falla
     (SMTP caído, SITE_URL sin configurar…) el aviso queda pendiente o se registra, y el acta sigue cerrada.
     """
     if match.reopened_at is not None and not resend:
         return  # recierre tras reabrir: el resultado ya se avisó, solo se repite si el capitán lo pide
+    if is_old_match(match) and not resend:
+        return  # partido de hace más de 14 días: no se avisa salvo que el capitán lo pida
     try:
         deliver(queue_match_result(match, force=resend))
     except Exception:

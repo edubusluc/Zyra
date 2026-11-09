@@ -15,7 +15,7 @@ from django.contrib import messages
 from .forms import MatchForm, MatchDateForm
 from .models import Match, Game, Result
 from . import league, lineup, month_view, outcomes, pair_no_show, phase as match_phase
-from .notifications import admin_emails, send_call_report, report_filename
+from .notifications import admin_emails, is_old_match, is_past_match, send_call_report, report_filename
 from .result_email import notify_match_closed
 from call.models import ReportDelivery
 from .report import build_report, suggested_lineups
@@ -639,7 +639,10 @@ def close_call(request, match_id):
         resend = request.POST.get("resend_report") == "1" or bool(request.POST.get("force_finals"))
         call.draft_mode = False
         call.save()
-        if already_sent and not resend:
+        if is_past_match(call.match) and not already_sent and not resend:
+            messages.success(request, _("Convocatoria cerrada. La fecha del enfrentamiento ya pasó: no se ha enviado el informe "
+                                        "por email, pero puedes descargarlo desde esta página."))
+        elif already_sent and not resend:
             messages.success(request, _("Convocatoria cerrada. El informe no se ha vuelto a enviar."))
         else:
             _send_report(request, call, _("Convocatoria cerrada"))
@@ -1070,6 +1073,8 @@ def _ficha_page(request, match, history=False):
         "score_local": split_points(match.result_points)[0] if outcome else None,
         "score_visiting": split_points(match.result_points)[1] if outcome else None,
         "is_future": match.start_date > today,
+        "old_match": is_old_match(match),
+        "past_match": is_past_match(match),
         "stage_view": UserPreference.match_stage_for(request.user),
         "countdown": stage_countdown(match, today),
         "stage_card": stage_card(match, call, convocados, games, lineup_rows(match, games, me.id if me else None),
@@ -1382,6 +1387,8 @@ def enter_results(request, match_id):
 
     return render(request, "enter_results.html", {
         "match": match, "rows": rows, "is_future": match.start_date > timezone.localdate(),
+        "old_match": is_old_match(match),
+        "past_match": is_past_match(match),
         "no_show_choices": Game.NO_SHOW_CHOICES,
         # Para la vista previa del reparto de «pareja no presentada» (SNP, 20.2) en result-form.js.
         "no_show_points": [match.club.rules.points_for(g.n_game) for g in games],

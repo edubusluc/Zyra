@@ -7,6 +7,9 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 - **Barras horizontales** con una fila por convocatoria: fecha y rival en dos líneas (rival recortado, nombre completo al pasar el ratón o tocar), sin giros ni solapes, en móvil y escritorio.
 
+## 09/11/2026 · Sin correos de partidos antiguos
+
+- **Informe de convocatoria**: si la fecha del enfrentamiento ya pasó, al cerrar la convocatoria no se envía el informe por correo (solo sirve antes de jugar). **Aviso de resultado**: no se envía si el enfrentamiento es de hace más de 14 días. Así dar de alta la temporada pasada no llena las bandejas ni gasta el cupo diario. La confirmación trae una casilla, desmarcada, para enviarlo igualmente; el informe sigue descargable.
 ## 09/11/2026 · Jugadores: aviso de jugadores nuevos solo al inicio de temporada
 
 - **«¿Han llegado jugadores nuevos?»**: en Jugadores el aviso con «Pedir actualización a Zyra» deja de salir cuando el «Completar equipo» de la temporada ya se ha hecho bien (desde el 1 de julio); vuelve a salir al empezar la siguiente.
