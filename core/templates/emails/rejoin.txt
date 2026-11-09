@@ -1,0 +1,10 @@
+{% load i18n tz %}{% load zyra_format %}{% autoescape off %}{% if inviter %}{% blocktranslate trimmed with name=inviter club=club.name %}{{ name }}, capitán de {{ club }}, te ha dado de alta de nuevo en el equipo.{% endblocktranslate %}{% else %}{% blocktranslate trimmed with club=club.name %}Te han dado de alta de nuevo en {{ club }}.{% endblocktranslate %}{% endif %}
+
+{% blocktranslate trimmed with player=player.full_name %}Al aceptar recuperas tu ficha ({{ player }}) con todas tus estadísticas y vuelves a ver el equipo, los enfrentamientos y las convocatorias.{% endblocktranslate %}
+
+{% translate "Aceptar invitación" %}: {{ url }}
+
+{% blocktranslate trimmed with date=expires_at|timezone:"Europe/Madrid"|date_day time=expires_at|timezone:"Europe/Madrid"|date:"H:i" %}La invitación caduca el {{ date }} a las {{ time }}.{% endblocktranslate %}
+
+{% translate "Un saludo," %}
+{% translate "El equipo de Zyra" %}{% endautoescape %}

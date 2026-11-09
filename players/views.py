@@ -8,7 +8,7 @@ from django.contrib import messages
 from match.models import Game
 from players.models import Player, SnpAccount, SnpTeamImport
 from core.crypto import DecryptionError
-from core.services import RemovalError, dar_de_baja, removal_blocker
+from core.services import AltaError, RemovalError, alta_blocker, dar_de_alta, dar_de_baja, removal_blocker
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET, require_POST
 from django.urls import reverse
@@ -169,15 +169,20 @@ def edit_player(request, player_id):
         if form.is_valid():
             was_in_team = Player.objects.filter(pk=player.pk, in_team=True).exists()
             leaving = was_in_team and not form.cleaned_data.get('in_team')
-            blocker = removal_blocker(player) if leaving else None
+            joining = not was_in_team and form.cleaned_data.get('in_team')
+            blocker = removal_blocker(player) if leaving else (alta_blocker(player) if joining else None)
             if blocker:
                 form.add_error('in_team', blocker)
+                player.in_team = was_in_team  # el formulario ya lo había cambiado en memoria; no se ha guardado
             else:
                 with transaction.atomic():
                     form.save()
                     if leaving:
                         # Una baja con cuenta enlazada es echar del equipo (membresía y convocatorias abiertas).
                         dar_de_baja(form.instance, request.user, request.build_absolute_uri('/'))
+                    elif joining and dar_de_alta(form.instance, request.user, request.build_absolute_uri('/')):
+                        messages.success(request, _("Hemos enviado una invitación a %(player)s para que vuelva al equipo.")
+                                         % {"player": form.instance.short_name})
                 if leaving:
                     _warn_if_roster_empty(request)
                 return redirect('list_players')
@@ -253,7 +258,16 @@ def manage_roster(request):
     if request.method == "POST":
         in_team_ids = {int(i) for i in request.POST.getlist('in_team') if i.isdigit()}
         # Las altas quitan la fecha de baja salvo en quien salió del club con su cuenta (conserva el día).
-        joined = players.filter(id__in=in_team_ids, in_team=False).update(in_team=True)
+        joined = 0
+        # Dar de alta a quien dejó una cuenta es invitarla por email a volver; si ya tiene otro equipo, no se puede.
+        for joining in players.filter(id__in=in_team_ids, in_team=False):
+            try:
+                if dar_de_alta(joining, request.user, request.build_absolute_uri('/')):
+                    messages.success(request, _("Hemos enviado una invitación a %(player)s para que vuelva al equipo.")
+                                     % {"player": joining.short_name})
+                joined += 1
+            except AltaError as exc:
+                messages.error(request, str(exc))
         players.filter(id__in=in_team_ids, past_user__isnull=True).update(left_on=None)
         left = 0
         # Dar de baja a quien tiene cuenta es echarlo del equipo; el capitán no se puede dar de baja.

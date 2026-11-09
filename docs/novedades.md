@@ -3,6 +3,15 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 09/11/2026 · Baja de plantilla = salir del equipo
+
+- **Dar de baja** a un jugador con cuenta lo saca del equipo: deja de ver enfrentamientos, convocatorias y estadísticas del equipo, queda libre para unirse a otro y conserva sus estadísticas en «Mis estadísticas». Sin cuenta, solo sale de la plantilla.
+- **Convocatorias**: quien causa baja (o abandona el club) desaparece de las convocatorias y alineaciones sin resultado de los enfrentamientos abiertos; lo ya jugado no cambia.
+- **Aviso al capitán**: al guardar una baja sale un popup que dice cuántos jugadores salen y qué cuentas dejan de ver el equipo. El capitán no se puede dar de baja: antes traspasa la capitanía.
+- **Correo al jugador** dado de baja (no si abandona él, no tiene email o tiene los correos del club bloqueados).
+- **Abandonar el club** ahora también es baja de plantilla.
+- **Dar de alta de nuevo** a alguien que salió envía una invitación por email a su cuenta; al aceptar recupera su ficha y sus estadísticas. No se puede si ese email ya tiene equipo en la competición.
+
 ## 09/11/2026 · Asistencia a las convocatorias legible
 
 - **Barras horizontales** con una fila por convocatoria: fecha y rival en dos líneas (rival recortado, nombre completo al pasar el ratón o tocar), sin giros ni solapes, en móvil y escritorio.

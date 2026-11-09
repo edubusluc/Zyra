@@ -12,8 +12,8 @@ from django.urls import reverse
 from django.utils import timezone
 
 from call.models import Call
-from core.models import Membership
-from core.services import RemovalError, create_club, dar_de_baja, leave_open_matches
+from core.models import Invitation, Membership
+from core.services import AltaError, RemovalError, alta_blocker, dar_de_alta, create_club, dar_de_baja, leave_open_matches
 from match.models import Game, Match, Result
 from players.models import Player
 from team.models import Team
@@ -227,3 +227,101 @@ class BajaEmailAndPopupTests(BajaFixture):
         roster = self.client.get(reverse("manage_roster"))
         self.assertContains(roster, "data-baja-confirm")
         self.assertContains(roster, 'data-linked="0"')
+
+
+class AltaTests(BajaFixture):
+    """Alta de una ficha que dejó una cuenta: invitación por email, comprobada por email y competición."""
+
+    def setUp(self):
+        super().setUp()
+        dar_de_baja(self.sheet, self.captain)
+        self.sheet.refresh_from_db()
+        mail.outbox.clear()
+
+    def _alta(self, player=None):
+        """Da de alta ejecutando los correos que quedan para después de confirmar la transacción."""
+        with self.captureOnCommitCallbacks(execute=True):
+            return dar_de_alta(player or self.sheet, self.captain, "https://zyra.test/")
+
+    def test_alta_invites_the_former_account_to_return(self):
+        invitation = self._alta()
+        self.assertEqual((invitation.email, invitation.player, invitation.club), ("edu@example.com", self.sheet, self.club))
+        self.assertEqual([m.to for m in mail.outbox], [["edu@example.com"]])
+        self.assertIn(invitation.token, mail.outbox[0].body)
+        self.sheet.refresh_from_db()
+        self.assertTrue(self.sheet.in_team)
+        self.assertFalse(Membership.objects.filter(user=self.user, club=self.club).exists())
+
+    def test_accepting_the_invitation_restores_membership_sheet_and_stats(self):
+        invitation = self._alta()
+        self.client.login(username="edu", password=PASSWORD)
+        self.client.post(reverse("respond_copy_invitation", args=[invitation.token]), {"action": "accept"})
+        self.sheet.refresh_from_db()
+        self.assertTrue(Membership.objects.filter(user=self.user, club=self.club).exists())
+        self.assertEqual(self.sheet.user, self.user)
+        self.assertIsNone(self.sheet.past_user)
+        self.assertIsNone(self.sheet.left_on)
+        self.assertTrue(self.sheet.in_team)
+
+    def test_declining_leaves_the_sheet_out_of_the_team(self):
+        invitation = self._alta()
+        self.client.login(username="edu", password=PASSWORD)
+        self.client.post(reverse("respond_copy_invitation", args=[invitation.token]), {"action": "decline"})
+        self.sheet.refresh_from_db()
+        self.assertFalse(self.sheet.in_team)
+        self.assertIsNone(self.sheet.user)
+        self.assertFalse(Invitation.objects.filter(pk=invitation.pk).exists())
+
+    def test_alta_is_refused_if_the_email_already_has_a_team_in_the_competition(self):
+        other_captain = User.objects.create_user("otro", password=PASSWORD, email="otro@example.com")
+        other = create_club("Club B", "Sevilla", other_captain, division="500")
+        Membership.objects.create(user=self.user, club=other, role=Membership.MEMBER)
+        self.assertIn("ya tiene un equipo", alta_blocker(self.sheet))
+        with self.assertRaises(AltaError):
+            self._alta()
+        self.sheet.refresh_from_db()
+        self.assertFalse(self.sheet.in_team)
+        self.assertEqual(mail.outbox, [])
+
+    def test_alta_in_another_competition_is_allowed(self):
+        lapi_captain = User.objects.create_user("lcap", password=PASSWORD, email="lcap@example.com")
+        lapi = create_club("Club LAPI", "Sevilla", lapi_captain, competition="lapi")
+        Membership.objects.create(user=self.user, club=lapi, role=Membership.MEMBER)
+        self.assertIsNotNone(self._alta())
+
+    def test_alta_needs_an_email(self):
+        User.objects.filter(pk=self.user.pk).update(email="")
+        self.sheet.refresh_from_db()
+        self.assertIn("no tiene email", alta_blocker(self.sheet))
+
+    def test_second_alta_replaces_the_pending_invitation(self):
+        first = self._alta()
+        Player.objects.filter(pk=self.sheet.pk).update(in_team=False)
+        second = self._alta()
+        self.assertFalse(Invitation.objects.filter(pk=first.pk).exists())
+        self.assertEqual(Invitation.objects.filter(player=self.sheet).count(), 1)
+        self.assertNotEqual(first.token, second.token)
+
+    def test_sheet_without_account_just_returns_to_the_squad(self):
+        dar_de_baja(self.free)
+        self.assertIsNone(self._alta(self.free))
+        self.free.refresh_from_db()
+        self.assertTrue(self.free.in_team)
+        self.assertIsNone(self.free.left_on)
+        self.assertEqual(mail.outbox, [])
+
+    def test_ticking_en_el_equipo_in_edit_player_sends_the_invitation(self):
+        self.client.login(username="cap", password=PASSWORD)
+        data = {"name": "Edu", "last_name": "B", "position": "NONE", "skillfull_hand": "NONE", "in_team": "on",
+                "joined_season": self.sheet.joined_season or ""}
+        with self.captureOnCommitCallbacks(execute=True):
+            self.client.post(reverse("edit_player", args=[self.sheet.public_id]), data)
+        self.assertEqual(Invitation.objects.filter(player=self.sheet).count(), 1)
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_ticking_in_manage_roster_sends_the_invitation_and_refuses_a_taken_email(self):
+        self.client.login(username="cap", password=PASSWORD)
+        with self.captureOnCommitCallbacks(execute=True):
+            self.client.post(reverse("manage_roster"), {"in_team": [self.sheet.pk, self.free.pk, self.captain_sheet.pk]})
+        self.assertEqual(Invitation.objects.filter(player=self.sheet).count(), 1)
+        self.assertEqual(len(mail.outbox), 1)

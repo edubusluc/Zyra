@@ -153,6 +153,35 @@ def send_removed_email(user, club, removed_by=None, site_url=""):
     return True
 
 
+def send_rejoin_email(invitation, url):
+    """
+    Invitación para volver al equipo: el capitán o un gestor da de alta de nuevo a una persona que salió o fue
+    dada de baja, y al aceptar recupera su ficha y sus estadísticas. Devuelve True si el correo salió; un fallo
+    se registra y no interrumpe el alta.
+    """
+    inviter = invitation.created_by
+    context = {
+        "club": invitation.club,
+        "player": invitation.player,
+        "inviter": (inviter.get_full_name() or inviter.username) if inviter else "",
+        "url": url,
+        "expires_at": invitation.expires_at,
+    }
+    email = build_email(
+        _("Te han dado de alta de nuevo en %(club)s en Zyra") % {"club": invitation.club.name},
+        render_to_string("emails/rejoin.txt", context),
+        render_to_string("emails/rejoin.html", context),
+        to=[invitation.email],
+        reply_to=[inviter.email] if inviter and inviter.email else None,
+    )
+    try:
+        email.send(fail_silently=False)
+    except Exception:  # SMTP caído, credenciales mal configuradas...
+        logger.exception("No se pudo enviar la invitación para volver a %s", invitation.email)
+        return False
+    return True
+
+
 def send_invitation_email(invitation, url):
     """
     Envía la invitación de un capitán al email indicado. Devuelve True si el

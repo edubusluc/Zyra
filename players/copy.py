@@ -163,7 +163,13 @@ def pending_for(user):
 
 
 def decline(invitation):
-    """Rechaza la invitación de una ficha copiada: la ficha se queda sin enlazar y el capitán puede borrarla."""
+    """
+    Rechaza la invitación de una ficha copiada: la ficha se queda sin enlazar y el capitán puede borrarla. Si era
+    la invitación para volver al equipo (la ficha dejó esa cuenta, ``past_user``), la ficha vuelve a estar fuera.
+    """
+    player = invitation.player
+    if player is not None and player.user_id is None and player.past_user_id:
+        Player.objects.filter(pk=player.pk).update(in_team=False)
     invitation.delete()
 
 
@@ -176,7 +182,8 @@ def _link(sheet, user):
     if current is not None:
         sheet.name, sheet.last_name, sheet.photo = current.name, current.last_name, current.photo.name or None
     sheet.user = user
-    sheet.save(update_fields=["user", "name", "last_name", "photo"])
+    sheet.in_team = True  # entrar en el equipo es un alta (también al volver a una ficha que estaba de baja)
+    sheet.save(update_fields=["user", "name", "last_name", "photo", "in_team"])
 
 
 def link_player(invitation, user):
