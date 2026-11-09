@@ -166,7 +166,7 @@ class UsabilityTests(ReviewBase):
         self.client.force_login(stranger)
         response = self.client.get(self.url)
         self.assertContains(response, "Cambiar de cuenta", status_code=403)
-        self.assertContains(response, "pídele una invitación", status_code=403)
+        self.assertContains(response, "Pídele una invitación", status_code=403)
 
     def test_u09_old_link_gets_an_explanation(self):
         """Un enlace sustituido da «Este enlace ya no es válido» con 404."""

@@ -3,7 +3,7 @@ Vistas generales de Zyra: portada, inicio de sesión, páginas de error, alta de
 cambio de club activo, gestión de miembros e invitaciones.
 """
 import datetime
-from urllib.parse import urlencode
+from urllib.parse import quote, urlencode
 
 from allauth.account.models import EmailAddress
 from allauth.socialaccount.models import SocialAccount
@@ -521,13 +521,20 @@ def register(request):
     return render(request, "register_choose.html")
 
 
+def _safe_next(request):
+    """Destino ``next`` (GET o POST) si es una ruta de este mismo sitio; si no, cadena vacía."""
+    target = request.POST.get("next") or request.GET.get("next") or ""
+    return target if target and url_has_allowed_host_and_scheme(target, allowed_hosts={request.get_host()}) else ""
+
+
 @require_http_methods(["GET", "POST"])
 def register_account(request):
     """
     Alta de una cuenta sin club, para quien espera a que un capitán lo invite (enlace
     compartido o email). Quien ya tiene sesión no se registra de nuevo: va a su portada
     o, si no tiene club, a la página de espera. Más tarde puede registrar un club
-    (``register_club``) o aceptar una invitación.
+    (``register_club``) o aceptar una invitación. Con ``next`` (p. ej. el enlace de disponibilidad de una
+    convocatoria) vuelve allí tras crear la cuenta, para no perder el enlace.
     """
     if request.user.is_authenticated:
         return redirect("home")
@@ -547,11 +554,13 @@ def register_account(request):
             login(request, user, backend=LOGIN_BACKEND)
             email_verification.start_verification(request, user)
             messages.success(request, _("Cuenta creada. Ya puedes unirte a un equipo cuando te inviten."))
-            return redirect("no_club")
+            return redirect(_safe_next(request) or "no_club")
     else:
         form = SignUpForm()
     _style(form)
-    return render(request, "register_account.html", {"form": form, "google_next": reverse("no_club")})
+    target = _safe_next(request)
+    return render(request, "register_account.html", {
+        "form": form, "next": target, "next_q": quote(target, safe=""), "google_next": target or reverse("no_club")})
 
 
 @login_required

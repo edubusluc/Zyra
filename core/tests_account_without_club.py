@@ -39,6 +39,20 @@ class RegisterAccountTests(TestCase):
     def test_account_page_has_form(self):
         self.assertContains(self.client.get(reverse("register_account")), "Solo quiero unirme a un club por invitación")
 
+    def test_signup_from_availability_link_returns_to_it(self):
+        """Quien se registra desde el enlace de disponibilidad vuelve a él, no a la página de espera."""
+        link = "/match/disponibilidad/abc123/"
+        login = self.client.get(reverse("login"), {"next": link})
+        self.assertContains(login, f'{reverse("register_account")}?next=%2Fmatch%2Fdisponibilidad%2Fabc123%2F')
+        page = self.client.get(reverse("register_account"), {"next": link})
+        self.assertContains(page, f'name="next" value="{link}"')
+        response = self.client.post(reverse("register_account"), {**SIGNUP, "next": link})
+        self.assertRedirects(response, link, fetch_redirect_response=False)
+
+    def test_signup_ignores_external_next(self):
+        response = self.client.post(reverse("register_account"), {**SIGNUP, "next": "https://evil.example/"})
+        self.assertRedirects(response, reverse("no_club"))
+
     def test_signup_creates_account_without_club_and_logs_in(self):
         response = self.client.post(reverse("register_account"), SIGNUP)
         self.assertRedirects(response, reverse("no_club"))

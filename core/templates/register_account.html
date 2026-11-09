@@ -16,12 +16,13 @@
         </div>
         <form method="post" novalidate data-loading-text="{% translate 'Creando tu cuenta…' %}">
             {% csrf_token %}
+            {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
             {{ form.as_p }}
             <button type="submit" class="btn btn-primary btn-lg mt-2">{% translate "Crear mi cuenta" %}</button>
         </form>
         {% translate "Crear mi cuenta con Google" as google_label %}
         {% include 'includes/google_button.html' with next=google_next label=google_label %}
-        <p class="z-auth-foot">{% url 'login' as login_url %}{% blocktranslate trimmed %}¿Ya tienes cuenta? <a href="{{ login_url }}">Inicia sesión</a>{% endblocktranslate %}</p>
+        <p class="z-auth-foot">{% url 'login' as login_url %}{% if next %}{% with login_url=login_url|add:'?next='|add:next_q %}{% blocktranslate trimmed %}¿Ya tienes cuenta? <a href="{{ login_url }}">Inicia sesión</a>{% endblocktranslate %}{% endwith %}{% else %}{% blocktranslate trimmed %}¿Ya tienes cuenta? <a href="{{ login_url }}">Inicia sesión</a>{% endblocktranslate %}{% endif %}</p>
         <p class="z-auth-foot"><a href="{% url 'register' %}">{% translate "Volver a elegir cómo registrarme" %}</a></p>
     </div>
 </div>
