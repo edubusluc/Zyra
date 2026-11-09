@@ -54,6 +54,21 @@ document.querySelectorAll('[data-scroll-top]').forEach((link) => {
   });
 });
 
+// «Saltar al contenido»: lleva el foco a <main> y lo marca con un contorno visible (si no, el salto
+// parece no hacer nada porque el contenido ya está en pantalla). Sin JavaScript sigue valiendo el ancla.
+document.querySelectorAll('.z-skip-link').forEach((link) => {
+  link.addEventListener('click', (event) => {
+    const target = document.querySelector(link.getAttribute('href'));
+    if (!target) return;
+    event.preventDefault();
+    if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+    target.focus({ preventScroll: true });
+    target.scrollIntoView({ block: 'start' });
+    target.classList.add('z-skip-target');
+    target.addEventListener('blur', () => target.classList.remove('z-skip-target'), { once: true });
+  });
+});
+
 // Filas enlazadas (tablas de partidos de las estadísticas): pulsar en cualquier punto de la fila
 // abre el partido de su primer enlace. El enlace sigue siendo el que usa el teclado y los lectores.
 (function () {
