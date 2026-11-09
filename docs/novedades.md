@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 09/11/2026 · Editar equipo con escudo 3D
+
+- **Editar equipo**: formulario a la izquierda y, a la derecha, el escudo del equipo en 3D (como en la ficha del enfrentamiento) oscilando sin dar la vuelta. Nombre, siglas, chips de datos y escudo nuevo se ven al momento. En móvil el escudo va arriba, compacto, y con movimiento reducido queda quieto. Las ayudas de los campos pasan a tooltips «i» y «Foto» se llama «Escudo».
+
 ## 09/11/2026 · Registro desde el enlace de disponibilidad
 
 - **Cuenta nueva sin perder el enlace**: el inicio de sesión que viene de un enlace de disponibilidad ofrece «Crear mi cuenta» y, al crearla (también con Google), se vuelve al enlace en lugar de a la página de espera. Si aún no eres del equipo, el enlace te dice que pidas la invitación al capitán y vuelvas a abrirlo.

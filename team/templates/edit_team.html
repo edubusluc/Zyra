@@ -3,12 +3,13 @@
 {% block page_title %}{% translate "Editar equipo" %} · {% endblock %}
 
 {% block content %}
-    <div class="table-container mt-4">
+    <div class="table-container mt-4 z-team-edit-page">
         <h1>{% translate "Editar equipo" %}</h1>
-        
+
+        <div class="z-team-edit">
         <form method="POST" action="{% url 'edit_team' team.public_id %}" enctype="multipart/form-data" data-loading-text="{% translate 'Guardando el equipo…' %}">
             {% csrf_token %}
-            
+
             <div class="mb-3">
                 <label for="name" class="form-label">{% translate "Nombre" %}</label>
                 <input type="text" id="name" name="name" class="form-control" value="{{ team.name }}" required>
@@ -16,18 +17,18 @@
 
             {% for error in form.name.errors %}<div class="text-danger small mb-3">{{ error }}</div>{% endfor %}
 
-            <div class="mb-3">
-                <label for="gender" class="form-label">{% translate "Categoría" %}</label>
+            <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="gender" class="form-label">{% translate "Categoría" %}{% if team.is_own %}{% translate "Los jugadores del club tienen la categoría de este equipo." as tip_gender %}{% include 'includes/stat_tip.html' with tip=tip_gender %}{% endif %}</label>
                 <select id="gender" name="gender" class="form-select" required>
                     <option value="">{% translate "Elige una opción" %}</option>
                     {% for value, label in genders %}
                     <option value="{{ value }}" {% if team.gender == value %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
                 </select>
-                {% if team.is_own %}<small class="form-text text-muted">{% translate "Los jugadores del club tienen la categoría de este equipo." %}</small>{% endif %}
             </div>
 
-            <div class="mb-3">
+            <div class="col-md-6 mb-3">
                 <label for="country" class="form-label">{% translate "Nacionalidad del equipo" %}</label>
                 <select id="country" name="country" class="form-select" required>
                     <option value="">{% translate "Elige una opción" %}</option>
@@ -36,8 +37,10 @@
                     {% endfor %}
                 </select>
             </div>
+            </div>
 
-            <div class="mb-3">
+            <div class="row">
+            <div class="col-md-6 mb-3">
                 <label for="division" class="form-label">{% translate "División" %}</label>
                 <select id="division" name="division" class="form-select" required>
                     <option value="">{% translate "Elige una opción" %}</option>
@@ -47,37 +50,52 @@
                 </select>
             </div>
 
-            <div class="mb-3">
+            <div class="col-md-6 mb-3">
                 <label for="location" class="form-label">{% translate "Ubicación" %}</label>
                 <input type="text" id="location" name="location" class="form-control" value="{{ team.location }}" required>
+            </div>
             </div>
 
             {% if team.is_own %}
             <div class="mb-3">
-                <label for="{{ form.default_time.auto_id }}" class="form-label">{{ form.default_time.label }}</label>
+                <label for="{{ form.default_time.auto_id }}" class="form-label">{{ form.default_time.label }}{% include 'includes/stat_tip.html' with tip=form.default_time.help_text %}</label>
                 {{ form.default_time }}
-                <small class="form-text text-muted">{{ form.default_time.help_text }}</small>
                 {% for error in form.default_time.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
             </div>
             {% endif %}
 
             <div class="mb-3">
-                <label for="photo" class="form-label">{% translate "Foto" %}</label>
+                <label for="photo" class="form-label">{% translate "Escudo" %}{% translate "Se muestra en 3D. Un PNG con fondo transparente queda mejor." as tip_photo %}{% include 'includes/stat_tip.html' with tip=tip_photo %}</label>
                 <div class="d-flex align-items-center gap-3">
-                    <img src="{% if team.photo %}{{ team.photo.url }}{% else %}{% static 'zyra/team.svg' %}{% endif %}" alt="{% translate 'Escudo actual del equipo' %}" class="z-avatar z-avatar--sm" data-photo-preview>
+                    <img{% if team.photo %} src="{{ team.photo.url }}"{% else %} hidden{% endif %} alt="{% translate 'Escudo actual del equipo' %}" class="z-avatar z-avatar--sm" data-photo-preview>
                     <input type="file" id="photo" name="photo" class="form-control" accept="image/*"{% if team.photo %} data-current-photo="{{ team.photo.url }}"{% endif %}>
                 </div>
-                <small class="form-text text-muted">{% translate "Dejar vacío si no deseas cambiar la foto." %}</small>
             </div>
 
             <div class="mb-3 form-check">
                 <input type="checkbox" id="in_group" name="in_group" class="form-check-input" {% if team.in_group or team.is_own %}checked{% endif %}{% if team.is_own %} disabled{% endif %}>
-                <label for="in_group" class="form-check-label">{% translate "¿Se encuentra en tu grupo?" %}</label>
-                {% if team.is_own %}<small class="form-text text-muted d-block">{% translate "Tu equipo siempre está en tu grupo: no se puede dar de baja." %}</small>{% endif %}
+                <label for="in_group" class="form-check-label">{% translate "¿Se encuentra en tu grupo?" %}{% if team.is_own %}{% translate "Tu equipo siempre está en tu grupo: no se puede dar de baja." as tip_group %}{% include 'includes/stat_tip.html' with tip=tip_group %}{% endif %}</label>
             </div>
-        
+
             <button type="submit" class="btn btn-primary">{% translate "Guardar" %}</button>
         </form>
+
+        <aside class="z-team-stage-col" aria-label="{% translate 'Vista previa del escudo' %}">
+            <div class="z-team-stage" data-team-crest>
+                {% include 'includes/crest_3d.html' with team=team name=team.name side="sway" %}
+                <p class="z-team-stage-name" data-crest-name data-empty="{% translate 'Nombre del equipo' %}">{{ team.name }}</p>
+                <span class="z-team-stage-role{% if not team.is_own %} is-rival{% endif %}">{% if team.is_own %}{% translate "Tu equipo" %}{% else %}{% translate "Rival" %}{% endif %}</span>
+                <div class="z-team-stage-chips">
+                    <span data-chip="division">{{ team.get_division_display }}</span>
+                    <span data-chip="gender">{{ team.get_gender_display }}</span>
+                    <span data-chip="country">{{ team.get_country_display }}</span>
+                    <span data-chip="location">{{ team.location }}</span>
+                </div>
+            </div>
+        </aside>
+        </div>
     </div>
+<script src="{% static 'js/stats-tips.js' %}"></script>
+<script src="{% static 'js/team-crest-preview.js' %}" defer></script>
 <script src="{% static 'js/time-24h.js' %}" defer></script>
 {% endblock %}
