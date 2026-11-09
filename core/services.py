@@ -280,6 +280,30 @@ def archive_club(club):
     club.save(update_fields=["archived_at"])
 
 
+def leave_open_matches(player_ids):
+    """
+    Quita a los jugadores ``player_ids`` de lo que aún está por jugar: las convocatorias y las alineaciones
+    sin resultado de los enfrentamientos abiertos (acta sin cerrar). Lo ya jugado, con resultado, y los
+    enfrentamientos cerrados no se tocan: sus estadísticas se conservan. Devuelve cuántos enfrentamientos
+    abiertos han cambiado.
+    """
+    from call.models import Call
+    from match.models import Game
+
+    player_ids = list(player_ids)
+    if not player_ids:
+        return 0
+    touched = set()
+    for call in Call.objects.filter(match__draft_mode=True, players__in=player_ids).distinct():
+        call.players.remove(*player_ids)
+        touched.add(call.match_id)
+    for slot in Game.PLAYER_SLOTS:
+        games = Game.objects.filter(match__draft_mode=True, results__isnull=True, **{f"{slot}__in": player_ids})
+        touched.update(games.values_list("match_id", flat=True))
+        Game.objects.filter(pk__in=list(games.values_list("pk", flat=True))).update(**{slot: None})
+    return len(touched)
+
+
 @transaction.atomic
 def remove_membership(membership):
     """
@@ -287,12 +311,53 @@ def remove_membership(membership):
     del jugador que tuviera en ese club: si vuelve a entrar, elige de nuevo quién es.
     El jugador y sus estadísticas se conservan, y la ficha recuerda la cuenta (``past_user``) y el día de
     salida (``left_on``) para que la persona siga viendo sus estadísticas y su porcentaje de convocatorias
-    no baje con las que se crean después.
+    no baje con las que se crean después. Salir del club es una baja de la plantilla (``in_team=False``) y
+    el jugador desaparece de las convocatorias y alineaciones por jugar (``leave_open_matches``).
     """
     from players.models import Player
 
     today = timezone.localdate()
-    Player.objects.filter(club=membership.club, user=membership.user).update(user=None, past_user=membership.user)
+    sheets = Player.objects.filter(club=membership.club, user=membership.user)
+    leave_open_matches(sheets.values_list("pk", flat=True))
+    sheets.update(user=None, past_user=membership.user, in_team=False)
     # Una baja anterior (``left_on`` ya puesto) manda: salir del club después no vuelve a contar las convocatorias intermedias.
     Player.objects.filter(club=membership.club, past_user=membership.user, left_on__isnull=True).update(left_on=today)
     membership.delete()
+
+
+class RemovalError(Exception):
+    """La baja no se puede hacer; el mensaje explica el motivo al usuario."""
+    pass
+
+
+def removal_blocker(player):
+    """Motivo por el que ``player`` no se puede dar de baja (es el capitán del equipo), o None si se puede."""
+    if player.user_id and Membership.objects.filter(club=player.club, user_id=player.user_id, role=Membership.ADMIN).exists():
+        return _("%(player)s es el capitán del equipo: traspasa antes la capitanía para darlo de baja.") % {"player": player.short_name}
+    return None
+
+
+@transaction.atomic
+def dar_de_baja(player):
+    """
+    Baja de la plantilla de ``player`` (la hace el capitán o un gestor). Dar de baja a un jugador con cuenta
+    enlazada es echarlo del equipo: se le quita la membresía (``remove_membership``), así que deja de ver
+    el equipo y queda libre para unirse a otro de esa competición; sus estadísticas siguen en «Mis
+    estadísticas». Sea con cuenta o sin ella, desaparece de las convocatorias y alineaciones por jugar y
+    la ficha queda fuera de la plantilla con el día de baja. El capitán no puede darse de baja: antes
+    tiene que traspasar la capitanía (``RemovalError``). Devuelve la membresía quitada, o None si la
+    ficha no tenía cuenta.
+    """
+    blocker = removal_blocker(player)
+    if blocker:
+        raise RemovalError(blocker)
+    membership = None
+    if player.user_id:
+        membership = Membership.objects.select_related("user", "club").filter(club=player.club, user_id=player.user_id).first()
+    if membership is not None:
+        remove_membership(membership)
+    else:
+        leave_open_matches([player.pk])
+    Player.objects.filter(pk=player.pk, in_team=True).update(in_team=False)
+    Player.objects.filter(pk=player.pk, left_on__isnull=True).update(left_on=timezone.localdate())
+    return membership

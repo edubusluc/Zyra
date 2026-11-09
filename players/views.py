@@ -8,6 +8,7 @@ from django.contrib import messages
 from match.models import Game
 from players.models import Player, SnpAccount, SnpTeamImport
 from core.crypto import DecryptionError
+from core.services import RemovalError, dar_de_baja, removal_blocker
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET, require_POST
 from django.urls import reverse
@@ -167,10 +168,19 @@ def edit_player(request, player_id):
     if request.method == "POST":
         if form.is_valid():
             was_in_team = Player.objects.filter(pk=player.pk, in_team=True).exists()
-            form.save()
-            if was_in_team and not form.instance.in_team:
-                _warn_if_roster_empty(request)
-            return redirect('list_players')
+            leaving = was_in_team and not form.cleaned_data.get('in_team')
+            blocker = removal_blocker(player) if leaving else None
+            if blocker:
+                form.add_error('in_team', blocker)
+            else:
+                with transaction.atomic():
+                    form.save()
+                    if leaving:
+                        # Una baja con cuenta enlazada es echar del equipo (membresía y convocatorias abiertas).
+                        dar_de_baja(form.instance)
+                if leaving:
+                    _warn_if_roster_empty(request)
+                return redirect('list_players')
 
     context = {
         'player': player,
@@ -245,7 +255,14 @@ def manage_roster(request):
         # Las altas quitan la fecha de baja salvo en quien salió del club con su cuenta (conserva el día).
         joined = players.filter(id__in=in_team_ids, in_team=False).update(in_team=True)
         players.filter(id__in=in_team_ids, past_user__isnull=True).update(left_on=None)
-        left = players.exclude(id__in=in_team_ids).filter(in_team=True).update(in_team=False)
+        left = 0
+        # Dar de baja a quien tiene cuenta es echarlo del equipo; el capitán no se puede dar de baja.
+        for leaving in players.exclude(id__in=in_team_ids).filter(in_team=True):
+            try:
+                dar_de_baja(leaving)
+                left += 1
+            except RemovalError as exc:
+                messages.error(request, str(exc))
         players.exclude(id__in=in_team_ids).filter(left_on__isnull=True).update(left_on=timezone.localdate())
         if joined or left:
             joined_text = ngettext("%(n)s alta", "%(n)s altas", joined) % {"n": joined}
@@ -616,8 +633,11 @@ def link_player(request, player_id):
             messages.error(request, _("Ese jugador ya está enlazado a otra cuenta. Si eres tú, habla con tu capitán."))
             return redirect("my_player")
         else:
+            # Volver a su ficha anterior (salió o lo dieron de baja) es un alta: vuelve a la plantilla.
+            returning = player.past_user_id == request.user.id and not player.in_team
             player.user = request.user
-            player.save(update_fields=["user"])
+            player.in_team = player.in_team or returning
+            player.save(update_fields=["user", "in_team"])
             # Quien se registró con SNP no escribió su nombre: la cuenta toma el del jugador.
             if not (request.user.first_name or request.user.last_name):
                 request.user.first_name, request.user.last_name = player.name, player.last_name
