@@ -177,7 +177,7 @@ def edit_player(request, player_id):
                     form.save()
                     if leaving:
                         # Una baja con cuenta enlazada es echar del equipo (membresía y convocatorias abiertas).
-                        dar_de_baja(form.instance)
+                        dar_de_baja(form.instance, request.user, request.build_absolute_uri('/'))
                 if leaving:
                     _warn_if_roster_empty(request)
                 return redirect('list_players')
@@ -259,7 +259,7 @@ def manage_roster(request):
         # Dar de baja a quien tiene cuenta es echarlo del equipo; el capitán no se puede dar de baja.
         for leaving in players.exclude(id__in=in_team_ids).filter(in_team=True):
             try:
-                dar_de_baja(leaving)
+                dar_de_baja(leaving, request.user, request.build_absolute_uri('/'))
                 left += 1
             except RemovalError as exc:
                 messages.error(request, str(exc))
