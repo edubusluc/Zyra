@@ -66,8 +66,13 @@ def selected_spaces(request, allow_all=True, session_key=SESSION_FILTER_KEY):
                 managed = managed_clubs(request, clubs)
                 wanted = (managed or clubs)[0].competition
     if wanted == ALL_SPACES:
+        # La página junta todos los equipos: su título no nombra uno solo (context_processors.title_club).
+        request.title_all_spaces = True
         return ALL_SPACES, clubs
-    return wanted, [c for c in clubs if c.competition == wanted]
+    chosen = [c for c in clubs if c.competition == wanted]
+    # El título de la pestaña nombra el equipo filtrado aunque el activo sea otro (context_processors.title_club).
+    request.title_space_club = chosen[0] if chosen else None
+    return wanted, chosen
 
 
 def plays_only(request):

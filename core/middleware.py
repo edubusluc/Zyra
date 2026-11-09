@@ -9,9 +9,27 @@ from django.utils import translation
 from django.utils.cache import patch_vary_headers
 
 from . import seo
+from .competitions import COMPETITIONS
 from .models import Membership
 
 SESSION_KEY = "club_id"
+
+
+def default_membership(memberships):
+    """
+    Membresía que se usa cuando la sesión aún no tiene espacio activo (primer acceso, otro dispositivo,
+    tras cerrar sesión): el primer equipo que gestiona (capitán o gestor) y, entre varios, por orden
+    de competición (SNP antes que LAPI) y de nombre. Si no gestiona ninguno, el primero con el mismo
+    orden. Devuelve None si no hay membresías.
+    """
+    order = list(COMPETITIONS)
+
+    def key(m):
+        """Gestiona primero, luego competición según ``COMPETITIONS`` y, al final, nombre."""
+        code = m.club.competition
+        return (not m.can_manage, order.index(code) if code in order else len(order), m.club.name)
+
+    return min(memberships, key=key) if memberships else None
 
 
 class CurrentClubMiddleware:
@@ -19,7 +37,7 @@ class CurrentClubMiddleware:
     Resuelve el club activo del usuario y lo deja en request.club / request.membership.
 
     El club activo se guarda en sesión; si no hay ninguno (o el guardado ya no es
-    válido) se usa la primera membresía del usuario. Un usuario sin membresías
+    válido) se usa ``default_membership``. Un usuario sin membresías
     tiene request.club = None.
     """
 
@@ -46,7 +64,7 @@ class CurrentClubMiddleware:
             if club_id:
                 membership = next((m for m in memberships if m.club_id == club_id), None)
             if membership is None:
-                membership = memberships[0] if memberships else None
+                membership = default_membership(memberships)
 
             if membership:
                 request.membership = membership
