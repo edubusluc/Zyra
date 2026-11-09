@@ -73,7 +73,7 @@ def dashboard(request):
     counts = attention_counts()
     return render(request, "backoffice/dashboard.html", {
         "section": "dashboard", "kpis": dashboard_kpis(), "at_risk_days": AT_RISK_DAYS,
-        "attention": attention_items(counts), "trend": daily_trend(30),
+        "attention": attention_items(counts), "trend": (trend := daily_trend(30)), "peak": max((d["dau"] for d in trend), default=0),
         "scheduler": scheduler_status(),
     })
 
@@ -886,8 +886,9 @@ def photo_list(request):
         .select_related("club", "uploaded_by", "team", "player__user")
         .order_by("-created_at")
     )
+    # Las rechazadas no se guardan; del resto solo importan las que siguen en uso.
     if status != PhotoCheck.REJECTED:
-        checks = checks.exclude(photo="")
+        checks = checks.in_use()
     page = _page(request, checks)
     owners = {c.owner.pk for c in page if c.owner}
     strikes = dict(
@@ -896,7 +897,7 @@ def photo_list(request):
     for c in page:
         c.strikes = strikes.get(c.owner.pk, 0) if c.owner else 0
     # Las rechazadas no tienen foto guardada; del resto solo cuentan las que llegaron a guardarse.
-    counts = dict(PhotoCheck.objects.exclude(photo="").values_list("status").annotate(n=Count("id")).order_by())
+    counts = dict(PhotoCheck.objects.in_use().values_list("status").annotate(n=Count("id")).order_by())
     counts[PhotoCheck.REJECTED] = PhotoCheck.objects.filter(status=PhotoCheck.REJECTED).count()
     return render(request, "backoffice/photo_list.html", {
         "section": "photos",

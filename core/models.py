@@ -327,6 +327,13 @@ class PhotoCheckQuerySet(models.QuerySet):
         """Fotos guardadas que ha subido ``user`` o que son de su jugador."""
         return self.filter(models.Q(uploaded_by=user) | models.Q(player__user=user)).exclude(photo="")
 
+    def in_use(self):
+        """Fotos guardadas que siguen siendo la actual de su jugador o equipo (misma regla que ``PhotoCheck.in_use``)."""
+        return self.exclude(photo="").filter(
+            models.Q(player__isnull=False, player__photo=models.F("photo"))
+            | models.Q(player__isnull=True, team__isnull=False, team__photo=models.F("photo"))
+        )
+
 
 class PhotoCheck(PublicIdModel):
     """

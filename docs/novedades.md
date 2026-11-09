@@ -3,6 +3,12 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 09/11/2026 · Back-office más legible
+
+- **Usuarios activos por día**: las 30 barras caben en una fila, con el máximo arriba y la fecha cada 5 días (el valor de cada día, al pasar el ratón).
+- **Auditoría por días**: una fila por día (acciones y personas); al pulsarla se abre el registro detallado de ese día, con los mismos filtros.
+- **Fotos**: ya no aparecen las fotos que «ya no se usan», ni cuentan como pendientes.
+
 ## 09/11/2026 · Aviso al sustituir el enlace de invitación
 
 - **Aviso antes de crear otro enlace**: si ya hay un enlace compartido activo, «Generar enlace de invitación» pide confirmación y explica que el actual dejará de funcionar (hasta cuándo valía y cuántas personas se han unido).

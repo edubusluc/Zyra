@@ -1,0 +1,29 @@
+{% extends 'backoffice/base.html' %}
+{% load i18n %}{% load zyra_format %}
+{% block title %}{% translate "Auditoría" %} · {{ day|date_day }}{% endblock %}
+
+{% block content %}
+<div class="z-page-head">
+    <div>
+        <span class="z-eyebrow"><a href="{% url 'backoffice:audit_list' %}{% if filters %}?{{ filters }}{% endif %}"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> {% translate "Auditoría" %}</a> · {% blocktranslate trimmed count n=logs|length %}{{ n }} acción{% plural %}{{ n }} acciones{% endblocktranslate %}</span>
+        <h1>{{ day|date_day }}</h1>
+    </div>
+</div>
+
+<div class="z-table-wrap"><table class="table align-middle">
+    <thead><tr><th>{% translate "Hora" %}</th><th>{% translate "Persona" %}</th><th>{% translate "Acción" %}</th><th>{% translate "Objeto" %}</th><th>{% translate "Detalle" %}</th></tr></thead>
+    <tbody>
+    {% for log in logs %}
+        <tr>
+            <td class="text-nowrap">{{ log.created_at|date:"H:i:s" }}</td>
+            <td>{{ log.username|default:"—" }}{% if log.ip %}<br><small class="text-muted">{{ log.ip }}</small>{% endif %}</td>
+            <td>{% for key, label in labels.items %}{% if key == log.action %}{{ label }}{% endif %}{% endfor %}<br><small class="text-muted">{{ log.action }}</small></td>
+            <td>{{ log.object_label|default:"—" }}{% if log.object_id %}<br><small class="text-muted">{{ log.object_id }}</small>{% endif %}</td>
+            <td><small class="text-muted">{% for k, v in log.detail.items %}{{ k }}: {{ v }}{% if not forloop.last %} · {% endif %}{% endfor %}</small></td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="5" class="text-muted">{% translate "No hay acciones este día." %}</td></tr>
+    {% endfor %}
+    </tbody>
+</table></div>
+{% endblock %}
