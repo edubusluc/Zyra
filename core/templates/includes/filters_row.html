@@ -1,7 +1,8 @@
 {% load i18n %}
 {# Fila única de filtros: desplegables Competición, Temporada y Tipo en una sola línea. Parámetros: season=True y/o type=True para añadir esos filtros; bare=True si la página ya abre su propia fila (z-fsel-row). La competición sale de mine_chips, space_chips o request.space_switcher, lo que haya. #}
 {% if not bare %}<div class="z-fsel-row">{% endif %}
-{% if mine_chips %}{% include 'includes/competition_selector.html' with items=mine_chips %}
+{% if history_view %}{# Ficha de un equipo anterior: la competición es la de la ficha, no se cambia. #}
+{% elif mine_chips %}{% include 'includes/competition_selector.html' with items=mine_chips %}
 {% elif space_chips %}{% include 'includes/space_filter.html' %}
 {% elif request.space_switcher %}{% include 'includes/competition_selector.html' with items=request.space_switcher %}{% endif %}
 {% if season %}{% include 'includes/season_filter.html' %}{% endif %}

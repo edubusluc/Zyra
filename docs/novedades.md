@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 10/11/2026 · Ficha de un equipo anterior
+
+- La ficha de un equipo anterior muestra el nombre del jugador y el equipo (con «Equipo anterior») en lugar de «Yo». Ya no aparece la pestaña «Yo» activa ni el selector de competición: solo se puede volver a «Mis estadísticas», y los filtros de temporada y tipo siguen funcionando. La página de un partido antiguo vuelve también a «Mis estadísticas», y en el menú superior se marca «Estadísticas» (no «Enfrentamientos»).
+
 ## 09/11/2026 · Asistencia a las convocatorias legible
 
 - **Barras horizontales** con una fila por convocatoria: fecha y rival en dos líneas (rival recortado, nombre completo al pasar el ratón o tocar), sin giros ni solapes, en móvil y escritorio.

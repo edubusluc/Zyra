@@ -16545,3 +16545,6 @@ msgstr ""
 "You are the only member of %(club)s. Leave the club from the menu (it will "
 "be closed and your statistics are kept) and then you can delete your "
 "account."
+
+msgid "Volver a Mis estadísticas"
+msgstr "Back to My statistics"
