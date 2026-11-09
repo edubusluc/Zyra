@@ -756,6 +756,9 @@ def _join(request, invitation, user):
     request.session[SESSION_KEY] = membership.club_id
     send_welcome_email(user, membership.club, site_url=_site_url(request))
     messages.success(request, _("¡Bienvenido a %(club)s!") % {"club": membership.club.name})
+    if invitation.player_id and not Player.objects.filter(pk=invitation.player_id, user=user).exists():
+        messages.warning(request, _("No hemos podido enlazarte a tu ficha de %(club)s. Avisa al capitán para que la revise.")
+                         % {"club": membership.club.name})
     return True
 
 

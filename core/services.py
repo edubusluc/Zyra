@@ -440,9 +440,7 @@ def dar_de_alta(player, by=None, site_url=""):
     blocker = alta_blocker(player)
     if blocker:
         raise AltaError(blocker)
-    Player.objects.filter(pk=player.pk).update(in_team=True)
-    if not player.past_user_id:
-        Player.objects.filter(pk=player.pk, left_on__isnull=False).update(left_on=None)
+    Player.objects.filter(pk=player.pk).update(in_team=True, left_on=None)
     if player.user_id or not player.past_user_id:
         return None
     Invitation.objects.filter(club=player.club, player=player, used_at__isnull=True).delete()

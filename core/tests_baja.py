@@ -263,12 +263,12 @@ class AltaTests(BajaFixture):
         self.assertIsNone(self.sheet.left_on)
         self.assertTrue(self.sheet.in_team)
 
-    def test_declining_leaves_the_sheet_out_of_the_team(self):
+    def test_declining_keeps_the_sheet_in_the_squad_unlinked(self):
         invitation = self._alta()
         self.client.login(username="edu", password=PASSWORD)
         self.client.post(reverse("respond_copy_invitation", args=[invitation.token]), {"action": "decline"})
         self.sheet.refresh_from_db()
-        self.assertFalse(self.sheet.in_team)
+        self.assertTrue(self.sheet.in_team)
         self.assertIsNone(self.sheet.user)
         self.assertFalse(Invitation.objects.filter(pk=invitation.pk).exists())
 
@@ -361,3 +361,37 @@ class AuditPhaseATests(BajaFixture):
         response = self.client.get(reverse("no_club"))
         self.assertContains(response, reverse("respond_copy_invitation", args=[invitation.token]))
         self.assertContains(response, "recuperas tu histórico")
+
+
+class AltaOptionBTests(BajaFixture):
+    """Opción B: al dar de alta la ficha entra ya en la plantilla; aceptar enlaza sin tocar las estadísticas."""
+
+    def setUp(self):
+        super().setUp()
+        self.game = Game.objects.create(match=self.closed_match, player_1_local=self.sheet)
+        Result.objects.create(game=self.game, set1_local=6, set1_visiting=2, set2_local=6, set2_visiting=3)
+        dar_de_baja(self.sheet, self.captain)
+        self.sheet.refresh_from_db()
+        with self.captureOnCommitCallbacks(execute=True):
+            self.invitation = dar_de_alta(self.sheet, self.captain, "https://zyra.test/")
+
+    def test_sheet_is_in_the_squad_and_without_left_date_until_answered(self):
+        self.sheet.refresh_from_db()
+        self.assertTrue(self.sheet.in_team)
+        self.assertIsNone(self.sheet.left_on)
+        self.assertIsNone(self.sheet.user)
+
+    def test_accepting_links_the_same_sheet_and_keeps_its_games(self):
+        sheet_id = self.sheet.pk
+        self.client.login(username="edu", password=PASSWORD)
+        self.client.post(reverse("respond_copy_invitation", args=[self.invitation.token]), {"action": "accept"})
+        self.assertEqual(Player.objects.filter(club=self.club, user=self.user).get().pk, sheet_id)
+        self.game.refresh_from_db()
+        self.assertEqual(self.game.player_1_local_id, sheet_id)
+        self.assertEqual(Result.objects.filter(game=self.game).count(), 1)
+        self.assertEqual(Player.objects.filter(club=self.club, name="Edu").count(), 1)
+
+    def test_soy_yo_consumes_the_pending_invitation(self):
+        from players import copy as player_copy
+        player_copy._link(self.sheet, self.user)
+        self.assertFalse(Invitation.objects.filter(pk=self.invitation.pk).exists())
