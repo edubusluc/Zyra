@@ -7,6 +7,11 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 - **Editar equipo**: formulario a la izquierda y, a la derecha, el escudo del equipo en 3D (como en la ficha del enfrentamiento) oscilando sin dar la vuelta. Nombre, siglas, chips de datos y escudo nuevo se ven al momento. En móvil el escudo va arriba, compacto, y con movimiento reducido queda quieto. Las ayudas de los campos pasan a tooltips «i» y «Foto» se llama «Escudo».
 
+## 09/11/2026 · Aviso al sustituir el enlace de invitación
+
+- **Aviso antes de crear otro enlace**: si ya hay un enlace compartido activo, «Generar enlace de invitación» pide confirmación y explica que el actual dejará de funcionar (hasta cuándo valía y cuántas personas se han unido).
+- **Sustituida, no caducada**: en el back-office un enlace cerrado por uno nuevo se marca «Sustituida», y quien lo abre ve que el capitán ha creado otro.
+
 ## 09/11/2026 · Registro desde el enlace de disponibilidad
 
 - **Cuenta nueva sin perder el enlace**: el inicio de sesión que viene de un enlace de disponibilidad ofrece «Crear mi cuenta» y, al crearla (también con Google), se vuelve al enlace en lugar de a la página de espera. Si aún no eres del equipo, el enlace te dice que pidas la invitación al capitán y vuelvas a abrirlo.

@@ -79,6 +79,34 @@ class InvitationTests(TestCase):
         self.assertContains(page, "Enlace compartido")
         self.assertContains(page, "wa.me")
 
+    def test_generating_link_warns_when_one_is_active(self):
+        self.client.login(username="capitan", password="pass-12345")
+        page = self.client.get(reverse("club_members"))
+        self.assertNotContains(page, "Ya tienes un enlace activo")
+        self.client.post(reverse("create_invitation_link"))
+        page = self.client.get(reverse("club_members"))
+        self.assertContains(page, "Ya tienes un enlace activo")
+        self.assertContains(page, "el actual dejará de funcionar")
+
+    def test_replaced_link_is_marked_and_explained(self):
+        self.client.login(username="capitan", password="pass-12345")
+        self.client.post(reverse("create_invitation_link"))
+        first = Invitation.objects.get()
+        Invitation.objects.filter(pk=first.pk).update(created_at=timezone.now() - datetime.timedelta(minutes=5))
+        self.client.post(reverse("create_invitation_link"))
+        first.refresh_from_db()
+        self.assertTrue(first.is_replaced)
+        self.assertFalse(Invitation.objects.get(pk=Invitation.objects.latest("created_at").pk).is_replaced)
+        self.client.logout()
+        response = self.client.get(self.url(first))
+        self.assertContains(response, "el capitán ha creado uno nuevo", status_code=410)
+
+    def test_naturally_expired_link_is_not_replaced(self):
+        old = self.invite(reusable=True, expires_at=timezone.now() - datetime.timedelta(seconds=1))
+        Invitation.objects.filter(pk=old.pk).update(created_at=timezone.now() - datetime.timedelta(hours=24))
+        old.refresh_from_db()
+        self.assertFalse(old.is_replaced)
+
     def test_members_cannot_generate_links(self):
         self.client.login(username="viewer", password="pass-12345")
         self.client.post(reverse("create_invitation_link"))
@@ -251,6 +279,8 @@ class InvitationTests(TestCase):
 
     def test_expired_shared_link_is_rejected(self):
         invitation = self.invite(reusable=True, expires_at=timezone.now() - datetime.timedelta(seconds=1))
+        # Pasaron sus 24 h (no la sustituyó otro enlace).
+        Invitation.objects.filter(pk=invitation.pk).update(created_at=timezone.now() - datetime.timedelta(hours=24))
         response = self.client.post(self.url(invitation), SIGNUP)
         self.assertContains(response, "ha caducado", status_code=410)
 

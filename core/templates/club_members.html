@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load tz i18n %}
+{% load tz i18n zyra_format %}
 {% block page_title %}{% translate "Miembros" %} · {% endblock %}
 
 {% block content %}
@@ -19,7 +19,7 @@
         {{ invite_form.as_p }}
         <button type="submit" class="btn btn-primary"><i class="fa-regular fa-envelope" aria-hidden="true"></i> {% translate "Enviar invitación" %}</button>
     </form>
-    <form method="post" action="{% url 'create_invitation_link' %}?en={{ request.club.competition }}" class="mb-3" data-loading-text="{% translate 'Generando el enlace…' %}">
+    <form method="post" action="{% url 'create_invitation_link' %}?en={{ request.club.competition }}" class="mb-3" data-loading-text="{% translate 'Generando el enlace…' %}"{% if active_link %} data-confirm-title="{% translate 'Ya tienes un enlace activo' %}" data-confirm-action="{% translate 'Crear enlace nuevo' %}" data-confirm="{% blocktranslate trimmed with date=active_link.expires_at|timezone:'Europe/Madrid'|date_day time=active_link.expires_at|timezone:'Europe/Madrid'|date:'H:i' count n=active_link.use_count %}Tu enlace actual vale hasta el {{ date }} a las {{ time }} y se ha unido {{ n }} persona. Si creas uno nuevo, el actual dejará de funcionar.{% plural %}Tu enlace actual vale hasta el {{ date }} a las {{ time }} y se han unido {{ n }} personas. Si creas uno nuevo, el actual dejará de funcionar.{% endblocktranslate %}"{% endif %}>
         {% csrf_token %}
         <button type="submit" class="btn btn-outline-primary"><i class="fa-solid fa-link" aria-hidden="true"></i> {% translate "Generar enlace de invitación" %}</button>
     </form>

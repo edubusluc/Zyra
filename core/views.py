@@ -638,7 +638,10 @@ def club_members(request, invite_form=None):
         url = request.build_absolute_uri(reverse("invitation", args=[inv.token]))
         invitations.append((inv, url, _("Únete a %(club)s en Zyra: %(url)s") % {"club": club.name, "url": url}))
     extra = ("&" + urlencode({"q": search}) if search else "") + "#invitaciones"
+    # Enlace compartido vigente: al generar otro, este dejaría de funcionar (se avisa antes).
+    active_link = club.invitations.pending().filter(reusable=True).order_by("-created_at", "-id").first()
     return render(request, "club_members.html", {
+        "active_link": active_link,
         "invite_form": invite_form, "memberships": memberships, "invitations": invitations,
         "successor_ids": set(eligible_successors(club).values_list("pk", flat=True)),
         "managers_full": club.memberships.filter(role=Membership.MANAGER).count() >= Membership.MAX_MANAGERS,
