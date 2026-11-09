@@ -454,7 +454,7 @@ def attention_counts():
         .filter(deadline__lte=now).count()
     )
     return {
-        "photos": PhotoCheck.objects.filter(status=PhotoCheck.UNCHECKED).exclude(photo="").count(),
+        "photos": PhotoCheck.objects.filter(status=PhotoCheck.UNCHECKED).in_use().count(),
         "unverified_overdue": overdue,
         "jobs_failed": JobRun.objects.filter(status=JobRun.ERROR, started_at__gte=now - datetime.timedelta(hours=24)).count(),
         "tasks_due": FollowUpTask.objects.filter(done_at__isnull=True, due_date__lte=timezone.localdate()).count(),

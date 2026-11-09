@@ -374,10 +374,12 @@ class BackofficePhotoTests(MediaMixin, TestCase):
         self.delete()
         self.assertEqual(PhotoRemoval.objects.get().user, self.captain)
 
-    def test_replaced_pending_photo_can_leave_the_queue(self):
+    def test_replaced_pending_photo_is_not_listed(self):
         self.player.photo = None
         self.player.save()
-        self.assertContains(self.client.get(reverse("backoffice:photo_list")), "Quitar de pendientes")
+        page = self.client.get(reverse("backoffice:photo_list"))
+        self.assertNotContains(page, "Ya no se usa")
+        self.assertEqual(len(page.context["page"]), 0)
 
     def test_delete_photo_emails_the_player(self):
         self.delete(reason="Imagen ofensiva")

@@ -28,6 +28,7 @@ urlpatterns = [
     path("import/<pid:job_id>/undo/", views.import_undo, name="import_undo"),
     path("search/", views_crm.search, name="search"),
     path("audit/", views_crm.audit_list, name="audit_list"),
+    path("audit/<str:day>/", views_crm.audit_day, name="audit_day"),
     path("emails/", views_crm.email_log, name="email_log"),
     path("emails/new/", views_crm.email_compose, name="email_compose"),
     path("tasks/", views_crm.task_list, name="task_list"),

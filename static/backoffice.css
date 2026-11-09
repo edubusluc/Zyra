@@ -226,3 +226,18 @@ a.bo-kpi:hover { color: inherit; border-color: var(--z-lime); }
 .bo-meter span { display: block; height: 100%; background: var(--z-lime); border-radius: 999px; }
 .bo-bars--weeks { grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 4px; }
 .bo-bars--weeks small { white-space: nowrap; }
+
+/* Usuarios activos por día: 30 barras en una sola fila, con etiqueta de fecha cada 5 días */
+.bo-daychart { position: relative; padding-top: 22px; }
+.bo-daychart-max { position: absolute; top: 0; left: 0; }
+.bo-bars--days { grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 3px; height: 160px; padding-bottom: 22px; border-bottom: 1px solid var(--z-border); }
+.bo-bars--days li { position: relative; justify-content: flex-end; }
+.bo-bars--days .bo-bar { max-width: none; border-radius: 3px 3px 0 0; }
+.bo-bars--days li:hover .bo-bar { filter: brightness(1.15); }
+.bo-bars--days small { position: absolute; bottom: -22px; left: 50%; transform: translateX(-50%); white-space: nowrap; }
+@media (max-width: 600px) { .bo-bars--days small { font-size: .62rem; } }
+/* Filas de tabla enteras clicables: el enlace de la primera celda cubre la fila */
+.bo-rows tbody tr { position: relative; }
+.bo-rows tbody tr:hover { background: var(--z-surface-3); }
+.bo-row-link { font-weight: 600; }
+.bo-row-link::after { content: ""; position: absolute; inset: 0; }

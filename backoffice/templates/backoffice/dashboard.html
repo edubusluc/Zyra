@@ -90,15 +90,17 @@
 <section class="z-panel">
     <h2 class="h5">{% translate "Usuarios activos por día (30 días)" %}</h2>
     {% if trend %}
-    <ol class="bo-bars" aria-label="{% translate 'Usuarios activos por día' %}">
-        {% for d in trend %}
-        <li title="{{ d.date|date:'j M' }}: {{ d.dau }}">
-            <span class="bo-bar" style="--h: {{ d.pct|unlocalize }}%"></span>
-            <b>{{ d.dau }}</b>
-            <small>{{ d.date|date:"j" }}</small>
-        </li>
-        {% endfor %}
-    </ol>
+    <div class="bo-daychart">
+        <span class="bo-daychart-max text-muted small">{% blocktranslate with n=peak %}Máximo: {{ n }}{% endblocktranslate %}</span>
+        <ol class="bo-bars bo-bars--days" style="--n: {{ trend|length }}" aria-label="{% translate 'Usuarios activos por día' %}">
+            {% for d in trend %}
+            <li title="{{ d.date|date:'j M' }}: {{ d.dau }}">
+                <span class="bo-bar" style="--h: {{ d.pct|unlocalize }}%"></span>
+                {% if forloop.last or forloop.counter0|divisibleby:5 %}<small>{{ d.date|date:"j M" }}</small>{% endif %}
+            </li>
+            {% endfor %}
+        </ol>
+    </div>
     <p class="text-muted small mb-0">{% with last=trend|last %}{% blocktranslate trimmed with wau=last.wau mau=last.mau %}Último resumen: {{ wau }} activos en 7 días y {{ mau }} en 30 días.{% endblocktranslate %}{% endwith %}</p>
     <p class="text-muted small mb-0">{% with first=trend|first last=trend|last %}{% blocktranslate trimmed with then=first.without_club now=last.without_club since=first.date|date:"j M" %}Cuentas sin club: {{ now }} (el {{ since }}: {{ then }}).{% endblocktranslate %}{% endwith %}</p>
     {% else %}
