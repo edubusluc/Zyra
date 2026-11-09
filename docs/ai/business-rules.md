@@ -35,7 +35,8 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
   (`LIST_HORIZON_DAYS`) salvo con `?ver=todo`, búsqueda o rival.
   Estadísticas nunca mezcla equipos: Equipo, Jugador, Parejas y Rivales son siempre de una competición (chips SNP · LAPI;
   Equipo recuerda la suya en `TEAM_SPACE_KEY`, la primera vez la del primer equipo que gestiona). Lo global es de la persona:
-  con jugador enlazado en dos o más espacios (`spaces.linked_players`, `my_stats_available`) hay una primera pestaña
+  con jugador enlazado en dos o más espacios o con alguna ficha de un equipo anterior (`spaces.my_players`, `spaces.my_stats_page`,
+  `my_stats_available`; ver «Equipo anterior» más abajo) hay una primera pestaña
   «Mis estadísticas» (`my_statistics`, `data_analyse/templates/stats_mine.html`, `static/js/stats_spaces.js`) con chips Todas · SNP · LAPI y
   el enlace Estadísticas del menú abre en ella. «Todas» cuenta sus partidos (no puntos) y pone cada competición al lado de
   la otra con su color (sets, local/visitante, ganados por temporada apilados con total, convocatorias en las que se
@@ -260,6 +261,12 @@ ni se editan parejas (`edit_game_match`).
 - [V] La temporada empieza el 1 de agosto (`SEASON_START_MONTH`). Al confirmar crea los que faltan y actualiza puntos de los existentes. Además lee en SNP «Competiciones → Clasificación» y crea como `in_group` (género/país/división/sede del equipo propio) los equipos del grupo que no existan (`core.similarity.is_similar`, sin duplicar); los existentes fuera del grupo se dan de alta en él, y si el club no tiene equipo propio, el que SNP marca en negrita lo será. Si ese paso falla no bloquea la importación de jugadores. Tests: `players/tests.py`.
 
 ## Estadísticas
+
+- [V] Cambiar de equipo no pierde estadísticas: al salir del club la ficha conserva `past_user` y `left_on` (`remove_membership`) y
+  «Yo» (`my_statistics`, solo `login_required`: funciona sin ningún club) muestra una fila por ficha, con la etiqueta «Equipo anterior» y sin
+  enlace a ficha propia, y los gráficos juntan por competición las fichas de la misma (varios clubes); los puntos no se suman entre
+  competiciones. Quien vuelve a un club ve «Tu ficha anterior» en `my_player` y, al enlazarla, se limpian `past_user` y `left_on`.
+  Tests: `core/tests_history.py`. Pendiente (en otros PR): archivar el club en vez de borrarlo, ficha y enfrentamiento históricos en solo lectura.
 
 - Un jugador solo cuenta convocatorias (apuntado, alineado, no apuntado; informe mensual incluido) desde su `joined_season`: `players.models.joined_by`. Los partidos jugados son hechos y no se filtran. El selector de convocatoria solo muestra las advertencias de la temporada actual (`call__match__season`); las estadísticas de advertencias siguen el selector de temporada.
 - [V] Solo cuentan partidos con el acta cerrada (`pairs.club_game_log`, `calculate_match_statistics`). Las consultas de `Game`/`Call` filtran también `match__draft_mode=False`.

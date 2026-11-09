@@ -8,7 +8,7 @@ from django.utils.translation import gettext as _
 
 from . import seo
 from .competitions import COMPETITIONS
-from .spaces import linked_players, plays_only
+from .spaces import my_players, my_stats_page, plays_only
 from .services import is_last_admin, is_only_member
 
 
@@ -47,8 +47,8 @@ def club(request):
         # «Mis estadísticas» (y Estadísticas abre en ella) con jugador enlazado en dos o más equipos.
         # La pestaña «Yo» se ve con jugador enlazado en algún equipo o con dos o más equipos (sin ficha enlazada
         # explica cómo enlazarla, Z-05).
-        "my_stats_tab": lambda: len(memberships) > 1 or bool(linked_players(request)),
-        "my_stats_available": lambda: len(memberships) > 1 and len(linked_players(request)) > 1,
+        "my_stats_tab": lambda: len(memberships) > 1 or bool(my_players(request)),
+        "my_stats_available": lambda: my_stats_page(request),
         "leaving_deletes_club": lambda: bool(membership and is_last_admin(membership) and is_only_member(membership)),
     }
 

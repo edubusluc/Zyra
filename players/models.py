@@ -5,6 +5,7 @@ from django.conf import settings
 from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models.signals import post_save
+from django.utils import timezone
 from django.utils.translation import gettext, gettext_lazy as _
 
 from core import crypto
@@ -114,8 +115,16 @@ class Player(PublicIdModel):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="players",
     )
+    # Cuenta que fue esta ficha: se guarda al salir del club (la ficha pierde ``user``) para que la persona
+    # siga viendo sus estadísticas en «Mis estadísticas». Nunca coincide con ``user``.
+    past_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="past_players",
+    )
     snp_score = models.FloatField(null=True)
     in_team = models.BooleanField(default=True)
+    # Día en que dejó de estar en el equipo (baja o salida del club): las convocatorias posteriores ya no
+    # cuentan en su porcentaje de «te apuntas». None mientras sigue.
+    left_on = models.DateField(null=True, blank=True)
     # El capitán puede dejar de enviar a este jugador los recordatorios del club (enlace de disponibilidad).
     emails_muted = models.BooleanField(default=False)
     # Ficha de otro equipo (de otra competición) de la que se copió con «Copiar jugadores»: solo se
@@ -147,7 +156,29 @@ class Player(PublicIdModel):
             self.team = self.club.own_team
         if self.team_id:
             self.gender = self.team.gender
+        touched = self._sync_membership_dates()
+        update_fields = kwargs.get("update_fields")
+        if update_fields is not None and touched:
+            kwargs["update_fields"] = list({*update_fields, *touched})
         super().save(*args, **kwargs)
+
+    def _sync_membership_dates(self):
+        """
+        Mantiene ``left_on`` y ``past_user`` coherentes con ``in_team`` y ``user`` antes de guardar y
+        devuelve los campos que ha tocado. Una baja pone la fecha de hoy; un alta (sin haber salido del
+        club con la cuenta) la quita; volver a enlazar la misma cuenta vacía ``past_user``.
+        """
+        touched = []
+        if self.user_id and self.past_user_id == self.user_id:
+            self.past_user = None
+            touched.append("past_user")
+        if not self.in_team and self.left_on is None:
+            self.left_on = timezone.localdate()
+            touched.append("left_on")
+        elif self.in_team and self.left_on is not None and not self.past_user_id:
+            self.left_on = None
+            touched.append("left_on")
+        return touched
 
     @property
     def full_name(self):

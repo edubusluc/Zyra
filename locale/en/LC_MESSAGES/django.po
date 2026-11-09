@@ -16437,3 +16437,12 @@ msgstr "More information"
 #, python-format
 msgid "%(n)s restantes"
 msgstr "%(n)s left"
+
+msgid "Equipo anterior"
+msgstr "Former team"
+
+msgid "Tu ficha anterior"
+msgstr "Your previous sheet"
+
+msgid "Ver mis estadísticas de equipos anteriores"
+msgstr "See my stats from former teams"

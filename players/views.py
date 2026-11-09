@@ -221,8 +221,11 @@ def manage_roster(request):
 
     if request.method == "POST":
         in_team_ids = {int(i) for i in request.POST.getlist('in_team') if i.isdigit()}
+        # Las altas quitan la fecha de baja salvo en quien salió del club con su cuenta (conserva el día).
         joined = players.filter(id__in=in_team_ids, in_team=False).update(in_team=True)
+        players.filter(id__in=in_team_ids, past_user__isnull=True).update(left_on=None)
         left = players.exclude(id__in=in_team_ids).filter(in_team=True).update(in_team=False)
+        players.exclude(id__in=in_team_ids).filter(left_on__isnull=True).update(left_on=timezone.localdate())
         if joined or left:
             joined_text = ngettext("%(n)s alta", "%(n)s altas", joined) % {"n": joined}
             left_text = ngettext("%(n)s baja", "%(n)s bajas", left) % {"n": left}
@@ -556,8 +559,9 @@ def my_player(request):
     search = request.GET.get("q", "").strip()
     candidates = (
         Player.objects.filter(club=request.club)
-        .annotate(linked=ExpressionWrapper(Q(user__isnull=False), output_field=BooleanField()))
-        .order_by("linked", "-in_team", "name", "last_name")
+        .annotate(linked=ExpressionWrapper(Q(user__isnull=False), output_field=BooleanField()),
+                  previous=ExpressionWrapper(Q(past_user=request.user), output_field=BooleanField()))
+        .order_by("linked", "-previous", "-in_team", "name", "last_name")
     )
     if search:
         candidates = candidates.filter(Q(name__icontains=search) | Q(last_name__icontains=search))

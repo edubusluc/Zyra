@@ -574,7 +574,8 @@ def no_club(request):
     """
     if request.club is not None:
         return redirect("home")
-    return render(request, "no_club.html", {"suspended_clubs": request.suspended_clubs})
+    return render(request, "no_club.html", {"suspended_clubs": request.suspended_clubs,
+                                           "has_history": bool(spaces.my_players(request))})
 
 
 @login_required

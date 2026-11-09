@@ -262,9 +262,12 @@ def remove_membership(membership):
     """
     Saca al usuario del club (lo quita el capitán o lo abandona él) y desenlaza su cuenta
     del jugador que tuviera en ese club: si vuelve a entrar, elige de nuevo quién es.
-    El jugador y sus estadísticas se conservan.
+    El jugador y sus estadísticas se conservan, y la ficha recuerda la cuenta (``past_user``) y el día de
+    salida (``left_on``) para que la persona siga viendo sus estadísticas y su porcentaje de convocatorias
+    no baje con las que se crean después.
     """
     from players.models import Player
 
-    Player.objects.filter(club=membership.club, user=membership.user).update(user=None)
+    Player.objects.filter(club=membership.club, user=membership.user).update(
+        user=None, past_user=membership.user, left_on=timezone.localdate())
     membership.delete()

@@ -35,7 +35,7 @@ def signup_by_player(club, players, season=None, match_type=None, side=SIDE_ALL)
     """
     Convocatorias cerradas a las que se apuntó cada jugador de ``players``: ``{id: {'signed', 'total',
     'pct'}}``. Como en la ficha del jugador, solo cuentan las de su temporada de incorporación en adelante
-    (``Player.joined_season``). Con ``side`` local o visitante, solo las de los enfrentamientos en los que el
+    (``Player.joined_season``) y hasta que dejó el equipo (``Player.left_on``). Con ``side`` local o visitante, solo las de los enfrentamientos en los que el
     equipo juega en ese lado. Una sola consulta para toda la plantilla. ``pct`` es None sin convocatorias.
     """
     calls = Call.objects.filter(match__club=club, match__draft_mode=False, draft_mode=False, match__no_show="",
@@ -45,12 +45,12 @@ def signup_by_player(club, players, season=None, match_type=None, side=SIDE_ALL)
     calls = list(calls.select_related("match", "match__local", "match__visiting").prefetch_related("players"))
     if side != SIDE_ALL:
         calls = [c for c in calls if (c.match.own_is_local if side == SIDE_LOCAL else c.match.own_is_visiting)]
-    signed_ids = [(c.match.season, {p.id for p in c.players.all()}) for c in calls]
+    signed_ids = [(c.match.season, c.match.start_date, {p.id for p in c.players.all()}) for c in calls]
     out = {}
     for p in players:
         total = signed = 0
-        for call_season, ids in signed_ids:
-            if joined_by(p.joined_season, call_season):
+        for call_season, call_date, ids in signed_ids:
+            if joined_by(p.joined_season, call_season) and (p.left_on is None or call_date <= p.left_on):
                 total += 1
                 signed += p.id in ids
         out[p.id] = {"signed": signed, "total": total, "pct": round(100 * signed / total) if total else None}
