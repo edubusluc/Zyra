@@ -12,6 +12,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 - **Abandonar el club** ahora también es baja de plantilla.
 - **Permisos**: solo el capitán da de baja a jugadores con cuenta; un gestor solo a fichas sin cuenta, y nadie se da de baja a sí mismo (se usa «Abandonar el club»).
 - **Alta con cuenta anterior**: la ficha entra en la plantilla al momento (el capitán puede convocarla) y la cuenta recibe una invitación; al aceptar se enlaza a esa misma ficha sin tocar sus estadísticas. Si no acepta, la ficha sigue en la plantilla hasta que el capitán decida.
+- **Baja y huecos**: al dar de baja se borran sus respuestas de disponibilidad de los enfrentamientos abiertos y se avisa al capitán de los enfrentamientos que se quedan con huecos. Eliminar la cuenta también saca la ficha de la plantilla y de las convocatorias abiertas.
 - **Invitación de vuelta**: solo la acepta la cuenta que dejó el equipo, y se ve y se responde también en la pantalla «Sin equipo».
 - **Dar de alta de nuevo** a alguien que salió envía una invitación por email a su cuenta; al aceptar recupera su ficha y sus estadísticas. No se puede si ese email ya tiene equipo en la competición.
 

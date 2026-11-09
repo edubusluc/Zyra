@@ -229,17 +229,23 @@ def delete_account(user, delete_player=False):
     verificados, cuenta de Google e historial de envíos mensuales. Su ficha de jugador pierde el
     enlace y la foto y se conserva en el club (los partidos y las estadísticas son del club); con
     ``delete_player`` se elimina también (los partidos jugados se conservan con su nombre).
-    Lanza ``CaptaincyError`` si todavía es capitán.
+    Lanza ``CaptaincyError`` si todavía es capitán. Si se conserva la ficha, queda fuera de la plantilla (baja)
+    y sale de las convocatorias y alineaciones por jugar.
     """
     blocker = account_delete_blocker(user)
     if blocker:
         raise CaptaincyError(blocker)
-    for player in Player.objects.filter(user=user):
+    sheets = list(Player.objects.filter(user=user))
+    # Borrar la cuenta es salir del equipo: la ficha deja las convocatorias y alineaciones por jugar.
+    leave_open_matches([p.pk for p in sheets])
+    for player in sheets:
         if delete_player:
             player.delete()
         else:
             player.user = None
             player.photo = None
+            player.in_team = False
+            player.left_on = player.left_on or timezone.localdate()
             player.save()
     user.delete()
 
@@ -287,27 +293,44 @@ def archive_club(club):
     club.save(update_fields=["archived_at"])
 
 
-def leave_open_matches(player_ids):
+def open_matches_with(player_ids):
     """
-    Quita a los jugadores ``player_ids`` de lo que aún está por jugar: las convocatorias y las alineaciones
-    sin resultado de los enfrentamientos abiertos (acta sin cerrar). Lo ya jugado, con resultado, y los
-    enfrentamientos cerrados no se tocan: sus estadísticas se conservan. Devuelve cuántos enfrentamientos
-    abiertos han cambiado.
+    Ids de los enfrentamientos abiertos (acta sin cerrar) en cuya convocatoria o alineación sin resultado aparece
+    alguno de ``player_ids``: lo que cambia si esos jugadores se dan de baja.
     """
     from call.models import Call
     from match.models import Game
 
     player_ids = list(player_ids)
     if not player_ids:
+        return set()
+    found = set(Call.objects.filter(match__draft_mode=True, players__in=player_ids).values_list("match_id", flat=True))
+    for slot in Game.PLAYER_SLOTS:
+        found.update(Game.objects.filter(match__draft_mode=True, results__isnull=True, **{f"{slot}__in": player_ids})
+                     .values_list("match_id", flat=True))
+    return found
+
+
+def leave_open_matches(player_ids):
+    """
+    Quita a los jugadores ``player_ids`` de lo que aún está por jugar: las convocatorias, las alineaciones
+    sin resultado y las respuestas de disponibilidad de los enfrentamientos abiertos (acta sin cerrar). Lo ya
+    jugado, con resultado, y los enfrentamientos cerrados no se tocan: sus estadísticas se conservan. Los
+    huecos que dejan en las alineaciones los rellena el capitán. Devuelve cuántos enfrentamientos abiertos han cambiado.
+    """
+    from call.models import Availability, Call
+    from match.models import Game
+
+    player_ids = list(player_ids)
+    if not player_ids:
         return 0
-    touched = set()
+    touched = open_matches_with(player_ids)
     for call in Call.objects.filter(match__draft_mode=True, players__in=player_ids).distinct():
         call.players.remove(*player_ids)
-        touched.add(call.match_id)
     for slot in Game.PLAYER_SLOTS:
         games = Game.objects.filter(match__draft_mode=True, results__isnull=True, **{f"{slot}__in": player_ids})
-        touched.update(games.values_list("match_id", flat=True))
         Game.objects.filter(pk__in=list(games.values_list("pk", flat=True))).update(**{slot: None})
+    Availability.objects.filter(match__draft_mode=True, player_id__in=player_ids).delete()
     return len(touched)
 
 

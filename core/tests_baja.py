@@ -395,3 +395,37 @@ class AltaOptionBTests(BajaFixture):
         from players import copy as player_copy
         player_copy._link(self.sheet, self.user)
         self.assertFalse(Invitation.objects.filter(pk=self.invitation.pk).exists())
+
+
+class AuditPhaseCTests(BajaFixture):
+    """Fase C de la auditoría: disponibilidades, borrar cuenta como baja y aviso de huecos."""
+
+    def test_baja_deletes_availability_of_open_matches_only(self):
+        from call.models import Availability
+        Availability.objects.create(match=self.open_match, player=self.sheet, answer=Availability.YES)
+        Availability.objects.create(match=self.closed_match, player=self.sheet, answer=Availability.YES)
+        dar_de_baja(self.sheet, self.captain)
+        self.assertFalse(Availability.objects.filter(match=self.open_match, player=self.sheet).exists())
+        self.assertTrue(Availability.objects.filter(match=self.closed_match, player=self.sheet).exists())
+
+    def test_delete_account_is_a_baja_of_the_sheet(self):
+        from core.services import delete_account
+        delete_account(self.user)
+        self.sheet.refresh_from_db()
+        self.assertFalse(self.sheet.in_team)
+        self.assertIsNone(self.sheet.user)
+        self.assertEqual(self.sheet.left_on, timezone.localdate())
+        self.assertNotIn(self.sheet, self.open_call.players.all())
+        self.assertIn(self.sheet, self.closed_call.players.all())
+
+    def test_open_matches_with_counts_the_matches_that_change(self):
+        from core.services import open_matches_with
+        self.assertEqual(open_matches_with([self.sheet.pk]), {self.open_match.pk})
+        self.assertEqual(open_matches_with([]), set())
+
+    def test_baja_in_the_form_warns_about_open_matches(self):
+        self.client.login(username="cap", password=PASSWORD)
+        response = self.client.post(reverse("edit_player", args=[self.free.public_id]), {
+            "name": "Sin", "last_name": "Cuenta", "position": "Derecha",
+            "skillfull_hand": "Diestro", "joined_season": "2026-2027"}, follow=True)
+        self.assertContains(response, "La baja deja huecos en 1 enfrentamiento abierto")

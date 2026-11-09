@@ -16717,3 +16717,9 @@ msgstr "You won't return to %(club)s; your sheet will stay as history, unlinked 
 #, python-format
 msgid "No hemos podido enlazarte a tu ficha de %(club)s. Avisa al capitán para que la revise."
 msgstr "We couldn't link you to your sheet at %(club)s. Ask the captain to check it."
+
+#, python-format
+msgid "La baja deja huecos en %(n)s enfrentamiento abierto: revisa su convocatoria y su alineación."
+msgid_plural "La baja deja huecos en %(n)s enfrentamientos abiertos: revisa sus convocatorias y alineaciones."
+msgstr[0] "The removal leaves gaps in %(n)s open match: check its call-up and line-up."
+msgstr[1] "The removal leaves gaps in %(n)s open matches: check their call-ups and line-ups."
