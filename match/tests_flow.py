@@ -32,7 +32,7 @@ class MatchLifecycleTests(TestCase):
     def _create_match(self):
         response = self.client.post(reverse("create_match"), {
             "mode": "competitivo", "match_type": Match.ENFRENTAMIENTO,
-            "local": self.club.own_team.id, "visiting": self.rival.id, "start_date": "2026-10-10",
+            "local": self.club.own_team.id, "visiting": self.rival.id, "start_date": f"{datetime.date.today() - datetime.timedelta(days=1):%Y-%m-%d}",
         })
         match = Match.objects.get(club=self.club)
         self.assertRedirects(response, reverse("call_for_match", args=[match.public_id]),
