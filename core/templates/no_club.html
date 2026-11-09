@@ -3,6 +3,7 @@
 {% block page_title %}{% translate "Sin equipo" %} · {% endblock %}
 
 {% block content %}
+{% if copy_invitations %}<div class="z-auth-invites">{% include 'includes/copy_invitations.html' %}</div>{% endif %}
 <div class="z-auth">
     <div class="z-auth-card text-center">
         <img src="{% static 'zyra/logo.svg' %}" alt="Zyra" class="z-auth-logo">

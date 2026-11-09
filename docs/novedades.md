@@ -3,6 +3,19 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 09/11/2026 · Baja de plantilla = salir del equipo
+
+- **Dar de baja** a un jugador con cuenta lo saca del equipo: deja de ver enfrentamientos, convocatorias y estadísticas del equipo, queda libre para unirse a otro y conserva sus estadísticas en «Mis estadísticas». Sin cuenta, solo sale de la plantilla.
+- **Convocatorias**: quien causa baja (o abandona el club) desaparece de las convocatorias y alineaciones sin resultado de los enfrentamientos abiertos; lo ya jugado no cambia.
+- **Aviso al capitán**: al guardar una baja sale un popup que dice cuántos jugadores salen y qué cuentas dejan de ver el equipo. El capitán no se puede dar de baja: antes traspasa la capitanía.
+- **Correo al jugador** dado de baja (no si abandona él, no tiene email o tiene los correos del club bloqueados).
+- **Abandonar el club** ahora también es baja de plantilla.
+- **Permisos**: solo el capitán da de baja a jugadores con cuenta; un gestor solo a fichas sin cuenta, y nadie se da de baja a sí mismo (se usa «Abandonar el club»).
+- **Alta con cuenta anterior**: la ficha entra en la plantilla al momento (el capitán puede convocarla) y la cuenta recibe una invitación; al aceptar se enlaza a esa misma ficha sin tocar sus estadísticas. Si no acepta, la ficha sigue en la plantilla hasta que el capitán decida.
+- **Baja y huecos**: al dar de baja se borran sus respuestas de disponibilidad de los enfrentamientos abiertos y se avisa al capitán de los enfrentamientos que se quedan con huecos. Eliminar la cuenta también saca la ficha de la plantilla y de las convocatorias abiertas.
+- **Invitación de vuelta**: solo la acepta la cuenta que dejó el equipo, y se ve y se responde también en la pantalla «Sin equipo».
+- **Dar de alta de nuevo** a alguien que salió envía una invitación por email a su cuenta; al aceptar recupera su ficha y sus estadísticas. No se puede si ese email ya tiene equipo en la competición.
+
 ## 09/11/2026 · Asistencia a las convocatorias legible
 
 - **Barras horizontales** con una fila por convocatoria: fecha y rival en dos líneas (rival recortado, nombre completo al pasar el ratón o tocar), sin giros ni solapes, en móvil y escritorio.

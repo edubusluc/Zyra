@@ -14,7 +14,7 @@
 
 <p class="text-muted">{% translate "Activa o desactiva a los jugadores que están en el equipo y guarda todos los cambios de una vez. Los jugadores fuera del equipo no aparecen en convocatorias, advertencias ni en los rankings." %}</p>
 
-<form method="post" data-roster data-loading-text="{% translate 'Guardando la plantilla…' %}">
+<form method="post" data-roster data-loading-text="{% translate 'Guardando la plantilla…' %}" data-baja-confirm data-confirm-title="{% translate 'Dar de baja del equipo' %}" data-confirm-action="{% translate 'Dar de baja' %}" data-confirm-danger data-baja-one="{% translate 'Vas a dar de baja a 1 jugador: saldrá de la plantilla y de las convocatorias abiertas.' %}" data-baja-many="{% translate 'Vas a dar de baja a {n} jugadores: saldrán de la plantilla y de las convocatorias abiertas.' %}" data-baja-accounts="{% translate 'Con cuenta en Zyra ({names}): dejan de ver el equipo (enfrentamientos, convocatorias y estadísticas del equipo), se les avisará por correo y conservan sus estadísticas en «Mis estadísticas». Para volver tendrás que invitarlos.' %}">
     {% csrf_token %}
     <div class="z-selector-tools">
         <div class="z-search">
@@ -41,7 +41,7 @@
                 <span class="z-pick-meta" data-roster-state></span>
             </span>
             <span class="form-check form-switch m-0">
-                <input class="form-check-input" type="checkbox" role="switch" name="in_team" value="{{ p.id }}" {% if p.in_team %}checked{% endif %} data-initial="{% if p.in_team %}1{% else %}0{% endif %}" aria-label="{% blocktranslate with name=p.name|upper last_name=p.last_name|upper %}{{ name }} {{ last_name }} en el equipo{% endblocktranslate %}">
+                <input class="form-check-input" type="checkbox" role="switch" name="in_team" value="{{ p.id }}" {% if p.in_team %}checked{% endif %} data-initial="{% if p.in_team %}1{% else %}0{% endif %}" data-linked="{% if p.user_id %}1{% else %}0{% endif %}" aria-label="{% blocktranslate with name=p.name|upper last_name=p.last_name|upper %}{{ name }} {{ last_name }} en el equipo{% endblocktranslate %}">
             </span>
         </label>
         {% empty %}
@@ -97,6 +97,7 @@
     root.querySelector('[data-roster-save]').disabled = !changes;
     // Dar de baja a todos se puede (p. ej. al acabar la temporada), pero se avisa antes de guardar.
     root.querySelector('[data-roster-empty-warning]').hidden = !(changes && count === 0 && rows.length);
+    root.dispatchEvent(new Event('roster-refresh'));
   }
 
   search.addEventListener('input', refresh);
@@ -121,4 +122,5 @@
   refresh();
 })();
 </script>
+<script src="{% static 'js/baja-confirm.js' %}" defer></script>
 {% endblock %}

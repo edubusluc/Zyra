@@ -76,7 +76,20 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
   (`club_name_matches`, `archive_club`): se quitan miembros, invitaciones y cuenta SNP, las fichas enlazadas pasan a `past_user` y se
   borran las fotos de las fichas sin cuenta; jugadores, partidos y resultados se conservan. Solo el personal lo borra de verdad
   (`delete_club`, back-office). Tests: `core/tests_delete_club.py`.
-- [V] Quitar o abandonar desenlaza su `Player` (`remove_membership`); el jugador y sus estadísticas quedan.
+- [V] Quitar o abandonar desenlaza su `Player` (`remove_membership`); el jugador y sus estadísticas quedan. Salir del club es una baja de
+  plantilla: la ficha pasa a `in_team=False` y el jugador sale de las convocatorias y alineaciones sin resultado de los enfrentamientos
+  abiertos (`leave_open_matches`); lo ya jugado y los enfrentamientos cerrados no se tocan.
+- [V] Baja de plantilla = salir del equipo (`dar_de_baja`, usado por `edit_player` al desmarcar «En el equipo» y por `manage_roster`): con
+  cuenta enlazada quita la membresía (`remove_membership`; un gestor pierde también el rol) y queda libre para otro equipo de esa
+  competición; sin cuenta solo sale de la plantilla y de las convocatorias abiertas. El capitán no se puede dar de baja
+  (`removal_blocker`, `RemovalError`): antes traspasa la capitanía. Volver a su ficha anterior con «Soy yo» (`link_player`) es un alta
+  (`in_team=True`). Al guardar una baja el capitán confirma en un popup (`static/js/baja-confirm.js`, sobre `static/js/confirm-modal.js`, que avisa de las
+  cuentas afectadas) y el jugador con cuenta recibe un correo (`notify_removal` → `send_removed_email`, plantillas `emails/removed.*`, al confirmar
+  la transacción; no sale si abandona él, si no tiene email o si el capitán le bloqueó los correos del club). Alta (`dar_de_alta`, desde `edit_player` o `manage_roster` al marcar «En el equipo»): una ficha sin cuenta anterior solo vuelve a la
+  plantilla; si dejó una cuenta (`past_user`) esa cuenta recibe una invitación por email vinculada a la ficha (`Invitation.player`, 30 días,
+  `send_rejoin_email`, plantillas `emails/rejoin.*`) y al aceptar recupera ficha y estadísticas (`players.copy.link_player`; la ficha vuelve a
+  `in_team=True`). No se puede (`alta_blocker`, `AltaError`) si el email no existe, está bloqueado, ya es miembro o ya tiene equipo en esa
+  competición (comprobado por email). Al dar de alta la ficha entra ya en la plantilla (`in_team=True`, `left_on=None`) para que el capitán pueda convocarla; si la cuenta no acepta o rechaza (`players.copy.decline`), la ficha sigue en la plantilla sin enlazar y el capitán decide. Al aceptar se enlaza la misma ficha (no se crea otra), así que sus partidos y estadísticas no cambian; enlazar la ficha (`_link`, también con «Soy yo») consume las invitaciones pendientes de esa ficha. Solo el capitán da de baja a fichas con cuenta (un gestor solo a fichas sin cuenta) y nadie se da de baja a sí mismo por ahí (`removal_blocker(player, by)`); la invitación de vuelta solo la acepta la cuenta titular de la ficha (`past_user`), y se ve y se responde también en «Sin equipo» (`core/templates/includes/copy_invitations.html`). La baja también borra las respuestas de disponibilidad de los enfrentamientos abiertos (`leave_open_matches`), avisa al capitán de los enfrentamientos que se quedan con huecos (`open_matches_with`) y «Eliminar mi cuenta» (`delete_account`) funciona como baja de la ficha que se conserva (`in_team=False`, `left_on`). Tests: `core/tests_baja.py`.
 - [V] Alta de club: crea equipo propio (`is_own=True`, `in_group=True`) y membresía de capitán;
   el jugador del capitán se crea escribiendo su nombre o eligiéndolo del equipo traído de SNP (`CaptainSnpForm`).
 - [V] Login con usuario o email (`ACCOUNT_LOGIN_METHODS`); verificación de email opcional

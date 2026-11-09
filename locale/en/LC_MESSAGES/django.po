@@ -16545,3 +16545,181 @@ msgstr ""
 "You are the only member of %(club)s. Leave the club from the menu (it will "
 "be closed and your statistics are kept) and then you can delete your "
 "account."
+
+#, python-format
+msgid ""
+"%(player)s es el capitán del equipo: traspasa antes la capitanía para darlo "
+"de baja."
+msgstr ""
+"%(player)s is the team captain: hand over the captaincy before removing "
+"them from the team."
+
+msgid ""
+"Ya no ves los enfrentamientos, las convocatorias ni las estadísticas del "
+"equipo, y has salido de las convocatorias que estaban abiertas."
+msgstr ""
+"You can no longer see the team's matches, call-ups or statistics, and you "
+"have been taken out of the call-ups that were still open."
+
+msgid ""
+"Tus estadísticas no se pierden: siguen en «Mis estadísticas». Puedes unirte "
+"a otro equipo cuando quieras."
+msgstr ""
+"Your statistics are not lost: they stay in “My statistics”. You can join "
+"another team whenever you like."
+
+msgid "Si crees que es un error, habla con el capitán"
+msgstr "If you think this is a mistake, talk to the captain"
+
+#, python-format
+msgid "%(by)s te ha dado de baja del equipo %(club)s."
+msgstr "%(by)s has removed you from the team %(club)s."
+
+#, python-format
+msgid "Te han dado de baja del equipo %(club)s."
+msgstr "You have been removed from the team %(club)s."
+
+#, python-format
+msgid ""
+"<strong>%(by)s</strong> te ha dado de baja del equipo <strong>%(club)s</"
+"strong>."
+msgstr ""
+"<strong>%(by)s</strong> has removed you from the team <strong>%(club)s</"
+"strong>."
+
+#, python-format
+msgid "Te han dado de baja del equipo <strong>%(club)s</strong>."
+msgstr "You have been removed from the team <strong>%(club)s</strong>."
+
+#, python-format
+msgid "Te han dado de baja de %(club)s en Zyra"
+msgstr "You have been removed from %(club)s on Zyra"
+
+#, python-format
+msgid "Te han dado de baja de %(club)s"
+msgstr "You have been removed from %(club)s"
+
+#, python-format
+msgid "Hola, %(username)s:"
+msgstr "Hi, %(username)s:"
+
+msgid "Dar de baja del equipo"
+msgstr "Remove from the team"
+
+msgid "Dar de baja"
+msgstr "Remove"
+
+msgid ""
+"Vas a dar de baja a 1 jugador: saldrá de la plantilla y de las convocatorias "
+"abiertas."
+msgstr ""
+"You are about to remove 1 player: they will leave the roster and the call-ups "
+"that are still open."
+
+#, python-brace-format
+msgid ""
+"Vas a dar de baja a {n} jugadores: saldrán de la plantilla y de las "
+"convocatorias abiertas."
+msgstr ""
+"You are about to remove {n} players: they will leave the roster and the "
+"call-ups that are still open."
+
+#, python-brace-format
+msgid ""
+"Con cuenta en Zyra ({names}): dejan de ver el equipo (enfrentamientos, "
+"convocatorias y estadísticas del equipo), se les avisará por correo y "
+"conservan sus estadísticas en «Mis estadísticas». Para volver tendrás que "
+"invitarlos."
+msgstr ""
+"With a Zyra account ({names}): they stop seeing the team (matches, call-ups "
+"and team statistics), they will be notified by email and keep their "
+"statistics in “My statistics”. To bring them back you will have to invite "
+"them."
+
+#, python-format
+msgid "La cuenta de %(player)s no tiene email: no se le puede invitar a volver."
+msgstr "%(player)s's account has no email address: they cannot be invited back."
+
+#, python-format
+msgid ""
+"%(player)s ya es miembro del equipo: puede enlazar su ficha anterior desde "
+"«Mi perfil»."
+msgstr ""
+"%(player)s is already a member of the team: they can link their previous "
+"sheet from “My profile”."
+
+#, python-format
+msgid ""
+"Ese email ya tiene un equipo en %(competition)s y solo se puede tener uno "
+"por competición."
+msgstr ""
+"That email already has a team in %(competition)s and only one team per "
+"competition is allowed."
+
+#, python-format
+msgid "%(player)s vuelve a la plantilla y le hemos enviado una invitación para que recupere su acceso al equipo."
+msgstr "%(player)s is back in the squad and we have sent them an invitation to regain access to the team."
+
+#, python-format
+msgid "Te han dado de alta de nuevo en %(club)s en Zyra"
+msgstr "You have been added back to %(club)s on Zyra"
+
+#, python-format
+msgid "Vuelves a %(club)s"
+msgstr "You are back in %(club)s"
+
+#, python-format
+msgid "%(name)s, capitán de %(club)s, te ha dado de alta de nuevo en el equipo."
+msgstr "%(name)s, captain of %(club)s, has added you back to the team."
+
+#, python-format
+msgid ""
+"<strong>%(name)s</strong>, capitán de <strong>%(club)s</strong>, te ha dado "
+"de alta de nuevo en el equipo."
+msgstr ""
+"<strong>%(name)s</strong>, captain of <strong>%(club)s</strong>, has added "
+"you back to the team."
+
+#, python-format
+msgid "Te han dado de alta de nuevo en %(club)s."
+msgstr "You have been added back to %(club)s."
+
+#, python-format
+msgid "Te han dado de alta de nuevo en <strong>%(club)s</strong>."
+msgstr "You have been added back to <strong>%(club)s</strong>."
+
+#, python-format
+msgid ""
+"Al aceptar recuperas tu ficha (%(player)s) con todas tus estadísticas y "
+"vuelves a ver el equipo, los enfrentamientos y las convocatorias."
+msgstr ""
+"When you accept you get your sheet (%(player)s) back with all your "
+"statistics, and you can see the team, matches and call-ups again."
+
+#, python-format
+msgid "Solo el capitán puede dar de baja a %(player)s: tiene una cuenta enlazada y saldría del equipo."
+msgstr "Only the captain can remove %(player)s: they have a linked account and would leave the team."
+
+msgid "No puedes darte de baja a ti mismo desde aquí: usa «Abandonar el club» en el menú."
+msgstr "You can't remove yourself from here: use «Leave the club» in the menu."
+
+msgid "Esta invitación es para otra cuenta."
+msgstr "This invitation is for another account."
+
+#, python-format
+msgid "Tu ficha allí: %(player)s. Si aceptas, vuelves a la plantilla y recuperas tu histórico."
+msgstr "Your sheet there: %(player)s. If you accept, you rejoin the squad and get your history back."
+
+#, python-format
+msgid "No volverás a %(club)s; tu ficha seguirá como histórico sin enlazar a tu cuenta."
+msgstr "You won't return to %(club)s; your sheet will stay as history, unlinked from your account."
+
+#, python-format
+msgid "No hemos podido enlazarte a tu ficha de %(club)s. Avisa al capitán para que la revise."
+msgstr "We couldn't link you to your sheet at %(club)s. Ask the captain to check it."
+
+#, python-format
+msgid "La baja deja huecos en %(n)s enfrentamiento abierto: revisa su convocatoria y su alineación."
+msgid_plural "La baja deja huecos en %(n)s enfrentamientos abiertos: revisa sus convocatorias y alineaciones."
+msgstr[0] "The removal leaves gaps in %(n)s open match: check its call-up and line-up."
+msgstr[1] "The removal leaves gaps in %(n)s open matches: check their call-ups and line-ups."
