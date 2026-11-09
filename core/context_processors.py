@@ -91,8 +91,10 @@ CLUB_URL_NAMES = {
 
 
 def navigation(request):
-    """Sección de la navegación que se marca como activa, según la app de la vista."""
+    """Sección de la navegación que se marca como activa, según la app de la vista (el historial, siempre «Estadísticas»)."""
     match = getattr(request, "resolver_match", None)
+    if getattr(request, "history_view", False):  # ficha o partido de un equipo anterior: cuelgan de «Estadísticas»
+        return {"nav_section": "stats"}
     if match and match.url_name == "home":
         return {"nav_section": "home"}
     if match and match.url_name == "warnings_statistics":  # las advertencias se gestionan desde Plantilla

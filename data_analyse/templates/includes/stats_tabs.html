@@ -1,5 +1,11 @@
 {% load i18n static %}
 {% with current=request.resolver_match.url_name %}
+{% if history_view %}
+{# Ficha de un equipo anterior: solo se puede volver a «Mis estadísticas» (no hay «Yo» activo ni pestañas del equipo). #}
+<nav class="st-tabs z-segmented" aria-label="{% translate 'Tipo de estadística' %}">
+  <a class="btn btn-sm" href="{% url 'my_statistics' %}"><i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i> {% translate "Mis estadísticas" %}</a>
+</nav>
+{% else %}
 <nav class="st-tabs z-segmented" aria-label="{% translate 'Tipo de estadística' %}">
   {# «Yo»: lo tuyo en todas tus competiciones (y tu ficha en cada una, con mine_chips). #}
   {% if my_stats_tab %}
@@ -13,5 +19,6 @@
   <a class="btn btn-sm{% if current == 'rival_statistics' or current == 'rival_detail' %} active{% endif %}" href="{% url 'rival_statistics' %}"{% if current == 'rival_statistics' or current == 'rival_detail' %} aria-current="page"{% endif %}><i class="fa-solid fa-shield-halved me-1" aria-hidden="true"></i> {% translate "Rivales" %}</a>
   {% endif %}
 </nav>
+{% endif %}
 {% endwith %}
 <script src="{% static 'js/stats-mobile.js' %}" defer></script>

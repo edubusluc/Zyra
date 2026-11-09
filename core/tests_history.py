@@ -209,6 +209,24 @@ class HistoricSheetAndMatchTests(TeamChangeStatsTests):
         mate = Player.objects.filter(club=self.club_a, name="Mate").first()
         self.assertEqual(self.client.get(reverse("my_history_player", args=[mate.public_id])).status_code, 404)
 
+    def test_history_sheet_title_names_player_and_team_without_yo_tab(self):
+        self._leave(self.club_a)
+        page = self.client.get(reverse("my_history_player", args=[self.sheet_a.public_id]))
+        html = page.content.decode()
+        self.assertIn(f'<h1 class="st-title">{self.sheet_a.full_name}</h1>', html)
+        self.assertContains(page, self.club_a.name)
+        self.assertContains(page, "Equipo anterior")
+        self.assertContains(page, reverse("my_statistics"))
+        self.assertNotContains(page, 'aria-current="page"><i class="fa-solid fa-id-badge')
+        self.assertNotContains(page, "z-space-switcher")
+
+    def test_history_pages_highlight_statistics_in_the_menu(self):
+        self._leave(self.club_a)
+        sheet = self.client.get(reverse("my_history_player", args=[self.sheet_a.public_id]))
+        self.assertEqual(sheet.context["nav_section"], "stats")
+        match = self.client.get(reverse("history_match", args=[self.match_a.public_id]))
+        self.assertEqual(match.context["nav_section"], "stats")
+
     def test_history_sheet_redirects_when_still_current(self):
         url = reverse("my_history_player", args=[self.sheet_a.public_id])
         self.assertEqual(self.client.get(url).status_code, 302)

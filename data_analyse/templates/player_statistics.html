@@ -10,7 +10,8 @@
     {% include 'includes/filters_row.html' with season=True type=True %}
     <header class="st-head">
       <div>
-        <h1 class="st-title">{% if selected_player and hero.is_me %}{% translate "Yo" %}{% else %}{% translate "Jugadores" %}{% endif %}</h1>
+        <h1 class="st-title">{% if history_view and selected_player %}{{ player.full_name }}{% elif selected_player and hero.is_me %}{% translate "Yo" %}{% else %}{% translate "Jugadores" %}{% endif %}</h1>
+        {% if history_view and selected_player %}<p class="st-subtitle">{{ request.club.name }} {% include 'includes/competition_badge.html' with code=request.club.competition name=request.club.rules.name %} · {% translate "Equipo anterior" %}</p>{% endif %}
       </div>
     </header>
     {% if not history_view %}<form class="st-picker st-picker--bar" method="GET" action="{% url 'player_statistics' %}">

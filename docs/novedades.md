@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 10/11/2026 · Ficha de un equipo anterior
+
+- La ficha de un equipo anterior muestra el nombre del jugador y el equipo (con «Equipo anterior») en lugar de «Yo». Ya no aparece la pestaña «Yo» activa ni el selector de competición: solo se puede volver a «Mis estadísticas», y los filtros de temporada y tipo siguen funcionando. La página de un partido antiguo vuelve también a «Mis estadísticas», y en el menú superior se marca «Estadísticas» (no «Enfrentamientos»).
+
 ## 09/11/2026 · Baja de plantilla = salir del equipo
 
 - **Dar de baja** a un jugador con cuenta lo saca del equipo: deja de ver enfrentamientos, convocatorias y estadísticas del equipo, queda libre para unirse a otro y conserva sus estadísticas en «Mis estadísticas». Sin cuenta, solo sale de la plantilla.

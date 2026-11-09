@@ -16546,6 +16546,8 @@ msgstr ""
 "be closed and your statistics are kept) and then you can delete your "
 "account."
 
+msgid "Volver a Mis estadísticas"
+msgstr "Back to My statistics"
 #, python-format
 msgid ""
 "%(player)s es el capitán del equipo: traspasa antes la capitanía para darlo "
