@@ -46,6 +46,10 @@ class AdvisorTests(TestCase):
 
 class ReportTests(TestCase):
     def setUp(self):
+        # Las fechas de estas pruebas son fijas (antiguas): el corte de «partido antiguo» solo se prueba aparte.
+        patcher = mock.patch("match.views.is_past_match", return_value=False)
+        patcher.start()
+        self.addCleanup(patcher.stop)
         self.admin = User.objects.create_user("admin", password="pass-12345", email="capitan@example.com")
         self.club = create_club("Club A", "Sevilla", self.admin)
         self.viewer = User.objects.create_user("viewer", password="pass-12345", email="viewer@example.com")
@@ -248,6 +252,20 @@ class ReportTests(TestCase):
         self.assertEqual(parts[:2], ["multipart/mixed", "multipart/related"])
         self.assertIn("image/png", parts)
         self.assertEqual(parts[-1], "application/pdf")
+
+    def test_old_match_does_not_email_the_report_unless_ticked(self):
+        """Con la fecha ya pasada se cierra sin correo; con la casilla marcada sí se envía."""
+        Match.objects.filter(pk=self.match.pk).update(start_date=datetime.date.today() - datetime.timedelta(days=60))
+        patcher = mock.patch("match.views.is_past_match", return_value=True)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        self.client.post(reverse("close_call", args=[self.match.public_id]))
+        self.call.refresh_from_db()
+        self.assertFalse(self.call.draft_mode)
+        self.assertEqual(mail.outbox, [])
+        self.client.post(reverse("reopen_call", args=[self.match.public_id]))
+        self.client.post(reverse("close_call", args=[self.match.public_id]), {"resend_report": "1"})
+        self.assertEqual(len(mail.outbox), 1)
 
     def test_the_captain_gets_an_individual_email(self):
         """El club tiene un solo capitán: recibe su correo propio, sin copias."""
