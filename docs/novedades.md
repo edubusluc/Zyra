@@ -3,6 +3,12 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 09/11/2026 · Pulido de Inicio, avisos y disponibilidad
+
+- **Inicio**: para el capitán y el gestor, el próximo enfrentamiento y «Pendiente» van ahora antes que los avisos de configuración (nombrar gestor, cuenta SNP, Primeros pasos), que quedan debajo.
+- **Móvil**: la notificación de confirmación («Enfrentamiento creado…») se pinta sobre la cabecera y ya no tapa los controles de la ficha.
+- **Enlace de disponibilidad**: sin hora, «Hora por confirmar» sale con el mismo tamaño que la fecha y en tono apagado, y fecha y hora ya no se aprietan en móvil.
+
 ## 09/11/2026 · «Pendiente» del Inicio va directo al paso
 
 - **Inicio**: en «Pendiente», quien gestiona (capitán y gestor) abre directamente el paso que toca: «Convocar» lleva al formulario de convocatoria, «Alinear parejas» a las parejas y «Poner resultados» o «Cerrar acta» a la pantalla de resultados. Un clic menos en cada uno. «Cerrar convocatoria» sigue abriendo la ficha (se confirma allí) y los jugadores también.

@@ -516,6 +516,16 @@ class HomeTests(TestCase):
         response = self.client.get(reverse("home"))
         self.assertNotContains(response, reverse("create_call", args=[match.public_id]))
 
+    def test_home_pending_goes_before_setup_notices(self):
+        """UC-13: «Pendiente» va antes que los avisos de configuración (gestor, Primeros pasos)."""
+        Match.objects.create(club=self.club, local=self.own, visiting=self.rival,
+                             start_date=self.today + datetime.timedelta(days=2))
+        html = self.client.get(reverse("home")).content.decode()
+        self.assertIn("z-home-pending", html)
+        for later in ("z-onboarding", "Añade un gestor"):
+            if later in html:
+                self.assertLess(html.index("z-home-pending"), html.index(later), later)
+
     def test_player_pending_uses_same_card_next_to_deck(self):
         """El jugador ve «Pendiente» con el mismo componente que el capitán, junto a la tarjeta del enfrentamiento."""
         member = User.objects.create_user("jugador", password="pass-12345")

@@ -17,7 +17,7 @@
         </p>
         <div class="z-av-when">
             <span class="z-av-date"><i class="fa-regular fa-calendar" aria-hidden="true"></i> {{ match.start_date|date:"l j F Y" }}</span>
-            <span class="z-av-time"><i class="fa-regular fa-clock" aria-hidden="true"></i> {% if match.start_time %}{{ match.start_time|time:"H:i" }}{% else %}{% translate "Hora por confirmar" %}{% endif %}</span>
+            <span class="z-av-time{% if not match.start_time %} is-tbc{% endif %}"><i class="fa-regular fa-clock" aria-hidden="true"></i> {% if match.start_time %}{{ match.start_time|time:"H:i" }}{% else %}{% translate "Hora por confirmar" %}{% endif %}</span>
         </div>
         {% if match.location %}
         <a class="z-av-place" href="{{ match.maps_url }}" target="_blank" rel="noopener">
