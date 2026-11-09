@@ -303,6 +303,15 @@ class Invitation(PublicIdModel):
         return timezone.now() >= self.expires_at
 
     @property
+    def is_replaced(self):
+        """
+        True si es un enlace compartido que dejó de valer antes de cumplir su plazo porque el
+        capitán generó otro (``create_invitation_link`` adelanta su caducidad).
+        """
+        return (self.reusable and self.is_expired
+                and self.expires_at < self.created_at + INVITATION_TTL - datetime.timedelta(minutes=1))
+
+    @property
     def is_valid(self):
         """La invitación todavía se puede aceptar: ni usada ni caducada."""
         return not self.is_used and not self.is_expired

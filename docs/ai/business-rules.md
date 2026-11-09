@@ -90,7 +90,7 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
 ### Invitaciones
 
 - [V] Por email: un solo uso. Enlace compartido (`reusable=True`): varios usos; solo vale el último,
-  al generar otro el anterior se caduca (`create_invitation_link`). Ambas caducan a las 24 h.
+  al generar otro el anterior se caduca (`create_invitation_link`; si ya hay uno activo, el botón pide confirmación y el sustituido se marca «Sustituida» / `Invitation.is_replaced`). Ambas caducan a las 24 h (las de ficha copiada, 30 días).
 - [V] `accept_invitation` bloquea la fila (`select_for_update`) y rechaza: usada/caducada, club
   suspendido, email bloqueado, ya miembro, o miembro de otro club.
 - [V] No se invita a un email que ya es miembro ni a uno bloqueado (`InviteMemberForm.clean_email`).
