@@ -85,7 +85,11 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
   (`removal_blocker`, `RemovalError`): antes traspasa la capitanía. Volver a su ficha anterior con «Soy yo» (`link_player`) es un alta
   (`in_team=True`). Al guardar una baja el capitán confirma en un popup (`static/js/baja-confirm.js`, sobre `static/js/confirm-modal.js`, que avisa de las
   cuentas afectadas) y el jugador con cuenta recibe un correo (`notify_removal` → `send_removed_email`, plantillas `emails/removed.*`, al confirmar
-  la transacción; no sale si abandona él, si no tiene email o si el capitán le bloqueó los correos del club). Tests: `core/tests_baja.py`.
+  la transacción; no sale si abandona él, si no tiene email o si el capitán le bloqueó los correos del club). Alta (`dar_de_alta`, desde `edit_player` o `manage_roster` al marcar «En el equipo»): una ficha sin cuenta anterior solo vuelve a la
+  plantilla; si dejó una cuenta (`past_user`) esa cuenta recibe una invitación por email vinculada a la ficha (`Invitation.player`, 30 días,
+  `send_rejoin_email`, plantillas `emails/rejoin.*`) y al aceptar recupera ficha y estadísticas (`players.copy.link_player`; la ficha vuelve a
+  `in_team=True`). No se puede (`alta_blocker`, `AltaError`) si el email no existe, está bloqueado, ya es miembro o ya tiene equipo en esa
+  competición (comprobado por email). Rechazar la invitación deja la ficha fuera (`players.copy.decline`). Tests: `core/tests_baja.py`.
 - [V] Alta de club: crea equipo propio (`is_own=True`, `in_group=True`) y membresía de capitán;
   el jugador del capitán se crea escribiendo su nombre o eligiéndolo del equipo traído de SNP (`CaptainSnpForm`).
 - [V] Login con usuario o email (`ACCOUNT_LOGIN_METHODS`); verificación de email opcional

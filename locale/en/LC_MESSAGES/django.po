@@ -16635,3 +16635,63 @@ msgstr ""
 "and team statistics), they will be notified by email and keep their "
 "statistics in “My statistics”. To bring them back you will have to invite "
 "them."
+
+#, python-format
+msgid "La cuenta de %(player)s no tiene email: no se le puede invitar a volver."
+msgstr "%(player)s's account has no email address: they cannot be invited back."
+
+#, python-format
+msgid ""
+"%(player)s ya es miembro del equipo: puede enlazar su ficha anterior desde "
+"«Mi perfil»."
+msgstr ""
+"%(player)s is already a member of the team: they can link their previous "
+"sheet from “My profile”."
+
+#, python-format
+msgid ""
+"Ese email ya tiene un equipo en %(competition)s y solo se puede tener uno "
+"por competición."
+msgstr ""
+"That email already has a team in %(competition)s and only one team per "
+"competition is allowed."
+
+#, python-format
+msgid "Hemos enviado una invitación a %(player)s para que vuelva al equipo."
+msgstr "We have sent %(player)s an invitation to return to the team."
+
+#, python-format
+msgid "Te han dado de alta de nuevo en %(club)s en Zyra"
+msgstr "You have been added back to %(club)s on Zyra"
+
+#, python-format
+msgid "Vuelves a %(club)s"
+msgstr "You are back in %(club)s"
+
+#, python-format
+msgid "%(name)s, capitán de %(club)s, te ha dado de alta de nuevo en el equipo."
+msgstr "%(name)s, captain of %(club)s, has added you back to the team."
+
+#, python-format
+msgid ""
+"<strong>%(name)s</strong>, capitán de <strong>%(club)s</strong>, te ha dado "
+"de alta de nuevo en el equipo."
+msgstr ""
+"<strong>%(name)s</strong>, captain of <strong>%(club)s</strong>, has added "
+"you back to the team."
+
+#, python-format
+msgid "Te han dado de alta de nuevo en %(club)s."
+msgstr "You have been added back to %(club)s."
+
+#, python-format
+msgid "Te han dado de alta de nuevo en <strong>%(club)s</strong>."
+msgstr "You have been added back to <strong>%(club)s</strong>."
+
+#, python-format
+msgid ""
+"Al aceptar recuperas tu ficha (%(player)s) con todas tus estadísticas y "
+"vuelves a ver el equipo, los enfrentamientos y las convocatorias."
+msgstr ""
+"When you accept you get your sheet (%(player)s) back with all your "
+"statistics, and you can see the team, matches and call-ups again."

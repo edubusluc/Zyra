@@ -7,8 +7,11 @@ mucho un espacio por competición: quien ya es miembro (o capitán) de un club S
 registrar ni unirse a otro club SNP, pero sí a uno LAPI (``club_of``). Los clubes suspendidos
 no cuentan, porque ya no se pueden usar.
 """
+import datetime
+
 from django.contrib.auth import get_user_model
 from django.db import transaction
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
@@ -16,7 +19,7 @@ from players.models import Player, SnpAccount
 from team.models import Team
 from .blocklist import is_user_blocked
 from .competitions import COMPETITIONS
-from .emails import send_removed_email
+from .emails import send_rejoin_email, send_removed_email
 from .models import Club, Invitation, Membership
 
 User = get_user_model()
@@ -377,3 +380,61 @@ def dar_de_baja(player, by=None, site_url=""):
     Player.objects.filter(pk=player.pk, in_team=True).update(in_team=False)
     Player.objects.filter(pk=player.pk, left_on__isnull=True).update(left_on=timezone.localdate())
     return membership
+
+
+# Cuánto vale la invitación para volver al equipo (como la de una ficha copiada).
+REJOIN_INVITATION_TTL = datetime.timedelta(days=30)
+
+
+class AltaError(Exception):
+    """El alta no se puede hacer; el mensaje explica el motivo al usuario."""
+    pass
+
+
+def alta_blocker(player):
+    """
+    Motivo por el que no se puede dar de alta a ``player`` (o None). Solo importa en una ficha que dejó una
+    cuenta (``past_user``): volver al equipo exige invitar a esa cuenta por email, así que hace falta un email
+    que no esté bloqueado, que no sea ya miembro del equipo y que no tenga ya otro equipo en la competición
+    (un equipo por competición, comprobado por email de la cuenta).
+    """
+    if player.user_id or not player.past_user_id:
+        return None
+    account = player.past_user
+    if not account.email:
+        return _("La cuenta de %(player)s no tiene email: no se le puede invitar a volver.") % {"player": player.short_name}
+    if is_user_blocked(account):
+        return _("No se puede invitar a este email.")
+    if Membership.objects.filter(club=player.club, user=account).exists():
+        return _("%(player)s ya es miembro del equipo: puede enlazar su ficha anterior desde «Mi perfil».") % {"player": player.short_name}
+    if club_of(account, player.club.competition) is not None:
+        return _("Ese email ya tiene un equipo en %(competition)s y solo se puede tener uno por competición.") % {
+            "competition": player.club.rules.name}
+    return None
+
+
+@transaction.atomic
+def dar_de_alta(player, by=None, site_url=""):
+    """
+    Alta en la plantilla de ``player`` (la hace el capitán o un gestor). Una ficha sin cuenta anterior solo vuelve a
+    la plantilla. Si la ficha dejó una cuenta (``past_user``), esa cuenta tiene que aceptar: se le envía una
+    invitación por email ya vinculada a la ficha (``Invitation.player``) y, al aceptar, entra en el club y
+    recupera su ficha y sus estadísticas (``players.copy.link_player``). No se puede si el email ya tiene equipo
+    en esa competición (``AltaError``). Devuelve la invitación enviada, o None si no hacía falta.
+    """
+    blocker = alta_blocker(player)
+    if blocker:
+        raise AltaError(blocker)
+    Player.objects.filter(pk=player.pk).update(in_team=True)
+    if not player.past_user_id:
+        Player.objects.filter(pk=player.pk, left_on__isnull=False).update(left_on=None)
+    if player.user_id or not player.past_user_id:
+        return None
+    Invitation.objects.filter(club=player.club, player=player, used_at__isnull=True).delete()
+    invitation = Invitation.objects.create(
+        club=player.club, created_by=by, email=player.past_user.email, player=player,
+        expires_at=timezone.now() + REJOIN_INVITATION_TTL,
+    )
+    url = site_url.rstrip("/") + reverse("invitation", args=[invitation.token])
+    transaction.on_commit(lambda: send_rejoin_email(invitation, url))
+    return invitation
