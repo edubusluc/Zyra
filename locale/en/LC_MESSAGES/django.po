@@ -6368,8 +6368,8 @@ msgstr "Leaving the team…"
 
 #: core/templates/base.html:188
 #, python-format
-msgid "¿Abandonar y eliminar %(club)s?"
-msgstr "Leave and delete %(club)s?"
+msgid "¿Abandonar y cerrar %(club)s?"
+msgstr "Leave and close %(club)s?"
 
 #: core/templates/base.html:190
 #, python-format
@@ -6417,8 +6417,8 @@ msgstr ""
 "it. To come back you will need a new invitation."
 
 #: core/templates/base.html:209
-msgid "Eliminar el equipo"
-msgstr "Delete the team"
+msgid "Cerrar el equipo"
+msgstr "Close the team"
 
 #: core/templates/base.html:211 core/templates/club.html:72
 #, python-format
@@ -6618,8 +6618,7 @@ msgstr "Invite players"
 msgid "Invita por email o comparte un enlace. Caduca a las 24 horas."
 msgstr "Invite by email or share a link. It expires after 24 hours."
 
-#: core/templates/club_members.html:61
-#: core/templates/club_members.html:62
+#: core/templates/club_members.html:61 core/templates/club_members.html:62
 msgid ""
 "Podrá registrarse con usuario, email y contraseña o con Google, o unirse con"
 " la cuenta que ya tenga, y entrará como miembro. La invitación por email "
@@ -16250,8 +16249,8 @@ msgid ""
 "enlace para responder. Si tienes otra cuenta con la que ya estás en el "
 "equipo, entra con ella."
 msgstr ""
-"You are signed in as «%(user)s», which is not part of %(team)s yet. Ask your "
-"captain for an invitation and, once you join, open this link again to "
+"You are signed in as «%(user)s», which is not part of %(team)s yet. Ask your"
+" captain for an invitation and, once you join, open this link again to "
 "answer. If you have another account that is already in the team, sign in "
 "with it."
 
@@ -16428,8 +16427,12 @@ msgstr "Emails today"
 msgid "Cupo diario de correos"
 msgstr "Daily email quota"
 
-msgid "Destinatarios con correo enviado hoy sobre el cupo diario del proveedor. Se avisa al personal cuando quedan pocos."
-msgstr "Recipients emailed today out of the provider's daily quota. Staff are alerted when few are left."
+msgid ""
+"Destinatarios con correo enviado hoy sobre el cupo diario del proveedor. Se "
+"avisa al personal cuando quedan pocos."
+msgstr ""
+"Recipients emailed today out of the provider's daily quota. Staff are "
+"alerted when few are left."
 
 msgid "Más información"
 msgstr "More information"
@@ -16437,3 +16440,90 @@ msgstr "More information"
 #, python-format
 msgid "%(n)s restantes"
 msgstr "%(n)s left"
+
+msgid "Equipo anterior"
+msgstr "Former team"
+
+msgid "Tu ficha anterior"
+msgstr "Your previous sheet"
+
+msgid "Ver mis estadísticas de equipos anteriores"
+msgstr "See my stats from former teams"
+
+msgid "%(player)s queda libre para enlazarla con otra cuenta."
+msgstr "%(player)s is now free to be linked to another account."
+
+msgid "Archivado"
+msgstr "Archived"
+
+msgid ""
+"Esta ficha es de una cuenta y no se puede eliminar para no borrar sus "
+"estadísticas. Desmarca «En el equipo» para sacarla de la plantilla."
+msgstr ""
+"This sheet belongs to an account and cannot be deleted, so its statistics "
+"are not lost. Untick “In the team” to take it off the roster."
+
+msgid ""
+"Esta ficha fue de una persona que ya no está en el club: conserva su "
+"historial y nadie más puede enlazarla."
+msgstr ""
+"This sheet belonged to someone who is no longer in the club: it keeps their "
+"history and nobody else can link it."
+
+msgid "Ficha anterior"
+msgstr "Previous sheet"
+
+msgid "Liberar ficha"
+msgstr "Release sheet"
+
+msgid "Ver mi ficha"
+msgstr "View my sheet"
+
+msgid ""
+"¿Liberar la ficha? La persona que la tuvo dejará de ver este historial en "
+"«Yo»."
+msgstr ""
+"Release the sheet? The person who had it will no longer see this history in "
+"“Me”."
+
+msgid "Liberando la ficha…"
+msgstr "Releasing the sheet…"
+
+msgid ""
+"Eres el único miembro del equipo. Si lo abandonas, el equipo se cerrará."
+msgstr ""
+"You are the only member of the team. If you leave, the team will be closed."
+
+msgid ""
+"El club está archivado: conserva el historial de quienes jugaron en él. "
+"Borrarlo lo elimina también de sus estadísticas."
+msgstr ""
+"The club is archived: it keeps the history of those who played in it. "
+"Deleting it also removes it from their statistics."
+
+msgid ""
+"Nadie más podrá entrar: se quitan las invitaciones y la cuenta SNP y se "
+"borran las fotos de los jugadores sin cuenta. Los enfrentamientos y las "
+"estadísticas se conservan para quien jugó en él, que seguirá viéndolos en "
+"«Yo». No se puede deshacer."
+msgstr ""
+"Nobody else will be able to join: invitations and the SNP account are "
+"removed and the photos of players without an account are deleted. Matches "
+"and statistics are kept for those who played in it, who will still see them "
+"in “Me”. This cannot be undone."
+
+msgid ""
+"Has abandonado %(club)s y el equipo se ha cerrado. Tus estadísticas siguen "
+"en «Yo»."
+msgstr ""
+"You have left %(club)s and the team has been closed. Your statistics are "
+"still in “Me”."
+
+msgid ""
+"Eres el único miembro de %(club)s. Abandona el club desde el menú (se "
+"cerrará y tus estadísticas se conservan) y después podrás eliminar tu "
+"cuenta."
+msgstr ""
+"You are the only member of %(club)s. Leave the club from the menu (it will "
+"be closed and your statistics are kept) and then you can delete your "
+"account."

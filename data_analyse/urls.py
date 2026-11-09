@@ -1,9 +1,10 @@
 """URLs de las estadísticas."""
 from django.urls import path
-from .views import team_statistics, statistics_per_player, statistics_per_pair, warnings_statistics, rival_statistics, rival_detail, my_statistics
+from .views import team_statistics, statistics_per_player, statistics_per_pair, warnings_statistics, rival_statistics, rival_detail, my_statistics, my_history_player
 
 urlpatterns = [
     path("mis_estadisticas", my_statistics, name='my_statistics'),
+    path("mis_estadisticas/ficha/<pid:player_id>/", my_history_player, name='my_history_player'),
     path("team_statistics",team_statistics, name='team_statistics'),
     path("player_statistics", statistics_per_player, name='player_statistics'),
     path("pair_statistics", statistics_per_pair, name='pair_statistics'),

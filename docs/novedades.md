@@ -3,6 +3,15 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 09/11/2026 · «Yo» conserva tus estadísticas al cambiar de equipo
+
+- **Equipo anterior**: al salir de un club (o si te saca el capitán) tu ficha y sus partidos siguen en «Yo». Una fila por ficha, marcada como «Equipo anterior»; los gráficos juntan por competición los equipos de la misma. Si te quedas sin equipo, «Sin equipo» enlaza a tus estadísticas.
+- **Tu ficha anterior**: al volver a un club donde ya jugaste, esa ficha sale marcada para no partir tu historial.
+- **Tu ficha y tus enfrentamientos**: desde «Yo» abres la ficha de un equipo anterior y los enfrentamientos en los que jugaste, de solo lectura y con la misma vista (también 3D) que tenías.
+- **Equipos cerrados**: si el último miembro abandona, el equipo se cierra pero no se borra: quienes jugaron conservan sus estadísticas.
+- **Fichas con cuenta**: no se pueden eliminar; el capitán puede «Liberar ficha» para que otra cuenta la reclame.
+- **Convocatorias**: tu porcentaje de «te apuntas» ya no baja con las convocatorias creadas después de tu baja o salida.
+
 ## 09/11/2026 · Back-office más legible
 
 - **Usuarios activos por día**: las 30 barras caben en una fila, con el máximo arriba y la fecha cada 5 días (el valor de cada día, al pasar el ratón).

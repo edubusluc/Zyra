@@ -38,7 +38,7 @@
         {% include 'includes/player_avatar.html' with player=p size="z-avatar--sm" alt="" %}
         <span class="z-pick-body">
             <span class="z-pick-name">{{ p.full_name }}</span>
-            <span class="z-pick-meta">{% if p.linked %}{% translate "Ya enlazado" %}{% else %}{{ p.get_position_display }}{% endif %}</span>
+            <span class="z-pick-meta">{% if p.linked %}{% translate "Ya enlazado" %}{% elif p.previous %}{% translate "Tu ficha anterior" %}{% else %}{{ p.get_position_display }}{% endif %}</span>
         </span>
         {% if p.linked %}
         <span class="z-claim-lock" title="{% translate 'Ya enlazado a otra cuenta' %}"><i class="fa-solid fa-lock" aria-hidden="true"></i></span>

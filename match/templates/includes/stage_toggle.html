@@ -1,6 +1,6 @@
 {# Interruptor de la ficha: 3D o clásica. Guarda el ajuste del usuario (el mismo de «Mi perfil»). Recibe: match, stage_view #}
 {% load i18n %}
-<form method="post" action="{% url 'set_stage_view' match.public_id %}" class="z-stage-toggle" data-loading-text="{% translate 'Cambiando la vista…' %}">
+<form method="post" action="{% if history_view %}{% url 'set_stage_view_history' match.public_id %}{% else %}{% url 'set_stage_view' match.public_id %}{% endif %}" class="z-stage-toggle" data-loading-text="{% translate 'Cambiando la vista…' %}">
     {% csrf_token %}
     <input type="hidden" name="stage" value="{% if stage_view %}off{% else %}on{% endif %}">
     <button type="submit" class="z-stage-toggle-btn" role="switch" aria-checked="{% if stage_view %}true{% else %}false{% endif %}">

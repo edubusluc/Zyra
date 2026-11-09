@@ -52,6 +52,11 @@ entero sigue siendo la clave de los FK. Excepciones sin `public_id`: `backoffice
 
 - `club` y `team` (siempre el equipo propio; `save()` lo asigna si falta y copia `gender`).
 - `user` (enlace a la cuenta, `SET_NULL`); única por (`club`, `user`) cuando no es nulo.
+- `past_user` (`SET_NULL`, `related_name="past_players"`): la cuenta que fue esta ficha. Se rellena en
+  `core.services.remove_membership` (al salir del club o sacarlo el capitán; el «Desenlazar» manual no lo guarda) y se vacía al
+  volver a enlazar esa cuenta (`save()`). Con ella «Mis estadísticas» (`spaces.my_players`) sigue mostrando la ficha.
+- `left_on` (fecha): día de la baja (`in_team=False`) o de la salida del club; `save()` y `manage_roster` lo mantienen. Las
+  convocatorias posteriores no cuentan en «te apuntas» (`calls_by_season`, `aligned_by_season`, `signup_by_player`).
 - `emails_muted` (el capitán silencia los recordatorios del club a ese jugador), `in_team` (False = ya no está en la plantilla, se conserva para estadísticas), `snp_score`,
   `joined_season` (`AAAA-AAAA`, selector con las de `season_choices`; las convocatorias anteriores no cuentan en sus estadísticas, `joined_by`), `position`, `skillfull_hand` (sic).
 - Mostrar siempre `full_name` / `short_name` (caja de título; mayúsculas solo en titulares por CSS); lo guardado no se toca.
@@ -124,7 +129,8 @@ Renombrarlos exige migración y tocar vistas, estadísticas, plantillas y `popul
 
 ## Borrados en cascada (qué se pierde)
 
-- Borrar **Club** (`core.services.delete_club`) borra equipos, jugadores, partidos, convocatorias,
+- Cerrar un **Club** (`core.services.archive_club`, `Club.archived_at`) no borra nada del historial; borrarlo del todo
+  (`core.services.delete_club`, solo personal) borra equipos, jugadores, partidos, convocatorias,
   advertencias, cuenta SNP, invitaciones y membresías; las cuentas de usuario se conservan. [V]
 - Borrar **Player**: los `Game` se conservan (`SET_NULL` + señal `keep_name_in_games` en
   `match/models.py`); se pierden sus `Penalty`, `SnpScoreHistory` y su presencia en convocatorias. [V]

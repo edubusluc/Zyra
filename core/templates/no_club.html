@@ -21,6 +21,7 @@
         </ul>
         {% endif %}
         <a class="btn {% if suspended_clubs %}btn-primary{% else %}btn-outline-primary{% endif %} btn-lg" href="{% url 'register_club' %}">{% translate "Registrar mi equipo" %}</a>
+        {% if has_history %}<p class="mt-3 mb-0"><a href="{% url 'my_statistics' %}"><i class="fa-solid fa-chart-simple me-1" aria-hidden="true"></i> {% translate "Ver mis estadísticas de equipos anteriores" %}</a></p>{% endif %}
     </div>
 </div>
 {% endblock %}

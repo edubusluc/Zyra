@@ -52,7 +52,7 @@ from .unsubscribe import user_from_result_token, user_from_token
 from .services import (
     CaptaincyError, InvitationError, accept_invitation, account_delete_blocker, club_name_matches, club_of,
     ensure_space_free, free_competitions, one_space_message, SpaceTaken,
-    create_club, delete_account, delete_club, eligible_successors, is_last_admin, is_only_member,
+    archive_club, create_club, delete_account, eligible_successors, is_last_admin, is_only_member,
     ManagerError, remove_membership, set_manager, transfer_captaincy,
 )
 
@@ -574,7 +574,8 @@ def no_club(request):
     """
     if request.club is not None:
         return redirect("home")
-    return render(request, "no_club.html", {"suspended_clubs": request.suspended_clubs})
+    return render(request, "no_club.html", {"suspended_clubs": request.suspended_clubs,
+                                           "has_history": bool(spaces.my_players(request))})
 
 
 @login_required
@@ -1178,7 +1179,8 @@ def leave_club(request):
 
     Se desenlaza su cuenta del jugador que tuviera en el club. El último capitán no puede
     irse si quedan otros miembros: antes tiene que nombrar a otro capitán. Si es el único
-    miembro, al irse se elimina el club con todos sus datos, siempre que confirme
+    miembro, al irse se cierra el club (se archiva: nadie más entra, pero las personas que jugaron
+    conservan sus estadísticas), siempre que confirme
     escribiendo el nombre del club (campo ``confirm_name``). Después pasa a otro de sus
     clubes o, si no tiene más, a la página «sin club».
     """
@@ -1191,9 +1193,9 @@ def leave_club(request):
             messages.error(request, _("Para eliminar el equipo escribe su nombre exactamente: %(club)s.") % {"club": club.name})
             return redirect("home")
         club_name = club.name
-        delete_club(club)
+        archive_club(club)
         request.session.pop(SESSION_KEY, None)
-        messages.success(request, _("Has abandonado %(club)s y el equipo se ha eliminado con todos sus datos.") % {"club": club_name})
+        messages.success(request, _("Has abandonado %(club)s y el equipo se ha cerrado. Tus estadísticas siguen en «Yo».") % {"club": club_name})
         return redirect("home")
     if is_last_admin(membership):
         messages.error(request, _("Eres el capitán de %(club)s: traspasa la capitanía a otro jugador enlazado antes de "
@@ -1208,7 +1210,7 @@ def leave_club(request):
 
 
 # Fecha de la última revisión de las páginas legales (cámbiala al editar sus textos).
-LEGAL_UPDATED = datetime.date(2026, 10, 12)
+LEGAL_UPDATED = datetime.date(2026, 11, 9)
 
 TEXT_PLAIN = "text/plain"
 

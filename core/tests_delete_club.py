@@ -45,9 +45,9 @@ class DeleteClubOnLeaveTests(TestCase):
         self.client.force_login(self.captain)
 
     def test_modal_warns_that_the_club_will_be_deleted(self):
-        """El popup avisa del borrado y pide escribir el nombre del club."""
+        """El popup avisa del cierre y pide escribir el nombre del club."""
         response = self.client.get(reverse("home"))
-        self.assertContains(response, "Si lo abandonas, el equipo se eliminará")
+        self.assertContains(response, "Si lo abandonas, el equipo se cerrará")
         self.assertContains(response, 'name="confirm_name"')
 
     def test_modal_is_the_usual_one_when_there_are_more_members(self):
@@ -67,21 +67,47 @@ class DeleteClubOnLeaveTests(TestCase):
             self.assertTrue(Club.objects.filter(pk=self.club.pk).exists())
             self.assertTrue(Membership.objects.filter(user=self.captain, club=self.club).exists())
 
-    def test_confirmed_leave_deletes_club_and_its_data(self):
-        """Con el nombre correcto se borra el club, sus equipos, jugadores, partidos y fotos."""
+    def test_confirmed_leave_archives_club_and_keeps_the_history(self):
+        """Con el nombre correcto el club se archiva: sin miembros ni invitaciones, con el historial de quien jugó."""
         self.assertTrue(os.path.exists(self.photo_path))
+        stranger = Player.objects.create(
+            club=self.club, team=self.club.own_team, name="Sin", last_name="Cuenta",
+            photo=SimpleUploadedFile("sin.jpg", image_bytes(), content_type="image/jpeg"))
+        stranger_path = stranger.photo.path
         with self.captureOnCommitCallbacks(execute=True):  # las fotos se borran al confirmar la transacción
             response = self.client.post(reverse("leave_club"), {"confirm_name": "  los gladiadores "})
         self.assertRedirects(response, reverse("home"), fetch_redirect_response=False)
-        self.assertFalse(Club.objects.filter(pk=self.club.pk).exists())
-        self.assertFalse(Team.objects.filter(club_id=self.club.pk).exists())
-        self.assertFalse(Player.objects.filter(club_id=self.club.pk).exists())
-        self.assertFalse(Match.objects.filter(club_id=self.club.pk).exists())
-        self.assertFalse(Game.objects.exists())
+        self.club.refresh_from_db()
+        self.assertTrue(self.club.is_archived)
+        self.assertFalse(Membership.objects.filter(club=self.club).exists())
         self.assertFalse(Invitation.objects.filter(club_id=self.club.pk).exists())
-        self.assertFalse(os.path.exists(self.photo_path))
+        # Se conservan equipos, jugadores y partidos; la ficha de la cuenta pasa a ser su ficha anterior y conserva su foto.
+        self.assertTrue(Team.objects.filter(club_id=self.club.pk).exists())
+        self.assertTrue(Match.objects.filter(club_id=self.club.pk).exists())
+        self.assertEqual(Game.objects.get().player_1_local, self.player)
+        self.player.refresh_from_db()
+        self.assertEqual((self.player.user, self.player.past_user), (None, self.captain))
+        self.assertIsNotNone(self.player.left_on)
+        self.assertTrue(os.path.exists(self.photo_path))
+        # La foto de la ficha sin cuenta sí se borra.
+        stranger.refresh_from_db()
+        self.assertFalse(stranger.photo)
+        self.assertFalse(os.path.exists(stranger_path))
         self.assertTrue(User.objects.filter(pk=self.captain.pk).exists())  # la cuenta se conserva
         self.assertRedirects(self.client.get(reverse("home")), reverse("no_club"))
+        # Y la persona sigue viendo sus estadísticas de ese equipo en «Yo».
+        page = self.client.get(reverse("my_statistics") + "?season=all")
+        self.assertEqual([(r["club"], r["former"]) for r in page.context["rows"]], [(self.club, True)])
+
+    def test_staff_delete_removes_everything(self):
+        """El personal sí puede borrar un club del todo (``delete_club``): jugadores, partidos, fotos e historial."""
+        from core.services import delete_club
+        with self.captureOnCommitCallbacks(execute=True):
+            delete_club(self.club)
+        self.assertFalse(Club.objects.filter(pk=self.club.pk).exists())
+        self.assertFalse(Player.objects.filter(club_id=self.club.pk).exists())
+        self.assertFalse(Game.objects.exists())
+        self.assertFalse(os.path.exists(self.photo_path))
 
     def test_last_captain_with_members_still_cannot_leave(self):
         """Si quedan otros miembros sigue haciendo falta nombrar otro capitán; no se borra nada."""

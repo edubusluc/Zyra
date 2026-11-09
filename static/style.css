@@ -3742,6 +3742,7 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .z-space-kpis .is-lime b, .z-space-kpis .is-lime span { color: var(--z-ink); }
 .z-space-kpis .is-won b { color: var(--z-lime); }
 .z-space-rows-text { display: flex; flex-direction: column; min-width: 0; white-space: normal; }
+.z-former-tag { font-size: var(--z-fs-xs); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--st-muted); }
 .z-space-rows-text small { font-weight: 600; font-size: var(--z-fs-xs); color: var(--st-muted); }
 .z-space-rows li.z-comp-frame { border-top: 1px solid var(--st-line); border-left: 4px solid var(--z-snp); background: var(--st-card); }
 .z-space-rows li.z-comp-frame--lapi { border-top-color: var(--st-line); border-left-color: var(--z-lapi); background: var(--st-card); }

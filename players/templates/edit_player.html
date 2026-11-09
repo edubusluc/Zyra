@@ -73,14 +73,24 @@
             {% blocktranslate with account=player.user.email|default:player.user.username %}Enlazado a la cuenta {{ account }}: puede cambiar su posición, mano hábil y foto.{% endblocktranslate %}
             {% if is_club_admin %}<button type="submit" form="unlink-player" class="btn btn-link btn-sm p-0 align-baseline">{% translate "Desenlazar" %}</button>{% endif %}
             {% if is_club_admin %} · <button type="submit" form="toggle-player-emails" class="btn btn-link btn-sm p-0 align-baseline">{% if player.emails_muted %}{% translate "Volver a enviarle correos" %}{% else %}{% translate "Bloquear correos del club" %}{% endif %}</button>{% endif %}
+            {% elif player.past_user %}
+            {% translate "Esta ficha fue de una persona que ya no está en el club: conserva su historial y nadie más puede enlazarla." %}
+            {% if is_club_admin %}<button type="submit" form="release-player" class="btn btn-link btn-sm p-0 align-baseline">{% translate "Liberar ficha" %}</button>{% endif %}
             {% else %}
             {% translate "Sin cuenta enlazada: el jugador puede enlazarla desde «Mi perfil» al entrar en el club." %}
             {% endif %}
         </p>
 
         <button type="submit" class="btn btn-primary">{% translate "Guardar" %}</button>
+        {% if player.user or player.past_user %}
+        <span class="form-text d-block mt-2">{% translate "Esta ficha es de una cuenta y no se puede eliminar para no borrar sus estadísticas. Para sacarla de la plantilla, desmarca «En el equipo»." %}</span>
+        {% else %}
         <a href="{% url 'delete_player' player.public_id %}" class="btn btn-outline-danger"><i class="fa-solid fa-trash me-1" aria-hidden="true"></i> {% translate "Eliminar jugador" %}</a>
+        {% endif %}
     </form>
+    {% if player.past_user %}
+    <form id="release-player" method="post" action="{% url 'release_player' player.public_id %}" data-confirm="{% translate "¿Liberar la ficha? La persona que la tuvo dejará de ver este historial en «Yo»." %}" data-loading-text="{% translate 'Liberando la ficha…' %}">{% csrf_token %}</form>
+    {% endif %}
     {% if player.user %}
     <form id="toggle-player-emails" method="post" action="{% url 'toggle_player_emails' player.public_id %}" data-loading-text="{% translate 'Guardando…' %}">{% csrf_token %}</form>
     <form id="unlink-player" method="post" action="{% url 'unlink_player' player.public_id %}" data-loading-text="{% translate 'Desvinculando el jugador…' %}">{% csrf_token %}</form>

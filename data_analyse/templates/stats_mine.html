@@ -29,9 +29,9 @@
       <ul class="z-space-rows" aria-label="{% translate 'Tus partidos por competición' %}">
         {% for row in rows %}
         <li class="z-comp-frame z-comp-frame--{{ row.club.competition }}">
-          <span class="z-space-rows-name">{% include 'includes/competition_badge.html' with code=row.club.competition name=row.club.rules.name %} <span class="z-space-rows-text"><b>{{ row.club.name }}</b><small>{% if row.played %}{% blocktranslate trimmed with pct=row.pct wins=row.wins losses=row.losses count played=row.played %}{{ pct }}% de victorias en {{ played }} partido jugado · {{ wins }}V {{ losses }}D{% plural %}{{ pct }}% de victorias en {{ played }} partidos jugados · {{ wins }}V {{ losses }}D{% endblocktranslate %}{% else %}{% translate "Todavía sin partidos jugados" %}{% endif %}</small></span></span>
+          <span class="z-space-rows-name">{% include 'includes/competition_badge.html' with code=row.club.competition name=row.club.rules.name %} <span class="z-space-rows-text"><b>{{ row.club.name }}</b>{% if row.former %}<span class="z-former-tag">{% if row.kind == "sheet" %}{% translate "Ficha anterior" %}{% elif row.kind == "suspended" %}{% translate "Equipo suspendido" %}{% else %}{% translate "Equipo anterior" %}{% endif %}</span>{% endif %}<small>{% if row.played %}{% blocktranslate trimmed with pct=row.pct wins=row.wins losses=row.losses count played=row.played %}{{ pct }}% de victorias en {{ played }} partido jugado · {{ wins }}V {{ losses }}D{% plural %}{{ pct }}% de victorias en {{ played }} partidos jugados · {{ wins }}V {{ losses }}D{% endblocktranslate %}{% else %}{% translate "Todavía sin partidos jugados" %}{% endif %}</small></span></span>
           {% if row.calls.total %}<span class="z-space-rows-calls"><b>{{ row.calls.signed }}/{{ row.calls.total }}</b><small>{% translate "convocatorias a las que te apuntaste" %}</small></span>{% endif %}
-          <a href="{% url 'my_statistics' %}?espacio={{ row.club.competition }}">{% blocktranslate with competition=row.club.rules.name %}Ver {{ competition }}{% endblocktranslate %} <i class="fa-solid fa-chevron-right" aria-hidden="true"></i></a>
+          {% if not row.former %}<a href="{% url 'my_statistics' %}?espacio={{ row.club.competition }}">{% blocktranslate with competition=row.club.rules.name %}Ver {{ competition }}{% endblocktranslate %} <i class="fa-solid fa-chevron-right" aria-hidden="true"></i></a>{% else %}<a href="{% url 'my_history_player' row.player.public_id %}">{% translate "Ver mi ficha" %} <i class="fa-solid fa-chevron-right" aria-hidden="true"></i></a>{% endif %}
         </li>
         {% endfor %}
       </ul>
@@ -41,7 +41,7 @@
     <section aria-labelledby="charts-title" class="st-section mt-4" data-level="compare">
       <h2 class="st-section-title" id="charts-title">{% translate "Gráficos" %}</h2>
       <ul class="z-comp-legend z-comp-legend--dots" aria-label="{% translate 'Competiciones' %}">
-        {% for row in rows %}<li><i class="z-dot z-dot--{{ row.club.competition }}" aria-hidden="true"></i> {{ row.club.rules.name }}</li>{% endfor %}
+        {% for c in spaces_chart.comps %}<li><i class="z-dot z-dot--{{ c.code }}" aria-hidden="true"></i> {{ c.name }}</li>{% endfor %}
       </ul>
       <div class="st-grid st-grid--2">
         <article class="st-card">
@@ -85,9 +85,9 @@
           {% translate "% de las convocatorias cerradas, por competición." as tip_text %}
           <h3 class="st-card-title">{% translate "Convocatorias en las que te apuntas" %}{% include 'includes/stat_tip.html' with tip=tip_text %}</h3>
           <ul class="z-commit-list">
-            {% for row in rows %}{% if row.calls.total %}
-            <li><span><i class="z-dot z-dot--{{ row.club.competition }}" aria-hidden="true"></i> {{ row.club.rules.name }}</span><b>{% widthratio row.calls.signed row.calls.total 100 %}%</b><small>{{ row.calls.signed }}/{{ row.calls.total }}</small></li>
-            {% endif %}{% empty %}{% endfor %}
+            {% for c in comp_calls %}{% if c.calls.total %}
+            <li><span><i class="z-dot z-dot--{{ c.code }}" aria-hidden="true"></i> {{ c.name }}</span><b>{% widthratio c.calls.signed c.calls.total 100 %}%</b><small>{{ c.calls.signed }}/{{ c.calls.total }}</small></li>
+            {% endif %}{% endfor %}
           </ul>
           {% if spaces_chart.attendance.labels|length > 1 %}
           <div class="st-chart st-chart--mine" role="img" aria-label="{% translate 'Convocatorias en las que te apuntas' %}"><canvas id="spacesAttendanceChart" aria-hidden="true"></canvas></div>

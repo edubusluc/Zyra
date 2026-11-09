@@ -98,7 +98,7 @@ def dashboard_kpis():
     at_risk_from = today - datetime.timedelta(days=AT_RISK_DAYS)
 
     users = User.objects.all()
-    clubs = Club.objects.all()
+    clubs = Club.objects.live()
     active_clubs = clubs.filter(
         matches__start_date__gte=active_from, matches__start_date__lte=today + datetime.timedelta(days=ACTIVE_CLUB_DAYS),
     ).distinct()
@@ -308,7 +308,7 @@ def usage_metrics(weeks=USAGE_WEEKS):
     results = Result.objects.filter(**{f"game__match__{k}": v for k, v in in_range.items()}) \
         .values_list("game__match__start_date", flat=True)
 
-    clubs = Club.objects.all()
+    clubs = Club.objects.live()
     total = clubs.count()
 
     def adoption(label, qs):
@@ -538,14 +538,14 @@ def snapshot_daily_metrics(day=None):
     metrics = RequestMetric.objects.filter(minute__date=day)
     agg = metrics.aggregate(requests=Sum("requests"), errors=Sum("errors"))
     values = {
-        "clubs": Club.objects.filter(created_at__date__lte=day).count(),
+        "clubs": Club.objects.live().filter(created_at__date__lte=day).count(),
         "users": User.objects.filter(date_joined__date__lte=day).count(),
         # Aproximación: las cuentas sin club de hoy entre las que ya existían ese día.
         "users_without_club": accounts_without_club().filter(date_joined__date__lte=day).count(),
         "dau": active_users(1, day),
         "wau": active_users(7, day),
         "mau": active_users(30, day),
-        "active_clubs": Club.objects.filter(
+        "active_clubs": Club.objects.live().filter(
             matches__start_date__gte=active_from, matches__start_date__lte=day).distinct().count(),
         "matches": Match.objects.filter(start_date=day).count(),
         "calls": Call.objects.filter(draft_mode=False, match__start_date=day).count(),

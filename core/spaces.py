@@ -96,6 +96,63 @@ def linked_players(request):
     return sorted(players, key=lambda p: clubs.index(p.club) if p.club in clubs else len(clubs))
 
 
+def my_players(request):
+    """
+    Todas las fichas de la persona: las enlazadas a su cuenta en sus equipos actuales y las que tuvo en
+    equipos que ya no son suyos (``Player.past_user``: salió del club o la sacaron). Es lo que ve en «Mis
+    estadísticas»: sus datos no se pierden al cambiar de equipo, y puede tener varias fichas de la misma
+    competición (una por club). Cada ficha lleva ``is_former`` (True si no es la ficha actual en un equipo
+    activo) y ``history_kind``: ``current``, ``team`` (ya no está en ese equipo), ``sheet`` (sigue en el club
+    pero con otra ficha) o ``suspended`` (equipo suspendido por el personal). Van en el orden de las
+    competiciones, las actuales antes que las anteriores y, entre estas, las más recientes primero.
+    """
+    from django.db.models import Q
+    from players.models import Player
+    if not request.user.is_authenticated:
+        return []
+    if hasattr(request, "_my_players"):
+        return request._my_players
+    current_clubs = {c.id for c in user_clubs(request)}
+    players = list(Player.objects.filter(Q(user=request.user) | Q(past_user=request.user)).select_related("club"))
+    order = list(COMPETITIONS)
+    suspended = {c.id for c in getattr(request, "suspended_clubs", [])}
+    for p in players:
+        p.is_former = not (p.user_id == request.user.id and p.club_id in current_clubs)
+        if not p.is_former:
+            p.history_kind = "current"
+        elif p.club_id in suspended:
+            p.history_kind = "suspended"
+        elif p.club_id in current_clubs:
+            p.history_kind = "sheet"
+        else:
+            p.history_kind = "team"
+    request._my_players = sorted(players, key=lambda p: (
+        order.index(p.club.competition) if p.club.competition in order else len(order),
+        p.is_former, -(p.left_on.toordinal() if p.left_on else 0), p.pk))
+    return request._my_players
+
+
+def history_request(request, club):
+    """
+    Prepara ``request`` para abrir, de solo lectura, una pantalla de un club en el que la persona ya no está (su
+    historial en «Mis estadísticas»): ``request.club`` pasa a ser ese club y ``request.membership`` un papel de
+    jugador sin guardar (``can_manage`` y ``is_admin`` falsos), así las vistas y plantillas de la ficha enseñan lo que ve un
+    jugador y nada de gestión. Solo cambia esta petición: no toca la sesión ni el espacio activo.
+    """
+    from .models import Membership
+    # El menú y la cabecera siguen siendo los del espacio real de la persona (o ninguno), no los del club anterior.
+    request.history_chrome = (getattr(request, "club", None), getattr(request, "membership", None))
+    request.club = club
+    request.membership = Membership(user=request.user, club=club, role=Membership.MEMBER)
+    request.history_view = True
+
+
+def my_stats_page(request):
+    """True si «Mis estadísticas» tiene página propia: dos o más fichas, o alguna de un equipo anterior."""
+    players = my_players(request)
+    return len(players) > 1 or any(p.is_former for p in players)
+
+
 def space_filter_context(request, selected, allow_all=True):
     """
     Chips «Todas» (salvo sin ``allow_all``) y una por competición (``space_chips``) para la plantilla

@@ -58,7 +58,7 @@ class CurrentClubMiddleware:
             memberships = Membership.objects.filter(user=request.user).select_related("club").order_by("club__name")
             # Los clubes suspendidos desde el back-office no se pueden usar (no_club lo explica).
             request.suspended_clubs = [m.club for m in memberships if m.club.is_suspended]
-            memberships = [m for m in memberships if not m.club.is_suspended]
+            memberships = [m for m in memberships if not m.club.is_suspended and not m.club.is_archived]
             club_id = request.session.get(SESSION_KEY)
             membership = None
             if club_id:

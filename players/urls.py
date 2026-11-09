@@ -2,7 +2,7 @@
 from django.urls import path
 from .views import (create_player, list_players, edit_player, delete_player, show_player, manage_roster, snp_account, snp_account_delete, snp_account_password,
                     complete_team_start, snp_update_request, complete_team_status, sync_status, complete_team_failed, complete_team_confirm, complete_team_cancel, complete_team_welcome,
-                    my_player, link_player, unlink_player, toggle_player_emails, copy_players)
+                    my_player, link_player, unlink_player, release_player, toggle_player_emails, copy_players)
 
 urlpatterns = (
     path("create_player",create_player, name='create_player'),
@@ -26,5 +26,6 @@ urlpatterns = (
     path("me/", my_player, name="my_player"),
     path("me/link/<pid:player_id>/", link_player, name="link_player"),
     path("unlink/<pid:player_id>/", unlink_player, name="unlink_player"),
+    path("release/<pid:player_id>/", release_player, name="release_player"),
     path("emails/<pid:player_id>/", toggle_player_emails, name="toggle_player_emails"),
 )

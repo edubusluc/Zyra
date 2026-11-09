@@ -188,7 +188,7 @@
             {% csrf_token %}
             <div class="modal-header">
                 {% if deletes_club %}
-                <h2 class="modal-title h5" id="leaveClubTitle">{% blocktranslate with club=current_club.name %}¿Abandonar y eliminar {{ club }}?{% endblocktranslate %}</h2>
+                <h2 class="modal-title h5" id="leaveClubTitle">{% blocktranslate with club=current_club.name %}¿Abandonar y cerrar {{ club }}?{% endblocktranslate %}</h2>
                 {% else %}
                 <h2 class="modal-title h5" id="leaveClubTitle">{% blocktranslate with club=current_club.name %}¿Abandonar {{ club }}?{% endblocktranslate %}</h2>
                 {% endif %}
@@ -197,8 +197,8 @@
             <div class="modal-body">
                 {% if deletes_club %}
                 <div class="alert alert-danger" role="alert">
-                    <p class="mb-2"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> <strong>{% translate "Eres el único miembro del equipo. Si lo abandonas, el equipo se eliminará." %}</strong></p>
-                    <p class="mb-0">{% translate "Se borrarán para siempre tu equipo, los equipos rivales, los jugadores y sus fotos, los enfrentamientos, las convocatorias, las advertencias, las estadísticas y la cuenta SNP. Esto no se puede deshacer." %}</p>
+                    <p class="mb-2"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> <strong>{% translate "Eres el único miembro del equipo. Si lo abandonas, el equipo se cerrará." %}</strong></p>
+                    <p class="mb-0">{% translate "Nadie más podrá entrar: se quitan las invitaciones y la cuenta SNP y se borran las fotos de los jugadores sin cuenta. Los enfrentamientos y las estadísticas se conservan para quien jugó en él, que seguirá viéndolos en «Yo». No se puede deshacer." %}</p>
                 </div>
                 <label for="leaveClubConfirm" class="form-label">{% blocktranslate with club=current_club.name %}Escribe <strong>{{ club }}</strong> para confirmar:{% endblocktranslate %}</label>
                 <input type="text" class="form-control" id="leaveClubConfirm" name="confirm_name" autocomplete="off" required data-club-name="{{ current_club.name }}">
@@ -209,7 +209,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{% translate "Cancelar" %}</button>
                 {% if deletes_club %}
-                <button type="submit" class="btn btn-danger" data-delete-club-submit disabled>{% translate "Eliminar el equipo" %}</button>
+                <button type="submit" class="btn btn-danger" data-delete-club-submit disabled>{% translate "Cerrar el equipo" %}</button>
                 {% else %}
                 <button type="submit" class="btn btn-danger">{% blocktranslate with club=current_club.name %}Abandonar {{ club }}{% endblocktranslate %}</button>
                 {% endif %}
