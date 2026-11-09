@@ -171,16 +171,36 @@ document.querySelectorAll('[data-result]').forEach(function (form) {
     }
   }
 
+  // Al decidirse el partido con la última casilla de su marcador (set 2 o set 3 del visitante), el
+  // foco pasa a la primera casilla del siguiente partido de la pantalla «Poner resultados» (UC-01).
+  // En el set 3 un «1» puede ser el principio de un 10-12 de supertiebreak: se espera a la 2ª cifra.
+  function goToNextGame(el) {
+    if (form.dataset.winner === undefined || el.dataset.side !== 'v') return;
+    const last = el.dataset.set === '3' || el.dataset.set === '2';
+    if (!last || (el.dataset.set === '3' && el.value === '1')) return;
+    if (el.dataset.set === '2' && !input(3, 'l').disabled) return;
+    const forms = Array.from(document.querySelectorAll('[data-result]'));
+    const after = forms.slice(forms.indexOf(form) + 1);
+    for (const f of after) {
+      const first = Array.from(f.querySelectorAll('input[data-set="1"]')).find((x) => !x.disabled && x.offsetParent !== null);
+      if (first) { first.focus(); return; }
+    }
+  }
+
   const order = ['1l', '1v', '2l', '2v', '3l', '3v'].map((k) => input(k[0], k[1]));
   order.forEach(function (el, i) {
     el.addEventListener('input', function () {
       el.value = el.value.replace(/\D/g, '');
       refresh();
-      // Sets 1 y 2 tienen un solo dígito: se salta a la siguiente casilla
-      if (el.value.length === 1 && el.dataset.set !== '3') {
+      // Sets 1 y 2 tienen un solo dígito: se salta a la siguiente casilla. En el set 3 (que puede ser un
+      // supertiebreak a 10) se salta del local al visitante al llegar a 2 cifras o con una cifra que no sea «1».
+      const advance = el.dataset.set !== '3' ? el.value.length === 1
+        : el.dataset.side === 'l' && (el.value.length === 2 || (el.value.length === 1 && el.value !== '1'));
+      if (advance) {
         const next = order.slice(i + 1).find((x) => !x.disabled);
         if (next) next.focus();
       }
+      goToNextGame(el);
     });
     el.addEventListener('focus', () => el.select());
   });
