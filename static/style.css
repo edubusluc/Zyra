@@ -249,7 +249,11 @@ h3 { font-size: var(--z-fs-base); font-weight: 700; }
     background: var(--z-lime); color: var(--z-ink); font-weight: 700;
 }
 .z-skip-link:focus { top: 12px; color: var(--z-ink); }
+/* Al usar «Saltar al contenido» el foco pasa a <main>: se marca con un contorno para que se vea
+   dónde ha quedado (el ratón no lo muestra: solo :focus-visible, que activa también el JS). */
 main:focus { outline: none; }
+main:focus-visible, main.z-skip-target { outline: 2px solid var(--z-lime); outline-offset: -2px; }
+main { scroll-margin-top: 0; }
 
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { transition: none !important; animation: none !important; }
