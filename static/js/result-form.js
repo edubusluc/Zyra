@@ -177,7 +177,10 @@ document.querySelectorAll('[data-result]').forEach(function (form) {
   function goToNextGame(el) {
     if (form.dataset.winner === undefined || el.dataset.side !== 'v') return;
     const last = el.dataset.set === '3' || el.dataset.set === '2';
-    if (!last || (el.dataset.set === '3' && el.value === '1')) return;
+    // Un «1» del visitante solo puede ser el principio de un 10-12 si el local ya tiene 10 o más
+    // (con un 6-1 normal el partido está decidido y se salta).
+    const mayGrow = el.dataset.set === '3' && el.value === '1' && (val(input(3, 'l')) || 0) >= 10;
+    if (!last || mayGrow) return;
     if (el.dataset.set === '2' && !input(3, 'l').disabled) return;
     const forms = Array.from(document.querySelectorAll('[data-result]'));
     const after = forms.slice(forms.indexOf(form) + 1);
@@ -196,6 +199,11 @@ document.querySelectorAll('[data-result]').forEach(function (form) {
       // supertiebreak a 10) se salta del local al visitante al llegar a 2 cifras o con una cifra que no sea «1».
       const advance = el.dataset.set !== '3' ? el.value.length === 1
         : el.dataset.side === 'l' && (el.value.length === 2 || (el.value.length === 1 && el.value !== '1'));
+      clearTimeout(el._advanceTimer);
+      // Un «1» en el set 3 local puede ser un 1-6 o el principio de un 10-12: si no llega otra cifra, se salta solo.
+      if (!advance && el.dataset.set === '3' && el.dataset.side === 'l' && el.value === '1') {
+        el._advanceTimer = setTimeout(() => { if (el.value === '1' && document.activeElement === el && !input(3, 'v').disabled) input(3, 'v').focus(); }, 700);
+      }
       if (advance) {
         const next = order.slice(i + 1).find((x) => !x.disabled);
         if (next) next.focus();
