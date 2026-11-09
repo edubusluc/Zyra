@@ -32,7 +32,8 @@ class UserPreference(models.Model):
     informe mensual por email del jugador (``send_monthly_reports``) y ``monthly_scope`` elige
     si cuenta todos sus partidos o solo los competitivos. ``match_result_email`` activa el aviso
     del resultado al cerrarse el acta de un enfrentamiento de su club. ``manager_tip_dismissed_at``
-    marca que el capitán cerró el aviso «Añade un gestor» de la portada; ``my_form_hidden``, que el jugador
+    marca que el capitán cerró el aviso «Añade un gestor» de la portada; ``snp_update_tip_dismissed_at``, que cerró el aviso «¿Han llegado jugadores nuevos?» de Jugadores
+    esta temporada; ``my_form_hidden``, que el jugador
     ocultó la tarjeta «Mi forma»; ``match_stage_view``, que prefiere la ficha del enfrentamiento
     con escudos 3D y tarjeta de fase (si no, ve la ficha clásica).
     """
@@ -44,6 +45,8 @@ class UserPreference(models.Model):
     match_result_email = models.BooleanField(default=True)
     # El capitán cerró el aviso «Añade un gestor» de la portada; no vuelve a aparecer.
     manager_tip_dismissed_at = models.DateTimeField(null=True, blank=True)
+    # El capitán cerró el aviso «¿Han llegado jugadores nuevos?» de Jugadores; vuelve en la temporada siguiente.
+    snp_update_tip_dismissed_at = models.DateTimeField(null=True, blank=True)
     # El jugador ocultó la tarjeta «Mi forma» del Inicio; la puede volver a mostrar.
     my_form_hidden = models.BooleanField(default=False)
     # Vista «previa» de la ficha del enfrentamiento (escudos 3D); desactivada vuelve a la clásica.
@@ -64,6 +67,11 @@ class UserPreference(models.Model):
     def manager_tip_pending(cls, user):
         """True si ``user`` aún no ha cerrado el aviso «Añade un gestor» de la portada."""
         return not cls.objects.filter(user=user, manager_tip_dismissed_at__isnull=False).exists()
+
+    @classmethod
+    def snp_update_tip_closed(cls, user, since):
+        """True si ``user`` cerró el aviso «¿Han llegado jugadores nuevos?» desde ``since`` (inicio de temporada)."""
+        return cls.objects.filter(user=user, snp_update_tip_dismissed_at__gte=since).exists()
 
     @classmethod
     def match_result_for(cls, user):

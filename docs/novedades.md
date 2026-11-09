@@ -6,6 +6,10 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 ## 09/11/2026 · Sin correos de partidos antiguos
 
 - **Enfrentamientos de hace más de 14 días**: al cerrar la convocatoria o el acta no se envía el informe ni el aviso de resultado por correo (así dar de alta la temporada pasada no llena las bandejas ni gasta el cupo diario). La confirmación trae una casilla, desmarcada, para enviarlo igualmente; el informe sigue descargable.
+## 09/11/2026 · Jugadores: aviso de jugadores nuevos solo al inicio de temporada
+
+- **«¿Han llegado jugadores nuevos?»**: en Jugadores el aviso con «Pedir actualización a Zyra» deja de salir cuando el «Completar equipo» de la temporada ya se ha hecho bien (desde el 1 de julio); vuelve a salir al empezar la siguiente.
+- **También desaparece** cuando Zyra da por atendida tu petición, y el capitán puede cerrarlo con la ✕ (vuelve en la temporada siguiente).
 
 ## 09/11/2026 · «Yo» conserva tus estadísticas al cambiar de equipo
 

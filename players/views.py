@@ -2,7 +2,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from core import ratelimit, spaces
 from core.decorators import club_required, club_admin_required, not_while_syncing, club_manager_required
-from core.models import Club, Invitation
+from core.models import Club, Invitation, UserPreference
 from .forms import NewOwnPlayerForm, OwnPlayerForm, PlayerEditForm, PlayerForm, SnpAccountForm, with_placeholder
 from django.contrib import messages
 from match.models import Game
@@ -108,6 +108,7 @@ def list_players(request):
     }
     if request.membership.is_admin:
         context.update(_complete_team_context(request.club))
+        context['snp_update_tip'] = _snp_update_tip_visible(request)
     return render(request, 'list_players.html', context)
 
 
@@ -120,6 +121,18 @@ def _copy_offer(request):
         return None
     sources = player_copy.managed_pairs(request)
     return {"club": sources[0]} if sources else None
+
+
+def _snp_update_tip_visible(request):
+    """
+    Si Jugadores muestra «¿Han llegado jugadores nuevos?»: solo mientras esta temporada no se haya
+    completado el equipo (``web_import_done``), Zyra no haya atendido una petición y el capitán no lo
+    haya cerrado. Vuelve al empezar la temporada siguiente.
+    """
+    club = request.club
+    if snp_import.web_import_done(club) or snp_requests.fulfilled_this_season(club):
+        return False
+    return not UserPreference.snp_update_tip_closed(request.user, snp_import.season_window_start())
 
 
 def _complete_team_context(club):
@@ -408,6 +421,14 @@ def snp_update_request(request):
     else:
         messages.info(request, _("Ya tienes una petición abierta: Zyra la está revisando."))
     return redirect(back)
+
+
+@club_admin_required
+@require_POST
+def dismiss_snp_update_tip(request):
+    """El capitán cierra el aviso «¿Han llegado jugadores nuevos?» de Jugadores hasta la próxima temporada (solo POST)."""
+    UserPreference.objects.update_or_create(user=request.user, defaults={"snp_update_tip_dismissed_at": timezone.now()})
+    return redirect("list_players")
 
 
 @club_admin_required
