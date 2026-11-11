@@ -120,6 +120,11 @@ jobs:
           if [ -z "$KNOWN_HOSTS" ]; then
             echo "Falta el secreto DEPLOY_KNOWN_HOSTS (salida de: ssh-keyscan -t ed25519 IP_DEL_SERVIDOR)" >&2; exit 1
           fi
-          printf '%s\n' "$KNOWN_HOSTS" | tr -d '\r' > known_hosts
+          # Se acepta la salida entera de ssh-keyscan o solo «ssh-ed25519 AAAA…»: sin servidor delante se le pone HOST.
+          printf '%s\n' "$KNOWN_HOSTS" | tr -d '\r' | grep -v '^#' | grep -v '^[[:space:]]*$' \
+            | awk -v h="$HOST" '$1 ~ /^(ssh-|ecdsa-|sk-)/ { print h " " $0; next } { print }' > known_hosts
+          if ! grep -q . known_hosts; then
+            echo "DEPLOY_KNOWN_HOSTS no tiene ninguna línea con la huella del servidor" >&2; exit 1
+          fi
           ssh -i key -o UserKnownHostsFile=known_hosts -o StrictHostKeyChecking=yes \
             "$DEPLOY_USER@$HOST" "/opt/zyra/deploy.sh $SHA"

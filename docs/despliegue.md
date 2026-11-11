@@ -18,6 +18,7 @@ repositorio y cómo está montado el servidor (VPS Ubuntu, usuario `ubuntu`, app
 
 El despliegue por SSH solo corre si la variable de repositorio `DEPLOY_ENABLED` vale `true`, y solo después de que pasen los tests y se publiquen las imágenes.
 Si la huella del servidor cambia (reinstalación), actualiza `DEPLOY_KNOWN_HOSTS`: sin ella el despliegue se niega a conectar.
+El secreto vale con la salida de `ssh-keyscan -t ed25519 IP_DEL_SERVIDOR` o solo con la línea `ssh-ed25519 AAAA…` (el despliegue le pone delante `DEPLOY_HOST`). Si el despliegue dice «No ED25519 host key is known», el secreto no tiene una clave ed25519 de ese servidor.
 
 ## Montar el servidor desde cero
 
