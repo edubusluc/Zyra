@@ -66,8 +66,8 @@ copia cifrada a mano: `openssl enc -d -aes-256-cbc -pbkdf2 -pass file:backup.pas
 
 - **`EMAIL_HOST_PASSWORD`** (o un `EMAIL_BACKEND` real): obligatoria. Sin ella la aplicación no arranca en producción.
 - **`SQL_CONSOLE_DATABASE_URL`**: sin ella la consola SQL del back-office no ejecuta consultas. Se crea el rol de solo lectura con
-  `docker compose exec web python manage.py sql_readonly_role` (imprime el SQL; con `--apply` lo ejecuta) y se pone en `.env` la URL
-  del rol (`postgres://zyra_sql_console:CONTRASEÑA@db:5432/NOMBRE_BD`).
+  `docker compose exec web python manage.py sql_readonly_role` (imprime el SQL; con `--apply` lo ejecuta, leyendo la contraseña de `SQL_CONSOLE_DB_PASSWORD`) y se pone en `.env` la URL
+  del rol (`postgres://zyra_sql_readonly:CONTRASEÑA@db:5432/NOMBRE_BD`).
 - **`FIELD_ENCRYPTION_KEY`**: para rotarla, pon la nueva delante de la antigua separadas por coma (`nueva,antigua`), reinicia,
   ejecuta `docker compose exec web python manage.py rotate_encryption_key` y, cuando diga que ha re-cifrado todo, quita la antigua.
 - **`CSP_MODE`**: `report-only` (por defecto; los avisos salen en el log de `web` como «CSP violation»), luego `enforce`.
