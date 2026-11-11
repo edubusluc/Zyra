@@ -104,3 +104,16 @@ class ManagerCannotDeleteReopenedMatchTests(TestCase):
         self.client.force_login(self.captain)
         page = self.client.get(reverse("call_for_match", args=[self.closed.public_id]))
         self.assertContains(page, reverse("delete_match", args=[self.closed.public_id]))
+
+    def test_manager_undoing_no_show_cannot_delete_the_match(self):
+        """Quitar «No presentado» también reabre un acta cerrada: el gestor no puede borrarlo después."""
+        self.closed.no_show = Match.NO_SHOW_RIVAL
+        self.closed.save()
+        self.client.force_login(self.manager)
+        self.client.post(reverse("undo_no_show", args=[self.closed.public_id]))
+        self.closed.refresh_from_db()
+        self.assertTrue(self.closed.draft_mode and self.closed.was_closed)
+        self.assertIsNone(self.closed.reopened_at)  # el correo del resultado se sigue enviando al cerrar
+        response = self.client.post(reverse("delete_match", args=[self.closed.public_id]), follow=True)
+        self.assertContains(response, "solo el capitán puede eliminarlo")
+        self.assertTrue(Match.objects.filter(pk=self.closed.pk).exists())
