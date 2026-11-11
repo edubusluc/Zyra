@@ -974,6 +974,7 @@ def _history_match_or_404(request, match_id):
 
 
 @login_required
+@require_GET
 def my_history_match(request, match_id):
     """Ficha de un enfrentamiento de un equipo anterior, de solo lectura y con la misma vista (3D o clásica) que la actual.
 
