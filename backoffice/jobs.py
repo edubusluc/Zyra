@@ -57,6 +57,9 @@ class JobSpec:
     # Salidas del comando que significan «no había nada que hacer». Una ejecución programada
     # correcta con una de ellas no se guarda en el log (procesos que corren cada pocos minutos).
     idle_output: tuple = field(default_factory=tuple)
+    # Minutos que puede durar una ejecución antes de dar la alarma al personal (``send_staff_alerts``). No la
+    # corta: un hilo bloqueado no se puede matar sin riesgo, pero así no pasa días sin que nadie se entere.
+    max_minutes: int = 60
 
 
 # Id de equipo del club: el público (TEA...) o el numérico interno.
@@ -111,6 +114,14 @@ JOBS = [
         idle_output=("Nada que enviar.",),
     ),
     JobSpec(
+        name="send_mass_emails",
+        description=_("Envía los correos del personal a varios usuarios que están en cola, respetando el cupo diario de "
+                      "correos (el resto sale al día siguiente). Reanudable: no repite a quien ya lo recibió."),
+        command="send_mass_emails",
+        schedule="*/5 * * * *",
+        idle_output=("Sin envíos masivos pendientes.",),
+    ),
+    JobSpec(
         name="clear_sessions",
         description=_("Borra de la base de datos las sesiones de usuario caducadas."),
         command="clearsessions",
@@ -125,6 +136,7 @@ JOBS = [
         # Lunes y miércoles a las 05:00 (hora de Madrid): cada ejecución es un ciclo
         # (SNP_SYNC_CYCLE en el comando) que procesa a todos los clubes.
         schedule="0 5 * * 1,3",
+        max_minutes=360,
         options=(
             JobOption("all", _("Repetir todos los equipos"), "--all",
                       _("Aunque ya se hayan actualizado en este ciclo o su último error no se reintente solo.")),
@@ -156,6 +168,7 @@ JOBS = [
                       "idempotente: no repite el correo de un mes ya enviado y reintenta los que fallaron. Hace falta SITE_URL."),
         command="send_monthly_reports",
         schedule="0 9 1 * *",
+        max_minutes=180,
         options=(
             JobOption("dry", _("Simulacro"), "--dry-run", _("Solo lista a quién se enviaría, sin enviar nada.")),
             JobOption("month", _("Mes"), "--month", _("AAAA-MM; por defecto, el mes natural anterior."),
@@ -171,6 +184,7 @@ JOBS = [
         description=_("«Completar equipo»: da de alta los jugadores del equipo de SNP de un club que todavía "
                       "no están en Zyra y actualiza los puntos SNP de los que ya existen. Solo a mano y sin los límites de la web."),
         command="complete_snp_team",
+        max_minutes=120,
         params=(JobParam("team_id", _("Id del equipo"), _("Id del equipo propio del club en Zyra, TEA... (aparece en la ficha del club)."), TEAM_ID_PATTERN),),
     ),
     JobSpec(
@@ -178,6 +192,7 @@ JOBS = [
         description=_("Añade al grupo los equipos de la clasificación de SNP de un club: crea los que todavía no existen "
                       "en Zyra y da de alta en el grupo los que estaban fuera. No toca los jugadores. Solo a mano y sin los límites de la web."),
         command="add_group_teams",
+        max_minutes=120,
         params=(JobParam("team_id", _("Id del equipo"), _("Id del equipo propio del club en Zyra, TEA... (aparece en la ficha del club)."), TEAM_ID_PATTERN),),
     ),
 ]

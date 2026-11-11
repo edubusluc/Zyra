@@ -89,17 +89,23 @@ class Cron:
         return True
 
     def next_after(self, moment):
-        """Primer instante estrictamente posterior a `moment` (aware) que cumple la expresión."""
+        """
+        Primer instante estrictamente posterior a `moment` (aware) que cumple la expresión. Se compara en UTC y no
+        con la hora de reloj: en el cambio de hora de octubre una hora ocurre dos veces (``fold``) y comparar el
+        reloj daba instantes ya pasados, con lo que un proceso frecuente se lanzaba en cada pasada.
+        """
         tz = moment.tzinfo
-        start = moment.replace(second=0, microsecond=0) + datetime.timedelta(minutes=1)
-        day = start.date()
+        utc = datetime.timezone.utc
+        start = moment.astimezone(utc).replace(second=0, microsecond=0) + datetime.timedelta(minutes=1)
+        day = start.astimezone(tz).date()
         for _attempt in range(366 * 5):
             if self._day_matches(day):
-                for hour in sorted(self.hours):
-                    for minute in sorted(self.minutes):
-                        candidate = datetime.datetime(day.year, day.month, day.day, hour, minute, tzinfo=tz)
-                        if candidate >= start:
-                            return candidate
+                found = [
+                    candidate for hour in self.hours for minute in self.minutes for fold in (0, 1)
+                    if (candidate := datetime.datetime(day.year, day.month, day.day, hour, minute, tzinfo=tz, fold=fold).astimezone(utc)) >= start
+                ]
+                if found:
+                    return min(found).astimezone(tz)
             day += datetime.timedelta(days=1)
         raise CronError(f"La expresión {self.expression} no se cumple nunca.")
 

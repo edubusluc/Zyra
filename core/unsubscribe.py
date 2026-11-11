@@ -10,6 +10,7 @@ from django.urls import reverse
 
 SALT = "zyra.monthly-report-unsubscribe"
 RESULT_SALT = "zyra.match-result-unsubscribe"
+NEWS_SALT = "zyra.news-unsubscribe"
 
 
 def unsubscribe_token(user):
@@ -45,6 +46,20 @@ def user_from_result_token(token):
     """La cuenta del token del aviso de resultado, o None si está manipulado o la cuenta ya no existe."""
     try:
         pk = signing.loads(token, salt=RESULT_SALT)
+    except signing.BadSignature:
+        return None
+    return get_user_model().objects.filter(pk=pk).first()
+
+
+def news_unsubscribe_path(user):
+    """Ruta (sin dominio) de la página de baja de los correos informativos del personal para ``user``."""
+    return reverse("news_unsubscribe", args=[signing.dumps(user.pk, salt=NEWS_SALT)])
+
+
+def user_from_news_token(token):
+    """La cuenta del token de los correos informativos, o None si está manipulado o la cuenta ya no existe."""
+    try:
+        pk = signing.loads(token, salt=NEWS_SALT)
     except signing.BadSignature:
         return None
     return get_user_model().objects.filter(pk=pk).first()

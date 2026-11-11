@@ -589,6 +589,16 @@ class AlertTests(StaffTestCase):
             self.assertEqual(alerts.evaluate(), [])
         self.assertEqual(len(mail.outbox), 3)
 
+    def test_problems_detects_jobs_running_too_long(self):
+        now = timezone.now()
+        job = ScheduledJob.objects.create(name="send_call_reports", running_since=now - datetime.timedelta(minutes=30))
+        self.assertNotIn("jobs_stuck", alerts.current_problems(now))
+        job.running_since = now - datetime.timedelta(minutes=90)  # max_minutes por defecto: 60
+        job.save()
+        self.assertIn("send_call_reports (90 min)", alerts.current_problems(now)["jobs_stuck"])
+        ScheduledJob.objects.update(name="update_snp_scores")  # este tiene 6 horas
+        self.assertNotIn("jobs_stuck", alerts.current_problems(now))
+
     def test_problems_detects_failing_jobs(self):
         job = ScheduledJob.objects.create(name="roto", consecutive_failures=3)
         self.assertIn("jobs", alerts.current_problems())
@@ -721,6 +731,18 @@ class MassEmailTests(StaffTestCase):
         self.other = User.objects.create_user("otro", password=PASSWORD, email="otro@example.com", first_name="Luis")
         create_club("Club B", "Cádiz", self.other, player_name="Luis", player_last_name="Gil")
         self.url = reverse("backoffice:email_compose")
+        self.verify("capi@example.com", "otro@example.com")
+
+    def verify(self, *emails):
+        """Marca esos emails como verificados (los segmentos solo incluyen cuentas con el email verificado)."""
+        from allauth.account.models import EmailAddress
+        for email in emails:
+            user = User.objects.get(email=email)
+            EmailAddress.objects.get_or_create(user=user, email=email, defaults={"verified": True, "primary": True})
+
+    def deliver(self):
+        """Pasada del proceso que envía lo que hay en cola."""
+        call_command("send_mass_emails", stdout=StringIO())
 
     def post(self, **extra):
         data = {"audience": "captains", "subject": "Hola {nombre}", "body": "Eres capitán de {club}", "action": "send", "confirm": "1"}
@@ -734,14 +756,18 @@ class MassEmailTests(StaffTestCase):
 
     def test_send_personalises_each_email_and_leaves_a_trace(self):
         self.assertEqual(self.post().status_code, 302)
+        self.assertEqual(len(mail.outbox), 0)  # solo se pone en cola: no sale en la petición
+        self.deliver()
         by_to = {m.to[0]: m for m in mail.outbox}
         self.assertEqual(set(by_to), {"capi@example.com", "otro@example.com"})
         self.assertEqual(len(by_to["otro@example.com"].to), 1)  # nadie ve a los demás
         self.assertEqual(by_to["otro@example.com"].subject, "Hola Luis")
         self.assertIn("Eres capitán de Club B", by_to["otro@example.com"].body)
         self.assertEqual(by_to["capi@example.com"].reply_to, ["staff@example.com"])
-        log = AuditLog.objects.get(action="email.mass")
-        self.assertEqual(log.detail["sent"], 2)
+        self.assertEqual(AuditLog.objects.get(action="email.mass").detail["recipients"], 2)
+        self.assertEqual(AuditLog.objects.get(action="email.mass_done").detail["sent"], 2)
+        self.assertIn("/news/unsubscribe/", by_to["otro@example.com"].extra_headers["List-Unsubscribe"])
+        self.assertIn("Dejar de recibir estos correos", by_to["otro@example.com"].alternatives[0][0])
 
     def test_needs_confirmation_and_content(self):
         self.post(confirm="")
@@ -769,7 +795,9 @@ class MassEmailTests(StaffTestCase):
     def test_no_club_audience_only_reaches_accounts_without_club(self):
         User.objects.create_user("suelto", password=PASSWORD, email="suelto@example.com")
         User.objects.create_user("baja", password=PASSWORD, email="baja@example.com", is_active=False)
+        self.verify("suelto@example.com")
         self.post(audience="no_club")
+        self.deliver()
         self.assertEqual([m.to for m in mail.outbox], [["suelto@example.com"]])
         self.assertEqual(mail.outbox[0].subject, "Hola suelto")
 
@@ -778,12 +806,15 @@ class MassEmailTests(StaffTestCase):
         self.assertContains(page, "Llegaría a 1 persona")
         self.assertContains(page, "mal")
         self.post(audience="custom", custom="a@x.com")
+        self.deliver()
         self.assertEqual(mail.outbox[0].to, ["a@x.com"])
+        self.assertIn("respóndeme a este correo", mail.outbox[0].alternatives[0][0])  # sin cuenta no hay enlace de baja
 
     def test_html_is_sanitised_and_values_escaped(self):
         self.other.first_name = "<b>X</b>"
         self.other.save()
         self.post(body="<p onclick='x()'>Hola {nombre}</p><script>1</script>")
+        self.deliver()
         html = next(m for m in mail.outbox if m.to == ["otro@example.com"]).alternatives[0][0]
         self.assertNotIn("<script", html)
         self.assertNotIn("onclick", html)
@@ -794,31 +825,49 @@ class MassEmailTests(StaffTestCase):
             self.post()
         self.assertEqual(len(mail.outbox), 0)
 
-    def test_send_over_the_daily_quota_is_rejected_keeping_a_reserve(self):
-        """Con 2 destinatarios y un cupo de 100 con reserva 99 solo caben 1: no se envía nada."""
+    def test_unverified_emails_and_opted_out_accounts_are_left_out_of_segments(self):
+        from core.models import UserPreference
+        User.objects.create_user("sinverificar", password=PASSWORD, email="nv@example.com")
+        UserPreference.objects.create(user=self.other, news_email=False)
+        page = self.post(action="preview")
+        self.assertContains(page, "Llegaría a 1 persona")
+        self.assertContains(page, "1 omitidos")
+
+    def test_unsubscribe_link_turns_the_news_off(self):
+        from core.unsubscribe import news_unsubscribe_path
+        path = news_unsubscribe_path(self.other)
+        self.assertContains(self.client.get(path), "Desactivar correos")
+        self.client.post(path)
+        self.assertFalse(self.other.preference.news_email)
+        self.assertEqual(self.client.get("/core/news/unsubscribe/mala/").status_code, 404)
+
+    def test_queue_respects_the_daily_quota_and_resumes_without_repeating(self):
+        """Con cupo para uno solo sale uno; cuando hay cupo sale el otro y nadie recibe dos veces."""
         with self.settings(EMAIL_DAILY_LIMIT=100, EMAIL_MASS_RESERVE=99):
-            response = self.post()
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "hoy solo se pueden enviar 1 correos masivos")
-        self.assertEqual(len(mail.outbox), 0)
-        self.assertFalse(AuditLog.objects.filter(action="email.mass").exists())
+            self.post()
+            self.deliver()
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(AuditLog.objects.filter(action="email.mass_done").count(), 0)
+        self.deliver()
+        self.deliver()
+        self.assertEqual(sorted(m.to[0] for m in mail.outbox), ["capi@example.com", "otro@example.com"])
+        self.assertEqual(AuditLog.objects.filter(action="email.mass_done").count(), 1)
 
-    def test_send_within_the_quota_and_reserve_is_allowed(self):
-        with self.settings(EMAIL_DAILY_LIMIT=100, EMAIL_MASS_RESERVE=98):
-            self.assertEqual(self.post().status_code, 302)
-        self.assertEqual(len(mail.outbox), 2)
-
-    def test_second_send_while_one_is_running_is_rejected(self):
-        from django.core.cache import cache
-        from backoffice.views_crm import _send_lock_key
-        cache.add(_send_lock_key(self.staff), 1, 60)
-        self.addCleanup(cache.delete, _send_lock_key(self.staff))
-        response = self.post()
-        self.assertContains(response, "Ya hay un envío masivo en curso")
-        self.assertEqual(len(mail.outbox), 0)
-
-    def test_lock_is_released_after_sending(self):
-        from django.core.cache import cache
-        from backoffice.views_crm import _send_lock_key
+    def test_failed_recipient_is_retried_then_given_up(self):
+        from .models import MassEmailRecipient
         self.post()
-        self.assertIsNone(cache.get(_send_lock_key(self.staff)))
+        with mock.patch("django.core.mail.EmailMultiAlternatives.send", side_effect=OSError("smtp caído")):
+            for _ in range(3):
+                self.deliver()
+        self.assertEqual(MassEmailRecipient.objects.filter(status="failed").count(), 2)
+        self.assertEqual(AuditLog.objects.get(action="email.mass_done").detail["failed"], 2)
+
+    def test_same_email_twice_is_rejected_and_cancel_stops_the_rest(self):
+        from .models import MassEmail
+        self.post()
+        self.assertContains(self.post(), "ya está en cola")
+        mass = MassEmail.objects.get()
+        self.client.post(reverse("backoffice:email_cancel", args=[mass.public_id]))
+        self.deliver()
+        self.assertEqual(len(mail.outbox), 0)
+        self.assertContains(self.client.get(reverse("backoffice:email_queue")), "Cancelado")

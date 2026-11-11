@@ -165,6 +165,15 @@
             </div>
             <p class="form-text">{% translate "Incluye el marcador y el resultado de cada pareja. También llegan los amistosos. Es un ajuste tuyo: vale para todos tus equipos." %}</p>
         </fieldset>
+        <input type="hidden" name="news_form" value="1">
+        <fieldset class="z-report-scope mt-4">
+            <legend class="form-label">{% translate "Novedades y avisos de Zyra" %}</legend>
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" name="news_email" id="news-email"{% if news_email %} checked{% endif %}>
+                <label class="form-check-label" for="news-email">{% translate "Recibir las novedades y avisos que escribe el equipo de Zyra" %}</label>
+            </div>
+            <p class="form-text">{% translate "No afecta a los avisos de tu cuenta ni de tu club." %}</p>
+        </fieldset>
         <input type="hidden" name="monthly_form" value="1">
         <fieldset class="z-report-scope mt-4">
             <legend class="form-label">{% translate "Informe mensual por email" %}</legend>

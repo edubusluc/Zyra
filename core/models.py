@@ -43,6 +43,8 @@ class UserPreference(models.Model):
     monthly_scope = models.CharField(max_length=15, choices=REPORT_SCOPES, default=REPORT_SCOPE_ALL)
     # Aviso por email con el resultado cuando el capitán cierra el acta de un enfrentamiento.
     match_result_email = models.BooleanField(default=True)
+    # Correos informativos que escribe el personal de Zyra (novedades, avisos): la baja es de la propia persona.
+    news_email = models.BooleanField(default=True)
     # El capitán cerró el aviso «Añade un gestor» de la portada; no vuelve a aparecer.
     manager_tip_dismissed_at = models.DateTimeField(null=True, blank=True)
     # El capitán cerró el aviso «¿Han llegado jugadores nuevos?» de Jugadores; vuelve en la temporada siguiente.
@@ -78,6 +80,11 @@ class UserPreference(models.Model):
         """True si ``user`` quiere recibir el aviso del resultado de los enfrentamientos (por defecto sí)."""
         value = cls.objects.filter(user=user).values_list("match_result_email", flat=True).first()
         return True if value is None else value
+
+    @classmethod
+    def news_opted_out(cls):
+        """Ids de las cuentas que se han dado de baja de los correos informativos del personal."""
+        return set(cls.objects.filter(news_email=False).values_list("user_id", flat=True))
 
     @classmethod
     def report_scope_for(cls, user):

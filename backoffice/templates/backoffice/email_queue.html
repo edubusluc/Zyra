@@ -1,0 +1,36 @@
+{% extends 'backoffice/base.html' %}
+{% load i18n %}
+{% block title %}{% translate "Envíos en cola" %}{% endblock %}
+
+{% block content %}
+<div class="z-page-head">
+    <div>
+        <span class="z-eyebrow">{% blocktranslate trimmed with n=email_quota.remaining limit=email_quota.limit %}Hoy quedan {{ n }} de {{ limit }} correos{% endblocktranslate %}</span>
+        <h1>{% translate "Envíos en cola" %}</h1>
+    </div>
+    <a class="btn btn-primary" href="{% url 'backoffice:email_compose' %}">{% translate "Nuevo correo" %}</a>
+</div>
+<p class="text-muted">{% translate "Los correos a varios usuarios salen poco a poco respetando el cupo diario (lo que no cabe hoy sale mañana). Si se corta, continúa donde se quedó sin repetir a nadie." %}</p>
+{% if queue %}
+<table class="bo-table">
+    <thead><tr><th>{% translate "Asunto" %}</th><th>{% translate "Estado" %}</th><th>{% translate "Enviados" %}</th><th>{% translate "Pendientes" %}</th><th>{% translate "Fallidos" %}</th><th>{% translate "Creado" %}</th><th></th></tr></thead>
+    <tbody>
+    {% for row in queue %}
+    <tr>
+        <td>{{ row.mass.subject }}</td>
+        <td>{{ row.mass.get_status_display }}</td>
+        <td>{{ row.sent }} / {{ row.total }}</td>
+        <td>{{ row.pending }}</td>
+        <td>{{ row.failed }}</td>
+        <td>{{ row.mass.created_at|date:"d/m/Y H:i" }}{% if row.mass.created_by %} · {{ row.mass.created_by.username }}{% endif %}</td>
+        <td>{% if row.mass.status == "pending" %}
+            <form method="post" action="{% url 'backoffice:email_cancel' row.mass.public_id %}" data-confirm="{% translate "¿Cancelar el envío? Lo que falta no saldrá." %}" data-loading-text="{% translate 'Guardando…' %}">{% csrf_token %}<button class="btn btn-outline-light btn-sm">{% translate "Cancelar" %}</button></form>
+        {% endif %}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="text-muted">{% translate "No hay envíos masivos todavía." %}</p>
+{% endif %}
+{% endblock %}

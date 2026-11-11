@@ -48,7 +48,7 @@ from .models import REPORT_SCOPES, Club, Invitation, Membership, UserPreference
 from .onboarding import onboarding_for
 from . import email_verification, ratelimit, seo, sessions
 from players import copy as player_copy, snp_service
-from .unsubscribe import user_from_result_token, user_from_token
+from .unsubscribe import user_from_news_token, user_from_result_token, user_from_token
 from .services import (
     CaptaincyError, InvitationError, accept_invitation, account_delete_blocker, club_name_matches, club_of,
     ensure_space_free, free_competitions, one_space_message, SpaceTaken,
@@ -994,7 +994,7 @@ def my_profile(request):
     email_form = None
     is_captain = bool(request.membership and request.membership.is_admin)
     if request.method == "POST" and ("report_scope" in request.POST or "monthly_form" in request.POST
-                                  or "results_form" in request.POST
+                                  or "results_form" in request.POST or "news_form" in request.POST
                                   or "stage_form" in request.POST):
         defaults = {}
         scope = request.POST.get("report_scope")
@@ -1005,6 +1005,8 @@ def my_profile(request):
             defaults["match_stage_view"] = request.POST.get("match_stage_view") == "on"
         if "results_form" in request.POST:
             defaults["match_result_email"] = request.POST.get("match_result_email") == "on"
+        if "news_form" in request.POST:
+            defaults["news_email"] = request.POST.get("news_email") == "on"
         if "monthly_form" in request.POST:
             defaults["monthly_report"] = request.POST.get("monthly_report") == "on"
             if request.POST.get("monthly_scope") in dict(REPORT_SCOPES):
@@ -1031,6 +1033,7 @@ def my_profile(request):
         "monthly_report": UserPreference.monthly_for(user)[0],
         "monthly_scope": UserPreference.monthly_for(user)[1],
         "match_result_email": UserPreference.match_result_for(user),
+        "news_email": user.pk not in UserPreference.news_opted_out(),
         "match_stage_view": UserPreference.match_stage_for(user),
         # Una fila por equipo de la cuenta (Mi perfil es de la cuenta, no del equipo activo).
         "sheets": _profile_sheets(request, user),
@@ -1170,6 +1173,23 @@ def result_unsubscribe(request, token):
         UserPreference.objects.update_or_create(user=user, defaults={"match_result_email": False})
         return render(request, "result_unsubscribe.html", {"done": True})
     return render(request, "result_unsubscribe.html")
+
+
+@require_http_methods(["GET", "POST"])
+def news_unsubscribe(request, token):
+    """
+    Baja de los correos informativos del personal (novedades y avisos) desde el enlace del email, sin iniciar sesión.
+
+    Igual que ``result_unsubscribe``: el GET solo pide confirmación y el POST, con el token CSRF de esa página,
+    desactiva esos correos en la cuenta que identifica el token firmado de la URL.
+    """
+    user = user_from_news_token(token)
+    if user is None:
+        return render(request, "news_unsubscribe.html", {"invalid": True}, status=404)
+    if request.method == "POST":
+        UserPreference.objects.update_or_create(user=user, defaults={"news_email": False})
+        return render(request, "news_unsubscribe.html", {"done": True})
+    return render(request, "news_unsubscribe.html")
 
 
 @club_admin_required

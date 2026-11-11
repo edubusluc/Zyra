@@ -458,3 +458,58 @@ class AlertState(models.Model):
     def __str__(self):
         """Nombre y si está activa."""
         return f"{self.name}: {'activa' if self.active else 'resuelta'}"
+
+
+class MassEmail(PublicIdModel):
+    """
+    Correo del personal a varios usuarios, en cola: se guarda con un ``MassEmailRecipient`` por destinatario y el
+    proceso ``send_mass_emails`` lo envía respetando el cupo diario (reanudable: no repite a quien ya lo recibió).
+    """
+    PUBLIC_ID_PREFIX = "MEM"
+    PENDING, DONE, CANCELLED = "pending", "done", "cancelled"
+    STATUSES = [(PENDING, _("En cola")), (DONE, _("Terminado")), (CANCELLED, _("Cancelado"))]
+
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+    subject = models.CharField(max_length=200)
+    body_html = models.TextField()
+    reply_to = models.EmailField(blank=True)
+    audience = models.CharField(max_length=20)
+    status = models.CharField(max_length=10, choices=STATUSES, default=PENDING)
+    created_at = models.DateTimeField(auto_now_add=True)
+    finished_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [models.Index(fields=["status", "created_at"])]
+
+    def __str__(self):
+        """Asunto y estado."""
+        return f"{self.subject} ({self.get_status_display()})"
+
+    def count(self, status):
+        """Destinatarios en ese estado."""
+        return self.recipients.filter(status=status).count()
+
+
+class MassEmailRecipient(models.Model):
+    """Un destinatario de un ``MassEmail`` con los datos para personalizar su correo y el resultado del envío."""
+    PENDING, SENT, FAILED = "pending", "sent", "failed"
+    STATUSES = [(PENDING, _("Pendiente")), (SENT, _("Enviado")), (FAILED, _("Fallido"))]
+
+    mass = models.ForeignKey(MassEmail, on_delete=models.CASCADE, related_name="recipients")
+    email = models.EmailField()
+    name = models.CharField(max_length=200, blank=True)
+    club = models.CharField(max_length=200, blank=True)
+    user_id = models.PositiveIntegerField(null=True, blank=True)
+    status = models.CharField(max_length=10, choices=STATUSES, default=PENDING)
+    attempts = models.PositiveSmallIntegerField(default=0)
+    last_error = models.TextField(blank=True)
+    sent_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["mass", "email"], name="unique_mass_email_recipient")]
+        indexes = [models.Index(fields=["mass", "status"])]
+
+    def __str__(self):
+        """Destinatario y estado."""
+        return f"{self.email} ({self.get_status_display()})"
