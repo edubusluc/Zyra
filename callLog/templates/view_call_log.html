@@ -1,26 +1,11 @@
 {% extends 'base.html' %}
 {% load static i18n %}
-{% block page_title %}{% translate "Advertencias y cambios de la convocatoria" %} · {% endblock %}
+{% block page_title %}{% translate "Advertencias de la convocatoria" %} · {% endblock %}
 
 {% block content %}
 <div class="table-container">
-    <h1>{% translate "Advertencias y cambios de la convocatoria" %}</h1>
+    <h1>{% translate "Advertencias de la convocatoria" %}</h1>
     <p class="text-muted small">{% blocktranslate with team=request.club.name %}Solo de {{ team }}: cada equipo tiene sus propias advertencias.{% endblocktranslate %}</p>
-
-    {% if log_lines %}
-        <div class="log-container">
-            {% for l in log_lines %}
-                {% if "convocatoria abierta" in l %}
-                    <p class="alert-log">{{ l }}</p>
-                {% endif %}
-                {% if "convocatoria cerrada" in l %}
-                    <p class="warning">{{ l }}</p>
-                {% endif %}
-            {% endfor %}
-        </div>
-    {% else %}
-        <p class = "alert-log">{% translate "No hay cambios registrados en la convocatoria." %}</p>
-    {% endif %}
 
     {% if can_manage %}
     <div class="mt-4">

@@ -191,16 +191,6 @@ class UsabilityTests(ReviewBase):
         self.client.force_login(self.user)
         self.assertNotContains(self.client.get(self.ficha), "aria-pressed")
 
-    def test_u11_reopen_log_is_translatable(self):
-        """La línea del registro se escribe con el idioma activo."""
-        from callLog.models import CallLog
-        call = Call.objects.create(match=self.match, draft_mode=False)
-        call.players.add(self.ana)
-        self.client.force_login(self.captain)
-        self.client.cookies[settings.LANGUAGE_COOKIE_NAME] = "en"
-        self.client.post(reverse("reopen_call", args=[self.match.public_id]))
-        self.assertIn("Call reopened by capitan", CallLog.objects.get(call=call).text)
-
 
 class SecurityTests(ReviewBase):
     """S-01…S-08."""

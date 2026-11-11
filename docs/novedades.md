@@ -3,6 +3,14 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 11/11/2026 · Auditoría: navegación y equipo activo (fase 3)
+
+- **Estadísticas**: los enlaces de jugador, pareja y rival abren el equipo al que pertenecen aunque en otra pestaña, con «Atrás» o en un enlace compartido haya otro equipo activo. Cambiar de competición desde la ficha de un rival vuelve a la lista de rivales.
+- **Inicio del jugador**: «Sube tu foto» lleva a «Mi ficha» en lugar de a una página que daba «Sin permiso».
+- **Cuenta SNP, Completar equipo y Copiar jugadores**: los formularios llevan el equipo de la página y no guardan nada si el equipo activo es otro.
+- **Convocatorias**: solo se convoca a jugadores del equipo. Se quita el historial de cambios de la convocatoria; «Advertencias» queda solo con las advertencias y responde 404 si la convocatoria no existe.
+- **No presentado**: quitarlo devuelve las parejas y los resultados que había.
+
 ## 11/11/2026 · Auditoría: SNP y correo masivo (fase 2)
 
 - **Puntos SNP**: solo se leen en notación española (`66.406,25`); una celda vacía o con otro formato ya no se guarda como 0 (el jugador conserva sus puntos y se avisa). Si muchos jugadores llegan ilegibles, a 0 o con un cambio disparatado, no se guarda nada y se avisa al personal.

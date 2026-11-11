@@ -21,7 +21,7 @@ el código que hay en producción.
 | `players` | Jugadores, enlace jugador ↔ cuenta, cuenta SNP cifrada, puntos SNP y «Completar equipo» desde SNP. |
 | `team` | Equipos del club y rivales (categoría, país, división), edición de varios a la vez. |
 | `match` | Partidos, convocatorias, parejas y resultados, cierre de actas, informe PDF y su envío. |
-| `call`, `callLog`, `penalty` | Modelo de convocatoria, registro de cambios y sanciones. |
+| `call`, `callLog`, `penalty` | Modelo de convocatoria, disponibilidad y advertencias. |
 | `data_analyse` | Estadísticas de equipo, jugador, parejas y avisos. |
 | `backoffice` | Panel del dueño de la plataforma: métricas, clubes, usuarios, procesos programados, consola SQL, importación, fotos. |
 | `zyra` | Configuración de Django (ajustes, URLs, WSGI). |
