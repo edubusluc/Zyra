@@ -421,6 +421,8 @@ EMAIL_MAX_PER_RUN = config('EMAIL_MAX_PER_RUN', default=100, cast=int)
 # (control del back-office: se cuentan los destinatarios de EmailLog enviados hoy).
 EMAIL_DAILY_LIMIT = config('EMAIL_DAILY_LIMIT', default=300, cast=int)
 EMAIL_DAILY_WARN_REMAINING = config('EMAIL_DAILY_WARN_REMAINING', default=60, cast=int)
+# Correos del cupo diario que un envío masivo nunca gasta: se reservan para los de la web (convocatorias, avisos, restablecer contraseña).
+EMAIL_MASS_RESERVE = config('EMAIL_MASS_RESERVE', default=60, cast=int)
 
 # Actualización de los puntos SNP (update_snp_scores): clubes por lote, pausa aleatoria
 # entre club y club, pausa entre lotes (en segundos) y cuántos fallos de red seguidos

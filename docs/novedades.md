@@ -3,6 +3,14 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 11/11/2026 · Auditoría: SNP y correo masivo (fase 2)
+
+- **Puntos SNP**: solo se leen en notación española (`66.406,25`); una celda vacía o con otro formato ya no se guarda como 0 (el jugador conserva sus puntos y se avisa). Si muchos jugadores llegan ilegibles, a 0 o con un cambio disparatado, no se guarda nada y se avisa al personal.
+- **Nombres parecidos**: un nombre de SNP que solo coincide en nombre y un apellido no recibe puntos solo; «Completar equipo» lo muestra con el jugador sugerido en «¿Es el mismo jugador?» y lo decide el capitán.
+- **Cuenta SNP rechazada**: el proceso programado no la vuelve a probar hasta que el capitán edite la cuenta.
+- **Eliminar jugadores**: un jugador que ya ha jugado algún partido no se puede eliminar, solo dar de baja, para que sus partidos no desaparezcan de las estadísticas del equipo y de sus compañeros.
+- **Correo masivo**: se rechaza si supera lo que queda del cupo diario menos una reserva para los avisos de la web (`EMAIL_MASS_RESERVE`), y un doble envío mientras otro sigue en curso.
+
 ## 11/11/2026 · Copia diaria: el instalador no duplica una tarea existente
 
 - `deploy/install-backup-cron.sh` sustituye una línea previa del cron que llame a `backup.sh` en lugar de añadir otra, y la guía explica que debe ejecutarse con el usuario dueño de `/opt/zyra`.

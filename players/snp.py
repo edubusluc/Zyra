@@ -16,13 +16,20 @@ from core.crypto import DecryptionError
 
 from .models import Player, SnpScoreHistory, current_season
 from . import snp_service
-from .scraper import SnpBlockedError, SnpScrapeError, scrape_scores
+from .scraper import SnpBlockedError, SnpScrapeError, SnpTemporaryError, scrape_scores
 
 logger = logging.getLogger(__name__)
 
 # Coincidencia exacta > nombre completo al principio (sobra o falta el 2º apellido o la
 # categoría) > nombre y primer apellido presentes.
 EXACT, PREFIX, PARTIAL = 3, 2, 1
+
+# Control de cordura de la lectura de SNP: si muchos jugadores a la vez llegan ilegibles, a cero o con un
+# cambio disparatado (el factor sale de [1/5, 5]), lo normal es que SNP haya cambiado su tabla, no que
+# hayan cambiado los puntos. Entonces no se guarda nada y se avisa al personal.
+SANITY_MIN_PLAYERS = 3
+SANITY_MAX_SHARE = 0.3
+SANITY_MAX_FACTOR = 5
 
 
 def normalize(text):
@@ -68,11 +75,15 @@ def _match_level(player_tokens, snp_tokens):
     return 0
 
 
-def match_scores(players, scores):
+def match_scores(players, scores, doubtful=None):
     """
     Empareja jugadores y puntuaciones de SNP. Devuelve (emparejados, sin_jugador, ambiguos):
     emparejados es una lista de (jugador, puntos, nombre_en_snp); sin_jugador, los nombres
     de SNP que no se han podido asignar; ambiguos, los que encajan igual de bien con varios.
+
+    Una coincidencia PARTIAL (solo nombre y un apellido) no es de fiar: puede ser otra persona.
+    No se asigna: se añade a la lista ``doubtful`` (pares jugador, nombre en SNP) para que el
+    capitán lo confirme, y si no se pasa la lista se trata como un nombre sin jugador.
     """
     tokens = {p.pk: normalize(f"{p.name} {p.last_name}").split() for p in players}
     candidates = []  # (nivel, jugador, entrada de SNP)
@@ -105,7 +116,13 @@ def match_scores(players, scores):
             ambiguous.extend(o[2]["name"] for o in options)
             continue
         level, player, entry = options[0]
-        matched.append((player, entry["score"], entry["name"]))
+        if level == PARTIAL:
+            if doubtful is None:
+                unmatched.append(entry["name"])
+            else:
+                doubtful.append((player, entry["name"]))
+        else:
+            matched.append((player, entry["score"], entry["name"]))
         unmatched.extend(o[2]["name"] for o in options[1:])
     return matched, unmatched, ambiguous
 
@@ -114,7 +131,9 @@ def match_scores(players, scores):
 class SyncResult:
     """
     Resultado de actualizar los puntos SNP de un club. ``updated`` son pares (jugador, puntos);
-    ``unmatched``, ``ambiguous`` y ``missing`` son nombres que no se han podido actualizar.
+    ``unmatched``, ``ambiguous``, ``doubtful``, ``unreadable`` y ``missing`` son nombres que no se han
+    podido actualizar (``doubtful``: parecidos a un jugador pero sin seguridad, los confirma el capitán;
+    ``unreadable``: SNP los devuelve con unos puntos ilegibles, se conservan los anteriores).
     ``retryable`` indica un fallo pasajero que se reintenta en la siguiente pasada y
     ``blocked`` que SNP nos está limitando.
     """
@@ -124,6 +143,8 @@ class SyncResult:
     updated: list = field(default_factory=list)
     unmatched: list = field(default_factory=list)
     ambiguous: list = field(default_factory=list)
+    doubtful: list = field(default_factory=list)
+    unreadable: list = field(default_factory=list)
     missing: list = field(default_factory=list)
     # Fallo pasajero que se reintenta en la siguiente pasada / SNP nos está limitando.
     retryable: bool = False
@@ -136,6 +157,10 @@ class SyncResult:
             lines.append(_("En SNP pero sin jugador en Zyra: %(names)s") % {"names": ", ".join(self.unmatched)})
         if self.ambiguous:
             lines.append(_("Nombres que encajan con varios jugadores (no se han tocado): %(names)s") % {"names": ", ".join(self.ambiguous)})
+        if self.doubtful:
+            lines.append(_("Nombres parecidos a un jugador pero sin seguridad (no se han tocado; confírmalos en «Completar equipo»): %(names)s") % {"names": ", ".join(self.doubtful)})
+        if self.unreadable:
+            lines.append(_("Puntos ilegibles en SNP (se conservan los anteriores): %(names)s") % {"names": ", ".join(self.unreadable)})
         if self.missing:
             lines.append(_("Jugadores de Zyra que no aparecen en SNP: %(names)s") % {"names": ", ".join(self.missing)})
         return "\n".join(lines)
@@ -192,22 +217,47 @@ def save_score(player, score):
     )
 
 
+def _check_sanity(readable, unreadable):
+    """
+    Lanza SnpTemporaryError si la lectura parece rota: muchos jugadores emparejados con puntos
+    ilegibles, que pasan a cero o que cambian más de ``SANITY_MAX_FACTOR`` veces. ``readable`` son
+    pares (jugador, puntos nuevos) y ``unreadable`` los jugadores sin puntos legibles.
+    """
+    total = len(readable) + len(unreadable)
+    suspicious = len(unreadable)
+    for player, score in readable:
+        old = player.snp_score
+        if old and (score == 0 or not 1 / SANITY_MAX_FACTOR <= score / old <= SANITY_MAX_FACTOR):
+            suspicious += 1
+    if suspicious >= SANITY_MIN_PLAYERS and suspicious / total >= SANITY_MAX_SHARE:
+        raise SnpTemporaryError(gettext(
+            "La lectura de SNP parece incorrecta (%(n)s de %(total)s jugadores con puntos ilegibles o con un "
+            "cambio disparatado). No se ha guardado nada y se reintentará más tarde.") % {"n": suspicious, "total": total})
+
+
 def _save_scores(account, scores):
     """
     Guarda los puntos emparejados (y una fila de histórico por jugador y día) para los
-    jugadores del equipo del club y devuelve el SyncResult. Se llama dentro de una transacción.
+    jugadores del equipo del club y devuelve el SyncResult. Los jugadores con puntos ilegibles
+    conservan los anteriores y los dudosos esperan la confirmación del capitán. Si la lectura
+    parece rota (``_check_sanity``) lanza SnpTemporaryError. Se llama dentro de una transacción.
     """
     players = list(Player.objects.filter(club=account.club, in_team=True))
-    matched, unmatched, ambiguous = match_scores(players, scores)
-    for player, score, _ in matched:
+    doubtful = []
+    matched, unmatched, ambiguous = match_scores(players, scores, doubtful)
+    readable = [(p, score) for p, score, _ in matched if score is not None]
+    unreadable = [(p, name) for p, score, name in matched if score is None]
+    _check_sanity(readable, [p for p, _ in unreadable])
+    for player, score in readable:
         save_score(player, score)
     matched_ids = {p.pk for p, _, _ in matched}
     return SyncResult(
         ok=True,
         message=gettext("%(matched)s de %(total)s jugadores actualizados con los puntos de SNP.") % {
-            "matched": len(matched), "total": len(players)},
+            "matched": len(readable), "total": len(players)},
         total=len(players),
-        updated=[(str(p), score) for p, score, _ in matched],
+        updated=[(str(p), score) for p, score in readable],
         unmatched=unmatched, ambiguous=ambiguous,
+        doubtful=[name for _, name in doubtful], unreadable=[name for _, name in unreadable],
         missing=[str(p) for p in players if p.pk not in matched_ids],
     )

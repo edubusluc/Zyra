@@ -774,3 +774,32 @@ class MassEmailTests(StaffTestCase):
         with mock.patch("backoffice.mass_email.MAX_RECIPIENTS", 1):
             self.post()
         self.assertEqual(len(mail.outbox), 0)
+
+    def test_send_over_the_daily_quota_is_rejected_keeping_a_reserve(self):
+        """Con 2 destinatarios y un cupo de 100 con reserva 99 solo caben 1: no se envía nada."""
+        with self.settings(EMAIL_DAILY_LIMIT=100, EMAIL_MASS_RESERVE=99):
+            response = self.post()
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "hoy solo se pueden enviar 1 correos masivos")
+        self.assertEqual(len(mail.outbox), 0)
+        self.assertFalse(AuditLog.objects.filter(action="email.mass").exists())
+
+    def test_send_within_the_quota_and_reserve_is_allowed(self):
+        with self.settings(EMAIL_DAILY_LIMIT=100, EMAIL_MASS_RESERVE=98):
+            self.assertEqual(self.post().status_code, 302)
+        self.assertEqual(len(mail.outbox), 2)
+
+    def test_second_send_while_one_is_running_is_rejected(self):
+        from django.core.cache import cache
+        from backoffice.views_crm import _send_lock_key
+        cache.add(_send_lock_key(self.staff), 1, 60)
+        self.addCleanup(cache.delete, _send_lock_key(self.staff))
+        response = self.post()
+        self.assertContains(response, "Ya hay un envío masivo en curso")
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_lock_is_released_after_sending(self):
+        from django.core.cache import cache
+        from backoffice.views_crm import _send_lock_key
+        self.post()
+        self.assertIsNone(cache.get(_send_lock_key(self.staff)))

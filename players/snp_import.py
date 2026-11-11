@@ -95,7 +95,8 @@ def plan_import(club, scores):
     """(a_añadir, ya_registrados) comparando los nombres de SNP con todos los jugadores del club."""
     scores = _by_clean_name(scores)
     players = list(Player.objects.filter(club=club))
-    matched, unmatched, ambiguous = match_scores(players, scores)
+    doubtful = []
+    matched, unmatched, ambiguous = match_scores(players, scores, doubtful)
     by_name = {entry["name"]: entry for entry in scores}
     category = {entry["name"]: entry["category"] for entry in scores}
     # De los que ya existen se guarda el jugador y los puntos: al confirmar se actualizan.
@@ -105,11 +106,17 @@ def plan_import(club, scores):
     existing += [{"snp_name": name, "category": category[name], "player": _("varios jugadores con un nombre parecido")}
                  for name in ambiguous]
     to_add = []
-    for snp_name in unmatched:
+    # Los parecidos sin seguridad (PARTIAL) esperan la confirmación del capitán: «¿Es el mismo jugador?»
+    # los trae con ese jugador como sugerencia (``doubtful_id``) y no se les da puntos hasta que lo confirme.
+    suggested = {entry_name: player for player, entry_name in doubtful}
+    for snp_name in [*unmatched, *suggested]:
         name, last_name = split_snp_name(snp_name)
         if name:
-            to_add.append({"name": name, "last_name": last_name, "snp_name": snp_name,
-                           "category": category[snp_name], "score": by_name[snp_name]["score"]})
+            row = {"name": name, "last_name": last_name, "snp_name": snp_name,
+                   "category": category[snp_name], "score": by_name[snp_name]["score"]}
+            if snp_name in suggested:
+                row.update(doubtful_id=suggested[snp_name].pk, doubtful_player=str(suggested[snp_name]))
+            to_add.append(row)
     to_add.sort(key=lambda p: (p["name"], p["last_name"]))
     existing.sort(key=lambda p: p["snp_name"])
     return to_add, existing
@@ -281,9 +288,16 @@ def confirm(team_import, same=None):
     club = team_import.club
     entries = [{"name": e["snp_name"], "score": e["score"]} for e in team_import.to_add]
     still_missing = {e["snp_name"] for e in plan_import(club, entries)[0]}
+    # Un nombre dudoso (``doubtful_id``) solo se da de alta o se asigna si el capitán lo decide en la web;
+    # en una confirmación automática (``same`` es None) se deja pendiente, sin puntos ni ficha nueva.
+    automatic = same is None
     created, today, season = [], timezone.localdate(), current_season()
     chosen = Player.objects.in_bulk([pid for pid in (same or {}).values()])
     for entry in team_import.to_add:
+        if automatic and entry.get("doubtful_id"):
+            team_import.existing.append({"snp_name": entry["snp_name"], "category": entry.get("category", ""),
+                                         "player": _("pendiente de confirmar por el capitán")})
+            continue
         player = chosen.get((same or {}).get(entry["snp_name"]))
         if player is not None and player.club_id == club.pk:
             team_import.existing.append({"snp_name": entry["snp_name"], "category": entry.get("category", ""),
@@ -296,7 +310,8 @@ def confirm(team_import, same=None):
             club=club, team=club.own_team, name=entry["name"], last_name=entry["last_name"],
             snp_score=entry["score"], in_team=True,
         )
-        SnpScoreHistory.objects.get_or_create(player=player, date=today, defaults={"score": entry["score"], "season": season})
+        if entry["score"] is not None:
+            SnpScoreHistory.objects.get_or_create(player=player, date=today, defaults={"score": entry["score"], "season": season})
         created.append(str(player))
     updated = _update_existing_scores(club, team_import.existing)
     team_import.created_teams = _create_group_teams(club, team_import.teams_to_add, team_import.teams_existing)

@@ -36,8 +36,22 @@ class ScraperHelpersTests(TestCase):
     def test_parse_score(self):
         self.assertEqual(parse_score("1.234,5"), 1234.5)
         self.assertEqual(parse_score("12,5 / 3"), 12.5)
-        self.assertEqual(parse_score(""), 0.0)
-        self.assertEqual(parse_score("n/d"), 0.0)
+        self.assertIsNone(parse_score(""))
+        self.assertIsNone(parse_score("n/d"))
+
+    def test_parse_score_spanish_format_of_snp_table(self):
+        """Valores reales de la tabla de SNP: punto de millares y coma decimal."""
+        self.assertEqual(parse_score("66.406,25"), 66406.25)
+        self.assertEqual(parse_score("65.000,00"), 65000.0)
+        self.assertEqual(parse_score("950"), 950.0)
+        self.assertEqual(parse_score("0,00"), 0.0)
+        self.assertEqual(parse_score(" 1.234.567,5 "), 1234567.5)
+
+    def test_parse_score_rejects_other_formats(self):
+        """«12.5» (formato inglés), millares mal puestos o texto suelto no son puntos válidos."""
+        for text in ("12.5", "1,234.5", "1.23,4", "66.406,", ",5", "abc", "--", "12 puntos", None):
+            with self.subTest(text=text):
+                self.assertIsNone(parse_score(text))
 
 
 class MatchScoresTests(TestCase):
@@ -380,6 +394,20 @@ class SnpBatchTests(TestCase):
         output, error = self.run_command()
         self.assertEqual(self.calls, [])
         self.assertIn("No hay equipos pendientes", output)
+
+    def test_rejected_password_is_not_retried_in_later_cycles_until_the_captain_edits_the_account(self):
+        from players.management.commands.update_snp_scores import pending_accounts
+        self.run_command(failures={"capitanA": SnpScrapeError("SNP no ha aceptado el usuario o la contraseña.")})
+        rejected = SnpAccount.objects.get(last_sync_ok=False)
+        # Un ciclo después: las demás vuelven a tocar, la rechazada conserva su último intento.
+        SnpAccount.objects.exclude(pk=rejected.pk).update(last_sync_at=madrid(2026, 9, 30, 4, 0))
+        SnpAccount.objects.filter(pk=rejected.pk).update(last_sync_at=timezone.now())
+        later = madrid(2026, 9, 30, 12, 0)
+        self.assertEqual(pending_accounts(later).count(), 3)
+        self.assertNotIn(rejected.pk, pending_accounts(later).values_list("pk", flat=True))
+        rejected.password = "nueva"  # el capitán corrige la cuenta: updated_at pasa a ser posterior al último intento
+        rejected.save()
+        self.assertIn(rejected.pk, pending_accounts(later).values_list("pk", flat=True))
 
     def test_a_new_cycle_makes_every_club_pending_again(self):
         from players.management.commands.update_snp_scores import pending_accounts
@@ -1058,27 +1086,34 @@ class DeletePlayerTests(TestCase):
                               set2_visiting="3", set3_local="0", set3_visiting="0")
         self.client.login(username="admin", password="pass-12345")
 
-    def test_confirmation_warns_that_statistics_are_deleted(self):
-        page = self.client.get(reverse("delete_player", args=[self.ana.public_id])).content.decode()
-        self.assertIn("estadísticas relacionadas con este jugador", page)
-        self.assertIn("1 partido jugado", page)
+    def test_player_who_played_cannot_be_deleted(self):
+        url = reverse("delete_player", args=[self.ana.public_id])
+        for response in (self.client.get(url), self.client.post(url)):
+            self.assertRedirects(response, reverse("edit_player", args=[self.ana.public_id]))
         self.assertTrue(Player.objects.filter(pk=self.ana.pk).exists())
+        self.game.refresh_from_db()
+        self.assertEqual(self.game.player_1_local, self.ana)
+        page = self.client.post(url, follow=True)
+        self.assertContains(page, "ha jugado partidos y no se puede eliminar")
 
-    def test_delete_keeps_match_game_and_result(self):
-        response = self.client.post(reverse("delete_player", args=[self.ana.public_id]))
+    def test_player_who_never_played_can_be_deleted(self):
+        cris = Player.objects.create(club=self.club, name="Cris", last_name="Gil")
+        page = self.client.get(reverse("delete_player", args=[cris.public_id])).content.decode()
+        self.assertIn("lo relacionado con este jugador", page)
+        self.assertNotIn("partido jugado", page)
+        response = self.client.post(reverse("delete_player", args=[cris.public_id]))
         self.assertRedirects(response, reverse("list_players"))
-        self.assertFalse(Player.objects.filter(pk=self.ana.pk).exists())
-        self.assertFalse(self.penalty_model.objects.exists())
+        self.assertFalse(Player.objects.filter(pk=cris.pk).exists())
 
+    def test_deleting_the_row_keeps_match_game_and_result(self):
+        """Lo que sigue pasando al borrar la ficha por otra vía (p. ej. borrar la cuenta con su ficha)."""
+        self.ana.delete()
+        self.assertFalse(self.penalty_model.objects.exists())
         self.game.refresh_from_db()
         self.assertIsNone(self.game.player_1_local)
         self.assertEqual(self.game.player_2_local, self.bea)
         self.assertTrue(self.game.results.exists())
         self.assertEqual(self.game.local_pair_label, "Ana López / Bea Ruiz")
-        page = self.client.get(reverse("call_for_match", args=[self.match.public_id])).content.decode()
-        self.assertIn("Ana López / Bea Ruiz", page)
-        # El compañero conserva sus estadísticas.
-        self.assertEqual(self.client.get(reverse("show_player", args=[self.bea.public_id]), follow=True).status_code, 200)
 
     def test_members_cannot_delete(self):
         viewer = User.objects.create_user("viewer", password="pass-12345")

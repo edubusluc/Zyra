@@ -105,15 +105,19 @@ def parse_team_id(value):
     return None
 
 
+# Puntos de SNP en notación española: «66.406,25», «65.000,00», «950» o «12,5».
+_SCORE_FORMAT = re.compile(r"^(?:\d{1,3}(?:\.\d{3})+|\d+)(?:,\d+)?$")
+
+
 def parse_score(text):
-    """'1.234,5' -> 1234.5; '12,5 / 3' -> 12.5; vacío o ilegible -> 0.0."""
+    """
+    '66.406,25' -> 66406.25; '12,5 / 3' -> 12.5. Solo acepta la notación española (punto de
+    millares, coma decimal). Vacío o con otro formato («12.5», «n/d») -> None: sin dato, nunca 0.
+    """
     text = (text or "").split("/")[0].strip()
-    if not text:
-        return 0.0
-    try:
-        return float(text.replace(".", "").replace(",", "."))
-    except ValueError:
-        return 0.0
+    if not _SCORE_FORMAT.match(text):
+        return None
+    return float(text.replace(".", "").replace(",", "."))
 
 
 def _first_visible(page, selectors):

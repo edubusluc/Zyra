@@ -160,3 +160,13 @@ def build_message(subject, body_html, recipient, reply_to=None):
     email = build_email(subject, html_to_text(html), html, to=[recipient["email"]], reply_to=reply_to)
     email.extra_headers["X-Zyra-Kind"] = "crm"
     return email
+
+
+def room_today():
+    """
+    Correos que un envío masivo puede gastar hoy: lo que queda del cupo diario menos la reserva
+    (``EMAIL_MASS_RESERVE``) para los avisos de la web, y como mucho ``MAX_RECIPIENTS``.
+    """
+    from django.conf import settings
+    from .metrics import email_quota
+    return max(min(MAX_RECIPIENTS, email_quota()["remaining"] - settings.EMAIL_MASS_RESERVE), 0)

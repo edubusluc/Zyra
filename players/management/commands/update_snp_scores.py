@@ -53,11 +53,18 @@ def cycle_start(now=None):
 
 
 def pending_accounts(now=None):
-    """Cuentas que faltan en el ciclo actual: sin intentar desde que empezó o con un fallo pasajero."""
+    """
+    Cuentas que faltan en el ciclo actual: sin intentar desde que empezó o con un fallo pasajero.
+    Una cuenta que falló sin remedio (contraseña rechazada, la cuenta no tiene ese equipo) no se
+    reintenta mientras el capitán no la modifique, y en cuanto la modifica vuelve a tocar: repetir
+    un inicio de sesión rechazado puede acabar bloqueándole la cuenta en SNP. Con ``--club`` o
+    ``--all`` se puede forzar a mano.
+    """
     start = cycle_start(now)
     return SnpAccount.objects.filter(
         Q(last_sync_at__isnull=True) | Q(last_sync_at__lt=start) | Q(last_sync_ok=False, last_sync_retryable=True)
-    )
+        | Q(last_sync_ok=False, updated_at__gt=F("last_sync_at"))
+    ).exclude(last_sync_ok=False, last_sync_retryable=False, updated_at__lte=F("last_sync_at"))
 
 
 def _pause(low, high):
