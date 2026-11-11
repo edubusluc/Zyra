@@ -37,6 +37,7 @@ REDIRECTED_NAMES = ("account_email", "socialaccount_connections")
 def _guard_google(view):
     """El login de Google responde 404 (y no 500) si no hay credenciales configuradas."""
     def wrapped(request, *args, **kwargs):
+        """Lanza 404 si Google no está configurado; si lo está, llama a la vista de allauth."""
         if not settings.GOOGLE_LOGIN_ENABLED:
             raise Http404("El inicio de sesión con Google no está configurado.")
         return view(request, *args, **kwargs)
