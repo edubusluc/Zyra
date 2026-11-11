@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 11/11/2026 · Despliegue: guía de la clave SSH
+
+- `docs/despliegue.md` explica cómo crear la clave de despliegue, autorizarla en el servidor y qué significa `Permission denied (publickey,password)`.
+
 ## 11/11/2026 · Despliegue: huella del servidor más tolerante
 
 - `DEPLOY_KNOWN_HOSTS` acepta la salida de `ssh-keyscan` o solo `ssh-ed25519 AAAA…`; el despliegue añade el servidor delante si falta.

@@ -20,6 +20,19 @@ El despliegue por SSH solo corre si la variable de repositorio `DEPLOY_ENABLED` 
 Si la huella del servidor cambia (reinstalación), actualiza `DEPLOY_KNOWN_HOSTS`: sin ella el despliegue se niega a conectar.
 El secreto vale con la salida de `ssh-keyscan -t ed25519 IP_DEL_SERVIDOR` o solo con la línea `ssh-ed25519 AAAA…` (el despliegue le pone delante `DEPLOY_HOST`). Si el despliegue dice «No ED25519 host key is known», el secreto no tiene una clave ed25519 de ese servidor.
 
+## Clave de despliegue (`DEPLOY_SSH_KEY`)
+
+Si el despliegue dice `Permission denied (publickey,password)`, el servidor no reconoce la clave del secreto: su parte pública no está en `~/.ssh/authorized_keys` del usuario `ubuntu`.
+Para crear una nueva (en PowerShell, una orden por línea):
+
+1. `mkdir D:\CopiasZyra\claves` y `ssh-keygen -t ed25519 -N '""' -C "github-deploy" -f D:\CopiasZyra\claves\zyra_deploy`
+2. `type D:\CopiasZyra\claves\zyra_deploy.pub` muestra la clave pública (una línea `ssh-ed25519 AAAA…`).
+3. En el servidor (`ssh ubuntu@IP`): `echo 'ssh-ed25519 AAAA… github-deploy' >> ~/.ssh/authorized_keys`
+4. `type D:\CopiasZyra\claves\zyra_deploy` muestra la privada: pégala entera (con BEGIN y END) en el secreto `DEPLOY_SSH_KEY`.
+5. «Re-run failed jobs» en la ejecución fallida.
+
+Para saber la pública de una privada que ya tienes: `ssh-keygen -y -f RUTA_DE_LA_PRIVADA`. Guarda la carpeta `claves` fuera del repositorio y en el gestor de contraseñas; la privada no se comparte.
+
 ## Montar el servidor desde cero
 
 1. Instala Docker en el VPS, usa el usuario `ubuntu` (o crea otro y defínelo en el secreto `DEPLOY_USER`), desactiva el acceso por contraseña y abre solo los puertos 22, 80 y 443.
