@@ -2,6 +2,7 @@
 Invitaciones por competición (SNP y LAPI): se comportan igual en las dos, no se invita a quien ya
 tiene equipo en esa competición y volver a invitar no borra la invitación de una ficha copiada.
 """
+from core.testing import TeamClient
 import datetime
 
 from django.contrib.auth import get_user_model
@@ -19,6 +20,8 @@ PASSWORD = "pass-12345-x"
 
 
 class SpaceInvitationTests(TestCase):
+    client_class = TeamClient
+
     def setUp(self):
         self.captain = User.objects.create_user("capi", password=PASSWORD, email="capi@example.com")
         self.clubs = {code: create_club(f"Club {code}", "Sevilla", self.captain, competition=code)
@@ -85,6 +88,7 @@ class SpaceInvitationTests(TestCase):
 
 class DoubleSubmitTests(TestCase):
     """Dos envíos seguidos del mismo formulario no crean duplicados."""
+    client_class = TeamClient
 
     def setUp(self):
         self.captain = User.objects.create_user("capi", password=PASSWORD, email="capi@example.com")

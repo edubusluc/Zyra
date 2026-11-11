@@ -2,6 +2,7 @@
 Espacios por competición (fase 1a): cada club guarda su competición, una cuenta tiene como mucho
 un espacio por competición, se crea otro espacio desde el menú y el de LAPI juega con su ficha.
 """
+from core.testing import TeamClient
 import datetime
 import json
 
@@ -261,6 +262,7 @@ class LinkedPlayerNewSpaceTests(TestCase):
 
 class EmptyRosterWarningTests(TestCase):
     """Dar de baja al último jugador del equipo se permite, pero avisa."""
+    client_class = TeamClient
 
     def setUp(self):
         self.captain = User.objects.create_user("capi", password=PASSWORD, email="capi@example.com")
@@ -272,7 +274,7 @@ class EmptyRosterWarningTests(TestCase):
     def test_warning_when_roster_becomes_empty(self):
         page = self.client.get(reverse("manage_roster"))
         self.assertContains(page, "Te quedarás sin jugadores en la plantilla.")
-        response = self.client.post(reverse("manage_roster"), {"team": self.club.public_id, "leave": [self.player.pk]}, follow=True)
+        response = self.client.post(reverse("manage_roster"), {"leave": [self.player.pk]}, follow=True)
         self.player.refresh_from_db()
         self.assertFalse(self.player.in_team)
         self.assertContains(response, "Te has quedado sin jugadores en la plantilla.")

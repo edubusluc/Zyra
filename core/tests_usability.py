@@ -3,6 +3,7 @@ Tests de las mejoras de usabilidad del primer uso: registro por pasos con errore
 valores por defecto, portada con «Primeros pasos» primero, aviso de email por confirmar,
 bienvenida de miembro, Club con accesos rápidos y estadísticas sin datos.
 """
+from core.testing import TeamClient
 import datetime
 
 from allauth.account.models import EmailAddress
@@ -101,6 +102,7 @@ class FormErrorsAccessibilityTests(TestCase):
 
 class HomeFirstStepsTests(TestCase):
     """U6, U8, U9: avisos y «Primeros pasos» primero, sin bloques vacíos."""
+    client_class = TeamClient
 
     def setUp(self):
         self.captain = User.objects.create_user("cap", "cap@example.com", "pass-12345")

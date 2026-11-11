@@ -36,8 +36,7 @@ class Team(PublicIdModel):
         ("lapi_4", _("4.ª división")),
         ("lapi_5", _("5.ª división")),
     ]
-    # null=True solo para poder migrar datos existentes (ver comando assign_default_club).
-    club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name="teams", null=True)
+    club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name="teams")
     # True para el equipo que representa al propio club; el resto son rivales.
     is_own = models.BooleanField(default=False)
     name = models.CharField(max_length=100)

@@ -14,7 +14,7 @@ from django.conf import settings
 from django.core.mail import get_connection
 from django.db import IntegrityError, transaction
 from django.utils import timezone
-from django.utils.html import escape, format_html
+from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 

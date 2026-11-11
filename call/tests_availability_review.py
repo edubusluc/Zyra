@@ -1,9 +1,7 @@
 """Tests de la revisión de usabilidad y seguridad del enlace de disponibilidad (U-01…U-11, S-01…S-08)."""
 import datetime
-import json
 from unittest import mock
 
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.sessions.models import Session
 from django.core import mail

@@ -1,3 +1,4 @@
+from core.testing import TeamClient
 import datetime
 import shutil
 import tempfile
@@ -32,6 +33,8 @@ class MediaMixin:
 
 
 class OwnPlayerTests(MediaMixin, TestCase):
+    client_class = TeamClient
+
     def setUp(self):
         self.use_temp_media()
         self.captain = User.objects.create_user("capitan", password="pass-12345")
@@ -236,6 +239,7 @@ REKOGNITION_ON = dict(
 
 
 class PhotoModerationTests(MediaMixin, TestCase):
+    client_class = TeamClient
     def setUp(self):
         self.use_temp_media()
         self.captain = User.objects.create_user("capitan", password="pass-12345")
@@ -324,6 +328,7 @@ class PhotoModerationTests(MediaMixin, TestCase):
 
 
 class BackofficePhotoTests(MediaMixin, TestCase):
+    client_class = TeamClient
     def setUp(self):
         self.use_temp_media()
         self.captain = User.objects.create_user("capitan", password="pass-12345", email="capitan@example.com")

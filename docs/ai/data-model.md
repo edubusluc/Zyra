@@ -134,16 +134,29 @@ Renombrarlos exige migración y tocar vistas, estadísticas, plantillas y `popul
   advertencias, cuenta SNP, invitaciones y membresías; las cuentas de usuario se conservan. [V]
 - Borrar **Player**: los `Game` se conservan (`SET_NULL` + señal `keep_name_in_games` en
   `match/models.py`); se pierden sus `Penalty`, `SnpScoreHistory` y su presencia en convocatorias. [V]
-- Borrar **Team** rival borra en cascada sus `Match` (FK `CASCADE`). [V] No hay vista de borrado de
-  equipos en `team/views.py`. [V]
+- **Team** está protegido: `Match.local`, `Match.visiting` y `Player.team` son `PROTECT`, así que un equipo con
+  partidos o jugadores no se puede borrar (ni desde el admin, que no ofrece borrar equipos, jugadores ni
+  enfrentamientos). `delete_club` borra antes los enfrentamientos y jugadores del club. No hay vista de borrado de
+  equipos en `team/views.py`. `club` es obligatorio en `Team`, `Player` y `Match`. [V]
 - Borrar **Match** borra `Game`, `Result`, `Call`, `Penalty`, `ReportDelivery`. Solo se
-  permite con el acta abierta (`match.views.delete_match`). [V]
+  permite con el acta abierta (`match.views.delete_match`), que deja una fila `match.delete` en el
+  `AuditLog` (quién, cuándo, club, fecha, temporada, nº de partidos). [V]
+- **Advertencias**: `create_penalty` no duplica una advertencia idéntica (mismo motivo y detalle) en la misma convocatoria. [V]
+
+## Migraciones y vuelta atrás
+
+- Las migraciones de datos (15 con `RunPython.noop` como reversa) **no se deshacen**: la vuelta atrás real es la copia de
+  seguridad de justo antes del despliegue (`docs/despliegue.md`, «Volver atrás»), no `migrate <app> <anterior>`.
+- El índice único del email (`core/migrations/0019_unique_user_email.py`) solo existe como SQL (`LOWER(email)` con
+  `WHERE email <> ''`, válido en SQLite y PostgreSQL): una base creada sin migraciones (por ejemplo con `syncdb` o
+  desde los modelos) no lo tiene. Las migraciones que hacen obligatorio un campo (`club`) se niegan a seguir si hay filas sin
+  valor y dicen cuántas; hay que corregirlas a mano y repetir el despliegue.
 
 ## Al modificar datos
 
 - Cambio de modelo → `makemigrations` y subir la migración en el mismo PR (CI lo comprueba).
 - Datos existentes: hay comandos de relleno de migraciones pasadas (`assign_public_ids`,
-  `fill_match_locations`, `fix_duplicate_games` con `--dry-run`, `assign_default_club`). Solo
+  `fill_match_locations`, `fix_duplicate_games` con `--dry-run`). Solo
   `assign_public_ids` se documenta como repetible sin riesgo (`Readme.md`); lee los demás antes de reutilizarlos.
 - `bulk_create` asigna `public_id` gracias a `PublicIdQuerySet`; `QuerySet.update()` no ejecuta
   `save()` (ni `clean()`, ni el relleno de `season`/`location`, ni la propagación de `gender`).

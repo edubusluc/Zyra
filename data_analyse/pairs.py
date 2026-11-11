@@ -8,7 +8,6 @@ o en el visitante, así que la pareja es siempre la del lado que tiene jugadores
 import datetime
 from .comparison import is_reliable
 from match import outcomes
-from django.db.models import Q
 
 from match.models import Game, Match
 

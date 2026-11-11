@@ -28,6 +28,7 @@ from core import similarity
                             question=gettext_lazy("¿En qué equipo quieres crear el jugador?"), back="list_players")
 @club_manager_required
 @not_while_syncing
+@spaces.team_explicit("list_players")
 def create_player(request):
     """
     Alta de un jugador en el equipo propio del club. Solo capitanes (``club_admin_required``).
@@ -276,6 +277,7 @@ def _ids(request, key):
 
 
 @club_manager_required
+@spaces.team_explicit("manage_roster", checked_in_view=True)
 def manage_roster(request):
     """
     Altas y bajas de la plantilla del equipo.
@@ -336,6 +338,7 @@ def manage_roster(request):
 
 
 @club_admin_required
+@spaces.team_explicit("snp_account", checked_in_view=True)
 def snp_account(request):
     """
     Cuenta SNP del capitán: con ella se descargan cada semana los puntos SNP de los jugadores.
@@ -383,16 +386,8 @@ def snp_account(request):
 
 
 def _stale_team_form(request, back):
-    """
-    Redirección (con un aviso y sin guardar nada) si el formulario enviado no es del equipo activo: lo trae del
-    campo oculto ``team`` (id público del club). Una página abierta en otra pestaña con otro equipo, o antigua y
-    sin el campo, no puede cambiar nada en el equipo que no estaba viendo. None si coincide.
-    """
-    if request.POST.get("team") == str(request.club.public_id):
-        return None
-    messages.error(request, _("La página que estabas viendo ya no es la del equipo activo. "
-                              "No se ha guardado ningún cambio: revisa los datos y vuelve a intentarlo."))
-    return redirect(back)
+    """Atajo de ``spaces.stale_team_form``: aviso y redirección si el formulario no es del equipo activo, o None."""
+    return spaces.stale_team_form(request, back)
 
 
 def _same_password(account, password):
@@ -405,6 +400,7 @@ def _same_password(account, password):
 
 @club_admin_required
 @require_POST
+@spaces.team_explicit("snp_account", checked_in_view=True)
 def snp_account_delete(request):
     """Borra la cuenta SNP del club. Solo capitanes y por POST y del equipo de la página; vuelve a la página de la cuenta SNP."""
     stale = _stale_team_form(request, "snp_account")
@@ -446,6 +442,7 @@ def _web_import_closed(request):
 
 @club_admin_required
 @require_POST
+@spaces.team_explicit("list_players", checked_in_view=True)
 def complete_team_start(request):
     """
     Lanza en segundo plano la búsqueda de «Completar equipo». Solo capitanes y por POST.
@@ -488,6 +485,7 @@ def complete_team_start(request):
 
 @club_admin_required
 @require_POST
+@spaces.team_explicit("home")
 def snp_update_request(request):
     """
     «Pedir actualización a Zyra»: el capitán pide al personal que complete el equipo desde SNP. Solo
@@ -631,6 +629,7 @@ def own_player(request):
 
 @spaces.follow_space
 @club_required
+@spaces.team_explicit("my_player")
 def my_player(request):
     """
     «Mi jugador». Sin jugador enlazado: lista de jugadores del club para elegir «Soy yo»
@@ -753,6 +752,7 @@ def toggle_player_emails(request, player_id):
 
 
 @club_manager_required
+@spaces.team_explicit("list_players", checked_in_view=True)
 def copy_players(request):
     """
     «Copiar jugadores» al equipo activo desde el de otra competición de la misma cuenta (SNP ↔

@@ -186,6 +186,7 @@
     <div class="modal-dialog modal-dialog-centered">
         <form class="modal-content" method="post" action="{% url 'leave_club' %}"{% if deletes_club %} data-delete-club{% endif %} data-loading-text="{% translate 'Abandonando el equipo…' %}">
             {% csrf_token %}
+        <input type="hidden" name="team" value="{{ request.club.public_id }}">
             <div class="modal-header">
                 {% if deletes_club %}
                 <h2 class="modal-title h5" id="leaveClubTitle">{% blocktranslate with club=current_club.name %}¿Abandonar y cerrar {{ club }}?{% endblocktranslate %}</h2>

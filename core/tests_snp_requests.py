@@ -1,10 +1,10 @@
 """Pruebas de «Pedir actualización a Zyra»: petición del capitán, paso de la tarjeta, back-office y aviso al personal."""
+from core.testing import TeamClient
 from unittest import mock
 
 from django.contrib.auth import get_user_model
 from django.core import mail
 from django.urls import reverse
-from django.utils import timezone
 
 from backoffice import alerts
 from backoffice.models import ScheduledJob
@@ -20,6 +20,7 @@ User = get_user_model()
 
 class RequestFlowTests(SeasonPrepBase):
     """Crear la petición, quién puede y cómo cuenta para la tarjeta."""
+    client_class = TeamClient
 
     def setUp(self):
         super().setUp()

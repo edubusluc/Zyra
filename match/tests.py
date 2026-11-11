@@ -1,3 +1,4 @@
+from core.testing import TeamClient
 import datetime
 
 from django.contrib.auth import get_user_model
@@ -51,6 +52,8 @@ class DrawResultTests(TestCase):
 
 
 class MatchesAndCallsTests(TestCase):
+    client_class = TeamClient
+
     def setUp(self):
         from core.models import Membership
         from penalty.models import Penalty
@@ -255,12 +258,12 @@ class MatchesAndCallsTests(TestCase):
 
     def test_manage_roster_updates_many_players_at_once(self):
         self.client.post(reverse("manage_roster"), {
-            "team": self.club.public_id, "join": [self.gone.id], "leave": [self.zoe.id]})
+            "join": [self.gone.id], "leave": [self.zoe.id]})
         states = dict(Player.objects.values_list("name", "in_team"))
         self.assertEqual(states, {"Ana": True, "Bea": True, "Zoe": False})
 
         self.client.login(username="viewer", password="pass-12345")
-        self.client.post(reverse("manage_roster"), {"team": self.club.public_id, "leave": [self.ana.id, self.gone.id]})
+        self.client.post(reverse("manage_roster"), {"leave": [self.ana.id, self.gone.id]})
         self.assertEqual(Player.objects.filter(in_team=True).count(), 2)
 
 
@@ -440,6 +443,8 @@ class FixDuplicateGamesCommandTests(TestCase):
 
 
 class CreateMatchTests(TestCase):
+    client_class = TeamClient
+
     def setUp(self):
         self.user = User.objects.create_user("admin", password="pass-12345")
         self.club = create_club("Club A", "Sevilla", self.user)
@@ -487,6 +492,7 @@ class CreateMatchTests(TestCase):
 
 class CreateMatchOwnTeamTests(TestCase):
     """El equipo del capitán (equipo propio del club) tiene que jugar como local o visitante."""
+    client_class = TeamClient
 
     def setUp(self):
         self.user = User.objects.create_user("admin", password="pass-12345")
@@ -535,6 +541,8 @@ class CreateMatchOwnTeamTests(TestCase):
         self.assertFalse(Match.objects.exists())
 
 class CreateMatchTypeTests(TestCase):
+    client_class = TeamClient
+
     def setUp(self):
         self.user = User.objects.create_user("admin", password="pass-12345")
         self.club = create_club("Club A", "Sevilla", self.user)
@@ -559,6 +567,7 @@ class CreateMatchTypeTests(TestCase):
 
 class CreateFriendlyMatchTests(TestCase):
     """Modo Amistoso / Competitivo: un amistoso no tiene tipo (enfrentamiento, reto, play off)."""
+    client_class = TeamClient
 
     def setUp(self):
         self.user = User.objects.create_user("admin", password="pass-12345")
@@ -604,6 +613,7 @@ class CreateFriendlyMatchTests(TestCase):
 
 class FriendlyManualRivalTests(TestCase):
     """Amistoso contra un rival escrito a mano: no se crea equipo, solo se guarda su nombre."""
+    client_class = TeamClient
 
     def setUp(self):
         self.user = User.objects.create_user("admin", password="pass-12345")

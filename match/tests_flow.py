@@ -3,6 +3,7 @@ Ciclo completo de un enfrentamiento por la web, como lo hace un capitán:
 crear partido -> convocatoria -> editarla -> cerrarla (informe por email) -> parejas ->
 resultados -> cambiar parejas -> cerrar actas -> PDF. Y borrar un partido en borrador.
 """
+from core.testing import TeamClient
 import datetime
 import json
 
@@ -21,6 +22,8 @@ User = get_user_model()
 
 
 class MatchLifecycleTests(TestCase):
+    client_class = TeamClient
+
     def setUp(self):
         self.user = User.objects.create_user("capi", email="capi@example.com", password="pass-12345")
         self.club = create_club("Club A", "Sevilla", self.user)

@@ -16,7 +16,6 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext, gettext_lazy as _
 from . import outcomes, scoring
 import secrets
-from datetime import datetime
 from urllib.parse import quote
 
 def new_availability_token():
@@ -26,7 +25,6 @@ def new_availability_token():
 
 # Create your models here.
 
-from django.db import models
 from core.public_id import PublicIdModel
 from core.models import Club, REPORT_SCOPES, REPORT_SCOPE_ALL, REPORT_SCOPE_COMPETITIVE
 from team.models import Team
@@ -39,9 +37,9 @@ class Match(PublicIdModel):
     sigue abierta.
     """
     PUBLIC_ID_PREFIX = "MAT"
-    club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name='matches', null=True)
-    local = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='local_matches', null=True, blank=True)
-    visiting = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='visiting_matches', null=True, blank=True)
+    club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name='matches')
+    local = models.ForeignKey(Team, on_delete=models.PROTECT, related_name='local_matches', null=True, blank=True)
+    visiting = models.ForeignKey(Team, on_delete=models.PROTECT, related_name='visiting_matches', null=True, blank=True)
     
     
     POSSIBLE_RESULT = [

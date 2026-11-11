@@ -3,6 +3,7 @@ Vistas unidas de varios espacios (opción A): Enfrentamientos, Calendario e Inic
 espacios con el filtro «Todas · SNP · LAPI»; abrir un enfrentamiento de otro espacio cambia a él y
 las acciones siguen el rol de cada espacio.
 """
+from core.testing import TeamClient
 import datetime
 
 from django.contrib.auth import get_user_model
@@ -560,6 +561,7 @@ class StatsEmptySpaceTests(TestCase):
 
 class CaptainAndPlayerClubTabTests(UnifiedSpacesTests):
     """Pestaña Equipo del capitán en un club y jugador en otro: ve y puede dejar los dos."""
+    client_class = TeamClient
 
     def test_club_tab_offers_both_clubs(self):
         page = self.client.get(reverse("club_home"))

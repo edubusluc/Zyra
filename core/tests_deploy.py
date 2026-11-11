@@ -2,7 +2,6 @@
 import tempfile
 from pathlib import Path
 
-from django.core.management import call_command
 from django.test import SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 

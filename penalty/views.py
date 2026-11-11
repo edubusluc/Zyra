@@ -28,7 +28,7 @@ def create_penalty(request, call_id):
     """
     Crea una advertencia con el mismo motivo para cada jugador marcado en el POST (solo jugadores
     actuales del club, estén o no en la convocatoria). El motivo (``kind``) es obligatorio y
-    «Otro» exige un detalle (``reason``). Solo capitanes. Al aplicarlas, el aviso trae un botón
+    «Otro» exige un detalle (``reason``). Una advertencia idéntica (mismo motivo y detalle) en la misma convocatoria no se duplica. Solo capitanes. Al aplicarlas, el aviso trae un botón
     «Deshacer»; si falta algo, vuelve al registro de la convocatoria con el error.
     """
     call = get_object_or_404(Call, public_id=call_id, match__club=request.club)
@@ -46,10 +46,18 @@ def create_penalty(request, call_id):
     # Solo jugadores actuales del club (estén o no en la convocatoria:
     # lo habitual es sancionar a quien se ha borrado de ella)
     ids = [i for i in request.POST.getlist('players') if i.isdigit()]
+    candidates = list(Player.objects.filter(club=request.club, in_team=True, id__in=ids))
+    # Un doble envío (doble clic, reintento del navegador) no duplica la advertencia: se salta a quien ya tiene
+    # exactamente la misma (mismo motivo y detalle) en esta convocatoria.
+    already = set(Penalty.objects.filter(call=call, kind=kind, reason=detail, player__in=candidates)
+                  .values_list("player_id", flat=True))
     created = [
         Penalty.objects.create(player=player, kind=kind, reason=detail, call=call)
-        for player in Player.objects.filter(club=request.club, in_team=True, id__in=ids)
+        for player in candidates if player.id not in already
     ]
+    if not created and already:
+        messages.info(request, _("Esa advertencia ya estaba aplicada."))
+        return redirect("call_for_match", match.public_id)
     if not created:
         messages.error(request, _("Marca al menos un jugador del equipo para advertirle."))
         return redirect("view_call_log", call.public_id)

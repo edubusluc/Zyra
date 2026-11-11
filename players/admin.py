@@ -10,3 +10,7 @@ class PlayerAdmin(admin.ModelAdmin):
     list_filter = ("club", "in_team", "position")
     search_fields = ("name", "last_name")
     list_select_related = ("club",)
+
+    def has_delete_permission(self, request, obj=None):
+        """Los jugadores no se borran desde el admin: lo hace la aplicación con sus comprobaciones."""
+        return False

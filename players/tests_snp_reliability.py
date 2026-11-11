@@ -2,7 +2,6 @@
 Fiabilidad de la lectura de SNP (fase 2 de la hoja de ruta): puntos ilegibles (SNP-01), control de
 cordura que descarta una lectura rota y coincidencias parciales de nombre que confirma el capitán (SNP-02).
 """
-from unittest import mock
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings

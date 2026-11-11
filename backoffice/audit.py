@@ -26,6 +26,7 @@ ACTIONS = {
     "email.mass_done": "Correo a varios usuarios (terminado)",
     "email.mass_cancel": "Correo a varios usuarios (cancelado)",
     "club.match_result": "Aviso de resultado reenviado",
+    "match.delete": "Enfrentamiento eliminado",
     "user.deactivate": "Cuenta suspendida",
     "user.activate": "Cuenta reactivada",
     "user.reset_link": "Restablecimiento de contraseña enviado",

@@ -1,4 +1,5 @@
 """Tests del registro: foco del formulario, primeros pasos, un solo club por cuenta y enlaces compartidos."""
+from core.testing import TeamClient
 import datetime
 
 from django.contrib.auth import get_user_model
@@ -29,6 +30,7 @@ class RegisterFormFocusTests(TestCase):
 
 
 class OnboardingTests(TestCase):
+    client_class = TeamClient
     def register(self):
         self.client.post(reverse("register_club"), {**CLUB, **SIGNUP})
         return Club.objects.get(name="Club Nuevo")
@@ -93,6 +95,8 @@ class OnboardingTests(TestCase):
 
 
 class SingleClubTests(TestCase):
+    client_class = TeamClient
+
     def setUp(self):
         self.captain = User.objects.create_user("capitan", password="pass-12345", email="capitan@example.com")
         self.club = create_club("Club A", "Sevilla", self.captain)
@@ -153,6 +157,8 @@ class SingleClubTests(TestCase):
 
 
 class SharedLinkTests(TestCase):
+    client_class = TeamClient
+
     def setUp(self):
         self.captain = User.objects.create_user("capitan", password="pass-12345", email="capitan@example.com")
         self.club = create_club("Club A", "Sevilla", self.captain)
@@ -319,6 +325,7 @@ class ManagerTipTests(TestCase):
 
 class ManagerWelcomeTests(TestCase):
     """Bienvenida al gestor recién nombrado: se ve hasta que la cierra."""
+    client_class = TeamClient
 
     def setUp(self):
         self.captain = User.objects.create_user("capitan", password="pass-12345", email="capitan@example.com")

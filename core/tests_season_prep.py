@@ -1,4 +1,5 @@
 """Pruebas de «Prepara la temporada»: cuándo aparece, quién la ve y cómo se marcan los pasos."""
+from core.testing import TeamClient
 import datetime
 from unittest import mock
 
@@ -132,6 +133,7 @@ class WebImportPerSeasonTests(SeasonPrepBase):
 
 class ViewsTests(SeasonPrepBase):
     """Tarjeta en el Inicio y vistas de los pasos."""
+    client_class = TeamClient
 
     def test_home_shows_card_to_captain_and_manager_but_not_member(self):
         with at(OCT):

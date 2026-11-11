@@ -162,6 +162,7 @@
         </div>
         <form method="post" action="{% url 'dismiss_manager_welcome' %}" data-loading-text="{% translate 'Cerrando el aviso…' %}">
             {% csrf_token %}
+        <input type="hidden" name="team" value="{{ request.club.public_id }}">
             <button type="submit" class="btn-close btn-close-white" aria-label="{% translate 'Cerrar aviso' %}" title="{% translate 'Cerrar aviso' %}"></button>
         </form>
     </div>
@@ -249,6 +250,7 @@
         </div>
         <form method="post" action="{% url 'dismiss_onboarding' %}" data-loading-text="{% translate 'Ocultando los primeros pasos…' %}">
             {% csrf_token %}
+        <input type="hidden" name="team" value="{{ request.club.public_id }}">
             <button type="submit" class="btn-close btn-close-white" aria-label="{% translate 'Ocultar primeros pasos' %}" title="{% translate 'Ocultar primeros pasos' %}"></button>
         </form>
     </div>

@@ -1,5 +1,4 @@
 """Comando ``send_query_exports``: envía por correo el CSV de las consultas guardadas con exportación programada."""
-import datetime
 
 from django.core.management.base import BaseCommand
 from django.utils import timezone

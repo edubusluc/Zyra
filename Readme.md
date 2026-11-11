@@ -163,10 +163,11 @@ activo con el selector de la barra superior.
 
 ```bash
 python manage.py migrate
-# Crea el club "LOS GLADIADORES", le asigna todos los datos existentes
-# y da de alta a los usuarios actuales como administradores.
-python manage.py assign_default_club --name "LOS GLADIADORES"
 ```
+
+`club` es obligatorio en equipos, jugadores y enfrentamientos: si hubiera filas sin club, la migración se niega a
+seguir y dice cuántas son (asígnalas a un club o bórralas y repite). Los equipos no se borran en cascada: borrar un
+club lo hace `delete_club`, que elimina antes enfrentamientos y jugadores.
 
 ### Partidos duplicados y restricciones de integridad
 

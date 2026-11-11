@@ -1,4 +1,5 @@
 """Tests de abandonar el club siendo su único miembro: el club se elimina con sus datos."""
+from core.testing import TeamClient
 import datetime
 import os
 import shutil
@@ -21,6 +22,7 @@ User = get_user_model()
 
 class DeleteClubOnLeaveTests(TestCase):
     """El último capitán, si es el único miembro, puede abandonar el club y eliminarlo."""
+    client_class = TeamClient
 
     def setUp(self):
         """Club con capitán único, un rival, un jugador con foto y un partido con su juego."""

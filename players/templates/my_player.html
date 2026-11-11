@@ -27,6 +27,7 @@
     {% endif %}
     <form method="post" enctype="multipart/form-data" data-loading-text="{% translate 'Guardando tus datos…' %}">
         {% csrf_token %}
+        <input type="hidden" name="team" value="{{ request.club.public_id }}">
         <div class="row g-3">
             <div class="col-sm-6"><label class="form-label" for="{{ form.position.id_for_label }}">{% translate "Posición" %}</label>{{ form.position }}</div>
             <div class="col-sm-6"><label class="form-label" for="{{ form.skillfull_hand.id_for_label }}">{% translate "Mano hábil" %}</label>{{ form.skillfull_hand }}</div>

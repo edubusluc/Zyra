@@ -1,3 +1,4 @@
+from core.testing import TeamClient
 from django.contrib.auth import get_user_model
 from django.db import connection
 from django.test import TestCase
@@ -35,6 +36,8 @@ class NormalizeTests(TestCase):
 
 
 class BlockedEmailTests(TestCase):
+    client_class = TeamClient
+
     def setUp(self):
         self.captain = User.objects.create_user("capitan", password="pass-12345", email="capitan@example.com")
         self.club = create_club("Club A", "Sevilla", self.captain)

@@ -1,3 +1,4 @@
+from core.testing import TeamClient
 import datetime
 from unittest import mock
 
@@ -26,6 +27,8 @@ GOOGLE_ON = dict(
 
 
 class InvitationTests(TestCase):
+    client_class = TeamClient
+
     def setUp(self):
         self.admin = User.objects.create_user("capitan", password="pass-12345", email="capitan@example.com")
         self.club = create_club("Club A", "Sevilla", self.admin)

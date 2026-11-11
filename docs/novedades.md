@@ -3,6 +3,14 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 11/11/2026 · Auditoría: red de seguridad, datos y deuda técnica (fase 8)
+
+- **El equipo viaja siempre explícito**: crear jugador, enfrentamiento o rival, pedir una actualización a Zyra, invitar, abandonar el equipo, «Mi jugador» y los avisos de la portada llevan el equipo de su página; un envío desde otra pestaña con otro equipo activo no cambia nada y avisa.
+- **Datos**: `club` es obligatorio en equipos, jugadores y enfrentamientos (la migración se niega a seguir si hay filas sin club); los equipos no se borran en cascada y el admin de Django no ofrece borrar equipos, jugadores ni enfrentamientos; eliminar un enfrentamiento queda en el registro de auditoría.
+- **Advertencias**: un doble envío ya no duplica la misma advertencia.
+- **Red de seguridad**: `core/tests_safety_net.py` clasifica todas las rutas, prueba los envíos con el equipo de otra pestaña, genera una temporada con resultados conocidos para comprobar las cifras y cubre la integridad de datos.
+- **Limpieza**: imports y variables sin usar fuera, `match/urls.py` sin `import *`, `except` inalcanzable fuera y comando antiguo `assign_default_club` retirado (ya no puede haber datos sin club).
+
 ## 11/11/2026 · Auditoría: despliegue y operación (fase 7)
 
 - **Volver atrás**: `deploy.sh` conserva la imagen de la versión anterior (antes borraba todas) y `docs/despliegue.md` explica cuándo basta volver a la versión anterior y cuándo hay que restaurar la copia de justo antes del despliegue.

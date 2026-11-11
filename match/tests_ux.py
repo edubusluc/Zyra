@@ -1,5 +1,6 @@
 """Pruebas de la auditoría de UX: fase del enfrentamiento, «Poner resultados», cierre del acta,
 convocatoria de al menos 10, crear enfrentamiento con rival y lado, y estado del jugador."""
+from core.testing import TeamClient
 import datetime
 import json
 from pathlib import Path
@@ -192,7 +193,7 @@ class MatchPageTests(UxBase):
         # un jugador no convocado
         other = User.objects.create_user("otro", password="pass-12345")
         Membership.objects.create(user=other, club=self.club, role=Membership.MEMBER)
-        outsider = Player.objects.create(club=self.club, name="Fuera", last_name="Y", user=other)
+        Player.objects.create(club=self.club, name="Fuera", last_name="Y", user=other)
         self.client.force_login(other)
         self.assertContains(self.client.get(reverse("call_for_match", args=[match.public_id])), "No estás convocado")
         self.assertTrue(games)
@@ -340,6 +341,8 @@ class EnterResultsTests(UxBase):
 
 
 class CreateMatchFormTests(UxBase):
+    client_class = TeamClient
+
     def test_rival_with_away_side_and_time_and_place(self):
         response = self.client.post(reverse("create_match"), {
             "mode": "competitivo", "match_type": Match.ENFRENTAMIENTO, "rival": self.rival.id, "own_side": "visiting",

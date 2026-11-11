@@ -1,6 +1,5 @@
 """Vistas de las advertencias de una convocatoria."""
 from django.shortcuts import get_object_or_404, render
-from django.utils.translation import gettext as _
 from call.models import Call
 from players.models import Player
 from penalty.models import Penalty, KINDS
