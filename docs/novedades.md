@@ -3,6 +3,13 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 11/11/2026 · Auditoría: despliegue y operación (fase 7)
+
+- **Volver atrás**: `deploy.sh` conserva la imagen de la versión anterior (antes borraba todas) y `docs/despliegue.md` explica cuándo basta volver a la versión anterior y cuándo hay que restaurar la copia de justo antes del despliegue.
+- **Despliegue seguro**: espera a que pasen los tests en `main`, conecta como `ubuntu` y solo si la huella del servidor coincide con el secreto `DEPLOY_KNOWN_HOSTS`; las acciones de los workflows van fijadas por SHA.
+- **Imagen de producción**: dos imágenes (`zyra` web sin Chromium y `zyra-scheduler` con Chromium); bases de Python, PostgreSQL y Caddy fijadas por digest; `clear_database.py` fuera de la imagen y se niega a borrar con `DJANGO_DEBUG=False`.
+- **Documentación**: `ZYRA_CONTEXT.md` y `docs/ai/` reflejan el servidor real, Django 5.2 y sin problemas ya resueltos.
+
 ## 11/11/2026 · Auditoría: estadísticas, casos de borde (fase 6)
 
 - **Ranking SNP**: en una temporada pasada cada jugador aparece con los puntos de su última actualización de entonces, no con los de hoy, y coincide con el gráfico.

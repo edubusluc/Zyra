@@ -8,6 +8,7 @@ db.sqlite3
 media
 staticfiles
 docs
+clear_database.py
 informes
 **/__pycache__
 **/*.pyc

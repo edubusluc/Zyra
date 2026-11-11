@@ -19,6 +19,9 @@ tablas en el esquema public) y con el almacenamiento de fotos configurado (disco
 S3). No se puede deshacer: haz antes una copia (en SQLite basta con copiar db.sqlite3, y
 la carpeta media/).
 
+Con DJANGO_DEBUG=False (producción) se niega a borrar nada, salvo que se defina a propósito
+ZYRA_PERMITIR_BORRAR_PRODUCCION=si. La imagen Docker de producción tampoco lo incluye.
+
 Opciones:
     --yes             no pide confirmación.
     --conservar-fotos no borra las fotos subidas.
@@ -32,11 +35,19 @@ import django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zyra.settings")
 django.setup()
 
+from django.conf import settings  # noqa: E402
 from django.core.files.storage import default_storage  # noqa: E402
 from django.core.management import call_command  # noqa: E402
 from django.db import connection  # noqa: E402
 
 from core.images import PHOTO_DIRS  # noqa: E402
+
+
+def refuse_in_production():
+    """Sale con un error si DEBUG está apagado (producción), salvo permiso explícito por variable de entorno."""
+    if not settings.DEBUG and os.environ.get("ZYRA_PERMITIR_BORRAR_PRODUCCION") != "si":
+        sys.exit("Negado: con DJANGO_DEBUG=False esto borraría la base de datos de producción. "
+                 "Solo se usa en desarrollo.")
 
 
 def drop_all_tables():
@@ -84,6 +95,7 @@ def delete_uploaded_photos():
 
 if __name__ == "__main__":
     args = set(sys.argv[1:])
+    refuse_in_production()
     keep_photos = "--conservar-fotos" in args
     db = connection.settings_dict["NAME"]
     tables = connection.introspection.table_names()

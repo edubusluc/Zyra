@@ -2,7 +2,7 @@
 
 Decisiones vigentes que condicionan cambios futuros. Cuando el motivo no está escrito en el código
 o en la documentación del repositorio se indica «Motivo: no documentado». Historial completo de
-cambios: `docs/novedades.md`. Índice general: `ZYRA_CONTEXT.md`. Verificado el 09/10/2026.
+cambios: `docs/novedades.md`. Índice general: `ZYRA_CONTEXT.md`. Verificado el 11/11/2026.
 
 ## D1. Multi-club por filtrado en la aplicación
 

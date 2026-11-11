@@ -1,7 +1,7 @@
 # Flujos de trabajo y comandos (para asistentes)
 
 Solo comandos que existen en el repositorio (`Readme.md`, `.github/workflows/`, `docs/`,
-`<app>/management/commands/`). Índice general: `ZYRA_CONTEXT.md`. Verificado el 09/10/2026.
+`<app>/management/commands/`). Índice general: `ZYRA_CONTEXT.md`. Verificado el 11/11/2026.
 
 ## Entorno local
 
@@ -120,8 +120,8 @@ Los `.po` y `.mo` de `locale/en/LC_MESSAGES/` están en git. Los msgid son el te
 
 ## Despliegue
 
-- Servidor aún sin comprar. Todo está listo para un VPS único con Docker Compose (`db`, `web`, `scheduler`, `caddy`): `Dockerfile`, `docker-compose.yml`, `Caddyfile`, `deploy/deploy.sh`, `deploy/backup.sh` y `.github/workflows/deploy.yml`. Guía paso a paso: `docs/despliegue.md`. [V]
-- `.github/workflows/deploy.yml`: en PR construye la imagen y comprueba Chromium y `check --deploy`; en `main` publica la imagen en GHCR (`sha-<commit>`); el despliegue por SSH solo corre con la variable de repositorio `DEPLOY_ENABLED=true`.
+- Producción: VPS Ubuntu único con Docker Compose (`db`, `web`, `scheduler`, `caddy`), usuario SSH `ubuntu`, app en `/opt/zyra`. `Dockerfile` (dos imágenes: `web` sin navegador y `scheduler` con Chromium; base fijada por digest), `docker-compose.yml`, `Caddyfile`, `deploy/deploy.sh`, `deploy/backup.sh` y `.github/workflows/deploy.yml`. Guía paso a paso: `docs/despliegue.md`. [V]
+- `.github/workflows/deploy.yml`: en PR construye la imagen y comprueba Chromium y `check --deploy`; en `main` publica la imagen en GHCR (`sha-<commit>`); el despliegue por SSH solo corre con la variable de repositorio `DEPLOY_ENABLED=true`, espera a los tests (`.github/workflows/tests.yml` se llama desde `.github/workflows/deploy.yml` en `main`) y exige la huella del servidor en el secreto `DEPLOY_KNOWN_HOSTS`.
 - Estáticos: WhiteNoise + `core/storage.py` (manifiesto con hash, tolerante a referencias rotas de `static/vendor/`) solo con `DJANGO_DEBUG=False`; `collectstatic` se ejecuta al construir la imagen. Las fotos (`media/`) las sirve Caddy.
 - Las migraciones las lanza `deploy.sh` (no el arranque del contenedor, porque web y scheduler arrancan a la vez).
 - Lista de variables y cómo generar claves: `.env.example`. Comprobación: `python manage.py check --deploy`.

@@ -1,7 +1,7 @@
 # Modelo de datos (para asistentes)
 
 Solo lo necesario para entender el dominio y no romper datos. Para los campos completos, lee el
-`<app>/models.py` correspondiente. Índice general: `ZYRA_CONTEXT.md`. Verificado contra `main` el 09/10/2026.
+`<app>/models.py` correspondiente. Índice general: `ZYRA_CONTEXT.md`. Verificado contra `main` el 11/11/2026.
 
 ## Mapa de relaciones
 

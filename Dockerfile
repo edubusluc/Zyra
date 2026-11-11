@@ -1,6 +1,8 @@
 # syntax=docker/dockerfile:1
-# Imagen única de Zyra: la usan la web (gunicorn) y el lanzador de procesos (run_scheduler).
-FROM python:3.11-slim-bookworm
+# Dos imágenes desde el mismo código: `web` (gunicorn, la última etapa, por defecto) y `scheduler`
+# (run_scheduler, con Chromium para el scraping de SNP). Así la web no lleva un navegador.
+# La base va fijada por digest (python:3.11-slim-bookworm); se actualiza a mano a una versión nueva.
+FROM python:3.11-slim-bookworm@sha256:a83ba18aef0f865b1a4a611c2cf460fe446f2795673bbb9fe43be570439e3b39 AS base
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -10,9 +12,7 @@ WORKDIR /app
 
 # 1) Dependencias: esta capa solo cambia si cambia requirements.txt.
 COPY requirements.txt .
-RUN pip install --no-cache-dir --only-binary :all: --require-hashes -r requirements.txt \
- && playwright install --with-deps chromium \
- && rm -rf /var/lib/apt/lists/*
+RUN pip install --no-cache-dir --only-binary :all: --require-hashes -r requirements.txt
 
 # 2) Código y estáticos (se sirven con WhiteNoise, con el hash en el nombre).
 COPY manage.py ./
@@ -41,8 +41,19 @@ RUN DJANGO_DEBUG=False \
 # 3) Usuario sin privilegios; media/ es un volumen que debe poder escribir.
 RUN useradd --create-home zyra \
  && mkdir -p /app/media \
- && chown -R zyra: /app/media /ms-playwright
+ && chown -R zyra: /app/media
 USER zyra
 
+# Lanzador de procesos: lo único que necesita Chromium.
+FROM base AS scheduler
+USER root
+RUN playwright install --with-deps chromium \
+ && rm -rf /var/lib/apt/lists/* \
+ && chown -R zyra: /ms-playwright
+USER zyra
+CMD ["python", "manage.py", "run_scheduler", "--loop"]
+
+# Web: última etapa, la que construye `docker build` sin --target.
+FROM base AS web
 EXPOSE 8000
 CMD ["gunicorn", "zyra.wsgi", "--bind", "0.0.0.0:8000", "--workers", "3", "--worker-class", "gthread", "--threads", "4", "--timeout", "60", "--graceful-timeout", "30", "--max-requests", "1000", "--max-requests-jitter", "100", "--limit-request-line", "4094", "--access-logfile", "-"]
