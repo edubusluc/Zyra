@@ -269,9 +269,16 @@ ni se editan parejas (`edit_game_match`).
   con fallo reintentable. Una cuenta con fallo no reintentable (usuario/contraseña rechazados) no se reintenta
   hasta que el capitán la edite (`updated_at` posterior al último intento; evita bloquear su cuenta) salvo con
   `--club`/`--all`. Para ante 429/403/503 o fallos de red seguidos.
-- [V] Correo masivo (`backoffice/views_crm.py`, `email_compose`): el envío se rechaza si supera `mass_email.room_today()`
-  (cupo diario restante menos `EMAIL_MASS_RESERVE`, tope `MAX_RECIPIENTS`) y un segundo envío del mismo usuario
-  mientras otro sigue en curso se rechaza (bloqueo en la caché compartida).
+- [V] Correo masivo (`backoffice/views_crm.py`, `email_compose`): «Enviar» no envía en la petición, pone en cola un
+  `MassEmail` con un `MassEmailRecipient` por persona (tope `MAX_RECIPIENTS`, el mismo correo pendiente no se duplica) y
+  el proceso `send_mass_emails` (cada 5 min) lo envía con el cupo diario restante menos `EMAIL_MASS_RESERVE`; cada
+  destinatario se anota al enviarse (reanudable sin repetir), se reintenta hasta `MAX_ATTEMPTS` y se puede cancelar en
+  «Envíos en cola». Los segmentos (no la lista a mano) solo incluyen emails verificados (allauth `EmailAddress`) y nadie
+  que tenga `UserPreference.news_email` apagado; cada correo lleva enlace de baja (`core/unsubscribe.py`, `news_unsubscribe`)
+  y cabecera `List-Unsubscribe`.
+- [V] Procesos programados: `JobSpec.max_minutes` (60 por defecto) es la duración tras la cual `send_staff_alerts` avisa
+  de que un proceso lleva demasiado tiempo en marcha (no lo corta). `Cron.next_after` compara en UTC: en el cambio de hora de
+  octubre nunca devuelve un instante pasado.
 - [V] Mientras una búsqueda web está en marcha (`SnpTeamImport.RUNNING`) los capitanes ven en toda la web la barra de `core/templates/includes/sync_bar.html` (`progress`/`stage` del import, `sync_status`) y `not_while_syncing` bloquea `create_player`, `create_team` y `create_match`.
 - [V] «Prepara la temporada» (`core/season_prep.py`, `Club.season_prep`): tarjeta del Inicio de capitanes y gestores del 1 de julio al 31 de octubre en clubes creados antes del 1 de julio; tres pasos (plantilla y rivales los marca a mano quien los revisa con `season_prep_step`; SNP se marca solo con una búsqueda web correcta de la temporada o con «Omitir este paso», solo capitán). «Ahora no» (`season_prep_dismiss`) solo capitán. Se oculta sola al completar los tres. Dentro de la tarjeta va la tarea de SNP (`sync_task(this_season=True)`), por lo que no sale la tarea suelta «Sincronizar datos». Tests: `core/tests_season_prep.py`.
 - [V] «Mi forma» (`data_analyse/my_form.py`): tarjeta del Inicio solo para quien tiene su cuenta enlazada a un jugador (nada nuevo para el capitán que no juega). Solo partidos competitivos (los amistosos no cuentan en nada). Últimos 5 (del más antiguo a la izquierda al más reciente a la derecha), racha, balance (anillo de victorias y derrotas) y convocatorias son todos de la temporada actual: un solo gráfico, «jugadas Y de las X convocatorias cerradas en las que te apuntaste»; SNP = puntos actuales y gráfica a todo el ancho de los últimos 30 días con cada actualización en su fecha, máximo/mínimo y cambio respecto a la actualización anterior (`SnpScoreHistory`; misma definición que la columna «Evolución» de la tabla de plantilla); el botón de la tarjeta lleva a `player_statistics?en=<competición>&player=`. Con jugador en varias competiciones (`others`) suma partidos y convocatorias de todas (son partidos, no puntos), marca la competición de cada uno de los últimos partidos y da el desglose (`by_competition`); los puntos SNP son del jugador de la SNP y la tarjeta no cambia con el espacio activo. Cada usuario puede ocultarla y volver a mostrarla (`toggle_my_form`, `UserPreference.my_form_hidden`). Tests: `core/tests_my_form.py`.

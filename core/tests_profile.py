@@ -133,6 +133,16 @@ class ReportPreferenceTests(TestCase):
         self.client.post(reverse("my_profile"), {"report_scope": "competitivos", "monthly_form": "1"})
         self.assertEqual(self.client.get(reverse("my_profile")).context["report_scope"], "todos")
 
+    def test_news_email_switch_is_saved(self):
+        """«Novedades y avisos de Zyra»: activo por defecto y la persona puede apagarlo y volver a encenderlo."""
+        page = self.client.get(reverse("my_profile"))
+        self.assertContains(page, "Novedades y avisos de Zyra")
+        self.assertTrue(page.context["news_email"])
+        self.client.post(reverse("my_profile"), {"news_form": "1"})
+        self.assertFalse(self.client.get(reverse("my_profile")).context["news_email"])
+        self.client.post(reverse("my_profile"), {"news_form": "1", "news_email": "on"})
+        self.assertTrue(self.client.get(reverse("my_profile")).context["news_email"])
+
     def test_default_is_all_data_and_it_is_saved(self):
         page = self.client.get(reverse("my_profile"))
         self.assertContains(page, "Solo enfrentamientos competitivos")

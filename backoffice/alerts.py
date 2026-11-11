@@ -47,7 +47,24 @@ def current_problems(now=None):
     failing = list(ScheduledJob.objects.filter(consecutive_failures__gte=FAILING_JOB_RUNS).values_list("name", flat=True))
     if failing:
         problems["jobs"] = _("Procesos fallando varias veces seguidas: %(jobs)s.") % {"jobs": ", ".join(failing)}
+    stuck = stuck_jobs(now)
+    if stuck:
+        problems["jobs_stuck"] = _("Procesos que llevan demasiado tiempo en marcha: %(jobs)s.") % {
+            "jobs": ", ".join(f"{name} ({minutes} min)" for name, minutes in stuck)}
     return problems
+
+
+def stuck_jobs(now=None):
+    """Procesos en ejecución más tiempo que su ``max_minutes``: lista de ``(nombre, minutos)``."""
+    from .jobs import get_spec
+    now = now or timezone.now()
+    stuck = []
+    for job in ScheduledJob.objects.filter(running_since__isnull=False).order_by("running_since"):
+        spec = get_spec(job.name)
+        minutes = int((now - job.running_since).total_seconds() // 60)
+        if spec and minutes > spec.max_minutes:
+            stuck.append((job.name, minutes))
+    return stuck
 
 
 def staff_emails():

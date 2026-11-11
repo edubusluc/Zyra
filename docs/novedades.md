@@ -3,6 +3,13 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 11/11/2026 · Auditoría: correo masivo y tareas programadas (fase 5)
+
+- **Correo a varios usuarios**: «Enviar» pone el correo en cola y sale poco a poco respetando el cupo diario (lo que no cabe hoy sale mañana). Si se corta, continúa sin repetir a nadie; se puede cancelar y ver el avance en «Envíos en cola». Queda auditado al ponerlo en cola y al terminar.
+- **Baja de los correos informativos**: cada correo del personal lleva «Dejar de recibir estos correos», hay un ajuste en «Mi perfil» y los segmentos solo incluyen emails verificados de quien no se ha dado de baja.
+- **Procesos**: si un proceso lleva más de su duración máxima en marcha se avisa al personal.
+- **Cambio de hora de octubre**: los procesos frecuentes ya no se lanzan en cada pasada durante la hora repetida.
+
 ## 11/11/2026 · Auditoría: credenciales y seguridad (fase 4)
 
 - **Cuenta SNP**: la contraseña guardada nunca se muestra ni se sirve (se quita el ojo y la ruta que la devolvía).

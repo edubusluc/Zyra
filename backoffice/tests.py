@@ -276,6 +276,24 @@ class CronTests(TestCase):
         self.assertEqual(Cron("0 0 1 * *").next_after(self.at(2026, 9, 30, 12, 0)), self.at(2026, 10, 1, 0, 0))
         self.assertEqual(Cron("0 9 * * 0,6").next_after(self.at(2026, 9, 30, 12, 0)), self.at(2026, 10, 3, 9, 0))
 
+    def test_repeated_hour_of_october_never_returns_the_past(self):
+        """En el cambio de hora (25/10/2026, las 03:00 pasan a ser las 02:00) lo calculado siempre es futuro."""
+        import datetime as dt
+        from .cron import Cron
+        utc = dt.timezone.utc
+        moment = dt.datetime(2026, 10, 24, 22, 0, tzinfo=utc)  # 00:00 en Madrid
+        end = dt.datetime(2026, 10, 25, 6, 0, tzinfo=utc)
+        runs = 0
+        while moment < end:
+            nxt = Cron("*/15 * * * *").next_after(moment.astimezone(self.at(2026, 1, 1).tzinfo))
+            self.assertGreater(nxt.astimezone(utc), moment)
+            moment = nxt.astimezone(utc)
+            runs += 1
+        self.assertEqual(runs, 4 * 8)  # cada 15 minutos durante 8 horas reales, sin duplicados ni saltos
+        # Un diario a las 02:30 se lanza una vez (la primera vez que es esa hora).
+        first = Cron("30 2 * * *").next_after(self.at(2026, 10, 25, 0, 0))
+        self.assertEqual(first.astimezone(utc), dt.datetime(2026, 10, 25, 0, 30, tzinfo=utc))
+
     def test_invalid_expressions(self):
         from .cron import Cron, CronError
         for bad in ["", "* * * *", "61 * * * *", "a * * * *", "*/0 * * * *", "0 3 31 2 *"]:

@@ -39,6 +39,7 @@ urlpatterns = (
     path('members/invitations/<pid:invitation_id>/revoke/', views.revoke_invitation, name='revoke_invitation'),
     path('monthly-report/unsubscribe/<str:token>/', views.monthly_unsubscribe, name='monthly_unsubscribe'),
     path('match-result/unsubscribe/<str:token>/', views.result_unsubscribe, name='result_unsubscribe'),
+    path('news/unsubscribe/<str:token>/', views.news_unsubscribe, name='news_unsubscribe'),
     path('invite/<str:token>/', views.invitation, name='invitation'),
     path('invite/<str:token>/respond/', views.respond_copy_invitation, name='respond_copy_invitation'),
     path('password-check/', views.password_check, name='password_check'),

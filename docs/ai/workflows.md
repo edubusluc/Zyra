@@ -94,6 +94,7 @@ lanzador si está vivo y, si no, lo ejecuta en un hilo. Las ejecuciones sin nada
 | `send_staff_alerts` | `send_staff_alerts` (avisos al personal con `AlertState`) | cada 15 min |
 | `send_staff_digest` | `send_staff_digest [--dry-run]` | lunes 08:00 |
 | `send_query_exports` | `send_query_exports` (CSV de `SavedQuery.export_every` a emails del personal) | 07:00 diario |
+| `send_mass_emails` | `send_mass_emails` (cola de `MassEmail`, con el cupo diario) | cada 5 min |
 | `complete_snp_team` | `complete_snp_team <TEA...> [--dry-run]` | solo a mano |
 | `rotate_encryption_key` | `rotate_encryption_key [--dry-run]` (re-cifra las cuentas SNP con la primera clave de `FIELD_ENCRYPTION_KEY`) | solo a mano, al rotar la clave |
 | `add_group_teams` | `add_group_teams <TEA...> [--dry-run]` | solo a mano |

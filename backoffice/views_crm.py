@@ -9,7 +9,6 @@ import re
 from allauth.account.forms import ResetPasswordForm
 from django.contrib import messages
 from django.contrib.auth import get_user_model
-from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.core.validators import validate_email
@@ -35,7 +34,7 @@ from .metrics import email_quota
 from .audit import ACTIONS, audit
 from .decorators import staff_required, superuser_required
 from .richtext import html_to_text, sanitize_html
-from .models import AuditLog, ClubCrm, ClubNote, EmailLog, FollowUpTask
+from .models import AuditLog, ClubCrm, ClubNote, EmailLog, FollowUpTask, MassEmail
 
 User = get_user_model()
 PAGE_SIZE = 25
@@ -392,8 +391,9 @@ def email_compose(request):
     """
     Redacta y envía un correo a un segmento de usuarios (solo personal). Un único formulario con tres
     botones: ``preview`` (se abre en otra pestaña: cómo queda y a cuántas personas llegaría), ``test`` (lo manda solo a quien
-    escribe) y ``send`` (lo manda de verdad, tras marcar la confirmación). Cada persona recibe su propio
-    correo con {nombre} y {club} sustituidos; queda en «Correos enviados» y en la auditoría.
+    escribe) y ``send`` (lo pone en cola tras marcar la confirmación; ``send_mass_emails`` lo envía respetando el
+    cupo). Cada persona recibe su propio correo con {nombre} y {club} sustituidos y su enlace de baja; queda en
+    «Correos enviados» y en la auditoría.
     """
     audience = request.POST.get("audience", "captains")
     if audience not in mass_email.AUDIENCES:
@@ -433,30 +433,38 @@ def email_compose(request):
                                % {"n": len(recipients), "max": mass_email.MAX_RECIPIENTS})
             elif not request.POST.get("confirm"):
                 messages.error(request, _("Marca la casilla para confirmar el envío."))
-            elif len(recipients) > (room := mass_email.room_today()):
-                messages.error(request, _("Hay %(n)s destinatarios y hoy solo se pueden enviar %(room)s correos masivos "
-                                          "(el resto del cupo diario se reserva para los avisos de la web). "
-                                          "Acota el segmento o envíalo mañana.") % {"n": len(recipients), "room": room})
-            elif not cache.add(_send_lock_key(request.user), 1, SEND_LOCK_SECONDS):
-                messages.error(request, _("Ya hay un envío masivo en curso. Espera a que termine y revisa «Correos enviados»."))
+            elif MassEmail.objects.filter(status=MassEmail.PENDING, created_by=request.user, subject=subject, body_html=body).exists():
+                messages.error(request, _("Ese mismo correo ya está en cola: mira «Envíos en cola»."))
             else:
-                try:
-                    sent, failed = _send_batch([mass_email.build_message(subject, body, r, reply_to) for r in recipients], request)
-                    audit(request, "email.mass", None, subject=subject, audience=audience, sent=sent, failed=failed)
-                finally:
-                    cache.delete(_send_lock_key(request.user))
-                return redirect("backoffice:email_log")
-    ctx.update(audiences=mass_email.audience_labels(), templates=mass_email.message_templates(), max_recipients=mass_email.room_today())
+                mass = mass_email.queue(request.user, subject, body, audience, recipients, request.user.email)
+                audit(request, "email.mass", mass, label=subject[:150], audience=audience, recipients=len(recipients))
+                messages.success(request, _("Correo en cola para %(n)s personas. Sale poco a poco respetando el cupo diario; "
+                                            "aquí ves cómo va.") % {"n": len(recipients)})
+                return redirect("backoffice:email_queue")
+    ctx.update(audiences=mass_email.audience_labels(), templates=mass_email.message_templates(), max_recipients=mass_email.MAX_RECIPIENTS)
     return render(request, "backoffice/email_compose.html", ctx)
 
 
-# Un envío masivo es síncrono y tarda: mientras dura, otra petición (doble clic, otra pestaña) se rechaza.
-SEND_LOCK_SECONDS = 600
+@staff_required
+def email_queue(request):
+    """Envíos masivos en cola o recientes (solo personal): cuántos se han enviado, cuántos faltan y cuántos han fallado."""
+    queue = [
+        {"mass": m, "sent": m.count("sent"), "pending": m.count("pending"), "failed": m.count("failed"), "total": m.recipients.count()}
+        for m in MassEmail.objects.select_related("created_by")[:30]
+    ]
+    return render(request, "backoffice/email_queue.html", {"section": "compose", "queue": queue, "email_quota": email_quota()})
 
 
-def _send_lock_key(user):
-    """Clave de caché del envío masivo en curso de ``user`` (la caché es común a todos los procesos)."""
-    return f"mass-email-sending:{user.pk}"
+@staff_required
+@require_POST
+def email_cancel(request, mass_id):
+    """Cancela un envío masivo en cola: lo que falta por enviar no sale (lo ya enviado, enviado está)."""
+    mass = get_object_or_404(MassEmail, public_id=mass_id, status=MassEmail.PENDING)
+    mass.status, mass.finished_at = MassEmail.CANCELLED, timezone.now()
+    mass.save(update_fields=["status", "finished_at"])
+    audit(request, "email.mass_cancel", mass, label=mass.subject[:150], sent=mass.count("sent"), pending=mass.count("pending"))
+    messages.success(request, _("Envío cancelado: no saldrá lo que faltaba."))
+    return redirect("backoffice:email_queue")
 
 
 def _send_batch(emails, request, test=False):

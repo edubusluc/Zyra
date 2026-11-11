@@ -55,7 +55,7 @@
 
         {% if total is not None %}
         <p class="mb-1"><strong>{% blocktranslate count n=total %}Llegaría a {{ n }} persona{% plural %}Llegaría a {{ n }} personas{% endblocktranslate %}</strong>
-            {% if blocked %}<span class="text-muted"> · {% blocktranslate %}{{ blocked }} omitidos por estar bloqueados{% endblocktranslate %}</span>{% endif %}
+            {% if blocked %}<span class="text-muted"> · {% blocktranslate %}{{ blocked }} omitidos (bloqueados, sin email verificado o dados de baja de estos correos){% endblocktranslate %}</span>{% endif %}
             {% if invalid %}<span class="text-warning"> · {% translate "Emails no válidos:" %} {{ invalid|join:", " }}</span>{% endif %}</p>
         {% if recipients %}<details class="mb-2"><summary>{% translate "Ver destinatarios" %}</summary>
             <ul class="bo-list">{% for r in recipients %}<li><span>{{ r.email }}</span><small class="text-muted ms-auto">{{ r.name }}{% if r.club %} · {{ r.club }}{% endif %}</small></li>{% endfor %}</ul>
@@ -64,7 +64,7 @@
 
         <div class="form-check mb-2">
             <input class="form-check-input" type="checkbox" id="confirm" name="confirm" value="1">
-            <label class="form-check-label" for="confirm">{% blocktranslate %}Confirmo que quiero enviarlo a todos los destinatarios (máximo {{ max_recipients }} por envío){% endblocktranslate %}</label>
+            <label class="form-check-label" for="confirm">{% blocktranslate %}Confirmo que quiero enviarlo a todos los destinatarios (máximo {{ max_recipients }} por envío; sale poco a poco según el cupo diario){% endblocktranslate %}</label>
         </div>
         <button type="button" class="btn btn-outline-light" id="preview-btn"><i class="fa-solid fa-eye" aria-hidden="true"></i> {% translate "Vista previa" %}</button>
         <button class="btn btn-outline-light" name="action" value="test"><i class="fa-solid fa-flask" aria-hidden="true"></i> {% translate "Enviarme una prueba" %}</button>

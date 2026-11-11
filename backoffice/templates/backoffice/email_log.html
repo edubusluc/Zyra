@@ -18,6 +18,7 @@
     </div>
 </section>
 
+<p><a href="{% url 'backoffice:email_queue' %}">{% translate "Envíos en cola" %}</a></p>
 <p class="text-muted">{% translate "Todos los correos que la web intenta enviar (bienvenida, invitaciones, informes, avisos), con el resultado. Sirve para contestar «no me ha llegado». Se guardan seis meses." %}</p>
 
 <form method="get" class="bo-filters" role="search">
