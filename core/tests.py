@@ -1,3 +1,4 @@
+from core.testing import TeamClient
 import datetime
 import io
 
@@ -20,6 +21,7 @@ User = get_user_model()
 
 class ClubIsolationTests(TestCase):
     """Cada club solo ve y gestiona sus propios datos."""
+    client_class = TeamClient
 
     def setUp(self):
         self.user_a = User.objects.create_user("admin_a", password="pass-a-12345")
@@ -321,57 +323,9 @@ class RolesAndClubSwitchTests(TestCase):
         self.assertContains(response, "no ha aceptado el usuario")
 
 
-class AssignDefaultClubCommandTests(TestCase):
-    def test_assigns_legacy_data(self):
-        user = User.objects.create_user("legacy", password="x")
-        own = Team.objects.create(name="LOS GLADIADORES", location="Sevilla", in_group=True)
-        rival = Team.objects.create(name="Rival", location="X", in_group=True)
-        Player.objects.create(name="Old", last_name="Player", team=own)
-        Match.objects.create(local=own, visiting=rival, start_date=datetime.date(2024, 10, 1))
-
-        call_command("assign_default_club", stdout=io.StringIO())
-        call_command("assign_default_club", stdout=io.StringIO())  # idempotente
-
-        club = Club.objects.get()
-        own.refresh_from_db()
-        self.assertTrue(own.is_own)
-        self.assertEqual(club.own_team, own)
-        self.assertFalse(Team.objects.filter(club__isnull=True).exists())
-        self.assertFalse(Player.objects.filter(club__isnull=True).exists())
-        self.assertFalse(Match.objects.filter(club__isnull=True).exists())
-        self.assertTrue(Membership.objects.get(user=user, club=club).is_admin)
-
-
-class AssignDefaultClubMergeTests(TestCase):
-    def test_merges_own_team_created_at_signup_into_legacy_team(self):
-        """Caso real: el club se registró por la web (crea un equipo propio vacío)
-        y el equipo antiguo con el historial se quedó sin club."""
-        user = User.objects.create_user("legacy", password="x")
-        legacy = Team.objects.create(name="LOS GLADIADORES", location="Sevilla", in_group=True)
-        rival = Team.objects.create(name="Rival", location="X", in_group=True)
-        club = create_club("LOS GLADIADORES", "Sevilla", user)
-        duplicate = club.own_team
-        new_player = Player.objects.create(club=club, name="Nuevo", last_name="Jugador")
-        Match.objects.create(club=club, local=legacy, visiting=rival, start_date=datetime.date(2025, 10, 1),
-                             result="Victoria Local", draft_mode=False)
-
-        call_command("assign_default_club", stdout=io.StringIO())
-
-        legacy.refresh_from_db()
-        new_player.refresh_from_db()
-        self.assertEqual(club.own_team, legacy)
-        self.assertEqual(legacy.club, club)
-        self.assertFalse(Team.objects.filter(pk=duplicate.pk).exists())
-        self.assertEqual(new_player.team, legacy)
-
-        self.client.login(username="legacy", password="x")
-        response = self.client.get(reverse("team_statistics"))
-        self.assertEqual(response.context["won_matches"], 1)
-        self.assertEqual(response.context["lost_matches"], 0)
-
-
 class HomeTests(TestCase):
     """Portada: logo, próximo partido con ubicación y jugador/pareja en racha."""
+    client_class = TeamClient
 
     def setUp(self):
         self.user = User.objects.create_user("admin", password="pass-12345")

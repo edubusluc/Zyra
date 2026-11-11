@@ -5,7 +5,6 @@ contenido escrito por usuarios que acaba en HTML, JavaScript o PDF.
 """
 import datetime
 
-from allauth.account.models import EmailAddress
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.test import Client, TestCase

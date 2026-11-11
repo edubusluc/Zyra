@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import datetime
 import sys
 from pathlib import Path
-import os
 import dj_database_url
 from cryptography.fernet import Fernet
 from decouple import Csv, config

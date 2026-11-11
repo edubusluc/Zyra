@@ -2,6 +2,7 @@
 Fase 3 de la hoja de ruta (navegación y equipo activo): las páginas de estadísticas de jugador, pareja y rival
 funcionan aunque el equipo activo de la sesión sea otro (NAV-01, NAV-03).
 """
+from core.testing import TeamClient
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
@@ -89,6 +90,7 @@ class PlayerHomeLinksTests(TestCase):
 
 class StaleTeamFormsTests(TestCase):
     """Cuenta SNP, copiar jugadores e importar con el equipo de la página (FUN-04)."""
+    client_class = TeamClient
 
     def setUp(self):
         from players.models import SnpAccount
@@ -132,7 +134,8 @@ class StaleTeamFormsTests(TestCase):
         session[SESSION_KEY] = self.snp.id
         session.save()
         page = self.client.get(reverse("snp_account"))
-        self.assertContains(page, f'name="team" value="{self.snp.public_id}"', count=1)
+        # El formulario de la cuenta SNP y el de «Abandonar el equipo» (en todas las páginas) llevan el equipo.
+        self.assertContains(page, f'name="team" value="{self.snp.public_id}"', count=2)
 
 
 class CallOnlyInTeamPlayersTests(TestCase):

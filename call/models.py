@@ -4,7 +4,6 @@ from django.utils.translation import gettext_lazy as _
 from core.public_id import PublicIdModel
 from players.models import Player
 from match.models import Match
-from datetime import datetime
 
 # Create your models here.
 class Call(PublicIdModel):

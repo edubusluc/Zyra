@@ -43,10 +43,14 @@ class InvitationAdmin(admin.ModelAdmin):
 
 @admin.register(Team)
 class TeamAdmin(admin.ModelAdmin):
-    """Admin de equipos."""
+    """Admin de equipos. No se pueden borrar desde aquí: arrastrarían la historia de partidos y jugadores."""
     list_display = ("name", "club", "is_own", "in_group", "location")
     list_filter = ("club", "is_own", "in_group")
     search_fields = ("name", "location")
+
+    def has_delete_permission(self, request, obj=None):
+        """Los equipos no se borran desde el admin (el borrado está protegido también en la base de datos)."""
+        return False
 
 
 @admin.register(Penalty)

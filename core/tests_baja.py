@@ -3,6 +3,7 @@ Baja de plantilla = salir del equipo: dar de baja a un jugador con cuenta le qui
 convocatorias y alineaciones por jugar; salir del club también lo da de baja de la plantilla; el capitán no puede
 darse de baja; las estadísticas y la otra competición se conservan.
 """
+from core.testing import TeamClient
 import datetime
 
 from django.contrib.auth import get_user_model
@@ -49,6 +50,7 @@ class BajaFixture(TestCase):
 
 class BajaTests(BajaFixture):
     """Efectos de la baja de plantilla."""
+    client_class = TeamClient
 
     def test_baja_with_account_removes_membership_and_keeps_history(self):
         dar_de_baja(self.sheet)
@@ -232,6 +234,7 @@ class BajaEmailAndPopupTests(BajaFixture):
 
 class AltaTests(BajaFixture):
     """Alta de una ficha que dejó una cuenta: invitación por email, comprobada por email y competición."""
+    client_class = TeamClient
 
     def setUp(self):
         super().setUp()

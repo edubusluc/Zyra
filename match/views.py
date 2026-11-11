@@ -4,6 +4,7 @@ los 5 partidos, resultados, cierre del acta e informe PDF de la convocatoria.
 Todas las vistas trabajan solo con datos del club activo (``request.club``).
 """
 from . import outcomes
+from backoffice.audit import audit
 from core.competitions import competition_for
 from core import spaces
 from core.models import Invitation, UserPreference
@@ -14,7 +15,7 @@ from core.decorators import club_required, not_while_syncing, club_manager_requi
 from django.contrib import messages
 from .forms import MatchForm, MatchDateForm
 from .models import Match, Game, Result
-from . import league, lineup, month_view, outcomes, pair_no_show, phase as match_phase
+from . import league, lineup, month_view, pair_no_show, phase as match_phase
 from .notifications import admin_emails, is_old_match, is_past_match, send_call_report, report_filename
 from .result_email import notify_match_closed
 from call.models import ReportDelivery
@@ -33,11 +34,9 @@ logger = logging.getLogger(__name__)
 from players.models import Player, current_season
 from call.models import Call, Availability
 from call import availability as call_availability
-from team.models import Team
-from datetime import datetime, timedelta
+from datetime import timedelta
 from . import no_show_backup
 from penalty.models import Penalty
-import json
 import re
 from urllib.parse import urlencode
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
@@ -403,6 +402,7 @@ def calendar_match(request):
 @spaces.choose_managed_space("create_match_choose.html")
 @club_manager_required
 @not_while_syncing
+@spaces.team_explicit("list_match")
 def create_match(request):
     """Alta de un enfrentamiento.
 
@@ -452,29 +452,25 @@ def delete_match(request, match_id):
     Un enfrentamiento cuya acta estuvo cerrada y se reabrió (``was_closed``) solo lo borra el
     capitán: el gestor puede reabrir un acta para corregirla, pero nunca borrar ese enfrentamiento.
     """
-    try:
-        match = club_match(request, match_id)
-        if match.was_closed and not request.membership.is_admin:
-            messages.error(request, _("Este enfrentamiento ya tuvo el acta cerrada: solo el capitán puede eliminarlo. "
-                                      "Puedes corregir el acta y volver a cerrarla."))
-            return redirect('call_for_match', match_id=match.public_id)
-        if match.draft_mode != False:
-
-            if request.method == 'POST':
-                # Eliminar el partido si el usuario confirma
-                match.delete()
-                messages.success(request, _("Enfrentamiento eliminado."))
-                return redirect('list_match')
-
-            from_match = request.GET.get('desde') == 'ficha'
-            return render(request, 'delete_match.html', {'match': match, 'from_match': from_match})
-        else:
-            messages.error(request, _("No se puede eliminar un enfrentamiento ya confirmado"))
-
-            return redirect('list_match')
-    except Match.DoesNotExist:
-        messages.error(request, _("El enfrentamiento no existe"))
+    match = club_match(request, match_id)
+    if match.was_closed and not request.membership.is_admin:
+        messages.error(request, _("Este enfrentamiento ya tuvo el acta cerrada: solo el capitán puede eliminarlo. "
+                                  "Puedes corregir el acta y volver a cerrarla."))
+        return redirect('call_for_match', match_id=match.public_id)
+    if match.draft_mode == False:
+        messages.error(request, _("No se puede eliminar un enfrentamiento ya confirmado"))
         return redirect('list_match')
+    if request.method == 'POST':
+        # Antes de borrar se anota quién, cuándo y qué (el registro de auditoría sobrevive al enfrentamiento).
+        audit(request, "match.delete", match, label=str(match)[:200], club=request.club.name,
+              date=match.start_date.isoformat() if match.start_date else None, season=match.season,
+              games=match.games.count(), was_closed=match.was_closed or None)
+        match.delete()
+        messages.success(request, _("Enfrentamiento eliminado."))
+        return redirect('list_match')
+
+    from_match = request.GET.get('desde') == 'ficha'
+    return render(request, 'delete_match.html', {'match': match, 'from_match': from_match})
 
 
 def selectable_players(club, include_ids=()):
@@ -978,6 +974,7 @@ def _history_match_or_404(request, match_id):
 
 
 @login_required
+@require_GET
 def my_history_match(request, match_id):
     """Ficha de un enfrentamiento de un equipo anterior, de solo lectura y con la misma vista (3D o clásica) que la actual.
 

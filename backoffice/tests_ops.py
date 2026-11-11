@@ -17,7 +17,7 @@ from players.models import Player
 from . import alerts, sql
 from .audit import audit
 from .csvsafe import csv_safe, to_csv_text
-from .jobs import JobParam, JobSpec
+from .jobs import JobSpec
 from .models import (
     AlertState, AuditLog, ClubCrm, ClubNote, DailyActivity, DailyMetric, EmailLog, ErrorEvent, FollowUpTask,
     ImportJob, JobRun, QueryLog, SavedQuery, ScheduledJob,

@@ -1,3 +1,4 @@
+from core.testing import TeamClient
 from datetime import timedelta
 from io import StringIO
 from unittest import mock
@@ -97,6 +98,8 @@ NO_PAUSES = {"SNP_PAUSE_MIN_SECONDS": 0, "SNP_PAUSE_MAX_SECONDS": 0, "SNP_BATCH_
 
 @override_settings(FIELD_ENCRYPTION_KEY="", **NO_PAUSES)
 class SnpAccountTests(TestCase):
+    client_class = TeamClient
+
     def setUp(self):
         self.admin = User.objects.create_user("admin", password="pass-12345")
         self.club = create_club("Club A", "Sevilla", self.admin)
@@ -507,6 +510,8 @@ class SplitSnpNameTests(TestCase):
 
 @override_settings(FIELD_ENCRYPTION_KEY="", SNP_IMPORT_INLINE=True)
 class CompleteTeamTests(TestCase):
+    client_class = TeamClient
+
     def setUp(self):
         self.admin = User.objects.create_user("admin", password="pass-12345")
         self.club = create_club("Club A", "Sevilla", self.admin)
@@ -647,7 +652,7 @@ class CompleteTeamTests(TestCase):
         """Mientras sincroniza se navega con normalidad (barra de progreso), pero no se crean registros."""
         with override_settings(SNP_IMPORT_INLINE=False):
             self.client.post(reverse("complete_team_start"), {"from": "home", "team": self.club.public_id})
-        team_import = SnpTeamImport.objects.get()
+        SnpTeamImport.objects.get()
         SnpTeamImport.objects.update(started_at=timezone.now(), progress=40, stage="Sesión iniciada en SNP")
         page = self.client.get(reverse("list_players"))
         self.assertEqual(page.status_code, 200)
@@ -1005,6 +1010,8 @@ class ScraperTeamChoiceTests(TestCase):
 
 
 class CreatePlayerSimilarityTests(TestCase):
+    client_class = TeamClient
+
     def setUp(self):
         self.user = User.objects.create_user("admin_sim", password="pass-12345")
         self.club = create_club("Club A", "Sevilla", self.user, gender="F", country="ES")
@@ -1126,6 +1133,8 @@ class DeletePlayerTests(TestCase):
 
 @override_settings(FIELD_ENCRYPTION_KEY="")
 class SnpAccountCardTests(TestCase):
+    client_class = TeamClient
+
     def setUp(self):
         self.admin = User.objects.create_user("admin", password="pass-12345")
         self.club = create_club("Club A", "Sevilla", self.admin)

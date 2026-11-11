@@ -10,6 +10,7 @@
         {% if season_prep.is_captain %}
         <form method="post" action="{% url 'season_prep_dismiss' %}" data-loading-text="{% translate 'Ocultando la preparación…' %}">
             {% csrf_token %}
+        <input type="hidden" name="team" value="{{ request.club.public_id }}">
             <button type="submit" class="btn-close btn-close-white" aria-label="{% translate 'Ahora no' %}" title="{% translate 'Ahora no' %}"></button>
         </form>
         {% endif %}
@@ -69,6 +70,7 @@
                     <a class="btn btn-primary btn-sm" href="{{ step.url }}">{{ step.action }}</a>
                     <form method="post" action="{% url 'season_prep_step' step.key %}" data-loading-text="{% translate 'Guardando…' %}">
                         {% csrf_token %}
+        <input type="hidden" name="team" value="{{ request.club.public_id }}">
                         <button type="submit" class="btn btn-secondary btn-sm">{% if step.key == 'roster' %}{% translate "Ya la he revisado" %}{% else %}{% translate "Ya los he revisado" %}{% endif %}</button>
                     </form>
                 </div>

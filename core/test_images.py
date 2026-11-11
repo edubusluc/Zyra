@@ -1,3 +1,4 @@
+from core.testing import TeamClient
 import shutil
 import tempfile
 from io import BytesIO, StringIO
@@ -47,6 +48,8 @@ class MediaTestCase(TestCase):
 
 
 class PhotoUploadTests(MediaTestCase):
+    client_class = TeamClient
+
     team_data = {"name": "Burguillos", "location": "X", "gender": "M", "country": "ES", "division": "500"}
 
     def create_team(self, content, filename="escudo.jpg"):

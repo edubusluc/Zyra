@@ -15,7 +15,6 @@ from reportlab.pdfbase import pdfmetrics
 from call.models import Call, ReportDelivery
 from core.models import Membership
 from core.services import create_club
-from data_analyse.pairs import club_game_log
 from match import advisor
 from match.models import Game, Match
 from match.report import build_report

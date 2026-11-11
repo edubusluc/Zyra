@@ -20,7 +20,7 @@ from django.urls import reverse
 from django.http import Http404
 from django.core.paginator import Paginator
 from urllib.parse import urlencode
-from django.utils.translation import gettext as _, gettext_lazy
+from django.utils.translation import gettext as _
 from core.decorators import club_required, club_manager_required
 from core import spaces
 from core.competitions import competition_for
@@ -593,9 +593,7 @@ def team_card_context(club, season, match_type, context):
     fases finales, no presentados y lesiones, filas de sets con su texto, y tarjetas y puntos SNP del equipo.
     ``context`` es lo ya calculado (sets, ranking SNP).
     """
-    rules = club.rules
     sets = context['set_stats']
-    snp = context['snp']
     extra = {
         'team_form': team_card.form_and_streak(club, season, match_type),
         'league': team_card.league_summary(club, season or current_season()),

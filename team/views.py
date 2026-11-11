@@ -63,6 +63,7 @@ def list_team(request):
 @club_manager_required
 @not_while_syncing
 @require_http_methods(["GET", "POST"])
+@spaces.team_explicit("list_teams")
 def create_team(request):
     """
     Alta de un equipo en el club. Solo capitanes; GET y POST.
@@ -179,6 +180,7 @@ BULK_FIELDS = ('gender', 'country', 'division')
 
 @club_manager_required
 @require_http_methods(["GET", "POST"])
+@spaces.team_explicit("manage_teams", checked_in_view=True)
 def manage_teams(request):
     """
     Cambia de una vez categoría, nacionalidad, división y grupo de los equipos rivales, tanto

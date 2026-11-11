@@ -13,6 +13,7 @@
 
     <form method="POST" action="{{ request.get_full_path }}" class="z-match-form" data-match-form novalidate data-loading-text="{% translate 'Creando el enfrentamiento…' %}" data-own-location="{{ form.own_team.location|default:'' }}" data-own-time="{{ form.own_team.default_time|time:'H:i' }}">
         {% csrf_token %}
+        <input type="hidden" name="team" value="{{ request.club.public_id }}">
 
         {# Competición: es la del equipo, así que se muestra como dato (no como un selector bloqueado). Quien gestiona varios equipos puede volver a elegir. #}
         <p class="z-create-in">

@@ -780,7 +780,6 @@ class ImportTests(TestCase):
         for content in ["", "name;last_name\n"]:
             f = self.upload("x.csv", content.encode(), content_type="text/csv")
             self.client.post(reverse("backoffice:import_list"), {"entity": "players", "mode": "create", "club": self.club.pk, "file": f})
-        from .models import ImportJob
         self.assertFalse(ImportJob.objects.exists())
 
     def test_template(self):

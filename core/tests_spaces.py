@@ -2,6 +2,7 @@
 Espacios por competición (fase 1a): cada club guarda su competición, una cuenta tiene como mucho
 un espacio por competición, se crea otro espacio desde el menú y el de LAPI juega con su ficha.
 """
+from core.testing import TeamClient
 import datetime
 import json
 
@@ -261,6 +262,7 @@ class LinkedPlayerNewSpaceTests(TestCase):
 
 class EmptyRosterWarningTests(TestCase):
     """Dar de baja al último jugador del equipo se permite, pero avisa."""
+    client_class = TeamClient
 
     def setUp(self):
         self.captain = User.objects.create_user("capi", password=PASSWORD, email="capi@example.com")

@@ -274,6 +274,7 @@ def member_welcome(request):
 
 @club_admin_required
 @require_POST
+@spaces.team_explicit("home")
 def dismiss_onboarding(request):
     """El capitán cierra la lista de primeros pasos de la portada (solo POST)."""
     request.club.onboarding_dismissed_at = timezone.now()
@@ -300,6 +301,7 @@ def dismiss_manager_tip(request):
 
 @club_manager_required
 @require_POST
+@spaces.team_explicit("home")
 def dismiss_manager_welcome(request):
     """El gestor cierra la bienvenida a sus nuevas funciones de la portada (solo POST)."""
     Membership.objects.filter(pk=request.membership.pk).update(manager_welcome_pending=False)
@@ -672,6 +674,7 @@ def club_members(request, invite_form=None):
 @spaces.follow_space
 @club_admin_required
 @require_POST
+@spaces.team_explicit("club_members")
 def create_invitation(request):
     """
     El capitán invita a un jugador por email. Las cuentas las crea cada jugador
@@ -707,6 +710,7 @@ def create_invitation(request):
 @spaces.follow_space
 @club_admin_required
 @require_POST
+@spaces.team_explicit("club_members")
 def create_invitation_link(request):
     """
     Invitación sin email: el capitán copia el enlace y lo comparte (por WhatsApp, por
@@ -884,6 +888,7 @@ def update_member(request, membership_id):
 
 @club_manager_required
 @require_POST
+@spaces.team_explicit("home")
 def season_prep_step(request, key):
     """
     Marca un paso de «Prepara la temporada» como hecho (solo POST): la plantilla y los rivales los marca
@@ -901,6 +906,7 @@ def season_prep_step(request, key):
 
 @club_admin_required
 @require_POST
+@spaces.team_explicit("home")
 def season_prep_dismiss(request):
     """El capitán oculta «Prepara la temporada» hasta la próxima temporada (solo POST)."""
     season_prep.close(request.club)
@@ -1217,6 +1223,7 @@ def remove_member(request, membership_id):
 
 @login_required
 @require_POST
+@spaces.team_explicit("home")
 def leave_club(request):
     """
     El usuario abandona el club activo (solo POST; el menú pide confirmación antes).

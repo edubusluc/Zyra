@@ -1,3 +1,4 @@
+from core.testing import TeamClient
 from django.contrib.auth import get_user_model
 from django.test import SimpleTestCase, TestCase
 from django.urls import reverse
@@ -31,6 +32,8 @@ class SimilarNameTests(SimpleTestCase):
 
 
 class CreateTeamTests(TestCase):
+    client_class = TeamClient
+
     def setUp(self):
         self.user = User.objects.create_user("admin", password="pass-12345")
         self.club = create_club("Club A", "Sevilla", self.user, gender="F", country="ES")
@@ -128,6 +131,8 @@ class TeamGenderPropagationTests(TestCase):
 
 
 class NewTeamDefaultsTests(TestCase):
+    client_class = TeamClient
+
     def setUp(self):
         self.user = User.objects.create_user("admin", password="pass-12345")
         self.club = create_club("Club A", "Sevilla", self.user, gender="F", country="IT", division="1000")
@@ -167,6 +172,8 @@ class NewTeamDefaultsTests(TestCase):
 
 
 class ManageTeamsTests(TestCase):
+    client_class = TeamClient
+
     def setUp(self):
         self.user = User.objects.create_user("admin", password="pass-12345")
         self.club = create_club("Club A", "Sevilla", self.user, gender="F", country="ES", division="500")
@@ -246,7 +253,7 @@ class ManageTeamsTests(TestCase):
         self.assertTrue(self.b.in_group and self.c.in_group)
 
     def test_old_form_without_team_changes_nothing(self):
-        self.post_form(**{"team": None, f"in_group_{self.b.id}": None})
+        self.post_form(**{"team": "", f"in_group_{self.b.id}": None})
         self.b.refresh_from_db()
         self.assertTrue(self.b.in_group)
 
@@ -289,6 +296,8 @@ class OwnTeamStaysInGroupTests(TestCase):
 
 
 class ReactivateTeamTests(TestCase):
+    client_class = TeamClient
+
     def setUp(self):
         self.user = User.objects.create_user("admin", password="pass-12345")
         self.club = create_club("Club A", "Sevilla", self.user, gender="F", country="ES", division="500")
@@ -377,6 +386,7 @@ class TeamListPaginationTests(TestCase):
 
 class DefaultTimeTests(TestCase):
     """Hora habitual de juego del equipo propio: se guarda, se precarga y se puede cambiar."""
+    client_class = TeamClient
 
     def setUp(self):
         self.user = User.objects.create_user("admin", password="pass-12345")

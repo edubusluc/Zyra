@@ -7,7 +7,6 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
-from call.models import Call
 from core.models import Invitation, Membership
 from core.services import create_club
 from match import outcomes

@@ -5,7 +5,6 @@ iniciada» como con Google; quien desmarca la casilla la pierde al cerrar el nav
 (``is_staff``) solo tiene 12 horas. Cambiar el email o la contraseña sigue pidiendo la contraseña actual. «Cerrar sesión en todos los
 dispositivos» (Mi perfil) borra las demás sesiones de la cuenta.
 """
-from django.conf import settings
 from django.contrib.auth import SESSION_KEY
 from django.contrib.sessions.models import Session
 from django.utils import timezone

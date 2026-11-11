@@ -107,8 +107,8 @@ class Player(PublicIdModel):
     last_name = models.CharField(max_length=100)
     position = models.CharField(max_length=10, choices=POSITIONS, default="NONE")
     skillfull_hand = models.CharField(max_length=10, choices=HAND, default="NONE")
-    club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name="players", null=True)
-    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="team_players")
+    club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name="players")
+    team = models.ForeignKey(Team, on_delete=models.PROTECT, related_name="team_players")
     photo = models.ImageField(upload_to=player_photo_path, null=True, blank=True)
     # Cuenta del jugador: puede editar su posición, mano hábil y foto. Se enlaza al
     # aceptar una invitación (vista my_player) y el capitán puede desenlazarla.

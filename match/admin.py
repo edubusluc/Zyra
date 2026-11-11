@@ -7,6 +7,7 @@ class GameInline(admin.TabularInline):
     """Partidos de un enfrentamiento, editables dentro de su ficha."""
     model = Game
     extra = 0
+    can_delete = False
     fields = ("n_game", "player_1_local", "player_2_local", "player_1_visiting", "player_2_visiting", "winner", "draft_mode")
 
 
@@ -19,6 +20,10 @@ class MatchAdmin(admin.ModelAdmin):
     date_hierarchy = "start_date"
     list_select_related = ("club", "local", "visiting")
     inlines = [GameInline]
+
+    def has_delete_permission(self, request, obj=None):
+        """Un enfrentamiento solo se borra desde la aplicación, que deja constancia en el registro de auditoría."""
+        return False
 
 
 @admin.register(Game)

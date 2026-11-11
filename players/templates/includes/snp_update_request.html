@@ -5,6 +5,7 @@
 {% else %}
 <form method="post" action="{% url 'snp_update_request' %}" class="d-flex flex-wrap gap-2 align-items-center" data-loading-text="{% translate 'Enviando la petición…' %}">
     {% csrf_token %}
+        <input type="hidden" name="team" value="{{ request.club.public_id }}">
     <input type="hidden" name="from" value="{{ from }}">
     <input type="text" name="note" maxlength="200" class="form-control form-control-sm w-auto flex-grow-1" placeholder="{% translate 'Nota (opcional): jugadores nuevos…' %}" aria-label="{% translate 'Nota para Zyra' %}">
     <button type="submit" class="btn btn-secondary btn-sm">{% translate "Pedir actualización a Zyra" %}</button>

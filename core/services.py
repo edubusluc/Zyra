@@ -267,7 +267,14 @@ def delete_club(club):
     convocatorias, sanciones, cuenta SNP, invitaciones y miembros. Las fotos se borran del
     almacenamiento con las señales de core.images. Las cuentas de usuario se conservan. Solo lo usa el
     personal (back-office); al abandonar el último miembro el club se archiva (``archive_club``).
+
+    Los equipos están protegidos contra el borrado en cascada (``PROTECT`` desde partidos y jugadores), así
+    que aquí se borran primero los enfrentamientos y los jugadores y después el club con todo lo demás.
     """
+    from match.models import Match  # import tardío: match.models importa core
+
+    Match.objects.filter(club=club).delete()
+    Player.objects.filter(club=club).delete()
     club.delete()
 
 

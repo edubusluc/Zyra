@@ -256,6 +256,49 @@ def follow_query_objects(request):
             return
 
 
+def stale_team_form(request, back):
+    """
+    Redirección (con un aviso y sin guardar nada) si el formulario enviado no es del equipo activo: lo trae del
+    campo oculto ``team`` (id público del club). Una página abierta en otra pestaña con otro equipo, o antigua y
+    sin el campo, no puede cambiar nada en el equipo que no estaba viendo. ``back`` es el nombre de la URL a la
+    que vuelve. Devuelve None si coincide (o si la petición no tiene equipo activo).
+    """
+    club = getattr(request, "club", None)
+    if club is None or request.POST.get("team") == str(club.public_id):
+        return None
+    from django.contrib import messages
+    from django.shortcuts import redirect
+    messages.error(request, _("La página que estabas viendo ya no es la del equipo activo. "
+                              "No se ha guardado ningún cambio: revisa los datos y vuelve a intentarlo."))
+    return redirect(back)
+
+
+def team_explicit(back, checked_in_view=False):
+    """
+    Decorador de las vistas que escriben sobre el equipo activo sin llevar un objeto en la URL (altas, abandonar
+    el equipo, pedir una actualización): en POST exigen que el envío diga a qué equipo se refiere, con el campo
+    oculto ``team`` (``stale_team_form``) o con ``?en=`` en la dirección (``follow_space`` ya cambió a ese equipo).
+    Si no, no se toca nada y se vuelve a ``back``. Va justo encima de la función, debajo de los permisos.
+
+    Con ``checked_in_view=True`` solo marca la vista: la comprobación la hace ella misma (con su propio aviso).
+    ``test_team_explicit`` recorre todas las rutas y exige que cada una sea de un objeto, esté marcada aquí o esté
+    en su lista de excepciones razonadas.
+    """
+    def decorator(view_func):
+        """Envuelve la vista del POST."""
+        @wraps(view_func)
+        def wrapper(request, *args, **kwargs):
+            """Rechaza el POST que no dice a qué equipo se refiere."""
+            if request.method == "POST" and not checked_in_view and not request.GET.get(SWITCH_PARAM):
+                stale = stale_team_form(request, back)
+                if stale:
+                    return stale
+            return view_func(request, *args, **kwargs)
+        wrapper.team_explicit = True
+        return wrapper
+    return decorator
+
+
 def management_view(view_func):
     """
     Decorador de Plantilla, Club y Rivales, que son de un solo espacio. Con ``?en=`` cambia a ese

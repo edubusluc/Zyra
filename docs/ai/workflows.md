@@ -62,7 +62,7 @@ Accesibilidad con la web arrancada (Playwright + axe-core):
   (`--conservar-fotos` mantiene `media/`) y, opcional, `python populate_db.py` (club de pruebas
   LOS GLADIADORES; pide usuario, email y contraseña del capitán).
 - SQLite → PostgreSQL vacío: `python manage.py copy_sqlite_to_db [ruta.sqlite3]`.
-- Comandos de migraciones de datos antiguas: `assign_default_club`, `assign_public_ids`,
+- Comandos de migraciones de datos antiguas: `assign_public_ids`,
   `fill_match_locations`, `fix_duplicate_games [--dry-run]`, `move_photos_to_media`.
 
 ## Procesos programados
