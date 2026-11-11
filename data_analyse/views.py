@@ -32,7 +32,7 @@ from . import rivals as rival_stats
 from . import records
 from . import comparison, player_card, roster_table, team_card
 from .attendance import signup_attendance
-from .sets import by_game_number, own_sets, set_stats
+from .sets import by_game_number, filled_of, own_sets, set_stats
 
 def _zero_state(request, title):
     """
@@ -749,7 +749,8 @@ def build_game_log(player, match_type=None):
             'possible': g.score,
             'sets_won': sets_won,
             'sets_lost': sets_lost,
-            'sets': own_sets(next(iter(g.results.all()), None), is_local),
+            'sets': own_sets(next(iter(g.results.all()), None), is_local, played_only=True),
+            'filled': filled_of(next(iter(g.results.all()), None)),
         })
     return log
 
@@ -1115,6 +1116,8 @@ def _player_page(request, player_id, history=False):
             'warnings': player.penalties.count() if request.membership.can_manage else 0,
         },
         'league': player_card.league_rounds(player, selected_season),
+        # La elegibilidad para fases finales es de la temporada en curso, como en la tarjeta del equipo (``finals_roster``).
+        'finals_eligibility': player_card.league_rounds(player, current_season()),
         'snp_seasons': player_card.snp_by_season(player),
         **match_type_context(request, match_type, stats=True, by_type=True),
         **season_filter_context(request, all_seasons, selected_season),

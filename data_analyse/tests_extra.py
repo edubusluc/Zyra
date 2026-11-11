@@ -1,5 +1,6 @@
 """Tests de las estadísticas de sets, número de partido, récords, ranking SNP y apuntado/alineado."""
 import datetime
+from unittest import mock
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
@@ -12,7 +13,7 @@ from data_analyse import records, team_card
 from data_analyse.attendance import signup_attendance
 from data_analyse.sets import best_and_worst_number, by_game_number, own_sets, set_stats
 from match.models import Game, Match, Result
-from players.models import Player, SnpScoreHistory
+from players.models import Player, SnpScoreHistory, current_season
 from team.models import Team
 
 User = get_user_model()
@@ -42,6 +43,20 @@ class SetStatsUnitTests(TestCase):
         self.assertEqual((st['bagels_for'], st['bagels_against']), (1, 1))
         # El super tie-break no suma juegos
         self.assertEqual((st['games_won'], st['games_lost']), (6 + 6 + 4 + 7 + 6 + 7 + 3 + 0 + 6, 4 + 0 + 6 + 6 + 3 + 5 + 6 + 6 + 7))
+
+    def test_filled_sets_do_not_count_as_played_sets(self):
+        """Un partido acabado por lesión y completado cuenta como jugado y ganado, pero sus sets rellenados no suman roscos ni decisivo (EST-03)."""
+        r = Result(set1_local=6, set1_visiting=4, set2_local=3, set2_visiting=6, set3_local=0, set3_visiting=6, retired=True, filled_sets=2)
+        self.assertEqual(own_sets(r, False), [(4, 6), (6, 3), (6, 0)])
+        self.assertEqual(own_sets(r, False, played_only=True), [(4, 6)])
+        st = set_stats([{'won': True, 'sets': own_sets(r, False, played_only=True), 'filled': 2}])
+        self.assertEqual(st['played'], 1)
+        self.assertEqual((st['sets_won'], st['sets_lost']), (0, 1))
+        self.assertEqual((st['bagels_for'], st['bagels_against']), (0, 0))
+        self.assertEqual(st['third']['total'], 0)  # nunca llegó a un tercer set
+        # Si ni el primer set se jugó entero, solo queda el partido jugado.
+        st = set_stats([{'won': False, 'sets': [], 'filled': 3}])
+        self.assertEqual((st['played'], st['sets_won'], st['comeback']['total'], st['first_set']['total']), (1, 0, 0, 0))
 
     def test_empty(self):
         st = set_stats([])
@@ -138,6 +153,17 @@ class ClubSetsTests(ClubDataMixin, TestCase):
             self.assertNotIn(gone, rec)
         self.assertEqual(rec['top_pair']['n'], 2)
 
+    def test_snp_ranking_of_a_past_season_uses_that_seasons_scores(self):
+        """El ranking de una temporada pasada usa su última actualización, no el valor de hoy (EST-02)."""
+        past = "2000-2001"
+        SnpScoreHistory.objects.create(player=self.a, season=past, date=datetime.date(2025, 3, 1), score=100)
+        Player.objects.filter(pk=self.a.pk).update(snp_score=250)
+        rows = records.snp_ranking(self.club, past)["rows"]
+        self.assertEqual([(r["player"], r["score"]) for r in rows], [(self.a, 100)])  # sin los que no tienen datos de entonces
+        current = records.snp_ranking(self.club, current_season())["rows"]
+        self.assertEqual(next(r for r in current if r["player"] == self.a)["score"], 250)
+
+    @mock.patch("data_analyse.records.current_season", new=lambda: "2025-2026")  # los datos de prueba son de esa temporada
     def test_snp_ranking(self):
         season = "2025-2026"
         for day, score in ((1, 35), (8, 40)):

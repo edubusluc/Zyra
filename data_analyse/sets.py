@@ -13,15 +13,19 @@ Reglas de pádel que se aplican (las mismas que valida match.scoring):
 
 Cada partido llega como un diccionario con al menos ``won`` (bool) y ``sets``: lista de
 tuplas (juegos propios, juegos del rival) de los sets jugados, sin el tercero si no se
-jugó. Los resultados antiguos guardan el tercer set sin jugar como 0-0: se ignora.
+jugó y sin los rellenados al completar un partido por lesión (``filled`` dice cuántos eran: el partido
+cuenta como jugado y su victoria o derrota se mantiene, pero esos sets no entran en ninguna situación). Los resultados antiguos guardan el tercer set sin jugar como 0-0: se ignora.
 """
 from match import scoring
 
 GAME_NUMBERS = (1, 2, 3, 4, 5)
 
 
-def own_sets(result, is_local):
-    """Sets jugados de un Result desde el punto de vista de la pareja del club: [(propios, rival), ...]."""
+def own_sets(result, is_local, played_only=False):
+    """
+    Sets de un Result desde el punto de vista de la pareja del club: [(propios, rival), ...]. Con ``played_only``
+    quedan fuera los sets rellenados al completar un partido por lesión (``Result.filled_sets``), que no se jugaron.
+    """
     if result is None:
         return []
     sets = []
@@ -31,7 +35,14 @@ def own_sets(result, is_local):
         if n == 3 and loc == 0 and vis == 0:
             continue  # tercer set sin jugar guardado como 0-0 (resultados antiguos)
         sets.append((loc, vis) if is_local else (vis, loc))
+    if played_only and result.filled_sets:
+        sets = sets[:len(sets) - result.filled_sets]
     return sets
+
+
+def filled_of(result):
+    """Sets rellenados por lesión de un Result (0 si no hay resultado)."""
+    return result.filled_sets if result is not None else 0
 
 
 def _pct(wins, total):
@@ -72,9 +83,11 @@ def set_stats(games):
 
     for g in games:
         sets = g.get('sets') or []
-        if not sets:
+        if not sets and not g.get('filled'):
             continue
         played += 1
+        if not sets:
+            continue  # acabó por lesión antes de completar un solo set: solo cuenta como partido jugado
         won = g['won']
         for i, (own, rival) in enumerate(sets):
             set_won = own > rival

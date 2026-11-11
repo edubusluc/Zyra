@@ -192,7 +192,12 @@ Orden obligatorio del ciclo (`match/views.py`) [V], cubierto por `match/tests_fl
    En las competiciones con `injury_completes` (SNP 15.10 y LAPI) se indica la pareja lesionada (`Result.injured_side`) y
    gana siempre la sana: `complete_retired_result` le completa el set a medias a 6 (a 7 si la lesionada
    tenía 5 o 6) y los sets que falten 6-0 (3-2 queda 3-6 / 0-6). La casilla y la pareja están en el resultado de un partido y en «Poner resultados» (`match/templates/includes/injury_fields.html`, prefijo `gN_`); la etiqueta «Lesión» dice qué pareja se lesionó.
-   Al guardar fija `Game.winner`.
+   Al guardar fija `Game.winner` y `Result.filled_sets` (`scoring.filled_count`: cuántos sets finales se rellenaron y no
+   se jugaron). Las estadísticas de sets (`own_sets(..., played_only=True)`, `set_stats`) cuentan el partido y su
+   victoria o derrota pero dejan fuera esos sets (roscos, decisivo, ventaja perdida, juegos); los resultados anteriores a este
+   campo tienen 0. «¿Puede jugar fases finales?» de la ficha del jugador usa siempre la temporada en curso
+   (`finals_eligibility`), y el ranking SNP de una temporada pasada (`records.snp_ranking`) usa los puntos de su última
+   actualización en vez del valor actual.
    **Pareja no presentada** (`pair_no_show`, solo SNP, normativa 20.2): en «Poner resultados», «¿Se jugó?»
    por partido guarda `Game.no_show` (`own`/`rival`/`both`), borra su resultado y sus jugadores (no cuenta para
    jugadores ni parejas). Al cerrar el acta `match/pair_no_show.py` (`apply`) deja los puntos en cada `Game.score`:

@@ -1,5 +1,6 @@
 """Fase 5 de la auditoría de estadísticas: la tabla de plantilla de Equipo y de la entrada de Jugadores."""
 import datetime
+from unittest import mock
 
 from django.http import QueryDict
 from django.test import SimpleTestCase, TestCase
@@ -151,6 +152,7 @@ class RosterSideAndMinimumTests(ClubDataMixin, TestCase):
         self.assertEqual(row["calls"], 1)
 
 
+@mock.patch("data_analyse.records.current_season", new=lambda: "2025-2026")  # los datos de prueba son de esa temporada
 class SnpEvolutionTests(ClubDataMixin, TestCase):
     """«Evolución»: mini gráfico de cada jugador y puestos que sube o baja en el ranking SNP."""
 

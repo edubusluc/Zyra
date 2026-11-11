@@ -52,6 +52,18 @@ class LapiMatchTests(TestCase):
         match.save()
         return match
 
+    def test_player_finals_eligibility_uses_only_the_current_season(self):
+        """Con «Todas» las temporadas la etiqueta «Elegible» no suma jornadas de años anteriores (EST-04)."""
+        self.day = datetime.date(2020, 10, 10)  # temporada antigua: tiene jornadas jugadas de sobra
+        for days in (0, 7):
+            self._close(self._match(days=days), 2, 1)
+        player = self.players[0]
+        response = self.client.get(reverse("player_statistics"), {"player": player.public_id})
+        self.assertEqual(response.context["league"]["played"], 2)  # el dato de «todas» sigue siendo el total
+        self.assertEqual(response.context["finals_eligibility"]["played"], 0)
+        self.assertFalse(response.context["finals_eligibility"]["eligible"])
+        self.assertContains(response, "Todavía no es elegible")
+
     def test_form_offers_lapi_types_and_round(self):
         form = MatchForm(club=self.club)
         self.assertEqual([v for v, _l in form.fields['match_type'].choices], ["liga", "playoff", "fase_final"])

@@ -3,6 +3,12 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 11/11/2026 · Auditoría: estadísticas, casos de borde (fase 6)
+
+- **Ranking SNP**: en una temporada pasada cada jugador aparece con los puntos de su última actualización de entonces, no con los de hoy, y coincide con el gráfico.
+- **Partidos acabados por lesión**: los sets rellenados al completar el partido para la pareja sana (el 6-0 añadido, el set a medias subido a 6 o 7) ya no suman roscos, set decisivo, ventajas perdidas ni juegos. El partido sigue contando como jugado y su victoria o derrota se mantiene. Los resultados ya guardados no cambian.
+- **Ficha del jugador (LAPI)**: «¿Puede jugar fases finales?» cuenta solo las jornadas de la temporada en curso, también con el filtro «Todas».
+
 ## 11/11/2026 · Auditoría: correo masivo y tareas programadas (fase 5)
 
 - **Correo a varios usuarios**: «Enviar» pone el correo en cola y sale poco a poco respetando el cupo diario (lo que no cabe hoy sale mañana). Si se corta, continúa sin repetir a nadie; se puede cancelar y ver el avance en «Envíos en cola». Queda auditado al ponerlo en cola y al terminar.

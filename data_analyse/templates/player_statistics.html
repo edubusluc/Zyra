@@ -108,15 +108,15 @@
             <h3 class="st-card-title">{% translate "Sets" %}</h3>
             {% include 'includes/set_situations.html' with rows=clutch_rows %}
           </article>
-          {% if league %}
+          {% if finals_eligibility %}
           <article class="st-card">
             <span class="z-comp-badge z-comp-badge--lapi st-only">{% translate "Solo LAPI" %}</span>
-            {% blocktranslate asvar tip_text with n=league.minimum %}Reglamento 8.2: mínimo {{ n }} enfrentamientos de liga.{% endblocktranslate %}
+            {% blocktranslate asvar tip_text with n=finals_eligibility.minimum %}Reglamento 8.2: mínimo {{ n }} enfrentamientos de liga.{% endblocktranslate %}
             <h3 class="st-card-title">{% translate "¿Puede jugar fases finales?" %}{% include 'includes/stat_tip.html' with tip=tip_text %}</h3>
             <div class="st-eligible">
-              <b class="{% if league.eligible %}is-ok{% endif %}">{{ league.played }}</b>
-              <p><strong>{% if league.eligible %}{% translate "Elegible para Playoffs y Fase final" %}{% else %}{% translate "Todavía no es elegible" %}{% endif %}</strong>
-              <small>{% blocktranslate with n=league.played total=league.total %}Ha jugado {{ n }} de {{ total }} jornadas de liga.{% endblocktranslate %}</small></p>
+              <b class="{% if finals_eligibility.eligible %}is-ok{% endif %}">{{ finals_eligibility.played }}</b>
+              <p><strong>{% if finals_eligibility.eligible %}{% translate "Elegible para Playoffs y Fase final" %}{% else %}{% translate "Todavía no es elegible" %}{% endif %}</strong>
+              <small>{% blocktranslate with n=finals_eligibility.played total=finals_eligibility.total %}Ha jugado {{ n }} de {{ total }} jornadas de liga.{% endblocktranslate %}</small></p>
             </div>
           </article>
           {% endif %}
