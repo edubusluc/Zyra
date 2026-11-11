@@ -443,9 +443,16 @@ def delete_match(request, match_id):
     Para el capitán y los gestores. En GET pide confirmación (delete_match.html);
     en POST lo borra. Si el acta ya está cerrada, avisa y vuelve al listado. Con ``?desde=ficha``
     (se llega desde la página del enfrentamiento) «Cancelar» vuelve a esa página.
+
+    Un enfrentamiento cuya acta estuvo cerrada y se reabrió (``was_closed``) solo lo borra el
+    capitán: el gestor puede reabrir un acta para corregirla, pero nunca borrar ese enfrentamiento.
     """
     try:
         match = club_match(request, match_id)
+        if match.was_closed and not request.membership.is_admin:
+            messages.error(request, _("Este enfrentamiento ya tuvo el acta cerrada: solo el capitán puede eliminarlo. "
+                                      "Puedes corregir el acta y volver a cerrarla."))
+            return redirect('call_for_match', match_id=match.public_id)
         if match.draft_mode != False:
 
             if request.method == 'POST':
@@ -1530,7 +1537,7 @@ def reopen_match(request, match_id):
         match.games.update(draft_mode=True)
         match.result, match.result_points, match.draft_mode = outcomes.NONE, outcomes.NONE, True
         match.no_show = ""
-        match.reopened_at, match.reopened_by = timezone.now(), request.user
+        match.reopened_at, match.reopened_by, match.was_closed = timezone.now(), request.user, True
         match.save()
     messages.success(request, _("Acta reabierta. Corrige lo que haga falta y vuelve a cerrarla."))
     return redirect('call_for_match', match_id=match.public_id)
@@ -1588,6 +1595,7 @@ def undo_no_show(request, match_id):
         return redirect('call_for_match', match_id=match.public_id)
     match.no_show = ""
     match.result, match.result_points, match.draft_mode = outcomes.NONE, outcomes.NONE, True
+    match.was_closed = True
     match.save()
     messages.success(request, _("Ya no está marcado como no presentado: el acta vuelve a estar abierta."))
     return redirect('call_for_match', match_id=match.public_id)

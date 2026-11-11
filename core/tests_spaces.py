@@ -272,7 +272,7 @@ class EmptyRosterWarningTests(TestCase):
     def test_warning_when_roster_becomes_empty(self):
         page = self.client.get(reverse("manage_roster"))
         self.assertContains(page, "Te quedarás sin jugadores en la plantilla.")
-        response = self.client.post(reverse("manage_roster"), {}, follow=True)
+        response = self.client.post(reverse("manage_roster"), {"team": self.club.public_id, "leave": [self.player.pk]}, follow=True)
         self.player.refresh_from_db()
         self.assertFalse(self.player.in_team)
         self.assertContains(response, "Te has quedado sin jugadores en la plantilla.")

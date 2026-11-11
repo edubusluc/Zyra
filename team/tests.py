@@ -179,7 +179,7 @@ class ManageTeamsTests(TestCase):
         self.url = reverse("manage_teams")
 
     def post_form(self, **changes):
-        data = {}
+        data = {"team": self.club.public_id, "row": [self.a.id, self.b.id, self.c.id]}
         for t in (self.own, self.a, self.b, self.c):
             data.update({f"gender_{t.id}": t.gender, f"country_{t.id}": t.country, f"division_{t.id}": t.division})
             if t.in_group:
@@ -237,6 +237,24 @@ class ManageTeamsTests(TestCase):
         self.c.refresh_from_db()
         self.b.refresh_from_db()
         self.assertEqual((self.c.division, self.b.gender), ("1000", ""))
+
+    def test_submit_for_another_team_changes_nothing(self):
+        """Página de otro equipo enviada con este activo: nadie sale del grupo ni cambia."""
+        response = self.post_form(**{"team": "otroequipo00000", f"in_group_{self.b.id}": None, f"in_group_{self.c.id}": None})
+        self.assertRedirects(response, self.url, fetch_redirect_response=False)
+        self.b.refresh_from_db(), self.c.refresh_from_db()
+        self.assertTrue(self.b.in_group and self.c.in_group)
+
+    def test_old_form_without_team_changes_nothing(self):
+        self.post_form(**{"team": None, f"in_group_{self.b.id}": None})
+        self.b.refresh_from_db()
+        self.assertTrue(self.b.in_group)
+
+    def test_rival_created_after_page_load_is_not_removed_from_the_group(self):
+        newcomer = Team.objects.create(club=self.club, name="Nuevo", location="X", division="500", in_group=True)
+        self.post_form(**{f"gender_{self.c.id}": "M"})
+        newcomer.refresh_from_db()
+        self.assertTrue(newcomer.in_group)
 
     def test_teams_of_other_clubs_are_not_touched(self):
         other_user = User.objects.create_user("other", password="pass-12345")

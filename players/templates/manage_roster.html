@@ -16,6 +16,9 @@
 
 <form method="post" data-roster data-loading-text="{% translate 'Guardando la plantilla…' %}" data-baja-confirm data-confirm-title="{% translate 'Dar de baja del equipo' %}" data-confirm-action="{% translate 'Dar de baja' %}" data-confirm-danger data-baja-one="{% translate 'Vas a dar de baja a 1 jugador: saldrá de la plantilla y de las convocatorias abiertas.' %}" data-baja-many="{% translate 'Vas a dar de baja a {n} jugadores: saldrán de la plantilla y de las convocatorias abiertas.' %}" data-baja-accounts="{% translate 'Con cuenta en Zyra ({names}): dejan de ver el equipo (enfrentamientos, convocatorias y estadísticas del equipo), se les avisará por correo y conservan sus estadísticas en «Mis estadísticas». Para volver tendrás que invitarlos.' %}">
     {% csrf_token %}
+    {# Se envían solo los cambios (join / leave, que rellena el script) y el equipo al que se refieren. #}
+    <input type="hidden" name="team" value="{{ request.club.public_id }}">
+    <div data-roster-fields hidden></div>
     <div class="z-selector-tools">
         <div class="z-search">
             <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
@@ -95,6 +98,17 @@
     root.querySelector('[data-roster-count]').textContent = count;
     root.querySelector('[data-roster-changes]').textContent = changes ? (changes === 1 ? T.changeOne : T.changeMany).replace('{n}', changes) : T.none;
     root.querySelector('[data-roster-save]').disabled = !changes;
+    const fields = root.querySelector('[data-roster-fields]');
+    fields.replaceChildren();
+    rows.forEach(function (r) {
+      const on = box(r).checked;
+      if (on === (box(r).dataset.initial === '1')) return;
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = on ? 'join' : 'leave';
+      input.value = box(r).value;
+      fields.appendChild(input);
+    });
     // Dar de baja a todos se puede (p. ej. al acabar la temporada), pero se avisa antes de guardar.
     root.querySelector('[data-roster-empty-warning]').hidden = !(changes && count === 0 && rows.length);
     root.dispatchEvent(new Event('roster-refresh'));

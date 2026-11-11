@@ -11,7 +11,9 @@ repositorio y los pasos que faltan cuando se compre el servidor.
 | `docker-compose.yml` | `db` (PostgreSQL 16), `web` (gunicorn), `scheduler` (`run_scheduler --loop`) y `caddy` (https y fotos). |
 | `Caddyfile` | Dominio, certificado automático, `/media/` y proxy hacia la web. Cambia el dominio si no es `zyrapadel.com`. |
 | `deploy/deploy.sh` | Copia de seguridad, `check --deploy`, `migrate`, `createcachetable` y arranque; espera a que `/healthz/` responda. |
-| `deploy/backup.sh` | `pg_dump` y copia de las fotos (14 días); opcionalmente `rsync` fuera del servidor. |
+| `deploy/backup.sh` | Copia de la base de datos, las fotos y (cifrada) las claves; opcionalmente `rsync` fuera del servidor. Ver «Copias de seguridad». |
+| `deploy/install-backup-cron.sh` | Programa la copia diaria (03:30) en el crontab del servidor. |
+| `deploy/restore-test.sh` | Prueba de restauración en una base temporal, sin tocar la real. |
 | `.github/workflows/deploy.yml` | En PR construye la imagen y comprueba Chromium y la configuración; en `main` la publica en GHCR. |
 
 Mientras no exista el servidor no se rompe nada: el despliegue por SSH solo corre si la variable de
@@ -27,6 +29,38 @@ repositorio `DEPLOY_ENABLED` vale `true`.
 5. En el repositorio de GitHub: secretos `DEPLOY_SSH_KEY` (la llave privada, o su base64 en una línea con `base64 -w0 llave`) y `DEPLOY_HOST`, entorno `production` (con aprobación manual si quieres)
    y variable `DEPLOY_ENABLED=true`. El paquete de GHCR debe poder leerse desde el servidor (`docker login ghcr.io`).
 6. Primer arranque: `./deploy.sh <sha-completo-del-commit>` en el servidor, o un push a `main`.
+
+## Copias de seguridad
+
+`backup.sh` se ejecuta **antes de cada despliegue** (`deploy.sh`) y **cada día a las 03:30** (copia programada). Hace
+`pg_dump` de la base de datos cada vez y copia de las fotos en cada despliegue y los domingos. Se conservan 14 días.
+Una copia que está solo en el mismo servidor no sirve si el servidor se pierde: hay que enviarla fuera.
+
+Configuración (una sola vez, en el servidor, en `/opt/zyra`):
+
+1. Copia `deploy/backup.sh`, `deploy/install-backup-cron.sh` y `deploy/restore-test.sh` a `/opt/zyra` (a mano, como `deploy.sh`) y dales permiso de ejecución.
+2. Crea `/opt/zyra/backup.pass` con una frase larga (`chmod 600`) y **guárdala también en tu gestor de contraseñas**: sin ella las copias cifradas no se abren.
+3. Crea `/opt/zyra/backup.env`:
+
+   ```bash
+   BACKUP_PASSPHRASE_FILE=/opt/zyra/backup.pass      # cifra las copias (AES-256) e incluye .env y db_password.txt
+   BACKUP_RSYNC_TARGET=usuario@otro-servidor:zyra/   # destino FUERA del servidor (rsync por SSH)
+   BACKUP_KEEP_DAYS=14
+   ```
+
+4. Programa la copia diaria: `./install-backup-cron.sh` (se puede repetir; `--quitar` la retira).
+5. Comprueba que funciona: `./backup.sh daily` y `ls -l backups/`. `backups/.last-ok` guarda cuándo terminó la última copia correcta; `backups/backup.log`, la salida de la copia diaria.
+
+**Las claves.** `FIELD_ENCRYPTION_KEY` (en `.env`) descifra las cuentas SNP guardadas: sin ella, una copia restaurada no las puede leer.
+Con `BACKUP_PASSPHRASE_FILE` definido, cada copia incluye `claves-<fecha>.tgz.enc` con `.env` y `db_password.txt`; sin él no se
+copian (irían sin cifrar). Guarda además `.env` en un sitio seguro aparte (gestor de contraseñas).
+
+**Probar la restauración** (hazlo tras configurarlo y cada cierto tiempo): `./restore-test.sh` carga la última copia en una base
+temporal, compara el número de filas de las tablas principales con la base real y la borra; no toca la base real. Para abrir una
+copia cifrada a mano: `openssl enc -d -aes-256-cbc -pbkdf2 -pass file:backup.pass -in zyra-FECHA.sql.gz.enc | gunzip > zyra.sql`.
+
+**Restaurar de verdad** (tras un desastre o una migración fallida): para `web` y `scheduler`, vacía la base y carga la copia en
+`db` con `psql`, y vuelve a arrancar. Es una operación destructiva sobre los datos reales: hazla con calma y con una copia de lo que haya.
 
 ## Qué pasa en cada versión nueva
 

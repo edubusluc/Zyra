@@ -502,6 +502,13 @@ class GoogleSameAccountTests(TestCase):
         self.admin.refresh_from_db()
         self.assertFalse(self.admin.has_usable_password())
 
+    def test_google_login_with_unverified_account_removes_other_emails(self):
+        """Los emails secundarios de una cuenta sin verificar se borran al entrar con Google."""
+        from allauth.account.models import EmailAddress
+        EmailAddress.objects.create(user=self.admin, email="atacante@evil.test", verified=False, primary=False)
+        self.google_login("capitan@example.com")
+        self.assertFalse(EmailAddress.objects.filter(user=self.admin, email="atacante@evil.test").exists())
+
     def test_google_login_uses_existing_account_and_keeps_password(self):
         from allauth.account.models import EmailAddress
         EmailAddress.objects.create(user=self.admin, email="capitan@example.com", verified=True, primary=True)

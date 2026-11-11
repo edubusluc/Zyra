@@ -104,6 +104,10 @@ class Match(PublicIdModel):
     reopened_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+",
     )
+    # True si el acta estuvo cerrada alguna vez y se reabrió (reabrir el acta o quitar «No presentado»): desde
+    # entonces solo el capitán puede eliminar el enfrentamiento. Aparte de ``reopened_at``, que además decide
+    # si se reenvía el correo del resultado (quitar «No presentado» no lo marca porque ese cierre no avisó).
+    was_closed = models.BooleanField(default=False)
     # Token impredecible del enlace de disponibilidad (``call.availability``); el capitán lo regenera.
     availability_token = models.CharField(max_length=64, unique=True, null=True, blank=True, editable=False)
 

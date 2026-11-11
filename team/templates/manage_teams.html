@@ -15,6 +15,9 @@
 
 <form method="post" data-teams data-loading-text="{% translate 'Guardando los equipos…' %}">
     {% csrf_token %}
+    {# El equipo al que se refiere el formulario y los rivales que muestra: un envío de otra pestaña no toca otro equipo. #}
+    <input type="hidden" name="team" value="{{ request.club.public_id }}">
+    {% for row in rows %}<input type="hidden" name="row" value="{{ row.team.id }}">{% endfor %}
     <div class="z-selector-tools">
         <div class="z-search">
             <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>

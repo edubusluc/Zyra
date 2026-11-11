@@ -58,3 +58,62 @@ class ReopenMatchTests(TestCase):
         self.client.get(reverse("reopen_match", args=[self.match.public_id]))
         self.match.refresh_from_db()
         self.assertFalse(self.match.draft_mode)
+
+
+class ManagerCannotDeleteReopenedMatchTests(TestCase):
+    """El gestor puede reabrir un acta, pero nunca borrar un enfrentamiento que estuvo cerrado."""
+
+    def setUp(self):
+        from core.models import Membership
+        self.captain = User.objects.create_user("capitan", "c@example.com", "pass-12345")
+        self.manager = User.objects.create_user("gestor", "g@example.com", "pass-12345")
+        self.club = create_club("Club", "Sevilla", self.captain, gender="M")
+        Membership.objects.create(user=self.manager, club=self.club, role=Membership.MANAGER)
+        rival = Team.objects.create(club=self.club, name="Rival", location="Huelva")
+        self.closed = Match.objects.create(
+            club=self.club, local=self.club.own_team, visiting=rival, start_date=datetime.date(2026, 10, 1),
+            draft_mode=False, result=outcomes.LOCAL_WIN, result_points="4-2",
+        )
+        self.never_closed = Match.objects.create(
+            club=self.club, local=self.club.own_team, visiting=rival, start_date=datetime.date(2026, 10, 8))
+
+    def test_manager_reopen_then_delete_is_refused(self):
+        self.client.force_login(self.manager)
+        self.assertEqual(self.client.post(reverse("reopen_match", args=[self.closed.public_id])).status_code, 302)
+        for method in (self.client.get, self.client.post):
+            response = method(reverse("delete_match", args=[self.closed.public_id]), follow=True)
+            self.assertContains(response, "solo el capitán puede eliminarlo")
+        self.assertTrue(Match.objects.filter(pk=self.closed.pk).exists())
+
+    def test_manager_still_deletes_a_match_that_was_never_closed(self):
+        self.client.force_login(self.manager)
+        self.client.post(reverse("delete_match", args=[self.never_closed.public_id]))
+        self.assertFalse(Match.objects.filter(pk=self.never_closed.pk).exists())
+
+    def test_captain_can_delete_a_reopened_match(self):
+        self.client.force_login(self.captain)
+        self.client.post(reverse("reopen_match", args=[self.closed.public_id]))
+        self.client.post(reverse("delete_match", args=[self.closed.public_id]))
+        self.assertFalse(Match.objects.filter(pk=self.closed.pk).exists())
+
+    def test_delete_link_is_hidden_from_the_manager_on_a_reopened_match(self):
+        self.client.force_login(self.manager)
+        self.client.post(reverse("reopen_match", args=[self.closed.public_id]))
+        page = self.client.get(reverse("call_for_match", args=[self.closed.public_id]))
+        self.assertNotContains(page, reverse("delete_match", args=[self.closed.public_id]))
+        self.client.force_login(self.captain)
+        page = self.client.get(reverse("call_for_match", args=[self.closed.public_id]))
+        self.assertContains(page, reverse("delete_match", args=[self.closed.public_id]))
+
+    def test_manager_undoing_no_show_cannot_delete_the_match(self):
+        """Quitar «No presentado» también reabre un acta cerrada: el gestor no puede borrarlo después."""
+        self.closed.no_show = Match.NO_SHOW_RIVAL
+        self.closed.save()
+        self.client.force_login(self.manager)
+        self.client.post(reverse("undo_no_show", args=[self.closed.public_id]))
+        self.closed.refresh_from_db()
+        self.assertTrue(self.closed.draft_mode and self.closed.was_closed)
+        self.assertIsNone(self.closed.reopened_at)  # el correo del resultado se sigue enviando al cerrar
+        response = self.client.post(reverse("delete_match", args=[self.closed.public_id]), follow=True)
+        self.assertContains(response, "solo el capitán puede eliminarlo")
+        self.assertTrue(Match.objects.filter(pk=self.closed.pk).exists())

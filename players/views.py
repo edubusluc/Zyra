@@ -261,36 +261,54 @@ def _warn_if_roster_empty(request):
                                     "para poder convocarlos."))
 
 
+def _ids(request, key):
+    """Ids enteros enviados en ``key`` (los que no son números se ignoran)."""
+    return {int(i) for i in request.POST.getlist(key) if i.isdigit()}
+
+
 @club_manager_required
 def manage_roster(request):
-    """Marca de una vez qué jugadores están en el equipo."""
+    """
+    Altas y bajas de la plantilla del equipo.
+
+    El formulario envía solo los cambios (``join``: pasan a alta, ``leave``: pasan a baja) y el
+    equipo al que se refieren (``team``). Si el equipo no es el activo, o el envío no lo trae
+    (una página abierta antes de este cambio), no se toca nada: así una página antigua o abierta
+    en otra pestaña no puede dar de baja a nadie en un equipo que no estaba viendo.
+    """
     players = Player.objects.filter(club=request.club).order_by('name', 'last_name')
 
     if request.method == "POST":
-        in_team_ids = {int(i) for i in request.POST.getlist('in_team') if i.isdigit()}
-        # Las altas quitan la fecha de baja salvo en quien salió del club con su cuenta (conserva el día).
-        joined = 0
-        # Dar de alta a quien dejó una cuenta es invitarla por email a volver; si ya tiene otro equipo, no se puede.
-        for joining in players.filter(id__in=in_team_ids, in_team=False):
-            try:
-                if dar_de_alta(joining, request.user, request.build_absolute_uri('/')):
-                    messages.success(request, _("%(player)s vuelve a la plantilla y le hemos enviado una invitación para que recupere su acceso al equipo.")
-                                     % {"player": joining.short_name})
-                joined += 1
-            except AltaError as exc:
-                messages.error(request, str(exc))
-        players.filter(id__in=in_team_ids, past_user__isnull=True).update(left_on=None)
-        left = 0
-        affected = set()
-        # Dar de baja a quien tiene cuenta es echarlo del equipo; el capitán no se puede dar de baja.
-        for leaving in players.exclude(id__in=in_team_ids).filter(in_team=True):
-            try:
-                affected |= open_matches_with([leaving.pk])
-                dar_de_baja(leaving, request.user, request.build_absolute_uri('/'))
-                left += 1
-            except RemovalError as exc:
-                messages.error(request, str(exc))
-        players.exclude(id__in=in_team_ids).filter(in_team=False, left_on__isnull=True).update(left_on=timezone.localdate())
+        if request.POST.get("team") != str(request.club.public_id):
+            messages.error(request, _("La plantilla que estabas viendo ya no es la del equipo activo. "
+                                      "No se ha guardado ningún cambio: revisa los datos y vuelve a intentarlo."))
+            return redirect('manage_roster')
+        join_ids = _ids(request, 'join')
+        leave_ids = _ids(request, 'leave') - join_ids
+        with transaction.atomic():
+            joined = 0
+            # Dar de alta a quien dejó una cuenta es invitarla por email a volver; si ya tiene otro equipo, no se puede.
+            for joining in players.filter(id__in=join_ids, in_team=False):
+                try:
+                    if dar_de_alta(joining, request.user, request.build_absolute_uri('/')):
+                        messages.success(request, _("%(player)s vuelve a la plantilla y le hemos enviado una invitación para que recupere su acceso al equipo.")
+                                         % {"player": joining.short_name})
+                    joined += 1
+                except AltaError as exc:
+                    messages.error(request, str(exc))
+            # Las altas quitan la fecha de baja salvo en quien salió del club con su cuenta (conserva el día).
+            players.filter(id__in=join_ids, in_team=True, past_user__isnull=True).update(left_on=None)
+            left = 0
+            affected = set()
+            # Dar de baja a quien tiene cuenta es echarlo del equipo; el capitán no se puede dar de baja.
+            for leaving in players.filter(id__in=leave_ids, in_team=True):
+                try:
+                    affected |= open_matches_with([leaving.pk])
+                    dar_de_baja(leaving, request.user, request.build_absolute_uri('/'))
+                    left += 1
+                except RemovalError as exc:
+                    messages.error(request, str(exc))
+            players.filter(id__in=leave_ids, in_team=False, left_on__isnull=True).update(left_on=timezone.localdate())
         if joined or left:
             joined_text = ngettext("%(n)s alta", "%(n)s altas", joined) % {"n": joined}
             left_text = ngettext("%(n)s baja", "%(n)s bajas", left) % {"n": left}
