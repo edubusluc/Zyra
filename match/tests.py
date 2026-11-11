@@ -258,12 +258,12 @@ class MatchesAndCallsTests(TestCase):
 
     def test_manage_roster_updates_many_players_at_once(self):
         self.client.post(reverse("manage_roster"), {
-            "join": [self.gone.id], "leave": [self.zoe.id]})
+            "team": self.club.public_id, "join": [self.gone.id], "leave": [self.zoe.id]})
         states = dict(Player.objects.values_list("name", "in_team"))
         self.assertEqual(states, {"Ana": True, "Bea": True, "Zoe": False})
 
         self.client.login(username="viewer", password="pass-12345")
-        self.client.post(reverse("manage_roster"), {"leave": [self.ana.id, self.gone.id]})
+        self.client.post(reverse("manage_roster"), {"team": self.club.public_id, "leave": [self.ana.id, self.gone.id]})
         self.assertEqual(Player.objects.filter(in_team=True).count(), 2)
 
 

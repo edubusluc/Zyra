@@ -7,7 +7,6 @@ Red de seguridad de la auditoría (fase 8): protege familias enteras de fallo, n
 - Integridad: equipos protegidos, borrados de enfrentamientos auditados, advertencias sin duplicados.
 """
 import datetime
-import random
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
@@ -147,7 +146,7 @@ class SeasonFiguresTests(TestCase):
 
     def test_generated_season_matches_the_oracle(self):
         """Victorias, derrotas y sets de cada partido (local o visitante) coinciden con lo guardado."""
-        rng = random.Random(2026)
+        scores = [(6, 2), (6, 4), (3, 6), (2, 6), (7, 5), (4, 6)]
         user = User.objects.create_user("capi", password=PASSWORD)
         club = create_club("Club A", "Sevilla", user)
         rival = Team.objects.create(club=club, name="Rival", location="X", in_group=True)
@@ -156,16 +155,19 @@ class SeasonFiguresTests(TestCase):
         expected = []  # (n_game, ganado, sets desde el lado del club)
         day = datetime.date(2025, 10, 1)
         for number in range(12):
-            own_local = rng.random() < 0.5
+            own_local = number % 3 != 0  # mezcla de enfrentamientos como local y como visitante
             match = Match.objects.create(
                 club=club, local=club.own_team if own_local else rival, visiting=rival if own_local else club.own_team,
                 start_date=day + datetime.timedelta(days=7 * number), draft_mode=False, result="EMPATE")
             side = "local" if own_local else "visiting"
             for n_game in (1, 2, 3):
-                pair = rng.sample(players, 2)
-                sets, mine, theirs = [], 0, 0
+                pair = [players[(number + n_game) % 6], players[(number + 2 * n_game + 1) % 6]]
+                if pair[0] == pair[1]:
+                    pair[1] = players[(number + 2 * n_game + 2) % 6]
+                sets, mine, theirs, step = [], 0, 0, 0
                 while max(mine, theirs) < 2:
-                    own_games, rival_games = rng.choice([(6, 2), (6, 4), (3, 6), (2, 6), (7, 5), (4, 6)])
+                    own_games, rival_games = scores[(number * 5 + n_game * 3 + step * 7) % len(scores)]
+                    step += 1
                     sets.append((own_games, rival_games))
                     mine, theirs = (mine + 1, theirs) if own_games > rival_games else (mine, theirs + 1)
                 won = mine > theirs

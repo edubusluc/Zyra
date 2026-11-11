@@ -151,7 +151,7 @@ class BajaTests(BajaFixture):
     def test_manage_roster_bulk_baja_skips_the_captain(self):
         self.client.login(username="cap", password=PASSWORD)
         self.client.post(reverse("manage_roster"), {
-            "leave": [self.sheet.pk, self.captain_sheet.pk]})
+            "team": self.club.public_id, "leave": [self.sheet.pk, self.captain_sheet.pk]})
         self.sheet.refresh_from_db(), self.captain_sheet.refresh_from_db()
         self.assertFalse(self.sheet.in_team)
         self.assertFalse(Membership.objects.filter(user=self.user, club=self.club).exists())
@@ -327,7 +327,7 @@ class AltaTests(BajaFixture):
         self.client.login(username="cap", password=PASSWORD)
         with self.captureOnCommitCallbacks(execute=True):
             self.client.post(reverse("manage_roster"), {
-                "join": [self.sheet.pk, self.free.pk]})
+                "team": self.club.public_id, "join": [self.sheet.pk, self.free.pk]})
         self.assertEqual(Invitation.objects.filter(player=self.sheet).count(), 1)
         self.assertEqual(len(mail.outbox), 1)
 

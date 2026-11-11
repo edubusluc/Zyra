@@ -186,7 +186,7 @@ class ManageTeamsTests(TestCase):
         self.url = reverse("manage_teams")
 
     def post_form(self, **changes):
-        data = {"row": [self.a.id, self.b.id, self.c.id]}
+        data = {"team": self.club.public_id, "row": [self.a.id, self.b.id, self.c.id]}
         for t in (self.own, self.a, self.b, self.c):
             data.update({f"gender_{t.id}": t.gender, f"country_{t.id}": t.country, f"division_{t.id}": t.division})
             if t.in_group:
