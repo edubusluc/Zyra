@@ -121,8 +121,11 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
 - [V] Un jugador pertenece siempre al equipo propio y hereda su categoría (`Player.save`, `Team.save`).
 - [V] Una cuenta es como mucho un jugador por club (restricción en BD). «Soy yo» (`link_player`) solo
   enlaza jugadores sin cuenta; el capitán puede desenlazar (`unlink_player`). Tests: `players/test_own_player.py`.
-- [V] Borrar jugador conserva sus partidos (nombre en `Game.removed_player_names`); antes se avisa
-  de lo que se pierde (`delete_player`, plantilla `players/templates/confirm_delete.html`).
+- [V] Solo se elimina a mano (`delete_player`) un jugador sin cuenta que nunca ha jugado un partido; antes se avisa
+  de lo que se pierde (convocatorias, advertencias, historial SNP; plantilla `players/templates/confirm_delete.html`).
+  Si ha jugado, se da de baja (`in_team=False`): eliminarlo sacaba sus partidos de las cifras del equipo y de sus compañeros
+  (`club_game_log` descarta partidos con hueco). Al borrar la cuenta con su ficha el modelo sigue conservando los partidos
+  (`Game.removed_player_names`).
 - [V] `in_team=False` saca al jugador de la plantilla sin borrarlo; los selectores de convocatoria
   muestran solo `in_team=True` más los ya convocados (`selectable_players`).
 - [V] Nombres en caja de título al mostrarse (`full_name`, `short_name`, vía `proper_name`; los titulares los pasan a mayúsculas con CSS); texto plano sin HTML

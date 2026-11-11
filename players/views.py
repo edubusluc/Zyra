@@ -208,12 +208,21 @@ def edit_player(request, player_id):
     return render(request, 'edit_player.html', context)
 
 
+def _games_played(player):
+    """Número de partidos (de cualquier enfrentamiento) en los que ha jugado ``player``."""
+    return Game.objects.filter(
+        Q(player_1_local=player) | Q(player_2_local=player) |
+        Q(player_1_visiting=player) | Q(player_2_visiting=player)
+    ).count()
+
+
 @spaces.follow_player
 @club_manager_required
 def delete_player(request, player_id):
     """
-    Elimina un jugador tras avisar de que se borran sus estadísticas. Los partidos se conservan. Una ficha de una
-    cuenta (``user`` o ``past_user``) no se puede eliminar: se da de baja (``in_team``).
+    Elimina un jugador que nunca ha jugado, tras avisar de que se borran sus convocatorias y advertencias.
+    Una ficha que ha jugado algún partido no se elimina (se borrarían sus partidos de las estadísticas del equipo y
+    de sus compañeros): se da de baja (``in_team``). Tampoco una ficha de una cuenta (``user`` o ``past_user``).
     """
     player = get_object_or_404(Player, public_id=player_id, club=request.club)
     if player.user_id or player.past_user_id:
@@ -221,19 +230,18 @@ def delete_player(request, player_id):
         messages.error(request, _("Esta ficha es de una cuenta y no se puede eliminar para no borrar sus estadísticas. "
                                   "Desmarca «En el equipo» para sacarla de la plantilla."))
         return redirect("edit_player", player_id=player.public_id)
+    if _games_played(player):
+        messages.error(request, _("Este jugador ha jugado partidos y no se puede eliminar para no borrarlos de las "
+                                  "estadísticas del equipo y de sus compañeros. Desmarca «En el equipo» para sacarlo de la plantilla."))
+        return redirect("edit_player", player_id=player.public_id)
     if request.method == "POST":
         name = str(player)
         player.delete()
         messages.success(request, _("Jugador «%(name)s» eliminado.") % {"name": name})
         return redirect("list_players")
 
-    played = Game.objects.filter(
-        Q(player_1_local=player) | Q(player_2_local=player) |
-        Q(player_1_visiting=player) | Q(player_2_visiting=player)
-    ).count()
     return render(request, "confirm_delete.html", {
         "player": player,
-        "games": played,
         "calls": player.calls.count(),
         "penalties": player.penalties.count(),
     })

@@ -9,14 +9,12 @@
         <p>{% blocktranslate trimmed with name=player %}¿Seguro que quieres eliminar a «{{ name }}»?{% endblocktranslate %}</p>
         <div class="alert alert-warning text-start" role="alert">
             <p class="mb-2"><i class="fa-solid fa-triangle-exclamation me-1" aria-hidden="true"></i>
-                {% blocktranslate trimmed %}Se eliminarán también todas las estadísticas relacionadas con este jugador:{% endblocktranslate %}</p>
+                {% blocktranslate trimmed %}Se eliminará también lo relacionado con este jugador:{% endblocktranslate %}</p>
             <ul class="mb-2">
-                <li>{% blocktranslate trimmed count n=games %}Sus estadísticas de {{ n }} partido jugado{% plural %}Sus estadísticas de {{ n }} partidos jugados{% endblocktranslate %}</li>
                 <li>{% blocktranslate trimmed count n=calls %}{{ n }} convocatoria{% plural %}{{ n }} convocatorias{% endblocktranslate %}</li>
                 <li>{% blocktranslate trimmed count n=penalties %}{{ n }} advertencia{% plural %}{{ n }} advertencias{% endblocktranslate %}</li>
                 <li>{% translate "Su historial de puntos SNP" %}</li>
             </ul>
-            <p class="mb-0 small">{% blocktranslate trimmed %}Los enfrentamientos y sus resultados no se borran: en las parejas en las que jugó se seguirá mostrando su nombre.{% endblocktranslate %}</p>
         </div>
         <p class="text-muted small">{% translate "Esta acción no se puede deshacer." %}</p>
         <form method="POST" class="d-grid gap-2" data-loading-text="{% translate 'Eliminando el jugador…' %}">
