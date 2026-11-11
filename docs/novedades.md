@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 11/11/2026 · Despliegue: huella del servidor más tolerante
+
+- `DEPLOY_KNOWN_HOSTS` acepta la salida de `ssh-keyscan` o solo `ssh-ed25519 AAAA…`; el despliegue añade el servidor delante si falta.
+
 ## 11/11/2026 · Auditoría: red de seguridad, datos y deuda técnica (fase 8)
 
 - **El equipo viaja siempre explícito**: crear jugador, enfrentamiento o rival, pedir una actualización a Zyra, invitar, abandonar el equipo, «Mi jugador» y los avisos de la portada llevan el equipo de su página; un envío desde otra pestaña con otro equipo activo no cambia nada y avisa.
