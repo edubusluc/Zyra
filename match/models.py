@@ -108,6 +108,9 @@ class Match(PublicIdModel):
     # entonces solo el capitán puede eliminar el enfrentamiento. Aparte de ``reopened_at``, que además decide
     # si se reenvía el correo del resultado (quitar «No presentado» no lo marca porque ese cierre no avisó).
     was_closed = models.BooleanField(default=False)
+    # Parejas y resultados que había al marcar «No presentado» (``match.no_show_backup``), para que quitarlo los
+    # devuelva. Vacío si no se marcó o ya se restauró.
+    no_show_backup = models.JSONField(default=list, blank=True)
     # Token impredecible del enlace de disponibilidad (``call.availability``); el capitán lo regenera.
     availability_token = models.CharField(max_length=64, unique=True, null=True, blank=True, editable=False)
 

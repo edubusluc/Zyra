@@ -177,7 +177,7 @@ def home(request):
                                  "text": _("Enlaza tu cuenta con tu ficha de jugador")})
         else:
             if not form_player.photo:
-                player_todos.append({"icon": "fa-camera", "url": reverse('edit_player', args=[form_player.public_id]),
+                player_todos.append({"icon": "fa-camera", "url": f"{reverse('my_player')}?en={form_player.club.competition}",
                                      "text": _("Sube tu foto")})
         if my_status and my_status.get("game") and my_status.get("partner"):
             player_todos.append({"icon": "fa-user-group", "url": reverse('call_for_match', args=[next_match.public_id]),

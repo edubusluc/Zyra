@@ -35,7 +35,7 @@ from call.models import Call, Availability
 from call import availability as call_availability
 from team.models import Team
 from datetime import datetime, timedelta
-from callLog.models import CallLog
+from . import no_show_backup
 from penalty.models import Penalty
 import json
 import re
@@ -78,9 +78,14 @@ def club_call(request, **filters):
     return get_object_or_404(Call, match__club=request.club, **filters)
 
 
-def club_players(request, ids):
-    """Jugadores del club activo cuyos ids vienen del formulario (ignora ids ajenos)."""
-    return Player.objects.filter(club=request.club, id__in=[i for i in ids if str(i).isdigit()])
+def club_players(request, ids, keep=()):
+    """
+    Jugadores del club activo cuyos ids vienen del formulario (ignora ids ajenos) y que están en el equipo:
+    quien está de baja no se convoca aunque llegue por POST. ``keep`` son los ya convocados, que se admiten
+    aunque ya no estén en el equipo (para poder conservarlos o quitarlos al editar).
+    """
+    return Player.objects.filter(club=request.club, id__in=[i for i in ids if str(i).isdigit()]).filter(
+        Q(in_team=True) | Q(id__in=list(keep)))
 
 
 MATCHES_PER_PAGE = 12
@@ -542,7 +547,6 @@ def create_call(request, match_id):
         else:
             call = Call.objects.create(match=match)
             call.players.set(selected_ids)
-            CallLog.objects.create(call=call, text="")
             messages.success(request, _("Convocatoria creada con %(n)s jugadores.") % {"n": len(selected_ids)})
             return redirect('call_for_match', match.public_id)
 
@@ -677,10 +681,6 @@ def reopen_call(request, match_id):
     else:
         call.draft_mode = True
         call.save()
-        log, _created = CallLog.objects.get_or_create(call=call, defaults={"text": ""})
-        log.text += _("Convocatoria reabierta por %(user)s el día %(when)s;") % {
-            "user": request.user.username, "when": f"{datetime.now():%d-%m-%Y %H:%M:%S}"}
-        log.save()
         messages.success(request, _("Convocatoria reabierta."))
     return redirect("call_for_match", call.match.public_id)
 
@@ -768,21 +768,19 @@ def edit_call(request, call_id):
     """Edición de los jugadores de una convocatoria.
 
     Solo para administradores del club y mientras el acta del enfrentamiento esté
-    abierta (si no, vuelve a la convocatoria). En POST guarda los jugadores y anota en
-    el CallLog quién se ha añadido o quitado; en GET muestra edit_call.html.
+    abierta (si no, vuelve a la convocatoria). En POST guarda los jugadores; en GET muestra edit_call.html.
     """
     call = club_call(request, public_id=call_id)
     selected_players = list(call.players.values_list('id', flat=True))
     all_players = selectable_players(request.club, include_ids=selected_players)
     has_availability = annotate_availability(call.match, all_players)
-    call_log, _created = CallLog.objects.get_or_create(call=call, defaults={'text': ''})
-    
-    current_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+
     if call.match.draft_mode == False:
         return redirect('call_for_match', call.match.public_id)
     else:
         if request.method == "POST":
-            selected_players_ids = list(club_players(request, request.POST.getlist("players")).values_list('id', flat=True))
+            selected_players_ids = list(club_players(request, request.POST.getlist("players"), keep=selected_players)
+                                        .values_list('id', flat=True))
             selected_set = set(selected_players_ids)
             call_set = set(selected_players)
             min_call = competition_for(call.match).min_call_players
@@ -796,30 +794,6 @@ def edit_call(request, call_id):
                     'has_availability': has_availability,
                     'min_call_players': min_call, **_finals_context(call.match, all_players, list(selected_set)),
                 })
-
-            added_players = selected_set - call_set
-            removed_players = call_set - selected_set
-
-            # Definir si el mensaje es para convocatoria abierta o cerrada
-            status_message = "convocatoria abierta" if call.draft_mode else "convocatoria cerrada"
-
-            # Inicializar el log_text
-            log_text = ""
-
-            # Construir el mensaje para los jugadores añadidos
-            if added_players:
-                added_player_names = [Player.objects.get(id=player_id).name.upper() for player_id in added_players]
-                log_text += f"Jugadores añadidos con la {status_message}: " + ", ".join(added_player_names) + f" el día {current_time};"
-
-            # Construir el mensaje para los jugadores eliminados
-            if removed_players:
-                removed_player_names = [Player.objects.get(id=player_id).name.upper() for player_id in removed_players]
-                log_text += f"Jugadores eliminados con la {status_message}: " + ", ".join(removed_player_names) + f" el día {current_time};"
-
-            # Guardar el log si hay algún mensaje
-            if log_text.strip():  # Verifica que log_text no esté vacío
-                call_log.text += log_text
-                call_log.save()
 
             # Actualizar la convocatoria con los jugadores seleccionados
             call.players.set(selected_players_ids)
@@ -1561,8 +1535,8 @@ def mark_no_show(request, match_id):
 
     Solo en las competiciones que lo tienen (LAPI), en enfrentamientos competitivos con el acta
     abierta, sea cual sea su fase. ``side`` dice quién no se presentó (``own`` o ``rival``): el
-    otro gana todos los puntos. Las parejas y resultados que hubiera se borran, así no cuenta
-    para jugadores ni parejas; la convocatoria se queda pero no cuenta en la asistencia. No envía
+    otro gana todos los puntos. Las parejas y resultados que hubiera se quitan (se guardan en
+    ``Match.no_show_backup`` para devolverlos al deshacer), así no cuenta para jugadores ni parejas; la convocatoria se queda pero no cuenta en la asistencia. No envía
     el correo del resultado.
     """
     match = club_match(request, match_id)
@@ -1575,6 +1549,7 @@ def mark_no_show(request, match_id):
         return redirect('call_for_match', match_id=match.public_id)
 
     with transaction.atomic():
+        no_show_backup.snapshot(match)  # quitar «No presentado» devuelve las parejas y los resultados
         match.games.all().delete()
         match.result, match.result_points = no_show_score(match, side)
         match.no_show, match.draft_mode = side, False
@@ -1588,16 +1563,19 @@ def mark_no_show(request, match_id):
 @require_POST
 def undo_no_show(request, match_id):
     """Quita el «No presentado» de un enfrentamiento (solo POST, capitán o gestor): el acta vuelve
-    a estar abierta en la fase en que estaba su convocatoria, sin parejas ni resultados."""
+    a estar abierta en la fase en que estaba su convocatoria, con las parejas y resultados que tenía al marcarlo."""
     match = club_match(request, match_id)
     if not match.no_show:
         messages.info(request, _("Este enfrentamiento no está marcado como no presentado."))
         return redirect('call_for_match', match_id=match.public_id)
-    match.no_show = ""
-    match.result, match.result_points, match.draft_mode = outcomes.NONE, outcomes.NONE, True
-    match.was_closed = True
-    match.save()
-    messages.success(request, _("Ya no está marcado como no presentado: el acta vuelve a estar abierta."))
+    with transaction.atomic():
+        match.no_show = ""
+        match.result, match.result_points, match.draft_mode = outcomes.NONE, outcomes.NONE, True
+        match.was_closed = True
+        recovered = no_show_backup.restore(match)
+        match.save()
+    messages.success(request, _("Ya no está marcado como no presentado: el acta vuelve a estar abierta.")
+                     + (" " + _("Se han recuperado las parejas y los resultados que había.") if recovered else ""))
     return redirect('call_for_match', match_id=match.public_id)
 
 

@@ -352,6 +352,9 @@ def snp_account(request):
             if request.method != "POST":
                 messages.error(request, _("No se ha podido leer la cuenta guardada (¿ha cambiado la clave de cifrado?). Vuelve a introducirla."))
     if request.method == "POST":
+        stale = _stale_team_form(request, "snp_account")
+        if stale:
+            return stale
         form = SnpAccountForm(request.POST, has_password=account is not None)
         if form.is_valid():
             account = account or SnpAccount(club=request.club)
@@ -379,6 +382,19 @@ def snp_account(request):
     })
 
 
+def _stale_team_form(request, back):
+    """
+    Redirección (con un aviso y sin guardar nada) si el formulario enviado no es del equipo activo: lo trae del
+    campo oculto ``team`` (id público del club). Una página abierta en otra pestaña con otro equipo, o antigua y
+    sin el campo, no puede cambiar nada en el equipo que no estaba viendo. None si coincide.
+    """
+    if request.POST.get("team") == str(request.club.public_id):
+        return None
+    messages.error(request, _("La página que estabas viendo ya no es la del equipo activo. "
+                              "No se ha guardado ningún cambio: revisa los datos y vuelve a intentarlo."))
+    return redirect(back)
+
+
 def _same_password(account, password):
     """True si ``password`` es la contraseña SNP ya guardada (si no se puede leer, cuenta como distinta)."""
     try:
@@ -404,7 +420,10 @@ def snp_account_password(request):
 @club_admin_required
 @require_POST
 def snp_account_delete(request):
-    """Borra la cuenta SNP del club. Solo capitanes y por POST; vuelve a la página de la cuenta SNP."""
+    """Borra la cuenta SNP del club. Solo capitanes y por POST y del equipo de la página; vuelve a la página de la cuenta SNP."""
+    stale = _stale_team_form(request, "snp_account")
+    if stale:
+        return stale
     SnpAccount.objects.filter(club=request.club).delete()
     messages.success(request, _("Cuenta SNP borrada."))
     return redirect("snp_account")
@@ -453,6 +472,9 @@ def complete_team_start(request):
     """
     from_home = request.POST.get("from") == "home"
     back = "home" if from_home else "list_players"
+    stale = _stale_team_form(request, back)
+    if stale:
+        return stale
     if not SnpAccount.objects.filter(club=request.club).exists():
         messages.error(request, _("Primero registra la cuenta SNP del capitán."))
         return redirect("snp_account")
@@ -760,6 +782,9 @@ def copy_players(request):
     source = next((c for c in sources if c.competition == request.GET.get("desde")), sources[0])
     target = request.club
     if request.method == "POST":
+        stale = _stale_team_form(request, "list_players")
+        if stale:
+            return stale
         result = player_copy.copy_players(source, target, request.POST.getlist("players"), request.user,
                                           site_url=request.build_absolute_uri("/"))
         copied, invited = len(result["copied"]), len(result["invited"])

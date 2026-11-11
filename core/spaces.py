@@ -229,6 +229,33 @@ def follow_space(view_func):
     return wrapper
 
 
+# Parámetros de las páginas de consulta que llevan el id público de un objeto y el modelo al que apuntan.
+QUERY_OBJECTS = {"player": "players.Player", "p1": "players.Player", "p2": "players.Player", "team": "team.Team"}
+
+
+def follow_query_objects(request):
+    """
+    Cambia al equipo del usuario al que pertenece el jugador, la pareja o el rival que llevan los parámetros
+    de la página (``?player=``, ``?p1=&p2=``, ``?team=``), si es de otro de sus equipos: así el enlace sigue
+    funcionando aunque en otra pestaña, con «Atrás» o en un enlace compartido se haya abierto otro equipo.
+    Con ``?en=`` manda lo que dice el enlace y no se hace nada.
+    """
+    if request.GET.get(SWITCH_PARAM) or not is_multi_space(request):
+        return
+    from django.apps import apps
+    clubs = user_clubs(request)
+    for param, model_label in QUERY_OBJECTS.items():
+        value = request.GET.get(param)
+        if not value:
+            continue
+        club_id = (apps.get_model(model_label).objects.filter(public_id=value, club__in=clubs)
+                   .values_list("club", flat=True).first())
+        club = next((c for c in clubs if c.id == club_id), None)
+        if club is not None:
+            switch_to(request, club)
+            return
+
+
 def management_view(view_func):
     """
     Decorador de Plantilla, Club y Rivales, que son de un solo espacio. Con ``?en=`` cambia a ese
@@ -264,12 +291,14 @@ def consult_view(view_func):
     """
     Decorador de las páginas de consulta de un solo espacio (estadísticas de jugador, parejas,
     rivales…): con ``?en=`` cambia a ese espacio (follow_space) y deja en
-    ``request.space_switcher`` todos los espacios del usuario para cambiar desde la página.
+    ``request.space_switcher`` todos los espacios del usuario para cambiar desde la página. Sin ``?en=``,
+    el jugador, la pareja o el rival del enlace deciden el equipo (``follow_query_objects``).
     """
     @follow_space
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
-        """Prepara el selector con todos los espacios."""
+        """Sigue al equipo del objeto del enlace y prepara el selector con todos los espacios."""
+        follow_query_objects(request)
         request.space_switcher = []
         if getattr(request, "club", None) is not None and is_multi_space(request):
             request.space_switcher = [

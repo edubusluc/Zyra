@@ -54,7 +54,6 @@ from django.db import transaction  # noqa: E402
 from django.utils.dateparse import parse_date, parse_datetime  # noqa: E402
 
 from call.models import Call  # noqa: E402
-from callLog.models import CallLog  # noqa: E402
 from core.models import Club, Membership  # noqa: E402
 from match.models import Game, Match, Result  # noqa: E402
 from penalty.models import Penalty  # noqa: E402
@@ -2470,24 +2469,6 @@ CALLS = [{'public_id': 'CALKnzVwXhaHoIl',
               'PLYanVz8oS3njsq',
               'PLYWT8zT9fEkKR1']}]
 
-CALL_LOGS = [{'public_id': 'LOG7efpG17WUmlG',
-  'call': 'CALhe7ae3wfySJC',
-  'text': 'Jugadores añadidos con la convocatoria abierta: FRANCISCO el día 27-09-2026 18:10:48;Jugadores añadidos con '
-          'la convocatoria abierta: JUAN JOSE el día 27-09-2026 18:12:33;'},
- {'public_id': 'LOGg8sO7eGsALJb', 'call': 'CALONfpFlzaOLF5', 'text': ''},
- {'public_id': 'LOGeknWmI8dZcFA',
-  'call': 'CALmO7bY4FUnmSl',
-  'text': 'Jugadores añadidos con la convocatoria abierta: FABRIZIO el día 27-09-2026 18:48:50;'},
- {'public_id': 'LOG99zgVYoO72w4', 'call': 'CALMTSkFGulvNXM', 'text': ''},
- {'public_id': 'LOG0yuetLtZwePG', 'call': 'CAL6o2lt7JICavw', 'text': ''},
- {'public_id': 'LOGQYX69HrEUoz7', 'call': 'CALhPmbMFKfZ1mO', 'text': ''},
- {'public_id': 'LOGzGWn0mh7RxZC',
-  'call': 'CALJTir3q7Hn8hR',
-  'text': 'Jugadores añadidos con la convocatoria abierta: ALBERTO el día 27-09-2026 19:25:02;'},
- {'public_id': 'LOGUNlmDBfYuMvM', 'call': 'CALs2KVQx1mBDWl', 'text': ''},
- {'public_id': 'LOGeAEltJWo9wpF', 'call': 'CALZEK3sZvE1myI', 'text': ''},
- {'public_id': 'LOGqNlMSfolrxpt', 'call': 'CALmIdj4W71YLO8', 'text': ''}]
-
 PENALTIES = []
 
 
@@ -2604,8 +2585,6 @@ def populate(username, email, password, superuser=False):
     Call.players.through.objects.bulk_create([
         Call.players.through(call=calls[r["public_id"]], player=players[p]) for r in CALLS for p in r["players"]
     ])
-    _create("registros de convocatoria", CallLog, CALL_LOGS,
-            lambda r: CallLog(public_id=r["public_id"], call=calls[r["call"]], text=r["text"]))
     _create("penalizaciones", Penalty, PENALTIES, lambda r: Penalty(
         public_id=r["public_id"], player=players[r["player"]], call=calls[r["call"]], reason=r["reason"]))
 

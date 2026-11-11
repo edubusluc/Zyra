@@ -5,7 +5,6 @@ El admin queda solo para el dueño de la plataforma (superusuarios) como herrami
 de emergencia; la gestión diaria se hace desde el back-office.
 """
 from django.contrib import admin
-from callLog.models import CallLog
 from penalty.models import Penalty
 from team.models import Team
 from .models import Club, Invitation, Membership
@@ -48,14 +47,6 @@ class TeamAdmin(admin.ModelAdmin):
     list_display = ("name", "club", "is_own", "in_group", "location")
     list_filter = ("club", "is_own", "in_group")
     search_fields = ("name", "location")
-
-
-@admin.register(CallLog)
-class CallLogAdmin(admin.ModelAdmin):
-    """Admin de las entradas del registro de convocatorias."""
-    list_display = ("call", "text")
-    list_filter = ("call__match__club",)
-    search_fields = ("text",)
 
 
 @admin.register(Penalty)

@@ -12,7 +12,7 @@ User ─┬─< Membership >── Club ──1:1── SnpAccount
                           ├─< Match >── Team local / Team visiting (nullable)
                           │     └─< Game (n_game 1..5, 4 FK a Player) ─< Result (uno por Game)
                           │     └─< Call (uno por Match) ─M2M─ Player
-                          │            ├─< CallLog   ├─< Penalty >── Player   └─< ReportDelivery
+                          │            ├─< Penalty   >── Player   └─< ReportDelivery
                           ├─< Invitation, SnpTeamImport, PhotoCheck, BlockedEmail …
 ```
 
@@ -78,7 +78,7 @@ entero sigue siendo la clave de los FK. Excepciones sin `public_id`: `backoffice
 
 - **Match**: `club`, `local`, `visiting` (FK a `Team`, nullable), `start_date`, `match_type`
   (`enfrentamiento`/`reto`/`playoff`/`liga`/`fase_final`/`amistoso`; los de cada competición en
-  `core.competitions`), `round_number` (jornada de liga, opcional), `no_show` (`own`/`rival`: no presentado, acta cerrada sin partidos), `draft_mode` (True = acta abierta), `result`
+  `core.competitions`), `round_number` (jornada de liga, opcional), `no_show` (`own`/`rival`: no presentado, acta cerrada sin partidos; `no_show_backup` guarda las parejas y resultados para devolverlos al quitarlo), `draft_mode` (True = acta abierta), `result`
   (`Victoria Local`/`Victoria Visitante`/`EMPATE`/`NONE`), `result_points` (`"7/5"`; formato
   antiguo `"7-5"`, ver `match.views.split_points`), `season` y `location` (rellenos en `save()` solo
   si están vacíos; `location` es copia, no enlace), `rival_name` (amistoso con rival escrito a mano:
@@ -99,7 +99,7 @@ entero sigue siendo la clave de los FK. Excepciones sin `public_id`: `backoffice
 - **Availability** (`call/models.py`): respuesta de un jugador al enlace de disponibilidad, única por (`match`, `player`); `answer` yes/no/maybe, `comment` (≤200, solo con «Pendiente»; se borra al cerrar el acta). Cambiar fecha u hora del `Match` no la borra. El enlace usa `Match.availability_token` (impredecible; migración `match/0018` lo crea para los enfrentamientos abiertos).
 - **ReportDelivery**: cola de envío del PDF, única por (`call`, `email`); `status`
   pending/sent/failed, `attempts`, `next_attempt_at`.
-- **CallLog** (`callLog/models.py`): `text` con líneas separadas por `;`.
+- La app `callLog` ya no tiene modelos (`0002_delete_calllog` borró `CallLog`): solo la página de advertencias.
 - **Penalty** (`penalty/models.py`): advertencia; `player`, `call`, `kind` (código del motivo: `no_show`, `late`, `late_drop`, `conduct`, `other`; se traduce al pintarlo con `display_reason`) y `reason` (detalle libre, obligatorio solo en `other`). Las anteriores al motivo quedaron como `other`; su texto automático «Advertencia en el partido…» se vació en la migración 0003.
 
 ### backoffice (`backoffice/models.py`)
@@ -136,7 +136,7 @@ Renombrarlos exige migración y tocar vistas, estadísticas, plantillas y `popul
   `match/models.py`); se pierden sus `Penalty`, `SnpScoreHistory` y su presencia en convocatorias. [V]
 - Borrar **Team** rival borra en cascada sus `Match` (FK `CASCADE`). [V] No hay vista de borrado de
   equipos en `team/views.py`. [V]
-- Borrar **Match** borra `Game`, `Result`, `Call`, `CallLog`, `Penalty`, `ReportDelivery`. Solo se
+- Borrar **Match** borra `Game`, `Result`, `Call`, `Penalty`, `ReportDelivery`. Solo se
   permite con el acta abierta (`match.views.delete_match`). [V]
 
 ## Al modificar datos

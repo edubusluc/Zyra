@@ -12,7 +12,6 @@ from django.test import TestCase
 from django.urls import reverse
 
 from call.models import Call
-from callLog.models import CallLog
 from core.services import create_club
 from match.models import Game, Match
 from players.models import Player
@@ -51,7 +50,6 @@ class MatchLifecycleTests(TestCase):
         self.client.post(reverse("edit_call", args=[call.public_id]),
                          {"players": [p.id for p in self.players[:10]]})
         self.assertEqual(call.players.count(), 10)
-        self.assertIn("JUG10", CallLog.objects.get(call=call).text)
 
         # Sin convocatoria cerrada no se pueden crear partidos
         self.client.post(reverse("create_game", args=[match.public_id]), {"ordered_games": "[]"})

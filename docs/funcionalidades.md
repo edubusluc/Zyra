@@ -140,8 +140,8 @@ El ciclo de un enfrentamiento ([`match.views`](referencia/match/views.md)):
    «Mi perfil» (enlace «Edita tus preferencias» bajo el selector).
    La fecha se puede cambiar después (lápiz junto a la fecha en la página del partido) mientras el acta no esté
    cerrada; la temporada se recalcula y los listados, estadísticas e informe usan la nueva fecha.
-2. **Convocatoria**: elegir jugadores (con sus sanciones a la vista); se puede editar y cada
-   cambio queda en el **registro de convocatoria** ([`callLog`](referencia/callLog/index.md)).
+2. **Convocatoria**: elegir jugadores (con sus sanciones a la vista); se puede editar mientras el acta esté abierta; las
+   **advertencias** de cada convocatoria están en [`callLog`](referencia/callLog/index.md).
    **Disponibilidad**: en la ficha, el capitán y los gestores tienen un enlace por enfrentamiento (con texto listo para WhatsApp). Cada jugador inicia sesión (la sesión dura 30 días), enlaza su cuenta con su jugador si aún no lo estaba y responde Sí, No o Aún no sé (con un comentario opcional en «Aún no sé»), y puede cambiarlo hasta que se cierra la convocatoria. Solo capitán y gestores ven las respuestas y pueden cambiarlas; los «Sí» llegan marcados al crear la convocatoria. Hay botones para enviar un recordatorio por correo a quien no ha respondido y para crear un enlace nuevo.
 3. **Cerrar convocatoria** (mínimo 10 jugadores; con menos, la ficha avisa de cuántos faltan antes de cerrar igualmente): envía el **informe PDF** a los capitanes; lo que
    falle se reintenta solo cada 5 minutos. El informe recomienda cómo formar las parejas según el

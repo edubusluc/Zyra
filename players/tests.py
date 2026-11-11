@@ -204,12 +204,12 @@ class SnpAccountTests(TestCase):
 
     def test_admin_can_save_account_and_password_is_kept_when_blank(self):
         self.client.login(username="admin", password="pass-12345")
-        response = self.client.post(reverse("snp_account"), {"username": "capitan", "password": "secreto"})
+        response = self.client.post(reverse("snp_account"), {"team": self.club.public_id, "username": "capitan", "password": "secreto"})
         self.assertRedirects(response, reverse("snp_account"))
         page = self.client.get(reverse("snp_account")).content.decode()
         self.assertNotIn("secreto", page)
 
-        self.client.post(reverse("snp_account"), {"username": "capitan2", "password": ""})
+        self.client.post(reverse("snp_account"), {"team": self.club.public_id, "username": "capitan2", "password": ""})
         account = SnpAccount.objects.get(club=self.club)
         self.assertEqual((account.username, account.password, account.team_id), ("capitan2", "secreto", ""))
 
@@ -221,7 +221,7 @@ class SnpAccountTests(TestCase):
         account.username, account.password = "capitan", "secreto"
         account.save()
         self.assertNotContains(self.client.get(reverse("snp_account")), "4380")
-        self.client.post(reverse("snp_account"), {"username": "capitan", "password": "", "team": "4380"})
+        self.client.post(reverse("snp_account"), {"team": self.club.public_id, "username": "capitan", "password": "", "team_id": "4380"})
         self.assertEqual(SnpAccount.objects.get().team_id, "")
 
     def test_members_cannot_see_account(self):
@@ -524,7 +524,7 @@ class CompleteTeamTests(TestCase):
         from .models import SnpScoreHistory, SnpTeamImport
         # «Completar equipo» ya no tiene botón en Jugadores: lo lanza el administrador a mano o, tras un fallo, «Reintentar» en la portada.
         self.assertNotContains(self.client.get(reverse("list_players")), "Completar equipo")
-        self.assertRedirects(self.client.post(reverse("complete_team_start")), reverse("list_players"))
+        self.assertRedirects(self.client.post(reverse("complete_team_start"), {"team": self.club.public_id}), reverse("list_players"))
         team_import = SnpTeamImport.objects.get()
         self.assertEqual(team_import.status, SnpTeamImport.READY)
         self.assertEqual([(p["name"], p["last_name"]) for p in team_import.to_add],
@@ -555,12 +555,12 @@ class CompleteTeamTests(TestCase):
         page = self.client.get(reverse("list_players"))
         self.assertNotContains(page, "complete_team/\"")
         self.assertNotContains(page, "Añade los jugadores de tu equipo de SNP")
-        self.client.post(reverse("complete_team_start"))
+        self.client.post(reverse("complete_team_start"), {"team": self.club.public_id})
         self.assertEqual(SnpTeamImport.objects.count(), 1)
 
     def test_confirm_skips_players_created_in_the_meantime(self):
         from .models import SnpTeamImport
-        self.client.post(reverse("complete_team_start"))
+        self.client.post(reverse("complete_team_start"), {"team": self.club.public_id})
         team_import = SnpTeamImport.objects.get()
         Player.objects.create(club=self.club, name="Pedro", last_name="Raposo")
         self.client.post(reverse("complete_team_confirm", args=[team_import.public_id]))
@@ -569,18 +569,18 @@ class CompleteTeamTests(TestCase):
 
     def test_cancel_does_not_close_the_option(self):
         from .models import SnpTeamImport
-        self.client.post(reverse("complete_team_start"))
+        self.client.post(reverse("complete_team_start"), {"team": self.club.public_id})
         team_import = SnpTeamImport.objects.get()
         self.client.post(reverse("complete_team_cancel", args=[team_import.public_id]))
         self.assertEqual(Player.objects.count(), 1)
         SnpTeamImport.objects.update(created_at=timezone.now() - timedelta(minutes=10))  # pasada la pausa
-        self.client.post(reverse("complete_team_start"))
+        self.client.post(reverse("complete_team_start"), {"team": self.club.public_id})
         self.assertEqual(SnpTeamImport.objects.filter(status=SnpTeamImport.READY).count(), 1)
 
     def failed_import(self, error):
         from .models import SnpTeamImport
         with mock.patch("players.snp_import.scrape_scores", side_effect=error):
-            self.client.post(reverse("complete_team_start"))
+            self.client.post(reverse("complete_team_start"), {"team": self.club.public_id})
         team_import = SnpTeamImport.objects.get()
         self.assertEqual(team_import.status, SnpTeamImport.ERROR)
         return team_import, self.client.get(reverse("complete_team_status", args=[team_import.public_id])).json()
@@ -604,7 +604,7 @@ class CompleteTeamTests(TestCase):
         from .models import SnpTeamImport
         error = SnpScrapeError("SNP no ha aceptado el usuario o la contraseña.", kind=SnpScrapeError.ACCOUNT)
         with mock.patch("players.snp_import.scrape_scores", side_effect=error):
-            self.client.post(reverse("complete_team_start"))
+            self.client.post(reverse("complete_team_start"), {"team": self.club.public_id})
         # Con el plazo de espera cumplido aparece «Reintentar»; si no, solo se explica la espera.
         SnpTeamImport.objects.update(created_at=timezone.now() - timedelta(hours=25))
         home = self.client.get(reverse("home"))
@@ -612,7 +612,7 @@ class CompleteTeamTests(TestCase):
         self.assertContains(home, 'name="from" value="home"')
         self.assertContains(home, "Revisar cuenta SNP")
         # Reintentar desde la portada se comporta como en el alta: confirma solo y va a la espera.
-        response = self.client.post(reverse("complete_team_start"), {"from": "home"})
+        response = self.client.post(reverse("complete_team_start"), {"from": "home", "team": self.club.public_id})
         team_import = SnpTeamImport.objects.latest("created_at")
         self.assertRedirects(response, reverse("complete_team_welcome", args=[team_import.public_id]), fetch_redirect_response=False)
         self.assertEqual(team_import.status, SnpTeamImport.DONE)
@@ -625,7 +625,7 @@ class CompleteTeamTests(TestCase):
         self.assertContains(home, 'name="from" value="home"')
         # En curso (en cola): se puede seguir o cancelar, sin botón de lanzar otra.
         with override_settings(SNP_IMPORT_INLINE=False):
-            self.client.post(reverse("complete_team_start"), {"from": "home"})
+            self.client.post(reverse("complete_team_start"), {"from": "home", "team": self.club.public_id})
         team_import = SnpTeamImport.objects.get()
         home = self.client.get(reverse("home"))
         self.assertContains(home, "Sincronizando tu equipo con SNP")
@@ -637,7 +637,7 @@ class CompleteTeamTests(TestCase):
         self.assertContains(home, "No hemos podido traer tu equipo de SNP")
         self.assertContains(home, 'name="from" value="home"')
         self.assertIsNone(snp_import.search_limit(self.club))
-        response = self.client.post(reverse("complete_team_start"), {"from": "home"})
+        response = self.client.post(reverse("complete_team_start"), {"from": "home", "team": self.club.public_id})
         self.assertEqual(SnpTeamImport.objects.count(), 2)
         # Hecho correctamente: la tarea desaparece.
         SnpTeamImport.objects.update(status=SnpTeamImport.DONE)
@@ -646,7 +646,7 @@ class CompleteTeamTests(TestCase):
     def test_progress_bar_on_every_page_and_creation_blocked_while_syncing(self):
         """Mientras sincroniza se navega con normalidad (barra de progreso), pero no se crean registros."""
         with override_settings(SNP_IMPORT_INLINE=False):
-            self.client.post(reverse("complete_team_start"), {"from": "home"})
+            self.client.post(reverse("complete_team_start"), {"from": "home", "team": self.club.public_id})
         team_import = SnpTeamImport.objects.get()
         SnpTeamImport.objects.update(started_at=timezone.now(), progress=40, stage="Sesión iniciada en SNP")
         page = self.client.get(reverse("list_players"))
@@ -687,24 +687,24 @@ class CompleteTeamTests(TestCase):
         """Si SNP rechazó la cuenta y sigue igual, no se relanza; al cambiarla sí, y la espera es de 1 minuto."""
         error = SnpScrapeError("SNP no ha aceptado el usuario o la contraseña.", kind=SnpScrapeError.ACCOUNT)
         with mock.patch("players.snp_import.scrape_scores", side_effect=error):
-            self.client.post(reverse("complete_team_start"))
+            self.client.post(reverse("complete_team_start"), {"team": self.club.public_id})
         self.assertEqual(snp_import.SEARCH_COOLDOWN, timedelta(minutes=1))
         self.assertTrue(snp_import.account_unchanged_after_failure(self.club))
         home = self.client.get(reverse("home"))
         self.assertContains(home, "Cambia el usuario o la contraseña")
         self.assertNotContains(home, 'name="from" value="home"')
-        response = self.client.post(reverse("complete_team_start"), {"from": "home"})
+        response = self.client.post(reverse("complete_team_start"), {"from": "home", "team": self.club.public_id})
         self.assertRedirects(response, reverse("snp_account"), fetch_redirect_response=False)
         self.assertEqual(SnpTeamImport.objects.count(), 1)
         # Guardar la cuenta sin cambiar nada no la da por corregida.
         account = SnpAccount.objects.get(club=self.club)
         before = account.updated_at
-        self.client.post(reverse("snp_account"), {"username": account.username, "password": ""})
+        self.client.post(reverse("snp_account"), {"team": self.club.public_id, "username": account.username, "password": ""})
         account.refresh_from_db()
         self.assertEqual(account.updated_at, before)
         self.assertTrue(snp_import.account_unchanged_after_failure(self.club))
         # Con otra contraseña sí se puede reintentar.
-        self.client.post(reverse("snp_account"), {"username": account.username, "password": "otra-clave"})
+        self.client.post(reverse("snp_account"), {"team": self.club.public_id, "username": account.username, "password": "otra-clave"})
         self.assertFalse(snp_import.account_unchanged_after_failure(self.club))
         self.assertContains(self.client.get(reverse("home")), 'name="from" value="home"')
 
@@ -715,7 +715,7 @@ class CompleteTeamTests(TestCase):
         self.club.save(update_fields=["snp_import_failures"])
         with mock.patch("players.snp_import.scrape_scores", side_effect=error), \
                 mock.patch("players.snp_import._notify_staff", side_effect=RuntimeError("sin correo")):
-            self.client.post(reverse("complete_team_start"))
+            self.client.post(reverse("complete_team_start"), {"team": self.club.public_id})
         team_import = SnpTeamImport.objects.get()
         self.assertEqual(team_import.status, SnpTeamImport.ERROR)
         self.assertIn("no ha aceptado el usuario", team_import.message)
@@ -741,11 +741,11 @@ class CompleteTeamTests(TestCase):
     def test_fixing_the_account_lifts_the_wait_and_the_block(self):
         error = SnpScrapeError("SNP no ha aceptado el usuario o la contraseña.", kind=SnpScrapeError.ACCOUNT)
         with mock.patch("players.snp_import.scrape_scores", side_effect=error):
-            self.client.post(reverse("complete_team_start"))
+            self.client.post(reverse("complete_team_start"), {"team": self.club.public_id})
         self.assertIsNotNone(snp_import.search_limit(self.club))
         self.club.snp_import_failures = snp_import.MAX_FAILED_SEARCHES
         self.club.save(update_fields=["snp_import_failures"])
-        self.client.post(reverse("snp_account"), {"username": "nuevo", "password": "otra-clave"})
+        self.client.post(reverse("snp_account"), {"team": self.club.public_id, "username": "nuevo", "password": "otra-clave"})
         self.club.refresh_from_db()
         self.assertEqual(self.club.snp_import_failures, 0)
         self.assertIsNone(snp_import.search_limit(self.club))
@@ -761,7 +761,7 @@ class CompleteTeamTests(TestCase):
         self.assertIn("nacionalidad", str(raised.exception))
         self.assertIn("Italia", str(raised.exception))
         with mock.patch("players.snp_import.scrape_scores", side_effect=raised.exception):
-            self.client.post(reverse("complete_team_start"), {"from": "home"})
+            self.client.post(reverse("complete_team_start"), {"from": "home", "team": self.club.public_id})
         edit = reverse("edit_team", args=[self.club.own_team.public_id])
         self.assertContains(self.client.get(reverse("home")), f'href="{edit}"')
         team_import = SnpTeamImport.objects.get()
@@ -770,7 +770,7 @@ class CompleteTeamTests(TestCase):
     def test_failure_card_explains_the_wait_when_retry_is_too_soon(self):
         error = SnpScrapeError("No se encontraron jugadores.", kind=SnpScrapeError.TEAM)
         with mock.patch("players.snp_import.scrape_scores", side_effect=error):
-            self.client.post(reverse("complete_team_start"))
+            self.client.post(reverse("complete_team_start"), {"team": self.club.public_id})
         home = self.client.get(reverse("home"))
         self.assertContains(home, "Podrás reintentarlo a partir del")
         self.assertNotContains(home, 'name="from" value="home"')
@@ -783,7 +783,7 @@ class CompleteTeamTests(TestCase):
         for attempt in range(snp_import.MAX_FAILED_SEARCHES):
             SnpTeamImport.objects.update(created_at=timezone.now() - timedelta(hours=25))  # fuera del límite diario
             with mock.patch("players.snp_import.scrape_scores", side_effect=error):
-                self.client.post(reverse("complete_team_start"))
+                self.client.post(reverse("complete_team_start"), {"team": self.club.public_id})
             if attempt < snp_import.MAX_FAILED_SEARCHES - 1:
                 SnpTeamImport.objects.update(created_at=timezone.now() - timedelta(hours=25))
                 # Tras cada fallo la portada ofrece «Reintentar» (mientras no se alcance el máximo).
@@ -799,14 +799,14 @@ class CompleteTeamTests(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn("staff@example.com", mail.outbox[0].to)
         count = SnpTeamImport.objects.count()
-        response = self.client.post(reverse("complete_team_start"), follow=True)
+        response = self.client.post(reverse("complete_team_start"), {"team": self.club.public_id}, follow=True)
         self.assertContains(response, "Hemos avisado al administrador")
         self.assertEqual(SnpTeamImport.objects.count(), count)
 
     def test_snp_switched_off_does_not_count_as_a_failure(self):
         from . import snp_service
         with mock.patch.object(snp_service, "is_enabled", return_value=False):
-            self.client.post(reverse("complete_team_start"))
+            self.client.post(reverse("complete_team_start"), {"team": self.club.public_id})
         self.club.refresh_from_db()
         self.assertEqual(self.club.snp_import_failures, 0)
 
@@ -835,7 +835,7 @@ class CompleteTeamTests(TestCase):
         Membership.objects.create(user=viewer, club=self.club, role=Membership.MEMBER)
         self.client.login(username="viewer", password="pass-12345")
         self.assertNotContains(self.client.get(reverse("list_players")), "Completar equipo")
-        self.client.post(reverse("complete_team_start"))
+        self.client.post(reverse("complete_team_start"), {"team": self.club.public_id})
         self.client.login(username="admin", password="pass-12345")
         SnpAccount.objects.all().delete()
         self.assertNotContains(self.client.get(reverse("list_players")), "Completar equipo")
@@ -909,18 +909,19 @@ class CompleteTeamLimitsTests(TestCase):
         account = SnpAccount(club=club)
         account.username, account.password = "capitan", "secreto"
         account.save()
+        self.current = club
         return club
 
     def start_and_cancel(self):
         from .models import SnpTeamImport
-        self.client.post(reverse("complete_team_start"))
+        self.client.post(reverse("complete_team_start"), {"team": self.current.public_id})
         SnpTeamImport.objects.filter(status=SnpTeamImport.READY).update(status=SnpTeamImport.ERROR, message="No terminó.")
 
     def test_cancelled_searches_do_not_count_for_the_limit(self):
         from . import snp_import
         from .models import SnpTeamImport
         club = self.club("Club A")
-        self.client.post(reverse("complete_team_start"))
+        self.client.post(reverse("complete_team_start"), {"team": self.current.public_id})
         SnpTeamImport.objects.filter(status=SnpTeamImport.READY).update(status=SnpTeamImport.CANCELLED)
         self.assertIsNone(snp_import.search_limit(club))
 
@@ -930,7 +931,7 @@ class CompleteTeamLimitsTests(TestCase):
         club = self.club("Club A")
         self.start_and_cancel()
         # Pulsar otra vez enseguida no lanza otra búsqueda.
-        response = self.client.post(reverse("complete_team_start"), follow=True)
+        response = self.client.post(reverse("complete_team_start"), {"team": self.current.public_id}, follow=True)
         self.assertContains(response, "varias veces seguidas")
         self.assertEqual(SnpTeamImport.objects.count(), 1)
         # Pasada la pausa sí, pero no más de SEARCHES_PER_DAY en 24 horas.
@@ -939,7 +940,7 @@ class CompleteTeamLimitsTests(TestCase):
             self.start_and_cancel()
         SnpTeamImport.objects.update(created_at=timezone.now() - timedelta(hours=2))
         self.assertIsNotNone(snp_import.search_limit(club))
-        self.client.post(reverse("complete_team_start"))
+        self.client.post(reverse("complete_team_start"), {"team": self.current.public_id})
         self.assertEqual(SnpTeamImport.objects.count(), snp_import.SEARCHES_PER_DAY)
 
     def test_test_team_has_no_limits(self):
@@ -951,7 +952,7 @@ class CompleteTeamLimitsTests(TestCase):
         club.save(update_fields=["snp_unlimited"])
         self.assertTrue(snp_import.is_unlimited(club))
         for _ in range(snp_import.SEARCHES_PER_DAY + 1):
-            self.client.post(reverse("complete_team_start"))
+            self.client.post(reverse("complete_team_start"), {"team": self.current.public_id})
             team_import = SnpTeamImport.objects.get(status=SnpTeamImport.READY)
             self.client.post(reverse("complete_team_confirm", args=[team_import.public_id]))
         self.assertEqual(SnpTeamImport.objects.filter(status=SnpTeamImport.DONE).count(), snp_import.SEARCHES_PER_DAY + 1)
@@ -962,7 +963,7 @@ class CompleteTeamLimitsTests(TestCase):
         club = self.club("Club B")
         for name, last_name in (("Ana", "Alvarez"), ("Pedro", "Raposo Bellerin"), ("Maria Jose", "Gomez Ruiz")):
             Player.objects.create(club=club, name=name, last_name=last_name, snp_score=1.0)
-        self.client.post(reverse("complete_team_start"))
+        self.client.post(reverse("complete_team_start"), {"team": self.current.public_id})
         page = self.client.get(reverse("list_players"))
         self.assertContains(page, "Actualizar puntos SNP")
         team_import = SnpTeamImport.objects.get()
@@ -1132,7 +1133,7 @@ class SnpAccountCardTests(TestCase):
         self.url = reverse("snp_account")
 
     def save_account(self):
-        return self.client.post(self.url, {"username": "capitan", "password": "secreto"})
+        return self.client.post(self.url, {"team": self.club.public_id, "username": "capitan", "password": "secreto"})
 
     def test_form_until_the_account_is_saved_then_a_card(self):
         self.assertContains(self.client.get(self.url), 'name="username"')
@@ -1152,7 +1153,7 @@ class SnpAccountCardTests(TestCase):
         self.assertContains(page, 'value="capitan"')
         self.assertNotContains(page, "secreto")
         # Dejar la contraseña vacía mantiene la actual.
-        self.client.post(self.url, {"username": "otro", "password": ""})
+        self.client.post(self.url, {"team": self.club.public_id, "username": "otro", "password": ""})
         account = SnpAccount.objects.get(club=self.club)
         self.assertEqual((account.username, account.password), ("otro", "secreto"))
 

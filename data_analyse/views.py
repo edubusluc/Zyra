@@ -1474,6 +1474,9 @@ def rival_detail(request):
     if request.GET.get("team"):
         team = get_object_or_404(Team, public_id=request.GET["team"], club=request.club)
     elif not name:
+        if request.GET.get("en"):
+            # Al cambiar de competición desde la ficha de un rival, ese rival no existe en el otro equipo: vuelve a la lista.
+            return redirect(reverse("rival_statistics"))
         raise Http404("Rival no indicado")
     seasons, selected_season, match_type = _season_and_type(request, with_type=True)
     players = list(Player.objects.filter(club=request.club))

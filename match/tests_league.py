@@ -169,6 +169,37 @@ class LapiMatchTests(TestCase):
         match.refresh_from_db()
         self.assertEqual((match.no_show, match.draft_mode, match.result_points), ("", True, "NONE"))
 
+    def test_undoing_no_show_restores_pairs_and_results(self):
+        """Marcar «No presentado» borra parejas y resultados de las cifras, pero quitarlo los devuelve (FUN-06)."""
+        from match.models import Result
+        match = self._match()
+        game = Game.objects.create(match=match, n_game=1, score=2, winner="Local", player_1_local=self.players[0],
+                                   player_2_local=self.players[1], removed_player_names={"player_1_visiting": "Eva Ruiz"})
+        Result.objects.create(game=game, result="Local", set1_local=6, set1_visiting=2, set2_local=6, set2_visiting=3)
+        self.client.post(reverse("mark_no_show", args=[match.public_id]), {"side": "rival"})
+        self.assertFalse(match.games.exists())
+        self.assertFalse(Result.objects.filter(game__match=match).exists())
+        self.client.post(reverse("undo_no_show", args=[match.public_id]))
+        match.refresh_from_db()
+        self.assertEqual(match.no_show_backup, [])
+        restored = match.games.get()
+        self.assertEqual((restored.n_game, restored.score, restored.winner), (1, 2, "Local"))
+        self.assertEqual((restored.player_1_local, restored.player_2_local), (self.players[0], self.players[1]))
+        self.assertEqual(restored.removed_player_names, {"player_1_visiting": "Eva Ruiz"})
+        result = restored.results.get()
+        self.assertEqual(result.sets()[:2], [(6, 2), (6, 3)])
+
+    def test_undoing_no_show_keeps_the_name_of_a_player_deleted_meanwhile(self):
+        match = self._match()
+        Game.objects.create(match=match, n_game=1, score=1, player_1_local=self.players[0], player_2_local=self.players[1])
+        self.client.post(reverse("mark_no_show", args=[match.public_id]), {"side": "rival"})
+        name = str(self.players[1])
+        self.players[1].delete()
+        self.client.post(reverse("undo_no_show", args=[match.public_id]))
+        restored = match.games.get()
+        self.assertIsNone(restored.player_2_local)
+        self.assertEqual(restored.removed_player_names, {"player_2_local": name})
+
     def test_no_show_own_gives_zero_league_points(self):
         match = self._match(days=3)
         self.assertContains(self.client.get(reverse("call_for_match", args=[match.public_id])), "No nos presentamos")

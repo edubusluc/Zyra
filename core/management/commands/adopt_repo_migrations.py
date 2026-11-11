@@ -21,6 +21,8 @@ from django.db.migrations.recorder import MigrationRecorder
 
 PROJECT_APPS = ["backoffice", "call", "callLog", "core", "data_analyse", "match", "penalty", "players", "team"]
 INITIAL = "0001_initial"
+# Tablas que crea una 0001_initial y borra una migración posterior (``callLog.0002_delete_calllog``): su ausencia no impide adaptar.
+DROPPED_LATER = {"callLog_calllog"}
 
 
 class Command(BaseCommand):
@@ -90,6 +92,8 @@ class Command(BaseCommand):
                 if model._meta.app_label not in PROJECT_APPS:
                     continue
                 table = model._meta.db_table
+                if table in DROPPED_LATER:
+                    continue
                 if table not in tables:
                     missing.append(f"tabla {table}")
                     continue

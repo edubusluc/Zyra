@@ -227,6 +227,7 @@
         {% if snp_sync.can_retry %}
         <form method="post" action="{% url 'complete_team_start' %}" data-loading-text="{% translate 'Buscando jugadores en SNP…' %}">
             {% csrf_token %}
+            <input type="hidden" name="team" value="{{ request.club.public_id }}">
             <input type="hidden" name="from" value="home">
             <button type="submit" class="btn btn-primary btn-sm">{% if snp_sync.state == 'failed' %}{% translate "Reintentar" %}{% else %}{% translate "Sincronizar datos" %}{% endif %}</button>
         </form>

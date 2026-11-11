@@ -66,7 +66,7 @@ class CopyPlayersTests(TestCase):
         page = self.client.get(reverse("copy_players"))
         self.assertContains(page, "Ana Ruiz")
         with self.captureOnCommitCallbacks(execute=True):
-            response = self.client.post(reverse("copy_players"), {"players": [self.ana.pk, self.luis.pk]}, follow=True)
+            response = self.client.post(reverse("copy_players"), {"team": self.lapi.public_id, "players": [self.ana.pk, self.luis.pk]}, follow=True)
         self.assertContains(response, "2 jugadores copiados.")
         ana_copy = Player.objects.get(club=self.lapi, name="Ana")
         self.assertEqual((ana_copy.copied_from, ana_copy.user, ana_copy.position, ana_copy.snp_score),
@@ -77,7 +77,7 @@ class CopyPlayersTests(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn(invitation.token, mail.outbox[0].body)
         # Copiar otra vez no duplica.
-        self.client.post(reverse("copy_players"), {"players": [self.ana.pk]})
+        self.client.post(reverse("copy_players"), {"team": self.lapi.public_id, "players": [self.ana.pk]})
         self.assertEqual(Player.objects.filter(club=self.lapi, name="Ana").count(), 1)
 
     def test_lapi_roster_hides_snp_points(self):
@@ -88,14 +88,14 @@ class CopyPlayersTests(TestCase):
 
     def test_must_manage_both_teams(self):
         Membership.objects.filter(user=self.edu, club=self.snp).update(role=Membership.MEMBER)
-        response = self.client.post(reverse("copy_players"), {"players": [self.luis.pk]})
+        response = self.client.post(reverse("copy_players"), {"team": self.lapi.public_id, "players": [self.luis.pk]})
         self.assertRedirects(response, reverse("list_players"), fetch_redirect_response=False)
         self.assertFalse(Player.objects.filter(club=self.lapi, name="Luis").exists())
 
     def test_roster_over_limit_warns_but_copies(self):
         for n in range(15):
             Player.objects.create(club=self.lapi, team=self.lapi.own_team, name=f"Jugador{n}", last_name="X")
-        response = self.client.post(reverse("copy_players"), {"players": [self.luis.pk]}, follow=True)
+        response = self.client.post(reverse("copy_players"), {"team": self.lapi.public_id, "players": [self.luis.pk]}, follow=True)
         self.assertContains(response, "el máximo es 15")
         self.assertTrue(Player.objects.filter(club=self.lapi, name="Luis").exists())
 

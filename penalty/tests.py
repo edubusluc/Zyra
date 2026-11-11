@@ -8,7 +8,6 @@ from django.utils import translation
 from django.urls import reverse
 
 from call.models import Call
-from callLog.models import CallLog
 from core.models import Membership
 from core.services import create_club
 from match.models import Match
@@ -34,7 +33,6 @@ class PenaltyBase(TestCase):
         self.match = Match.objects.create(club=self.club, local=self.club.own_team, visiting=rival,
                                           start_date=datetime.date(2025, 10, 1))
         self.call = Call.objects.create(match=self.match, draft_mode=False)
-        CallLog.objects.create(call=self.call, text="")
         self.ana = Player.objects.create(club=self.club, name="Ana", last_name="Alpha")
         self.zoe = Player.objects.create(club=self.club, name="Zoe", last_name="Zeta")
         self.gone = Player.objects.create(club=self.club, name="Bea", last_name="Beta", in_team=False)
