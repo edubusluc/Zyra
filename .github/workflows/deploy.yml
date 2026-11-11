@@ -113,9 +113,12 @@ jobs:
           install -m 600 /dev/null key
           case "$KEY" in
             *BEGIN*) printf '%s\n' "$KEY" | tr -d '\r' > key ;;
-            *) printf '%s' "$KEY" | tr -d ' \r\n' | base64 -d > key ;;
+            *) printf '%s' "$KEY" | tr -d ' \r\n' | base64 -d | tr -d '\r' > key ;;
           esac
-          ssh-keygen -y -f key > /dev/null
+          if ! ssh-keygen -y -P '' -f key > /dev/null; then
+            echo "DEPLOY_SSH_KEY no es una clave privada válida: está incompleta, tiene contraseña o es la pública (.pub)" >&2
+            exit 1
+          fi
           # La huella del servidor va fijada (secreto DEPLOY_KNOWN_HOSTS): si cambia, el despliegue falla en vez de fiarse.
           if [ -z "$KNOWN_HOSTS" ]; then
             echo "Falta el secreto DEPLOY_KNOWN_HOSTS (salida de: ssh-keyscan -t ed25519 IP_DEL_SERVIDOR)" >&2; exit 1
@@ -127,4 +130,4 @@ jobs:
             echo "DEPLOY_KNOWN_HOSTS no tiene ninguna línea con la huella del servidor" >&2; exit 1
           fi
           ssh -i key -o UserKnownHostsFile=known_hosts -o StrictHostKeyChecking=yes \
-            "$DEPLOY_USER@$HOST" "/opt/zyra/deploy.sh $SHA"
+            "$DEPLOY_USER@$HOST" "sudo -n -u zyra /opt/zyra/deploy.sh $SHA"

@@ -22,13 +22,15 @@ El secreto vale con la salida de `ssh-keyscan -t ed25519 IP_DEL_SERVIDOR` o solo
 
 ## Clave de despliegue (`DEPLOY_SSH_KEY`)
 
+El despliegue entra por SSH como `ubuntu` y ejecuta `deploy.sh` con `sudo -n -u zyra`, porque `/opt/zyra/.env` solo lo lee el usuario `zyra`. Si dice `open /opt/zyra/.env: permission denied`, `deploy.sh` se está ejecutando como otro usuario. Comprueba que `sudo -n -u zyra whoami` imprime `zyra` sin pedir contraseña.
+
 Si el despliegue dice `Permission denied (publickey,password)`, el servidor no reconoce la clave del secreto: su parte pública no está en `~/.ssh/authorized_keys` del usuario `ubuntu`.
 Para crear una nueva (en PowerShell, una orden por línea):
 
-1. `mkdir D:\CopiasZyra\claves` y `ssh-keygen -t ed25519 -N '""' -C "github-deploy" -f D:\CopiasZyra\claves\zyra_deploy`
+1. `mkdir D:\CopiasZyra\claves` y `ssh-keygen -t ed25519 -N '""' -C "github-deploy" -f D:\CopiasZyra\claves\zyra_deploy`; comprueba que no tiene contraseña: `ssh-keygen -y -f D:\CopiasZyra\claves\zyra_deploy` no debe pedirla.
 2. `type D:\CopiasZyra\claves\zyra_deploy.pub` muestra la clave pública (una línea `ssh-ed25519 AAAA…`).
 3. En el servidor (`ssh ubuntu@IP`): `echo 'ssh-ed25519 AAAA… github-deploy' >> ~/.ssh/authorized_keys`
-4. `type D:\CopiasZyra\claves\zyra_deploy` muestra la privada: pégala entera (con BEGIN y END) en el secreto `DEPLOY_SSH_KEY`.
+4. `type D:\CopiasZyra\claves\zyra_deploy` muestra la privada: pégala entera (con BEGIN y END) en el secreto `DEPLOY_SSH_KEY`. Si dice `error in libcrypto`, la clave se pegó cortada o tiene contraseña: usa mejor su base64 en una línea, `[Convert]::ToBase64String([IO.File]::ReadAllBytes("D:\CopiasZyra\claves\zyra_deploy"))`.
 5. «Re-run failed jobs» en la ejecución fallida.
 
 Para saber la pública de una privada que ya tienes: `ssh-keygen -y -f RUTA_DE_LA_PRIVADA`. Guarda la carpeta `claves` fuera del repositorio y en el gestor de contraseñas; la privada no se comparte.
