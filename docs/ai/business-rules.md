@@ -202,7 +202,7 @@ Orden obligatorio del ciclo (`match/views.py`) [V], cubierto por `match/tests_fl
    y cierra `Game.draft_mode`. Con fecha futura exige `confirm_future`. Los resultados se pueden
    meter de una vez en `enter_results` (guardado parcial; «Guardar y cerrar acta»). La fase y la siguiente acción salen siempre de
    `match/phase.py` (`phase_of`/`phases_for`), que usan el inicio, el listado y la página del enfrentamiento. Siempre son 5 partidos: no se contempla un acta con menos. Todo en una transacción.
-7. **Reabrir acta** (`reopen_match`, POST, capitán o gestor): vuelve a borrador, resultado `NONE`, anota `reopened_at/by`.
+7. **Reabrir acta** (`reopen_match`, POST, capitán o gestor): vuelve a borrador, resultado `NONE`, anota `reopened_at/by`. Un enfrentamiento con `reopened_at` solo lo elimina el capitán (`delete_match`): el gestor puede reabrir para corregir, nunca borrar lo que ya estuvo cerrado.
 
 Con el acta cerrada [V]: no se borra el partido (`delete_match`) ni su convocatoria (`delete_call`),
 ni se editan parejas (`edit_game_match`).

@@ -64,7 +64,7 @@ def club_manager_required(view_func):
     """
     Como club_required, pero además el usuario debe ser capitán o gestor del club activo (lo deportivo:
     enfrentamientos, convocatorias, resultados, jugadores y equipos). Un miembro ve «Sin permiso» (403).
-    Lo que solo hace el capitán (miembros, SNP, reabrir actas, eliminar) usa ``club_admin_required``.
+    Lo que solo hace el capitán (miembros, SNP, eliminar un enfrentamiento que ya estuvo cerrado) usa ``club_admin_required``.
     """
     @club_required
     @wraps(view_func)

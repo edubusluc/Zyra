@@ -12,7 +12,7 @@ Mapa de URLs del proyecto.
 - callLog/: registro de convocatorias (app callLog).
 - penalty/: sanciones (app penalty).
 - core/: inicio de sesión, alta de club, miembros e invitaciones (app core).
-- accounts/: cuentas de django-allauth (inicio de sesión con Google, contraseñas...).
+- accounts/: cuentas de django-allauth (inicio de sesión con Google, contraseñas...); solo las rutas aprobadas de core/allauth_urls.py.
 - i18n/ y jsi18n/: selector de idioma y traducciones para el JavaScript.
 
 En local también sirve las fotos subidas (MEDIA_URL). Registra el conversor ``<pid:...>``
@@ -61,7 +61,7 @@ urlpatterns = [
     path('callLog/',include('callLog.urls')),
     path('penalty/',include('penalty.urls')),
     path('core/', include('core.urls')),
-    path('accounts/', include('allauth.urls')),
+    path('accounts/', include('core.allauth_urls')),
     # Selector de idioma (vista set_language) y traducciones de los textos de static/js.
     path('i18n/', include('django.conf.urls.i18n')),
     path('jsi18n/', JavaScriptCatalog.as_view(), name='javascript-catalog'),

@@ -324,6 +324,16 @@ class ZyraResetPasswordForm(ResetPasswordForm):
     pantalla de confirmación: así el freno no revela si la cuenta existe.
     """
 
+    def clean_email(self):
+        """
+        Solo recibe el enlace el email principal de la cuenta (``User.email``): un email
+        secundario o sin verificar que figure en allauth no sirve para recuperar la contraseña.
+        """
+        email = super().clean_email()
+        typed = email.strip().lower()
+        self.users = [u for u in self.users if (u.email or "").strip().lower() == typed]
+        return email
+
     def save(self, request, **kwargs):
         """Envía el correo salvo que la IP o la dirección hayan superado su límite en la última hora."""
         email = self.cleaned_data["email"]

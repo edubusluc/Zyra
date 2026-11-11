@@ -3,6 +3,14 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 11/11/2026 · Auditoría: seguridad y pérdida de datos (fase 1)
+
+- **Cuentas**: se cierran las páginas sobrantes de allauth (`/accounts/email/` y `/accounts/3rdparty/` redirigen a «Mi perfil», donde cambiar el email sí pide la contraseña). La recuperación de contraseña solo llega al email principal de la cuenta, y al entrar con Google en una cuenta sin verificar se borran sus demás emails. El login de Google sin configurar responde 404 en vez de error 500. Solo existen las rutas aprobadas en `core/allauth_urls.py`.
+- **Plantilla**: «Guardar cambios» envía solo las altas y bajas y el equipo al que se refiere la página. Una página antigua, o abierta en otra pestaña con otro equipo activo, ya no da de baja a nadie: se avisa y no se guarda nada. Todo va en una transacción.
+- **Gestionar equipos**: lo mismo (equipo y rivales mostrados en el formulario); un rival creado después de abrir la página ya no sale del grupo.
+- **Actas**: el capitán o un gestor pueden reabrir un acta, pero un enfrentamiento que estuvo cerrado y se reabrió solo lo elimina el capitán.
+- **Copias de seguridad**: copia diaria programada (`deploy/install-backup-cron.sh`), cifrado opcional con las claves incluidas, destino fuera del servidor y prueba de restauración (`deploy/restore-test.sh`). Guía en `docs/despliegue.md`.
+
 ## 10/11/2026 · Ficha de un equipo anterior
 
 - La ficha de un equipo anterior muestra el nombre del jugador y el equipo (con «Equipo anterior») en lugar de «Yo». Ya no aparece la pestaña «Yo» activa ni el selector de competición: solo se puede volver a «Mis estadísticas», y los filtros de temporada y tipo siguen funcionando. La página de un partido antiguo vuelve también a «Mis estadísticas», y en el menú superior se marca «Estadísticas» (no «Enfrentamientos»).

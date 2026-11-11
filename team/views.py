@@ -184,6 +184,10 @@ def manage_teams(request):
     Cambia de una vez categoría, nacionalidad, división y grupo de los equipos rivales, tanto
     los del grupo como los dados de baja (que así se pueden volver a dar de alta). No muestra
     el equipo propio (se edita desde su ficha y nunca puede salir del grupo).
+
+    El formulario envía el equipo al que se refiere (``team``) y los rivales que mostraba
+    (``row``). Si el equipo no es el activo, o el envío no lo trae, no se guarda nada; y un
+    rival que no estaba en la página (creado después) no se toca.
     """
     club_teams = list(Team.objects.filter(club=request.club).order_by('name'))
     teams = [t for t in club_teams if not t.is_own]
@@ -191,10 +195,17 @@ def manage_teams(request):
     rows = [{"team": t, "error": "", **{f: getattr(t, f) for f in BULK_FIELDS}, "in_group": t.in_group} for t in teams]
 
     if request.method == "POST":
+        if request.POST.get("team") != str(request.club.public_id):
+            messages.error(request, _("Los equipos que estabas viendo ya no son los del equipo activo. "
+                                      "No se ha guardado ningún cambio: revisa los datos y vuelve a intentarlo."))
+            return redirect('manage_teams')
+        shown_ids = {int(i) for i in request.POST.getlist("row") if i.isdigit()}
         valid = {f: {v for v, _label in Team._meta.get_field(f).choices} for f in BULK_FIELDS}
         valid['division'] = set(request.club.rules.divisions)
         for row in rows:
             team = row["team"]
+            if team.id not in shown_ids:
+                continue
             for f in BULK_FIELDS:
                 value = request.POST.get(f"{f}_{team.id}", row[f])
                 # No se puede dejar en blanco un dato que ya tenía (los equipos antiguos sí lo tienen vacío).

@@ -130,6 +130,10 @@ class SocialAccountAdapter(DefaultSocialAccountAdapter):
                     # no pueda seguir entrando; el dueño real usa Google o «Olvidé mi contraseña».
                     user.set_unusable_password()
                     user.save(update_fields=["password"])
+                    # Y se borran los demás emails y conexiones sociales de la cuenta: pudo
+                    # añadirlos quien la creó para recuperar la contraseña después.
+                    EmailAddress.objects.filter(user=user).exclude(email__iexact=address.email).delete()
+                    user.socialaccount_set.all().delete()
                 _mark_verified(user, address.email)
                 return user, address.email
         return None

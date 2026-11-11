@@ -29,7 +29,9 @@
             {% if match.draft_mode %}
             <li class="z-more-title" role="presentation">{% translate "Enfrentamiento" %}</li>
             <li><a href="{% url 'edit_match_date' match.public_id %}"><i class="fa-regular fa-calendar" aria-hidden="true"></i> {% translate "Cambiar fecha y hora" %}</a></li>
+            {% if not match.reopened_at or request.membership.is_admin %}
             <li class="z-more-danger"><a href="{% url 'delete_match' match.public_id %}?desde=ficha" class="is-danger"><i class="fa-solid fa-trash" aria-hidden="true"></i> {% translate "Eliminar enfrentamiento" %}</a></li>
+            {% endif %}
             {% endif %}
         </ul>
     </details>

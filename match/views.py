@@ -443,9 +443,16 @@ def delete_match(request, match_id):
     Para el capitán y los gestores. En GET pide confirmación (delete_match.html);
     en POST lo borra. Si el acta ya está cerrada, avisa y vuelve al listado. Con ``?desde=ficha``
     (se llega desde la página del enfrentamiento) «Cancelar» vuelve a esa página.
+
+    Un enfrentamiento cuya acta estuvo cerrada y se reabrió (``reopened_at``) solo lo borra el
+    capitán: el gestor puede reabrir un acta para corregirla, pero nunca borrar ese enfrentamiento.
     """
     try:
         match = club_match(request, match_id)
+        if match.reopened_at is not None and not request.membership.is_admin:
+            messages.error(request, _("Este enfrentamiento ya tuvo el acta cerrada: solo el capitán puede eliminarlo. "
+                                      "Puedes corregir el acta y volver a cerrarla."))
+            return redirect('call_for_match', match_id=match.public_id)
         if match.draft_mode != False:
 
             if request.method == 'POST':
