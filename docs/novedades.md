@@ -6,6 +6,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 ## 11/11/2026 · Despliegue: aviso claro si la clave SSH no es válida
 
 - Si `DEPLOY_SSH_KEY` está cortada, tiene contraseña o es la pública, el despliegue lo dice en claro; el base64 también se limpia de retornos de carro.
+- `deploy.sh` se ejecuta como el usuario `zyra` (con `sudo -n -u zyra` desde `ubuntu`), el único que puede leer `/opt/zyra/.env`.
 
 ## 11/11/2026 · Despliegue: guía de la clave SSH
 

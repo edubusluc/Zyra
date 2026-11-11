@@ -130,4 +130,4 @@ jobs:
             echo "DEPLOY_KNOWN_HOSTS no tiene ninguna línea con la huella del servidor" >&2; exit 1
           fi
           ssh -i key -o UserKnownHostsFile=known_hosts -o StrictHostKeyChecking=yes \
-            "$DEPLOY_USER@$HOST" "/opt/zyra/deploy.sh $SHA"
+            "$DEPLOY_USER@$HOST" "sudo -n -u zyra /opt/zyra/deploy.sh $SHA"
