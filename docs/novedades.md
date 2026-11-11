@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 11/11/2026 · Despliegue: aviso claro si la clave SSH no es válida
+
+- Si `DEPLOY_SSH_KEY` está cortada, tiene contraseña o es la pública, el despliegue lo dice en claro; el base64 también se limpia de retornos de carro.
+
 ## 11/11/2026 · Despliegue: guía de la clave SSH
 
 - `docs/despliegue.md` explica cómo crear la clave de despliegue, autorizarla en el servidor y qué significa `Permission denied (publickey,password)`.
