@@ -119,12 +119,12 @@ class ContentSecurityPolicyTests(TestCase):
 
     def test_report_endpoint_logs_and_returns_204(self):
         """El navegador envía el aviso sin CSRF ni sesión: se anota en el log."""
-        with self.assertLogs("core.views", level="WARNING") as logs:
-            response = self.client.post(reverse("csp_report"), '{"csp-report": {"blocked-uri": "https://malo.example"}}',
+        with self.assertLogs("core.middleware", level="WARNING") as logs:
+            response = self.client.post("/csp-report/", '{"csp-report": {"blocked-uri": "https://malo.example"}}',
                                         content_type="application/csp-report")
         self.assertEqual(response.status_code, 204)
         self.assertIn("malo.example", logs.output[0])
-        self.assertEqual(self.client.get(reverse("csp_report")).status_code, 405)
+        self.assertEqual(self.client.get("/csp-report/").status_code, 404)
 
 
 class ProductionEmailTests(TestCase):

@@ -30,7 +30,7 @@ from django.contrib.sitemaps.views import sitemap
 
 from core.guides import callup_template_pdf, guide_detail, guide_index, TEMPLATE_PDF
 from core.sitemaps import GuidesSitemap, PublicPagesSitemap
-from core.views import error_403_view, error_404_view, csp_report, healthz, home, bing_site_auth, favicon_ico, legal_page, robots_txt
+from core.views import error_403_view, error_404_view, healthz, home, bing_site_auth, favicon_ico, legal_page, robots_txt
 
 # <pid:...>: identificador público de un objeto (core/public_id.py). Se registra antes de
 # cargar las URLs de cada aplicación, que lo usan.
@@ -54,7 +54,6 @@ urlpatterns = [
     path("guia/<slug:slug>/", guide_detail, name="guide_detail"),
     # Para el servicio que avisa si la web se cae.
     path("healthz/", healthz, name="healthz"),
-    path("csp-report/", csp_report, name="csp_report"),
     path('players/', include('players.urls')),
     path('match/', include('match.urls')),
     path('data_analyse/',include('data_analyse.urls')),

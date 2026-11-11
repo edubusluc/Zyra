@@ -3,7 +3,6 @@ Vistas generales de Zyra: portada, inicio de sesión, páginas de error, alta de
 cambio de club activo, gestión de miembros e invitaciones.
 """
 import datetime
-import logging
 from urllib.parse import quote, urlencode
 
 from allauth.account.models import EmailAddress
@@ -29,7 +28,6 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _, ngettext
 
 from core.templatetags.zyra_format import date_short
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods, require_POST, require_safe
 
 from data_analyse import my_form as my_form_stats
@@ -75,8 +73,6 @@ FROM_GOOGLE_PARAM = "google"
 LOGIN_BACKEND = "django.contrib.auth.backends.ModelBackend"
 
 User = get_user_model()
-
-logger = logging.getLogger(__name__)
 
 # Inicio de sesión: tras LOGIN_MAX_FAILURES contraseñas erróneas seguidas para el mismo
 # usuario desde la misma IP, se bloquea durante LOGIN_LOCKOUT_SECONDS.
@@ -1276,18 +1272,6 @@ def favicon_ico(request):
 def bing_site_auth(request):
     """BingSiteAuth.xml: archivo de verificación de Bing Webmaster Tools (el código es público)."""
     return render(request, "BingSiteAuth.xml", content_type="application/xml")
-
-
-@csrf_exempt
-@require_POST
-def csp_report(request):
-    """
-    Recibe los avisos de la Content-Security-Policy que envía el navegador (JSON) y los anota en el log
-    (``logger.warning``) para decidir cuándo pasar a ``enforce``. Sin sesión, con límite por IP y cuerpo acotado.
-    """
-    if not ratelimit.too_many(request, "csp-report", 60, 60):
-        logger.warning("CSP violation: %s", request.body[:2000].decode("utf-8", "replace"))
-    return HttpResponse(status=204)
 
 
 @require_safe
