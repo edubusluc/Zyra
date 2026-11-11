@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 11/11/2026 · Copia diaria: el instalador no duplica una tarea existente
+
+- `deploy/install-backup-cron.sh` sustituye una línea previa del cron que llame a `backup.sh` en lugar de añadir otra, y la guía explica que debe ejecutarse con el usuario dueño de `/opt/zyra`.
+
 ## 11/11/2026 · Auditoría: seguridad y pérdida de datos (fase 1)
 
 - **Cuentas**: se cierran las páginas sobrantes de allauth (`/accounts/email/` y `/accounts/3rdparty/` redirigen a «Mi perfil», donde cambiar el email sí pide la contraseña). La recuperación de contraseña solo llega al email principal de la cuenta, y al entrar con Google en una cuenta sin verificar se borran sus demás emails. El login de Google sin configurar responde 404 en vez de error 500. Solo existen las rutas aprobadas en `core/allauth_urls.py`.

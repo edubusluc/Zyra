@@ -32,7 +32,7 @@ repositorio `DEPLOY_ENABLED` vale `true`.
 
 ## Copias de seguridad
 
-`backup.sh` se ejecuta **antes de cada despliegue** (`deploy.sh`) y **cada día a las 03:30** (copia programada). Hace
+`backup.sh` se ejecuta **antes de cada despliegue** (`deploy.sh`) y **cada día a las 03:30** (copia programada, `backup.sh daily`; sin argumentos equivale al modo despliegue y copia las fotos cada vez). Hace
 `pg_dump` de la base de datos cada vez y copia de las fotos en cada despliegue y los domingos. Se conservan 14 días.
 Una copia que está solo en el mismo servidor no sirve si el servidor se pierde: hay que enviarla fuera.
 
@@ -48,7 +48,7 @@ Configuración (una sola vez, en el servidor, en `/opt/zyra`):
    BACKUP_KEEP_DAYS=14
    ```
 
-4. Programa la copia diaria: `./install-backup-cron.sh` (se puede repetir; `--quitar` la retira).
+4. Programa la copia diaria con el usuario dueño de `/opt/zyra` (en el servidor real, `zyra`; es quien despliega y puede leer `.env`): `sudo -u zyra ./install-backup-cron.sh`. Se puede repetir sin duplicar, sustituye una línea previa que llame a `backup.sh` (p. ej. una puesta a mano) y `--quitar` la retira. Los archivos de `/opt/zyra` (scripts, `backup.pass`, `backup.env`) deben ser de ese usuario: créalos con `sudo -u zyra`.
 5. Comprueba que funciona: `./backup.sh daily` y `ls -l backups/`. `backups/.last-ok` guarda cuándo terminó la última copia correcta; `backups/backup.log`, la salida de la copia diaria.
 
 **Las claves.** `FIELD_ENCRYPTION_KEY` (en `.env`) descifra las cuentas SNP guardadas: sin ella, una copia restaurada no las puede leer.
