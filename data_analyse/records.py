@@ -9,7 +9,7 @@ from django.utils import timezone
 
 from match import outcomes
 from match.models import Match
-from players.models import Player, SnpScoreHistory
+from players.models import Player, SnpScoreHistory, current_season
 
 from . import pairs as pair_stats
 
@@ -155,9 +155,11 @@ def snp_ranking(club, season):
     'first', 'delta', 'rank_delta' (puestos que ha subido, negativo si baja), ``delta``: variación respecto a la actualización anterior, no a la
     primera de la temporada; None con menos de dos actualizaciones); ``chart`` es la media del equipo en cada actualización
     ({'labels', 'average'}); ``riser``, la fila que más ha subido (o None); ``updated``, la fecha de la
-    última actualización de la temporada (None si no hay) y ``stale``, si ya pasó el plazo (``SNP_STALE_DAYS``).
+    última actualización de la temporada (None si no hay) y ``stale``, si ya pasó el plazo (``SNP_STALE_DAYS``). En una temporada que no es la actual la puntuación es la de su última actualización y no entran
+    quienes no tienen ninguna en esa temporada: el valor actual de SNP no dice nada de entonces.
     """
     squad = list(Player.objects.filter(club=club, in_team=True))
+    is_current = season == current_season()
     history = (SnpScoreHistory.objects.filter(player__in=squad, season=season)
                .order_by('date').values_list('player_id', 'date', 'score'))
     first, last, by_date, timeline = {}, {}, {}, {}
@@ -185,7 +187,8 @@ def snp_ranking(club, season):
 
     rows = []
     for p in squad:
-        score = p.snp_score if p.snp_score is not None else last.get(p.id)
+        # Una temporada pasada se ve con lo que valía entonces (su última actualización), no con el valor de hoy.
+        score = (p.snp_score if p.snp_score is not None else last.get(p.id)) if is_current else last.get(p.id)
         if score is None:
             continue
         delta = round(now_at[p.id] - prev[p.id], 1) if p.id in prev else None

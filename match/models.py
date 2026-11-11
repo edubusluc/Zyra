@@ -374,6 +374,9 @@ class Result(PublicIdModel):
     # para la pareja sana (``Competition.injury_completes``: SNP y LAPI); vacío en los resultados antiguos.
     INJURED_SIDES = [("local", _("Local")), ("visiting", _("Visitante"))]
     injured_side = models.CharField(_("Pareja lesionada"), max_length=8, choices=INJURED_SIDES, blank=True, default="")
+    # Sets finales que no se jugaron: los que se rellenan al completar un partido por lesión (``complete_retired_result``).
+    # Cuentan para el marcador y el ganador, pero no para las estadísticas de sets. 0 en los resultados antiguos.
+    filled_sets = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
         constraints = [
@@ -398,8 +401,15 @@ class Result(PublicIdModel):
         values = [scoring.to_int(v) for pair in self.sets() for v in pair]
         sets = (values[0], values[1]), (values[2], values[3]), (values[4], values[5])
         if self.retired and self.game.match.club.rules.injury_completes:
+            entered = tuple(sets)
             sets, self._winner = scoring.complete_retired_result(*sets, injured=self.injured_side)
+            # clean() se llama dos veces (formulario y save): la segunda ya recibe el resultado completado y no
+            # debe olvidar cuántos sets se rellenaron en la primera.
+            if entered != getattr(self, "_completed_sets", None):
+                self.filled_sets = scoring.filled_count(entered, sets)
+            self._completed_sets = tuple(sets)
         else:
+            self.filled_sets = 0
             if not self.retired:
                 self.injured_side = ""
             validate = scoring.validate_retired_result if self.retired else scoring.validate_padel_result

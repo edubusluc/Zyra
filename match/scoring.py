@@ -135,6 +135,19 @@ def validate_retired_result(set1, set2, set3):
     return sets, "local" if local_sets > visiting_sets else "visiting"
 
 
+def filled_count(entered, completed):
+    """
+    Cuántos sets finales de ``completed`` (el resultado ya completado) no se jugaron de verdad: desde el primero que
+    difiere de lo ``entered`` (el set a medias que se subió a 6 o 7 juegos y los sets añadidos 0-6). 0 si no cambió nada.
+    """
+    done = [s for s in completed if s != (None, None)]
+    real = [s for s in entered if s != (None, None)]
+    for i, s in enumerate(done):
+        if i >= len(real) or real[i] != s:
+            return len(done) - i
+    return 0
+
+
 def complete_retired_result(set1, set2, set3, injured):
     """
     Completa un partido que acabó por lesión dándoselo a la pareja sana (reglamento LAPI):

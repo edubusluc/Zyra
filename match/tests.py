@@ -319,6 +319,14 @@ class RetiredScoringTests(TestCase):
         sets, _ = scoring.validate_retired_result((7, 5), (3, 0), (0, 0))
         self.assertEqual(sets, [(7, 5), (3, 0), (None, None)])
 
+    def test_filled_count_marks_the_sets_that_were_not_played(self):
+        entered = ((6, 4), (3, 2), (None, None))
+        completed, _ = scoring.complete_retired_result(*entered, injured="local")  # 6-4 / 3-6 / 0-6
+        self.assertEqual(scoring.filled_count(entered, completed), 2)
+        done, _ = scoring.complete_retired_result((6, 3), (2, 1), (None, None), injured="visiting")  # 6-3 / 6-1
+        self.assertEqual(scoring.filled_count(((6, 3), (2, 1), (None, None)), done), 1)
+        self.assertEqual(scoring.filled_count(((6, 3), (6, 4), (None, None)), ((6, 3), (6, 4), (None, None))), 0)
+
     def test_invalid_retired_results(self):
         self.bad((None, None), (None, None))      # nada jugado
         self.bad((3, 1), (6, 2))                  # set 1 a medias con otro set después
@@ -412,6 +420,7 @@ class LineupTests(TestCase):
         result = Result.objects.get(game=game)
         self.assertTrue(result.retired)
         self.assertEqual(result.sets()[:2], [(7, 5), (6, 0)])
+        self.assertEqual(result.filled_sets, 1)  # el 3-0 a medias se completó a 6-0: ese set no se jugó
         self.assertContains(self.client.get(reverse("call_for_match", args=[self.match.public_id])), "Lesión")
 
 

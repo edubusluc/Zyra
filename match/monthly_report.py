@@ -13,7 +13,7 @@ from django.db.models import Q
 
 from core.models import REPORT_SCOPE_COMPETITIVE
 from data_analyse.pairs import COMPETITIVE, _current_run, match_type_lookup
-from data_analyse.sets import own_sets, set_stats
+from data_analyse.sets import filled_of, own_sets, set_stats
 from call.models import Call
 from match.models import Game
 from players.models import SnpScoreHistory, joined_by, proper_name
@@ -124,14 +124,15 @@ def build_monthly_report(player, month, scope=None):
         if is_local is None:
             continue
         won = (g.winner == outcomes.WINNER_LOCAL) == is_local
-        sets = own_sets(next(iter(g.results.all()), None), is_local)
+        result = next(iter(g.results.all()), None)
+        sets = own_sets(result, is_local)
         points = (g.score or 0) if won else 0
         rows.append({
             "date": g.match.start_date, "rival": g.match.rival_label, "match_type": g.match.type_label,
             "partner": name, "n_game": g.n_game, "sets": sets, "won": won, "points": points,
             "match_id": g.match_id,
         })
-        log.append({"sets": sets, "won": won})
+        log.append({"sets": own_sets(result, is_local, played_only=True), "filled": filled_of(result), "won": won})
         key = partner.pk if partner else name
         entry = partners[key]
         entry["name"] = name

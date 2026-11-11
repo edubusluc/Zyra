@@ -12,7 +12,7 @@ from django.db.models import Q
 
 from match.models import Game, Match
 
-from .sets import own_sets
+from .sets import filled_of, own_sets
 
 # Mínimo de partidos para entrar en un top 5 (evita que un 1/1 = 100 % encabece la tabla).
 MIN_GAMES_PLAYER = 2
@@ -108,7 +108,8 @@ def club_game_log(club, season=None, match_type=None):
             'date': g.match.start_date,
             'n_game': g.n_game,
             'points': (g.score or 0) if won else 0,
-            'sets': own_sets(next(iter(g.results.all()), None), is_local),
+            'sets': own_sets(next(iter(g.results.all()), None), is_local, played_only=True),
+            'filled': filled_of(next(iter(g.results.all()), None)),
         })
     return log
 

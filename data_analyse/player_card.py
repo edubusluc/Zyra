@@ -39,7 +39,8 @@ def snp_rank(player):
 def league_rounds(player, season=None):
     """
     Jornadas de liga cerradas del equipo en las que ha jugado ``player``: ``{"played", "total", "minimum",
-    "eligible"}`` (``season`` None = todas). None si la competición no tiene liga.
+    "eligible"}`` (``season`` None = todas). None si la competición no tiene liga. ``eligible`` compara con el mínimo
+    de UNA temporada: para la elegibilidad a fases finales hay que pasar la temporada en curso, nunca «todas».
     """
     rules = player.club.rules
     if not rules.league_type:
