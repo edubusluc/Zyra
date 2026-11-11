@@ -2721,7 +2721,6 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 .z-snp-fields dt { font-size: var(--z-fs-sm); font-weight: 800; letter-spacing: .01em; color: var(--z-muted); }
 .z-snp-fields dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
 .z-snp-password { display: flex; align-items: center; gap: 4px; }
-.z-snp-password .z-password-toggle { width: 2.5rem; height: 2rem; border-radius: var(--z-radius-sm); }
 @media (max-width: 480px) {
     .z-snp-fields { grid-template-columns: 1fr; gap: 2px; }
     .z-snp-fields dd { margin-bottom: 8px; }

@@ -3,6 +3,7 @@ Vistas generales de Zyra: portada, inicio de sesión, páginas de error, alta de
 cambio de club activo, gestión de miembros e invitaciones.
 """
 import datetime
+import logging
 from urllib.parse import quote, urlencode
 
 from allauth.account.models import EmailAddress
@@ -28,6 +29,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _, ngettext
 
 from core.templatetags.zyra_format import date_short
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods, require_POST, require_safe
 
 from data_analyse import my_form as my_form_stats
@@ -74,10 +76,15 @@ LOGIN_BACKEND = "django.contrib.auth.backends.ModelBackend"
 
 User = get_user_model()
 
+logger = logging.getLogger(__name__)
+
 # Inicio de sesión: tras LOGIN_MAX_FAILURES contraseñas erróneas seguidas para el mismo
 # usuario desde la misma IP, se bloquea durante LOGIN_LOCKOUT_SECONDS.
 LOGIN_MAX_FAILURES = 5
 LOGIN_LOCKOUT_SECONDS = 15 * 60
+# Contador adicional por CUENTA (da igual la IP o si se escribió usuario o email): frena el ataque
+# repartido entre muchas IP. Es más alto que el de IP para que no sea fácil dejar fuera a alguien.
+LOGIN_MAX_FAILURES_PER_ACCOUNT = 30
 
 # Límites por IP (core/ratelimit.py): altas de club, altas de cuenta por invitación y
 # comprobaciones de contraseña mientras se escribe.
@@ -314,9 +321,20 @@ class ThrottledLoginView(LoginView):
         username = (self.request.POST.get("username") or "").strip().lower()
         return f"login-failures:{ratelimit.client_ip(self.request)}:{username}"
 
+    def _account_key(self):
+        """Clave del contador por cuenta: la persona que corresponde al usuario o email escrito (None si no existe)."""
+        typed = (self.request.POST.get("username") or "").strip()
+        if not typed:
+            return None
+        users = get_user_model().objects
+        user = users.filter(username__iexact=typed).first() or users.filter(email__iexact=typed).order_by("pk").first()
+        return f"login-failures-account:{user.pk}" if user else None
+
     def post(self, request, *args, **kwargs):
-        """Con demasiados fallos seguidos responde 429 sin comprobar la contraseña."""
-        if ratelimit.get_count(self._key()) >= LOGIN_MAX_FAILURES:
+        """Con demasiados fallos seguidos (de esa IP o contra esa cuenta) responde 429 sin comprobar la contraseña."""
+        account_key = self._account_key()
+        if (ratelimit.get_count(self._key()) >= LOGIN_MAX_FAILURES
+                or (account_key and ratelimit.get_count(account_key) >= LOGIN_MAX_FAILURES_PER_ACCOUNT)):
             # Sin validar el formulario: validarlo comprobaría la contraseña.
             form = self.get_form()
             form._errors, form.cleaned_data = ErrorDict(), {}
@@ -325,13 +343,17 @@ class ThrottledLoginView(LoginView):
         return super().post(request, *args, **kwargs)
 
     def form_invalid(self, form):
-        """Suma un fallo al contador (caduca a los LOGIN_LOCKOUT_SECONDS)."""
+        """Suma un fallo a los contadores de IP y de cuenta (caducan a los LOGIN_LOCKOUT_SECONDS)."""
         ratelimit.add_hit(self._key(), LOGIN_LOCKOUT_SECONDS)
+        account_key = self._account_key()
+        if account_key:
+            ratelimit.add_hit(account_key, LOGIN_LOCKOUT_SECONDS)
         return super().form_invalid(form)
 
     def form_valid(self, form):
         """Inicio de sesión correcto: pone a cero el contador de fallos."""
         ratelimit.clear(self._key())
+        ratelimit.clear(f"login-failures-account:{form.get_user().pk}")
         response = super().form_valid(form)
         sessions.apply_login_expiry(self.request, form.get_user(), self.request.POST.get("remember") == "on")
         return response
@@ -1254,6 +1276,18 @@ def favicon_ico(request):
 def bing_site_auth(request):
     """BingSiteAuth.xml: archivo de verificación de Bing Webmaster Tools (el código es público)."""
     return render(request, "BingSiteAuth.xml", content_type="application/xml")
+
+
+@csrf_exempt
+@require_POST
+def csp_report(request):
+    """
+    Recibe los avisos de la Content-Security-Policy que envía el navegador (JSON) y los anota en el log
+    (``logger.warning``) para decidir cuándo pasar a ``enforce``. Sin sesión, con límite por IP y cuerpo acotado.
+    """
+    if not ratelimit.too_many(request, "csp-report", 60, 60):
+        logger.warning("CSP violation: %s", request.body[:2000].decode("utf-8", "replace"))
+    return HttpResponse(status=204)
 
 
 @require_safe

@@ -5,11 +5,13 @@ La sesión sigue siendo la de la persona del personal; el middleware cambia ``re
 usuario visto mientras dure el modo (``request.impersonator`` guarda a quien entró). Se puede crear
 y corregir datos como ese usuario para resolver incidencias; cada escritura (POST, PUT, PATCH,
 DELETE) queda en la auditoría con el personal real como autor. Las acciones sensibles (cuenta,
-email o contraseña, abandonar o borrar el club, ver la contraseña de SNP) siguen bloqueadas. No se
+email o contraseña, abandonar o borrar el club, traspasar la capitanía, quitar miembros o cambiar gestores)
+siguen bloqueadas. No se
 cuenta como actividad del usuario visto y el modo caduca solo a los 30 minutos. Empezar y terminar
 quedan en la auditoría (con el motivo).
 """
 import datetime
+import re
 
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
@@ -23,11 +25,14 @@ SESSION_KEY = "backoffice_impersonation"
 MAX_DURATION = datetime.timedelta(minutes=30)
 SAFE_METHODS = ("GET", "HEAD", "OPTIONS")
 # Rutas bloqueadas con cualquier método: acciones sobre la cuenta o el club que no se hacen como otro
-# usuario (cuenta y contraseña, abandonar/borrar el club, aceptar invitaciones, ver la clave de SNP...).
+# usuario (cuenta y contraseña, abandonar/borrar el club, aceptar invitaciones...).
 BLOCKED_PREFIXES = (
     "/accounts/", "/core/profile/", "/core/members/leave/", "/core/invite/", "/core/monthly-report/",
-    "/core/switch_club/", "/core/logout/", "/players/snp/password/",
+    "/core/switch_club/", "/core/logout/",
 )
+# Cambios en los miembros del club: cambiar sus datos o su rol, nombrar o quitar gestor, traspasar la capitanía y
+# quitar a un miembro (``/core/members/<id>/update|manager|transfer|remove/``). Ver la lista de miembros sí se puede.
+BLOCKED_MEMBER_ACTIONS = re.compile(r"^/core/members/[A-Za-z0-9]+/(update|manager|transfer|remove)/")
 # El perfil (``/core/profile/``) se puede mirar con GET, pero no cambiar.
 
 
@@ -95,6 +100,8 @@ class ImpersonationMiddleware:
     def is_blocked(request):
         """Dice si la petición es una acción sensible que no se permite como otro usuario."""
         path = request.path
+        if BLOCKED_MEMBER_ACTIONS.match(path):
+            return True
         if path.startswith(BLOCKED_PREFIXES) and not (path.rstrip("/") == "/core/profile" and request.method in SAFE_METHODS):
             return True
         return False

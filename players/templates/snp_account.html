@@ -19,11 +19,7 @@
             <dt>{% translate "Usuario de SNP" %}</dt>
             <dd>{{ username }}</dd>
             <dt>{% translate "Contraseña de SNP" %}</dt>
-            <dd class="z-snp-password">
-                <span data-snp-password aria-live="polite">••••••••</span>
-                <button type="button" class="z-password-toggle position-static" data-snp-password-toggle data-url="{% url 'snp_account_password' %}"
-                        aria-pressed="false" aria-label="{% translate 'Mostrar contraseña' %}" title="{% translate 'Mostrar contraseña' %}"><i class="fa-regular fa-eye" aria-hidden="true"></i></button>
-            </dd>
+            <dd class="z-snp-password"><span aria-label="{% translate 'Contraseña guardada y oculta' %}">••••••••</span></dd>
             <dt>{% translate "Última actualización" %}</dt>
             <dd>
                 {% if account.last_sync_at %}
@@ -41,37 +37,6 @@
             </form>
         </div>
     </div>
-    {% translate "Mostrar contraseña" as t_show %}{% translate "Ocultar contraseña" as t_hide %}
-    <script>
-        // La contraseña no está en la página: se pide al pulsar el ojo y se vuelve a ocultar al pulsarlo otra vez.
-        (function () {
-            const btn = document.querySelector('[data-snp-password-toggle]');
-            const box = document.querySelector('[data-snp-password]');
-            const hidden = box.textContent;
-            const token = document.querySelector('[name=csrfmiddlewaretoken]').value;
-            function render(visible) {
-                btn.querySelector('i').className = visible ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
-                const label = visible ? '{{ t_hide|escapejs }}' : '{{ t_show|escapejs }}';
-                btn.setAttribute('aria-label', label);
-                btn.title = label;
-                btn.setAttribute('aria-pressed', visible ? 'true' : 'false');
-            }
-            btn.addEventListener('click', function () {
-                if (btn.getAttribute('aria-pressed') === 'true') { box.textContent = hidden; render(false); return; }
-                if (btn.disabled) return; // petición en curso: un segundo clic no lanza otra
-                btn.disabled = true;
-                btn.setAttribute('aria-busy', 'true');
-                fetch(btn.dataset.url, {method: 'POST', headers: {'X-CSRFToken': token, 'Accept': 'application/json'}})
-                    .then(function (r) { return r.json(); })
-                    .then(function (data) {
-                        if (data.password === undefined) { box.textContent = data.error || hidden; return; }
-                        box.textContent = data.password;
-                        render(true);
-                    })
-                    .finally(function () { btn.disabled = false; btn.removeAttribute('aria-busy'); });
-            });
-        })();
-    </script>
     {% else %}
     <h2 class="h4 z-heading-plain">{% if account %}{% translate "Cambiar la cuenta" %}{% else %}{% translate "Configurar la cuenta" %}{% endif %}</h2>
     <form method="post" action="{% url 'snp_account' %}" autocomplete="off" data-loading-text="{% translate 'Guardando la cuenta SNP…' %}">

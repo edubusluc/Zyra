@@ -255,7 +255,7 @@ ni se editan parejas (`edit_game_match`).
   (`same_player_options`) se ofrecen en «¿Es el mismo jugador?» y `confirm(team_import, same=...)`
   les da los puntos en vez de crear otra ficha.
 
-- [V] Credenciales SNP cifradas con `FIELD_ENCRYPTION_KEY`; cambiar la clave invalida las guardadas.
+- [V] Credenciales SNP cifradas con `FIELD_ENCRYPTION_KEY`, que admite varias claves separadas por comas (la primera cifra, todas descifran); para rotarla se pone la nueva delante, se ejecuta `rotate_encryption_key` y se quita la antigua. La contraseña de SNP nunca se muestra ni se sirve.
 - [V] Cruce de nombres SNP ↔ jugador sin mayúsculas, tildes, categoría final ni segundo apellido
   ausente (`players/snp.py`, `match_scores`); ambiguos y sin pareja no se actualizan. Una coincidencia
   PARTIAL (nombre y un solo apellido) nunca asigna puntos: va a la lista `doubtful`; en «Completar equipo»

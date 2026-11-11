@@ -173,3 +173,43 @@ class PartialMatchTests(TestCase):
         pedro = Player.objects.get(name="Pedro")
         self.assertIsNone(pedro.snp_score)
         self.assertFalse(SnpScoreHistory.objects.filter(player=pedro).exists())
+
+
+class KeyRotationTests(TestCase):
+    """Rotación de FIELD_ENCRYPTION_KEY (ROADMAP 20): varias claves, la primera cifra y todas descifran."""
+
+    def setUp(self):
+        from cryptography.fernet import Fernet
+        self.old, self.new = Fernet.generate_key().decode(), Fernet.generate_key().decode()
+        self.club = create_club("Club R", "Sevilla", User.objects.create_user("capi", password="x"))
+
+    def make_account(self):
+        account = SnpAccount(club=self.club, team_id="1")
+        account.username, account.password = "usuario", "secreto"
+        account.save()
+        return account
+
+    def test_new_key_in_front_still_reads_old_data_and_command_reencrypts(self):
+        from io import StringIO
+        from django.core.management import call_command
+        with override_settings(FIELD_ENCRYPTION_KEY=self.old):
+            account = self.make_account()
+        before = account.password_encrypted
+        with override_settings(FIELD_ENCRYPTION_KEY=f"{self.new},{self.old}"):
+            self.assertEqual(SnpAccount.objects.get().password, "secreto")
+            call_command("rotate_encryption_key", stdout=StringIO())
+        after = SnpAccount.objects.get()
+        self.assertNotEqual(after.password_encrypted, before)
+        with override_settings(FIELD_ENCRYPTION_KEY=self.new):
+            self.assertEqual((after.username, after.password), ("usuario", "secreto"))
+
+    def test_command_aborts_without_saving_when_an_account_is_unreadable(self):
+        from io import StringIO
+        from django.core.management import call_command
+        with override_settings(FIELD_ENCRYPTION_KEY=self.old):
+            self.make_account()
+        before = SnpAccount.objects.get().password_encrypted
+        with override_settings(FIELD_ENCRYPTION_KEY=self.new):
+            with self.assertRaises(SystemExit):
+                call_command("rotate_encryption_key", stdout=StringIO(), stderr=StringIO())
+        self.assertEqual(SnpAccount.objects.get().password_encrypted, before)

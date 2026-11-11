@@ -186,3 +186,23 @@ class FloodProtectionMiddleware:
                 response["Retry-After"] = "60"
                 return response
         return self.get_response(request)
+
+
+class ContentSecurityPolicyMiddleware:
+    """
+    Añade la cabecera Content-Security-Policy (``settings.CSP_POLICY``) a las respuestas HTML: en modo
+    ``report-only`` (``CSP_MODE``) el navegador no bloquea nada y avisa a ``/csp-report/``; en ``enforce`` bloquea.
+    Con ``CSP_MODE=off`` no añade nada. No pisa una cabecera que ya tenga la respuesta.
+    """
+
+    def __init__(self, get_response):
+        """Guarda la siguiente capa de la cadena de middlewares."""
+        self.get_response = get_response
+
+    def __call__(self, request):
+        """Pone la cabecera según ``CSP_MODE`` en las respuestas HTML."""
+        response = self.get_response(request)
+        header = {"enforce": "Content-Security-Policy", "report-only": "Content-Security-Policy-Report-Only"}.get(settings.CSP_MODE)
+        if header and header not in response and response.get("Content-Type", "").startswith("text/html"):
+            response[header] = settings.CSP_POLICY
+        return response

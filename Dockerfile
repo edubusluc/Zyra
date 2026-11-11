@@ -35,7 +35,7 @@ COPY populate_db.py ./
 RUN DJANGO_DEBUG=False \
     DJANGO_SECRET_KEY="$(python -c 'import secrets; print(secrets.token_urlsafe(64))')" \
     FIELD_ENCRYPTION_KEY="$(python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())')" \
-    ADMIN_URL=solo-para-collectstatic/ DJANGO_ALLOWED_HOSTS=localhost \
+    ADMIN_URL=solo-para-collectstatic/ DJANGO_ALLOWED_HOSTS=localhost EMAIL_HOST_PASSWORD=solo-para-collectstatic \
     python manage.py collectstatic --noinput
 
 # 3) Usuario sin privilegios; media/ es un volumen que debe poder escribir.

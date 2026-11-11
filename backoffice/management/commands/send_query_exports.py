@@ -9,6 +9,9 @@ from backoffice.csvsafe import to_csv_text
 from backoffice.models import SavedQuery
 from django.utils.html import format_html
 
+from django.contrib.auth import get_user_model
+
+from backoffice.audit import audit
 from core.emails import build_email
 
 
@@ -31,12 +34,17 @@ class Command(BaseCommand):
         """Una línea por consulta enviada; una consulta que falla no impide el resto."""
         today = timezone.localdate()
         sent = 0
+        staff = {e.lower() for e in get_user_model().objects.filter(is_staff=True, is_active=True).exclude(email="").values_list("email", flat=True)}
         for query in SavedQuery.objects.exclude(export_every="").exclude(export_to=""):
             if not is_due(query, today):
                 continue
+            # Solo al personal activo: si alguien dejó de serlo, o se editó el campo a mano, no se le envía nada.
+            recipients = [e.strip() for e in query.export_to.split(",") if e.strip() and e.strip().lower() in staff]
+            if not recipients:
+                self.stderr.write(f"{query.name}: ningún destinatario es personal activo, no se envía.")
+                continue
             try:
                 result = sql.run(query.sql, limit=sql.EXPORT_LIMIT)
-                recipients = [e.strip() for e in query.export_to.split(",") if e.strip()]
                 text = f"Consulta «{query.name}»: {result.row_count} filas."
                 email = build_email(f"Zyra · {query.name}", text, format_html("<p>{}</p>", text), to=recipients)
                 name = f"zyra-{query.name[:40].replace(' ', '-')}-{today:%Y%m%d}.csv"
@@ -46,6 +54,7 @@ class Command(BaseCommand):
                 self.stderr.write(f"{query.name}: {exc}")
                 continue
             SavedQuery.objects.filter(pk=query.pk).update(last_exported_at=timezone.now())
+            audit(None, "sql.scheduled_export", query, label=query.name, rows=result.row_count, recipients=recipients)
             sent += 1
             self.stdout.write(f"Enviada: {query.name} ({result.row_count} filas)")
         if not sent:

@@ -3,6 +3,16 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 11/11/2026 · Auditoría: credenciales y seguridad (fase 4)
+
+- **Cuenta SNP**: la contraseña guardada nunca se muestra ni se sirve (se quita el ojo y la ruta que la devolvía).
+- **Consola SQL**: en producción no ejecuta consultas hasta que exista `SQL_CONSOLE_DATABASE_URL` (rol de solo lectura). Las exportaciones programadas solo se envían a personal activo y cada envío queda auditado.
+- **Clave de cifrado**: `FIELD_ENCRYPTION_KEY` admite varias claves para rotarla sin perder datos; `rotate_encryption_key` re-cifra las cuentas SNP.
+- **Inicio de sesión**: además del freno por IP y usuario hay otro por cuenta (30 fallos en 15 minutos, da igual la IP o si se escribe usuario o email).
+- **«Entrar como»**: sigue bloqueando también traspasar capitanía, expulsar miembros, cambiar gestores y editar miembros.
+- **Correo**: en producción hay que tener transporte real (`EMAIL_HOST_PASSWORD`); sin él la aplicación no arranca en vez de escribir los enlaces en el log.
+- **Seguridad web**: cabecera Content-Security-Policy en modo informe (`CSP_MODE`) con receptor `/csp-report/`, y HSTS de un año por defecto.
+
 ## 11/11/2026 · Auditoría: navegación y equipo activo (fase 3)
 
 - **Estadísticas**: los enlaces de jugador, pareja y rival abren el equipo al que pertenecen aunque en otra pestaña, con «Atrás» o en un enlace compartido haya otro equipo activo. Cambiar de competición desde la ficha de un rival vuelve a la lista de rivales.

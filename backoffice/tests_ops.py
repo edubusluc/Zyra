@@ -1,4 +1,5 @@
 """Tests de las mejoras de operación del back-office: procesos, auditoría, SQL, CRM, métricas y «Entrar como»."""
+from io import StringIO
 import datetime
 from unittest import mock
 
@@ -370,11 +371,17 @@ class ImpersonationTests(StaffTestCase):
         self.start()
         for method, url in (
             ("post", reverse("switch_club")), ("post", reverse("leave_club")), ("post", reverse("delete_account")),
-            ("post", reverse("my_profile")), ("post", reverse("snp_account_password")),
+            ("post", reverse("my_profile")),
             ("get", reverse("delete_account")),
+            # Traspasar la capitanía, quitar miembros y cambiar gestores o roles (SEC-07).
+            ("post", reverse("transfer_captaincy", args=["MBRaaaaaaaaaaaa"])),
+            ("post", reverse("remove_member", args=["MBRaaaaaaaaaaaa"])),
+            ("post", reverse("set_manager", args=["MBRaaaaaaaaaaaa"])),
+            ("post", reverse("update_member", args=["MBRaaaaaaaaaaaa"])),
         ):
             self.assertEqual(getattr(self.client, method)(url, {}).status_code, 403, url)
         self.assertEqual(self.client.get(reverse("my_profile")).status_code, 200)
+        self.assertEqual(self.client.get(reverse("club_members")).status_code, 200)  # la lista de miembros sí se ve
         self.assertFalse(AuditLog.objects.filter(action="impersonate.write").exists())
 
     def test_stop_audits_and_restores_the_staff_session(self):
@@ -643,6 +650,18 @@ class QueryExportTests(StaffTestCase):
         self.assertEqual(message.to, ["staff@example.com"])
         self.assertIn("Club A", message.attachments[0][1])
         call_command("send_query_exports")  # hoy ya se envió
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_export_job_skips_non_staff_recipients_and_audits(self):
+        from .models import AuditLog
+        self.save(export_every="daily", export_to="staff@example.com")
+        SavedQuery.objects.update(export_to="fuera@example.com, staff@example.com")
+        call_command("send_query_exports", stderr=StringIO())
+        self.assertEqual(mail.outbox[0].to, ["staff@example.com"])
+        log = AuditLog.objects.get(action="sql.scheduled_export")
+        self.assertEqual(log.detail["recipients"], ["staff@example.com"])
+        SavedQuery.objects.update(export_to="fuera@example.com", last_exported_at=None)
+        call_command("send_query_exports", stderr=StringIO())
         self.assertEqual(len(mail.outbox), 1)
 
     def test_weekly_and_monthly_schedule(self):

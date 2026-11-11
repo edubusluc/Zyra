@@ -51,8 +51,13 @@ SECRET_KEY = SECRET_KEY or 'django-insecure-solo-para-desarrollo'
 # clave se derivaría de DJANGO_SECRET_KEY.
 FIELD_ENCRYPTION_KEY = config('FIELD_ENCRYPTION_KEY', default='')
 if FIELD_ENCRYPTION_KEY:
+    # Admite varias claves separadas por comas para rotarla (la primera cifra, todas descifran).
     try:
-        Fernet(FIELD_ENCRYPTION_KEY)
+        if not FIELD_ENCRYPTION_KEY.strip(", "):
+            raise ValueError("vacía")
+        for _key in FIELD_ENCRYPTION_KEY.split(','):
+            if _key.strip():
+                Fernet(_key.strip())
     except (ValueError, TypeError):
         raise ImproperlyConfigured(
             "FIELD_ENCRYPTION_KEY no es una clave Fernet válida. Genera una con: "
@@ -112,8 +117,8 @@ if not DEBUG:
     SECURE_SSL_REDIRECT = config('DJANGO_SECURE_SSL_REDIRECT', default=True, cast=bool)
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-    # Empieza con 1 hora; cuando todo funcione por https súbelo a un año (31536000).
-    SECURE_HSTS_SECONDS = config('DJANGO_SECURE_HSTS_SECONDS', default=3600, cast=int)
+    # Un año: el navegador recuerda que esta web solo va por https (evita el downgrade a http).
+    SECURE_HSTS_SECONDS = config('DJANGO_SECURE_HSTS_SECONDS', default=31536000, cast=int)
     SECURE_HSTS_INCLUDE_SUBDOMAINS = config('DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS', default=False, cast=bool)
     # HSTS para subdominios y la lista "preload" de los navegadores son decisiones difíciles
     # de deshacer: se activan a mano cuando haya dominio definitivo, no por defecto.
@@ -124,6 +129,19 @@ if not DEBUG:
     # esto para que Django sepa que la petición original era https y no entre en bucle.
     if BEHIND_PROXY:
         SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Content-Security-Policy (core/middleware.py). CSP_MODE: «report-only» (por defecto: el navegador solo
+# avisa a /csp-report/ de lo que bloquearía), «enforce» (bloquea) u «off». Se pasa a «enforce» cuando el
+# registro de avisos esté limpio. Todo el JS y CSS es propio; quedan scripts y estilos en línea en las
+# plantillas, por eso 'unsafe-inline' hasta que se muevan a ficheros. form-action admite a Google por
+# la redirección del inicio de sesión con Google.
+CSP_MODE = config('CSP_MODE', default='report-only')
+CSP_POLICY = (
+    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; "
+    "img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; object-src 'none'; "
+    "base-uri 'self'; form-action 'self' https://accounts.google.com; frame-ancestors 'self'; "
+    "report-uri /csp-report/"
+)
 
 # Application definition
 
@@ -169,6 +187,7 @@ MIDDLEWARE = [
     'core.middleware.CurrentClubMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'core.middleware.ContentSecurityPolicyMiddleware',
     'allauth.account.middleware.AccountMiddleware',
 ]
 # En producción WhiteNoise sirve los estáticos desde STATIC_ROOT (ver más abajo). Va justo tras
@@ -260,11 +279,12 @@ else:
 
 # Consola SQL del back-office: conexión opcional con un rol de PostgreSQL de solo lectura que
 # no puede leer las columnas protegidas (se crea con `python manage.py sql_readonly_role`).
-# Sin ella la consola usa la conexión de la aplicación, protegida solo por la lista de nombres
-# de backoffice/sql.py. Recomendado en producción.
+# En producción (DEBUG apagado) la consola SQL queda desactivada si no está configurada: la lista
+# de nombres de backoffice/sql.py no basta por sí sola. En desarrollo usa la conexión de la app.
 SQL_CONSOLE_DATABASE_URL = config('SQL_CONSOLE_DATABASE_URL', default='')
 if SQL_CONSOLE_DATABASE_URL:
     DATABASES['sql_console'] = dj_database_url.parse(SQL_CONSOLE_DATABASE_URL, conn_max_age=0)
+SQL_CONSOLE_REQUIRE_READONLY_ROLE = not DEBUG
 
 
 # Password validation
@@ -409,6 +429,13 @@ EMAIL_TRANSPORT_BACKEND = config(
     else 'django.core.mail.backends.console.EmailBackend',
 )
 EMAIL_BACKEND = 'backoffice.email_backend.LoggingEmailBackend'
+# En producción el correo tiene que salir de verdad: con el backend de consola los enlaces de acceso y
+# de cambio de contraseña acabarían en el log del contenedor y nadie recibiría nada.
+if not DEBUG and not TESTING and EMAIL_TRANSPORT_BACKEND.rsplit('.', 2)[-2] in ('console', 'dummy', 'locmem', 'filebased'):
+    raise ImproperlyConfigured(
+        "Falta EMAIL_HOST_PASSWORD (o un EMAIL_BACKEND real): en producción el correo no puede salir por consola. "
+        "Ver docs/despliegue.md."
+    )
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default=f'Zyra <{ZYRA_SENDER}>')
 # Correo de contacto que se muestra en el pie y en las páginas legales.
 CONTACT_EMAIL = config('CONTACT_EMAIL', default=ZYRA_SENDER)

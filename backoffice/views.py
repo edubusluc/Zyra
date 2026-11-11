@@ -589,7 +589,7 @@ def sql_console(request):
                                          "created_by": request.user, "export_every": every,
                                          "export_to": ", ".join(recipients) if every else ""},
                 )
-                audit(request, "sql.save", saved, label=saved.name, created=created)
+                audit(request, "sql.save", saved, label=saved.name, created=created, export_every=every, recipients=recipients if every else [])
                 if created:
                     messages.success(request, _("Consulta «%(name)s» guardada.") % {"name": saved.name})
                 else:
@@ -597,7 +597,7 @@ def sql_console(request):
                 return redirect(f'{reverse("backoffice:sql_console")}?saved={saved.public_id}')
 
     return render(request, "backoffice/sql_console.html", {
-        "section": "sql", "query": query or "", "result": result, "error": error, "saved": saved,
+        "section": "sql", "console_available": sql.available(), "query": query or "", "result": result, "error": error, "saved": saved,
         "saved_queries": SavedQuery.objects.all(), "schema": sql.schema(),
         "history": QueryLog.objects.filter(user=request.user)[:15],
         "export_choices": SavedQuery.EXPORT_EVERY, "display_limit": sql.DISPLAY_LIMIT, "export_limit": sql.EXPORT_LIMIT, "timeout": sql.TIMEOUT_SECONDS,
