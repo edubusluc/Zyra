@@ -1,7 +1,7 @@
 # ZYRA_CONTEXT · índice técnico
 
 Punto de entrada para retomar cualquier tarea sin explorar todo el repositorio. Dirige la
-investigación; no sustituye leer el código. Verificado contra `main` el 09/10/2026 (tras #105).
+investigación; no sustituye leer el código. Verificado contra `main` el 11/11/2026 (tras #345).
 Leyenda: **[V]** comprobado en código o tests · **[I]** inferido · **[?]** pendiente de verificar.
 
 ## Cómo usarlo (3 pasos, ~1.000 tokens)
@@ -23,8 +23,8 @@ Web multi-club para capitanes de equipos de pádel de las Series Nacionales de P
 plantilla, rivales, enfrentamientos, convocatorias, alineaciones, resultados, informe PDF por email,
 estadísticas y back-office del dueño de la plataforma. Español con traducción al inglés.
 
-- Python 3.11 · Django 5.1 · django-allauth (usuario/email + Google) · `requirements.txt`.
-- SQLite en local, PostgreSQL 16 en producción (`DATABASE_URL`). Despliegue previsto en un VPS con Docker (`Dockerfile`, `docker-compose.yml`, `Caddyfile`, `deploy/`, guía en `docs/despliegue.md`); servidor aún sin comprar; Netlify solo previews (`netlify.toml`).
+- Python 3.11 · Django 5.2 · django-allauth (usuario/email + Google) · `requirements.txt`.
+- SQLite en local, PostgreSQL 16 en producción (`DATABASE_URL`). Producción en un VPS Ubuntu con Docker (usuario `ubuntu`, app en `/opt/zyra`; `Dockerfile` con dos imágenes web y scheduler, `docker-compose.yml`, `Caddyfile`, `deploy/`, guía en `docs/despliegue.md`); Netlify solo previews (`netlify.toml`).
 - ReportLab (PDF), Pillow (fotos → WebP), Playwright (scraper SNP), cryptography (Fernet), boto3 (S3; Rekognition apagado), sentry-sdk.
 - Front sin framework ni build: plantillas Django + `static/style.css` + `static/js/*.js`.
 - Sin colas: tareas en hilos y un lanzador `run_scheduler` llamado por cron.
@@ -107,9 +107,6 @@ Resto (migraciones de datos, scheduler, i18n, reset, despliegue): [docs/ai/workf
 
 ## Problemas conocidos vigentes
 
-- [V] El freno de login (`core/views.py`, `ThrottledLoginView._key`) usa `REMOTE_ADDR`; detrás de un
-  proxy todas las peticiones comparten IP. [I] Con la caché por defecto el contador es por proceso.
-- [V] Texto sin traducir guardado en BD: motivo de `Penalty` (`penalty/views.py`).
 - [V] Nombres `related_name` engañosos (`Call.match` → `match.match`, etc.): ver [data-model](docs/ai/data-model.md#trampas-de-related_name).
 - [V] `call/templates/closed_call.html` y `call/templates/existing_call.html` están en `call/` pero los pinta `match/views.py`.
 - [V] Partes de `Readme.md` § Multi-club están desfasadas (rol «Administrador», enlace de un solo uso,

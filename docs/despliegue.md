@@ -1,33 +1,33 @@
 # Despliegue con Docker
 
-Zyra se despliega en **un solo servidor (VPS)** con Docker Compose. Esta página resume lo que ya hay en el
-repositorio y los pasos que faltan cuando se compre el servidor.
+Zyra se despliega en **un solo servidor (VPS)** con Docker Compose. Esta página resume lo que hay en el
+repositorio y cómo está montado el servidor (VPS Ubuntu, usuario `ubuntu`, app en `/opt/zyra`).
 
 ## Qué hay en el repositorio
 
 | Fichero | Para qué sirve |
 |---|---|
-| `Dockerfile` | Imagen única (Python 3.11, dependencias con hash, Chromium de Playwright y estáticos ya recopilados). La usan la web y el lanzador. |
-| `docker-compose.yml` | `db` (PostgreSQL 16), `web` (gunicorn), `scheduler` (`run_scheduler --loop`) y `caddy` (https y fotos). |
+| `Dockerfile` | Dos imágenes con el mismo código: `web` (Python 3.11, dependencias con hash y estáticos; sin navegador) y `scheduler` (lo mismo más Chromium de Playwright, solo para el scraping de SNP). La base va fijada por digest. |
+| `docker-compose.yml` | `db` (PostgreSQL 16), `web` (gunicorn), `scheduler` (`run_scheduler --loop`, imagen `zyra-scheduler`) y `caddy` (https y fotos). `postgres` y `caddy` van fijados por digest. |
 | `Caddyfile` | Dominio, certificado automático, `/media/` y proxy hacia la web. Cambia el dominio si no es `zyrapadel.com`. |
 | `deploy/deploy.sh` | Copia de seguridad, `check --deploy`, `migrate`, `createcachetable` y arranque; espera a que `/healthz/` responda. |
 | `deploy/backup.sh` | Copia de la base de datos, las fotos y (cifrada) las claves; opcionalmente `rsync` fuera del servidor. Ver «Copias de seguridad». |
 | `deploy/install-backup-cron.sh` | Programa la copia diaria (03:30) en el crontab del servidor. |
 | `deploy/restore-test.sh` | Prueba de restauración en una base temporal, sin tocar la real. |
-| `.github/workflows/deploy.yml` | En PR construye la imagen y comprueba Chromium y la configuración; en `main` la publica en GHCR. |
+| `.github/workflows/deploy.yml` | En PR construye las dos imágenes y comprueba Chromium (lanzador) y la configuración (web); en `main` pasa los tests, publica las imágenes en GHCR y despliega por SSH solo si todo fue bien. |
 
-Mientras no exista el servidor no se rompe nada: el despliegue por SSH solo corre si la variable de
-repositorio `DEPLOY_ENABLED` vale `true`.
+El despliegue por SSH solo corre si la variable de repositorio `DEPLOY_ENABLED` vale `true`, y solo después de que pasen los tests y se publiquen las imágenes.
+Si la huella del servidor cambia (reinstalación), actualiza `DEPLOY_KNOWN_HOSTS`: sin ella el despliegue se niega a conectar.
 
-## Cuando se compre el servidor
+## Montar el servidor desde cero
 
-1. Instala Docker en el VPS, crea el usuario `zyra`, desactiva el acceso por contraseña y abre solo los puertos 22, 80 y 443.
+1. Instala Docker en el VPS, usa el usuario `ubuntu` (o crea otro y defínelo en el secreto `DEPLOY_USER`), desactiva el acceso por contraseña y abre solo los puertos 22, 80 y 443.
 2. Crea el registro DNS `A` de `zyrapadel.com` hacia la IP del servidor (en Cloudflare, nube gris).
 3. Copia a `/opt/zyra`: `docker-compose.yml`, `Caddyfile`, `deploy/deploy.sh` y `deploy/backup.sh`.
 4. Crea `/opt/zyra/.env` a partir de `.env.example` (claves, dominios, `DATABASE_URL=postgres://zyra:CONTRASEÑA@db:5432/zyra`,
    `DJANGO_BEHIND_PROXY=True`, `DJANGO_TRUSTED_PROXY_COUNT=1`, correo y Google) y `db_password.txt` con la misma contraseña.
-5. En el repositorio de GitHub: secretos `DEPLOY_SSH_KEY` (la llave privada, o su base64 en una línea con `base64 -w0 llave`) y `DEPLOY_HOST`, entorno `production` (con aprobación manual si quieres)
-   y variable `DEPLOY_ENABLED=true`. El paquete de GHCR debe poder leerse desde el servidor (`docker login ghcr.io`).
+5. En el repositorio de GitHub: secretos `DEPLOY_SSH_KEY` (la llave privada, o su base64 en una línea con `base64 -w0 llave`), `DEPLOY_HOST` y `DEPLOY_KNOWN_HOSTS` (la huella del servidor: salida de `ssh-keyscan -t ed25519 IP_DEL_SERVIDOR`, que conviene comprobar contra `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub` en el propio servidor), entorno `production` (con aprobación manual si quieres)
+   y variable `DEPLOY_ENABLED=true`. Los paquetes de GHCR (`zyra` y `zyra-scheduler`) deben poder leerse desde el servidor (`docker login ghcr.io`).
 6. Primer arranque: `./deploy.sh <sha-completo-del-commit>` en el servidor, o un push a `main`.
 
 ## Copias de seguridad
@@ -75,16 +75,29 @@ copia cifrada a mano: `openssl enc -d -aes-256-cbc -pbkdf2 -pass file:backup.pas
 
 ## Qué pasa en cada versión nueva
 
-- El CI construye una imagen por commit (`ghcr.io/edubusluc/zyra:sha-<commit>`) y la sube a GHCR.
+- El CI construye dos imágenes por commit (`ghcr.io/edubusluc/zyra:sha-<commit>` y `ghcr.io/edubusluc/zyra-scheduler:sha-<commit>`) y las sube a GHCR.
 - `deploy.sh` descarga la imagen, hace copia de seguridad, comprueba la configuración, aplica las migraciones y reinicia web y lanzador.
-- Cuando la web queda sana, `deploy.sh` borra las imágenes que ya no usa ningún contenedor (`docker image prune -af`); sin esto el disco se llena (cada imagen pesa ~800 MB). Para volver atrás, el script vuelve a descargar la versión anterior de GHCR.
+- Cuando la web queda sana, `deploy.sh` borra las imágenes antiguas salvo la versión nueva y la anterior (cada imagen pesa cientos de MB y sin limpiar el disco se llena). La versión anterior se conserva para poder volver atrás sin depender de GHCR.
 - Las migraciones no se ejecutan al arrancar el contenedor, solo en `deploy.sh`, para que web y lanzador no choquen.
 - Si la web no queda sana, el script lo dice y da el comando para volver a la versión anterior (`./deploy.sh <sha anterior>`).
-  Las migraciones destructivas no se deshacen solas: para eso están las copias de `backups/`.
+
+## Volver atrás
+
+Volver a la versión anterior del código **no deshace las migraciones**. Hay dos casos:
+
+1. **La migración no cambió el esquema ni borró datos** (o no hubo migraciones): basta `cd /opt/zyra && ./deploy.sh $(cat .previous)`.
+   La imagen anterior sigue en el servidor, no hace falta descargarla. Ojo: `deploy.sh` hace antes otra copia de seguridad.
+2. **La migración cambió o borró datos** (o la versión nueva ha escrito datos que la anterior no entiende): hay que restaurar la copia que
+   `deploy.sh` hizo justo antes de desplegar (la más reciente en `/opt/zyra/backups/` anterior al fallo; ver «Copias de seguridad» y
+   `deploy/restore-test.sh`, que ensaya la restauración en una base temporal). Pasos: parar `web` y `scheduler`, restaurar la base (y las fotos si
+   hace falta) desde esa copia, y lanzar `./deploy.sh $(cat .previous)`. Se pierde lo escrito entre la copia y la restauración.
+
+La primera vez que se despliega tras separar las imágenes, la versión anterior era una sola imagen sin `zyra-scheduler`: volver a ella obliga a
+arrancar el lanzador con la imagen `zyra` antigua (`ZYRA_SCHEDULER_IMAGE=ghcr.io/edubusluc/zyra:sha-<sha anterior> ./deploy.sh <sha anterior>`).
 
 ## Cargar los datos de partida en el servidor
 
-La imagen incluye `populate_db.py` y `populate/` (escudos). Solo se carga si todavía no hay ningún club; las
+La imagen web incluye `populate_db.py` y `populate/` (escudos); `clear_database.py` no va en la imagen y, aunque se copiara, se niega a borrar con `DJANGO_DEBUG=False`. Solo se carga si todavía no hay ningún club; las
 cuentas que ya existan (por ejemplo tu superusuario) se conservan. En el servidor, en `/opt/zyra`:
 
 ```bash

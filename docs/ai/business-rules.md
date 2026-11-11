@@ -2,7 +2,7 @@
 
 Reglas comprobadas en el código (y, donde se indica, cubiertas por tests). Prioriza las que, si se
 rompen, causan errores funcionales o datos corruptos. Índice general: `ZYRA_CONTEXT.md`.
-Verificado contra `main` el 09/10/2026. [V] comprobado · [I] inferido · [?] pendiente.
+Verificado contra `main` el 11/11/2026. [V] comprobado · [I] inferido · [?] pendiente.
 Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funcionalidades.md`.
 
 ## Aislamiento entre clubes

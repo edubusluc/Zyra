@@ -2,6 +2,7 @@
 # Se copia a /opt/zyra del servidor junto a .env, Caddyfile y db_password.txt (ver docs/despliegue.md).
 name: zyra
 
+# Las imágenes de postgres y caddy van fijadas por digest: actualizarlas es una decisión (ver docs/despliegue.md).
 x-app: &app
   image: ${ZYRA_IMAGE:-ghcr.io/edubusluc/zyra:latest}
   restart: unless-stopped
@@ -13,7 +14,7 @@ x-app: &app
 
 services:
   db:
-    image: postgres:16
+    image: postgres:16@sha256:f9a7b9ebf6f56201f949db745e47bc423c0f0f8294bafe991cc10bf74b029657
     restart: unless-stopped
     environment:
       POSTGRES_DB: zyra
@@ -37,13 +38,14 @@ services:
 
   scheduler:
     <<: *app
+    image: ${ZYRA_SCHEDULER_IMAGE:-ghcr.io/edubusluc/zyra-scheduler:latest}
     command: python manage.py run_scheduler --loop
     ipc: host      # Chromium (Completar equipo) necesita memoria compartida
     init: true
     mem_limit: 1500m
 
   caddy:
-    image: caddy:2
+    image: caddy:2@sha256:ce773ec7a742ce15ee6bf2bb5f65882b9e2a4487b10733e6f1484f86e6b5d8bc
     restart: unless-stopped
     ports: ["80:80", "443:443"]
     volumes:
