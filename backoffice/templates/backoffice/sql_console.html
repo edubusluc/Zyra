@@ -17,6 +17,7 @@
 
 <div class="bo-sql">
     <div class="bo-sql-main">
+        {% if not console_available %}<div class="alert alert-warning" role="alert">{% translate "La consola SQL está desactivada hasta configurar SQL_CONSOLE_DATABASE_URL (rol de PostgreSQL de solo lectura). Las consultas no se ejecutan." %}</div>{% endif %}
         <form method="post" class="z-panel bo-sql-form" id="sql-form" data-loading-text="{% translate 'Ejecutando la consulta…' %}">
             {% csrf_token %}
             {% if saved %}<p class="mb-2"><span class="z-badge z-badge--lime">{% translate "Guardada" %}</span> <strong>{{ saved.name }}</strong>{% if saved.description %} <span class="text-muted">· {{ saved.description }}</span>{% endif %}</p>{% endif %}

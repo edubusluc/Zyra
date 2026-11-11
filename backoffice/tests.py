@@ -580,6 +580,13 @@ class SqlConsoleTests(TestCase):
         log = QueryLog.objects.get()
         self.assertEqual((log.user, log.row_count, log.exported, log.error), (self.root, 1, False, ""))
 
+    def test_console_is_disabled_in_production_without_readonly_role(self):
+        with self.settings(SQL_CONSOLE_REQUIRE_READONLY_ROLE=True):
+            response = self.client.post(self.url, {"sql": "SELECT name FROM core_club", "action": "run"})
+            self.assertIsNone(response.context["result"])
+            self.assertIn("SQL_CONSOLE_DATABASE_URL", response.context["error"])
+            self.assertContains(response, "desactivada", status_code=200)
+
     def test_page_ships_schema_for_autocomplete(self):
         response = self.client.get(self.url)
         self.assertContains(response, 'id="sql-schema"')

@@ -95,11 +95,12 @@ lanzador si está vivo y, si no, lo ejecuta en un hilo. Las ejecuciones sin nada
 | `send_staff_digest` | `send_staff_digest [--dry-run]` | lunes 08:00 |
 | `send_query_exports` | `send_query_exports` (CSV de `SavedQuery.export_every` a emails del personal) | 07:00 diario |
 | `complete_snp_team` | `complete_snp_team <TEA...> [--dry-run]` | solo a mano |
+| `rotate_encryption_key` | `rotate_encryption_key [--dry-run]` (re-cifra las cuentas SNP con la primera clave de `FIELD_ENCRYPTION_KEY`) | solo a mano, al rotar la clave |
 | `add_group_teams` | `add_group_teams <TEA...> [--dry-run]` | solo a mano |
 
 `complete_snp_team` y `add_group_teams` comparten la base `_snp_import_command` (resolver equipo propio, buscar en SNP,
 mostrar el plan, `--dry-run`); `sql_readonly_role [--apply]` genera el rol PostgreSQL de solo lectura para la
-consola SQL (`SQL_CONSOLE_DATABASE_URL`, `SQL_CONSOLE_DB_PASSWORD`); `add_group_teams` solo lee la «Clasificación» (`group_only`) y no toca jugadores.
+consola SQL (`SQL_CONSOLE_DATABASE_URL`, `SQL_CONSOLE_DB_PASSWORD`; en producción la consola no ejecuta nada sin ese rol); `add_group_teams` solo lee la «Clasificación» (`group_only`) y no toca jugadores.
 
 Proceso nuevo: crear el comando de Django y añadir un `JobSpec` a `JOBS`; aparece en
 *Back-office → Procesos*. Ejecutar a mano desde el back-office no espera al lanzador.

@@ -117,8 +117,15 @@ def console_connection():
     return connections["sql_console"] if "sql_console" in settings.DATABASES else default_connection
 
 
+def available():
+    """False si en producción falta el rol de solo lectura (``SQL_CONSOLE_DATABASE_URL``): la consola no se ejecuta."""
+    return not (getattr(settings, "SQL_CONSOLE_REQUIRE_READONLY_ROLE", False) and "sql_console" not in settings.DATABASES)
+
+
 def run(sql, limit=DISPLAY_LIMIT, timeout=TIMEOUT_SECONDS):
     """Ejecuta una consulta de solo lectura y devuelve como mucho `limit` filas."""
+    if not available():
+        raise QueryError(_("La consola SQL está desactivada: falta configurar SQL_CONSOLE_DATABASE_URL (rol de PostgreSQL de solo lectura)."))
     sql = validate(sql)
     written = sql
     sql = expand_relations(sql)

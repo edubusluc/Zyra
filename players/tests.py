@@ -1157,15 +1157,15 @@ class SnpAccountCardTests(TestCase):
         account = SnpAccount.objects.get(club=self.club)
         self.assertEqual((account.username, account.password), ("otro", "secreto"))
 
-    def test_password_is_shown_only_on_request_to_captains(self):
+    def test_password_is_never_shown_or_served(self):
+        """La contraseña de SNP no se muestra ni se puede pedir: solo se sustituye (SEC-03)."""
         self.save_account()
-        password_url = reverse("snp_account_password")
-        self.assertEqual(self.client.get(password_url).status_code, 405)
-        self.assertEqual(self.client.post(password_url).json(), {"password": "secreto"})
-        member = User.objects.create_user("member", password="pass-12345")
-        Membership.objects.create(user=member, club=self.club, role=Membership.MEMBER)
-        self.client.force_login(member)
-        self.assertNotEqual(self.client.post(password_url).status_code, 200)
+        page = self.client.get(self.url)
+        self.assertContains(page, "••••••••")
+        self.assertNotContains(page, "secreto")
+        self.assertNotContains(page, "data-snp-password")
+        self.assertEqual(self.client.post("/players/snp/password/").status_code, 404)
+        self.assertEqual(self.client.get(self.url + "?edit=1").content.decode().count("secreto"), 0)
 
 
 class PlayerListSearchTests(TestCase):

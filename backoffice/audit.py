@@ -41,6 +41,7 @@ ACTIONS = {
     "sql.run": "Consulta SQL",
     "sql.export": "Consulta SQL exportada",
     "sql.save": "Consulta SQL guardada",
+    "sql.scheduled_export": "Consulta SQL enviada por correo",
     "sql.delete": "Consulta SQL borrada",
     "import.confirm": "Importación hecha",
     "import.undo": "Importación deshecha",

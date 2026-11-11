@@ -1,10 +1,11 @@
 """Middlewares propios de Zyra: club activo del usuario, idioma de la interfaz y dominio único."""
+import logging
 from urllib.parse import urlsplit
 
 from django.conf import settings
 from django.core.cache import caches
 from django.shortcuts import render
-from django.http import HttpResponsePermanentRedirect
+from django.http import HttpResponse, HttpResponsePermanentRedirect
 from django.utils import translation
 from django.utils.cache import patch_vary_headers
 
@@ -186,3 +187,36 @@ class FloodProtectionMiddleware:
                 response["Retry-After"] = "60"
                 return response
         return self.get_response(request)
+
+
+logger = logging.getLogger(__name__)
+CSP_REPORT_PATH = "/csp-report/"
+
+
+class ContentSecurityPolicyMiddleware:
+    """
+    Añade la cabecera Content-Security-Policy (``settings.CSP_POLICY``) a las respuestas HTML: en modo
+    ``report-only`` (``CSP_MODE``) el navegador no bloquea nada y avisa a ``/csp-report/``; en ``enforce`` bloquea.
+    Con ``CSP_MODE=off`` no añade nada. No pisa una cabecera que ya tenga la respuesta.
+
+    También recibe los avisos del navegador (POST a ``/csp-report/``, JSON) y los anota en el log
+    (``CSP violation``) para decidir cuándo pasar a ``enforce``. El navegador los envía sin sesión ni token
+    CSRF y no cambian ningún dato, así que se atienden aquí, antes de llegar a ninguna vista.
+    """
+
+    def __init__(self, get_response):
+        """Guarda la siguiente capa de la cadena de middlewares."""
+        self.get_response = get_response
+
+    def __call__(self, request):
+        """Atiende ``/csp-report/`` y pone la cabecera según ``CSP_MODE`` en las respuestas HTML."""
+        if request.path == CSP_REPORT_PATH and request.method == "POST":
+            from .ratelimit import too_many
+            if not too_many(request, "csp-report", 60, 60):
+                logger.warning("CSP violation: %s", request.body[:2000].decode("utf-8", "replace"))
+            return HttpResponse(status=204)
+        response = self.get_response(request)
+        header = {"enforce": "Content-Security-Policy", "report-only": "Content-Security-Policy-Report-Only"}.get(settings.CSP_MODE)
+        if header and header not in response and response.get("Content-Type", "").startswith("text/html"):
+            response[header] = settings.CSP_POLICY
+        return response

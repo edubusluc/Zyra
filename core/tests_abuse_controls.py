@@ -69,6 +69,94 @@ class PasswordResetLimitTests(TestCase):
         self.assertEqual(len(mail.outbox), 5)
 
 
+@override_settings(RATE_LIMITS_ENABLED=True)
+class AccountLoginThrottleTests(TestCase):
+    """El freno de login cuenta también por cuenta: usuario y email suman juntos y da igual la IP (ROADMAP 21)."""
+
+    def setUp(self):
+        """Caché limpia y un usuario con email."""
+        cache.clear()
+        User.objects.create_user("ana", "ana@example.com", "pass-12345-x")
+
+    def attempt(self, typed, ip, password="mala"):
+        """Un intento de login con el texto escrito (usuario o email) desde una IP."""
+        return self.client.post(reverse("login"), {"username": typed, "password": password}, REMOTE_ADDR=ip)
+
+    def test_many_ips_and_both_spellings_hit_the_account_limit(self):
+        """Con 30 fallos repartidos entre IP y entre usuario/email la cuenta se bloquea, incluso con la contraseña buena."""
+        from core.views import LOGIN_MAX_FAILURES_PER_ACCOUNT
+        for n in range(LOGIN_MAX_FAILURES_PER_ACCOUNT):
+            self.assertEqual(self.attempt("ana" if n % 2 else "ANA@example.com", f"9.9.{n}.1").status_code, 200)
+        response = self.attempt("ana", "5.5.5.5", password="pass-12345-x")
+        self.assertEqual(response.status_code, 429)
+
+    def test_other_accounts_are_not_affected(self):
+        """Los fallos contra una cuenta no bloquean a otra."""
+        from core.views import LOGIN_MAX_FAILURES_PER_ACCOUNT
+        User.objects.create_user("luis", "luis@example.com", "pass-12345-y")
+        for n in range(LOGIN_MAX_FAILURES_PER_ACCOUNT):
+            self.attempt("ana", f"9.8.{n}.1")
+        self.assertEqual(self.attempt("luis", "4.4.4.4", password="pass-12345-y").status_code, 302)
+
+
+class ContentSecurityPolicyTests(TestCase):
+    """CSP en modo informe por defecto, aplicable con CSP_MODE=enforce, y receptor de avisos (ROADMAP 26)."""
+
+    def test_report_only_header_by_default(self):
+        """Las páginas HTML llevan la política en modo informe, sin bloquear nada."""
+        response = self.client.get(reverse("login"))
+        self.assertIn("default-src 'self'", response["Content-Security-Policy-Report-Only"])
+        self.assertNotIn("Content-Security-Policy", response)
+
+    @override_settings(CSP_MODE="enforce")
+    def test_enforce_and_off_modes(self):
+        """«enforce» pone la cabecera que bloquea; «off» no pone ninguna."""
+        self.assertIn("Content-Security-Policy", self.client.get(reverse("login")))
+        with override_settings(CSP_MODE="off"):
+            response = self.client.get(reverse("login"))
+            self.assertNotIn("Content-Security-Policy", response)
+            self.assertNotIn("Content-Security-Policy-Report-Only", response)
+
+    def test_report_endpoint_logs_and_returns_204(self):
+        """El navegador envía el aviso sin CSRF ni sesión: se anota en el log."""
+        with self.assertLogs("core.middleware", level="WARNING") as logs:
+            response = self.client.post("/csp-report/", '{"csp-report": {"blocked-uri": "https://malo.example"}}',
+                                        content_type="application/csp-report")
+        self.assertEqual(response.status_code, 204)
+        self.assertIn("malo.example", logs.output[0])
+        self.assertEqual(self.client.get("/csp-report/").status_code, 404)
+
+
+class ProductionEmailTests(TestCase):
+    """Sin transporte de correo real, la configuración de producción no arranca (ROADMAP 25)."""
+
+    def settings_error(self, **env):
+        """Importa settings en un proceso limpio como producción y devuelve su salida de error."""
+        import os
+        import subprocess
+        import sys
+        from cryptography.fernet import Fernet
+        base = {**os.environ, "DJANGO_DEBUG": "False", "DJANGO_SECRET_KEY": "x" * 60, "ADMIN_URL": "panel/",
+                "FIELD_ENCRYPTION_KEY": Fernet.generate_key().decode(), "DJANGO_ALLOWED_HOSTS": "ejemplo.com"}
+        base.pop("EMAIL_HOST_PASSWORD", None)
+        base.pop("EMAIL_BACKEND", None)
+        base.update(env)
+        done = subprocess.run([sys.executable, "-c", "import django, os; os.environ['DJANGO_SETTINGS_MODULE']='zyra.settings'; "
+                               "from django.conf import settings; settings.EMAIL_HOST"], env=base, capture_output=True, text=True)
+        return done.returncode, done.stderr
+
+    def test_missing_mail_transport_fails_at_startup(self):
+        """Sin contraseña de correo y sin backend explícito, producción falla con un mensaje claro."""
+        code, err = self.settings_error()
+        self.assertNotEqual(code, 0)
+        self.assertIn("EMAIL_HOST_PASSWORD", err)
+
+    def test_with_password_it_starts(self):
+        """Con la contraseña de correo, arranca."""
+        code, err = self.settings_error(EMAIL_HOST_PASSWORD="algo")
+        self.assertEqual(code, 0, err)
+
+
 class EmailVerificationTests(TestCase):
     """Verificación de email al registrar el club y reenvío."""
 

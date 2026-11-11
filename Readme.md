@@ -29,7 +29,9 @@ cp .env.example .env
   que cifra las cuentas SNP). Define también `DJANGO_ALLOWED_HOSTS`,
   `DJANGO_CSRF_TRUSTED_ORIGINS` y, si el hosting tiene un proxy que termina el https,
   `DJANGO_BEHIND_PROXY=True`. Activa solo https: redirección, cookies seguras y HSTS
-  (1 hora por defecto; súbelo con `DJANGO_SECURE_HSTS_SECONDS`).
+  (1 año por defecto; ajústalo con `DJANGO_SECURE_HSTS_SECONDS`). También añade una
+  Content-Security-Policy: `CSP_MODE=report-only` (por defecto, solo avisa a `/csp-report/`), `enforce` o `off`.
+  En producción hace falta `EMAIL_HOST_PASSWORD` (o un `EMAIL_BACKEND` real) o no arranca.
 
 `.env.example` explica cada variable y cómo generar las claves. Para comprobar la
 configuración de producción: `python manage.py check --deploy`.
@@ -418,7 +420,8 @@ obligatorio, cada cambio anotado en la auditoría a nombre del personal y sin co
 
 Consola SQL: además de la lista de bloqueos, se recomienda un rol de PostgreSQL de solo lectura.
 `python manage.py sql_readonly_role` imprime el SQL (con `--apply` lo ejecuta); luego define
-`SQL_CONSOLE_DATABASE_URL` con ese rol. Sin ella la consola usa la base normal. El correo sale por
+`SQL_CONSOLE_DATABASE_URL` con ese rol. En producción (`DJANGO_DEBUG` apagado) la consola queda desactivada
+mientras falte; en desarrollo usa la base normal. El correo sale por
 `EMAIL_TRANSPORT_BACKEND` (por defecto lo que ponga `EMAIL_BACKEND` en el entorno) envuelto en
 `backoffice.email_backend.LoggingEmailBackend`, que apunta cada envío en el registro de correos.
 

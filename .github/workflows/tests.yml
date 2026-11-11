@@ -69,5 +69,6 @@ jobs:
           export DJANGO_SECRET_KEY="$(python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())')"
           export FIELD_ENCRYPTION_KEY="$(python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())')"
           export DJANGO_ALLOWED_HOSTS=zyra.example.com
+          export EMAIL_HOST_PASSWORD=contrasena-de-prueba
           export ADMIN_URL=panel-ci-largo-y-secreto/
           python manage.py check --deploy --fail-level WARNING

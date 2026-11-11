@@ -7,3 +7,6 @@ nunca se carga en producción (``wsgi.py``/``asgi.py`` usan ``zyra.settings``).
 from .settings import *  # noqa: F401,F403
 
 PASSWORD_HASHERS = ['django.contrib.auth.hashers.MD5PasswordHasher']
+
+# Los tests ejecutan la consola SQL sobre la base de datos de prueba, sin rol de solo lectura aparte.
+SQL_CONSOLE_REQUIRE_READONLY_ROLE = False

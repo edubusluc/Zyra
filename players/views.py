@@ -405,20 +405,6 @@ def _same_password(account, password):
 
 @club_admin_required
 @require_POST
-def snp_account_password(request):
-    """
-    Contraseña de SNP guardada, en JSON, para enseñarla en la tarjeta de la cuenta al pulsar
-    el ojo. Solo capitanes y por POST: así no queda escrita en la página ni en el historial.
-    """
-    account = get_object_or_404(SnpAccount, club=request.club)
-    try:
-        return JsonResponse({"password": account.password})
-    except DecryptionError:
-        return JsonResponse({"error": _("No se ha podido leer la contraseña guardada.")}, status=409)
-
-
-@club_admin_required
-@require_POST
 def snp_account_delete(request):
     """Borra la cuenta SNP del club. Solo capitanes y por POST y del equipo de la página; vuelve a la página de la cuenta SNP."""
     stale = _stale_team_form(request, "snp_account")
