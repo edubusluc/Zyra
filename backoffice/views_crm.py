@@ -9,6 +9,7 @@ import re
 from allauth.account.forms import ResetPasswordForm
 from django.contrib import messages
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.core.validators import validate_email
@@ -432,12 +433,30 @@ def email_compose(request):
                                % {"n": len(recipients), "max": mass_email.MAX_RECIPIENTS})
             elif not request.POST.get("confirm"):
                 messages.error(request, _("Marca la casilla para confirmar el envío."))
+            elif len(recipients) > (room := mass_email.room_today()):
+                messages.error(request, _("Hay %(n)s destinatarios y hoy solo se pueden enviar %(room)s correos masivos "
+                                          "(el resto del cupo diario se reserva para los avisos de la web). "
+                                          "Acota el segmento o envíalo mañana.") % {"n": len(recipients), "room": room})
+            elif not cache.add(_send_lock_key(request.user), 1, SEND_LOCK_SECONDS):
+                messages.error(request, _("Ya hay un envío masivo en curso. Espera a que termine y revisa «Correos enviados»."))
             else:
-                sent, failed = _send_batch([mass_email.build_message(subject, body, r, reply_to) for r in recipients], request)
-                audit(request, "email.mass", None, subject=subject, audience=audience, sent=sent, failed=failed)
+                try:
+                    sent, failed = _send_batch([mass_email.build_message(subject, body, r, reply_to) for r in recipients], request)
+                    audit(request, "email.mass", None, subject=subject, audience=audience, sent=sent, failed=failed)
+                finally:
+                    cache.delete(_send_lock_key(request.user))
                 return redirect("backoffice:email_log")
-    ctx.update(audiences=mass_email.audience_labels(), templates=mass_email.message_templates(), max_recipients=mass_email.MAX_RECIPIENTS)
+    ctx.update(audiences=mass_email.audience_labels(), templates=mass_email.message_templates(), max_recipients=mass_email.room_today())
     return render(request, "backoffice/email_compose.html", ctx)
+
+
+# Un envío masivo es síncrono y tarda: mientras dura, otra petición (doble clic, otra pestaña) se rechaza.
+SEND_LOCK_SECONDS = 600
+
+
+def _send_lock_key(user):
+    """Clave de caché del envío masivo en curso de ``user`` (la caché es común a todos los procesos)."""
+    return f"mass-email-sending:{user.pk}"
 
 
 def _send_batch(emails, request, test=False):

@@ -185,18 +185,25 @@
                 <div class="z-import-wrap">
                     <table class="z-import-table">
                         <colgroup><col><col class="z-import-cat"><col class="z-import-last"></colgroup>
-                        <thead><tr><th>{% translate "Jugador" %}</th><th>{% translate "Categoría" %}</th><th class="text-end">{% translate "Puntos SNP" %}</th>{% if same_options %}<th>{% translate "¿Es el mismo jugador?" %}</th>{% endif %}</tr></thead>
+                        <thead><tr><th>{% translate "Jugador" %}</th><th>{% translate "Categoría" %}</th><th class="text-end">{% translate "Puntos SNP" %}</th>{% if same_options or has_doubtful %}<th>{% translate "¿Es el mismo jugador?" %}</th>{% endif %}</tr></thead>
                         <tbody>
                         {% for p in snp_import.to_add %}
-                        <tr><td>{{ p.name|upper }} {{ p.last_name|upper }}</td><td>{% include 'includes/snp_category.html' with category=p.category %}</td><td class="text-end">{{ p.score|floatformat:"-1" }}</td>
-                        {% if same_options %}<td><select class="form-select form-select-sm" name="same_{{ forloop.counter0 }}" form="complete-team-confirm" aria-label="{% blocktranslate with name=p.snp_name %}¿Es {{ name }} uno de tus jugadores?{% endblocktranslate %}">
+                        <tr><td>{{ p.name|upper }} {{ p.last_name|upper }}</td><td>{% include 'includes/snp_category.html' with category=p.category %}</td><td class="text-end">{% if p.score is None %}—{% else %}{{ p.score|floatformat:"-1" }}{% endif %}</td>
+                        {% if same_options or has_doubtful %}<td><select class="form-select form-select-sm" name="same_{{ forloop.counter0 }}" form="complete-team-confirm" aria-label="{% blocktranslate with name=p.snp_name %}¿Es {{ name }} uno de tus jugadores?{% endblocktranslate %}">
                             <option value="">{% translate "No, jugador nuevo" %}</option>
-                            {% for o in same_options %}<option value="{{ o.pk }}">{% blocktranslate with name=o.full_name %}Sí, {{ name }}{% endblocktranslate %}</option>{% endfor %}
+                            {% if p.doubtful_id %}<option value="{{ p.doubtful_id }}">{% blocktranslate with name=p.doubtful_player %}Sí, {{ name }}{% endblocktranslate %}</option>{% endif %}
+                            {% for o in same_options %}{% if o.pk != p.doubtful_id %}<option value="{{ o.pk }}">{% blocktranslate with name=o.full_name %}Sí, {{ name }}{% endblocktranslate %}</option>{% endif %}{% endfor %}
                         </select></td>{% endif %}</tr>
                         {% endfor %}
                         </tbody>
                     </table>
                 </div>
+                {% if has_doubtful %}
+                <div class="z-callout z-callout--warning my-3">
+                    <i class="fa-solid fa-user-check" aria-hidden="true"></i>
+                    <p class="mb-0">{% translate "Algunos nombres de SNP se parecen a un jugador tuyo pero no es seguro que sean la misma persona. Elige en «¿Es el mismo jugador?» si lo son: hasta entonces no reciben puntos de nadie." %}</p>
+                </div>
+                {% endif %}
                 {% if same_options %}
                 <div class="z-callout z-callout--warning my-3">
                     <i class="fa-solid fa-user-check" aria-hidden="true"></i>

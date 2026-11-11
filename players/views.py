@@ -153,6 +153,7 @@ def _complete_team_context(club):
         'snp_update_request': snp_requests.open_request(club),
         # «¿Es el mismo jugador?»: jugadores sin puntos SNP a los que asignar un nombre nuevo de SNP.
         'same_options': snp_import.same_player_options(club) if active and active.to_add else [],
+        'has_doubtful': bool(active and any(e.get("doubtful_id") for e in active.to_add)),
     }
 
 def _warn_open_matches(request, match_ids):

@@ -254,10 +254,21 @@ ni se editan parejas (`edit_game_match`).
 
 - [V] Credenciales SNP cifradas con `FIELD_ENCRYPTION_KEY`; cambiar la clave invalida las guardadas.
 - [V] Cruce de nombres SNP ↔ jugador sin mayúsculas, tildes, categoría final ni segundo apellido
-  ausente (`players/snp.py`, `match_scores`); ambiguos y sin pareja no se actualizan.
+  ausente (`players/snp.py`, `match_scores`); ambiguos y sin pareja no se actualizan. Una coincidencia
+  PARTIAL (nombre y un solo apellido) nunca asigna puntos: va a la lista `doubtful`; en «Completar equipo»
+  sale como nombre nuevo con el jugador sugerido (`doubtful_id`) en «¿Es el mismo jugador?» y solo el capitán
+  decide (una confirmación automática, `confirm(same=None)`, la deja pendiente).
+- [V] Puntos SNP (`players/scraper.py`, `parse_score`): solo notación española (`66.406,25`, `65.000,00`); vacío o
+  con otro formato es `None` (sin dato), nunca 0. Ese jugador conserva sus puntos y se avisa. `_check_sanity`
+  (`players/snp.py`) descarta toda la lectura con `SnpTemporaryError` si ≥3 jugadores y ≥30 % de los emparejados
+  llegan ilegibles, a 0 o con un cambio de más de ×5.
 - [V] `update_snp_scores`: un ciclo por ejecución, lunes y miércoles 05:00 (Madrid); solo clubes pendientes o
-  con fallo reintentable. Fallos de usuario/contraseña no se reintentan solos (evita bloquear la
-  cuenta del capitán). Para ante 429/403/503 o fallos de red seguidos.
+  con fallo reintentable. Una cuenta con fallo no reintentable (usuario/contraseña rechazados) no se reintenta
+  hasta que el capitán la edite (`updated_at` posterior al último intento; evita bloquear su cuenta) salvo con
+  `--club`/`--all`. Para ante 429/403/503 o fallos de red seguidos.
+- [V] Correo masivo (`backoffice/views_crm.py`, `email_compose`): el envío se rechaza si supera `mass_email.room_today()`
+  (cupo diario restante menos `EMAIL_MASS_RESERVE`, tope `MAX_RECIPIENTS`) y un segundo envío del mismo usuario
+  mientras otro sigue en curso se rechaza (bloqueo en la caché compartida).
 - [V] Mientras una búsqueda web está en marcha (`SnpTeamImport.RUNNING`) los capitanes ven en toda la web la barra de `core/templates/includes/sync_bar.html` (`progress`/`stage` del import, `sync_status`) y `not_while_syncing` bloquea `create_player`, `create_team` y `create_match`.
 - [V] «Prepara la temporada» (`core/season_prep.py`, `Club.season_prep`): tarjeta del Inicio de capitanes y gestores del 1 de julio al 31 de octubre en clubes creados antes del 1 de julio; tres pasos (plantilla y rivales los marca a mano quien los revisa con `season_prep_step`; SNP se marca solo con una búsqueda web correcta de la temporada o con «Omitir este paso», solo capitán). «Ahora no» (`season_prep_dismiss`) solo capitán. Se oculta sola al completar los tres. Dentro de la tarjeta va la tarea de SNP (`sync_task(this_season=True)`), por lo que no sale la tarea suelta «Sincronizar datos». Tests: `core/tests_season_prep.py`.
 - [V] «Mi forma» (`data_analyse/my_form.py`): tarjeta del Inicio solo para quien tiene su cuenta enlazada a un jugador (nada nuevo para el capitán que no juega). Solo partidos competitivos (los amistosos no cuentan en nada). Últimos 5 (del más antiguo a la izquierda al más reciente a la derecha), racha, balance (anillo de victorias y derrotas) y convocatorias son todos de la temporada actual: un solo gráfico, «jugadas Y de las X convocatorias cerradas en las que te apuntaste»; SNP = puntos actuales y gráfica a todo el ancho de los últimos 30 días con cada actualización en su fecha, máximo/mínimo y cambio respecto a la actualización anterior (`SnpScoreHistory`; misma definición que la columna «Evolución» de la tabla de plantilla); el botón de la tarjeta lleva a `player_statistics?en=<competición>&player=`. Con jugador en varias competiciones (`others`) suma partidos y convocatorias de todas (son partidos, no puntos), marca la competición de cada uno de los últimos partidos y da el desglose (`by_competition`); los puntos SNP son del jugador de la SNP y la tarjeta no cambia con el espacio activo. Cada usuario puede ocultarla y volver a mostrarla (`toggle_my_form`, `UserPreference.my_form_hidden`). Tests: `core/tests_my_form.py`.
