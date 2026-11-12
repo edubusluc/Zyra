@@ -1,7 +1,7 @@
 /*
- * «Compartir resultado» y «Compartir alineación»: en el móvil abre el menú de compartir del sistema con la imagen del resultado
- * (y el texto); en el ordenador descarga la imagen y abre WhatsApp con el texto, para adjuntarla.
- * Sin JavaScript el botón sigue siendo un enlace a WhatsApp con el texto.
+ * «Compartir resultado» y «Compartir alineación»: en el móvil abre el menú de compartir del sistema con la imagen;
+ * en el ordenador descarga la imagen y abre WhatsApp, para adjuntarla.
+ * Se comparte solo la imagen, sin texto. Sin JavaScript el botón sigue siendo un enlace a WhatsApp.
  */
 (function () {
     if (window.zShareResultReady) { return; }
@@ -29,7 +29,6 @@
         var button = event.target.closest('[data-share-image]');
         if (!button || !window.fetch) { return; }
         var url = button.dataset.shareImage;
-        var text = button.dataset.shareText || '';
         var name = button.dataset.shareFile || 'resultado-zyra.jpg';
         if (!(navigator.canShare && navigator.share)) {
             // Ordenador sin menú de compartir: el enlace abre WhatsApp y la imagen se descarga a la vez.
@@ -44,7 +43,7 @@
                 window.open(button.href, '_blank', 'noopener');
                 return null;
             }
-            return navigator.share({ files: [file], text: text });
+            return navigator.share({ files: [file] });
         }).catch(function (error) {
             if (error && error.name === 'AbortError') { return; }
             window.open(button.href, '_blank', 'noopener');

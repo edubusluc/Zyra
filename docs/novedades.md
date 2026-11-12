@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 12/11/2026 · Imágenes de compartir: solo la imagen y JPEG estándar para la miniatura de iOS
+
+- «Compartir resultado» y «Compartir alineación» comparten únicamente la imagen: ya no se genera texto para WhatsApp.
+- Las imágenes de «Compartir resultado» y de la alineación se guardan ahora como JPEG secuencial estándar (4:2:0, calidad 90, sin optimizar), con una sola función compartida, para que iOS genere la miniatura en el menú de compartir.
+
 ## 12/11/2026 · Imágenes de compartir: escudo con foto sin círculo
 
 - Si el equipo tiene escudo (foto), las imágenes de «Compartir resultado» y de la alineación lo muestran tal cual, sin el círculo alrededor. Sin foto sigue el círculo con las siglas.

@@ -7,15 +7,13 @@ la hora y el lugar y, en el panel, una fila por partido con las dos personas de 
 alineado. En la SNP cada fila suma además los puntos SNP de sus dos jugadores. Reutiliza los dibujos de
 ``result_image``.
 """
-import io
-
 from django.utils.formats import date_format
 from django.utils.translation import gettext as _
-from PIL import Image, ImageDraw
+from PIL import ImageDraw
 
 from match.result_image import (
     BORDER, H, LIME, MUTED, SCALE, SURFACE, TEXT, W,
-    _background, _fit, _font, _header, _own_pair, _pill, _s, _spaced_width, _team, _text,
+    _background, _fit, _font, _header, _own_pair, jpeg_bytes, _pill, _s, _spaced_width, _team, _text,
 )
 
 EXTRA_BOLD = "Archivo-ExtraBold.ttf"
@@ -122,6 +120,4 @@ def build_lineup_jpeg(match, games):
 
     _text(draw, (W / 2, 1295), "zyrapadel.com", _font(EXTRA_BOLD, 28), LIME, "mm", spacing=1)
 
-    out = io.BytesIO()
-    canvas.convert("RGB").resize((W, H), Image.LANCZOS).save(out, "JPEG", quality=92, optimize=True, subsampling=0)
-    return out.getvalue()
+    return jpeg_bytes(canvas)
