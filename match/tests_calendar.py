@@ -1,4 +1,4 @@
-"""Pruebas del calendario mensual de Enfrentamientos y del texto de compartir para WhatsApp."""
+"""Pruebas del calendario mensual de Enfrentamientos y de las imágenes de compartir por WhatsApp."""
 import datetime
 
 from django.contrib.auth import get_user_model
@@ -100,8 +100,8 @@ class CalendarViewTests(UxBase):
         self.assertContains(self.client.get(reverse("calendar_match")), reverse("list_match"))
 
 
-class ShareTextTests(UxBase):
-    """Texto de «Compartir resultado» pensado para WhatsApp."""
+class ClosedMatchBase(UxBase):
+    """Enfrentamiento cerrado listo para compartir su resultado."""
 
     def closed_match(self):
         match = self.match()
@@ -111,28 +111,8 @@ class ShareTextTests(UxBase):
         self.client.post(reverse("close_match", args=[match.public_id]))
         return match
 
-    def share(self, match):
-        return self.client.get(reverse("call_for_match", args=[match.public_id])).context["share_text"]
 
-    def test_text_has_bold_headline_games_and_footer(self):
-        text = self.share(self.closed_match())
-        lines = text.split("\n")
-        self.assertEqual(lines[0], "✅ *Victoria 12-0* contra Rival")
-        self.assertIn("Rival", lines[1])
-        self.assertIn("10/10/2026", lines[1])
-        self.assertIn("✅ *Partido 1* ·", text)
-        self.assertIn("6-2 6-3", text)
-        self.assertEqual(lines[-1], "Hecho con Zyra")
-        self.assertNotIn("Amistoso", text)
-
-    def test_friendly_is_marked(self):
-        match = self.closed_match()
-        Match.objects.filter(pk=match.pk).update(match_type=Match.AMISTOSO)
-        match.refresh_from_db()
-        self.assertIn("Amistoso", self.share(match).split("\n")[1])
-
-
-class ResultImageTests(ShareTextTests):
+class ResultImageTests(ClosedMatchBase):
     """Imagen vertical del resultado (botón «Compartir resultado»)."""
 
     def test_closed_match_returns_jpeg_1080x1350(self):
@@ -176,8 +156,7 @@ class LineupImageTests(UxBase):
         self.lineup(match)
         page = self.client.get(reverse("call_for_match", args=[match.public_id]))
         self.assertContains(page, url)
-        self.assertIn("*Alineación* contra Rival", page.context["lineup_share_text"])
-        self.assertIn("*Partido 1* ·", page.context["lineup_share_text"])
+        self.assertNotContains(page, "wa.me/?text")
 
     def test_returns_jpeg_1080x1350(self):
         from io import BytesIO

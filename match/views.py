@@ -136,55 +136,6 @@ OUTCOME_LABELS = {"V": gettext_lazy("Victoria"), "D": gettext_lazy("Derrota"), "
 DATE_FORMAT = "%d/%m/%Y"
 
 
-OUTCOME_EMOJI = {"V": "✅", "D": "❌", "E": "🤝"}
-
-
-def share_text(match, games):
-    """
-    Resultado listo para pegar en WhatsApp u otro chat: una cabecera en negrita con el desenlace, el
-    marcador y el rival, el enfrentamiento con la fecha (y «Amistoso» si lo es), quién no se presentó si
-    es el caso y una línea por partido
-    con su pareja, el resultado de sus sets desde el punto de vista del club y los puntos que valía. Usa
-    solo negrita (*texto*) y emojis, que se ven igual en WhatsApp y Telegram, y acaba con «Hecho con Zyra».
-    """
-    own_points, rival_points = club_score(match)
-    outcome = match_outcome(match)
-    label = _(OUTCOME_LABELS.get(outcome, ""))
-    if own_points is not None:
-        head = f"{OUTCOME_EMOJI.get(outcome, '')} *{label} {own_points}-{rival_points}*".strip()
-        head += f" {_('contra')} {match.rival_label}" if match.rival_label else ""
-    else:
-        head = f"*{match.local_name} – {match.visiting_name}*"
-    date = match.start_date.strftime(DATE_FORMAT)
-    lines = [head, f"{match.local_name} – {match.visiting_name} · {date}" + (f" · {_('Amistoso')}" if match.is_friendly else ""), ""]
-    if match.no_show:
-        lines.append(_("No presentado: %(team)s") % {"team": match.no_show_team})
-    for g in games:
-        result = g.result
-        sets = ""
-        if result:
-            pairs = [(result.set1_local, result.set1_visiting), (result.set2_local, result.set2_visiting)]
-            if result.set3_local is not None:
-                pairs.append((result.set3_local, result.set3_visiting))
-            sets = " ".join(f"{a}-{b}" if match.own_is_local else f"{b}-{a}" for a, b in pairs)
-        elif g.no_show:
-            sets = g.get_no_show_display()
-        own_won = g.winner == (outcomes.WINNER_LOCAL if match.own_is_local else outcomes.WINNER_VISITING)
-        lines.append(f"{'✅' if own_won else '❌'} *{_('Partido')} {g.n_game}* · {g.pair_label}" + (f" · {sets}" if sets else ""))
-    lines += ["", _("Hecho con Zyra")]
-    return "\n".join(lines)
-
-
-def lineup_share_text(match, rows):
-    """Alineación lista para pegar en WhatsApp: cabecera en negrita con el rival, el enfrentamiento con la
-    fecha y una línea por partido con su pareja (``rows`` de ``lineup_rows``). Acaba con «Hecho con Zyra»."""
-    head = f"*{_('Alineación')}*" + (f" {_('contra')} {match.rival_label}" if match.rival_label else "")
-    date = match.start_date.strftime(DATE_FORMAT)
-    lines = [head, f"{match.local_name} – {match.visiting_name} · {date}" + (f" · {_('Amistoso')}" if match.is_friendly else ""), ""]
-    lines += [f"*{_('Partido')} {row['n']}* · {row['label']}" for row in rows]
-    return "\n".join(lines + ["", _("Hecho con Zyra")])
-
-
 def rival_names(club_matches):
     """Rivales distintos de los partidos (equipos ajenos y rivales escritos a mano), por orden alfabético."""
     names = set()
@@ -1075,8 +1026,6 @@ def _ficha_page(request, match, history=False):
         "my_status": my_status,
         "report_emails": ", ".join(admin_emails(request.club)) if call else "",
         "report_already_sent": bool(call and call.report_deliveries.filter(status=ReportDelivery.SENT).exists()),
-        "share_text": share_text(match, games) if not match.draft_mode else "",
-        "lineup_share_text": lineup_share_text(match, stage_pairs) if stage_pairs else "",
         "min_call_players": competition_for(match).min_call_players,
         # Regla de fases finales (LAPI 8.2) a la vista donde se decide: apuntados que no la cumplen.
         "finals_minimum": match.club.rules.finals_min_regular if league.applies_finals_rule(match) else 0,
