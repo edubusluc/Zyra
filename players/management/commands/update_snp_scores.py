@@ -1,7 +1,7 @@
 """
-Actualización de los puntos SNP (lunes y miércoles), por lotes.
+Actualización de los puntos SNP (lunes, martes y miércoles), por lotes.
 
-Cada lunes y miércoles a las 05:00 (SNP_SYNC_CYCLE) empieza un ciclo. El proceso procesa los
+Cada lunes, martes y miércoles a las 05:00 (SNP_SYNC_CYCLE) empieza un ciclo. El proceso procesa los
 clubes pendientes del ciclo: los que todavía no se han intentado desde que empezó y los que
 fallaron por algo pasajero. Al empezar el ciclo son todos; si una ejecución queda a medias,
 una nueva pasada manual retoma lo que falte.
@@ -36,8 +36,8 @@ from players.models import SnpAccount
 from players.scraper import SnpBrowser
 from players.snp import sync_club
 
-# Inicio de cada ciclo de actualización: lunes y miércoles a las 05:00 (hora de Madrid).
-SNP_SYNC_CYCLE = "0 5 * * 1,3"
+# Inicio de cada ciclo de actualización: lunes, martes y miércoles a las 05:00 (hora de Madrid).
+SNP_SYNC_CYCLE = "0 5 * * 1,2,3"
 
 
 def cycle_start(now=None):

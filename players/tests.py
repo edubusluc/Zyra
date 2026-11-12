@@ -288,8 +288,8 @@ class SnpAccountTests(TestCase):
     def test_snp_job_runs_monday_and_wednesday_at_5(self):
         from backoffice.jobs import get_spec
         from players.management.commands.update_snp_scores import SNP_SYNC_CYCLE
-        self.assertEqual(get_spec("update_snp_scores").schedule, "0 5 * * 1,3")
-        self.assertEqual(SNP_SYNC_CYCLE, "0 5 * * 1,3")
+        self.assertEqual(get_spec("update_snp_scores").schedule, "0 5 * * 1,2,3")
+        self.assertEqual(SNP_SYNC_CYCLE, "0 5 * * 1,2,3")
 
 
 def madrid(*args):
@@ -481,11 +481,12 @@ class SnpBatchTests(TestCase):
         self.assertRedirects(response, reverse("backoffice:job_detail", args=["update_snp_scores"]))
         self.assertEqual(JobRun.objects.count(), 2)
 
-    def test_cycle_start_is_the_last_monday_or_wednesday_at_5(self):
+    def test_cycle_start_is_the_last_monday_tuesday_or_wednesday_at_5(self):
         from players.management.commands.update_snp_scores import cycle_start
         self.assertEqual(cycle_start(madrid(2026, 9, 30, 12, 0)), madrid(2026, 9, 30, 5, 0))
         self.assertEqual(cycle_start(madrid(2026, 9, 30, 5, 0)), madrid(2026, 9, 30, 5, 0))
-        self.assertEqual(cycle_start(madrid(2026, 9, 30, 4, 59)), madrid(2026, 9, 28, 5, 0))
+        self.assertEqual(cycle_start(madrid(2026, 9, 30, 4, 59)), madrid(2026, 9, 29, 5, 0))
+        self.assertEqual(cycle_start(madrid(2026, 9, 29, 4, 59)), madrid(2026, 9, 28, 5, 0))
         self.assertEqual(cycle_start(madrid(2026, 9, 28, 4, 59)), madrid(2026, 9, 23, 5, 0))
 
 

@@ -270,7 +270,7 @@ ni se editan parejas (`edit_game_match`).
   con otro formato es `None` (sin dato), nunca 0. Ese jugador conserva sus puntos y se avisa. `_check_sanity`
   (`players/snp.py`) descarta toda la lectura con `SnpTemporaryError` si ≥3 jugadores y ≥30 % de los emparejados
   llegan ilegibles, a 0 o con un cambio de más de ×5.
-- [V] `update_snp_scores`: un ciclo por ejecución, lunes y miércoles 05:00 (Madrid); solo clubes pendientes o
+- [V] `update_snp_scores`: un ciclo por ejecución, lunes, martes y miércoles 05:00 (Madrid); solo clubes pendientes o
   con fallo reintentable. Una cuenta con fallo no reintentable (usuario/contraseña rechazados) no se reintenta
   hasta que el capitán la edite (`updated_at` posterior al último intento; evita bloquear su cuenta) salvo con
   `--club`/`--all`. Para ante 429/403/503 o fallos de red seguidos.

@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 12/11/2026 · Puntos SNP también los martes
+
+- `update_snp_scores` pasa a lunes, martes y miércoles a las 05:00 (hora de Madrid): quien prepare la alineación cualquiera de esos días tiene los puntos al día. Cada ejecución sigue siendo un ciclo completo (`SNP_SYNC_CYCLE`, igual que el horario del proceso).
+
 ## 11/11/2026 · Despliegue: aviso claro si la clave SSH no es válida
 
 - Si `DEPLOY_SSH_KEY` está cortada, tiene contraseña o es la pública, el despliegue lo dice en claro; el base64 también se limpia de retornos de carro.
