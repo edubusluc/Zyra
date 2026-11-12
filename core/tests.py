@@ -396,6 +396,19 @@ class HomeTests(TestCase):
         self.assertContains(response, "En 3 días")
         self.assertContains(response, "z-next-match-teams")
 
+    def test_next_match_long_team_name_goes_to_two_lines(self):
+        """Un nombre largo se parte en dos líneas y el tamaño común (--fit) sale de la línea más larga."""
+        self.rival.name = "Sonridental Avanzza Padel"
+        self.rival.save()
+        self.own.name = "Los Gladiadores"
+        self.own.save()
+        Match.objects.create(club=self.club, local=self.rival, visiting=self.own,
+                             start_date=self.today + datetime.timedelta(days=2))
+        html = self.client.get(reverse("home")).content.decode()
+        self.assertIn('style="--fit: 15"', html)
+        self.assertIn('title="Sonridental Avanzza Padel">Sonridental<br>Avanzza Padel</span>', html)
+        self.assertIn('title="Los Gladiadores">Los Gladiadores</span>', html)
+
     def test_home_deck_shows_next_matches_in_order(self):
         # Carrusel: el más cercano delante, el siguiente por detrás y un punto por tarjeta; solo la
         # semana natural (lunes a domingo) del más cercano.
@@ -624,3 +637,27 @@ class CopySqliteToDbTests(SimpleTestCase):
         result = self._manage(self.target_url, "copy_sqlite_to_db", str(self.source), check=False)
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("no es PostgreSQL", result.stderr)
+
+
+class TeamNamesFitTests(SimpleTestCase):
+    """Reparto de los nombres de la tarjeta «Próximo enfrentamiento» (``team_names_fit``)."""
+
+    def test_short_names_stay_on_one_line(self):
+        from core.templatetags.zyra_format import team_names_fit
+        fit = team_names_fit("Atlético Isleno", "Los Gladiadores")
+        self.assertEqual(fit, {"local": ["Atlético Isleno"], "visiting": ["Los Gladiadores"], "width": 15})
+
+    def test_long_name_splits_at_most_balanced_word_break(self):
+        from core.templatetags.zyra_format import split_team_name
+        self.assertEqual(split_team_name("Sonridental Avanzza Padel"), ["Sonridental", "Avanzza Padel"])
+        self.assertEqual(split_team_name("Club Deportivo Pádel Indoor Alcalá de Guadaíra"),
+                         ["Club Deportivo Pádel", "Indoor Alcalá de Guadaíra"])
+        # Una sola palabra no se puede partir; los espacios sobrantes no cuentan.
+        self.assertEqual(split_team_name("Supercalifragilisticoespialidoso"), ["Supercalifragilisticoespialidoso"])
+        self.assertEqual(split_team_name("  Los   Gladiadores "), ["Los Gladiadores"])
+        self.assertEqual(split_team_name(None), [""])
+
+    def test_width_is_longest_line_of_both(self):
+        from core.templatetags.zyra_format import team_names_fit
+        self.assertEqual(team_names_fit("Sonridental Avanzza Padel", "Los Gladiadores")["width"], 15)
+        self.assertEqual(team_names_fit("", "")["width"], 1)
