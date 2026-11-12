@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 12/11/2026 · Imágenes de compartir: escudo con foto sin círculo
+
+- Si el equipo tiene escudo (foto), las imágenes de «Compartir resultado» y de la alineación lo muestran tal cual, sin el círculo alrededor. Sin foto sigue el círculo con las siglas.
+
 ## 12/11/2026 · Ficha del enfrentamiento: compartir la alineación por WhatsApp
 
 - Con las parejas ya alineadas y el acta abierta, la tarjeta «Parejas» de la ficha lleva en su cabecera un botón de WhatsApp (solo para capitán y gestores). En el móvil abre el menú de compartir con una imagen de la alineación (escudos, VS y una fila por partido con su pareja) y el texto; en el ordenador descarga la imagen y abre WhatsApp con el texto. Es el mismo mecanismo de «Compartir resultado».
