@@ -5,7 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 12/11/2026 · Línea central de la tarjeta de enfrentamiento difuminada
 
-- La línea vertical de la red de la tarjeta de enfrentamiento se desvanece arriba y abajo y es más tenue, para que no parte la tarjeta en dos (#367).
+- La línea vertical de la red de la tarjeta de enfrentamiento ya no cruza el VS: nace justo debajo de lo último que hay en el centro («Estás convocado…» o «Por convocar») y baja hasta el borde inferior, con el extremo superior difuminado (#367).
 
 ## 12/11/2026 · Imagen de la alineación: nombres completos
 
