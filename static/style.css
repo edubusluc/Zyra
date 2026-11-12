@@ -4258,6 +4258,8 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
     .z-menu > li { display: grid; min-width: 0; }
     .z-menu > li > form, .z-menu > li > .z-more { display: grid; min-width: 0; }
     .z-menu button.z-menu-card { width: 100%; font: inherit; color: var(--z-text); text-align: left; cursor: pointer; }
+    .z-menu .z-more { grid-template-rows: minmax(0, 1fr); }
+    .z-menu .z-more::details-content { display: contents; }
     .z-menu .z-more summary.z-menu-card { height: 100%; list-style: none; }
     .z-menu-card { position: relative; box-sizing: border-box; display: grid; align-content: space-between; gap: 10px; min-height: 150px; padding: 18px; overflow: hidden; color: var(--z-text); text-decoration: none; background: linear-gradient(180deg, var(--z-stage-card-a), var(--z-stage-card-b)); border: 1px solid var(--z-stage-card-border); border-top-color: var(--z-stage-card-bevel); border-radius: var(--z-radius); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 6px 0 -2px var(--z-stage-drop), 0 12px 20px -10px rgba(0, 0, 0, .9); transition: transform .16s cubic-bezier(.2, .7, .2, 1), box-shadow .16s, background .2s; }
     .z-menu-card::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(110deg, transparent 35%, rgba(255, 255, 255, .09) 50%, transparent 65%); transform: translateX(-120%); transition: transform .6s ease; }

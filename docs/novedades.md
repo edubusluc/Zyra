@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 12/11/2026 · Ficha del enfrentamiento: «Más» y «Acta» a la misma altura
+
+- Con la lista de convocados o de parejas abierta, la tarjeta «Más» ocupa ahora toda la altura de la fila, igual que «Acta», en móvil y en escritorio.
+
 ## 12/11/2026 · Inicio: nombres de equipo largos en dos líneas
 
 - En la tarjeta «Próximo enfrentamiento», un nombre de más de 16 letras se parte en dos líneas (entre palabras, lo más equilibradas posible) en vez de encoger los dos nombres. Local y visitante siguen al mismo tamaño, que sale de la línea más larga: «Sonridental Avanzza Padel» contra «Los Gladiadores» se ve tan grande como dos nombres cortos.
