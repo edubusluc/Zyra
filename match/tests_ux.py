@@ -396,6 +396,11 @@ class MoreMenuMobileTests(SimpleTestCase):
         self.assertIn("right: 0", rule)
         self.assertIn("max-width: calc(100vw", rule)
 
+    def test_closed_more_card_does_not_force_content_visible(self):
+        """``::details-content { display: contents }`` mantenía el menú abierto siempre."""
+        css = (Path(settings.BASE_DIR) / "static" / "style.css").read_text(encoding="utf-8")
+        self.assertNotIn("::details-content", css)
+
     def test_more_menus_close_with_escape(self):
         for name in ("match/templates/includes/ficha_more.html", "match/templates/includes/player_selector.html"):
             html = (Path(settings.BASE_DIR) / name).read_text(encoding="utf-8")
