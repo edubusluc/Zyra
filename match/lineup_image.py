@@ -15,6 +15,8 @@ from match.result_image import (
     _background, _fit, _font, _header, _own_pair, _pill, _s, _spaced_width, _team, _text,
 )
 
+EXTRA_BOLD = "Archivo-ExtraBold.ttf"
+
 
 def lineup_pairs(match, games):
     """Parejas propias por partido: ``[(n_game, [«A. Montaño», «J. Gamero»])]``, sin los partidos sin pareja propia o no presentados."""
@@ -40,7 +42,7 @@ def _panel(draw, pairs):
             draw.line([(_s(92), _s(y)), (_s(W - 92), _s(y))], fill=BORDER, width=_s(2))
         _text(draw, (96, cy), f"P{n_game}", _font("Anton-Regular.ttf", 40), LIME, "lm")
         for j, name in enumerate(names):
-            font = _fit(draw, name, "Archivo-ExtraBold.ttf", 40, W - 128 - 240)
+            font = _fit(draw, name, EXTRA_BOLD, 40, W - 128 - 240)
             _text(draw, (230, cy + (j - 0.5) * 48), name, font, TEXT, "lm")
 
 
@@ -58,7 +60,7 @@ def build_lineup_jpeg(match, games):
     _text(draw, (W / 2, 330), "VS", _font("Anton-Regular.ttf", 120), TEXT, "mm")
 
     label = _("ALINEACIÓN")
-    font = _font("Archivo-ExtraBold.ttf", 30)
+    font = _font(EXTRA_BOLD, 30)
     pw = _spaced_width(draw, label, font, 6) / SCALE + 68
     _pill(canvas, [W / 2 - pw / 2, 500, W / 2 + pw / 2, 560], SURFACE + (255,), outline=BORDER, width=2)
     draw = ImageDraw.Draw(canvas, "RGBA")
@@ -67,7 +69,7 @@ def build_lineup_jpeg(match, games):
     _panel(draw, lineup_pairs(match, games))
 
     _text(draw, (64, 1285), _("Hecho con Zyra"), _font("Archivo-Bold.ttf", 26), MUTED, "lm")
-    _text(draw, (W - 64, 1285), "zyrapadel.com", _font("Archivo-ExtraBold.ttf", 26), LIME, "rm", spacing=1)
+    _text(draw, (W - 64, 1285), "zyrapadel.com", _font(EXTRA_BOLD, 26), LIME, "rm", spacing=1)
 
     out = io.BytesIO()
     canvas.convert("RGB").resize((W, H), Image.LANCZOS).save(out, "JPEG", quality=92, optimize=True, subsampling=0)

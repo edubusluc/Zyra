@@ -133,6 +133,9 @@ def club_score(match):
 OUTCOME_LABELS = {"V": gettext_lazy("Victoria"), "D": gettext_lazy("Derrota"), "E": gettext_lazy("Empate")}
 
 
+DATE_FORMAT = "%d/%m/%Y"
+
+
 OUTCOME_EMOJI = {"V": "✅", "D": "❌", "E": "🤝"}
 
 
@@ -152,7 +155,7 @@ def share_text(match, games):
         head += f" {_('contra')} {match.rival_label}" if match.rival_label else ""
     else:
         head = f"*{match.local_name} – {match.visiting_name}*"
-    date = match.start_date.strftime("%d/%m/%Y")
+    date = match.start_date.strftime(DATE_FORMAT)
     lines = [head, f"{match.local_name} – {match.visiting_name} · {date}" + (f" · {_('Amistoso')}" if match.is_friendly else ""), ""]
     if match.no_show:
         lines.append(_("No presentado: %(team)s") % {"team": match.no_show_team})
@@ -176,7 +179,7 @@ def lineup_share_text(match, rows):
     """Alineación lista para pegar en WhatsApp: cabecera en negrita con el rival, el enfrentamiento con la
     fecha y una línea por partido con su pareja (``rows`` de ``lineup_rows``). Acaba con «Hecho con Zyra»."""
     head = f"*{_('Alineación')}*" + (f" {_('contra')} {match.rival_label}" if match.rival_label else "")
-    date = match.start_date.strftime("%d/%m/%Y")
+    date = match.start_date.strftime(DATE_FORMAT)
     lines = [head, f"{match.local_name} – {match.visiting_name} · {date}" + (f" · {_('Amistoso')}" if match.is_friendly else ""), ""]
     lines += [f"*{_('Partido')} {row['n']}* · {row['label']}" for row in rows]
     return "\n".join(lines + ["", _("Hecho con Zyra")])
@@ -1474,7 +1477,7 @@ def do_close_match(request, match):
         messages.error(request, _("La fecha de %(local)s – %(visiting)s es el %(date)s y aún no se ha jugado. "
                                   "Comprueba que es el enfrentamiento correcto antes de cerrar el acta.")
                        % {"local": match.local_name, "visiting": match.visiting_name,
-                          "date": match.start_date.strftime("%d/%m/%Y")})
+                          "date": match.start_date.strftime(DATE_FORMAT)})
         return False
 
     # Parejas no presentadas (SNP 20.2): reparto de puntos en cada partido antes de sumarlos.
