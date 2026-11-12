@@ -3,6 +3,13 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 12/11/2026 · Convocatoria: colores de respuesta y aviso al elegir a quien dijo «No»
+
+- En el selector de la convocatoria cada tarjeta lleva una franja de color según la respuesta del enlace de disponibilidad (Sí en verde, No en rojo, Pendiente en amarillo), siempre con icono y texto. La respuesta del jugador no cambia nunca por convocarlo.
+- Si el capitán elige a un jugador con «No» o «Pendiente», su tarjeta cambia de color y muestra «Lo has seleccionado»; la barra inferior suma «1 dijo que no · 1 sin confirmar».
+- Al guardar, un popup avisa de quién entra en la convocatoria sin haber confirmado (solo los que entran ahora, no los que ya estaban). Siempre se puede convocar igualmente.
+- «Ver respuestas» marca «Seleccionado» a los convocados con «No» o «Pendiente»; el jugador convocado con «No» lo ve en su ficha, con enlace para cambiar su respuesta.
+
 ## 12/11/2026 · Puntos SNP también los martes
 
 - `update_snp_scores` pasa a lunes, martes y miércoles a las 05:00 (hora de Madrid): quien prepare la alineación cualquiera de esos días tiene los puntos al día. Cada ejecución sigue siendo un ciclo completo (`SNP_SYNC_CYCLE`, igual que el horario del proceso).

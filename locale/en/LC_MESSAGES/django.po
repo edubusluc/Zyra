@@ -16726,3 +16726,51 @@ msgid "La baja deja huecos en %(n)s enfrentamiento abierto: revisa su convocator
 msgid_plural "La baja deja huecos en %(n)s enfrentamientos abiertos: revisa sus convocatorias y alineaciones."
 msgstr[0] "The removal leaves gaps in %(n)s open match: check its call-up and line-up."
 msgstr[1] "The removal leaves gaps in %(n)s open matches: check their call-ups and line-ups."
+
+msgid "Hay un jugador que dijo que no"
+msgstr "A player said no"
+
+msgid "Hay jugadores sin confirmar"
+msgstr "Some players have not confirmed"
+
+msgid "Convocar igualmente"
+msgstr "Call up anyway"
+
+msgid "Vas a convocar a {names}, que ha respondido que no puede. ¿Quieres convocarlo igualmente?"
+msgstr "You are about to call up {names}, who answered that they cannot play. Call them up anyway?"
+
+msgid "Vas a convocar a {names}, que aún no ha confirmado. ¿Continuar?"
+msgstr "You are about to call up {names}, who has not confirmed yet. Continue?"
+
+msgid "Vas a convocar a {n} jugadores que no han confirmado."
+msgstr "You are about to call up {n} players who have not confirmed."
+
+msgid "No pueden: {names}."
+msgstr "Cannot play: {names}."
+
+msgid "Pendientes: {names}."
+msgstr "Pending: {names}."
+
+msgid "¿Continuar?"
+msgstr "Continue?"
+
+msgid "1 dijo que no"
+msgstr "1 said no"
+
+msgid "{n} dijeron que no"
+msgstr "{n} said no"
+
+msgid "1 sin confirmar"
+msgstr "1 not confirmed"
+
+msgid "{n} sin confirmar"
+msgstr "{n} not confirmed"
+
+msgid "Lo has seleccionado"
+msgstr "You selected this player"
+
+msgid "Seleccionado"
+msgstr "Selected"
+
+msgid "Tu respuesta era No"
+msgstr "Your answer was No"

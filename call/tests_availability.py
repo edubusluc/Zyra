@@ -172,6 +172,47 @@ class AvailabilityTests(TestCase):
         self.assertEqual(response.context["selected_players"], [self.ana.id])
         self.assertFalse(Call.objects.exists())
 
+    def test_selector_marks_answers_and_flag_for_no_and_maybe(self):
+        """Cada tarjeta lleva su respuesta; «No» y «Pendiente» llevan la etiqueta «Lo has seleccionado» (visible al marcarlos)."""
+        availability.set_answer(self.match, self.ana, "no")
+        availability.set_answer(self.match, self.luis, "yes")
+        self.client.force_login(self.captain)
+        html = self.client.get(reverse("create_call", args=[self.match.public_id])).content.decode()
+        self.assertIn('data-answer="no"', html)
+        self.assertIn('data-answer="yes"', html)
+        self.assertEqual(html.count('class="z-pick-flag is-no"><i'), 1)
+        self.assertNotIn('class="z-pick-flag is-yes"', html)
+        self.assertIn("data-warn-one-no=", html)
+
+    def test_no_answer_never_blocks_the_call(self):
+        """Se puede convocar a quien dijo «No»: el servidor no valida la respuesta y la respuesta no cambia."""
+        availability.set_answer(self.match, self.ana, "no")
+        self.client.force_login(self.captain)
+        response = self.client.post(reverse("create_call", args=[self.match.public_id]), {"players": [self.ana.id]})
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Call.objects.get(match=self.match).players.filter(id=self.ana.id).exists())
+        self.assertEqual(Availability.objects.get(match=self.match, player=self.ana).answer, "no")
+
+    def test_board_flags_called_players_who_said_no(self):
+        """La ventana de respuestas marca «Seleccionado» a quien dijo «No» o «Pendiente» y fue convocado."""
+        call = Call.objects.create(match=self.match)
+        call.players.add(self.ana)
+        availability.set_answer(self.match, self.ana, "no")
+        self.client.force_login(self.captain)
+        html = self.client.get(reverse("call_for_match", args=[self.match.public_id])).content.decode()
+        self.assertIn('class="is-forced"', html)
+        self.assertIn("Seleccionado", html)
+
+    def test_player_sees_that_called_despite_no(self):
+        """El jugador convocado con «No» lo ve en su ficha, con enlace para cambiar su respuesta."""
+        call = Call.objects.create(match=self.match)
+        call.players.add(self.ana)
+        availability.set_answer(self.match, self.ana, "no")
+        self.client.force_login(self.user)
+        response = self.client.get(reverse("call_for_match", args=[self.match.public_id]))
+        self.assertContains(response, "Tu respuesta era No")
+        self.assertContains(response, "?cambiar=1")
+
     def test_ficha_shows_card_only_to_managers(self):
         """La tarjeta con el enlace y las respuestas solo la ven capitán y gestores."""
         url = reverse("call_for_match", args=[self.match.public_id])

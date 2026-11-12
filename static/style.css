@@ -2359,6 +2359,29 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 .z-pick:has(input:checked) { background: rgba(var(--z-lime-rgb), .08); border-color: var(--z-lime); }
 .z-pick:has(input:checked) .z-pick-check { color: var(--z-ink); background: var(--z-lime); border-color: var(--z-lime); }
 .z-pick:has(input:focus-visible) { outline: 2px solid var(--z-lime); outline-offset: 2px; }
+/* Respuesta de disponibilidad: franja de color a la izquierda (siempre con icono y texto, el color no va solo) y,
+   si se elige a quien dijo «No» o está pendiente, la tarjeta cambia de color y muestra «Lo has seleccionado». */
+.z-pick { overflow: hidden; }
+.z-pick[data-answer]::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 5px; background: var(--z-border-strong); }
+.z-pick[data-answer="yes"]::before { background: var(--z-lime); }
+.z-pick[data-answer="no"]::before { background: var(--z-danger); }
+.z-pick[data-answer="maybe"]::before { background: var(--z-warning); }
+.z-pick[data-answer="no"]:has(input:checked) { background: rgba(255, 92, 99, .10); border-color: var(--z-danger); box-shadow: 0 0 0 1px var(--z-danger) inset; }
+.z-pick[data-answer="maybe"]:has(input:checked) { background: rgba(255, 201, 64, .09); border-color: var(--z-warning); }
+.z-pick-hint.is-no { color: var(--z-danger); font-weight: 700; }
+.z-pick-hint.is-maybe { color: var(--z-warning); font-weight: 700; }
+.z-pick-flag { display: inline-flex; align-items: center; gap: 6px; width: fit-content; margin-top: 4px; padding: 2px 9px; border: 1px solid; border-radius: 999px; font-size: var(--z-fs-sm); font-weight: 800; white-space: nowrap; }
+.z-pick-flag.is-no { color: var(--z-danger); border-color: var(--z-danger); background: rgba(255, 92, 99, .10); }
+.z-pick-flag.is-maybe { color: var(--z-warning); border-color: var(--z-warning); background: rgba(255, 201, 64, .09); }
+.z-pick > .z-pick-body > .z-pick-flag { display: none; }
+.z-pick:has(input:checked) > .z-pick-body > .z-pick-flag { display: inline-flex; }
+.z-selector-warns { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.z-selector-warns .z-pick-flag { margin-top: 0; }
+.z-selector-warns[hidden], .z-selector-warns [hidden] { display: none; }
+/* «Seleccionado» en la ventana de respuestas del capitán */
+.z-availability-list li.is-forced { background: rgba(255, 92, 99, .10); border-color: var(--z-danger); }
+.z-availability-list li.is-forced-maybe { background: rgba(255, 201, 64, .09); border-color: var(--z-warning); }
+.z-availability-list .z-pick-flag { margin-top: 0; }
 
 .z-selector-bar {
     position: sticky;
@@ -4163,6 +4186,8 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
     .z-stage-me { display: inline-flex; align-items: center; gap: 6px; margin: 10px 0 0; padding: 5px 12px; font-size: var(--z-fs-sm); font-weight: 700; color: var(--z-text); background: rgba(0, 0, 0, .35); border: 1px solid var(--z-border-strong); border-radius: 999px; }
     .z-stage-me.is-in { color: var(--z-lime); border-color: rgba(var(--z-lime-rgb), .5); }
     .z-stage-me.is-out { color: var(--z-warning); border-color: color-mix(in srgb, var(--z-warning) 50%, transparent); }
+    .z-stage-me.is-warn { color: var(--z-warning); border-color: color-mix(in srgb, var(--z-warning) 50%, transparent); flex-wrap: wrap; }
+    .z-stage-me a { color: var(--z-text); font-weight: 800; text-decoration: underline; }
     .z-closed-actions { justify-content: center; margin-top: 14px; }
 
     /* Escudos 3D */

@@ -95,7 +95,61 @@
       closeMenu();
       refresh();
     });
-    picks.forEach((p) => { if (box(p)) box(p).addEventListener('change', refresh); });
+    // Avisos de respuesta: cuántos elegidos dijeron «No» o están sin confirmar, en la barra inferior y en el popup al guardar.
+    const warnBox = root.querySelector('[data-selector-warns]');
+    const form = root.closest('form');
+    const fill = (tpl, vars) => Object.keys(vars).reduce((t, k) => t.split('{' + k + '}').join(vars[k]), tpl);
+    const joinNames = (list) => list.map((p) => p.dataset.name).join(', ');
+    const answered = (answer) => picks.filter((p) => p.dataset.answer === answer && checked(p));
+
+    function refreshWarnings() {
+      if (!warnBox) return;
+      const no = answered('no');
+      const maybe = answered('maybe');
+      [['no', no], ['maybe', maybe]].forEach(function (pair) {
+        const el = warnBox.querySelector('[data-warn-' + pair[0] + ']');
+        const n = pair[1].length;
+        el.hidden = !n;
+        const cap = pair[0].charAt(0).toUpperCase() + pair[0].slice(1);
+        const tpl = n === 1 ? root.dataset['bar' + cap + 'One'] : root.dataset['bar' + cap + 'Many'];
+        el.querySelector('span').textContent = n ? fill(tpl, { n: n }) : '';
+      });
+      warnBox.hidden = !(no.length || maybe.length);
+      updateConfirm(no, maybe);
+    }
+
+    // Solo se pregunta por quien entra ahora: los que ya estaban convocados (casilla marcada de origen) no cuentan.
+    function updateConfirm(no, maybe) {
+      if (!form) return;
+      const fresh = (p) => !box(p).defaultChecked;
+      const nNo = no.filter(fresh);
+      const nMaybe = maybe.filter(fresh);
+      const total = nNo.length + nMaybe.length;
+      if (!total) {
+        form.removeAttribute('data-confirm');
+        form.removeAttribute('data-confirm-title');
+        form.removeAttribute('data-confirm-action');
+        form.removeAttribute('data-confirm-danger');
+        return;
+      }
+      let text;
+      if (total === 1) {
+        text = fill(nNo.length ? root.dataset.warnOneNo : root.dataset.warnOneMaybe, { names: joinNames(nNo.concat(nMaybe)) });
+      } else {
+        text = fill(root.dataset.warnMany, { n: total });
+        if (nNo.length) text += ' ' + fill(root.dataset.warnListNo, { names: joinNames(nNo) });
+        if (nMaybe.length) text += ' ' + fill(root.dataset.warnListMaybe, { names: joinNames(nMaybe) });
+        text += ' ' + root.dataset.warnManyEnd;
+      }
+      form.setAttribute('data-confirm', text);
+      form.setAttribute('data-confirm-title', nNo.length && total === 1 ? root.dataset.warnTitleNo : root.dataset.warnTitleMany);
+      form.setAttribute('data-confirm-action', root.dataset.warnAction);
+      if (nNo.length) form.setAttribute('data-confirm-danger', ''); else form.removeAttribute('data-confirm-danger');
+    }
+
+    picks.forEach((p) => { if (box(p)) box(p).addEventListener('change', () => { refresh(); refreshWarnings(); }); });
+    [all, none, yes].forEach((b) => { if (b) b.addEventListener('click', refreshWarnings); });
     refresh();
+    refreshWarnings();
   });
 })();

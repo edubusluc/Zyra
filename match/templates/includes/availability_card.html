@@ -36,8 +36,9 @@
                     <h3 class="z-av-group-title">{{ group.label }} <span class="z-badge">{{ group.rows|length }}</span></h3>
                     <ul class="z-availability-list">
                         {% for row in group.rows %}
-                        <li>
+                        <li{% if row.called and group.key == "no" %} class="is-forced"{% elif row.called and group.key == "maybe" %} class="is-forced-maybe"{% endif %}>
                             <span><b>{{ row.player.short_name }}</b>{% if row.state == "captain" %} · <small>{% translate "Apuntado por el capitán" %}</small>{% endif %}{% if row.comment %} · <small>{{ row.comment }}</small>{% endif %}</span>
+                            {% if row.called and group.key == "no" or row.called and group.key == "maybe" %}<span class="z-pick-flag is-{{ group.key }}"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> {% translate "Seleccionado" %}</span>{% endif %}
                         </li>
                         {% empty %}<li class="text-muted">{% translate "Nadie" %}</li>{% endfor %}
                     </ul>

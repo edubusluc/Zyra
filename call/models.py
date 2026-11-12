@@ -69,7 +69,6 @@ class Availability(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE, related_name="availabilities")
     answer = models.CharField(max_length=5, choices=ANSWERS)
     comment = models.CharField(max_length=MAX_COMMENT, blank=True, default="")
-    # True si la respuesta la ha puesto el capitán o un gestor por el jugador.
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
