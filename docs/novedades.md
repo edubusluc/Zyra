@@ -10,6 +10,8 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 12/11/2026 · Ficha del enfrentamiento: «Más» y «Acta» a la misma altura
 
+- Corregido: el menú «Más» aparecía abierto al entrar en la ficha y no se podía cerrar; ahora arranca cerrado y se abre y cierra con clic, clic fuera y Escape.
+
 - Con la lista de convocados o de parejas abierta, la tarjeta «Más» ocupa ahora toda la altura de la fila, igual que «Acta», en móvil y en escritorio.
 
 ## 12/11/2026 · Inicio: nombres de equipo largos en dos líneas
