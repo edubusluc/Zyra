@@ -215,3 +215,21 @@ class LineupImageTests(UxBase):
         type(first).objects.filter(pk=first.pk).update(snp_score=None)
         games = list(match.games.order_by("n_game").select_related("player_1_local", "player_2_local", "player_1_visiting", "player_2_visiting"))
         self.assertIsNone(lineup_pairs(match, games)[0][2])
+
+    def test_team_photo_is_used_without_ring(self):
+        import tempfile
+        from io import BytesIO
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from django.test import override_settings
+        from PIL import Image
+        match = self.aligned_match()
+        buffer = BytesIO()
+        Image.new("RGBA", (200, 200), (255, 0, 0, 255)).save(buffer, "PNG")
+        with tempfile.TemporaryDirectory() as media, override_settings(MEDIA_ROOT=media):
+            team = match.local if match.local.is_own else match.visiting
+            team.photo.save("escudo.png", SimpleUploadedFile("escudo.png", buffer.getvalue()))
+            response = self.client.get(reverse("lineup_image", args=[match.public_id]))
+            image = Image.open(BytesIO(response.content)).convert("RGB")
+            x = 188 if match.own_is_local else 892
+            self.assertGreater(image.getpixel((x, 386))[0], 200)  # el centro del escudo es la foto roja
+            self.assertLess(image.getpixel((x - 80, 386))[0], 120)  # y fuera de ella no hay anillo ni círculo

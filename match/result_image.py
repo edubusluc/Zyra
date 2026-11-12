@@ -13,7 +13,7 @@ from pathlib import Path
 
 from django.conf import settings
 from django.utils.translation import gettext as _
-from PIL import Image, ImageDraw, ImageFont, ImageOps
+from PIL import Image, ImageDraw, ImageFont
 
 from core.templatetags.zyra_format import crest_initials
 from match import outcomes
@@ -153,31 +153,29 @@ def _sets(game):
 
 
 def _team_photo(team, size):
-    """Foto del equipo (``Team.photo``) recortada en círculo de ``size`` px del lienzo, o None si no tiene o no se puede abrir."""
+    """Foto del equipo (``Team.photo``) reducida para caber en ``size`` px del lienzo conservando su forma y su
+    transparencia, o None si no tiene o no se puede abrir."""
     if not team or not team.photo:
         return None
     try:
         with team.photo.open("rb") as handle:
-            photo = Image.open(handle).convert("RGB")
-            photo = ImageOps.fit(photo, (size, size), Image.LANCZOS)
+            photo = Image.open(handle).convert("RGBA")
+            photo.thumbnail((size, size), Image.LANCZOS)
     except (OSError, ValueError):
         return None
-    mask = Image.new("L", (size, size), 0)
-    ImageDraw.Draw(mask).ellipse([0, 0, size - 1, size - 1], fill=255)
-    photo.putalpha(mask)
     return photo
 
 
 def _crest(canvas, draw, cx, cy, name, own, team=None):
-    """Escudo del equipo: su foto en círculo o, si no tiene, círculo con las siglas; el borde es lima si es el propio."""
+    """Escudo del equipo: su foto tal cual, sin círculo alrededor, o, si no tiene, círculo con las siglas
+    (borde lima si es el propio)."""
     r = 66
-    box = [_s(cx - r), _s(cy - r), _s(cx + r), _s(cy + r)]
-    photo = _team_photo(team, _s(2 * r))
+    photo = _team_photo(team, _s(2 * r + 20))
     if photo:
-        canvas.paste(photo, (box[0], box[1]), photo)
-        draw.ellipse(box, outline=LIME if own else BORDER, width=_s(4))
+        canvas.alpha_composite(photo, (_s(cx) - photo.width // 2, _s(cy) - photo.height // 2))
         return
-    draw.ellipse(box, fill=CREST_BG, outline=LIME if own else BORDER, width=_s(4))
+    draw.ellipse([_s(cx - r), _s(cy - r), _s(cx + r), _s(cy + r)], fill=CREST_BG, outline=LIME if own else BORDER,
+                 width=_s(4))
     _text(draw, (cx, cy + 4), crest_initials(name), _font("Anton-Regular.ttf", 60), LIME if own else TEXT, "mm")
 
 
