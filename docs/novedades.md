@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 12/11/2026 · Inicio: nombres de equipo largos en dos líneas
+
+- En la tarjeta «Próximo enfrentamiento», un nombre de más de 16 letras se parte en dos líneas (entre palabras, lo más equilibradas posible) en vez de encoger los dos nombres. Local y visitante siguen al mismo tamaño, que sale de la línea más larga: «Sonridental Avanzza Padel» contra «Los Gladiadores» se ve tan grande como dos nombres cortos.
+- El nombre de dos líneas crece hacia arriba; la línea de la convocatoria y «Ver convocatoria» conservan su sitio.
+
 ## 12/11/2026 · Convocatoria: colores de respuesta y aviso al elegir a quien dijo «No»
 
 - En el selector de la convocatoria cada tarjeta lleva una franja de color según la respuesta del enlace de disponibilidad (Sí en verde, No en rojo, Pendiente en amarillo), siempre con icono y texto. La respuesta del jugador no cambia nunca por convocarlo.

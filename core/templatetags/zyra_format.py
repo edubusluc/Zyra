@@ -68,3 +68,42 @@ def crest_initials(name):
 def crest_hue(name):
     """Tono (0-359) derivado del nombre del equipo para el escudo de reserva: el mismo nombre, el mismo tono."""
     return sum((i + 1) * ord(c) for i, c in enumerate(str(name or "").lower())) % 360
+
+
+
+# Un nombre de equipo de hasta estas letras va en una sola línea en la tarjeta «Próximo enfrentamiento»;
+# a partir de ahí se reparte en dos líneas en vez de encogerse.
+TEAM_NAME_ONE_LINE_MAX = 16
+
+
+def split_team_name(name):
+    """
+    Líneas con las que se pinta un nombre de equipo en la tarjeta «Próximo enfrentamiento».
+
+    Hasta ``TEAM_NAME_ONE_LINE_MAX`` letras (o con una sola palabra), una línea. Si es más largo, dos líneas
+    cortando entre palabras por el punto que deja la línea más larga lo más corta posible
+    («Sonridental Avanzza Padel» → «Sonridental» / «Avanzza Padel»).
+    """
+    name = " ".join((name or "").split())
+    words = name.split(" ")
+    if len(name) <= TEAM_NAME_ONE_LINE_MAX or len(words) < 2:
+        return [name]
+    cut = min(
+        range(1, len(words)),
+        key=lambda i: max(len(" ".join(words[:i])), len(" ".join(words[i:]))),
+    )
+    return [" ".join(words[:cut]), " ".join(words[cut:])]
+
+
+@register.simple_tag
+def team_names_fit(local, visiting):
+    """
+    Nombres de local y visitante para la tarjeta «Próximo enfrentamiento», listos para pintar al mismo tamaño.
+
+    Devuelve ``local`` y ``visiting`` (lista de líneas de cada nombre, ver :func:`split_team_name`) y ``width``:
+    letras de la línea más larga de los dos. El CSS lo usa como ``--fit`` para elegir un tamaño común, así un
+    nombre largo pasa a dos líneas en vez de encoger los dos.
+    """
+    local_lines, visiting_lines = split_team_name(local), split_team_name(visiting)
+    width = max(len(line) for line in local_lines + visiting_lines)
+    return {"local": local_lines, "visiting": visiting_lines, "width": max(width, 1)}
