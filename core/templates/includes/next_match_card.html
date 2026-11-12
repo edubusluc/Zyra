@@ -23,14 +23,14 @@
     <div class="z-next-match-cta">
         <a class="btn btn-secondary" href="{% url 'call_for_match' item.match.public_id %}"><i class="fa-solid fa-clipboard-list me-1" aria-hidden="true"></i> {% translate "Ver convocatoria" %}</a>
     </div>
-    <div class="z-next-match-teams">
+    <div class="z-next-match-teams" style="--len-l: {{ item.match.local_name|length }}; --len-v: {{ item.match.visiting_name|length }}">
         <div class="z-next-match-team {% if item.match.local.is_own %}is-own{% endif %}">
-            <span style="--len: {{ item.match.local_name|length }}" title="{{ item.match.local_name }}">{{ item.match.local_name }}</span>
+            <span title="{{ item.match.local_name }}">{{ item.match.local_name }}</span>
             <small>{% translate "Local" %}</small>
         </div>
         <div class="z-versus-vs" aria-hidden="true">VS</div>
         <div class="z-next-match-team {% if item.match.visiting.is_own %}is-own{% endif %}">
-            <span style="--len: {{ item.match.visiting_name|length }}" title="{{ item.match.visiting_name }}">{{ item.match.visiting_name }}</span>
+            <span title="{{ item.match.visiting_name }}">{{ item.match.visiting_name }}</span>
             <small>{% translate "Visitante" %}</small>
         </div>
     </div>
