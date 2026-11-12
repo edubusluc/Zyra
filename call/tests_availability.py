@@ -173,15 +173,15 @@ class AvailabilityTests(TestCase):
         self.assertFalse(Call.objects.exists())
 
     def test_selector_marks_answers_and_flag_for_no_and_maybe(self):
-        """Cada tarjeta lleva su respuesta; «No» y «Pendiente» llevan la etiqueta «Lo has seleccionado» (visible al marcarlos)."""
+        """Cada tarjeta lleva su respuesta; «No» y «Pendiente» llevan el texto «… · seleccionado» (visible al marcarlos, en la misma línea)."""
         availability.set_answer(self.match, self.ana, "no")
         availability.set_answer(self.match, self.luis, "yes")
         self.client.force_login(self.captain)
         html = self.client.get(reverse("create_call", args=[self.match.public_id])).content.decode()
         self.assertIn('data-answer="no"', html)
         self.assertIn('data-answer="yes"', html)
-        self.assertEqual(html.count('class="z-pick-flag is-no"><i'), 1)
-        self.assertNotIn('class="z-pick-flag is-yes"', html)
+        self.assertEqual(html.count("Dice que no · seleccionado"), 1)
+        self.assertNotIn("Dice que sí · seleccionado", html)
         self.assertIn("data-warn-one-no=", html)
 
     def test_no_answer_never_blocks_the_call(self):

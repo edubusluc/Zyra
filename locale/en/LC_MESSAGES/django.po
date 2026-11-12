@@ -16774,3 +16774,9 @@ msgstr "Selected"
 
 msgid "Tu respuesta era No"
 msgstr "Your answer was No"
+
+msgid "Dice que no · seleccionado"
+msgstr "Says no · selected"
+
+msgid "Pendiente · seleccionado"
+msgstr "Pending · selected"
