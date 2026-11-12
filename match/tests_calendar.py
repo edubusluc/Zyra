@@ -157,3 +157,46 @@ class ResultImageTests(ShareTextTests):
         self.client.logout()
         self.client.login(username="otro", password="pass-12345")
         self.assertEqual(self.client.get(reverse("result_image", args=[match.public_id])).status_code, 404)
+
+
+class LineupImageTests(UxBase):
+    """Botón de compartir de la tarjeta «Parejas» y su imagen de la alineación."""
+
+    def aligned_match(self):
+        match = self.match()
+        self.closed_call(match)
+        self.lineup(match)
+        return match
+
+    def test_button_shows_only_with_pairs(self):
+        match = self.match()
+        self.closed_call(match)
+        url = reverse("lineup_image", args=[match.public_id])
+        self.assertNotContains(self.client.get(reverse("call_for_match", args=[match.public_id])), url)
+        self.lineup(match)
+        page = self.client.get(reverse("call_for_match", args=[match.public_id]))
+        self.assertContains(page, url)
+        self.assertIn("*Alineación* contra Rival", page.context["lineup_share_text"])
+        self.assertIn("*Partido 1* ·", page.context["lineup_share_text"])
+
+    def test_returns_jpeg_1080x1350(self):
+        from io import BytesIO
+        from PIL import Image
+        match = self.aligned_match()
+        response = self.client.get(reverse("lineup_image", args=[match.public_id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "image/jpeg")
+        self.assertEqual(Image.open(BytesIO(response.content)).size, (1080, 1350))
+
+    def test_without_pairs_has_no_image(self):
+        match = self.match()
+        self.closed_call(match)
+        self.assertEqual(self.client.get(reverse("lineup_image", args=[match.public_id])).status_code, 404)
+
+    def test_other_club_cannot_see_it(self):
+        match = self.aligned_match()
+        other = User.objects.create_user("otro", email="otro@example.com", password="pass-12345")
+        create_club("Club B", "Madrid", other)
+        self.client.logout()
+        self.client.login(username="otro", password="pass-12345")
+        self.assertEqual(self.client.get(reverse("lineup_image", args=[match.public_id])).status_code, 404)
