@@ -461,12 +461,12 @@ msgstr "Deletes expired user sessions from the database."
 #: backoffice/jobs.py:121
 msgid ""
 "Descarga de SNP los puntos de los jugadores de los clubes con cuenta SNP, "
-"por lotes de 50 y con pausas. Se ejecuta los lunes y miércoles a las 05:00 "
+"por lotes de 50 y con pausas. Se ejecuta los lunes, martes y miércoles a las 05:00 "
 "(los partidos del fin de semana tardan en verificarse en SNP) y cada "
 "ejecución actualiza a todos los clubes."
 msgstr ""
 "Downloads SNP points for the players of clubs with an SNP account, in "
-"batches of 50 with pauses. It runs on Mondays and Wednesdays at 05:00 "
+"batches of 50 with pauses. It runs on Mondays, Tuesdays and Wednesdays at 05:00 "
 "(weekend matches take a while to be verified on SNP) and each run updates "
 "every club."
 
@@ -14093,10 +14093,11 @@ msgstr "You have not changed any SNP account data."
 
 #: players/views.py:277
 msgid ""
-"Cuenta SNP guardada. Los puntos se actualizarán los lunes y miércoles por la"
+"Cuenta SNP guardada. Los puntos se actualizarán los lunes, martes y miércoles por la"
 " mañana."
 msgstr ""
-"SNP account saved. Points will be updated on Monday and Wednesday mornings."
+"SNP account saved. Points will be updated on Monday, Tuesday and Wednesday "
+"mornings."
 
 #: players/views.py:307
 msgid "No se ha podido leer la contraseña guardada."
