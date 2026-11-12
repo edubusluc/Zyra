@@ -25,12 +25,12 @@
     </div>
     <div class="z-next-match-teams">
         <div class="z-next-match-team {% if item.match.local.is_own %}is-own{% endif %}">
-            <span title="{{ item.match.local_name }}">{{ item.match.local_name }}</span>
+            <span style="--len: {{ item.match.local_name|length }}" title="{{ item.match.local_name }}">{{ item.match.local_name }}</span>
             <small>{% translate "Local" %}</small>
         </div>
         <div class="z-versus-vs" aria-hidden="true">VS</div>
         <div class="z-next-match-team {% if item.match.visiting.is_own %}is-own{% endif %}">
-            <span title="{{ item.match.visiting_name }}">{{ item.match.visiting_name }}</span>
+            <span style="--len: {{ item.match.visiting_name|length }}" title="{{ item.match.visiting_name }}">{{ item.match.visiting_name }}</span>
             <small>{% translate "Visitante" %}</small>
         </div>
     </div>
