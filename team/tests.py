@@ -492,3 +492,100 @@ class EditTeamCrestStageTests(TestCase):
         response = self.get(self.own)
         self.assertNotContains(response, "form-text")
         self.assertContains(response, 'data-tip="Tu equipo siempre está en tu grupo')
+
+
+class TeamLocationPropagationTests(TestCase):
+    """Al cambiar el lugar de un equipo, sus enfrentamientos con el acta abierta lo siguen."""
+    client_class = TeamClient
+
+    def setUp(self):
+        from datetime import timedelta
+        from django.utils import timezone
+        self.today = timezone.localdate()
+        self.future = self.today + timedelta(days=7)
+        self.past = self.today - timedelta(days=7)
+        self.user = User.objects.create_user("admin", password="pass-12345")
+        self.club = create_club("Club A", "Sevilla", self.user, gender="F", country="ES")
+        self.own = self.club.own_team
+        self.own.location = "Pista Vieja"
+        self.own.save()
+        self.rival = Team.objects.create(club=self.club, name="CD Tomares", location="X", gender="F", country="ES",
+                                         division="500")
+        self.client.force_login(self.user)
+
+    def _match(self, date, **extra):
+        from match.models import Match
+        return Match.objects.create(club=self.club, local=self.own, visiting=self.rival, start_date=date, **extra)
+
+    def _edit(self, team, location):
+        return self.client.post(reverse("edit_team", args=[team.public_id]),
+                                {"name": team.name, "location": location, "gender": "F", "country": "ES",
+                                 "division": team.division or "future", "in_group": "on"})
+
+    def test_pending_future_matches_take_the_new_location(self):
+        match = self._match(self.future)
+        self.assertEqual(match.location, "Pista Vieja")
+        self._edit(self.own, "Pista Nueva")
+        match.refresh_from_db()
+        self.assertEqual(match.location, "Pista Nueva")
+
+    def test_closed_and_custom_matches_keep_their_location(self):
+        past_closed = self._match(self.past, draft_mode=False)
+        closed = self._match(self.future, draft_mode=False)
+        custom = self._match(self.future)
+        custom.location = "Pabellón del rival"
+        custom.save()
+        self._edit(self.own, "Pista Nueva")
+        for match in (past_closed, closed, custom):
+            match.refresh_from_db()
+        self.assertEqual([m.location for m in (past_closed, closed, custom)],
+                         ["Pista Vieja", "Pista Vieja", "Pabellón del rival"])
+
+    def test_open_past_match_is_updated(self):
+        match = self._match(self.past)
+        self._edit(self.own, "Pista Nueva")
+        match.refresh_from_db()
+        self.assertEqual(match.location, "Pista Nueva")
+
+    def test_works_when_the_team_is_the_visitor(self):
+        from match.models import Match
+        match = Match.objects.create(club=self.club, local=self.rival, visiting=self.own, start_date=self.future,
+                                     location="Pista Vieja")
+        self._edit(self.own, "Pista Nueva")
+        match.refresh_from_db()
+        self.assertEqual(match.location, "Pista Nueva")
+
+    def test_away_match_at_rival_venue_is_untouched(self):
+        from match.models import Match
+        away = Match.objects.create(club=self.club, local=self.rival, visiting=self.own, start_date=self.future)
+        self.assertEqual(away.location, "X")
+        self._edit(self.own, "Pista Nueva")
+        away.refresh_from_db()
+        self.assertEqual(away.location, "X")
+
+    def test_rival_location_change_updates_its_home_matches(self):
+        from match.models import Match
+        away = Match.objects.create(club=self.club, local=self.rival, visiting=self.own, start_date=self.future)
+        self._edit(self.rival, "Pista Tomares")
+        away.refresh_from_db()
+        self.assertEqual(away.location, "Pista Tomares")
+
+    def test_no_emails_are_sent(self):
+        from django.core import mail
+        self._match(self.future)
+        self._edit(self.own, "Pista Nueva")
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_location_change_does_not_alter_local_visiting_or_their_stats(self):
+        from match.models import Match
+        from data_analyse import team_card
+        home = self._match(self.future)
+        away = Match.objects.create(club=self.club, local=self.rival, visiting=self.own, start_date=self.future,
+                                    location="Pista Vieja")
+        before = team_card.venue_matches(self.club)
+        self._edit(self.own, "Pista Nueva")
+        home.refresh_from_db()
+        away.refresh_from_db()
+        self.assertEqual((home.local, home.visiting), (self.own, self.rival))
+        self.assertEqual((away.local, away.visiting), (self.rival, self.own))
+        self.assertEqual(team_card.venue_matches(self.club), before)

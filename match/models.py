@@ -85,8 +85,9 @@ class Match(PublicIdModel):
     # sus otros espacios (otras competiciones). Se elige al crear el partido.
     report_other_competitions = models.BooleanField(_("Incluir datos de otras competiciones"), default=False)
     season = models.CharField(max_length=9, blank = True, default="NONE")
-    # Copia de la ubicación del equipo local al crear el partido. Es una copia, no un
-    # enlace: si el equipo cambia de sede después, los partidos ya creados no cambian.
+    # Copia de la ubicación del equipo local al crear el partido. Es una copia, no un enlace: al editar
+    # el lugar del equipo solo se actualizan los partidos con el acta abierta que aún tenían el lugar
+    # anterior (``match.locations.propagate_team_location``); los cerrados no cambian.
     location = models.CharField(max_length=100, blank=True, default="")
     # Rival de un amistoso que no es un equipo del grupo: solo se guarda su nombre en el
     # propio partido (no se crea ningún equipo) y ese lado (local o visiting) queda vacío.
