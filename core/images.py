@@ -10,6 +10,8 @@ pierden los metadatos (EXIF, ubicación GPS...).
 Cuando una foto se cambia o se borra su equipo/jugador, el fichero antiguo se borra del
 almacenamiento si ya no lo usa nadie más.
 """
+import logging
+import time
 import uuid
 from io import BytesIO
 
@@ -19,6 +21,10 @@ from django.core.files.base import ContentFile
 from django.db import transaction
 from django.utils.translation import gettext as _
 from PIL import Image, ImageOps
+
+logger = logging.getLogger(__name__)
+# Si procesar y validar una foto tarda más de esto (segundos) se anota en el log con el desglose.
+SLOW_PHOTO_SECONDS = 1.0
 
 # Carpetas del almacenamiento donde van las fotos. Las rutas que no empiezan por una de
 # ellas son antiguas (static/team, static/profile): las mueve el comando move_photos_to_media.
@@ -85,14 +91,20 @@ def clean_photo_field(form, field_name="photo"):
     # Solo los ficheros recién subidos traen content_type; una foto ya guardada se deja igual.
     if not (photo and hasattr(photo, "content_type")) or getattr(form, "check_only", False):
         return photo
+    started = time.monotonic()
     content = process_image(photo)
+    processed = time.monotonic()
     result = moderate(content)
+    moderated = time.monotonic()
     uploader = getattr(form, "uploader", None)
     check = PhotoCheck.objects.create(
         club=getattr(form.instance, "club", None) or getattr(form, "club", None),
         uploaded_by=uploader if uploader and uploader.is_authenticated else None,
         status=result.status, reason=result.reason, api_called=result.api_called,
     )
+    if moderated - started > SLOW_PHOTO_SECONDS:
+        logger.warning("Foto lenta: %.2f s en total (procesar %.2f s, validar %.2f s, %s bytes subidos)",
+                       moderated - started, processed - started, moderated - processed, getattr(photo, "size", "?"))
     if result.status == PhotoCheck.REJECTED:
         raise ValidationError(_("La foto no se puede usar: parece contener contenido no permitido. Elige otra."))
     form.instance._photo_check_id = check.pk
