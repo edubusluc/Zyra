@@ -152,6 +152,7 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
   (`manage_teams`) trata los rivales, del grupo y dados de baja (`in_group=False`), que se vuelven
   a dar de alta allí o desde el aviso de nombre parecido (`reactivate_team`, POST).
 - [V] `Team.default_time` (hora habitual de juego, opcional, solo equipo propio; vacía en los ya creados) se pide en el alta del club y en «Editar equipo» y precarga la hora del formulario de enfrentamiento cuando el equipo juega en casa (en visitante se vacía); siempre editable.
+- [V] `Match.location` es una copia del lugar del equipo local al crear el partido. Al editar el lugar de un equipo, `match.locations.propagate_team_location` actualiza los enfrentamientos del club con el acta abierta en los que juega (local o visitante) y cuyo lugar sigue siendo el anterior; los de acta cerrada y los editados a mano no cambian. Sin correos. Tests: `team/tests.py` (`TeamLocationPropagationTests`).
 - [V] El equipo propio nunca sale del grupo: `Team.save`, `Teamform.clean` y la migración
   `team/0006` lo fuerzan. Al crear un equipo se avisa de nombres parecidos aunque estén de baja.
 

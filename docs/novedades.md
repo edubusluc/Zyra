@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 12/11/2026 · Editar el lugar de un equipo actualiza sus enfrentamientos abiertos
+
+- Al cambiar el lugar de un equipo en «Editar equipo», los enfrentamientos con el acta abierta en los que juega (como local o visitante) que aún tenían el lugar anterior pasan al nuevo, y se avisa de cuántos. Los de acta cerrada y los que tienen un lugar escrito a mano conservan el suyo. No se envía ningún correo.
+
 ## 12/11/2026 · Imágenes de compartir: solo la imagen y JPEG estándar para la miniatura de iOS
 
 - «Compartir resultado» y «Compartir alineación» comparten únicamente la imagen: ya no se genera texto para WhatsApp.
