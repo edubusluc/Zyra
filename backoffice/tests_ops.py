@@ -556,6 +556,14 @@ class MetricsTests(StaffTestCase):
         load = self.client.get(reverse("backoffice:load"))
         self.assertContains(load, "/backoffice/search/")
 
+    def test_slow_request_event_includes_database_time(self):
+        from django.core.cache import cache
+        cache.clear()
+        with mock.patch("backoffice.middleware.SLOW_EVENT_MS", 0):
+            self.client.get(reverse("backoffice:search"), {"q": "ab"})
+        event = ErrorEvent.objects.get()
+        self.assertRegex(event.exception, r"^\[BD \d+ ms en [1-9]\d* consultas\]")
+
     def test_funnel_counts_steps(self):
         from .metrics import funnel
         steps = {s["label"]: s["n"] for s in funnel()["steps"]}

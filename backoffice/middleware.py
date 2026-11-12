@@ -9,7 +9,7 @@ import time
 
 from django.conf import settings
 from django.core.cache import cache
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError, connection, transaction
 from django.db.models import F
 from django.db.models.functions import Greatest
 from django.utils import timezone
@@ -116,6 +116,24 @@ def activity_cache_key(user_id):
     return f"backoffice:seen:{user_id}"
 
 
+class _DbTimer:
+    """Suma el tiempo y el número de consultas SQL de una petición (``connection.execute_wrapper``)."""
+
+    def __init__(self):
+        """Contadores a cero."""
+        self.queries = 0
+        self.seconds = 0.0
+
+    def __call__(self, execute, sql, params, many, context):
+        """Ejecuta la consulta midiendo cuánto tarda."""
+        start = time.monotonic()
+        try:
+            return execute(sql, params, many, context)
+        finally:
+            self.queries += 1
+            self.seconds += time.monotonic() - start
+
+
 class ActivityMiddleware:
     """
     Mide cada petición (tiempo y código de respuesta) y apunta la última actividad del
@@ -142,7 +160,9 @@ class ActivityMiddleware:
             return self.get_response(request)
 
         start = time.monotonic()
-        response = self.get_response(request)
+        db_timer = _DbTimer()
+        with connection.execute_wrapper(db_timer):
+            response = self.get_response(request)
         ms = int((time.monotonic() - start) * 1000)
         now = timezone.now()
 
@@ -163,21 +183,28 @@ class ActivityMiddleware:
                 if cache.add(f"backoffice:day:{user.pk}:{today}", 1, 24 * 3600):
                     DailyActivity.objects.get_or_create(user=user, date=today)
             if response.status_code >= 500 or ms >= SLOW_EVENT_MS:
-                _record_event(request, response.status_code, ms, user)
+                _record_event(request, response.status_code, ms, user, db_timer)
         except Exception:  # la medición nunca debe romper una página
             pass
         return response
 
 
-def _record_event(request, status, ms, user):
-    """Anota una petición de error 500 o muy lenta, con un tope por minuto para no llenar la tabla."""
+def _record_event(request, status, ms, user, db_timer=None):
+    """
+    Anota una petición de error 500 o muy lenta, con un tope por minuto para no llenar la tabla.
+    En ``exception`` va, delante, cuánto de la petición fue base de datos (para saber si el retraso
+    está en las consultas o fuera de ellas).
+    """
     key = f"backoffice:events:{timezone.now():%Y%m%d%H%M}"
     cache.add(key, 0, 120)
     if cache.incr(key) > MAX_EVENTS_PER_MINUTE:
         return
     exc = getattr(request, "_zyra_exception", None)
+    detail = f"{type(exc).__name__}: {exc}" if exc else ""
+    if db_timer is not None:
+        detail = f"[BD {int(db_timer.seconds * 1000)} ms en {db_timer.queries} consultas] {detail}"
     ErrorEvent.objects.create(
         path=request.path[:200], method=request.method[:10], status=status, duration_ms=ms,
-        exception=(f"{type(exc).__name__}: {exc}" if exc else "")[:300],
+        exception=detail.strip()[:300],
         user=user if user is not None and user.is_authenticated and getattr(request, "impersonator", None) is None else None,
     )
