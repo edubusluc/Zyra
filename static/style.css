@@ -4291,7 +4291,11 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
     @media (min-width: 992px) {
         .z-menu.has-focus, .z-menu.z-menu--short.has-focus { grid-template-columns: repeat(4, minmax(0, 1fr)); }
         .z-menu.has-focus > li.is-focus { grid-column: 1 / 3; grid-row: 1 / 3; }
+        .z-menu.has-focus > li.z-menu-link { grid-column: 3 / 5; grid-row: 2; }
     }
+    /* «¿Puedes jugar?» sin jugador enlazado: ocupa el hueco bajo «Acta» (visible sin desplazarse) */
+    .z-menu > li.z-menu-link { grid-column: 1 / -1; }
+    .z-menu > li.z-menu-link .z-av-me { margin: 0; }
     .z-menu-focus { display: flex; flex-direction: column; gap: 10px; min-width: 0; padding: 18px; background: linear-gradient(180deg, var(--z-stage-card-a), var(--z-stage-card-b)); border: 1px solid var(--z-stage-card-border); border-top: 3px solid var(--z-stage-card-bevel); border-radius: var(--z-radius); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 6px 0 -2px var(--z-stage-drop), 0 12px 20px -10px rgba(0, 0, 0, .9); }
     .z-menu-focus:has(> .z-menu-card.is-done, > form > .z-menu-card.is-done) { border-top-color: var(--z-lime); }
     .z-menu-focus:has(> .z-menu-card.is-next, > form > .z-menu-card.is-next) { border-top-color: var(--z-warning); }

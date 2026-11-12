@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 12/11/2026 · «¿Puedes jugar?» sin jugador, bajo «Acta»
+
+- En la ficha 3D, el aviso para enlazar tu jugador sale en el hueco bajo la tarjeta «Acta», para verlo sin desplazarse.
+
 ## 12/11/2026 · «¿Puedes jugar?» pide enlazar tu jugador
 
 - Si tu cuenta es de jugador y aún no tiene ficha enlazada, la tarjeta «¿Puedes jugar?» de la ficha del enfrentamiento te dice que debes enlazarla y te lleva a «Mi jugador» (antes la tarjeta no aparecía).
