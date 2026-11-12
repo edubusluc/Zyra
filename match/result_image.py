@@ -13,7 +13,7 @@ from pathlib import Path
 
 from django.conf import settings
 from django.utils.translation import gettext as _
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 from core.templatetags.zyra_format import crest_initials
 from match import outcomes
@@ -152,17 +152,38 @@ def _sets(game):
     return " ".join(f"{a}-{b}" for a, b in pairs if a is not None and b is not None)
 
 
-def _crest(draw, cx, cy, name, own):
-    """Escudo de reserva: círculo con las siglas del equipo (borde y siglas lima si es el propio)."""
+def _team_photo(team, size):
+    """Foto del equipo (``Team.photo``) recortada en círculo de ``size`` px del lienzo, o None si no tiene o no se puede abrir."""
+    if not team or not team.photo:
+        return None
+    try:
+        with team.photo.open("rb") as handle:
+            photo = Image.open(handle).convert("RGB")
+            photo = ImageOps.fit(photo, (size, size), Image.LANCZOS)
+    except (OSError, ValueError):
+        return None
+    mask = Image.new("L", (size, size), 0)
+    ImageDraw.Draw(mask).ellipse([0, 0, size - 1, size - 1], fill=255)
+    photo.putalpha(mask)
+    return photo
+
+
+def _crest(canvas, draw, cx, cy, name, own, team=None):
+    """Escudo del equipo: su foto en círculo o, si no tiene, círculo con las siglas; el borde es lima si es el propio."""
     r = 66
-    draw.ellipse([_s(cx - r), _s(cy - r), _s(cx + r), _s(cy + r)], fill=CREST_BG, outline=LIME if own else BORDER,
-                 width=_s(4))
+    box = [_s(cx - r), _s(cy - r), _s(cx + r), _s(cy + r)]
+    photo = _team_photo(team, _s(2 * r))
+    if photo:
+        canvas.paste(photo, (box[0], box[1]), photo)
+        draw.ellipse(box, outline=LIME if own else BORDER, width=_s(4))
+        return
+    draw.ellipse(box, fill=CREST_BG, outline=LIME if own else BORDER, width=_s(4))
     _text(draw, (cx, cy + 4), crest_initials(name), _font("Anton-Regular.ttf", 60), LIME if own else TEXT, "mm")
 
 
-def _team(draw, cx, top, name, side, own):
+def _team(canvas, draw, cx, top, name, side, own, team=None):
     """Bloque de un equipo: escudo, nombre (hasta dos líneas) y etiqueta Local / Visitante."""
-    _crest(draw, cx, top + 66, name, own)
+    _crest(canvas, draw, cx, top + 66, name, own, team)
     font = _font("Archivo-ExtraBold.ttf", 34)
     lines = _wrap(draw, name.upper(), font, 270)
     for i, line in enumerate(lines):
@@ -231,8 +252,8 @@ def _rows(canvas, draw, match, games, own_is_local, rules):
     return panel[3]
 
 
-def _header(canvas, draw, match, rules):
-    """Cabecera común (logotipo, insignia de la competición y fecha/lugar); devuelve el ``draw`` vigente del lienzo."""
+def _header(canvas, draw, match, rules, kicker=True):
+    """Cabecera común (logotipo, insignia de la competición y, con ``kicker``, fecha y lugar en gris); devuelve el ``draw`` vigente del lienzo."""
     _logo(draw, 64, 68, 54)
     _text(draw, (120, 95), "ZYRA", _font("Syncopate-BoldItalic.ttf", 34), TEXT, "lm", spacing=1.4)
 
@@ -246,9 +267,10 @@ def _header(canvas, draw, match, rules):
     draw = ImageDraw.Draw(canvas, "RGBA")
     _text(draw, (W - 64 - bw / 2, 95), comp.upper(), bfont, badge_color, "mm", spacing=2)
 
-    when = match.start_date.strftime("%d/%m/%Y") + (f" · {match.start_time:%H:%M}" if match.start_time else "")
-    kicker = f"{when} · {match.location}" if match.location else when
-    _text(draw, (64, 170), kicker, _fit(draw, kicker, "Archivo-Bold.ttf", 30, W - 128), MUTED, "lm")
+    if kicker:
+        when = match.start_date.strftime("%d/%m/%Y") + (f" · {match.start_time:%H:%M}" if match.start_time else "")
+        line = f"{when} · {match.location}" if match.location else when
+        _text(draw, (64, 170), line, _fit(draw, line, "Archivo-Bold.ttf", 30, W - 128), MUTED, "lm")
     return draw
 
 
@@ -267,8 +289,8 @@ def build_result_jpeg(match, games, outcome):
     draw = _header(canvas, draw, match, rules)
 
     own_is_local = match.own_is_local
-    _team(draw, 188, 224, match.local_name, _("Local"), own_is_local)
-    _team(draw, W - 188, 224, match.visiting_name, _("Visitante"), not own_is_local)
+    _team(canvas, draw, 188, 224, match.local_name, _("Local"), own_is_local, match.local)
+    _team(canvas, draw, W - 188, 224, match.visiting_name, _("Visitante"), not own_is_local, match.visiting)
 
     points = (match.result_points or "").replace("-", "/").split("/")
     score = "-".join(p.strip() for p in points) if len(points) == 2 else "-"

@@ -16789,3 +16789,6 @@ msgstr "Line-up"
 
 msgid "ALINEACIÓN"
 msgstr "LINE-UP"
+
+msgid "PUNTOS"
+msgstr "POINTS"

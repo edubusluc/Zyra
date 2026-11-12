@@ -200,3 +200,18 @@ class LineupImageTests(UxBase):
         self.client.logout()
         self.client.login(username="otro", password="pass-12345")
         self.assertEqual(self.client.get(reverse("lineup_image", args=[match.public_id])).status_code, 404)
+
+    def test_snp_pairs_sum_the_points_of_both_players(self):
+        from match.lineup_image import lineup_pairs
+        match = self.aligned_match()
+        games = list(match.games.order_by("n_game"))
+        for player in self.players:
+            player.snp_score = 1000
+            player.save()
+        match.refresh_from_db()
+        totals = [total for _, _, total in lineup_pairs(match, games)]
+        self.assertEqual(totals, [2000] * len(totals))
+        first = games[0].player_1_local or games[0].player_1_visiting
+        type(first).objects.filter(pk=first.pk).update(snp_score=None)
+        games = list(match.games.order_by("n_game").select_related("player_1_local", "player_2_local", "player_1_visiting", "player_2_visiting"))
+        self.assertIsNone(lineup_pairs(match, games)[0][2])
