@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 12/11/2026 · Línea central de la tarjeta de enfrentamiento difuminada
+
+- La línea vertical de la red de la tarjeta de enfrentamiento se desvanece arriba y abajo y es más tenue, para que no parte la tarjeta en dos (#367).
+
 ## 12/11/2026 · Imagen de la alineación: nombres completos
 
 - La imagen de «Compartir alineación» muestra el nombre y los apellidos de cada jugador en vez de la inicial y el primer apellido, para no confundir a jugadores con la misma inicial y apellido.
