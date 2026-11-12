@@ -996,6 +996,9 @@ def _ficha_page(request, match, history=False):
         "history_view": history,
         "my_availability": Availability.objects.filter(match=match, player=me).first() if me else None,
         "can_answer": bool(me and not history and match.draft_mode and call_availability.is_open(match)),
+        # Cuenta de jugador sin ficha enlazada: en lugar de «¿Puedes jugar?» se le pide enlazarla.
+        "must_link": bool(not me and not history and not request.membership.can_manage
+                          and match.draft_mode and call_availability.is_open(match)),
         "availability": availability_context(request, match) if request.membership.can_manage else None,
         "call_for_match": call,
         "match_id": match.public_id,

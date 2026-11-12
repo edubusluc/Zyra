@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 12/11/2026 · «¿Puedes jugar?» pide enlazar tu jugador
+
+- Si tu cuenta es de jugador y aún no tiene ficha enlazada, la tarjeta «¿Puedes jugar?» de la ficha del enfrentamiento te dice que debes enlazarla y te lleva a «Mi jugador» (antes la tarjeta no aparecía).
+
 ## 12/11/2026 · Línea central de la tarjeta de enfrentamiento difuminada
 
 - La línea vertical de la red de la tarjeta de enfrentamiento ya no cruza el VS: nace justo debajo de lo último que hay en el centro («Estás convocado…» o «Por convocar») y baja hasta el borde inferior, con el extremo superior difuminado (#367).
