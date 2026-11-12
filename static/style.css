@@ -1505,7 +1505,7 @@ a.z-card:hover, .z-card--link:hover {
    el tamaño se adapta al ancho de la tarjeta y, si aun así no cabe, el nombre se recorta con puntos suspensivos. */
 .z-next-match-teams { display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center; gap: 6px; width: 100%; margin-inline: auto; text-align: center; }
 .z-next-match-team { display: grid; gap: 2px; justify-items: center; min-width: 0; max-width: 100%; text-align: center; }
-.z-next-match-team > span { max-width: 100%; font-family: var(--z-display); font-size: clamp(1rem, 6.4cqw, var(--z-fs-xl)); line-height: 1.05; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.z-next-match-team > span { max-width: 100%; font-family: var(--z-display); font-size: clamp(1.1rem, calc(215cqw / var(--len, 20)), 2.6rem); line-height: 1.05; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .z-next-match-team small { font-size: var(--z-fs-xs); font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--z-ink); opacity: .75; }
 .z-next-match-team.is-own span { color: var(--z-ink); }
 .z-next-match .z-versus-vs { display: block; padding: 3px 12px; font-size: var(--z-fs-sm); color: var(--z-ink); background: var(--z-lime); border-radius: 999px; line-height: 1; opacity: .7; }
@@ -1533,9 +1533,9 @@ a.z-card:hover, .z-card--link:hover {
     .z-home-grid .z-next-match .btn-secondary { --bs-btn-padding-x: 1.1rem; --bs-btn-padding-y: .3rem; --bs-btn-font-size: var(--z-fs-xs); min-height: 36px; }
     .z-home-grid .z-next-match-day { font-size: clamp(3rem, 13.5cqw, 6.2rem); white-space: nowrap; }
     .z-home-grid .z-next-match-teams {
-        grid-area: teams; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: end; align-self: end; gap: 0 8px; margin: 0 auto; width: 92%;
+        grid-area: teams; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: end; align-self: end; gap: 0 6px; margin: 0 auto; width: 100%;
     }
-    .z-home-grid .z-next-match-team > span { font-size: clamp(.9rem, 2.5cqw, 2.4rem); }
+    .z-home-grid .z-next-match-team > span { font-size: clamp(1.1rem, calc(88cqw / var(--len, 20)), 3.4rem); }
     .z-home-grid .z-next-match .z-versus-vs, .z-home-grid .z-versus-vs { display: block; padding: 4px 12px; font-size: clamp(1rem, 3cqw, 1.5rem); color: var(--z-ink); background: var(--z-lime); border-radius: 999px; }
 }
 
