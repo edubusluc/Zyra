@@ -292,6 +292,20 @@ class AvailabilityTests(TestCase):
         self.assertRedirects(response, ficha)
         self.assertContains(self.client.get(ficha), "Has respondido: Sí")
 
+    def test_unlinked_player_is_asked_to_link_on_the_ficha(self):
+        """Sin ficha enlazada, «¿Puedes jugar?» pide enlazarla en vez de mostrar Sí / No; el capitán no lo ve."""
+        ficha = reverse("call_for_match", args=[self.match.public_id])
+        self.ana.user = None
+        self.ana.save()
+        self.client.force_login(self.user)
+        response = self.client.get(ficha)
+        self.assertContains(response, "¿Puedes jugar?")
+        self.assertContains(response, "Para responder tienes que enlazar tu cuenta con tu jugador.")
+        self.assertContains(response, reverse("my_player"))
+        self.assertNotContains(response, 'name="answer"')
+        self.client.force_login(self.captain)
+        self.assertNotContains(self.client.get(ficha), "Para responder tienes que enlazar")
+
     def test_board_groups_follow_yes_no_pending_no_answer(self):
         """La ventana «Ver respuestas» agrupa en Sí, No, Pendiente y Sin respuesta."""
         availability.set_answer(self.match, self.ana, "maybe")

@@ -1,0 +1,7 @@
+{# «¿Puedes jugar?» para quien aún no tiene jugador enlazado: debe enlazarse para responder. #}
+{% load i18n %}
+<section class="z-card z-av-me" aria-labelledby="av-me-title">
+    <h2 class="z-panel-title" id="av-me-title">{% translate "¿Puedes jugar?" %}</h2>
+    <p>{% translate "Para responder tienes que enlazar tu cuenta con tu jugador." %}</p>
+    <a class="btn btn-primary" href="{% url 'my_player' %}{% if request.space_switcher %}?en={{ request.club.competition }}{% endif %}"><i class="fa-solid fa-link me-1" aria-hidden="true"></i> {% translate "Enlazarme a un jugador" %}</a>
+</section>

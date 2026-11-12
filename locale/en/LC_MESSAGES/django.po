@@ -16792,3 +16792,6 @@ msgstr "LINE-UP"
 
 msgid "PUNTOS"
 msgstr "POINTS"
+
+msgid "Para responder tienes que enlazar tu cuenta con tu jugador."
+msgstr "To answer, you need to link your account to your player."
