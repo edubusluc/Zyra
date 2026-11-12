@@ -303,6 +303,11 @@ class AvailabilityTests(TestCase):
         self.assertContains(response, "Para responder tienes que enlazar tu cuenta con tu jugador.")
         self.assertContains(response, reverse("my_player"))
         self.assertNotContains(response, 'name="answer"')
+        self.assertContains(response, 'class="z-menu-link"')  # ficha 3D: en el hueco bajo «Acta»
+        self.client.post(reverse("set_stage_view", args=[self.match.public_id]), {})  # ficha clásica
+        classic = self.client.get(ficha)
+        self.assertContains(classic, "Para responder tienes que enlazar tu cuenta con tu jugador.")
+        self.assertNotContains(classic, 'class="z-menu-link"')
         self.client.force_login(self.captain)
         self.assertNotContains(self.client.get(ficha), "Para responder tienes que enlazar")
 

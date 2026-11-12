@@ -23,7 +23,7 @@
 {% if focus %}{% if can_manage and stage_card.kind == 'pairs' %}<a class="z-menu-share" href="https://wa.me/" target="_blank" rel="noopener" data-share-image="{% url 'lineup_image' match.public_id %}" data-share-file="alineacion-zyra.jpg" aria-label="{% translate 'Compartir alineación' %}" title="{% translate 'Compartir alineación' %}"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i></a><script src="{% static 'js/share-result.js' %}" defer></script>{% endif %}{% include 'includes/stage_card.html' %}</div>{% endif %}
 </li>
 {% endif %}{% endfor %}
-{% if can_manage %}<li>{% include 'includes/ficha_more.html' with card=True %}</li>{% endif %}
+{% if can_manage %}<li>{% include 'includes/ficha_more.html' with card=True %}</li>{% elif must_link %}<li class="z-menu-link">{% include 'includes/availability_link.html' %}</li>{% endif %}
 </ol>
 </nav>
 {% if can_manage and phase.missing_players and phase.action == 'close_call' %}<div class="z-menu-hint">{% include 'includes/ficha_hint.html' %}</div>{% endif %}
