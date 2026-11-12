@@ -231,18 +231,8 @@ def _rows(canvas, draw, match, games, own_is_local, rules):
     return panel[3]
 
 
-def build_result_jpeg(match, games, outcome):
-    """JPEG (bytes) de 1080×1350 con el resultado de ``match``; ``games`` son sus partidos ordenados por número
-    y ``outcome`` el desenlace del equipo propio (``match.views.match_outcome``: «V», «D», «E» o None).
-
-    Los marcadores van en orden local-visitante, igual que la ficha. El color del marcador y la etiqueta
-    (Victoria, Derrota, Empate) son los del equipo propio.
-    """
-    rules = match.club.rules
-    color = OUTCOME_COLOR.get(outcome, TEXT)
-    canvas = _background()
-    draw = ImageDraw.Draw(canvas, "RGBA")
-
+def _header(canvas, draw, match, rules):
+    """Cabecera común (logotipo, insignia de la competición y fecha/lugar); devuelve el ``draw`` vigente del lienzo."""
     _logo(draw, 64, 68, 54)
     _text(draw, (120, 95), "ZYRA", _font("Syncopate-BoldItalic.ttf", 34), TEXT, "lm", spacing=1.4)
 
@@ -259,6 +249,22 @@ def build_result_jpeg(match, games, outcome):
     when = match.start_date.strftime("%d/%m/%Y") + (f" · {match.start_time:%H:%M}" if match.start_time else "")
     kicker = f"{when} · {match.location}" if match.location else when
     _text(draw, (64, 170), kicker, _fit(draw, kicker, "Archivo-Bold.ttf", 30, W - 128), MUTED, "lm")
+    return draw
+
+
+def build_result_jpeg(match, games, outcome):
+    """JPEG (bytes) de 1080×1350 con el resultado de ``match``; ``games`` son sus partidos ordenados por número
+    y ``outcome`` el desenlace del equipo propio (``match.views.match_outcome``: «V», «D», «E» o None).
+
+    Los marcadores van en orden local-visitante, igual que la ficha. El color del marcador y la etiqueta
+    (Victoria, Derrota, Empate) son los del equipo propio.
+    """
+    rules = match.club.rules
+    color = OUTCOME_COLOR.get(outcome, TEXT)
+    canvas = _background()
+    draw = ImageDraw.Draw(canvas, "RGBA")
+
+    draw = _header(canvas, draw, match, rules)
 
     own_is_local = match.own_is_local
     _team(draw, 188, 224, match.local_name, _("Local"), own_is_local)

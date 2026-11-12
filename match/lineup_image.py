@@ -11,8 +11,8 @@ from django.utils.translation import gettext as _
 from PIL import Image, ImageDraw
 
 from match.result_image import (
-    BADGE, BORDER, H, LIME, MUTED, SCALE, SURFACE, TEXT, W, WARNING,
-    _background, _fit, _font, _logo, _own_pair, _pill, _s, _spaced_width, _team, _text,
+    BORDER, H, LIME, MUTED, SCALE, SURFACE, TEXT, W,
+    _background, _fit, _font, _header, _own_pair, _pill, _s, _spaced_width, _team, _text,
 )
 
 
@@ -50,22 +50,7 @@ def build_lineup_jpeg(match, games):
     canvas = _background()
     draw = ImageDraw.Draw(canvas, "RGBA")
 
-    _logo(draw, 64, 68, 54)
-    _text(draw, (120, 95), "ZYRA", _font("Syncopate-BoldItalic.ttf", 34), TEXT, "lm", spacing=1.4)
-
-    comp = str(rules.name)
-    if match.is_friendly or (match.match_type and match.match_type != rules.default_type):
-        comp += f" · {match.type_label}"
-    badge_color = BADGE.get(rules.code, WARNING)
-    bfont = _font("Archivo-ExtraBold.ttf", 26)
-    bw = _spaced_width(draw, comp.upper(), bfont, 2) / SCALE + 56
-    _pill(canvas, [W - 64 - bw, 64, W - 64, 125], (0, 0, 0, 90), outline=badge_color, width=3)
-    draw = ImageDraw.Draw(canvas, "RGBA")
-    _text(draw, (W - 64 - bw / 2, 95), comp.upper(), bfont, badge_color, "mm", spacing=2)
-
-    when = match.start_date.strftime("%d/%m/%Y") + (f" · {match.start_time:%H:%M}" if match.start_time else "")
-    kicker = f"{when} · {match.location}" if match.location else when
-    _text(draw, (64, 170), kicker, _fit(draw, kicker, "Archivo-Bold.ttf", 30, W - 128), MUTED, "lm")
+    draw = _header(canvas, draw, match, rules)
 
     own_is_local = match.own_is_local
     _team(draw, 188, 224, match.local_name, _("Local"), own_is_local)
