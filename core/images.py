@@ -69,7 +69,8 @@ def process_image(source):
             img = img.convert("RGBA" if has_alpha else "RGB")
             img.thumbnail((settings.PHOTO_MAX_SIZE, settings.PHOTO_MAX_SIZE), Image.LANCZOS)
             out = BytesIO()
-            img.save(out, format="WEBP", quality=settings.PHOTO_WEBP_QUALITY, method=6)
+            # method=6 con transparencia (escudos PNG) tarda entre 1 y 8 s por foto y pesa lo mismo que 4.
+            img.save(out, format="WEBP", quality=settings.PHOTO_WEBP_QUALITY, method=4)
     except (OSError, ValueError, Image.DecompressionBombError):
         raise ValidationError(_("El archivo no es una imagen válida."))
     return ContentFile(out.getvalue(), name="photo.webp")
