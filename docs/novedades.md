@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 12/11/2026 · Ficha del enfrentamiento: compartir la alineación por WhatsApp
+
+- Con las parejas ya alineadas y el acta abierta, la tarjeta «Parejas» de la ficha lleva en su cabecera un botón de WhatsApp (solo para capitán y gestores). En el móvil abre el menú de compartir con una imagen de la alineación (escudos, VS y una fila por partido con su pareja) y el texto; en el ordenador descarga la imagen y abre WhatsApp con el texto. Es el mismo mecanismo de «Compartir resultado».
+- La imagen lleva la fecha, la hora y el lugar en un bloque destacado, los escudos con su foto (o las siglas si no la tienen, con borde lima el equipo propio) y, en la SNP, la suma de los puntos SNP de cada pareja. Sin «Hecho con Zyra». Los escudos con foto también salen ahora en la imagen de «Compartir resultado».
+
 ## 12/11/2026 · Ficha del enfrentamiento: «Más» y «Acta» a la misma altura
 
 - Con la lista de convocados o de parejas abierta, la tarjeta «Más» ocupa ahora toda la altura de la fila, igual que «Acta», en móvil y en escritorio.

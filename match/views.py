@@ -21,6 +21,7 @@ from .result_email import notify_match_closed
 from call.models import ReportDelivery
 from .report import build_report, suggested_lineups
 from .report_pdf import render_report
+from .lineup_image import build_lineup_jpeg
 from .result_image import build_result_jpeg
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.decorators import login_required
@@ -132,6 +133,9 @@ def club_score(match):
 OUTCOME_LABELS = {"V": gettext_lazy("Victoria"), "D": gettext_lazy("Derrota"), "E": gettext_lazy("Empate")}
 
 
+DATE_FORMAT = "%d/%m/%Y"
+
+
 OUTCOME_EMOJI = {"V": "✅", "D": "❌", "E": "🤝"}
 
 
@@ -151,7 +155,7 @@ def share_text(match, games):
         head += f" {_('contra')} {match.rival_label}" if match.rival_label else ""
     else:
         head = f"*{match.local_name} – {match.visiting_name}*"
-    date = match.start_date.strftime("%d/%m/%Y")
+    date = match.start_date.strftime(DATE_FORMAT)
     lines = [head, f"{match.local_name} – {match.visiting_name} · {date}" + (f" · {_('Amistoso')}" if match.is_friendly else ""), ""]
     if match.no_show:
         lines.append(_("No presentado: %(team)s") % {"team": match.no_show_team})
@@ -169,6 +173,16 @@ def share_text(match, games):
         lines.append(f"{'✅' if own_won else '❌'} *{_('Partido')} {g.n_game}* · {g.pair_label}" + (f" · {sets}" if sets else ""))
     lines += ["", _("Hecho con Zyra")]
     return "\n".join(lines)
+
+
+def lineup_share_text(match, rows):
+    """Alineación lista para pegar en WhatsApp: cabecera en negrita con el rival, el enfrentamiento con la
+    fecha y una línea por partido con su pareja (``rows`` de ``lineup_rows``). Acaba con «Hecho con Zyra»."""
+    head = f"*{_('Alineación')}*" + (f" {_('contra')} {match.rival_label}" if match.rival_label else "")
+    date = match.start_date.strftime(DATE_FORMAT)
+    lines = [head, f"{match.local_name} – {match.visiting_name} · {date}" + (f" · {_('Amistoso')}" if match.is_friendly else ""), ""]
+    lines += [f"*{_('Partido')} {row['n']}* · {row['label']}" for row in rows]
+    return "\n".join(lines + ["", _("Hecho con Zyra")])
 
 
 def rival_names(club_matches):
@@ -1026,6 +1040,7 @@ def _ficha_page(request, match, history=False):
         for p in convocados:
             p.is_me = p.id == me.id
 
+    stage_pairs = lineup_rows(match, games, me.id if me else None)
     return render(request, "call_for_match.html", {
         "history_view": history,
         "my_availability": Availability.objects.filter(match=match, player=me).first() if me else None,
@@ -1055,12 +1070,13 @@ def _ficha_page(request, match, history=False):
         "past_match": is_past_match(match),
         "stage_view": UserPreference.match_stage_for(request.user),
         "countdown": stage_countdown(match, today),
-        "stage_card": stage_card(match, call, convocados, games, lineup_rows(match, games, me.id if me else None),
+        "stage_card": stage_card(match, call, convocados, games, stage_pairs,
                                  competition_for(match).min_call_players),
         "my_status": my_status,
         "report_emails": ", ".join(admin_emails(request.club)) if call else "",
         "report_already_sent": bool(call and call.report_deliveries.filter(status=ReportDelivery.SENT).exists()),
         "share_text": share_text(match, games) if not match.draft_mode else "",
+        "lineup_share_text": lineup_share_text(match, stage_pairs) if stage_pairs else "",
         "min_call_players": competition_for(match).min_call_players,
         # Regla de fases finales (LAPI 8.2) a la vista donde se decide: apuntados que no la cumplen.
         "finals_minimum": match.club.rules.finals_min_regular if league.applies_finals_rule(match) else 0,
@@ -1086,6 +1102,27 @@ def result_image(request, match_id):
     )
     response = HttpResponse(build_result_jpeg(match, games, match_outcome(match)), content_type="image/jpeg")
     response["Content-Disposition"] = 'inline; filename="resultado-zyra.jpg"'
+    response["Cache-Control"] = "private, no-store"
+    return response
+
+
+@club_required
+def lineup_image(request, match_id):
+    """imagen vertical (JPEG) con las parejas alineadas de un enfrentamiento abierto, para compartirla por WhatsApp.
+
+    Solo capitán o gestor (como el botón de la tarjeta «Parejas»). 404 si el acta está cerrada o no hay parejas.
+    """
+    match = space_match(request, match_id)
+    if not request.membership.can_manage:
+        raise PermissionDenied
+    games = list(
+        Game.objects.filter(match=match).order_by("n_game")
+        .select_related("player_1_local", "player_2_local", "player_1_visiting", "player_2_visiting")
+    )
+    if not match.draft_mode or not lineup_rows(match, games):
+        raise Http404
+    response = HttpResponse(build_lineup_jpeg(match, games), content_type="image/jpeg")
+    response["Content-Disposition"] = 'inline; filename="alineacion-zyra.jpg"'
     response["Cache-Control"] = "private, no-store"
     return response
 
@@ -1440,7 +1477,7 @@ def do_close_match(request, match):
         messages.error(request, _("La fecha de %(local)s – %(visiting)s es el %(date)s y aún no se ha jugado. "
                                   "Comprueba que es el enfrentamiento correcto antes de cerrar el acta.")
                        % {"local": match.local_name, "visiting": match.visiting_name,
-                          "date": match.start_date.strftime("%d/%m/%Y")})
+                          "date": match.start_date.strftime(DATE_FORMAT)})
         return False
 
     # Parejas no presentadas (SNP 20.2): reparto de puntos en cada partido antes de sumarlos.

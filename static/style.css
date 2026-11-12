@@ -4294,6 +4294,10 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
     .z-menu-focus:has(> .z-menu-card.is-done, > form > .z-menu-card.is-done) { border-top-color: var(--z-lime); }
     .z-menu-focus:has(> .z-menu-card.is-next, > form > .z-menu-card.is-next) { border-top-color: var(--z-warning); }
     .z-menu-focus > .z-menu-card, .z-menu-focus > form > .z-menu-card { min-height: 0; padding: 0; background: none; border: 0; box-shadow: none; border-radius: 0; grid-template-columns: auto 1fr; grid-template-areas: "ic title" "ic sub"; align-content: start; align-items: center; column-gap: 14px; row-gap: 2px; }
+    .z-menu-focus { position: relative; }
+    .z-menu-share { position: absolute; top: 14px; right: 14px; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; font-size: 1.35rem; color: var(--z-ink, #0A0A0A); background: var(--z-lime); text-decoration: none; transition: transform .16s ease, filter .16s; }
+    .z-menu-share:hover { filter: brightness(1.08); transform: translateY(-2px); }
+    .z-menu-share:focus-visible { outline: 2px solid var(--z-text); outline-offset: 3px; }
     .z-menu-focus .z-menu-ic { grid-area: ic; }
     .z-menu-focus .z-menu-card b { grid-area: title; align-self: end; }
     .z-menu-focus .z-menu-card small { grid-area: sub; align-self: start; }

@@ -16780,3 +16780,15 @@ msgstr "Says no · selected"
 
 msgid "Pendiente · seleccionado"
 msgstr "Pending · selected"
+
+msgid "Compartir alineación"
+msgstr "Share line-up"
+
+msgid "Alineación"
+msgstr "Line-up"
+
+msgid "ALINEACIÓN"
+msgstr "LINE-UP"
+
+msgid "PUNTOS"
+msgstr "POINTS"

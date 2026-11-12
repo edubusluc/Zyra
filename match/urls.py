@@ -20,6 +20,7 @@ urlpatterns = (
     path('close_match/<pid:match_id>/', views.close_match, name='close_match'),
     path('reopen_match/<pid:match_id>/', views.reopen_match, name='reopen_match'),
     path('no_show/<pid:match_id>/', views.mark_no_show, name='mark_no_show'),
+    path('lineup_image/<pid:match_id>/', views.lineup_image, name='lineup_image'),
     path('result_image/<pid:match_id>/', views.result_image, name='result_image'),
     path('stage_view/<pid:match_id>/', views.set_stage_view, name='set_stage_view'),
     path('historial/<pid:match_id>/', views.my_history_match, name='history_match'),
