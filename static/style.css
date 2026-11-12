@@ -4140,7 +4140,7 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
     .z-versus--stage::after { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 0; background:
         linear-gradient(90deg, transparent 6%, rgba(var(--z-lime-rgb), .7) 50%, transparent 94%) top / 100% 1px no-repeat,
         linear-gradient(180deg, transparent 0%, transparent 48%, rgba(255, 255, 255, .5) 64%, rgba(255, 255, 255, .45)) center / 3px 100% no-repeat,
-        linear-gradient(90deg, transparent, rgba(var(--z-lime-rgb), .07), transparent) center / 56px 100% no-repeat; }
+        radial-gradient(ellipse 28px 52% at 50% 100%, rgba(var(--z-lime-rgb), .07), transparent) center / 100% 100% no-repeat; }
     /* Alineación local/visitante: cada equipo ocupa tres filas de la rejilla del escenario (escudo, nombre,
        cinta de rol) y las comparte con el otro mediante subgrid, así que la fila de cada pieza mide lo que
        mida la más alta de las dos (nombre de 1 o 3 líneas, rol en 1 o 2 líneas) y escudos, nombres y
