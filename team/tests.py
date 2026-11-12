@@ -575,3 +575,17 @@ class TeamLocationPropagationTests(TestCase):
         self._match(self.future)
         self._edit(self.own, "Pista Nueva")
         self.assertEqual(len(mail.outbox), 0)
+
+    def test_location_change_does_not_alter_local_visiting_or_their_stats(self):
+        from match.models import Match
+        from data_analyse import team_card
+        home = self._match(self.future)
+        away = Match.objects.create(club=self.club, local=self.rival, visiting=self.own, start_date=self.future,
+                                    location="Pista Vieja")
+        before = team_card.venue_matches(self.club)
+        self._edit(self.own, "Pista Nueva")
+        home.refresh_from_db()
+        away.refresh_from_db()
+        self.assertEqual((home.local, home.visiting), (self.own, self.rival))
+        self.assertEqual((away.local, away.visiting), (self.rival, self.own))
+        self.assertEqual(team_card.venue_matches(self.club), before)
