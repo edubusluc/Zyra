@@ -2,6 +2,7 @@ import datetime
 
 from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth import get_user_model
+from django.db.models import Sum
 from django.test import TestCase, TransactionTestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
@@ -215,13 +216,13 @@ class ActivityAndLoadTests(TestCase):
         self.client.get(reverse("login"))
         self.client.get("/static/style.css")  # los estáticos no cuentan
         flush_metrics()
-        metric = RequestMetric.objects.get()
-        self.assertEqual(metric.requests, 2)
-        self.assertEqual(metric.errors, 0)
+        # Se suman todas las filas: si el test cruza el cambio de minuto, las peticiones caen en dos filas.
+        totals = RequestMetric.objects.aggregate(requests=Sum("requests"), errors=Sum("errors"))
+        self.assertEqual(totals, {"requests": 2, "errors": 0})
 
         self.client.get(reverse("login"))
         flush_metrics()
-        self.assertEqual(RequestMetric.objects.get().requests, 3)
+        self.assertEqual(RequestMetric.objects.aggregate(n=Sum("requests"))["n"], 3)
 
     def test_load_page_and_series(self):
         now = timezone.now().replace(second=0, microsecond=0)
