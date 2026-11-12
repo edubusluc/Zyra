@@ -7,6 +7,9 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 - En la tarjeta «Próximo enfrentamiento», un nombre de más de 16 letras se parte en dos líneas (entre palabras, lo más equilibradas posible) en vez de encoger los dos nombres. Local y visitante siguen al mismo tamaño, que sale de la línea más larga: «Sonridental Avanzza Padel» contra «Los Gladiadores» se ve tan grande como dos nombres cortos.
 - El nombre de dos líneas crece hacia arriba; la línea de la convocatoria y «Ver convocatoria» conservan su sitio.
+## 12/11/2026 · Convocatoria: sin saltos al marcar a quien dijo No
+
+- La etiqueta «Lo has seleccionado» reserva su hueco desde el principio: al marcar la tarjeta solo aparece, sin cambiar su tamaño.
 
 ## 12/11/2026 · Convocatoria: colores de respuesta y aviso al elegir a quien dijo «No»
 
