@@ -6,6 +6,9 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 ## 12/11/2026 · Imagen de la alineación: nombres completos
 
 - La imagen de «Compartir alineación» muestra el nombre y los apellidos de cada jugador en vez de la inicial y el primer apellido, para no confundir a jugadores con la misma inicial y apellido.
+## 12/11/2026 · Editar el lugar de un equipo actualiza sus enfrentamientos abiertos
+
+- Al cambiar el lugar de un equipo en «Editar equipo», los enfrentamientos con el acta abierta en los que juega (como local o visitante) que aún tenían el lugar anterior pasan al nuevo, y se avisa de cuántos. Los de acta cerrada y los que tienen un lugar escrito a mano conservan el suyo. No se envía ningún correo.
 
 ## 12/11/2026 · Imágenes de compartir: solo la imagen y JPEG estándar para la miniatura de iOS
 

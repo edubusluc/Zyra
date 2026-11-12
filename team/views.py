@@ -12,6 +12,7 @@ from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import Q
 from django.http import JsonResponse
 from core import similarity, spaces
+from match.locations import propagate_team_location
 
 # Los grupos de SNP tienen unos 15-30 equipos: se ven de una vez, sin paginar.
 TEAMS_PER_PAGE = 30
@@ -156,8 +157,14 @@ def edit_team(request, team_id):
     if request.method == "POST":
         form = Teamform(request.POST, request.FILES, instance=team, club=request.club)
         form.uploader = request.user
+        old_location = team.location
         if form.is_valid():
-            form.save()
+            team = form.save()
+            moved = propagate_team_location(team, old_location)
+            if moved:
+                messages.success(request, ngettext(
+                    "Lugar actualizado también en %(n)s enfrentamiento abierto.",
+                    "Lugar actualizado también en %(n)s enfrentamientos abiertos.", moved) % {"n": moved})
             return redirect('club_home' if team.is_own else 'list_teams')
         else:
             messages.error(request, _("No se ha podido editar el equipo. Revisa los datos."))
