@@ -272,6 +272,14 @@ def _header(canvas, draw, match, rules, kicker=True):
     return draw
 
 
+def jpeg_bytes(canvas):
+    """Lienzo reducido a 1080×1350 y guardado como JPEG estándar (secuencial, 4:2:0, sin optimizar): es el formato
+    más sencillo, el que iOS necesita para generar la miniatura en el menú de compartir."""
+    out = io.BytesIO()
+    canvas.convert("RGB").resize((W, H), Image.LANCZOS).save(out, "JPEG", quality=90, progressive=False, optimize=False)
+    return out.getvalue()
+
+
 def build_result_jpeg(match, games, outcome):
     """JPEG (bytes) de 1080×1350 con el resultado de ``match``; ``games`` son sus partidos ordenados por número
     y ``outcome`` el desenlace del equipo propio (``match.views.match_outcome``: «V», «D», «E» o None).
@@ -309,6 +317,4 @@ def build_result_jpeg(match, games, outcome):
     _text(draw, (64, 1285), _("Hecho con Zyra"), _font("Archivo-Bold.ttf", 26), MUTED, "lm")
     _text(draw, (W - 64, 1285), "zyrapadel.com", _font("Archivo-ExtraBold.ttf", 26), LIME, "rm", spacing=1)
 
-    out = io.BytesIO()
-    canvas.convert("RGB").resize((W, H), Image.LANCZOS).save(out, "JPEG", quality=92, optimize=True, subsampling=0)
-    return out.getvalue()
+    return jpeg_bytes(canvas)
