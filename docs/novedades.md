@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 12/11/2026 · Imagen de la alineación: nombres completos
+
+- La imagen de «Compartir alineación» muestra el nombre y los apellidos de cada jugador en vez de la inicial y el primer apellido, para no confundir a jugadores con la misma inicial y apellido.
+
 ## 12/11/2026 · Imágenes de compartir: solo la imagen y JPEG estándar para la miniatura de iOS
 
 - «Compartir resultado» y «Compartir alineación» comparten únicamente la imagen: ya no se genera texto para WhatsApp.

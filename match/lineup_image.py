@@ -13,7 +13,7 @@ from PIL import ImageDraw
 
 from match.result_image import (
     BORDER, H, LIME, MUTED, SCALE, SURFACE, TEXT, W,
-    _background, _fit, _font, _header, _own_pair, jpeg_bytes, _pill, _s, _spaced_width, _team, _text,
+    _background, _fit, _font, _header, jpeg_bytes, _pill, _s, _spaced_width, _team, _text,
 )
 
 EXTRA_BOLD = "Archivo-ExtraBold.ttf"
@@ -27,13 +27,16 @@ def _own_players(match, game):
     return getattr(game, f"player_1_{prefix}"), getattr(game, f"player_2_{prefix}")
 
 
-def _readable(name):
-    """«E. BUSTAMANTE» → «E. Bustamante»: los nombres solo van en mayúsculas en los titulares."""
-    return name.title() if name.isupper() else name
+def _own_names(match, game):
+    """Nombre completo de los dos jugadores de la pareja propia (lista vacía si falta alguno), para no confundir a
+    dos jugadores con la misma inicial y apellido."""
+    prefix = "local" if match.own_is_local else "visiting"
+    names = [game.player_name(f"player_{i}_{prefix}") for i in (1, 2)]
+    return names if all(names) else []
 
 
 def lineup_pairs(match, games):
-    """Parejas propias por partido: ``[(n_game, [«A. Montaño», «J. Gamero»], puntos SNP o None)]``.
+    """Parejas propias por partido: ``[(n_game, [«Alberto Montaño León», «Juan Gamero Rueda»], puntos SNP o None)]``.
 
     Salta los partidos sin pareja propia o con la pareja no presentada. Los puntos son la suma de los
     puntos SNP de los dos jugadores, solo en la SNP y solo si ambos los tienen.
@@ -41,12 +44,12 @@ def lineup_pairs(match, games):
     is_snp = match.club.rules.code == "snp"
     pairs = []
     for game in games:
-        pair = [] if game.no_show in ("own", "both") else _own_pair(game, match.own_is_local)
+        pair = [] if game.no_show in ("own", "both") else _own_names(match, game)
         if not pair:
             continue
         scores = [getattr(p, "snp_score", None) for p in _own_players(match, game)]
         total = sum(scores) if is_snp and all(s is not None for s in scores) else None
-        pairs.append((game.n_game, [_readable(n) for n in pair], total))
+        pairs.append((game.n_game, pair, total))
     return pairs
 
 
