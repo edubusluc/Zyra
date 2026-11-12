@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 12/11/2026 · Convocatoria: sin saltos al marcar a quien dijo No
+
+- La etiqueta «Lo has seleccionado» reserva su hueco desde el principio: al marcar la tarjeta solo aparece, sin cambiar su tamaño.
+
 ## 12/11/2026 · Convocatoria: colores de respuesta y aviso al elegir a quien dijo «No»
 
 - En el selector de la convocatoria cada tarjeta lleva una franja de color según la respuesta del enlace de disponibilidad (Sí en verde, No en rojo, Pendiente en amarillo), siempre con icono y texto. La respuesta del jugador no cambia nunca por convocarlo.
