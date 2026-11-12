@@ -152,6 +152,7 @@ def club_detail(request, club_id):
     today = timezone.localdate()
     matches = Match.objects.filter(club=club).select_related("local", "visiting")
     players = Player.objects.filter(club=club)
+    roster = list(players.select_related("user", "past_user").order_by("name", "last_name"))
 
     return render(request, "backoffice/club_detail.html", {
         "section": "clubs",
@@ -165,7 +166,8 @@ def club_detail(request, club_id):
         "upcoming_matches": matches.filter(start_date__gt=today).order_by("start_date")[:5],
         "invitations": club.invitations.select_related("created_by", "used_by")[:10],
         "edit_teams": club.teams.order_by("-is_own", "name"),
-        "edit_players": players.order_by("-in_team", "name"),
+        "players_in_team": [p for p in roster if p.in_team],
+        "players_left": [p for p in roster if not p.in_team],
         "snp_account": SnpAccount.objects.filter(club=club).first(),
         "snp_max_failures": snp_import.MAX_FAILED_SEARCHES,
         "blocked_emails": club.blocked_emails.all(),

@@ -69,8 +69,13 @@
         {% for t in edit_teams %}<li>{{ t.name }}{% if t.is_own %} <span class="z-badge z-badge--lime">{% translate "Propio" %}</span>{% endif %} · <a href="{% url 'backoffice:team_edit' t.public_id %}">{% translate "Editar" %}</a></li>{% endfor %}
     </ul>
     <h3 class="h6">{% translate "Jugadores" %}</h3>
+    <h4 class="h6 text-muted">{% translate "En el equipo" %} ({{ players_in_team|length }})</h4>
+    <ul class="list-unstyled mb-3">
+        {% for p in players_in_team %}<li>{{ p.full_name }}{% if p.user %} <span class="text-muted">· {{ p.user.email|default:p.user.username }}</span>{% endif %} · <a href="{% url 'backoffice:player_edit' p.public_id %}">{% translate "Editar" %}</a></li>{% empty %}<li class="text-muted">—</li>{% endfor %}
+    </ul>
+    <h4 class="h6 text-muted">{% translate "Fuera del equipo" %} ({{ players_left|length }})</h4>
     <ul class="list-unstyled mb-0">
-        {% for p in edit_players %}<li>{{ p.full_name }}{% if not p.in_team %} <span class="text-muted">({% translate "baja" %})</span>{% endif %} · <a href="{% url 'backoffice:player_edit' p.public_id %}">{% translate "Editar" %}</a></li>{% endfor %}
+        {% for p in players_left %}{% with account=p.user|default:p.past_user %}<li>{{ p.full_name }}{% if account %} <span class="text-muted">· {{ account.email|default:account.username }}</span>{% endif %} · <a href="{% url 'backoffice:player_edit' p.public_id %}">{% translate "Editar" %}</a></li>{% endwith %}{% empty %}<li class="text-muted">—</li>{% endfor %}
     </ul>
 </section>
 

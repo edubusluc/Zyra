@@ -1,6 +1,8 @@
 """Edición del personal desde el back-office: equipo, jugadores y cuenta SNP, siempre auditada."""
 from django.contrib.auth import get_user_model
+from django.db import connection
 from django.test import TestCase, override_settings
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from core.services import create_club
@@ -29,6 +31,34 @@ class StaffEditTests(TestCase):
         page = self.client.get(reverse("backoffice:club_detail", args=[self.club.public_id]))
         self.assertContains(page, reverse("backoffice:team_edit", args=[self.club.own_team.public_id]))
         self.assertContains(page, reverse("backoffice:player_edit", args=[self.player.public_id]))
+
+    def test_club_page_splits_players_and_shows_account_email(self):
+        linked = User.objects.create_user("jugador", email="jugador@example.com", password="pass-12345")
+        Player.objects.create(club=self.club, name="Berta", last_name="Boo", user=linked)
+        former = User.objects.create_user("exjug", email="ex@example.com", password="pass-12345")
+        Player.objects.create(club=self.club, name="Carla", last_name="Cid", in_team=False, past_user=former)
+        Player.objects.create(club=self.club, name="Dora", last_name="Dia", in_team=False)
+        page = self.client.get(reverse("backoffice:club_detail", args=[self.club.public_id]))
+        self.assertEqual([p.name for p in page.context["players_in_team"]], ["Ana", "Berta"])
+        self.assertEqual([p.name for p in page.context["players_left"]], ["Carla", "Dora"])
+        html = page.content.decode()
+        self.assertIn("En el equipo", html)
+        self.assertIn("Fuera del equipo", html)
+        self.assertContains(page, "jugador@example.com")
+        self.assertContains(page, "ex@example.com")
+        self.assertNotContains(page, "(baja)")
+
+    def test_club_page_player_list_has_no_extra_queries_per_player(self):
+        url = reverse("backoffice:club_detail", args=[self.club.public_id])
+        self.client.get(url)  # calienta cachés (la primera petición hace consultas de más)
+        with CaptureQueriesContext(connection) as few:
+            self.client.get(url)
+        for i in range(5):
+            u = User.objects.create_user(f"u{i}", email=f"u{i}@example.com", password="pass-12345")
+            Player.objects.create(club=self.club, name=f"P{i}", last_name="X", user=u)
+        with CaptureQueriesContext(connection) as many:
+            self.client.get(url)
+        self.assertEqual(len(many), len(few))
 
     def test_team_edit_is_saved_and_audited(self):
         team = self.club.own_team
