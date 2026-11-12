@@ -50,6 +50,7 @@ class StaffEditTests(TestCase):
 
     def test_club_page_player_list_has_no_extra_queries_per_player(self):
         url = reverse("backoffice:club_detail", args=[self.club.public_id])
+        self.client.get(url)  # calienta cachés (la primera petición hace consultas de más)
         with CaptureQueriesContext(connection) as few:
             self.client.get(url)
         for i in range(5):
