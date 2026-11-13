@@ -5,7 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 13/11/2026 · Selector de competición con escudo 3D al registrar un equipo
 
-- El alta de un equipo (y «Añadir equipo de otra competición») empieza eligiendo país y competición en una lista con el escudo 3D de la competición a la derecha, con sus partidos, puntos, convocados mínimos y tipos de enfrentamiento. Los escudos son propios (color y siglas), no los oficiales.
+- El alta de un equipo (título genérico «Añadir equipo» si ya tienes otro) empieza eligiendo país y competición en una lista con el escudo 3D de la competición a la derecha, con sus partidos, puntos, convocados mínimos y tipos de enfrentamiento. Los escudos son propios (color y siglas), no los oficiales.
 - Si ya perteneces a un equipo de una competición, sea como capitán, gestor o jugador, su tarjeta sale bloqueada y dice a qué equipo perteneces.
 - Cada competición dice en qué países se juega (LAPI solo en España, SNP en cinco) y el formulario no deja crear un equipo en un país donde no se juega. La división solo se pide en las competiciones que la tienen.
 - Al crear el equipo se avisa, con un «i», de que serás su capitán y qué conlleva. Cada paso del registro entra con una transición suave.

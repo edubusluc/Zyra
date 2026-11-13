@@ -520,8 +520,6 @@ def register_club(request):
         "club_form": club_form, "user_form": user_form, "player_form": player_form, "snp_form": snp_form,
         "google_missing_name": google_missing_name, "snp_service_off": not snp_service.is_enabled(),
         "new_space": current is not None, "linked_player": linked_player,
-        # Con una sola competición libre el título la nombra («Añadir equipo LAPI»).
-        "new_competition": free[0] if current is not None and len(free) == 1 else None,
         # Selector de competición: las libres se eligen; en las que ya pertenece (capitán, gestor o
         # jugador) la tarjeta sale bloqueada con el nombre de su equipo.
         "picker": picker_entries(free, [] if anonymous else getattr(request, "user_memberships", [])),

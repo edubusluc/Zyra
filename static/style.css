@@ -4526,12 +4526,12 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 @media (min-width: 768px) { .z-av-row > section + section { margin-top: 0; } }
 
 /* Alta de equipo: selector de competición con el escudo 3D. El formulario va a la izquierda y el escenario a la derecha (arriba en móvil). */
-.z-auth-card--stage .z-stage { --stage: var(--z-lime); --stage-rgb: var(--z-lime-rgb); position: relative; display: grid; grid-template-rows: 170px auto auto; margin: 0 0 16px; overflow: hidden; border: 1px solid var(--z-border); border-radius: var(--z-radius); background: radial-gradient(120% 90% at 70% 20%, rgba(var(--stage-rgb), .28), transparent 60%), linear-gradient(180deg, var(--z-bg-top), var(--z-bg) 75%); transition: background .6s var(--z-ease); }
-.z-stage-view { position: relative; grid-row: 1; min-height: 0; }
+.z-auth-card--stage .z-stage { --stage: var(--z-lime); --stage-rgb: var(--z-lime-rgb); position: relative; display: grid; grid-template-rows: auto 220px auto; margin: 0 0 16px; overflow: hidden; border: 1px solid var(--z-border); border-radius: var(--z-radius); background: radial-gradient(120% 90% at 70% 20%, rgba(var(--stage-rgb), .28), transparent 60%), linear-gradient(180deg, var(--z-bg-top), var(--z-bg) 75%); transition: background .6s var(--z-ease); }
+.z-stage-view { position: relative; grid-row: 2; min-height: 0; }
 .z-stage-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: pan-y; }
 .z-stage-fallback { position: absolute; inset: 0; display: grid; place-items: center; }
 .z-stage-fallback span { font-family: var(--z-display); font-size: 4rem; letter-spacing: .04em; color: var(--stage); }
-.z-stage-head { position: relative; grid-row: 2; padding: 0 16px 12px; text-align: left; }
+.z-stage-head { position: relative; grid-row: 1; z-index: 1; padding: 16px 16px 0; text-align: left; }
 .z-stage-pill { display: inline-block; padding: 3px 11px; font-size: var(--z-fs-xs); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--z-ink); background: var(--stage); border-radius: 999px; }
 .z-stage-pill:empty { display: none; }
 .z-auth-card--stage .z-stage .z-stage-name { margin: 6px 0 0; font-family: var(--z-display); font-size: var(--z-fs-2xl); line-height: 1; text-transform: uppercase; letter-spacing: .02em; color: var(--z-text); }
@@ -4573,11 +4573,21 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 }
 @keyframes z-wizard-in { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
 @keyframes z-wizard-rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+/* Cabecera del alta: logotipo, título y el «i» de la introducción en una fila. */
+.z-auth-card--stage .z-stage-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 12px; margin: 0 0 16px; }
+.z-auth-card--stage .z-stage-header .z-auth-logo { width: 48px; margin: 0; }
+.z-auth-card--stage .z-stage-header h1 { margin: 0; }
+.z-auth-card--stage .z-stage-header .z-tip { margin: 0; }
 @media (min-width: 992px) {
-    .z-auth-card--split.z-auth-card--stage { grid-template-columns: minmax(0, 1fr) 400px; grid-template-areas: "main side"; column-gap: 40px; max-width: 1100px; }
-    .z-auth-card--stage .z-auth-side { grid-area: side; position: sticky; top: 24px; }
+    /* Como el mockup: título arriba, formulario a la izquierda y el escenario 3D grande a la derecha. */
+    .z-auth-card--split.z-auth-card--stage { grid-template-columns: minmax(0, 1fr) minmax(420px, 1.1fr); grid-template-areas: "side side" "main stage"; row-gap: 20px; column-gap: 40px; max-width: 1160px; align-items: stretch; }
+    .z-auth-card--stage .z-auth-side { grid-area: side; justify-content: flex-start; margin: 0; }
+    .z-auth-card--stage .z-auth-side h1 { font-size: var(--z-fs-2xl); text-align: left; }
     .z-auth-card--stage .z-auth-main { grid-area: main; }
-    .z-auth-card--stage .z-stage { grid-template-rows: 300px auto auto; }
-    .z-auth-card--stage .z-stage-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .z-auth-card--stage .z-stage { grid-area: stage; align-self: start; position: sticky; top: 24px; grid-template-rows: auto minmax(320px, 1fr) auto; min-height: 560px; margin: 0; }
+    .z-auth-card--stage .z-stage .z-stage-head { padding: 22px 24px 0; }
+    .z-auth-card--stage .z-stage .z-stage-name { font-size: clamp(2.4rem, 4.4vw, 3.6rem); }
+    .z-auth-card--stage .z-stage-facts { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .z-auth-card--stage .z-stage-facts > div { padding: 14px 14px; }
 }
 @media (prefers-reduced-motion: reduce) { .z-comp-card, .z-auth-card--stage .z-stage { transition: none; } }
