@@ -63,7 +63,6 @@
   const crestImg = q('[data-stage-photo]');
   function syncCrest() {
     const src = crest && !crest.hidden ? crest.getAttribute('src') : '';
-    crestImg.hidden = !src;
     if (src) crestImg.setAttribute('src', src); else crestImg.removeAttribute('src');
     stage.classList.toggle('has-photo', Boolean(src));
   }
