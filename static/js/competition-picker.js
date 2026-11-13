@@ -58,6 +58,20 @@
     syncTeam();
   }
 
+  // Escudo propio del equipo: si lo sube, sustituye al de la competición en el escenario.
+  const crest = document.querySelector('[data-photo-preview]');
+  const crestImg = q('[data-stage-photo]');
+  function syncCrest() {
+    const src = crest && !crest.hidden ? crest.getAttribute('src') : '';
+    crestImg.hidden = !src;
+    if (src) crestImg.setAttribute('src', src); else crestImg.removeAttribute('src');
+    stage.classList.toggle('has-photo', Boolean(src));
+  }
+  if (crest) {
+    new MutationObserver(syncCrest).observe(crest, { attributes: true, attributeFilter: ['src', 'hidden'] });
+    syncCrest();
+  }
+
   radios.forEach((r) => r.addEventListener('change', () => paint(entries[r.value])));
   country.addEventListener('change', sync);
   if (team) team.addEventListener('input', syncTeam);

@@ -1,4 +1,6 @@
 """Formularios de alta de club, registro de usuario, invitación de miembros y contraseñas."""
+from types import SimpleNamespace
+
 from allauth.account.forms import ChangePasswordForm, ResetPasswordForm, ResetPasswordKeyForm, SetPasswordForm
 from django import forms
 from django.conf import settings
@@ -11,6 +13,7 @@ from django.utils.translation import gettext, gettext_lazy as _
 from team.forms import default_time_field
 from team.models import Team
 from .blocklist import is_blocked
+from .images import clean_photo_field
 from .competitions import CHOICES as COMPETITION_CHOICES, COMPETITIONS, get_competition
 from . import ratelimit
 from .models import Membership
@@ -64,10 +67,13 @@ class ClubForm(forms.Form):
     # campo la pone ``__init__`` y la ajusta register-wizard según la competición.
     division = forms.ChoiceField(label=_("División"), choices=[("", _("Elige una opción"))] + Team.DIVISIONS, required=False,
                                  help_text=_("Nivel en el que juega el equipo en su competición."))
+    photo = forms.ImageField(label=_("Escudo del equipo"), required=False)
 
     def __init__(self, *args, competitions=None, **kwargs):
         """Limita las competiciones a ``competitions`` y los nombres a texto plano (core.validators)."""
         super().__init__(*args, **kwargs)
+        # clean_photo_field anota en ``instance`` la validación de la foto; aquí aún no hay equipo.
+        self.instance = SimpleNamespace()
         competitions = list(competitions or COMPETITIONS.values())
         self.fields["competition"].choices = [(c.code, c.name) for c in competitions]
         self.fields["competition"].initial = competitions[0].code
@@ -84,6 +90,10 @@ class ClubForm(forms.Form):
         if code not in dict(self.fields["competition"].choices):
             code = self.fields["competition"].initial
         return get_competition(code)
+
+    def clean_photo(self):
+        """Valida, reduce y pasa a WebP el escudo antes de guardarlo (core/images.py)."""
+        return clean_photo_field(self)
 
     def clean_competition(self):
         """Sin competición, la SNP; tiene que ser una en la que la cuenta aún no tenga espacio."""

@@ -442,7 +442,8 @@ def register_club(request):
     if request.method == "POST":
         if ratelimit.too_many(request, "register", REGISTER_LIMIT, REGISTER_WINDOW):
             return render(request, "429.html", status=429)
-        club_form = ClubForm(request.POST, competitions=free)
+        club_form = ClubForm(request.POST, request.FILES, competitions=free)
+        club_form.uploader = None if anonymous else request.user
         player_form = CaptainPlayerForm(linked_data or request.POST, prefix="player")
         # Fuera de la SNP no hay cuenta SNP: el jugador del capitán se escribe a mano.
         snp_form = CaptainSnpForm(request.POST if club_form.rules.has_snp else {"snp-mode": CaptainSnpForm.MANUAL},
@@ -468,6 +469,12 @@ def register_club(request):
                                        division=data["division"], player_name=player.get("name", ""),
                                        player_last_name=player.get("last_name", ""), competition=data["competition"],
                                        default_time=data.get("default_time"))
+                    if data.get("photo"):
+                        # Escudo ya procesado y validado en el formulario; queda anotada su validación.
+                        team = club.own_team
+                        team.photo.save(data["photo"].name, data["photo"], save=False)
+                        team._photo_check_id = getattr(club_form.instance, "_photo_check_id", None)
+                        team.save()
                     # La cuenta se queda con el nombre del jugador si no tenía uno.
                     if player and not (user.first_name or user.last_name):
                         user.first_name, user.last_name = player["name"], player["last_name"]

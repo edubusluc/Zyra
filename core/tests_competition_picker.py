@@ -4,10 +4,12 @@ cuenta ya pertenece a un equipo de ella (capitán, gestor o jugador), filtrada p
 formulario que pide la división solo si la competición la tiene.
 """
 import dataclasses
+import tempfile
 from unittest import mock
 
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from core import competitions
@@ -15,6 +17,7 @@ from core.competition_picker import picker_entries
 from core.competitions import LAPI, SNP
 from core.forms import ClubForm
 from core.models import Club, Membership
+from core.test_images import image_bytes
 from core.services import create_club
 
 User = get_user_model()
@@ -145,3 +148,29 @@ class DivisionTests(TestCase):
             self.assertEqual(form.cleaned_data["division"], "")
             form = ClubForm(club_data(competition="local", division=""), competitions=[local])
             self.assertTrue(form.is_valid(), form.errors)
+
+
+@override_settings(MEDIA_ROOT=tempfile.mkdtemp(prefix="zyra-test-media-"))
+class CrestPhotoTests(TestCase):
+    """El escudo del equipo es opcional y, si se sube, queda como foto del equipo propio."""
+
+    def post(self, **files):
+        user = User.objects.create_user(username="capi", email="capi@example.com", password=PASSWORD)
+        self.client.force_login(user)
+        return self.client.post(reverse("register_club"), club_data(**files))
+
+    def test_page_offers_the_crest_upload_and_stage_image(self):
+        page = self.client.get(reverse("register_club"))
+        self.assertContains(page, 'enctype="multipart/form-data"')
+        self.assertContains(page, 'name="photo"')
+        self.assertContains(page, "data-stage-photo")
+
+    def test_crest_is_saved_on_the_own_team(self):
+        photo = SimpleUploadedFile("escudo.png", image_bytes(fmt="PNG"), content_type="image/png")
+        self.post(photo=photo)
+        club = Club.objects.get(name="Pádel Norte")
+        self.assertTrue(club.own_team.photo)
+
+    def test_crest_is_optional(self):
+        self.post()
+        self.assertFalse(Club.objects.get(name="Pádel Norte").own_team.photo)

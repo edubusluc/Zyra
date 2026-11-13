@@ -16848,3 +16848,9 @@ msgstr "Crest of the chosen competition"
 
 msgid "Escudo de {name}"
 msgstr "{name} crest"
+
+msgid "Escudo del equipo"
+msgstr "Team crest"
+
+msgid "Opcional. Sustituye al escudo de la competición. Un PNG con fondo transparente queda mejor."
+msgstr "Optional. Replaces the competition crest. A PNG with a transparent background looks best."

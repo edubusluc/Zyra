@@ -20,7 +20,7 @@
         </header>
         {% include 'includes/competition_stage.html' %}
         <div class="z-auth-main">
-        <form method="post" novalidate data-wizard data-loading-text="{% translate 'Creando tu equipo…' %}">
+        <form method="post" enctype="multipart/form-data" novalidate data-wizard data-loading-text="{% translate 'Creando tu equipo…' %}">
             {% csrf_token %}
             <nav class="z-wizard-progress" data-wizard-progress aria-label="{% translate 'Progreso del registro' %}" hidden></nav>
             <div class="z-wizard-summary" data-wizard-summary role="alert" tabindex="-1" hidden></div>
@@ -69,7 +69,7 @@
                 {% blocktranslate asvar captain_tip_snp trimmed %}Al crear el equipo serás su capitán y el encargado de gestionarlo: invitas a los jugadores, creas rivales, enfrentamientos y convocatorias, apuntas los resultados y puedes nombrar hasta 2 gestores. Solo tú gestionas los miembros, la cuenta SNP y la reapertura de actas, y puedes eliminar el equipo. Puedes traspasar la capitanía desde Equipo › Miembros.{% endblocktranslate %}
                 {% blocktranslate asvar captain_tip trimmed %}Al crear el equipo serás su capitán y el encargado de gestionarlo: invitas a los jugadores, creas rivales, enfrentamientos y convocatorias, apuntas los resultados y puedes nombrar hasta 2 gestores. Solo tú gestionas los miembros y la reapertura de actas, y puedes eliminar el equipo. Puedes traspasar la capitanía desde Equipo › Miembros.{% endblocktranslate %}
                 <p class="z-role-chip"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i><span>{% translate "Serás el capitán de este equipo" %}</span><span data-snp-only>{% include 'includes/stat_tip.html' with tip=captain_tip_snp %}</span><span data-no-snp hidden>{% include 'includes/stat_tip.html' with tip=captain_tip %}</span></p>
-                {% for field in club_form %}{% if field.name != 'competition' and field.name != 'country' %}
+                {% for field in club_form %}{% if field.name != 'competition' and field.name != 'country' and field.name != 'photo' %}
                 <p{% if field.name == 'division' %} data-division-field{% endif %}>
                     {{ field.label_tag }}
                     {{ field }}
@@ -77,6 +77,12 @@
                     {% for error in field.errors %}<span class="errorlist d-block text-danger small">{{ error }}</span>{% endfor %}
                 </p>
                 {% endif %}{% endfor %}
+                <p data-crest-field>
+                    <label for="{{ club_form.photo.id_for_label }}">{{ club_form.photo.label }}{% translate "Opcional. Sustituye al escudo de la competición. Un PNG con fondo transparente queda mejor." as tip_photo %}{% include 'includes/stat_tip.html' with tip=tip_photo %}</label>
+                    <img hidden alt="{% translate 'Escudo del equipo' %}" class="z-avatar z-avatar--sm" data-photo-preview>
+                    {{ club_form.photo }}
+                    {% for error in club_form.photo.errors %}<span class="errorlist d-block text-danger small">{{ error }}</span>{% endfor %}
+                </p>
                 {% for error in club_form.non_field_errors %}<p class="errorlist text-danger small">{{ error }}</p>{% endfor %}
                 <div class="z-wizard-actions">
                     <button type="button" class="btn btn-primary btn-lg" data-wizard-next hidden>{% translate "Siguiente" %}</button>
