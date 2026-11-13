@@ -40,6 +40,7 @@ from players.models import Player, SnpAccount, current_season
 from .adapters import GOOGLE_NEW_ACCOUNT_KEY
 from .blocklist import is_user_blocked
 from .decorators import club_admin_required, club_manager_required, club_required
+from .competition_picker import country_names, picker_entries
 from .emails import send_invitation_email, send_welcome_email
 from . import guides, season_prep, spaces
 from .forms import CaptainPlayerForm, CaptainSnpForm, ClubForm, EmailChangeForm, InviteMemberForm, SignUpForm
@@ -521,8 +522,10 @@ def register_club(request):
         "new_space": current is not None, "linked_player": linked_player,
         # Con una sola competición libre el título la nombra («Añadir equipo LAPI»).
         "new_competition": free[0] if current is not None and len(free) == 1 else None,
-        # Competiciones en las que ya tiene equipo: se ven desactivadas («Ya tienes X en LAPI»).
-        "taken_teams": [] if anonymous else spaces.user_clubs(request),
+        # Selector de competición: las libres se eligen; en las que ya pertenece (capitán, gestor o
+        # jugador) la tarjeta sale bloqueada con el nombre de su equipo.
+        "picker": picker_entries(free, [] if anonymous else getattr(request, "user_memberships", [])),
+        "picker_countries": country_names(),
         # Para register-wizard: divisiones de cada competición y si tiene SNP.
         "competition_rules": {c.code: {"divisions": list(c.divisions), "snp": c.has_snp} for c in free},
         "google_next": f"{reverse('register_club')}?{FROM_GOOGLE_PARAM}=1",

@@ -103,7 +103,7 @@ class OneSpacePerCompetitionTests(TestCase):
         page = self.client.get(reverse("register_club") + "?competicion=lapi")
         self.assertContains(page, "Añadir equipo LAPI")
         # La SNP, que ya tiene, sale desactivada y dice con qué equipo.
-        self.assertContains(page, "Ya tienes Gladiadores en SNP.")
+        self.assertContains(page, "Ya perteneces al equipo «Gladiadores» (Capitán) en esta competición.")
         self.assertContains(page, 'value="Gladiadores"')
         self.assertNotContains(page, 'value="snp" name="competition"')
 

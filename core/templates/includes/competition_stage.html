@@ -1,0 +1,25 @@
+{% load i18n %}{# Escenario del selector de competición: escudo 3D (canvas; si no hay WebGL, la insignia de reserva), nombre y datos de la competición elegida. Lo pintan competition-picker.js y competition-stage.js; recibe picker (core.competition_picker). #}
+<section class="z-stage" data-competition-stage aria-labelledby="stage-name">
+    <div class="z-stage-view" role="img" aria-label="{% translate 'Escudo de la competición elegida' %}" data-stage-label="{% translate 'Escudo de {name}' %}">
+        <canvas class="z-stage-canvas" data-stage-canvas aria-hidden="true"></canvas>
+        <div class="z-stage-fallback" data-stage-fallback><span data-stage-mono></span></div>
+    </div>
+    <div class="z-stage-head">
+        <span class="z-stage-pill" data-stage-pill></span>
+        <p class="z-stage-name" id="stage-name" data-stage-name></p>
+        <p class="z-stage-full" data-stage-full></p>
+        <p class="z-stage-team" data-stage-team></p>
+    </div>
+    {% translate "Partidos que se juegan en cada enfrentamiento." as tip_games %}
+    {% translate "Puntos que se reparten entre todos los partidos de un enfrentamiento." as tip_points %}
+    {% translate "Jugadores que hacen falta para poder cerrar la convocatoria." as tip_call %}
+    {% translate "Tipos de enfrentamiento que se juegan en esta competición." as tip_types %}
+    {% for c in picker %}
+    <dl class="z-stage-facts" data-facts-for="{{ c.code }}" hidden>
+        <div><dt>{% translate "Partidos" %}{% include 'includes/stat_tip.html' with tip=tip_games %}</dt><dd>{{ c.games }}</dd></div>
+        <div><dt>{% translate "Puntos en juego" %}{% include 'includes/stat_tip.html' with tip=tip_points %}</dt><dd>{{ c.points }}</dd></div>
+        <div><dt>{% translate "Convocados mínimos" %}{% include 'includes/stat_tip.html' with tip=tip_call %}</dt><dd>{{ c.min_call }}</dd></div>
+        <div><dt>{% translate "Tipos" %}{% include 'includes/stat_tip.html' with tip=tip_types %}</dt><dd class="z-stage-types">{{ c.types|join:" · " }}</dd></div>
+    </dl>
+    {% endfor %}
+</section>

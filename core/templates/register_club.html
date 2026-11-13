@@ -6,7 +6,7 @@
 
 {% block content %}
 <div class="z-auth">
-    <div class="z-auth-card z-auth-card--wide z-auth-card--split">
+    <div class="z-auth-card z-auth-card--wide z-auth-card--split z-auth-card--stage">
         <div class="z-auth-side">
         <img src="{% static 'zyra/logo.svg' %}" alt="Zyra" class="z-auth-logo">
         {% if new_space %}
@@ -16,6 +16,7 @@
         <h1>{% translate "Registrar mi equipo" %}</h1>
         <p class="text-muted z-auth-lead">{% translate "Cada equipo gestiona sus propios jugadores, rivales, enfrentamientos y estadísticas. Nadie de fuera del equipo puede ver sus datos." %}</p>
         {% endif %}
+        {% include 'includes/competition_stage.html' %}
         <details class="z-more-options z-captain-note mb-3">
             <summary>{% translate "¿Qué implica ser capitán?" %}</summary>
             <strong class="d-block mt-2">{% translate "Como capitán serás el encargado del equipo" %}</strong>
@@ -33,42 +34,61 @@
             <nav class="z-wizard-progress" data-wizard-progress aria-label="{% translate 'Progreso del registro' %}" hidden></nav>
             <div class="z-wizard-summary" data-wizard-summary role="alert" tabindex="-1" hidden></div>
 
-            <section data-wizard-step data-step-title="{% translate 'Tu equipo' %}">
-                <h2 class="z-section-title">{% translate "Equipo" %}</h2>
-                <fieldset class="z-choice" data-competition-choice aria-describedby="{{ club_form.competition.auto_id }}_helptext">
+            <section data-wizard-step data-step-title="{% translate 'Competición' %}">
+                <h2 class="z-section-title">{% translate "Elige tu competición" %}</h2>
+                {% with field=club_form.country %}
+                <p>
+                    {{ field.label_tag }}
+                    {{ field }}
+                    <span class="helptext" id="{{ field.auto_id }}_helptext">{{ field.help_text }} <span data-snp-only>{% translate "En la SNP decide dónde se buscan tus jugadores." %}</span></span>
+                    {% for error in field.errors %}<span class="errorlist d-block text-danger small">{{ error }}</span>{% endfor %}
+                </p>
+                {% endwith %}
+                <fieldset class="z-choice z-comp-list" data-competition-choice data-unavailable="{% translate "No se juega en {country}" %}" aria-describedby="{{ club_form.competition.auto_id }}_helptext">
                     <legend class="z-choice-legend">{{ club_form.competition.label }}</legend>
-                    {% for radio in club_form.competition %}
-                    <label class="z-choice-option" for="{{ radio.id_for_label }}">
-                        {{ radio.tag }}
-                        <span>{{ radio.choice_label }}</span>
-                        {% if radio.data.value == 'snp' %}<small>{% translate "5 partidos (3-3-2-2-2 puntos), 10 convocados y puntos SNP de cada jugador." %}</small>
-                        {% elif radio.data.value == 'lapi' %}<small>{% translate "Liga Andaluza: 3 partidos de 1 punto y 6 convocados." %}</small>{% endif %}
+                    {% for c in picker %}
+                    {% if c.free %}
+                    <label class="z-comp-card" for="{{ club_form.competition.auto_id }}_{{ c.code }}" data-comp-card="{{ c.code }}" style="--c: {{ c.color }}; --c-rgb: {{ c.rgb }}">
+                        <input type="radio" name="{{ club_form.competition.html_name }}" id="{{ club_form.competition.auto_id }}_{{ c.code }}" value="{{ c.code }}"{% if club_form.competition.value == c.code %} checked{% endif %}>
+                        <span class="z-comp-mini" aria-hidden="true">{{ c.monogram|slice:":1" }}</span>
+                        <span class="z-comp-text"><strong>{{ c.name }}</strong><small>{{ c.full_name }}</small><small class="z-comp-note" data-comp-note hidden></small></span>
+                        <span class="z-comp-go" aria-hidden="true"><i class="fa-solid fa-play" aria-hidden="true"></i></span>
                     </label>
-                    {% endfor %}
-                    {% for club in taken_teams %}
-                    {# Ya tiene equipo en esta competición: se ve, pero no se puede elegir. #}
-                    <label class="z-choice-option z-choice-option--taken" aria-disabled="true">
-                        <input type="radio" disabled aria-label="{{ club.rules.name }}">
-                        <span>{{ club.rules.name }}</span>
-                        <small>{% blocktranslate with club=club.name competition=club.rules.name %}Ya tienes {{ club }} en {{ competition }}.{% endblocktranslate %}</small>
+                    {% else %}
+                    {# Ya pertenece a un equipo de esta competición (capitán, gestor o jugador): se ve, pero bloqueada. #}
+                    <label class="z-comp-card is-locked" data-comp-card="{{ c.code }}" style="--c: {{ c.color }}; --c-rgb: {{ c.rgb }}">
+                        <input type="radio" disabled aria-label="{{ c.name }}">
+                        <span class="z-comp-mini" aria-hidden="true"><i class="fa-solid fa-lock" aria-hidden="true"></i></span>
+                        <span class="z-comp-text"><strong>{{ c.name }}</strong><small>{% blocktranslate with club=c.club role=c.role %}Ya perteneces al equipo «{{ club }}» ({{ role }}) en esta competición.{% endblocktranslate %}</small></span>
                     </label>
+                    {% endif %}
                     {% endfor %}
                 </fieldset>
                 <p class="z-choice-help">
                     <span class="helptext" id="{{ club_form.competition.auto_id }}_helptext">{{ club_form.competition.help_text }}</span>
                     {% for error in club_form.competition.errors %}<span class="errorlist d-block text-danger small">{{ error }}</span>{% endfor %}
                 </p>
-                {% for field in club_form %}{% if field.name != 'competition' %}
-                <p>
+                <div class="z-wizard-actions">
+                    <button type="button" class="btn btn-primary btn-lg" data-wizard-next hidden>{% translate "Siguiente" %}</button>
+                </div>
+            </section>
+
+            <section data-wizard-step data-step-title="{% translate 'Tu equipo' %}">
+                <h2 class="z-section-title">{% translate "Registra tu equipo" %}</h2>
+                {% blocktranslate asvar captain_tip trimmed %}Al crear el equipo serás su capitán: invitas a los jugadores, creas rivales, enfrentamientos y convocatorias, apuntas los resultados y puedes nombrar hasta 2 gestores. Solo tú gestionas los miembros, la cuenta SNP y la reapertura de actas, y puedes eliminar el equipo. Puedes traspasar la capitanía desde Equipo › Miembros.{% endblocktranslate %}
+                <p class="z-role-chip"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i><span>{% translate "Serás el capitán de este equipo" %}</span>{% include 'includes/stat_tip.html' with tip=captain_tip %}</p>
+                {% for field in club_form %}{% if field.name != 'competition' and field.name != 'country' %}
+                <p{% if field.name == 'division' %} data-division-field{% endif %}>
                     {{ field.label_tag }}
                     {{ field }}
-                    {% if field.help_text %}<span class="helptext" id="{{ field.auto_id }}_helptext">{{ field.help_text }}{% if field.name == 'country' %} <span data-snp-only>{% translate "En la SNP decide dónde se buscan tus jugadores." %}</span>{% endif %}</span>{% endif %}
+                    {% if field.help_text %}<span class="helptext" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</span>{% endif %}
                     {% for error in field.errors %}<span class="errorlist d-block text-danger small">{{ error }}</span>{% endfor %}
                 </p>
                 {% endif %}{% endfor %}
                 {% for error in club_form.non_field_errors %}<p class="errorlist text-danger small">{{ error }}</p>{% endfor %}
                 <div class="z-wizard-actions">
                     <button type="button" class="btn btn-primary btn-lg" data-wizard-next hidden>{% translate "Siguiente" %}</button>
+                    <button type="button" class="btn btn-secondary" data-wizard-back hidden>{% translate "Atrás" %}</button>
                 </div>
             </section>
 
@@ -94,14 +114,6 @@
                         {{ radio.tag }}
                         <span>{{ radio.choice_label }}</span>
                         {% if radio.data.value == 'snp' %}<small>{% translate "Recomendado: tu equipo y tus puntos SNP listos en un minuto." %}</small>{% endif %}
-                    </label>
-                    {% endfor %}
-                    {% for club in taken_teams %}
-                    {# Ya tiene equipo en esta competición: se ve, pero no se puede elegir. #}
-                    <label class="z-choice-option z-choice-option--taken" aria-disabled="true">
-                        <input type="radio" disabled aria-label="{{ club.rules.name }}">
-                        <span>{{ club.rules.name }}</span>
-                        <small>{% blocktranslate with club=club.name competition=club.rules.name %}Ya tienes {{ club }} en {{ competition }}.{% endblocktranslate %}</small>
                     </label>
                     {% endfor %}
                 </fieldset>
@@ -137,6 +149,7 @@
                 </div>
             </section>
             {{ competition_rules|json_script:"competition-rules" }}
+            {{ picker|json_script:"competition-picker" }}
             <script>
                 // Muestra solo los campos de la opción elegida (sin JavaScript se ven las dos).
                 (function () {
@@ -164,6 +177,11 @@
                             return !o.value || rule.divisions.indexOf(o.value) !== -1;
                         }).map(function (o) { return o.cloneNode(true); }));
                         division.value = rule.divisions.indexOf(current) !== -1 ? current : '';
+                        // Sin divisiones (competición que no las usa) el campo ni se muestra ni se pide.
+                        const hasDivisions = rule.divisions.length > 0;
+                        division.required = hasDivisions;
+                        const divisionRow = division.closest('[data-division-field]');
+                        if (divisionRow) divisionRow.hidden = !hasDivisions;
                         document.querySelectorAll('[data-snp-only]').forEach(function (el) { el.hidden = !rule.snp; });
                         document.querySelectorAll('[data-no-snp]').forEach(function (el) { el.hidden = rule.snp; });
                         const lastNameHelp = document.getElementById('{{ player_form.last_name.auto_id }}_helptext');
@@ -190,6 +208,9 @@
         </div>
     </div>
 </div>
+<script src="{% static 'js/stats-tips.js' %}" defer></script>
+<script src="{% static 'js/competition-stage.js' %}" defer></script>
+<script src="{% static 'js/competition-picker.js' %}" defer></script>
 <script src="{% static 'js/register-wizard.js' %}"></script>
 <script src="{% static 'js/time-24h.js' %}" defer></script>
 

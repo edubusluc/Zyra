@@ -16795,3 +16795,53 @@ msgstr "POINTS"
 
 msgid "Para responder tienes que enlazar tu cuenta con tu jugador."
 msgstr "To answer, you need to link your account to your player."
+
+msgid "Elige tu competición"
+msgstr "Choose your competition"
+
+msgid "Serás el capitán de este equipo"
+msgstr "You will be this team's captain"
+
+msgid "Al crear el equipo serás su capitán: invitas a los jugadores, creas rivales, enfrentamientos y convocatorias, apuntas los resultados y puedes nombrar hasta 2 gestores. Solo tú gestionas los miembros, la cuenta SNP y la reapertura de actas, y puedes eliminar el equipo. Puedes traspasar la capitanía desde Equipo › Miembros."
+msgstr "When you create the team you become its captain: you invite players, create rivals, matches and call-ups, enter the results and can appoint up to 2 managers. Only you manage the members, the SNP account and the reopening of match reports, and you can delete the team. You can hand over the captaincy from Team › Members."
+
+#, python-format
+msgid "Ya perteneces al equipo «%(club)s» (%(role)s) en esta competición."
+msgstr "You already belong to the team “%(club)s” (%(role)s) in this competition."
+
+msgid "No se juega en {country}"
+msgstr "Not played in {country}"
+
+msgid "Partidos que se juegan en cada enfrentamiento."
+msgstr "Games played in each match."
+
+msgid "Puntos que se reparten entre todos los partidos de un enfrentamiento."
+msgstr "Points shared among all the games of a match."
+
+msgid "Jugadores que hacen falta para poder cerrar la convocatoria."
+msgstr "Players needed to be able to close the call-up."
+
+msgid "Tipos de enfrentamiento que se juegan en esta competición."
+msgstr "Match types played in this competition."
+
+msgid "Convocados mínimos"
+msgstr "Minimum call-up"
+
+msgid "Tipos"
+msgstr "Types"
+
+#, python-format
+msgid "%(competition)s no se juega en ese país: elige otro o cambia de competición."
+msgstr "%(competition)s is not played in that country: choose another one or change competition."
+
+msgid "Series Nacionales de Pádel"
+msgstr "Series Nacionales de Pádel (national padel series)"
+
+msgid "Liga Amateur de Pádel Internacional"
+msgstr "International Amateur Padel League"
+
+msgid "Escudo de la competición elegida"
+msgstr "Crest of the chosen competition"
+
+msgid "Escudo de {name}"
+msgstr "{name} crest"

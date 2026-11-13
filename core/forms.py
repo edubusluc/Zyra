@@ -60,7 +60,9 @@ class ClubForm(forms.Form):
     country = forms.ChoiceField(label=_("Nacionalidad del equipo"), choices=[("", _("Elige una opción"))] + Team.COUNTRIES,
                                 initial="ES",
                                 help_text=_("País en el que juega, por ejemplo España."))
-    division = forms.ChoiceField(label=_("División"), choices=[("", _("Elige una opción"))] + Team.DIVISIONS,
+    # Se pide solo si la competición elegida tiene divisiones (``clean``); la marca ``required`` del
+    # campo la pone ``__init__`` y la ajusta register-wizard según la competición.
+    division = forms.ChoiceField(label=_("División"), choices=[("", _("Elige una opción"))] + Team.DIVISIONS, required=False,
                                  help_text=_("Nivel en el que juega el equipo en su competición."))
 
     def __init__(self, *args, competitions=None, **kwargs):
@@ -71,6 +73,8 @@ class ClubForm(forms.Form):
         self.fields["competition"].initial = competitions[0].code
         plain_text(self, "name", "location")
         self.fields["default_time"] = default_time_field()
+        if self.rules.divisions:
+            self.fields["division"].widget.attrs["required"] = True
 
     @property
     def rules(self):
@@ -90,11 +94,22 @@ class ClubForm(forms.Form):
         return code
 
     def clean(self):
-        """La división tiene que ser de la competición elegida."""
+        """La competición tiene que jugarse en el país elegido y la división, si tiene, ser suya."""
         cleaned = super().clean()
-        code, division = cleaned.get("competition"), cleaned.get("division")
-        if code and division and division not in get_competition(code).divisions:
-            self.add_error("division", _("Elige una división de %(competition)s.") % {"competition": get_competition(code).name})
+        code, division, country = cleaned.get("competition"), cleaned.get("division"), cleaned.get("country")
+        if not code:
+            return cleaned
+        rules = get_competition(code)
+        if country and not rules.plays_in(country):
+            self.add_error("country", _("%(competition)s no se juega en ese país: elige otro o cambia de competición.")
+                           % {"competition": rules.name})
+        if not rules.divisions:
+            cleaned["division"] = ""
+        elif not division:
+            if not self.has_error("division"):
+                self.add_error("division", self.fields["division"].error_messages["required"])
+        elif division not in rules.divisions:
+            self.add_error("division", _("Elige una división de %(competition)s.") % {"competition": rules.name})
         return cleaned
 
 
