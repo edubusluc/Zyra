@@ -16802,8 +16802,8 @@ msgstr "Choose your competition"
 msgid "Serás el capitán de este equipo"
 msgstr "You will be this team's captain"
 
-msgid "Al crear el equipo serás su capitán: invitas a los jugadores, creas rivales, enfrentamientos y convocatorias, apuntas los resultados y puedes nombrar hasta 2 gestores. Solo tú gestionas los miembros, la cuenta SNP y la reapertura de actas, y puedes eliminar el equipo. Puedes traspasar la capitanía desde Equipo › Miembros."
-msgstr "When you create the team you become its captain: you invite players, create rivals, matches and call-ups, enter the results and can appoint up to 2 managers. Only you manage the members, the SNP account and the reopening of match reports, and you can delete the team. You can hand over the captaincy from Team › Members."
+msgid "Al crear el equipo serás su capitán y el encargado de gestionarlo: invitas a los jugadores, creas rivales, enfrentamientos y convocatorias, apuntas los resultados y puedes nombrar hasta 2 gestores. Solo tú gestionas los miembros, la cuenta SNP y la reapertura de actas, y puedes eliminar el equipo. Puedes traspasar la capitanía desde Equipo › Miembros."
+msgstr "When you create the team you become its captain and the person in charge of managing it: you invite players, create rivals, matches and call-ups, enter the results and can appoint up to 2 managers. Only you manage the members, the SNP account and the reopening of match reports, and you can delete the team. You can hand over the captaincy from Team › Members."
 
 #, python-format
 msgid "Ya perteneces al equipo «%(club)s» (%(role)s) en esta competición."

@@ -40,7 +40,7 @@ class PickerPageTests(TestCase):
         self.assertNotContains(page, "is-locked")
         # El rol de capitán se explica en un «i», no en una nota visible.
         self.assertContains(page, "Serás el capitán de este equipo")
-        self.assertContains(page, 'data-tip="Al crear el equipo serás su capitán')
+        self.assertContains(page, 'data-tip="Al crear el equipo serás su capitán y el encargado')
 
     def test_captain_of_snp_sees_it_locked_with_the_team_name(self):
         captain = User.objects.create_user("capi", password=PASSWORD)
