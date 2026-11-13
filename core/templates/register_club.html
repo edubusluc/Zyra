@@ -35,14 +35,14 @@
                     {% for error in field.errors %}<span class="errorlist d-block text-danger small">{{ error }}</span>{% endfor %}
                 </p>
                 {% endwith %}
-                <fieldset class="z-choice z-comp-list" data-competition-choice data-unavailable="{% translate "No se juega en {country}" %}" aria-describedby="{{ club_form.competition.auto_id }}_helptext">
+                <fieldset class="z-choice z-comp-list" data-competition-choice aria-describedby="{{ club_form.competition.auto_id }}_helptext">
                     <legend class="z-choice-legend">{{ club_form.competition.label }}</legend>
                     {% for c in picker %}
                     {% if c.free %}
                     <label class="z-comp-card" for="{{ club_form.competition.auto_id }}_{{ c.code }}" data-comp-card="{{ c.code }}" style="--c: {{ c.color }}; --c-rgb: {{ c.rgb }}">
                         <input type="radio" name="{{ club_form.competition.html_name }}" id="{{ club_form.competition.auto_id }}_{{ c.code }}" value="{{ c.code }}"{% if club_form.competition.value == c.code %} checked{% endif %}>
                         <span class="z-comp-mini" aria-hidden="true">{{ c.monogram|slice:":1" }}</span>
-                        <span class="z-comp-text"><strong>{{ c.name }}</strong><small>{{ c.full_name }}</small><small class="z-comp-note" data-comp-note hidden></small></span>
+                        <span class="z-comp-text"><strong>{{ c.name }}</strong><small>{{ c.full_name }}</small></span>
                         <span class="z-comp-go" aria-hidden="true"><i class="fa-solid fa-play" aria-hidden="true"></i></span>
                     </label>
                     {% else %}

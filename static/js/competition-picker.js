@@ -12,7 +12,6 @@
   const entries = {};
   JSON.parse(dataEl.textContent).forEach((e) => { entries[e.code] = e; });
   const radios = Array.from(fieldset.querySelectorAll('.z-comp-card:not(.is-locked) input[type=radio]'));
-  const unavailable = fieldset.dataset.unavailable || '';
   const team = document.querySelector('form input[name=name]');
   const q = (sel) => stage.querySelector(sel);
 
@@ -40,17 +39,12 @@
 
   function sync() {
     const place = country.value;
-    radios.forEach((radio) => {
-      const entry = entries[radio.value];
-      const allowed = !entry.countries.length || entry.countries.indexOf(place) !== -1;
-      const card = radio.closest('.z-comp-card');
-      radio.disabled = !allowed;
-      card.classList.toggle('is-unavailable', !allowed);
-      const note = card.querySelector('[data-comp-note]');
-      if (note) {
-        note.hidden = allowed;
-        note.textContent = allowed ? '' : unavailable.replace('{country}', countryName());
-      }
+    document.querySelectorAll('[data-comp-card]').forEach((card) => {
+      const entry = entries[card.dataset.compCard];
+      const allowed = !entry || !entry.countries.length || entry.countries.indexOf(place) !== -1;
+      card.hidden = !allowed;
+      const radio = card.querySelector('input[value]');
+      if (radio) radio.disabled = !allowed;
     });
     let picked = radios.find((r) => r.checked && !r.disabled);
     if (!picked) {
