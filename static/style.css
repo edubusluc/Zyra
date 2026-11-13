@@ -4603,6 +4603,6 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .z-stage-facts > div:nth-child(odd) { border-bottom-left-radius: var(--z-radius); }
 .z-stage-facts > div:nth-child(even) { border-bottom-right-radius: var(--z-radius); }
 @media (min-width: 641px) {
-  .z-stage-facts .z-tip::after { max-width: 230px; font-weight: 500; text-transform: none; letter-spacing: normal; transform: none; left: 0; }
+  .z-stage-facts .z-tip::after { max-width: 230px; white-space: normal; font-weight: 500; text-transform: none; letter-spacing: normal; transform: none; left: 0; }
   .z-stage-facts > div:nth-child(even) .z-tip::after { left: auto; right: 0; }
 }
