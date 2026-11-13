@@ -66,8 +66,9 @@
 
             <section data-wizard-step data-step-title="{% translate 'Tu equipo' %}">
                 <h2 class="z-section-title">{% translate "Registra tu equipo" %}</h2>
-                {% blocktranslate asvar captain_tip trimmed %}Al crear el equipo serás su capitán y el encargado de gestionarlo: invitas a los jugadores, creas rivales, enfrentamientos y convocatorias, apuntas los resultados y puedes nombrar hasta 2 gestores. Solo tú gestionas los miembros, la cuenta SNP y la reapertura de actas, y puedes eliminar el equipo. Puedes traspasar la capitanía desde Equipo › Miembros.{% endblocktranslate %}
-                <p class="z-role-chip"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i><span>{% translate "Serás el capitán de este equipo" %}</span>{% include 'includes/stat_tip.html' with tip=captain_tip %}</p>
+                {% blocktranslate asvar captain_tip_snp trimmed %}Al crear el equipo serás su capitán y el encargado de gestionarlo: invitas a los jugadores, creas rivales, enfrentamientos y convocatorias, apuntas los resultados y puedes nombrar hasta 2 gestores. Solo tú gestionas los miembros, la cuenta SNP y la reapertura de actas, y puedes eliminar el equipo. Puedes traspasar la capitanía desde Equipo › Miembros.{% endblocktranslate %}
+                {% blocktranslate asvar captain_tip trimmed %}Al crear el equipo serás su capitán y el encargado de gestionarlo: invitas a los jugadores, creas rivales, enfrentamientos y convocatorias, apuntas los resultados y puedes nombrar hasta 2 gestores. Solo tú gestionas los miembros y la reapertura de actas, y puedes eliminar el equipo. Puedes traspasar la capitanía desde Equipo › Miembros.{% endblocktranslate %}
+                <p class="z-role-chip"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i><span>{% translate "Serás el capitán de este equipo" %}</span><span data-snp-only>{% include 'includes/stat_tip.html' with tip=captain_tip_snp %}</span><span data-no-snp hidden>{% include 'includes/stat_tip.html' with tip=captain_tip %}</span></p>
                 {% for field in club_form %}{% if field.name != 'competition' and field.name != 'country' %}
                 <p{% if field.name == 'division' %} data-division-field{% endif %}>
                     {{ field.label_tag }}
