@@ -4524,3 +4524,96 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .z-av-row .z-panel-title { margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
 .z-av-row > section + section { margin-top: 16px; }
 @media (min-width: 768px) { .z-av-row > section + section { margin-top: 0; } }
+
+/* Alta de equipo: selector de competición con el escudo 3D. El formulario va a la izquierda y el escenario a la derecha (arriba en móvil). */
+.z-auth-card--stage .z-stage { --stage: var(--z-lime); --stage-rgb: var(--z-lime-rgb); position: relative; display: grid; grid-template-rows: auto 220px auto; margin: 0 0 16px; border: 1px solid var(--z-border); border-radius: var(--z-radius); background: radial-gradient(120% 90% at 70% 20%, rgba(var(--stage-rgb), .28), transparent 60%), linear-gradient(180deg, var(--z-bg-top), var(--z-bg) 75%); transition: background .6s var(--z-ease); }
+.z-stage-view { position: relative; grid-row: 2; min-height: 0; overflow: hidden; }
+.z-stage-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: pan-y; }
+.z-stage-fallback { position: absolute; inset: 0; display: grid; place-items: center; }
+.z-stage-fallback span { font-family: var(--z-display); font-size: 4rem; letter-spacing: .04em; color: var(--stage); }
+.z-stage-head { position: relative; grid-row: 1; z-index: 1; padding: 16px 16px 0; text-align: left; }
+.z-stage-pill { display: inline-block; padding: 3px 11px; font-size: var(--z-fs-xs); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--z-ink); background: var(--stage); border-radius: 999px; }
+.z-stage-pill:empty { display: none; }
+.z-auth-card--stage .z-stage .z-stage-name { margin: 6px 0 0; font-family: var(--z-display); font-size: var(--z-fs-2xl); line-height: 1; text-transform: uppercase; letter-spacing: .02em; color: var(--z-text); }
+.z-auth-card--stage .z-stage .z-stage-full { margin: 4px 0 0; font-size: var(--z-fs-sm); color: var(--z-muted); }
+.z-auth-card--stage .z-stage .z-stage-team { min-height: 1.4em; margin: 6px 0 0; font-weight: 700; color: var(--z-text); overflow-wrap: anywhere; }
+.z-stage-facts { grid-row: 3; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; margin: 0; background: var(--z-border); border-top: 1px solid var(--z-border); }
+.z-stage-facts[hidden] { display: none; }
+.z-stage-facts > div { padding: 10px 12px; background: rgba(20, 21, 18, .86); min-width: 0; }
+.z-stage-facts dt { display: block; white-space: nowrap; margin: 0; font-size: var(--z-fs-xs); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--z-muted); }
+.z-stage-facts dd { margin: 4px 0 0; font-family: var(--z-display); font-size: var(--z-fs-xl); line-height: 1.1; color: var(--z-text); }
+.z-stage-facts .z-stage-types { font-family: var(--z-body); font-size: var(--z-fs-sm); font-weight: 700; line-height: 1.35; }
+.z-comp-list { gap: 10px; background: none; }
+.z-comp-card[hidden] { display: none; }
+.z-comp-card { position: relative; display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; gap: 12px; margin: 0; padding: 12px 14px; cursor: pointer; text-transform: none; letter-spacing: normal; background: var(--z-surface-2); border: 1px solid var(--z-border); border-radius: var(--z-radius); transition: transform .25s var(--z-ease), border-color .25s, background .25s; }
+.z-comp-card input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: inherit; }
+.z-comp-card:hover:not(.is-locked):not(.is-unavailable) { border-color: var(--z-border-control-hover); }
+.z-comp-card:has(input:focus-visible) { outline: 3px solid var(--z-lime); outline-offset: 2px; }
+.z-comp-card:has(input:checked) { border-color: var(--c); background: linear-gradient(90deg, rgba(var(--c-rgb), .22), var(--z-surface-2) 75%); }
+.z-comp-mini { display: grid; place-items: center; width: 44px; height: 48px; font-family: var(--z-display); font-size: var(--z-fs-lg); color: var(--z-ink); background: linear-gradient(160deg, rgba(255, 255, 255, .55), var(--c) 45%, rgba(0, 0, 0, .4)); clip-path: polygon(50% 100%, 8% 78%, 8% 8%, 92% 8%, 92% 78%); }
+.z-comp-text { display: grid; gap: 2px; min-width: 0; }
+.z-comp-text strong { font-family: var(--z-display); font-size: var(--z-fs-xl); font-weight: 400; line-height: 1.05; text-transform: uppercase; letter-spacing: .02em; color: var(--z-text); }
+.z-comp-text small { font-size: var(--z-fs-sm); color: var(--z-muted); }
+.z-comp-text small.z-comp-note[hidden] { display: none; }
+.z-comp-go { color: var(--c); opacity: 0; transition: opacity .2s; }
+.z-comp-card:has(input:checked) .z-comp-go { opacity: 1; }
+.z-comp-card.is-locked, .z-comp-card.is-unavailable { cursor: not-allowed; }
+.z-comp-card.is-locked .z-comp-mini, .z-comp-card.is-unavailable .z-comp-mini { --c: var(--z-border-control); }
+.z-comp-card.is-locked .z-comp-text strong, .z-comp-card.is-unavailable .z-comp-text strong { color: var(--z-muted); }
+.z-role-chip { display: flex; align-items: center; gap: 8px; margin: 0 0 14px; padding: 8px 12px; font-weight: 700; color: var(--z-text); background: var(--z-surface-2); border: 1px solid var(--z-border); border-radius: var(--z-radius-sm); }
+.z-role-chip > i { color: var(--z-lime); }
+/* Cada paso del registro entra con un deslizamiento suave (la animación se repite cada vez que el paso pasa de oculto a visible). */
+@media (prefers-reduced-motion: no-preference) {
+    .is-wizard [data-wizard-step]:not([hidden]) { animation: z-wizard-in .42s var(--z-ease); }
+    .is-wizard [data-wizard-step]:not([hidden]) > * { animation: z-wizard-rise .38s var(--z-ease) backwards; }
+    .is-wizard [data-wizard-step]:not([hidden]) > :nth-child(2) { animation-delay: .06s; }
+    .is-wizard [data-wizard-step]:not([hidden]) > :nth-child(3) { animation-delay: .11s; }
+    .is-wizard [data-wizard-step]:not([hidden]) > :nth-child(4) { animation-delay: .16s; }
+    .is-wizard [data-wizard-step]:not([hidden]) > :nth-child(5) { animation-delay: .21s; }
+    .is-wizard [data-wizard-step]:not([hidden]) > :nth-child(n+6) { animation-delay: .26s; }
+}
+@keyframes z-wizard-in { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+@keyframes z-wizard-rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+/* Cabecera del alta: logotipo, título y el «i» de la introducción en una fila. */
+.z-auth-card--stage .z-stage-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 12px; margin: 0 0 16px; }
+.z-auth-card--stage .z-stage-header .z-auth-logo { width: 48px; margin: 0; }
+.z-auth-card--stage .z-stage-header h1 { margin: 0; }
+.z-auth-card--stage .z-stage-header .z-tip { margin: 0; }
+@media (min-width: 992px) {
+    /* Como el mockup: título arriba, formulario a la izquierda y el escenario 3D grande a la derecha. */
+    .z-auth-card--split.z-auth-card--stage { grid-template-columns: minmax(0, 1fr) minmax(420px, 1.1fr); grid-template-areas: "side side" "main stage"; row-gap: 20px; column-gap: 40px; max-width: 1160px; align-items: stretch; }
+    .z-auth-card--stage .z-auth-side { grid-area: side; justify-content: flex-start; margin: 0; }
+    .z-auth-card--stage .z-auth-side h1 { font-size: var(--z-fs-2xl); text-align: left; }
+    .z-auth-card--stage .z-auth-main { grid-area: main; }
+    .z-auth-card--stage .z-stage { grid-area: stage; align-self: start; position: sticky; top: 24px; grid-template-rows: auto minmax(320px, 1fr) auto; min-height: 560px; margin: 0; }
+    .z-auth-card--stage .z-stage .z-stage-head { padding: 22px 24px 0; }
+    .z-auth-card--stage .z-stage .z-stage-name { font-size: clamp(2.4rem, 4.4vw, 3.6rem); }
+    .z-auth-card--stage .z-stage-facts > div { padding: 14px 14px; }
+}
+@media (prefers-reduced-motion: reduce) { .z-comp-card, .z-auth-card--stage .z-stage { transition: none; } }
+
+/* Globos «i» largos de la alta de equipo: más anchos y con aire para que se lean enteros. */
+@media (min-width: 641px) {
+  .z-stage-header .z-tip::after, .z-role-chip .z-tip::after { width: 340px; max-width: 80vw; font-weight: 500; line-height: 1.55; padding: 12px 14px; transform: translateX(-50%); }
+  .z-stage-header .z-tip::after { top: calc(100% + 8px); bottom: auto; left: 0; transform: none; }
+}
+
+/* Sin recorte en la ficha del escudo: los globos «i» de los datos salen de ella y se anclan al borde de su columna. */
+.z-stage-facts { border-radius: 0 0 var(--z-radius) var(--z-radius); }
+.z-stage-facts > div:nth-child(odd) { border-bottom-left-radius: var(--z-radius); }
+.z-stage-facts > div:nth-child(even) { border-bottom-right-radius: var(--z-radius); }
+@media (min-width: 641px) {
+  .z-stage-facts .z-tip::after { max-width: 230px; white-space: normal; font-weight: 500; text-transform: none; letter-spacing: normal; transform: none; left: 0; }
+  .z-stage-facts > div:nth-child(even) .z-tip::after { left: auto; right: 0; }
+}
+
+/* Escudo propio del equipo: sustituye al 3D de la competición en el escenario. */
+.z-stage-photo { position: absolute; inset: 10% 12%; width: 76%; height: 80%; object-fit: contain; filter: drop-shadow(0 14px 22px rgba(0, 0, 0, .55)); }
+.z-stage-photo { opacity: 0; transform: scale(.92); transition: opacity .45s var(--z-ease), transform .45s var(--z-ease); pointer-events: none; }
+.z-stage-canvas, .z-stage-fallback { transition: opacity .45s var(--z-ease), transform .45s var(--z-ease); }
+.z-stage.has-photo .z-stage-photo { opacity: 1; transform: none; }
+.z-stage.has-photo .z-stage-canvas, .z-stage.has-photo .z-stage-fallback { opacity: 0; transform: scale(1.08); pointer-events: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .z-stage.has-photo .z-stage-photo { animation: z-stage-float 4s ease-in-out infinite; }
+  @keyframes z-stage-float { 50% { transform: translateY(-8px); } }
+}

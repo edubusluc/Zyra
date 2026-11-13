@@ -8,3 +8,4 @@ Versiones fijadas; para actualizarlas, descarga el paquete de npm con la misma v
 | Bootstrap | 5.3.3 | `bootstrap/bootstrap.min.css`, `bootstrap/bootstrap.bundle.min.js` | MIT |
 | Font Awesome Free | 6.5.2 | `fontawesome/css/all.min.css`, `fontawesome/webfonts/*.woff2` | Fuentes OFL, iconos CC BY 4.0, código MIT |
 | Chart.js | 4.5.1 | `chartjs/chart.umd.min.js` | MIT |
+| three.js | 0.128.0 | `three/three.min.js` (solo se carga en el selector de competición del alta de equipo, ver `static/js/competition-stage.js`) | MIT |

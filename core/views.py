@@ -40,6 +40,7 @@ from players.models import Player, SnpAccount, current_season
 from .adapters import GOOGLE_NEW_ACCOUNT_KEY
 from .blocklist import is_user_blocked
 from .decorators import club_admin_required, club_manager_required, club_required
+from .competition_picker import country_names, picker_entries
 from .emails import send_invitation_email, send_welcome_email
 from . import guides, season_prep, spaces
 from .forms import CaptainPlayerForm, CaptainSnpForm, ClubForm, EmailChangeForm, InviteMemberForm, SignUpForm
@@ -441,7 +442,8 @@ def register_club(request):
     if request.method == "POST":
         if ratelimit.too_many(request, "register", REGISTER_LIMIT, REGISTER_WINDOW):
             return render(request, "429.html", status=429)
-        club_form = ClubForm(request.POST, competitions=free)
+        club_form = ClubForm(request.POST, request.FILES, competitions=free)
+        club_form.uploader = None if anonymous else request.user
         player_form = CaptainPlayerForm(linked_data or request.POST, prefix="player")
         # Fuera de la SNP no hay cuenta SNP: el jugador del capitán se escribe a mano.
         snp_form = CaptainSnpForm(request.POST if club_form.rules.has_snp else {"snp-mode": CaptainSnpForm.MANUAL},
@@ -467,6 +469,12 @@ def register_club(request):
                                        division=data["division"], player_name=player.get("name", ""),
                                        player_last_name=player.get("last_name", ""), competition=data["competition"],
                                        default_time=data.get("default_time"))
+                    if data.get("photo"):
+                        # Escudo ya procesado y validado en el formulario; queda anotada su validación.
+                        team = club.own_team
+                        team.photo.save(data["photo"].name, data["photo"], save=False)
+                        team._photo_check_id = getattr(club_form.instance, "_photo_check_id", None)
+                        team.save()
                     # La cuenta se queda con el nombre del jugador si no tenía uno.
                     if player and not (user.first_name or user.last_name):
                         user.first_name, user.last_name = player["name"], player["last_name"]
@@ -519,10 +527,10 @@ def register_club(request):
         "club_form": club_form, "user_form": user_form, "player_form": player_form, "snp_form": snp_form,
         "google_missing_name": google_missing_name, "snp_service_off": not snp_service.is_enabled(),
         "new_space": current is not None, "linked_player": linked_player,
-        # Con una sola competición libre el título la nombra («Añadir equipo LAPI»).
-        "new_competition": free[0] if current is not None and len(free) == 1 else None,
-        # Competiciones en las que ya tiene equipo: se ven desactivadas («Ya tienes X en LAPI»).
-        "taken_teams": [] if anonymous else spaces.user_clubs(request),
+        # Selector de competición: las libres se eligen; en las que ya pertenece (capitán, gestor o
+        # jugador) la tarjeta sale bloqueada con el nombre de su equipo.
+        "picker": picker_entries(free, [] if anonymous else getattr(request, "user_memberships", [])),
+        "picker_countries": country_names(),
         # Para register-wizard: divisiones de cada competición y si tiene SNP.
         "competition_rules": {c.code: {"divisions": list(c.divisions), "snp": c.has_snp} for c in free},
         "google_next": f"{reverse('register_club')}?{FROM_GOOGLE_PARAM}=1",

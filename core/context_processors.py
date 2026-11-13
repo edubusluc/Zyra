@@ -38,7 +38,7 @@ def club(request):
         "is_club_admin": bool(membership and membership.is_admin),
         # Rol en el club activo («Capitán», «Jugador»…) para el botón de usuario de la cabecera.
         "current_role": membership.team_role_label if membership else "",
-        # Competiciones en las que aún no tiene equipo («Añadir equipo LAPI» en el menú, una entrada por competición).
+        # Competiciones en las que aún no tiene equipo («Añadir equipo» en el menú, una entrada por competición).
         "free_competitions": [c for code, c in COMPETITIONS.items()
                               if code not in {m.club.competition for m in memberships}],
         # «Ya tienes equipo en SNP y LAPI» cuando ya no le queda competición libre.

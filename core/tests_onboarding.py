@@ -122,7 +122,7 @@ class SingleClubTests(TestCase):
 
     def test_menu_offers_another_space_while_a_competition_is_free(self):
         self.client.force_login(self.captain)
-        self.assertContains(self.client.get(reverse("home")), "Añadir equipo LAPI")
+        self.assertContains(self.client.get(reverse("home")), "Añadir equipo")
 
     def test_user_without_club_can_register(self):
         user = User.objects.create_user("libre", password="pass-12345", email="libre@example.com")
