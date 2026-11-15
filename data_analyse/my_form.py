@@ -24,36 +24,62 @@ RING_LENGTH = 163.4
 
 def _snp(player, today):
     """
-    Puntos SNP actuales y su gráfica de los últimos 30 días (o None sin puntos). La gráfica coloca cada
-    actualización del histórico según su fecha: ``line`` y ``area`` (puntos SVG de un lienzo de
-    ``CHART_WIDTH`` x ``CHART_HEIGHT``), ``dot`` (posición en % del último punto), ``high`` y ``low``,
-    ``start`` y ``end`` (fechas del periodo), ``points`` (cada actualización con su posición en %, puntos y
+    Puntos SNP actuales y su gráfica de los últimos 30 días (o None sin puntos). Los puntos solo cambian
+    cuando hay una actualización, así que la gráfica es escalonada: cada valor se mantiene (línea horizontal)
+    hasta la siguiente actualización y el último llega hasta hoy. Si hay una actualización anterior a los 30
+    días, su valor es el de partida; si el histórico es más reciente, la gráfica empieza en su primera
+    actualización (el eje no deja un hueco vacío). ``line`` y ``area`` (puntos SVG de un lienzo de
+    ``CHART_WIDTH`` x ``CHART_HEIGHT``), ``dot`` (posición en % del valor de hoy), ``high`` y ``low``,
+    ``start`` y ``end`` (fechas del eje), ``points`` (cada actualización con su posición en %, puntos y
     fecha, para el indicador al pasar el ratón) y ``delta`` (variación de la última actualización respecto a la
-    anterior, igual que la columna «Evolución» de la tabla de plantilla); vacía si
-    hay menos de dos actualizaciones.
+    anterior, igual que la columna «Evolución» de la tabla de plantilla); sin gráfica si no hay al menos dos
+    días de histórico.
     """
     if player.snp_score is None:
         return None
-    start = today - datetime.timedelta(days=SNP_WINDOW_DAYS)
-    history = list(player.snp_history.filter(date__gte=start, date__lte=today).order_by("date"))
+    window_start = today - datetime.timedelta(days=SNP_WINDOW_DAYS)
+    history = player.snp_history.filter(date__lte=today)
+    inside = list(history.filter(date__gte=window_start).order_by("date"))
+    before = history.filter(date__lt=window_start).order_by("-date").first()
+    known = ([before] if before else []) + inside
     data = {"score": player.snp_score, "delta": None, "chart": None}
-    if len(history) < 2:
+    if not known:
         return data
-    scores = [h.score for h in history]
+    if len(known) >= 2:
+        data["delta"] = round(known[-1].score - known[-2].score, 1)
+    start = window_start if before else known[0].date
+    days = (today - start).days
+    if days < 1:
+        return data
+    scores = [h.score for h in known]
     low, high = min(scores), max(scores)
-    span = (high - low) or 1
-    xs = [(h.date - start).days / SNP_WINDOW_DAYS * CHART_WIDTH for h in history]
-    ys = [CHART_PAD + (high - score) / span * (CHART_HEIGHT - 2 * CHART_PAD) if high != low else CHART_HEIGHT / 2
-          for score in scores]
-    line = " ".join(f"{x:.1f},{y:.1f}" for x, y in zip(xs, ys))
-    data["delta"] = round(scores[-1] - scores[-2], 1)
+    span = high - low
+
+    def x_of(date):
+        """Posición horizontal de ``date`` en el lienzo (las anteriores al eje quedan en el borde izquierdo)."""
+        return max(date - start, datetime.timedelta(0)).days / days * CHART_WIDTH
+
+    def y_of(score):
+        """Posición vertical de ``score`` (línea centrada si no hay variación, con margen arriba y abajo)."""
+        if not span:
+            return CHART_HEIGHT / 2
+        return CHART_PAD + (high - score) / span * (CHART_HEIGHT - 2 * CHART_PAD)
+
+    xs = [x_of(h.date) for h in known]
+    ys = [y_of(h.score) for h in known]
+    path = [(xs[0], ys[0])]
+    for x, y in zip(xs[1:], ys[1:]):
+        path += [(x, path[-1][1]), (x, y)]
+    path.append((CHART_WIDTH, ys[-1]))
+    line = " ".join(f"{x:.1f},{y:.1f}" for x, y in path)
     data["chart"] = {
         "line": line,
-        "area": f"{line} {xs[-1]:.1f},{CHART_HEIGHT} {xs[0]:.1f},{CHART_HEIGHT}",
-        "dot": {"x": round(xs[-1] / CHART_WIDTH * 100, 1), "y": round(ys[-1] / CHART_HEIGHT * 100, 1)},
+        "area": f"{line} {CHART_WIDTH},{CHART_HEIGHT} {path[0][0]:.1f},{CHART_HEIGHT}",
+        "dot": {"x": 100.0, "y": round(ys[-1] / CHART_HEIGHT * 100, 1)},
         "high": high, "low": low, "start": start, "end": today,
         "points": [{"x": round(x / CHART_WIDTH * 100, 1), "y": round(y / CHART_HEIGHT * 100, 1),
-                    "score": h.score, "date": h.date} for x, y, h in zip(xs, ys, history)],
+                    "score": h.score, "date": h.date}
+                   for x, y, h in zip(xs, ys, known) if h.date >= window_start],
     }
     return data
 

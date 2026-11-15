@@ -130,11 +130,38 @@ class CalculationTests(MyFormBase):
         # Última actualización (436) menos la anterior (420), no menos la primera de los 30 días.
         self.assertEqual(snp["delta"], 16)
         chart = snp["chart"]
-        self.assertEqual(len(chart["line"].split()), 3)
+        # Escalonada: salida, (horizontal + salto) por cada cambio y tramo final hasta hoy.
+        self.assertEqual(len(chart["line"].split()), 1 + 2 * 2 + 1)
         self.assertEqual((chart["high"], chart["low"]), (436, 412))
-        self.assertEqual((chart["start"], chart["end"]), (self.day - datetime.timedelta(days=30), self.day))
-        self.assertGreater(chart["dot"]["x"], 90)
+        # Sin actualización anterior a los 30 días, el eje empieza en la primera que hay.
+        self.assertEqual((chart["start"], chart["end"]), (self.day - datetime.timedelta(days=20), self.day))
+        self.assertEqual(chart["dot"]["x"], 100)
         self.assertEqual([p["score"] for p in chart["points"]], [412, 420, 436])
+
+    def test_snp_chart_carries_the_value_from_before_the_window(self):
+        SnpScoreHistory.objects.create(player=self.me, date=self.day - datetime.timedelta(days=45), score=400)
+        SnpScoreHistory.objects.create(player=self.me, date=self.day - datetime.timedelta(days=3), score=430)
+        snp = my_form.my_form(self.club, self.me)["snp"]
+        chart = snp["chart"]
+        self.assertEqual(chart["start"], self.day - datetime.timedelta(days=30))
+        self.assertEqual(snp["delta"], 30)
+        # El valor de partida (400) abre la línea y solo la actualización de dentro del periodo es un punto.
+        self.assertTrue(chart["line"].startswith("0.0,"))
+        self.assertEqual([p["score"] for p in chart["points"]], [430])
+        self.assertEqual((chart["high"], chart["low"]), (430, 400))
+
+    def test_snp_chart_with_no_change_is_a_flat_line(self):
+        SnpScoreHistory.objects.create(player=self.me, date=self.day - datetime.timedelta(days=60), score=436)
+        chart = my_form.my_form(self.club, self.me)["snp"]["chart"]
+        ys = {pt.split(",")[1] for pt in chart["line"].split()}
+        self.assertEqual(ys, {"40.0"})
+        self.assertEqual(chart["points"], [])
+
+    def test_snp_chart_needs_more_than_one_day_of_history(self):
+        SnpScoreHistory.objects.create(player=self.me, date=self.day, score=436)
+        snp = my_form.my_form(self.club, self.me)["snp"]
+        self.assertIsNone(snp["chart"])
+        self.assertIsNone(snp["delta"])
 
     def test_snp_without_history_has_no_delta_and_without_score_is_none(self):
         snp = my_form.my_form(self.club, self.me)["snp"]
