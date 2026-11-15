@@ -25,7 +25,9 @@
   Chart.defaults.plugins.tooltip.borderWidth = 1;
   Chart.defaults.plugins.tooltip.cornerRadius = 12;
   Chart.defaults.plugins.tooltip.padding = 10;
-  Chart.defaults.plugins.tooltip.titleFont = { weight: 800 };
+  // Misma fuente y peso normal que los globos «i» (ver --z-tip-font en style.css).
+  Chart.defaults.plugins.tooltip.titleFont = { family: Chart.defaults.font.family, weight: 400 };
+  Chart.defaults.plugins.tooltip.bodyFont = { family: Chart.defaults.font.family, weight: 400 };
 
   // Alternativa accesible (EST-046): el canvas va oculto a los lectores de pantalla y el contenedor con role="img"
   // lleva en su aria-label el título y los valores de cada serie, que se actualizan con el gráfico.
