@@ -235,9 +235,9 @@ class UnifiedSpacesTests(TestCase):
             self.assertContains(page, "Categoría 500")
         self.assertContains(page, "Sin división")  # equipo LAPI sin división
 
-    def test_home_team_pills_link_to_team_statistics_of_their_competition(self):
+    def test_home_team_pills_link_to_club_page_of_their_competition(self):
         page = self.client.get(reverse("home"))
-        stats = reverse("team_statistics")
+        stats = reverse("club_home")
         for code in ("snp", "lapi"):
             self.assertContains(page, f'href="{stats}?en={code}"')
         html = page.content.decode()

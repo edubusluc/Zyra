@@ -5,7 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 15/11/2026 · Equipos de Inicio clicables
 
-- Las píldoras de equipo de la parte superior de Inicio son un enlace entero a las estadísticas del equipo de su competición (SNP o LAPI según el pulsado), con foco visible y un solo enlace por píldora; «Pon la categoría» sigue siendo su propio enlace.
+- Las píldoras de equipo de la parte superior de Inicio son un enlace entero a la página Club de su competición (SNP o LAPI según el pulsado), con foco visible y un solo enlace por píldora; «Pon la categoría» sigue siendo su propio enlace.
 
 ## 15/11/2026 · Color y escudo de cada competición, desde el back-office
 
