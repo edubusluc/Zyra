@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 15/11/2026 · «Mi forma»: gráfica de puntos SNP escalonada
+
+- La gráfica de «Puntos SNP · últimos 30 días» mantiene cada valor (línea horizontal) hasta la siguiente actualización y llega hasta hoy, en vez de unir puntos sueltos en una diagonal casi vertical. Si hay una actualización anterior a los 30 días, es el valor de partida; si el histórico es más reciente, el eje empieza en su primera fecha. Sin cambios, línea horizontal centrada.
+
 ## 15/11/2026 · «Frente a la plantilla» en una liga de pocas jornadas
 
 - Si nadie ha jugado aún 3 partidos (principio de temporada o una liga LAPI con solo 2 jornadas), «Frente a la plantilla» compara con los que lleve el jugador que más ha jugado, así que salen también el % de victorias, el de sets y el de convocatorias.
