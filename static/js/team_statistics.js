@@ -220,23 +220,50 @@
     fold.addEventListener('toggle', () => { if (fold.open) window.dispatchEvent(new Event('resize')); });
   });
 
-  // Panel lateral de secciones: marca la sección que se está viendo.
-  const links = Array.from(document.querySelectorAll('.st-side-list a'));
-  if (links.length && 'IntersectionObserver' in window) {
-    const idOf = (a) => a.getAttribute('href').slice(1);
-    const visible = new Set();
-    const paint = () => {
-      const current = links.map(idOf).find((id) => visible.has(id));
+  // Panel lateral y barra de secciones: marcan la sección que se está viendo.
+  // Activa = la última sección cuyo borde superior ya pasó la línea de lectura; al llegar al final
+  // de la página, la última (las secciones cortas del final nunca llegarían a la línea).
+  const links = Array.from(document.querySelectorAll('.st-side-list a, .st-index a'));
+  const targets = [];
+  links.forEach((a) => {
+    const el = document.getElementById(a.getAttribute('href').slice(1));
+    if (el && !targets.includes(el)) targets.push(el);
+  });
+  if (links.length && targets.length) {
+    const READING_LINE = 120;
+    let current = null;
+    const paint = (id) => {
+      if (id === current) return;
+      current = id;
       links.forEach((a) => {
-        const on = idOf(a) === current;
+        const on = a.getAttribute('href') === '#' + id;
         a.classList.toggle('is-active', on);
         if (on) a.setAttribute('aria-current', 'location'); else a.removeAttribute('aria-current');
       });
     };
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((e) => { if (e.isIntersecting) visible.add(e.target.id); else visible.delete(e.target.id); });
-      paint();
-    }, { rootMargin: '-90px 0px -55% 0px' });
-    links.forEach((a) => { const el = document.getElementById(idOf(a)); if (el) observer.observe(el); });
+    const update = () => {
+      const atEnd = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
+      let id = targets[0].id;
+      if (atEnd) id = targets[targets.length - 1].id;
+      else targets.forEach((el) => { if (el.getBoundingClientRect().top <= READING_LINE) id = el.id; });
+      paint(id);
+    };
+    let queued = false;
+    const schedule = () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(() => { queued = false; update(); });
+    };
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+    // Las secciones plegables cambian la altura de la página: se recalcula al abrirlas o cerrarlas.
+    document.querySelectorAll('.st-fold').forEach((fold) => fold.addEventListener('toggle', schedule));
+    // Al pulsar se marca al instante la elegida; el scroll suave no la cambia por las del camino.
+    links.forEach((a) => a.addEventListener('click', () => {
+      paint(a.getAttribute('href').slice(1));
+      window.removeEventListener('scroll', schedule);
+      setTimeout(() => { window.addEventListener('scroll', schedule, { passive: true }); update(); }, 700);
+    }));
+    update();
   }
 })();

@@ -3095,8 +3095,9 @@ a.z-hub-card:hover, a.z-hub-card:focus-visible { border-color: var(--z-lime); co
 .st-index { position: sticky; top: 0; z-index: 5; display: flex; gap: 8px; overflow-x: auto; padding: 8px 0; margin: 0 0 12px; background: var(--z-bg); scrollbar-width: none; }
 .st-index::-webkit-scrollbar { display: none; }
 .st-index a { flex: none; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--z-border); color: inherit; font-size: 13px; text-decoration: none; white-space: nowrap; }
-.st-index a:hover, .st-index a:focus-visible { border-color: var(--z-lime); }
-.st-section, .st-board { scroll-margin-top: 64px; }
+.st-index a:hover, .st-index a:focus-visible, .st-index a.is-active { border-color: var(--z-lime); }
+.st-index a.is-active { color: var(--z-lime); }
+.st-section, .st-board, .st-balance { scroll-margin-top: 96px; }
 
 /* Gestionar plantilla: tres columnas en escritorio y nombre corto a dos líneas. */
 @media (min-width: 992px) { .z-selector-grid:has(.z-roster) { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
