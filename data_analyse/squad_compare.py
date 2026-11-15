@@ -77,18 +77,22 @@ def _tally(players, log):
 
 
 def _rate(part, total):
+    """Porcentaje (con decimales) de ``part`` sobre ``total``; None si ``total`` es 0."""
     return 100 * part / total if total else None
 
 
 def _pct_text(value):
+    """«68 %» para un porcentaje."""
     return _("%(n)s %%") % {"n": round(value)}
 
 
 def _points_text(value):
+    """«1.840 pts» para unos puntos SNP, con el separador del idioma."""
     return _("%(n)s pts") % {"n": number_format(round(value), use_l10n=True, force_grouping=True)}
 
 
 def _rounds_text(value):
+    """Número entero de jornadas como texto."""
     return number_format(round(value), use_l10n=True)
 
 
@@ -109,14 +113,17 @@ def compare_to_squad(player, squad, log, signup, snp_rows=None, league=None):
         return None
     tally = _tally(squad, log)
     def base_pct(p):
+        """«15 de 22 partidos» de ``p``."""
         x = tally[p.id]
         return _("%(w)s de %(n)s partidos") % {"w": x["wins"], "n": x["played"]}
 
     def base_sets(p):
+        """«33 de 52 sets» de ``p``."""
         x = tally[p.id]
         return _("%(w)s de %(n)s sets") % {"w": x["sets_won"], "n": x["sets_played"]}
 
     def base_signup(p):
+        """«17 de 20 convocatorias» de ``p``."""
         s = signup.get(p.id) or {}
         return _("%(w)s de %(n)s convocatorias") % {"w": s.get("signed", 0), "n": s.get("total", 0)}
 
@@ -151,6 +158,7 @@ def compare_to_squad(player, squad, log, signup, snp_rows=None, league=None):
         lo_axis, hi_axis = axis or (max(0, low - (high - low) * .15 - 1), high + (high - low) * .15 + 1)
 
         def pos(x):
+            """Posición de ``x`` en la barra, en tanto por ciento entero y sin salirse de los bordes."""
             return round(max(2, min(98, 100 * (x - lo_axis) / (hi_axis - lo_axis))))
 
         diff = mine - mean
