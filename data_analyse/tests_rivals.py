@@ -299,3 +299,24 @@ class RivalViewsTests(RivalsBase):
             rival = Team.objects.create(club=self.club, name=f"Extra {i}", location="X", in_group=True)
             self.match(rival, datetime.date(2026, 4, 1 + i), 8, 4)
         self.assertEqual(queries(), before)
+
+
+class NeutralVenueStatsTests(RivalsBase):
+    """Un Play Off en sede neutral cuenta en el balance, pero no en Local ni en Visitante."""
+
+    def test_neutral_match_is_left_out_of_venue_stats_only(self):
+        from data_analyse import pairs, roster_table, team_card
+        self.match(self.norte, datetime.date(2025, 10, 4), 8, 4, games=[(1, True)])
+        self.match(self.sur, datetime.date(2025, 11, 8), 9, 3, games=[(1, True), (2, True)], match_type=Match.PLAYOFF,
+                   neutral_venue=True)
+        venue = team_card.venue_matches(self.club)
+        self.assertEqual((venue["local"]["total"], venue["visiting"]["total"]), (1, 0))
+        # El balance contra el rival sí cuenta el Play Off.
+        self.assertEqual({r["label"]: r["played"] for r in rivals.rival_summary(self.club)}, {"Norte": 1, "Sur": 1})
+        log = pairs.club_game_log(self.club)
+        self.assertEqual([g["neutral"] for g in log], [False, True, True])
+        summary = pairs.pair_summary(log, self.a.id, self.b.id)
+        self.assertEqual((summary["played"], summary["local_played"], summary["visiting_played"]), (3, 1, 0))
+        rows = roster_table.roster_rows([self.a], log, {}, side=roster_table.SIDE_LOCAL)
+        self.assertEqual(rows[0]["played"], 1)
+        self.assertEqual(roster_table.roster_rows([self.a], log, {})[0]["played"], 3)

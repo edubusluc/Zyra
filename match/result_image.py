@@ -274,8 +274,8 @@ def build_result_jpeg(match, games, outcome):
     draw = _header(canvas, draw, match, rules)
 
     own_is_local = match.own_is_local
-    _team(canvas, draw, 188, 224, match.local_name, _("Local"), own_is_local, match.local)
-    _team(canvas, draw, W - 188, 224, match.visiting_name, _("Visitante"), not own_is_local, match.visiting)
+    _team(canvas, draw, 188, 224, match.local_name, "" if match.neutral_venue else _("Local"), own_is_local, match.local)
+    _team(canvas, draw, W - 188, 224, match.visiting_name, "" if match.neutral_venue else _("Visitante"), not own_is_local, match.visiting)
 
     points = (match.result_points or "").replace("-", "/").split("/")
     score = "-".join(p.strip() for p in points) if len(points) == 2 else "-"

@@ -74,7 +74,7 @@
               <tr>
                 <th scope="row"><a href="{% url 'call_for_match' e.match.public_id %}">{{ e.date|date_day }}</a><small class="st-muted d-block">{{ e.season }}</small></th>
                 <td>{% if e.friendly %}<span class="z-badge">{{ e.type_label }}</span>{% else %}{{ e.type_label }}{% if e.round %} · J{{ e.round }}{% endif %}{% endif %}</td>
-                <td>{% if e.local %}{% translate "Local" %}{% else %}{% translate "Visitante" %}{% endif %}</td>
+                <td>{% if e.neutral %}{% translate "Sede neutral" %}{% elif e.local %}{% translate "Local" %}{% else %}{% translate "Visitante" %}{% endif %}</td>
                 <td>{% include 'includes/rival_outcome.html' with e=e %}</td>
                 {% if current_club.rules.league_type %}<td class="st-up">{% if e.league_points is not None %}{{ e.league_points }}{% else %}—{% endif %}</td>{% endif %}
               </tr>

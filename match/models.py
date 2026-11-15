@@ -92,6 +92,9 @@ class Match(PublicIdModel):
     # Rival de un amistoso que no es un equipo del grupo: solo se guarda su nombre en el
     # propio partido (no se crea ningún equipo) y ese lado (local o visiting) queda vacío.
     rival_name = models.CharField(_("Rival"), max_length=100, blank=True, default="")
+    # Partido en una sede fijada por la organización (Play Off de la SNP): no hay equipo local ni visitante
+    # a efectos de estadísticas. El equipo propio ocupa el lado local solo para guardar el resultado.
+    neutral_venue = models.BooleanField(default=False)
     # «No presentado» (competiciones con ``Competition.no_show``: SNP y LAPI): qué equipo no se
     # presentó. El acta se cierra sin partidos; el que no se presenta pierde todos los puntos.
     NO_SHOW_OWN = "own"
@@ -135,7 +138,7 @@ class Match(PublicIdModel):
         # Valor canónico aunque llegue escrito de otra forma (match/outcomes.py).
         self.result = outcomes.normalize(self.result)
 
-        if not self.location and self.local_id:
+        if not self.location and self.local_id and not self.neutral_venue:
             self.location = self.local.location
 
         if not self.availability_token:
@@ -150,6 +153,11 @@ class Match(PublicIdModel):
         if not self.location:
             return ""
         return "https://www.google.com/maps/search/?api=1&query=" + quote(self.location)
+
+    @property
+    def is_neutral(self):
+        """True si se juega en una sede neutral (no cuenta como local ni visitante)."""
+        return self.neutral_venue
 
     @property
     def is_friendly(self):
@@ -211,6 +219,13 @@ class Match(PublicIdModel):
     def own_is_visiting(self):
         """True si el equipo propio del club juega como visitante."""
         return bool(self.visiting and self.visiting.is_own)
+
+    @property
+    def venue_side(self):
+        """'local', 'visiting' o None en sede neutral: el lado que cuenta en las estadísticas de Local y visitante."""
+        if self.neutral_venue:
+            return None
+        return "local" if self.own_is_local else "visiting"
 
     def _side_name(self, team):
         """Nombre del equipo de un lado; si ese lado está vacío, el rival escrito a mano."""

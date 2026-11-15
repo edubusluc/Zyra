@@ -11,7 +11,6 @@
   if (!form) return;
 
   const typeRow = form.querySelector('[data-match-type-row]');
-  const sourceRow = form.querySelector('[data-rival-source-row]');
   const groupRival = form.querySelector('[data-group-rival]');
   const manualRival = form.querySelector('[data-manual-rival]');
   // Selector único «Tipo de enfrentamiento»: fija el modo (competitivo/amistoso) y el tipo (enfrentamiento,
@@ -20,28 +19,37 @@
   const kindSelect = form.querySelector('[data-kind-select]');
   const legacy = form.querySelector('[data-kind-legacy]');
   const typeSelect = form.querySelector('select[name="match_type"]');
-  const radios = form.querySelectorAll('input[name="mode"], input[name="rival_source"], input[name="own_side"], input[name="report_scope"]');
+  const radios = form.querySelectorAll('input[name="mode"], input[name="own_side"], input[name="report_scope"]');
   function checkedValue(name) {
     const checked = form.querySelector(`input[name="${name}"]:checked`);
     return checked ? checked.value : '';
   }
+  // Tipos que siempre se juegan en sede neutral (Play Off de la SNP): sin local ni visitante y con rival escrito.
+  const neutralTypes = (form.dataset.neutralTypes || '').split(',').filter(Boolean);
+  const ownSideRow = form.querySelector('[data-own-side-row]');
+  const placeHelp = form.querySelector('[data-place-help]');
+  const placeRow = form.querySelector('[data-place-row]');
+  function isNeutral() {
+    return checkedValue('mode') !== 'amistoso' && !!typeSelect && neutralTypes.includes(typeSelect.value);
+  }
   function syncMode() {
     const friendly = checkedValue('mode') === 'amistoso';
-    const manual = friendly && checkedValue('rival_source') === 'manual';
+    const neutral = isNeutral();
+    const manual = friendly || neutral;
     if (typeRow) typeRow.hidden = friendly;
-    if (sourceRow) sourceRow.hidden = !friendly;
+    if (ownSideRow) ownSideRow.hidden = neutral;
+    if (placeHelp) placeHelp.hidden = neutral;
+    // Amistoso en casa: no se pregunta el lugar (es el del equipo propio).
+    if (placeRow) placeRow.hidden = friendly && checkedValue('own_side') !== 'visiting';
     if (groupRival) groupRival.hidden = manual;
     if (manualRival) manualRival.hidden = !manual;
     // Los desplegables ocultos no deben bloquear el envío por ser obligatorios.
     if (groupRival) groupRival.querySelectorAll('select').forEach((s) => { s.disabled = manual; });
     radios.forEach((r) => r.closest('label').classList.toggle('active', r.checked));
   }
-  radios.forEach((r) => r.addEventListener('change', (event) => {
+  radios.forEach((r) => r.addEventListener('change', () => {
     syncMode();
-    if (event.target.name === 'rival_source' && event.target.value === 'manual') {
-      const input = manualRival && manualRival.querySelector('input[type="text"]');
-      if (input) input.focus();
-    }
+    syncDefaults();
   }));
   if (kindRow && kindSelect && legacy && typeSelect) {
     kindRow.hidden = false;
@@ -52,6 +60,8 @@
       const mode = form.querySelector(`input[name="mode"][value="${friendly ? 'amistoso' : 'competitivo'}"]`);
       if (mode) { mode.checked = true; mode.dispatchEvent(new Event('change', { bubbles: true })); }
       if (!friendly) typeSelect.value = kindSelect.value;
+      syncMode();
+      syncDefaults();
       syncRound();
     });
   }
@@ -73,7 +83,10 @@
   const rivalSelect = form.querySelector('select[name="rival"]');
   let placeEdited = place && place.value !== '' && place.value !== (form.dataset.ownLocation || '');
   function defaultPlace() {
+    // Sede neutral: la fija la organización, se escribe a mano.
+    if (isNeutral()) return '';
     if (checkedValue('own_side') !== 'visiting') return form.dataset.ownLocation || '';
+    if (manualRival && !manualRival.hidden) return '';
     const option = rivalSelect && rivalSelect.options[rivalSelect.selectedIndex];
     return (option && option.dataset.location) || '';
   }
@@ -90,7 +103,7 @@
   let timeEdited = startTime && startTime.value !== '' && startTime.value !== (form.dataset.ownTime || '');
   function syncTime() {
     if (!startTime || timeEdited) return;
-    startTime.value = checkedValue('own_side') === 'visiting' ? '' : (form.dataset.ownTime || '');
+    startTime.value = (isNeutral() || checkedValue('own_side') === 'visiting') ? '' : (form.dataset.ownTime || '');
   }
   if (startTime) {
     startTime.addEventListener('input', () => { timeEdited = true; });
@@ -112,6 +125,13 @@
     select.addEventListener('change', sync);
     sync();
   });
+
+  // Al cambiar de tipo o de rival se recalculan el lugar y la hora por defecto (sin pisar lo escrito a mano).
+  function syncDefaults() { syncPlace(); syncTime(); }
+
+  // Aviso de coincidencia del rival: se abre solo al volver del servidor.
+  const matchModal = document.getElementById('rivalMatchModal');
+  if (matchModal && window.bootstrap) window.bootstrap.Modal.getOrCreateInstance(matchModal).show();
 
   // Hora en 24 h con el mismo aspecto que el resto de campos: escribe 2030 y queda 20:30 (S-12).
   const time = form.querySelector('[data-time-24h]');
@@ -140,9 +160,10 @@
       const option = rivalSelect && rivalSelect.options[rivalSelect.selectedIndex];
       const rival = manual ? (field('rival_name').value || '') : (option && option.value ? option.textContent.trim() : '');
       const own = preview.dataset.ownName;
-      const home = checkedValue('own_side') !== 'visiting';
+      const home = isNeutral() || checkedValue('own_side') !== 'visiting';
       set('local', (home ? own : rival) || '—');
       set('visiting', (home ? rival : own) || '—');
+      preview.querySelectorAll('[data-preview-side]').forEach((el) => { el.hidden = isNeutral(); });
     }
     form.addEventListener('input', syncPreview);
     form.addEventListener('change', syncPreview);

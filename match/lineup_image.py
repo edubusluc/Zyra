@@ -108,8 +108,8 @@ def build_lineup_jpeg(match, games):
     draw = _when_block(canvas, match)
 
     own_is_local = match.own_is_local
-    _team(canvas, draw, 188, 320, match.local_name, _("Local"), own_is_local, match.local)
-    _team(canvas, draw, W - 188, 320, match.visiting_name, _("Visitante"), not own_is_local, match.visiting)
+    _team(canvas, draw, 188, 320, match.local_name, "" if match.neutral_venue else _("Local"), own_is_local, match.local)
+    _team(canvas, draw, W - 188, 320, match.visiting_name, "" if match.neutral_venue else _("Visitante"), not own_is_local, match.visiting)
     _text(draw, (W / 2, 426), "VS", _font(ANTON, 120), TEXT, "mm")
 
     label = _("ALINEACIÓN")

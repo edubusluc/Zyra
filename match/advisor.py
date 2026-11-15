@@ -189,7 +189,7 @@ def build_forms(log, players, own_local):
     forms = {p.id: PlayerForm(p) for p in players}
     pairs = {}
     for g in log:
-        same_venue = g['local'] == own_local
+        same_venue = not g.get('neutral') and g['local'] == own_local
         for pid in g['pair']:
             f = forms.get(pid)
             if f:

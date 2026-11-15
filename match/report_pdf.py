@@ -367,9 +367,14 @@ def _story(report, layout):
     # ---------------- Página 1 ----------------
     story.append(Paragraph(_("INFORME DE CONVOCATORIA"), st["title"]))
     story.append(Spacer(1, 1 * mm))
+    if match.neutral_venue:
+        subtitle = _("<b>%(own)s</b> vs <b>%(rival)s</b> · %(date)s · "
+                     "<font color='#B4F100'><b>%(venue)s</b></font> · temporada %(season)s")
+    else:
+        subtitle = _("<b>%(own)s</b> vs <b>%(rival)s</b> · %(date)s · "
+                     "jugáis como <font color='#B4F100'><b>%(venue)s</b></font> · temporada %(season)s")
     story.append(Paragraph(
-        _("<b>%(own)s</b> vs <b>%(rival)s</b> · %(date)s · "
-          "jugáis como <font color='#B4F100'><b>%(venue)s</b></font> · temporada %(season)s") % {
+        subtitle % {
             "own": esc(own), "rival": esc(report['rival']), "date": f"{match.start_date:%d/%m/%Y}",
             "venue": venue.upper(), "season": match.season},
         st["subtitle"]))
@@ -422,8 +427,12 @@ def _story(report, layout):
     players = report["players"]
     shown = players[:layout.max_players] if layout.max_players else players
     story.append(Spacer(1, layout.section_gap))
-    section(_("CONVOCADOS · RENDIMIENTO COMO %(venue)s") % {"venue": venue.upper()})
-    widths = PLAYER_COLS if snp else PLAYER_COLS_NO_SNP
+    neutral = match.neutral_venue  # sin local ni visitante no hay columna «Como …»
+    section(_("CONVOCADOS · RENDIMIENTO") if neutral else _("CONVOCADOS · RENDIMIENTO COMO %(venue)s") % {"venue": venue.upper()})
+    widths = list(PLAYER_COLS if snp else PLAYER_COLS_NO_SNP)
+    venue_at = 2 if snp else 1
+    if neutral:
+        widths[0] += widths.pop(venue_at)
     name_w = widths[0] - CELL_X_PAD
     usage = report["usage"]
 
@@ -435,7 +444,7 @@ def _story(report, layout):
     player_rows = [[
         Paragraph(f"<b>{esc(_player_label(f.player, name_w, size=cell_size))}</b>", st["cell"]),
         *([Paragraph(f"{f.snp:g}" if f.snp else "", st["cell"])] if snp else []),
-        Paragraph(_record(f.venue_wins, f.venue_played), st["cell"]),
+        *([] if neutral else [Paragraph(_record(f.venue_wins, f.venue_played), st["cell"])]),
         Paragraph(_record(f.wins, f.played), st["cell"]),
         Paragraph(f"<b>{usage[f.player.id]['games']}</b>/{usage[f.player.id]['calls']}", st["cell"]),
         Paragraph(last_played(f), st["cell"]),
@@ -443,7 +452,8 @@ def _story(report, layout):
         _pips(f.form),
     ] for f in shown]
     story.append(_data_table(
-        [_("Jugador"), *(["SNP"] if snp else []), _("Como %(venue)s") % {"venue": venue}, _("Global"), _("Jug./Conv."),
+        [_("Jugador"), *(["SNP"] if snp else []), *([] if neutral else [_("Como %(venue)s") % {"venue": venue}]),
+         _("Global"), _("Jug./Conv."),
          _("Último"), _("Racha"), _("Forma")],
         player_rows, widths, st, pad=pad))
     note = _("Jug./Conv.: partidos jugados / convocatorias en las que se apuntó esta temporada, sin contar "
@@ -481,13 +491,14 @@ def _story(report, layout):
         pair_rows = [[
             Paragraph(f"<b>{esc(_pair_label(p, pair_name_w, size=cell_size))}</b>", st["cell"]),
             *([Paragraph(f"{p.snp_sum:g}", st["cell"])] if snp else []),
-            Paragraph(_record(p.venue_wins, p.venue_played), st["cell"]),
+            *([] if neutral else [Paragraph(_record(p.venue_wins, p.venue_played), st["cell"])]),
             Paragraph(_record(p.wins, p.played), st["cell"]),
             Paragraph(_streak(p.streak), st["cell"]),
         ] for p in report["pairs"]]
-        story.append(_data_table([_("Pareja"), *([_("Suma SNP")] if snp else []), _("Como %(venue)s") % {"venue": venue},
-                                  _("Juntos"), _("Racha")],
-                                 pair_rows, [pair_col, *([18 * mm] if snp else []), 30 * mm, 30 * mm, 20 * mm], st, pad=pad))
+        story.append(_data_table([_("Pareja"), *([_("Suma SNP")] if snp else []),
+                                  *([] if neutral else [_("Como %(venue)s") % {"venue": venue}]), _("Juntos"), _("Racha")],
+                                 pair_rows, [pair_col + (30 * mm if neutral else 0), *([18 * mm] if snp else []),
+                                             *([] if neutral else [30 * mm]), 30 * mm, 20 * mm], st, pad=pad))
     else:
         story.append(Paragraph(_("Ninguna pareja de convocados ha jugado junta todavía."), st["muted"]))
 

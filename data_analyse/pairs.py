@@ -101,6 +101,8 @@ def club_game_log(club, season=None, match_type=None):
         log.append({
             'pair': pair_key(a, b),
             'local': is_local,
+            # Sede neutral (Play Off SNP): no cuenta ni como local ni como visitante.
+            'neutral': g.match.neutral_venue,
             'won': won,
             'season': g.match.season,
             'match_id': g.match_id,
@@ -143,7 +145,7 @@ def top_pairs(log, players, local, min_games=MIN_GAMES_PAIR):
     by_id = {p.id: p for p in players}
     counts = {}
     for g in log:
-        if g['local'] != local:
+        if g.get('neutral') or g['local'] != local:
             continue
         wins, played = counts.get(g['pair'], (0, 0))
         counts[g['pair']] = (wins + g['won'], played + 1)
@@ -215,8 +217,8 @@ def pair_summary(log, p1_id, p2_id):
     key = pair_key(p1_id, p2_id)
     games = [g for g in log if g['pair'] == key]
     results = [g['won'] for g in games]
-    local = [g['won'] for g in games if g['local']]
-    visiting = [g['won'] for g in games if not g['local']]
+    local = [g['won'] for g in games if g['local'] and not g.get('neutral')]
+    visiting = [g['won'] for g in games if not g['local'] and not g.get('neutral')]
     played, wins = len(results), sum(results)
     streak_type, streak_len = _current_run(results)
 

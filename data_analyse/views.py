@@ -516,10 +516,10 @@ def players_charts(players, logs, season, match_type):
         first = group["players"][0].club
         comps.append({"code": code, "name": str(first.rules.name), "club": ", ".join(clubs)})
         sets_by_comp.append(set_stats(log))
-        local.append({"won": sum(g["won"] for g in log if g["local"]),
-                      "lost": sum(not g["won"] for g in log if g["local"])})
-        visiting.append({"won": sum(g["won"] for g in log if not g["local"]),
-                         "lost": sum(not g["won"] for g in log if not g["local"])})
+        home = [g for g in log if g["local"] and not g.get("neutral")]
+        away = [g for g in log if not g["local"] and not g.get("neutral")]
+        local.append({"won": sum(g["won"] for g in home), "lost": sum(not g["won"] for g in home)})
+        visiting.append({"won": sum(g["won"] for g in away), "lost": sum(not g["won"] for g in away)})
         per_year = {}
         for g in log:
             row = per_year.setdefault(g["season"], {"won": 0, "played": 0})
@@ -742,6 +742,7 @@ def build_game_log(player, match_type=None):
             'match_id': g.match_id,
             'n_game': g.n_game,
             'local': is_local,
+            'neutral': g.match.neutral_venue,
             'won': won,
             'points': g.score if won else 0,
             'possible': g.score,
@@ -804,6 +805,7 @@ def season_games(player, season, match_type=None):
             'date': g.match.start_date,
             'rival': g.match.visiting_name if is_local else g.match.local_name,
             'local': is_local,
+            'neutral': g.match.neutral_venue,
             'partner': partner,
             'sets': _sets_text(g, is_local),
             'type_label': g.match.type_label,
@@ -914,8 +916,8 @@ def _current_run(results):
 def summarize(log):
     """Todas las métricas a partir de un log (global o de una temporada)."""
     results = [g['won'] for g in log]
-    local_games = [g for g in log if g['local']]
-    visiting_games = [g for g in log if not g['local']]
+    local_games = [g for g in log if g['local'] and not g.get('neutral')]
+    visiting_games = [g for g in log if not g['local'] and not g.get('neutral')]
     local = [g['won'] for g in local_games]
     visiting = [g['won'] for g in visiting_games]
 
@@ -1346,6 +1348,7 @@ def pair_last_games(club, p1, p2, n=PAIR_LAST_GAMES, match_type=None, season=Non
             'season': g.match.season,
             'rival': g.match.visiting_name if is_local else g.match.local_name,
             'local': is_local,
+            'neutral': g.match.neutral_venue,
             'sets': _sets_text(g, is_local),
             'type_label': g.match.type_label,
             'round': g.match.round_number,

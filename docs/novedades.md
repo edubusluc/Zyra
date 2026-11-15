@@ -3,6 +3,12 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 15/11/2026 · Play Off en sede neutral y rival escrito a mano
+
+- Los Play Off de la SNP se crean sin «En casa / Fuera»: se juegan en una sede fijada por la organización, que se escribe en «Lugar». No cuentan en Local y visitante (sí en el balance total, las rachas y los rivales) y la ficha, el listado, las imágenes y el informe PDF no muestran Local ni Visitante.
+- En Play Off y en Amistoso el rival se escribe por su nombre. Si coincide con un equipo que ya existe (del grupo o no), se avisa al capitán para que lo una a ese equipo o cree uno nuevo; si no, se crea fuera del grupo y sale en las sugerencias de los siguientes partidos.
+- En Play Off siempre se pide el lugar. En Amistoso solo se pide si se juega fuera; en casa se usa el del equipo propio.
+
 ## 15/11/2026 · «Mi forma»: gráfica de puntos SNP escalonada
 
 - La gráfica de «Puntos SNP · últimos 30 días» mantiene cada valor (línea horizontal) hasta la siguiente actualización y llega hasta hoy, en vez de unir puntos sueltos en una diagonal casi vertical. Si hay una actualización anterior a los 30 días, es el valor de partida; si el histórico es más reciente, el eje empieza en su primera fecha. Sin cambios, línea horizontal centrada.
@@ -10,6 +16,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 ## 15/11/2026 · «Frente a la plantilla» en una liga de pocas jornadas
 
 - Si nadie ha jugado aún 3 partidos (principio de temporada o una liga LAPI con solo 2 jornadas), «Frente a la plantilla» compara con los que lleve el jugador que más ha jugado, así que salen también el % de victorias, el de sets y el de convocatorias.
+
 ## 15/11/2026 · Misma fuente en todos los globos «i»
 
 - Los globos «i» de toda la app (estadísticas, alta de equipo, convocatoria, formularios) y los de las gráficas usan la fuente de cuerpo con peso normal, sin heredar la fuente condensada en mayúsculas del título donde están.

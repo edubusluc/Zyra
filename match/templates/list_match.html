@@ -115,9 +115,9 @@ o estado. Toda la tarjeta es pulsable.{% endcomment %}
         <time class="z-pfx-date" datetime="{{ m.start_date|date:'Y-m-d' }}" title="{% blocktranslate with season=m.season %}Temporada {{ season }}{% endblocktranslate %}">{{ m.start_date|date_short }}<small>{{ m.start_date|date:"Y" }}</small></time>
         <p class="z-pfx-meta">{% if m.start_time %}<strong>{{ m.start_time|time:"H:i" }}</strong>{% endif %}{% if m.location %}<span class="z-location"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>{{ m.location }}</span></span>{% endif %}</p>
         <div class="z-pfx-teams">
-            <span class="z-pfx-team{% if m.local.is_own %} is-own{% endif %}">{{ m.local_name }}<small>{% translate "Local" %}</small></span>
+            <span class="z-pfx-team{% if m.local.is_own %} is-own{% endif %}">{{ m.local_name }}{% if not m.neutral_venue %}<small>{% translate "Local" %}</small>{% endif %}</span>
             <span class="z-pfx-vs">{% if m.outcome %}{{ m.local_points }}–{{ m.visiting_points }}{% else %}VS{% endif %}</span>
-            <span class="z-pfx-team{% if m.visiting.is_own %} is-own{% endif %}">{{ m.visiting_name }}<small>{% translate "Visitante" %}</small></span>
+            <span class="z-pfx-team{% if m.visiting.is_own %} is-own{% endif %}">{{ m.visiting_name }}{% if not m.neutral_venue %}<small>{% translate "Visitante" %}</small>{% endif %}</span>
         </div>
         <div class="z-pfx-foot">{% if multi_space and create_spaces %}<span class="z-fixture-meta z-fixture-role">{% translate "Eres jugador aquí" %}</span>{% endif %}
         <a href="{% url 'call_for_match' m.public_id %}" class="z-pfx-open stretched-link" aria-label="{% blocktranslate with local=m.local_name visiting=m.visiting_name %}Ver {{ local }} contra {{ visiting }}{% endblocktranslate %}">{% translate "Ver enfrentamiento" %}<i class="fa-solid fa-chevron-right" aria-hidden="true"></i></a></div>

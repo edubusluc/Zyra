@@ -44,7 +44,7 @@ def signup_by_player(club, players, season=None, match_type=None, side=SIDE_ALL)
         calls = calls.filter(match__season=season)
     calls = list(calls.select_related("match", "match__local", "match__visiting").prefetch_related("players"))
     if side != SIDE_ALL:
-        calls = [c for c in calls if (c.match.own_is_local if side == SIDE_LOCAL else c.match.own_is_visiting)]
+        calls = [c for c in calls if c.match.venue_side == ('local' if side == SIDE_LOCAL else 'visiting')]
     signed_ids = [(c.match.season, c.match.start_date, {p.id for p in c.players.all()}) for c in calls]
     out = {}
     for p in players:
@@ -69,7 +69,7 @@ def roster_rows(players, log, signup, side=SIDE_ALL, sort=DEFAULT_SORT, snp=None
     """
     counts = {}
     for g in log:
-        if side != SIDE_ALL and g["local"] != (side == SIDE_LOCAL):
+        if side != SIDE_ALL and (g.get("neutral") or g["local"] != (side == SIDE_LOCAL)):
             continue
         for pid in g["pair"]:
             wins, played = counts.get(pid, (0, 0))

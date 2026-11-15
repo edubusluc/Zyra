@@ -7,7 +7,7 @@ from core.models import Club, REPORT_SCOPES, UserPreference
 from .models import Match, Game, Result
 from team.models import Team
 from players.models import Player
-from core.similarity import same_name
+from core.similarity import is_similar, same_name
 
 class TeamSelect(forms.Select):
     """Select de equipos que lleva la foto de cada uno (data-photo) para pintar la card del formulario."""
@@ -33,9 +33,6 @@ class MatchForm(forms.ModelForm):
     FRIENDLY = "amistoso"
     MODES = [(COMPETITIVE, _("Competitivo")), (FRIENDLY, _("Amistoso"))]
 
-    GROUP = "grupo"
-    MANUAL = "manual"
-    RIVAL_SOURCES = [(GROUP, _("Equipo del grupo")), (MANUAL, _("Escribir nombre"))]
     SIDES = [("local", _("En casa")), ("visiting", _("Fuera"))]
 
     # Competición del enfrentamiento: la del espacio (``Club.competition``). Solo informa, por eso
@@ -44,10 +41,6 @@ class MatchForm(forms.ModelForm):
                                     disabled=True, required=False)
     mode = forms.ChoiceField(label=_("Modo"), choices=MODES, initial=COMPETITIVE, required=False,
                              widget=forms.RadioSelect)
-    # Solo en amistosos: el rival puede ser un equipo del grupo o un nombre escrito a mano
-    # (no se crea ningún equipo; el nombre se guarda en el propio partido).
-    rival_source = forms.ChoiceField(label=_("Rival"), choices=RIVAL_SOURCES, initial=GROUP, required=False,
-                                     widget=forms.RadioSelect)
     own_side = forms.ChoiceField(label=_("Tu equipo juega"), choices=SIDES, initial="local", required=False,
                                  widget=forms.RadioSelect)
     # Rival del equipo propio (un equipo del grupo): con ``own_side`` decide quién es local y quién
@@ -67,7 +60,8 @@ class MatchForm(forms.ModelForm):
             'round_number': forms.NumberInput(attrs={'min': 1, 'max': 99, 'inputmode': 'numeric'}),
             'report_scope': forms.RadioSelect(),
             'report_other_competitions': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'rival_name': forms.TextInput(attrs={'placeholder': _('Ej.: Pádel Norte'), 'autocomplete': 'off'}),
+            'rival_name': forms.TextInput(attrs={'placeholder': _('Ej.: Pádel Norte'), 'autocomplete': 'off', 'maxlength': 100,
+                                                 'list': 'rival-suggestions'}),
             'start_time': forms.TimeInput(format='%H:%M', attrs={
                 'type': 'text', 'inputmode': 'numeric', 'placeholder': '20:30', 'maxlength': 5, 'autocomplete': 'off',
                 'pattern': '([01][0-9]|2[0-3]):[0-5][0-9]', 'data-time-24h': '', 'title': _('Hora en formato 24 h, por ejemplo 20:30')}),
@@ -107,8 +101,17 @@ class MatchForm(forms.ModelForm):
         if not self.instance.pk:
             self.initial['report_scope'] = self.default_report_scope
         self.own_team = club.own_team if club else None
+        self._manual_team = None  # equipo ya existente con el que se une el rival escrito
+        self._new_rival = None  # (nombre, localización) del rival escrito que hay que crear al guardar
+        self.rival_matches = []  # equipos existentes con un nombre igual o parecido al escrito (aviso al capitán)
+        self.rival_exact = False  # True si alguno se llama igual: solo se puede unir, no crear otro
+        self._neutral = False
         # El equipo propio siempre se puede elegir, aunque no esté marcado "en el grupo".
-        teams = Team.objects.filter(club=club).filter(Q(in_group=True) | Q(is_own=True)).order_by('-is_own', 'name')
+        # Y los rivales escritos a mano en partidos anteriores (fuera del grupo): se reutilizan sin darlos de alta.
+        played = Team.objects.filter(club=club, in_group=False, is_own=False).filter(
+            Q(local_matches__club=club) | Q(visiting_matches__club=club)).values('pk')
+        teams = Team.objects.filter(club=club).filter(
+            Q(in_group=True) | Q(is_own=True) | Q(pk__in=played)).order_by('-is_own', 'name')
         missing_team = _("Uno de los equipos no existe.")
         self.fields['rival'].queryset = teams.filter(is_own=False)
         self.fields['rival'].empty_label = _("Elige equipo")
@@ -211,25 +214,50 @@ class MatchForm(forms.ModelForm):
         """Si no se envía modo, es competitivo."""
         return self.cleaned_data.get('mode') or self.COMPETITIVE
 
-    def clean_rival_source(self):
-        """Si no se envía, el rival es un equipo del grupo."""
-        return self.cleaned_data.get('rival_source') or self.GROUP
-
     def clean_own_side(self):
         """Si no se envía, el equipo propio juega como local."""
         return self.cleaned_data.get('own_side') or "local"
 
     @property
-    def manual_rival(self):
-        """True si el formulario está en amistoso con el rival escrito a mano (para pintarlo)."""
+    def is_neutral_type(self):
+        """True si el tipo elegido siempre se juega en sede neutral (Play Off de la SNP), para pintar el formulario."""
         mode = self['mode'].value() or self.COMPETITIVE
-        return mode == self.FRIENDLY and self['rival_source'].value() == self.MANUAL
+        match_type = self['match_type'].value() or self.rules.default_type
+        return mode != self.FRIENDLY and match_type in self.rules.neutral_types
 
-    def _clean_manual_rival(self, cleaned):
-        """Amistoso contra un rival escrito a mano: el propio en su lado y el otro vacío."""
+    @property
+    def typed_rival(self):
+        """True si el rival se escribe por su nombre (amistoso o sede neutral), para pintar el formulario."""
+        mode = self['mode'].value() or self.COMPETITIVE
+        return mode == self.FRIENDLY or self.is_neutral_type
+
+    @property
+    def hide_place(self):
+        """True si no se pregunta el lugar: amistoso en casa (es el del equipo propio)."""
+        mode = self['mode'].value() or self.COMPETITIVE
+        return mode == self.FRIENDLY and self.own_side_value != "visiting"
+
+    def _rival_candidates(self):
+        """Equipos del club (del grupo o no) con los que puede coincidir un rival escrito: los de su división y los
+        sin división."""
+        teams = Team.objects.filter(club=self.club, is_own=False)
+        division = self.own_team.division if self.own_team else ""
+        return list(teams.filter(division__in=[division, ""]) if division else teams)
+
+    @property
+    def rival_suggestions(self):
+        """Nombres de los equipos existentes, para sugerirlos al escribir el rival."""
+        return [t.name for t in self._rival_candidates()] if self.own_team else []
+
+    def _clean_typed_rival(self, cleaned, neutral=False):
+        """Rival escrito por su nombre (amistoso o Play Off). Si coincide con un equipo existente, del grupo o no,
+        se avisa al capitán y elige unirlo a ese equipo o crear uno nuevo (``rival_link``: su id o «new»). Un
+        equipo nuevo se crea al guardar, fuera del grupo. La localización se pide en la sede neutral y cuando se
+        juega fuera; jugando en casa se usa la del equipo propio."""
         for name in ('local', 'visiting'):
             self.errors.pop(name, None)
         rival_name = " ".join((cleaned.get('rival_name') or "").split())
+        location = " ".join((cleaned.get('location') or "").split())
         if not rival_name:
             self.add_error('rival_name', _("Escribe el nombre del equipo rival."))
             return cleaned
@@ -238,30 +266,55 @@ class MatchForm(forms.ModelForm):
         if same_name(rival_name, self.own_team.name):
             self.add_error('rival_name', _("El rival no puede llamarse igual que tu equipo."))
             return cleaned
-        cleaned['rival_name'] = rival_name
-        own_local = cleaned.get('own_side') != "visiting"
+        own_local = neutral or cleaned.get('own_side') != "visiting"
+        if not own_local or neutral:
+            if not location:
+                self.add_error('location', _("Escribe la localización de la sede.") if neutral
+                               else _("Escribe la localización del equipo rival."))
+        matches = [t for t in self._rival_candidates() if is_similar(rival_name, t.name)]
+        exact = any(same_name(rival_name, t.name) for t in matches)
+        choice = (self.data.get('rival_link') or "").strip()
+        chosen = next((t for t in matches if choice.isdigit() and t.pk == int(choice)), None)
+        if matches and not chosen and not (choice == "new" and not exact):
+            self.rival_matches, self.rival_exact = matches, exact
+            self.add_error('rival_name', _("Ya existe un equipo con un nombre igual o parecido. Elige si es el mismo o crea uno nuevo."))
+        if self.errors:
+            return cleaned
+        if chosen:
+            self._manual_team = chosen
+        else:
+            self._new_rival = (rival_name, location if not own_local else "")
+        cleaned['rival_name'] = ""
         cleaned['local'] = self.own_team if own_local else None
         cleaned['visiting'] = None if own_local else self.own_team
+        if own_local and not neutral and not location:
+            cleaned['location'] = self.own_team.location or ""
         return cleaned
 
     def clean(self):
-        """Ajusta el tipo de un amistoso y comprueba los equipos.
+        """Ajusta el tipo de un amistoso, la sede neutral del Play Off y comprueba los equipos.
 
-        Los dos equipos deben ser distintos y uno de ellos el propio del club. En un
-        amistoso el rival puede escribirse a mano: entonces ese lado queda vacío y solo se
-        guarda su nombre en el partido.
+        Los dos equipos deben ser distintos y uno de ellos el propio del club. En un amistoso y en un Play
+        Off de la SNP (sede neutral, sin local ni visitante) el rival se escribe por su nombre: se une al
+        equipo existente que coincida (con aviso al capitán) o se crea uno nuevo fuera del grupo.
         """
         cleaned = super().clean()
         # La jornada solo se guarda en un enfrentamiento de liga.
         if self.has_rounds and (cleaned.get('mode') == self.FRIENDLY or cleaned.get('match_type') != self.rules.league_type):
             cleaned['round_number'] = None
         # Un amistoso no tiene tipo (enfrentamiento, reto, play off): se guarda como AMISTOSO.
-        if cleaned.get('mode') == self.FRIENDLY:
+        friendly = cleaned.get('mode') == self.FRIENDLY
+        if friendly:
             self.errors.pop('match_type', None)
             cleaned['match_type'] = Match.AMISTOSO
-            if cleaned.get('rival_source') == self.MANUAL:
-                return self._clean_manual_rival(cleaned)
-        # El nombre escrito a mano solo vale para un amistoso contra un rival fuera del grupo.
+        # Los tipos de sede neutral no tienen lado: el propio ocupa el local solo para guardar el resultado.
+        self._neutral = not friendly and cleaned.get('match_type') in self.rules.neutral_types
+        if self._neutral:
+            cleaned['own_side'] = "local"
+        # Amistoso y sede neutral: el rival se escribe por su nombre (sin nombre, solo valen un equipo ya elegido).
+        if (friendly or self._neutral) and (cleaned.get('rival_name') or not (
+                cleaned.get('rival') or cleaned.get('local') or cleaned.get('visiting'))):
+            return self._clean_typed_rival(cleaned, neutral=self._neutral)
         cleaned['rival_name'] = ""
         rival = cleaned.get('rival')
         if rival and self.own_team is not None and not (cleaned.get('local') and cleaned.get('visiting')):
@@ -286,10 +339,28 @@ class MatchForm(forms.ModelForm):
                 )
         return cleaned
 
+    def _create_rival(self):
+        """Crea el rival escrito como equipo fuera del grupo (con la categoría, el país y la división del propio);
+        None si no hay que crear ninguno."""
+        if not self._new_rival:
+            return None
+        name, location = self._new_rival
+        own = self.own_team
+        return Team.objects.create(club=self.club, name=name, location=location, in_group=False,
+                                   gender=own.gender, country=own.country, division=own.division)
+
     def save(self, commit=True):
         """Guarda el enfrentamiento asignándolo al club del formulario."""
         match = super().save(commit=False)
         match.club = self.club
+        match.neutral_venue = self._neutral
+        rival = self._manual_team or self._create_rival()
+        if rival:
+            # El rival escrito ocupa el lado que no es el del equipo propio.
+            if match.local_id == self.own_team.pk:
+                match.visiting = rival
+            else:
+                match.local = rival
         if commit:
             match.save()
         return match

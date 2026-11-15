@@ -105,6 +105,16 @@ class ReportTests(TestCase):
         self.assertEqual(len(report["precedents"]), 2)  # solo los de "Pádel Norte"
         self.assertTrue(render_report(report).startswith(b"%PDF"))
 
+    def test_neutral_venue_report_has_no_local_or_visitante(self):
+        Match.objects.filter(pk=self.match.pk).update(local=self.club.own_team, visiting=self.rival,
+                                                      match_type=Match.PLAYOFF, neutral_venue=True)
+        self.match.refresh_from_db()
+        report = build_report(self.call)
+        self.assertEqual(report["venue_label"], "sede neutral")
+        pdf = render_report(report)
+        self.assertTrue(pdf.startswith(b"%PDF"))
+        self.assertEqual(pdf_pages(pdf), 2)
+
     def test_competitive_scope_leaves_friendlies_out(self):
         # Un amistoso reciente contra el mismo rival con otros jugadores ganando
         friendly = Match.objects.create(club=self.club, local=self.rival, visiting=self.club.own_team,
