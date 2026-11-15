@@ -93,8 +93,8 @@ def _points_text(value):
 
 
 def _rounds_text(value):
-    """Número entero de jornadas como texto."""
-    return number_format(round(value), use_l10n=True)
+    """Jornadas como texto: entero, o con un decimal si lo tiene (la media)."""
+    return number_format(int(value) if float(value).is_integer() else round(value, 1), use_l10n=True)
 
 
 def compare_to_squad(player, squad, log, signup, snp_rows=None, league=None):
@@ -159,7 +159,8 @@ def compare_to_squad(player, squad, log, signup, snp_rows=None, league=None):
         mine = value(player)
         mean, low, high = sum(values) / len(values), min(values), max(values)
         rank = 1 + sum(1 for v in values if v > mine + 1e-9)
-        lo_axis, hi_axis = axis or (max(0, low - (high - low) * .15 - 1), high + (high - low) * .15 + 1)
+        # Puntos SNP y jornadas: la barra va exactamente del menor al mayor, así el máximo queda al final (con todos iguales, se centra).
+        lo_axis, hi_axis = axis or ((low, high) if high > low else (low - 1, high + 1))
 
         def pos(x):
             """Posición de ``x`` en la barra, en tanto por ciento entero y sin salirse de los bordes."""

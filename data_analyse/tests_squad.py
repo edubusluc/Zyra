@@ -72,6 +72,17 @@ class CompareLogicTests(SimpleTestCase):
         pct = next(r for r in res["rows"] if r["key"] == "pct")
         self.assertEqual((pct["rank"], pct["of"], pct["base"]), (1, 4, "2 de 2 partidos"))
 
+    def test_maximum_sits_at_the_end_of_the_bar(self):
+        res = self.compare(league=({1: 2, 2: 0, 3: 1, 4: 1}, 2))
+        row = next(r for r in res["rows"] if r["key"] == "league")
+        self.assertEqual((row["pos_me"], row["pos_high"], row["pos_low"]), (98, 98, 2))
+        self.assertEqual(row["mean"], "1")
+
+    def test_equal_values_are_centred(self):
+        res = self.compare(league=({1: 2, 2: 2, 3: 2, 4: 2}, 2))
+        row = next(r for r in res["rows"] if r["key"] == "league")
+        self.assertEqual(row["pos_me"], 50)
+
     def test_player_outside_squad(self):
         self.assertIsNone(squad_compare.compare_to_squad(Fake(99), self.squad, self.log, self.signup))
 
