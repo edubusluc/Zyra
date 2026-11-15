@@ -6,6 +6,9 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 ## 15/11/2026 · «Frente a la plantilla» en una liga de pocas jornadas
 
 - Si nadie ha jugado aún 3 partidos (principio de temporada o una liga LAPI con solo 2 jornadas), «Frente a la plantilla» compara con los que lleve el jugador que más ha jugado, así que salen también el % de victorias, el de sets y el de convocatorias.
+## 15/11/2026 · Misma fuente en todos los globos «i»
+
+- Los globos «i» de toda la app (estadísticas, alta de equipo, convocatoria, formularios) y los de las gráficas usan la fuente de cuerpo con peso normal, sin heredar la fuente condensada en mayúsculas del título donde están.
 
 ## 15/11/2026 · Estadísticas: «Frente a la plantilla»
 
