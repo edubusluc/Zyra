@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 15/11/2026 · Equipos de Inicio clicables
+
+- Las píldoras de equipo de la parte superior de Inicio son un enlace entero a las estadísticas del equipo de su competición (SNP o LAPI según el pulsado), con foco visible y un solo enlace por píldora; «Pon la categoría» sigue siendo su propio enlace.
+
 ## 15/11/2026 · Color y escudo de cada competición, desde el back-office
 
 - Nueva entrada «Aspecto» en el back-office (Competiciones): el personal ajusta el color de cada competición y, si hay permiso para usarlo, sube su escudo en imagen (PNG), que sustituye al escudo 3D genérico en el alta de equipo. Las reglas y las competiciones nuevas siguen en el código.

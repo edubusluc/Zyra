@@ -235,6 +235,17 @@ class UnifiedSpacesTests(TestCase):
             self.assertContains(page, "Categoría 500")
         self.assertContains(page, "Sin división")  # equipo LAPI sin división
 
+    def test_home_team_pills_link_to_team_statistics_of_their_competition(self):
+        page = self.client.get(reverse("home"))
+        stats = reverse("team_statistics")
+        for code in ("snp", "lapi"):
+            self.assertContains(page, f'href="{stats}?en={code}"')
+        html = page.content.decode()
+        self.assertEqual(html.count('class="stretched-link"'), 2)  # un solo enlace por píldora
+        lapi = self.client.get(f"{stats}?en=lapi")
+        self.assertEqual(lapi.status_code, 200)
+        self.assertEqual(lapi.wsgi_request.club.id, self.lapi.id)
+
     def test_roster_leaves_the_menu_only_for_player_in_every_team(self):
         url = reverse("list_players")
         self.assertContains(self.client.get(reverse("home")), url)  # capitán en SNP: la ve
