@@ -78,6 +78,8 @@ def venue_matches(club, season=None, match_type=None):
     out = {'local': dict.fromkeys(('won', 'lost', 'drawn', 'total'), 0),
            'visiting': dict.fromkeys(('won', 'lost', 'drawn', 'total'), 0)}
     for m in rivals.closed_matches(club, season, match_type):
+        if m.neutral_venue:
+            continue  # sede neutral: ni local ni visitante
         row = out['local' if m.own_is_local else 'visiting']
         row['total'] += 1
         outcome = rivals.outcome(m)

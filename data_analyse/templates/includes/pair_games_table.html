@@ -17,7 +17,7 @@
           <th scope="row">
             <a href="{% url 'call_for_match' g.match_public_id %}#partido-{{ g.n_game }}">{{ g.date|date_long }}</a>
           </th>
-          <td>{{ g.rival }} <span class="st-muted">({% if g.local %}{% translate "local" %}{% else %}{% translate "visitante" %}{% endif %})</span></td>
+          <td>{{ g.rival }} <span class="st-muted">({% if g.neutral %}{% translate "sede neutral" %}{% elif g.local %}{% translate "local" %}{% else %}{% translate "visitante" %}{% endif %})</span></td>
           <td>{% if current_club.rules.ordered_pairs %}{{ g.n_game }}{% else %}{{ g.type_label }}{% if g.round %} · J{{ g.round }}{% endif %}{% endif %}</td>
           <td>
             <span class="{% if g.won %}st-up{% else %}st-down{% endif %}">{% if g.won %}{% translate "V" context "abreviatura de victoria" %}{% else %}{% translate "D" context "abreviatura de derrota" %}{% endif %}</span>

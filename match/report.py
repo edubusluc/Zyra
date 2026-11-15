@@ -39,6 +39,13 @@ def _own_score(match):
     return f"{local}-{visiting}" if match.own_is_local else f"{visiting}-{local}"
 
 
+def _venue_label(match):
+    """«local», «visitante» o «sede neutral», en minúscula, para las frases del informe."""
+    if match.neutral_venue:
+        return pgettext("sede, en minúscula", "sede neutral")
+    return pgettext("sede, en minúscula", "local") if match.own_is_local else pgettext("sede, en minúscula", "visitante")
+
+
 def build_report(call):
     """Reúne todos los datos del informe de la convocatoria ``call`` en un diccionario.
 
@@ -49,7 +56,7 @@ def build_report(call):
     match = call.match
     club = match.club
     own_local = match.own_is_local
-    venue_label = pgettext("sede, en minúscula", "local") if own_local else pgettext("sede, en minúscula", "visitante")
+    venue_label = _venue_label(match)
     rival_team = match.visiting if own_local else match.local
     rival = match.rival_label
 
@@ -58,7 +65,7 @@ def build_report(call):
     competitive_only = match.report_competitive_only
     log = [g for g in club_game_log(club, match_type=COMPETITIVE if competitive_only else None)
            if g['date'] < match.start_date]
-    forms, pairs = advisor.build_forms(log, called, own_local)
+    forms, pairs = advisor.build_forms(log, called, None if match.neutral_venue else own_local)
     player_rows = sorted(forms.values(), key=lambda f: (f.strength, f.snp), reverse=True)
 
     # Rachas destacadas
@@ -87,7 +94,7 @@ def build_report(call):
         won = _outcome(m) == "V"
         season["played"] += 1
         season["won"] += won
-        if m.own_is_local == own_local:
+        if not match.neutral_venue and not m.neutral_venue and m.own_is_local == own_local:
             season["venue_played"] += 1
             season["venue_won"] += won
 
@@ -101,7 +108,7 @@ def build_report(call):
         {
             "date": m.start_date,
             "season": m.season,
-            "venue": _("Local") if m.own_is_local else _("Visitante"),
+            "venue": _("Sede neutral") if m.neutral_venue else (_("Local") if m.own_is_local else _("Visitante")),
             "score": _own_score(m),
             "outcome": _outcome(m),
         }
@@ -218,10 +225,10 @@ def suggested_lineups(call):
     if len(called) < comp.players_per_lineup:
         return []
     own_local = match.own_is_local
-    venue_label = pgettext("sede, en minúscula", "local") if own_local else pgettext("sede, en minúscula", "visitante")
+    venue_label = _venue_label(match)
     log = [g for g in club_game_log(match.club, match_type=COMPETITIVE if match.report_competitive_only else None)
            if g['date'] < match.start_date]
-    forms, pairs = advisor.build_forms(log, called, own_local)
+    forms, pairs = advisor.build_forms(log, called, None if match.neutral_venue else own_local)
     lineup_a, lineup_b = advisor.recommend(forms, pairs, [p.id for p in called], comp)
     result = []
     for key, lineup, compare_to in (("A", lineup_a, None), ("B", lineup_b, lineup_a)):

@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 15/11/2026 · Play Off en sede neutral y rival escrito a mano
+
+- Los Play Off de la SNP se crean sin «En casa / Fuera»: se juegan en una sede fijada por la organización, que se escribe en «Lugar». No cuentan en Local y visitante (sí en el balance total, las rachas y los rivales) y la ficha, el listado, las imágenes y el informe PDF no muestran Local ni Visitante.
+- En Play Off y en Amistoso el rival puede escribirse con su nombre y su localidad: se crea como equipo fuera del grupo (si ya existe uno igual, se reutiliza) y sale en el selector de rivales de los siguientes partidos.
+
 ## 15/11/2026 · Misma fuente en todos los globos «i»
 
 - Los globos «i» de toda la app (estadísticas, alta de equipo, convocatoria, formularios) y los de las gráficas usan la fuente de cuerpo con peso normal, sin heredar la fuente condensada en mayúsculas del título donde están.

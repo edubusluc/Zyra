@@ -67,6 +67,7 @@ def _entry(match):
         "own": own,
         "other": other,
         "local": match.own_is_local,
+        "neutral": match.neutral_venue,
         "friendly": match.is_friendly,
         "type_label": match.type_label,
         "round": match.round_number,

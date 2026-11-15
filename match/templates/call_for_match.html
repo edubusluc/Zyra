@@ -25,7 +25,7 @@
             {% if match.league_points is not None %}<span class="z-tag is-lime">{% blocktranslate count n=match.league_points %}{{ n }} punto de liga{% plural %}{{ n }} puntos de liga{% endblocktranslate %}</span>{% endif %}</p>
         </div>
         {% endif %}
-        <div class="z-versus-team">{% if stage_view %}{% include 'includes/crest_3d.html' with team=match.local name=match.local_name side="local" %}<span class="z-versus-name">{{ match.local_name }}<small>{% translate "Local" %}{% if match.local.division %} · {{ match.local.get_division_display }}{% endif %}</small></span>{% else %}<span class="z-versus-name"><small>{% translate "Local" %}</small>{{ match.local_name }}</span>{% endif %}</div>
+        <div class="z-versus-team">{% if stage_view %}{% include 'includes/crest_3d.html' with team=match.local name=match.local_name side="local" %}<span class="z-versus-name">{{ match.local_name }}<small>{% if not match.neutral_venue %}{% translate "Local" %}{% if match.local.division %} · {% endif %}{% endif %}{% if match.local.division %}{{ match.local.get_division_display }}{% endif %}</small></span>{% else %}<span class="z-versus-name">{% if not match.neutral_venue %}<small>{% translate "Local" %}</small>{% endif %}{{ match.local_name }}</span>{% endif %}</div>
         <div class="z-versus-mid">
                         <div class="z-versus-vs{% if outcome == 'D' %} is-loss{% elif outcome == 'E' %} is-draw{% endif %}">{% if score_local %}{{ score_local }}–{{ score_visiting }}{% else %}VS{% endif %}</div>
             {% if stage_view %}<span class="z-stage-sub{% if outcome == 'V' %} is-win{% elif outcome == 'D' %} is-loss{% endif %}">{% if outcome %}{{ outcome_label }}{% else %}{{ phase.label }}{% endif %}</span>{% endif %}
@@ -33,7 +33,7 @@
             {% if stage_view and my_status and match.draft_mode and not match.no_show %}{% include 'includes/stage_me.html' %}{% endif %}
             {% if stage_view and can_manage and not match.draft_mode %}{% include 'includes/ficha_closed_actions.html' %}{% endif %}
         </div>
-        <div class="z-versus-team">{% if stage_view %}{% include 'includes/crest_3d.html' with team=match.visiting name=match.visiting_name side="visiting" %}<span class="z-versus-name">{{ match.visiting_name }}<small>{% translate "Visitante" %}{% if match.visiting.division %} · {{ match.visiting.get_division_display }}{% endif %}</small></span>{% else %}<span class="z-versus-name"><small>{% translate "Visitante" %}</small>{{ match.visiting_name }}</span>{% endif %}</div>
+        <div class="z-versus-team">{% if stage_view %}{% include 'includes/crest_3d.html' with team=match.visiting name=match.visiting_name side="visiting" %}<span class="z-versus-name">{{ match.visiting_name }}<small>{% if not match.neutral_venue %}{% translate "Visitante" %}{% if match.visiting.division %} · {% endif %}{% endif %}{% if match.visiting.division %}{{ match.visiting.get_division_display }}{% endif %}</small></span>{% else %}<span class="z-versus-name">{% if not match.neutral_venue %}<small>{% translate "Visitante" %}</small>{% endif %}{{ match.visiting_name }}</span>{% endif %}</div>
     </div>
     {% if not stage_view %}
     <aside class="z-ficha-side">

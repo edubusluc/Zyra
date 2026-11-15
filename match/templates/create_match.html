@@ -11,7 +11,7 @@
     <div class="alert-message">{{ error }}</div>
     {% endfor %}
 
-    <form method="POST" action="{{ request.get_full_path }}" class="z-match-form" data-match-form novalidate data-loading-text="{% translate 'Creando el enfrentamiento…' %}" data-own-location="{{ form.own_team.location|default:'' }}" data-own-time="{{ form.own_team.default_time|time:'H:i' }}">
+    <form method="POST" action="{{ request.get_full_path }}" class="z-match-form" data-match-form data-neutral-types="{{ form.rules.neutral_types|join:',' }}" novalidate data-loading-text="{% translate 'Creando el enfrentamiento…' %}" data-own-location="{{ form.own_team.location|default:'' }}" data-own-time="{{ form.own_team.default_time|time:'H:i' }}">
         {% csrf_token %}
         <input type="hidden" name="team" value="{{ request.club.public_id }}">
 
@@ -54,7 +54,7 @@
         {% for error in form.round_number.errors %}<div class="alert-message">{{ error }}</div>{% endfor %}
         {% endif %}
 
-        <fieldset class="z-mode" data-rival-source-row{% if form.mode.value != "amistoso" %} hidden{% endif %}>
+        <fieldset class="z-mode" data-rival-source-row{% if form.mode.value != "amistoso" and not form.is_neutral_type %} hidden{% endif %}>
             <legend class="form-label">{{ form.rival_source.label }}</legend>
             <div class="z-segmented z-mode-options">
                 {% for radio in form.rival_source %}
@@ -72,12 +72,15 @@
         <div class="z-manual-rival" data-manual-rival{% if not form.manual_rival %} hidden{% endif %}>
             <p>
                 {{ form.rival_name.label_tag }} {{ form.rival_name }}
-                <small class="text-muted d-block mt-1">{% translate "No se añade a tu grupo de equipos: solo se guarda el nombre en este enfrentamiento." %}</small>
             </p>
             {% for error in form.rival_name.errors %}<div class="alert-message">{{ error }}</div>{% endfor %}
+            <p>
+                {{ form.rival_location.label_tag }} {{ form.rival_location }}
+            </p>
+            {% for error in form.rival_location.errors %}<div class="alert-message">{{ error }}</div>{% endfor %}
         </div>
 
-        <fieldset class="z-mode">
+        <fieldset class="z-mode" data-own-side-row{% if form.is_neutral_type %} hidden{% endif %}>
             <legend class="form-label">{{ form.own_side.label }}</legend>
             <div class="z-segmented z-mode-options">
                 {% for radio in form.own_side %}
@@ -98,7 +101,7 @@
 
         <p>
             {{ form.location.label_tag }} {{ form.location }}
-            <small class="text-muted d-block mt-1">{% translate "Por defecto, la localidad del equipo local. Escribe la dirección del club para que «Cómo llegar» funcione." %}</small>
+            <span data-place-help{% if form.is_neutral_type %} hidden{% endif %}><small class="text-muted d-block mt-1">{% translate "Por defecto, la localidad del equipo local. Escribe la dirección del club para que «Cómo llegar» funcione." %}</small></span>
         </p>
 
         <details class="z-more-options">
@@ -136,9 +139,9 @@
     <p class="z-create-preview-date" data-preview-date>{% translate "Elige la fecha" %}</p>
     <p class="z-create-preview-meta" data-preview-meta></p>
     <div class="z-create-preview-teams">
-        <span><b data-preview-local></b><small>{% translate "Local" %}</small></span>
+        <span><b data-preview-local></b><small data-preview-side>{% translate "Local" %}</small></span>
         <i aria-hidden="true">VS</i>
-        <span><b data-preview-visiting></b><small>{% translate "Visitante" %}</small></span>
+        <span><b data-preview-visiting></b><small data-preview-side>{% translate "Visitante" %}</small></span>
     </div>
 </aside>
 </div>

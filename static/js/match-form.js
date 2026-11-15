@@ -25,11 +25,21 @@
     const checked = form.querySelector(`input[name="${name}"]:checked`);
     return checked ? checked.value : '';
   }
+  // Tipos que siempre se juegan en sede neutral (Play Off de la SNP): sin local ni visitante y con rival escrito.
+  const neutralTypes = (form.dataset.neutralTypes || '').split(',').filter(Boolean);
+  const ownSideRow = form.querySelector('[data-own-side-row]');
+  const placeHelp = form.querySelector('[data-place-help]');
+  function isNeutral() {
+    return checkedValue('mode') !== 'amistoso' && !!typeSelect && neutralTypes.includes(typeSelect.value);
+  }
   function syncMode() {
     const friendly = checkedValue('mode') === 'amistoso';
-    const manual = friendly && checkedValue('rival_source') === 'manual';
+    const neutral = isNeutral();
+    const manual = (friendly || neutral) && checkedValue('rival_source') === 'manual';
     if (typeRow) typeRow.hidden = friendly;
-    if (sourceRow) sourceRow.hidden = !friendly;
+    if (sourceRow) sourceRow.hidden = !(friendly || neutral);
+    if (ownSideRow) ownSideRow.hidden = neutral;
+    if (placeHelp) placeHelp.hidden = neutral;
     if (groupRival) groupRival.hidden = manual;
     if (manualRival) manualRival.hidden = !manual;
     // Los desplegables ocultos no deben bloquear el envío por ser obligatorios.
@@ -38,6 +48,7 @@
   }
   radios.forEach((r) => r.addEventListener('change', (event) => {
     syncMode();
+    syncDefaults();
     if (event.target.name === 'rival_source' && event.target.value === 'manual') {
       const input = manualRival && manualRival.querySelector('input[type="text"]');
       if (input) input.focus();
@@ -52,6 +63,8 @@
       const mode = form.querySelector(`input[name="mode"][value="${friendly ? 'amistoso' : 'competitivo'}"]`);
       if (mode) { mode.checked = true; mode.dispatchEvent(new Event('change', { bubbles: true })); }
       if (!friendly) typeSelect.value = kindSelect.value;
+      syncMode();
+      syncDefaults();
       syncRound();
     });
   }
@@ -72,8 +85,15 @@
   const place = form.querySelector('input[name="location"]');
   const rivalSelect = form.querySelector('select[name="rival"]');
   let placeEdited = place && place.value !== '' && place.value !== (form.dataset.ownLocation || '');
+  const rivalPlace = form.querySelector('input[name="rival_location"]');
+  function manualNow() {
+    return !!manualRival && !manualRival.hidden;
+  }
   function defaultPlace() {
+    // Sede neutral: la fija la organización, se escribe a mano.
+    if (isNeutral()) return '';
     if (checkedValue('own_side') !== 'visiting') return form.dataset.ownLocation || '';
+    if (manualNow()) return rivalPlace ? rivalPlace.value : '';
     const option = rivalSelect && rivalSelect.options[rivalSelect.selectedIndex];
     return (option && option.dataset.location) || '';
   }
@@ -82,6 +102,7 @@
     place.addEventListener('input', () => { placeEdited = true; });
     form.querySelectorAll('input[name="own_side"]').forEach((r) => r.addEventListener('change', syncPlace));
     if (rivalSelect) rivalSelect.addEventListener('change', syncPlace);
+    if (rivalPlace) rivalPlace.addEventListener('input', syncPlace);
   }
 
   // Hora: la habitual del equipo propio si juega en casa; en visitante se deja en blanco. Si la
@@ -90,7 +111,7 @@
   let timeEdited = startTime && startTime.value !== '' && startTime.value !== (form.dataset.ownTime || '');
   function syncTime() {
     if (!startTime || timeEdited) return;
-    startTime.value = checkedValue('own_side') === 'visiting' ? '' : (form.dataset.ownTime || '');
+    startTime.value = (isNeutral() || checkedValue('own_side') === 'visiting') ? '' : (form.dataset.ownTime || '');
   }
   if (startTime) {
     startTime.addEventListener('input', () => { timeEdited = true; });
@@ -112,6 +133,9 @@
     select.addEventListener('change', sync);
     sync();
   });
+
+  // Al cambiar de tipo o de rival se recalculan el lugar y la hora por defecto (sin pisar lo escrito a mano).
+  function syncDefaults() { syncPlace(); syncTime(); }
 
   // Hora en 24 h con el mismo aspecto que el resto de campos: escribe 2030 y queda 20:30 (S-12).
   const time = form.querySelector('[data-time-24h]');
@@ -140,9 +164,10 @@
       const option = rivalSelect && rivalSelect.options[rivalSelect.selectedIndex];
       const rival = manual ? (field('rival_name').value || '') : (option && option.value ? option.textContent.trim() : '');
       const own = preview.dataset.ownName;
-      const home = checkedValue('own_side') !== 'visiting';
+      const home = isNeutral() || checkedValue('own_side') !== 'visiting';
       set('local', (home ? own : rival) || '—');
       set('visiting', (home ? rival : own) || '—');
+      preview.querySelectorAll('[data-preview-side]').forEach((el) => { el.hidden = isNeutral(); });
     }
     form.addEventListener('input', syncPreview);
     form.addEventListener('change', syncPreview);

@@ -33,6 +33,9 @@ class Competition:
     alinean por puntos y cada partido vale distinto); en la LAPI las parejas se cruzan por
     sorteo y Estadísticas no muestra el balance por número de partido ni el de 3 y 2 puntos.
 
+    ``neutral_types`` son los tipos que siempre se juegan en una sede fijada por la organización (SNP: Play Off):
+    no tienen equipo local ni visitante y no cuentan en las estadísticas de Local y visitante.
+
     ``max_roster`` es el máximo de jugadores de la plantilla (LAPI 15): al copiar jugadores se avisa
     si se pasa, sin impedirlo. ``no_show`` permite marcar un enfrentamiento como «No presentado» (el que no se presenta
     pierde todos los partidos; no cuenta para jugadores, parejas ni asistencia) y
@@ -66,6 +69,7 @@ class Competition:
     countries: tuple = ()
     full_name: str = ""
     color: str = "#B4F100"
+    neutral_types: tuple = ()
 
     @property
     def games(self):
@@ -131,6 +135,7 @@ SNP = Competition(
     injury_completes=True,
     pair_no_show=True,
     countries=("ES", "MX", "IT", "PT", "SE"),
+    neutral_types=("playoff",),
     full_name=_("Series Nacionales de Pádel"),
     color="#DBA400",
 )

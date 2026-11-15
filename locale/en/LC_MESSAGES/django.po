@@ -17020,3 +17020,41 @@ msgid "Por encima de la media en la única medida"
 msgid_plural "Por encima de la media en las %(n)s medidas"
 msgstr[0] "Above average in the only measure"
 msgstr[1] "Above average in all %(n)s measures"
+
+msgid "Localidad del rival"
+msgstr "Rival's town or city"
+
+msgid "Ej.: Sevilla"
+msgstr "E.g. Seville"
+
+msgid "Escribe la localidad del equipo rival."
+msgstr "Enter the rival team's town or city."
+
+#, python-format
+msgid ""
+"Ya tienes un equipo llamado «%(team)s»: elígelo en «Equipo del grupo» o "
+"escribe el nombre completo de otro equipo."
+msgstr ""
+"You already have a team called \"%(team)s\": pick it under \"Team from the "
+"group\" or type the full name of a different team."
+
+msgid "Sede neutral"
+msgstr "Neutral venue"
+
+msgid "sede neutral"
+msgstr "neutral venue"
+
+msgctxt "sede, en minúscula"
+msgid "sede neutral"
+msgstr "neutral venue"
+
+#, python-format
+msgid ""
+"<b>%(own)s</b> vs <b>%(rival)s</b> · %(date)s · <font "
+"color='#B4F100'><b>%(venue)s</b></font> · temporada %(season)s"
+msgstr ""
+"<b>%(own)s</b> vs <b>%(rival)s</b> · %(date)s · <font "
+"color='#B4F100'><b>%(venue)s</b></font> · season %(season)s"
+
+msgid "CONVOCADOS · RENDIMIENTO"
+msgstr "CALLED-UP PLAYERS · PERFORMANCE"
