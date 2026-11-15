@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 15/11/2026 · «Frente a la plantilla» en una liga de pocas jornadas
+
+- Si nadie ha jugado aún 3 partidos (principio de temporada o una liga LAPI con solo 2 jornadas), «Frente a la plantilla» compara con los que lleve el jugador que más ha jugado, así que salen también el % de victorias, el de sets y el de convocatorias.
+
 ## 15/11/2026 · Estadísticas: «Frente a la plantilla»
 
 - La ficha del jugador (y «Yo») tiene una tarjeta nueva, justo después de «Forma reciente» y «Local y visitante», que compara al jugador con la plantilla: % de victorias, % de convocatorias a las que se apunta, % de sets ganados y puntos SNP (en LAPI, jornadas de liga jugadas). Cada medida muestra su cifra con la base, el puesto, la diferencia con la media y una barra con el rango de la plantilla.
