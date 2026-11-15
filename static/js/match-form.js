@@ -129,6 +129,10 @@
   // Al cambiar de tipo o de rival se recalculan el lugar y la hora por defecto (sin pisar lo escrito a mano).
   function syncDefaults() { syncPlace(); syncTime(); }
 
+  // Aviso de coincidencia del rival: se abre solo al volver del servidor.
+  const matchModal = document.getElementById('rivalMatchModal');
+  if (matchModal && window.bootstrap) window.bootstrap.Modal.getOrCreateInstance(matchModal).show();
+
   // Hora en 24 h con el mismo aspecto que el resto de campos: escribe 2030 y queda 20:30 (S-12).
   const time = form.querySelector('[data-time-24h]');
   if (time) {

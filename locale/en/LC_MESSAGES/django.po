@@ -17076,3 +17076,6 @@ msgstr "It's the same team"
 
 msgid "No, es un equipo nuevo"
 msgstr "No, it's a new team"
+
+msgid "Ya existe un equipo parecido"
+msgstr "A similar team already exists"
