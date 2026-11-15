@@ -174,3 +174,12 @@ class CrestPhotoTests(TestCase):
     def test_crest_is_optional(self):
         self.post()
         self.assertFalse(Club.objects.get(name="Pádel Norte").own_team.photo)
+
+
+class StageAssetsTests(TestCase):
+    """El escenario 3D recibe de la plantilla la URL real de three.js (en producción los estáticos llevan huella)."""
+
+    def test_stage_carries_the_three_js_url(self):
+        page = self.client.get(reverse("register_club"))
+        self.assertContains(page, 'data-three-src="')
+        self.assertContains(page, "vendor/three/three.min")
