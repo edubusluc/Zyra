@@ -2370,8 +2370,8 @@ button.st-chip { font-family: inherit; line-height: inherit; cursor: pointer; }
 .z-pick:has(input:focus-visible) { outline: 2px solid var(--z-lime); outline-offset: 2px; }
 /* Respuesta de disponibilidad: franja de color a la izquierda (siempre con icono y texto, el color no va solo) y,
    si se elige a quien dijo «No» o está pendiente, la tarjeta cambia de color y muestra «Lo has seleccionado». */
-.z-pick { overflow: hidden; }
-.z-pick[data-answer]::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 5px; background: var(--z-border-strong); }
+.z-pick[data-answer]::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 5px; background: var(--z-border-strong); border-radius: calc(var(--z-radius) - 1px) 0 0 calc(var(--z-radius) - 1px); }
+/* Sin overflow:hidden en la tarjeta: recortaría el globo del «i» (la franja ya se redondea sola). */
 .z-pick[data-answer="yes"]::before { background: var(--z-lime); }
 .z-pick[data-answer="no"]::before { background: var(--z-danger); }
 .z-pick[data-answer="maybe"]::before { background: var(--z-warning); }
