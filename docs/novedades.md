@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 15/11/2026 · Color y escudo de cada competición, desde el back-office
+
+- Nueva entrada «Aspecto» en el back-office (Competiciones): el personal ajusta el color de cada competición y, si hay permiso para usarlo, sube su escudo en imagen (PNG), que sustituye al escudo 3D genérico en el alta de equipo. Las reglas y las competiciones nuevas siguen en el código.
+
 ## 13/11/2026 · Selector de competición con escudo 3D al registrar un equipo
 
 - El alta de un equipo (título genérico «Añadir equipo» si ya tienes otro) empieza eligiendo país y competición en una lista con el escudo 3D de la competición a la derecha, con sus partidos, puntos, convocados mínimos y tipos de enfrentamiento. Los escudos son propios (color y siglas), no los oficiales.

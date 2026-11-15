@@ -14,6 +14,7 @@ from allauth.socialaccount.models import SocialAccount
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db.models import Count, F, OuterRef, Q, Subquery
 from django.http import Http404, HttpResponse, JsonResponse
@@ -26,9 +27,11 @@ from django.utils.translation import gettext as _, ngettext
 from django.views.decorators.http import require_POST
 
 from core import blocklist, email_verification, moderation
-from core.competitions import CHOICES as COMPETITION_CHOICES
+from core.competition_style import COLOR_RE
+from core.competitions import CHOICES as COMPETITION_CHOICES, COMPETITIONS
 from core.emails import send_photo_removed_email, send_unverified_account_email
-from core.models import BlockedEmail, Club, Invitation, Membership, PhotoCheck, PhotoRemoval, ServiceSwitch
+from core.images import process_image
+from core.models import BlockedEmail, Club, CompetitionStyle, Invitation, Membership, PhotoCheck, PhotoRemoval, ServiceSwitch
 from match.models import Match
 from core.services import CaptaincyError, delete_account, eligible_successors
 from players import snp_import, snp_requests, snp_service
@@ -1124,3 +1127,63 @@ def unverified_delete(request, user_id):
             audit(request, "account.delete", label=entry.username, email=entry.email)
             messages.success(request, _("Cuenta %(username)s eliminada.") % {"username": entry.username})
     return _back_to(request, "backoffice:unverified_list")
+
+
+# ---------- Aspecto de las competiciones ----------
+
+@staff_required
+def competition_list(request):
+    """Color y escudo en imagen de cada competición (solo personal). Las reglas siguen en el código."""
+    rows = {row.code: row for row in CompetitionStyle.objects.all()}
+    items = []
+    for rules in COMPETITIONS.values():
+        row = rows.get(rules.code)
+        items.append({
+            "rules": rules,
+            "color": row.color if row and COLOR_RE.match(row.color) else rules.color,
+            "default_color": rules.color,
+            "crest": row.crest.url if row and row.crest else "",
+        })
+    return render(request, "backoffice/competition_list.html", {"section": "competitions", "items": items})
+
+
+@staff_required
+@require_POST
+def competition_style_save(request, code):
+    """Guarda el color y el escudo de una competición (solo personal, POST) y vuelve a la lista."""
+    rules = COMPETITIONS.get(code)
+    if rules is None:
+        raise Http404
+    color = request.POST.get("color", "").strip()
+    if color and not COLOR_RE.match(color):
+        messages.error(request, _("El color tiene que ser un hexadecimal como #DBA400."))
+        return redirect("backoffice:competition_list")
+    row, _created = CompetitionStyle.objects.get_or_create(code=code)
+    changes = {}
+    # Sin ajuste propio (la casilla o el mismo color de la ficha) se guarda vacío y vale el de la ficha.
+    if request.POST.get("reset_color") or color.lower() == rules.color.lower():
+        color = ""
+    if color != row.color:
+        changes["color"] = color or "—"
+        row.color = color
+    upload = request.FILES.get("crest")
+    old_crest = row.crest.name if row.crest else ""
+    if upload:
+        try:
+            content = process_image(upload)
+        except ValidationError as error:
+            messages.error(request, error.messages[0])
+            return redirect("backoffice:competition_list")
+        row.crest.save(content.name, content, save=False)
+        changes["crest"] = "nuevo"
+    elif request.POST.get("remove_crest") and old_crest:
+        row.crest = None
+        changes["crest"] = "quitado"
+    row.save()
+    # El fichero anterior se borra una vez guardado el cambio.
+    if old_crest and (row.crest.name if row.crest else "") != old_crest:
+        row._meta.get_field("crest").storage.delete(old_crest)
+    if changes:
+        audit(request, "competition.style", label=str(rules.name), **changes)
+        messages.success(request, _("%(name)s guardada.") % {"name": rules.name})
+    return redirect("backoffice:competition_list")

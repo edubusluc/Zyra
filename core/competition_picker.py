@@ -8,6 +8,8 @@ equipo pertenece. Qué se muestra de cada una (color, países, partidos, puntos�
 """
 from team.models import Team
 
+from .competition_style import style_of
+
 
 def picker_entries(free, memberships):
     """
@@ -21,12 +23,14 @@ def picker_entries(free, memberships):
     entries = []
     for rules in COMPETITIONS.values():
         membership = taken.get(rules.code)
-        hex_color = rules.color.lstrip("#")
+        color, crest = style_of(rules)
+        hex_color = color.lstrip("#")
         entries.append({
             "code": rules.code,
             "name": str(rules.name),
             "full_name": str(rules.full_name),
-            "color": rules.color,
+            "color": color,
+            "crest": crest,
             "rgb": ", ".join(str(int(hex_color[i:i + 2], 16)) for i in (0, 2, 4)),
             "monogram": rules.code.upper(),
             "countries": list(rules.countries),

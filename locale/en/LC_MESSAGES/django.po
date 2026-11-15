@@ -16854,3 +16854,39 @@ msgstr "Team crest"
 
 msgid "Opcional. Sustituye al escudo de la competición. Un PNG con fondo transparente queda mejor."
 msgstr "Optional. Replaces the competition crest. A PNG with a transparent background looks best."
+
+msgid "El color tiene que ser un hexadecimal como #DBA400."
+msgstr "The colour must be a hex value such as #DBA400."
+
+msgid "%(name)s guardada."
+msgstr "%(name)s saved."
+
+msgid "Aspecto de las competiciones"
+msgstr "Competition appearance"
+
+msgid "Aspecto"
+msgstr "Appearance"
+
+msgid "Color del escudo y de las etiquetas de cada competición y, solo si hay permiso para usarlo, su escudo en imagen (PNG con fondo transparente), que sustituye al escudo 3D genérico al añadir un equipo. Las reglas y las competiciones nuevas se añaden en el código."
+msgstr "Crest and label colour of each competition and, only if we have permission to use it, its crest image (PNG with a transparent background), which replaces the generic 3D crest when adding a team. Rules and new competitions are added in the code."
+
+msgid "Color"
+msgstr "Colour"
+
+msgid "Escudo en imagen"
+msgstr "Crest image"
+
+msgid "Color de"
+msgstr "Colour of"
+
+msgid "Volver al color por defecto (%(color)s)"
+msgstr "Back to the default colour (%(color)s)"
+
+msgid "Escudo actual"
+msgstr "Current crest"
+
+msgid "Escudo en imagen de"
+msgstr "Crest image of"
+
+msgid "Quitar el escudo"
+msgstr "Remove the crest"
