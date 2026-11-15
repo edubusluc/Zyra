@@ -126,6 +126,38 @@ class ResultImageTests(ClosedMatchBase):
         self.assertEqual(response["Content-Type"], "image/jpeg")
         self.assertEqual(Image.open(BytesIO(response.content)).size, (1080, 1350))
 
+    def test_rows_show_full_names_pair_first_and_winner_in_lime(self):
+        from unittest import mock
+        from match import result_image
+        match = self.closed_match()
+        games = list(match.games.order_by("n_game"))
+        calls = []
+        real = result_image._text
+
+        def spy(draw, xy, text, font, fill, anchor="la", spacing=0):
+            calls.append((xy, text, fill))
+            return real(draw, xy, text, font, fill, anchor, spacing)
+
+        with mock.patch.object(result_image, "_text", spy):
+            result_image.build_result_jpeg(match, games, "V")
+        game = games[0]
+        prefix = "local" if match.own_is_local else "visiting"
+        names = [game.player_name(f"player_1_{prefix}"), game.player_name(f"player_2_{prefix}")]
+        self.assertEqual(result_image._own_pair(game, match.own_is_local), names)
+        self.assertTrue(all(" " in name for name in names))  # «Nombre Apellido», no «N. Apellido»
+        own_won = (game.winner == "Local") == match.own_is_local if isinstance(game.winner, str) else None
+        by_text = {text: (xy, fill) for xy, text, fill in calls}
+        sets = result_image._sets(game)
+        for text in (*names, sets):
+            self.assertIn(text, by_text)
+        pair_x, sets_x = by_text[names[0]][0][0], by_text[sets][0][0]
+        self.assertLess(pair_x, sets_x)  # primero la pareja, después el resultado
+        fills = {by_text[names[0]][1], by_text[sets][1]}
+        if own_won:
+            self.assertEqual(fills, {result_image.LIME})
+        else:
+            self.assertNotIn(result_image.LIME, fills)
+
     def test_open_match_has_no_image(self):
         match = self.match()
         self.assertEqual(self.client.get(reverse("result_image", args=[match.public_id])).status_code, 404)

@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 15/11/2026 · Imagen del resultado con nombres completos
+
+- La imagen de «Compartir resultado» muestra los nombres completos de la pareja propia y, en cada fila, siempre «Pareja - Resultado» (pareja a la izquierda, sets después). Si la pareja propia gana el partido, su nombre y sus sets salen en verde.
+
 ## 15/11/2026 · Equipos de Inicio clicables
 
 - Las píldoras de equipo de la parte superior de Inicio son un enlace entero a la página Club de su competición (SNP o LAPI según el pulsado), con foco visible y un solo enlace por píldora; «Pon la categoría» sigue siendo su propio enlace.
