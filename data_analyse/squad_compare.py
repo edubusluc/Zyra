@@ -4,7 +4,8 @@ los jugadores de la plantilla actual (media, rango y puesto). Solo lógica, sin 
 
 Medidas: % de victorias, % de convocatorias a las que se apunta, % de sets ganados y, según la competición,
 puntos SNP o jornadas de liga jugadas (LAPI). La media, el rango y el puesto cuentan solo a quienes
-tienen al menos ``MIN_SAMPLE`` partidos (o convocatorias en «Se apunta»); si el jugador no llega, esa medida
+tienen al menos ``MIN_SAMPLE`` partidos (o convocatorias en «Se apunta»), o los que lleve el que más ha jugado
+si aún son menos (principio de temporada, o una liga con pocas jornadas); si el jugador no llega, esa medida
 no sale, y si menos de ``MIN_SAMPLE`` jugadores tienen datos no hay con quién compararse.
 """
 from django.utils.formats import number_format
@@ -35,8 +36,8 @@ TIPS = {
     LEAGUE: gettext_lazy("Jornadas de liga en las que ha jugado, sobre las disputadas."),
 }
 CARD_TIP = gettext_lazy(
-    "Se compara con los jugadores de la plantilla que tienen al menos 3 partidos en el periodo elegido. "
-    "La media es la de esos jugadores y el rango va del menor al mayor."
+    "Se compara con los jugadores de la plantilla que tienen al menos 3 partidos en el periodo elegido, "
+    "o los que lleve el que más ha jugado si son menos. La media es la de esos jugadores y el rango va del menor al mayor."
 )
 
 
@@ -127,13 +128,16 @@ def compare_to_squad(player, squad, log, signup, snp_rows=None, league=None):
         s = signup.get(p.id) or {}
         return _("%(w)s de %(n)s convocatorias") % {"w": s.get("signed", 0), "n": s.get("total", 0)}
 
+    # Muestra mínima: 3, o lo que lleve el que más ha jugado si aún son menos (así una liga con 2 jornadas compara).
+    need_games = max(1, min(MIN_SAMPLE, max(x["played"] for x in tally.values())))
+    need_calls = max(1, min(MIN_SAMPLE, max((signup.get(p.id) or {}).get("total", 0) for p in squad)))
     table = [
         # clave, ¿cuenta?, valor, formato, base, unidad, eje fijo
-        (PCT, lambda p: tally[p.id]["played"] >= MIN_SAMPLE,
+        (PCT, lambda p: tally[p.id]["played"] >= need_games,
          lambda p: _rate(tally[p.id]["wins"], tally[p.id]["played"]), _pct_text, base_pct, "pct", (0, 100)),
-        (SIGNUP, lambda p: (signup.get(p.id) or {}).get("total", 0) >= MIN_SAMPLE,
+        (SIGNUP, lambda p: (signup.get(p.id) or {}).get("total", 0) >= need_calls,
          lambda p: signup[p.id]["pct"], _pct_text, base_signup, "pct", (0, 100)),
-        (SETS, lambda p: tally[p.id]["played"] >= MIN_SAMPLE and tally[p.id]["sets_played"] > 0,
+        (SETS, lambda p: tally[p.id]["played"] >= need_games and tally[p.id]["sets_played"] > 0,
          lambda p: _rate(tally[p.id]["sets_won"], tally[p.id]["sets_played"]), _pct_text, base_sets, "pct", (0, 100)),
     ]
     if snp_rows is not None:

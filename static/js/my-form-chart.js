@@ -7,6 +7,7 @@
     var points = Array.prototype.map.call(list.children, function (li) {
         return { x: parseFloat(li.dataset.x), y: parseFloat(li.dataset.y), score: li.dataset.score, date: li.dataset.date };
     });
+    if (!points.length) return;
     var marker = chart.querySelector('.z-myform-hover');
     var tip = chart.querySelector('.z-myform-tip');
 

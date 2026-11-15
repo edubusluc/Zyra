@@ -230,8 +230,9 @@
     if (el && !targets.includes(el)) targets.push(el);
   });
   if (links.length && targets.length) {
-    const READING_LINE = 120;
+    const READING_LINE = 150;
     let current = null;
+    let pinned = null; // la elegida con un clic, hasta que la persona vuelva a hacer scroll
     const paint = (id) => {
       if (id === current) return;
       current = id;
@@ -242,6 +243,7 @@
       });
     };
     const update = () => {
+      if (pinned) { paint(pinned); return; }
       const atEnd = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
       let id = targets[0].id;
       if (atEnd) id = targets[targets.length - 1].id;
@@ -258,11 +260,24 @@
     window.addEventListener('resize', schedule);
     // Las secciones plegables cambian la altura de la página: se recalcula al abrirlas o cerrarlas.
     document.querySelectorAll('.st-fold').forEach((fold) => fold.addEventListener('toggle', schedule));
-    // Al pulsar se marca al instante la elegida; el scroll suave no la cambia por las del camino.
-    links.forEach((a) => a.addEventListener('click', () => {
-      paint(a.getAttribute('href').slice(1));
-      window.removeEventListener('scroll', schedule);
-      setTimeout(() => { window.addEventListener('scroll', schedule, { passive: true }); update(); }, 700);
+    // Al pulsar se desplaza el propio script: el salto nativo por ancla con scroll suave no llega
+    // siempre a la sección (se interrumpe a medio camino). La elegida queda marcada aunque, por
+    // ser corta la página, no pueda subir hasta la línea de lectura.
+    ['wheel', 'touchmove', 'keydown'].forEach((type) => window.addEventListener(type, () => { pinned = null; schedule(); }, { passive: true }));
+    const calm = window.matchMedia('(prefers-reduced-motion: reduce)');
+    links.forEach((a) => a.addEventListener('click', (event) => {
+      const el = document.getElementById(a.getAttribute('href').slice(1));
+      if (!el || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey) return;
+      event.preventDefault();
+      pinned = el.id;
+      paint(pinned);
+      // Un fotograma después: en móvil otro script abre antes la sección plegada.
+      requestAnimationFrame(() => {
+        el.scrollIntoView({ behavior: calm.matches ? 'auto' : 'smooth', block: 'start' });
+        history.replaceState(null, '', '#' + el.id);
+        if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1');
+        el.focus({ preventScroll: true });
+      });
     }));
     update();
   }

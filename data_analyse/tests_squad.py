@@ -1,14 +1,10 @@
 """Tarjeta «Frente a la plantilla» de la ficha del jugador (``data_analyse.squad_compare``)."""
-import datetime
 
 from django.test import SimpleTestCase, TestCase
 from django.urls import reverse
 
-from data_analyse import pairs as pair_stats
-from data_analyse import roster_table, squad_compare
+from data_analyse import squad_compare
 from data_analyse.tests_extra import ClubDataMixin
-from match.models import Game, Match, Result
-from players.models import Player
 
 
 class Fake:
@@ -65,6 +61,17 @@ class CompareLogicTests(SimpleTestCase):
         self.signup = {}
         self.assertIsNone(self.compare())
 
+    def test_short_season_lowers_the_minimum(self):
+        # Liga con 2 jornadas: nadie pasa de 2 partidos, pero se compara con lo que lleva el que más ha jugado.
+        self.log = [entry((1, 2), True), entry((1, 3), True), entry((2, 4), False), entry((3, 4), False)]
+        self.signup = {p.id: {"signed": 2, "total": 2, "pct": 100} for p in self.squad}
+        res = self.compare()
+        keys = [r["key"] for r in res["rows"]]
+        self.assertIn("pct", keys)
+        self.assertIn("sets", keys)
+        pct = next(r for r in res["rows"] if r["key"] == "pct")
+        self.assertEqual((pct["rank"], pct["of"], pct["base"]), (1, 4, "2 de 2 partidos"))
+
     def test_player_outside_squad(self):
         self.assertIsNone(squad_compare.compare_to_squad(Fake(99), self.squad, self.log, self.signup))
 
@@ -85,36 +92,19 @@ class CompareLogicTests(SimpleTestCase):
 
 
 class SquadCardPageTests(ClubDataMixin, TestCase):
-    """El club de ``ClubDataMixin`` solo tiene 4 jugadores con partidos y unos pocos cada uno: con MIN_SAMPLE no hay tarjeta."""
+    """El club de ``ClubDataMixin`` tiene 4 jugadores con 2 partidos como máximo: se compara con lo que lleva el que más ha jugado."""
 
     def sheet(self, **params):
         params.update(player=self.a.public_id, season="2025-2026")
         return self.client.get(reverse("player_statistics"), params)
 
-    def test_no_card_with_few_games(self):
-        self.assertEqual(self.sheet().status_code, 200)
-        self.assertNotContains(self.sheet(), "Frente a la plantilla")
-
-    def test_card_appears_with_enough_games_and_follows_filters(self):
-        # Tres enfrentamientos más con A+B y C+D ganando y perdiendo.
-        for i in range(3):
-            m = Match.objects.create(club=self.club, local=self.club.own_team, visiting=self.rival,
-                                     start_date=datetime.date(2025, 12, 1 + i), draft_mode=False, result="VICTORIA")
-            for n, (p1, p2, won) in enumerate(((self.a, self.b, True), (self.c, self.d, i % 2 == 0)), start=1):
-                g = Game.objects.create(match=m, n_game=n, score=3, winner="Local" if won else "Visitante", draft_mode=False,
-                                        player_1_local=p1, player_2_local=p2)
-                Result.objects.create(game=g, draft_mode=False, set1_local=6 if won else 3, set1_visiting=3 if won else 6,
-                                      set2_local=6 if won else 3, set2_visiting=3 if won else 6)
+    def test_card_with_a_short_season(self):
         res = self.sheet()
         self.assertContains(res, "Frente a la plantilla")
         card = res.context["squad_compare"]
         self.assertEqual(card["legend"], "A")  # su ficha, vista por el capitán: lleva su nombre
         self.assertEqual(card["rows"][0]["key"], "pct")
-        # Sin temporada elegida cuenta el historial completo y la tarjeta no desaparece.
+
+    def test_follows_the_season_filter_and_all_seasons(self):
         self.assertContains(self.client.get(reverse("player_statistics"), {"player": self.a.public_id, "season": "todas"}),
                             "Frente a la plantilla")
-
-    def test_pair_history_unaffected(self):
-        log = pair_stats.club_game_log(self.club)
-        signup = roster_table.signup_by_player(self.club, list(Player.objects.filter(club=self.club)))
-        self.assertIsNone(squad_compare.compare_to_squad(self.a, list(Player.objects.filter(club=self.club)), log, signup))
