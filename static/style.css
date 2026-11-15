@@ -3169,6 +3169,10 @@ a.z-hub-card:hover, a.z-hub-card:focus-visible { border-color: var(--z-lime); co
 .z-danger-zone { margin: 56px 0 24px; padding-top: 20px; border-top: 1px solid var(--z-border); }
 .z-danger-zone h2 { font-size: var(--z-fs-sm); font-weight: 800; letter-spacing: .01em; color: var(--z-danger); }
 .z-rival-empty { margin: 8px 0 0; font-size: var(--z-fs-md); color: var(--z-muted); }
+/* Aviso al escribir un rival que ya existe: unir con ese equipo o crear uno nuevo. */
+.z-rival-match { margin: 0 0 16px; padding: 12px 14px; border: 1px solid var(--z-border); border-radius: 12px; background: var(--z-surface-2, rgba(255, 255, 255, .04)); }
+.z-rival-match-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; margin: 0; padding: 6px 0; }
+.z-rival-match-row + .z-rival-match-row { border-top: 1px solid var(--z-border); }
 
 /* El contenido enfocado o al que se salta no queda bajo la cabecera fija ni bajo la barra inferior (WCAG 2.4.11) */
 html { scroll-padding-top: 84px; scroll-padding-bottom: calc(var(--z-nav-h) + 24px); }

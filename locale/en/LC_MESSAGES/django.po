@@ -17058,3 +17058,21 @@ msgstr ""
 
 msgid "CONVOCADOS · RENDIMIENTO"
 msgstr "CALLED-UP PLAYERS · PERFORMANCE"
+
+msgid "Escribe la localización de la sede."
+msgstr "Enter the venue's location."
+
+msgid "Escribe la localización del equipo rival."
+msgstr "Enter the rival team's location."
+
+msgid "Ya existe un equipo con un nombre igual o parecido. Elige si es el mismo o crea uno nuevo."
+msgstr "A team with the same or a similar name already exists. Choose whether it is the same team or create a new one."
+
+msgid "Fuera de tu grupo"
+msgstr "Outside your group"
+
+msgid "Es el mismo equipo"
+msgstr "It's the same team"
+
+msgid "No, es un equipo nuevo"
+msgstr "No, it's a new team"

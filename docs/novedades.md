@@ -6,7 +6,8 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 ## 15/11/2026 · Play Off en sede neutral y rival escrito a mano
 
 - Los Play Off de la SNP se crean sin «En casa / Fuera»: se juegan en una sede fijada por la organización, que se escribe en «Lugar». No cuentan en Local y visitante (sí en el balance total, las rachas y los rivales) y la ficha, el listado, las imágenes y el informe PDF no muestran Local ni Visitante.
-- En Play Off y en Amistoso el rival puede escribirse con su nombre y su localidad: se crea como equipo fuera del grupo (si ya existe uno igual, se reutiliza) y sale en el selector de rivales de los siguientes partidos.
+- En Play Off y en Amistoso el rival se escribe por su nombre. Si coincide con un equipo que ya existe (del grupo o no), se avisa al capitán para que lo una a ese equipo o cree uno nuevo; si no, se crea fuera del grupo y sale en las sugerencias de los siguientes partidos.
+- En Play Off siempre se pide el lugar. En Amistoso solo se pide si se juega fuera; en casa se usa el del equipo propio.
 
 ## 15/11/2026 · «Mi forma»: gráfica de puntos SNP escalonada
 

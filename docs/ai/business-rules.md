@@ -182,14 +182,18 @@ Orden obligatorio del ciclo (`match/views.py`) [V], cubierto por `match/tests_fl
    derrota), no en jugadores, parejas ni asistencia (las consultas de convocatorias filtran `match__no_show=""`); no envía el correo de resultado.
    Puntos de liga: 4 si no se presentó el rival, 0 si no nos presentamos (las sanciones del reglamento no se
    muestran nunca). «Quitar no presentado» (`undo_no_show`) reabre el acta y devuelve las parejas y resultados guardados; reabrirla también lo quita.
-   Amistoso: `match_type="amistoso"`; el rival puede escribirse a mano (nombre y localidad): `MatchForm`
-   crea un `Team` con `in_group=False` (categoría, país y división del propio) o reutiliza el que tenga el mismo
-   nombre (`same_name`); un nombre solo parecido (`is_similar`) pide elegir el existente. No puede llamarse como el
-   equipo propio. Esos rivales vuelven a salir en el selector de rival y la importación de SNP puede darlos de alta
-   en el grupo. `Match.rival_name` (sin `Team`, ese lado `NULL`) solo queda en los amistosos antiguos.
+   Amistoso: `match_type="amistoso"`; el rival se escribe por su nombre (un solo campo con sugerencias de los
+   equipos existentes). Si coincide o se parece (`same_name`/`is_similar`) a un equipo del club, del grupo o no,
+   `MatchForm` avisa al capitán y este elige «Es el mismo equipo» (`rival_link=<id>`, se une a su ficha) o «No, es un
+   equipo nuevo» (`rival_link=new`; con el mismo nombre solo se puede unir). Si no, crea un `Team` con
+   `in_group=False` (categoría, país y división del propio). No puede llamarse como el equipo propio. En casa no se
+   pregunta el lugar (el del propio); fuera se escribe y es también el del equipo nuevo. Esos rivales vuelven a
+   salir en el selector de rival y la importación de SNP puede darlos de alta en el grupo. `Match.rival_name` (sin
+   `Team`, ese lado `NULL`) solo queda en los amistosos antiguos.
    **Sede neutral** (`Competition.neutral_types`, SNP: Play Off): `MatchForm` fija `Match.neutral_venue=True`, sin
-   «En casa / Fuera» (el propio ocupa el lado local solo para guardar el resultado) y con el rival del grupo o
-   escrito a mano igual que en el amistoso; el lugar no se copia del equipo y lo escribe quien crea el partido.
+   «En casa / Fuera» (el propio ocupa el lado local solo para guardar el resultado) y con el rival escrito por su nombre
+   (mismo aviso de coincidencia que en el amistoso); el lugar (la sede) siempre se pide, no se copia del equipo y
+   el equipo nuevo se crea sin localidad.
    Un partido neutral cuenta en balance, rachas y rivales, pero no en Local y visitante (`Match.venue_side` None;
    `neutral` en `club_game_log`, `venue_matches`, `?lado=`, `advisor.build_forms`) y no muestra Local/Visitante en la
    ficha, el listado, las imágenes ni el informe PDF (`sede neutral`, sin columnas «Como …»). Los Play Off anteriores

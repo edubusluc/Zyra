@@ -11,7 +11,6 @@
   if (!form) return;
 
   const typeRow = form.querySelector('[data-match-type-row]');
-  const sourceRow = form.querySelector('[data-rival-source-row]');
   const groupRival = form.querySelector('[data-group-rival]');
   const manualRival = form.querySelector('[data-manual-rival]');
   // Selector único «Tipo de enfrentamiento»: fija el modo (competitivo/amistoso) y el tipo (enfrentamiento,
@@ -20,7 +19,7 @@
   const kindSelect = form.querySelector('[data-kind-select]');
   const legacy = form.querySelector('[data-kind-legacy]');
   const typeSelect = form.querySelector('select[name="match_type"]');
-  const radios = form.querySelectorAll('input[name="mode"], input[name="rival_source"], input[name="own_side"], input[name="report_scope"]');
+  const radios = form.querySelectorAll('input[name="mode"], input[name="own_side"], input[name="report_scope"]');
   function checkedValue(name) {
     const checked = form.querySelector(`input[name="${name}"]:checked`);
     return checked ? checked.value : '';
@@ -29,30 +28,28 @@
   const neutralTypes = (form.dataset.neutralTypes || '').split(',').filter(Boolean);
   const ownSideRow = form.querySelector('[data-own-side-row]');
   const placeHelp = form.querySelector('[data-place-help]');
+  const placeRow = form.querySelector('[data-place-row]');
   function isNeutral() {
     return checkedValue('mode') !== 'amistoso' && !!typeSelect && neutralTypes.includes(typeSelect.value);
   }
   function syncMode() {
     const friendly = checkedValue('mode') === 'amistoso';
     const neutral = isNeutral();
-    const manual = (friendly || neutral) && checkedValue('rival_source') === 'manual';
+    const manual = friendly || neutral;
     if (typeRow) typeRow.hidden = friendly;
-    if (sourceRow) sourceRow.hidden = !(friendly || neutral);
     if (ownSideRow) ownSideRow.hidden = neutral;
     if (placeHelp) placeHelp.hidden = neutral;
+    // Amistoso en casa: no se pregunta el lugar (es el del equipo propio).
+    if (placeRow) placeRow.hidden = friendly && checkedValue('own_side') !== 'visiting';
     if (groupRival) groupRival.hidden = manual;
     if (manualRival) manualRival.hidden = !manual;
     // Los desplegables ocultos no deben bloquear el envío por ser obligatorios.
     if (groupRival) groupRival.querySelectorAll('select').forEach((s) => { s.disabled = manual; });
     radios.forEach((r) => r.closest('label').classList.toggle('active', r.checked));
   }
-  radios.forEach((r) => r.addEventListener('change', (event) => {
+  radios.forEach((r) => r.addEventListener('change', () => {
     syncMode();
     syncDefaults();
-    if (event.target.name === 'rival_source' && event.target.value === 'manual') {
-      const input = manualRival && manualRival.querySelector('input[type="text"]');
-      if (input) input.focus();
-    }
   }));
   if (kindRow && kindSelect && legacy && typeSelect) {
     kindRow.hidden = false;
@@ -85,15 +82,11 @@
   const place = form.querySelector('input[name="location"]');
   const rivalSelect = form.querySelector('select[name="rival"]');
   let placeEdited = place && place.value !== '' && place.value !== (form.dataset.ownLocation || '');
-  const rivalPlace = form.querySelector('input[name="rival_location"]');
-  function manualNow() {
-    return !!manualRival && !manualRival.hidden;
-  }
   function defaultPlace() {
     // Sede neutral: la fija la organización, se escribe a mano.
     if (isNeutral()) return '';
     if (checkedValue('own_side') !== 'visiting') return form.dataset.ownLocation || '';
-    if (manualNow()) return rivalPlace ? rivalPlace.value : '';
+    if (manualRival && !manualRival.hidden) return '';
     const option = rivalSelect && rivalSelect.options[rivalSelect.selectedIndex];
     return (option && option.dataset.location) || '';
   }
@@ -102,7 +95,6 @@
     place.addEventListener('input', () => { placeEdited = true; });
     form.querySelectorAll('input[name="own_side"]').forEach((r) => r.addEventListener('change', syncPlace));
     if (rivalSelect) rivalSelect.addEventListener('change', syncPlace);
-    if (rivalPlace) rivalPlace.addEventListener('input', syncPlace);
   }
 
   // Hora: la habitual del equipo propio si juega en casa; en visitante se deja en blanco. Si la

@@ -54,30 +54,29 @@
         {% for error in form.round_number.errors %}<div class="alert-message">{{ error }}</div>{% endfor %}
         {% endif %}
 
-        <fieldset class="z-mode" data-rival-source-row{% if form.mode.value != "amistoso" and not form.is_neutral_type %} hidden{% endif %}>
-            <legend class="form-label">{{ form.rival_source.label }}</legend>
-            <div class="z-segmented z-mode-options">
-                {% for radio in form.rival_source %}
-                <label class="z-mode-option">{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>
-                {% endfor %}
-            </div>
-        </fieldset>
-
-        <div class="z-team-cards" data-group-rival{% if form.manual_rival %} hidden{% endif %}>
+        <div class="z-team-cards" data-group-rival{% if form.typed_rival %} hidden{% endif %}>
             {% include "includes/match_team_card.html" with field=form.rival team=form.rival_team %}
             <p class="z-rival-empty">{% if not form.rival.field.queryset.exists %}{% translate "Todavía no tienes rivales en tu grupo." %}{% else %}{% translate "¿No está el rival?" %}{% endif %} <a href="{% url 'create_team' %}?volver=enfrentamiento&amp;en={{ request.club.competition }}">{% translate "Añádelo" %}</a></p>
             {% for error in form.local.errors %}<div class="alert-message">{{ error }}</div>{% endfor %}
         </div>
 
-        <div class="z-manual-rival" data-manual-rival{% if not form.manual_rival %} hidden{% endif %}>
+        <div class="z-manual-rival" data-manual-rival{% if not form.typed_rival %} hidden{% endif %}>
             <p>
                 {{ form.rival_name.label_tag }} {{ form.rival_name }}
             </p>
+            <datalist id="rival-suggestions">{% for name in form.rival_suggestions %}<option value="{{ name }}">{% endfor %}</datalist>
             {% for error in form.rival_name.errors %}<div class="alert-message">{{ error }}</div>{% endfor %}
-            <p>
-                {{ form.rival_location.label_tag }} {{ form.rival_location }}
-            </p>
-            {% for error in form.rival_location.errors %}<div class="alert-message">{{ error }}</div>{% endfor %}
+            {% if form.rival_matches %}
+            <div class="z-rival-match" role="alert">
+                {% for team in form.rival_matches %}
+                <p class="z-rival-match-row">
+                    <span><strong>{{ team.name }}</strong>{% if team.location %} · {{ team.location }}{% endif %} · {% if team.in_group %}{% translate "En tu grupo" %}{% else %}{% translate "Fuera de tu grupo" %}{% endif %}</span>
+                    <button type="submit" name="rival_link" value="{{ team.pk }}" class="btn btn-secondary btn-sm">{% translate "Es el mismo equipo" %}</button>
+                </p>
+                {% endfor %}
+                {% if not form.rival_exact %}<p class="z-rival-match-row"><button type="submit" name="rival_link" value="new" class="btn btn-outline-secondary btn-sm">{% translate "No, es un equipo nuevo" %}</button></p>{% endif %}
+            </div>
+            {% endif %}
         </div>
 
         <fieldset class="z-mode" data-own-side-row{% if form.is_neutral_type %} hidden{% endif %}>
@@ -99,10 +98,11 @@
         </p>
         {% for error in form.start_time.errors %}<div class="alert-message">{{ error }}</div>{% endfor %}
 
-        <p>
+        <p data-place-row{% if form.hide_place %} hidden{% endif %}>
             {{ form.location.label_tag }} {{ form.location }}
             <span data-place-help{% if form.is_neutral_type %} hidden{% endif %}><small class="text-muted d-block mt-1">{% translate "Por defecto, la localidad del equipo local. Escribe la dirección del club para que «Cómo llegar» funcione." %}</small></span>
         </p>
+        {% for error in form.location.errors %}<div class="alert-message">{{ error }}</div>{% endfor %}
 
         <details class="z-more-options">
             <summary>{% translate "Más opciones" %}</summary>
