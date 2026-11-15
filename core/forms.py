@@ -1,4 +1,6 @@
 """Formularios de alta de club, registro de usuario, invitación de miembros y contraseñas."""
+from types import SimpleNamespace
+
 from allauth.account.forms import ChangePasswordForm, ResetPasswordForm, ResetPasswordKeyForm, SetPasswordForm
 from django import forms
 from django.conf import settings
@@ -11,6 +13,7 @@ from django.utils.translation import gettext, gettext_lazy as _
 from team.forms import default_time_field
 from team.models import Team
 from .blocklist import is_blocked
+from .images import clean_photo_field
 from .competitions import CHOICES as COMPETITION_CHOICES, COMPETITIONS, get_competition
 from . import ratelimit
 from .models import Membership
@@ -60,17 +63,24 @@ class ClubForm(forms.Form):
     country = forms.ChoiceField(label=_("Nacionalidad del equipo"), choices=[("", _("Elige una opción"))] + Team.COUNTRIES,
                                 initial="ES",
                                 help_text=_("País en el que juega, por ejemplo España."))
-    division = forms.ChoiceField(label=_("División"), choices=[("", _("Elige una opción"))] + Team.DIVISIONS,
+    # Se pide solo si la competición elegida tiene divisiones (``clean``); la marca ``required`` del
+    # campo la pone ``__init__`` y la ajusta register-wizard según la competición.
+    division = forms.ChoiceField(label=_("División"), choices=[("", _("Elige una opción"))] + Team.DIVISIONS, required=False,
                                  help_text=_("Nivel en el que juega el equipo en su competición."))
+    photo = forms.ImageField(label=_("Escudo del equipo"), required=False)
 
     def __init__(self, *args, competitions=None, **kwargs):
         """Limita las competiciones a ``competitions`` y los nombres a texto plano (core.validators)."""
         super().__init__(*args, **kwargs)
+        # clean_photo_field anota en ``instance`` la validación de la foto; aquí aún no hay equipo.
+        self.instance = SimpleNamespace()
         competitions = list(competitions or COMPETITIONS.values())
         self.fields["competition"].choices = [(c.code, c.name) for c in competitions]
         self.fields["competition"].initial = competitions[0].code
         plain_text(self, "name", "location")
         self.fields["default_time"] = default_time_field()
+        if self.rules.divisions:
+            self.fields["division"].widget.attrs["required"] = True
 
     @property
     def rules(self):
@@ -81,6 +91,10 @@ class ClubForm(forms.Form):
             code = self.fields["competition"].initial
         return get_competition(code)
 
+    def clean_photo(self):
+        """Valida, reduce y pasa a WebP el escudo antes de guardarlo (core/images.py)."""
+        return clean_photo_field(self)
+
     def clean_competition(self):
         """Sin competición, la SNP; tiene que ser una en la que la cuenta aún no tenga espacio."""
         code = self.cleaned_data.get("competition") or "snp"
@@ -90,11 +104,22 @@ class ClubForm(forms.Form):
         return code
 
     def clean(self):
-        """La división tiene que ser de la competición elegida."""
+        """La competición tiene que jugarse en el país elegido y la división, si tiene, ser suya."""
         cleaned = super().clean()
-        code, division = cleaned.get("competition"), cleaned.get("division")
-        if code and division and division not in get_competition(code).divisions:
-            self.add_error("division", _("Elige una división de %(competition)s.") % {"competition": get_competition(code).name})
+        code, division, country = cleaned.get("competition"), cleaned.get("division"), cleaned.get("country")
+        if not code:
+            return cleaned
+        rules = get_competition(code)
+        if country and not rules.plays_in(country):
+            self.add_error("country", _("%(competition)s no se juega en ese país: elige otro o cambia de competición.")
+                           % {"competition": rules.name})
+        if not rules.divisions:
+            cleaned["division"] = ""
+        elif not division:
+            if not self.has_error("division"):
+                self.add_error("division", self.fields["division"].error_messages["required"])
+        elif division not in rules.divisions:
+            self.add_error("division", _("Elige una división de %(competition)s.") % {"competition": rules.name})
         return cleaned
 
 

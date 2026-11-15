@@ -26,17 +26,17 @@ SIGNUP = {"username": "nuevo", "email": "nuevo@example.com",
 
 
 class RegisterWizardTests(TestCase):
-    """U1–U5: registro del club por pasos, valores por defecto, SNP preseleccionado y aviso a no capitanes."""
+    """U1–U5: registro del club por pasos (competición, equipo, cuenta y jugador), valores por defecto, SNP preseleccionado y aviso a no capitanes."""
 
-    def test_three_steps_for_a_new_account_and_two_for_google(self):
+    def test_four_steps_for_a_new_account_and_three_for_google(self):
         page = self.client.get(reverse("register_club"))
         self.assertContains(page, "data-wizard")
-        self.assertEqual(page.content.decode().count("data-wizard-step"), 3)
+        self.assertEqual(page.content.decode().count("data-wizard-step"), 4)
         self.assertContains(page, "register-wizard.js")
         self.assertContains(page, "data-wizard-summary")  # resumen «Faltan N campos»
         user = User.objects.create_user("g", email="g@example.com")
         self.client.force_login(user)
-        self.assertEqual(self.client.get(reverse("register_club")).content.decode().count("data-wizard-step"), 2)
+        self.assertEqual(self.client.get(reverse("register_club")).content.decode().count("data-wizard-step"), 3)
 
     def test_category_and_country_default_to_male_and_spain(self):
         form = self.client.get(reverse("register_club")).context["club_form"]

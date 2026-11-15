@@ -11,6 +11,7 @@
 (function () {
   const OUTPUT = 512; // lado del PNG recortado (igual que PHOTO_MAX_SIZE en el servidor)
   const MAX_ZOOM = 4; // cuánto se puede acercar respecto a «llenar el círculo»
+  const originals = new WeakMap(); // foto original elegida en cada campo, para poder reencuadrarla
   const inputs = Array.from(document.querySelectorAll('input[type="file"][name="photo"]'));
   if (!inputs.length || !window.bootstrap || !window.DataTransfer || !HTMLCanvasElement.prototype.toBlob) return;
 
@@ -264,17 +265,19 @@
       input.classList.add('z-file-native');
       input.tabIndex = -1;
       row.append(el, button);
-      // Con foto ya guardada (data-current-photo) se puede reabrir el encuadre sin subir otro archivo.
-      if (input.dataset.currentPhoto) {
-        const edit = document.createElement('button');
-        edit.type = 'button';
-        edit.className = 'btn btn-outline-secondary btn-sm';
-        edit.dataset.photoEdit = '';
-        edit.innerHTML = '<i class="fa-solid fa-crop-simple me-1" aria-hidden="true"></i>';
-        edit.append(gettext('Editar foto actual'));
-        edit.addEventListener('click', () => editCurrent(input));
-        row.append(edit);
-      }
+      // Botón para reencuadrar: la foto recién elegida (se guarda la original) o la ya guardada (data-current-photo).
+      const edit = document.createElement('button');
+      edit.type = 'button';
+      edit.className = 'btn btn-outline-secondary btn-sm';
+      edit.dataset.photoEdit = '';
+      edit.hidden = !input.dataset.currentPhoto;
+      edit.innerHTML = '<i class="fa-solid fa-crop-simple me-1" aria-hidden="true"></i>';
+      edit.append(gettext(input.dataset.currentPhoto ? 'Editar foto actual' : 'Editar foto'));
+      edit.addEventListener('click', () => {
+        const original = originals.get(input);
+        if (original) open(input, original); else if (input.dataset.currentPhoto) editCurrent(input);
+      });
+      row.append(edit);
       row.append(input);
     }
     if (!('original' in el.dataset)) el.dataset.original = el.hidden ? '' : el.src;
@@ -283,9 +286,12 @@
 
   function showPreview(input, file) {
     const el = preview(input);
-    // Con una foto nueva ya elegida, «Editar foto actual» deja de tener sentido.
+    // Con una foto nueva ya elegida, el botón reabre su encuadre; «Editar foto actual» solo con la guardada.
     const edit = (input.form || document).querySelector('[data-photo-edit]');
-    if (edit) edit.hidden = Boolean(file);
+    if (edit) {
+      edit.hidden = !file && !input.dataset.currentPhoto;
+      edit.lastChild.textContent = gettext(file || !input.dataset.currentPhoto ? 'Editar foto' : 'Editar foto actual');
+    }
     if (el.dataset.objectUrl) URL.revokeObjectURL(el.dataset.objectUrl);
     delete el.dataset.objectUrl;
     if (file) {
@@ -328,6 +334,7 @@
       const file = input.files && input.files[0];
       if (!file) { showPreview(input, null); return; }
       if (!file.type.startsWith('image/')) return;
+      originals.set(input, file);
       open(input, file);
     });
   });

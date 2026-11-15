@@ -40,6 +40,11 @@ class Competition:
     con sus juegos completados hasta ganar el set y los que falten 6-0 (3-2 queda 3-6, 0-6). Las
     dos competiciones tienen ambas cosas (SNP 12-0, LAPI 3-0). ``pair_no_show`` deja marcar que
     una pareja no se presentó a un partido (normativa SNP 20.2, ``match.pair_no_show``).
+
+    ``countries`` son los países donde se juega (códigos de ``Team.COUNTRIES``): el alta de un equipo
+    solo ofrece la competición en esos países; vacío = en todos. ``color`` (hex) es el de su escudo y
+    sus etiquetas en el selector de competición; ``full_name`` es su nombre completo. ``divisions`` vacío = la competición no tiene
+    divisiones y el alta no las pide.
     """
     code: str
     name: str
@@ -58,6 +63,9 @@ class Competition:
     max_roster: int | None = None
     injury_completes: bool = False
     pair_no_show: bool = False
+    countries: tuple = ()
+    full_name: str = ""
+    color: str = "#B4F100"
 
     @property
     def games(self):
@@ -78,6 +86,10 @@ class Competition:
     def has_draws(self):
         """Si un enfrentamiento puede acabar en empate (puntos totales pares: SNP sí, LAPI con tres partidos de 1 punto no)."""
         return self.total_points % 2 == 0
+
+    def plays_in(self, country):
+        """True si la competición se juega en ``country`` (código de país; sin países, en todos)."""
+        return not self.countries or country in self.countries
 
     @property
     def default_type(self):
@@ -118,6 +130,9 @@ SNP = Competition(
     no_show=True,
     injury_completes=True,
     pair_no_show=True,
+    countries=("ES", "MX", "IT", "PT", "SE"),
+    full_name=_("Series Nacionales de Pádel"),
+    color="#DBA400",
 )
 
 # Liga LAPI: 3 partidos de 1 punto (al mejor de 3, sin empate posible). En liga, ganar 3-0 da 4
@@ -145,6 +160,9 @@ LAPI = Competition(
     no_show=True,
     max_roster=15,
     injury_completes=True,
+    countries=("ES",),
+    full_name=_("Liga Amateur de Pádel Internacional"),
+    color="#61E2C9",
 )
 
 COMPETITIONS = {SNP.code: SNP, LAPI.code: LAPI}

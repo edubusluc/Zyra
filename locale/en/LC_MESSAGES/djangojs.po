@@ -418,3 +418,7 @@ msgstr "%(n)s games"
 #, python-format
 msgid "%(n)s part."
 msgstr "%(n)s gm."
+
+#: static/js/photo-crop.js
+msgid "Editar foto"
+msgstr "Edit photo"

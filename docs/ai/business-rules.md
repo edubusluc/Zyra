@@ -23,7 +23,11 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
   espacio (no suspendido) por competición: `core.services.club_of(user, competition)`; lo comprueban `register_club`
   (solo ofrece las competiciones libres, `free_competitions`) y `accept_invitation`/`invitation` (`one_space_message`).
   En espacios sin SNP no hay cuenta SNP, sincronización ni paso de SNP en «Primeros pasos» o «Prepara la temporada».
-  Tests: `core/tests_spaces.py`, `core/tests_onboarding.py`, `core/tests_invitations.py`, `core/tests_space_invitations.py`.
+  El alta elige la competición en un selector con escudo 3D (`core/competition_picker.py`, `static/js/competition-picker.js`):
+  la tarjeta de una competición en la que la cuenta ya pertenece a un equipo (capitán, gestor o jugador) sale bloqueada
+  con el nombre del equipo; cada ficha dice en qué países se juega (`Competition.countries`, `plays_in`; LAPI solo España)
+  y `ClubForm.clean` lo exige; la división solo se pide si la ficha tiene `divisions`. Quien crea el equipo es su capitán.
+  Tests: `core/tests_spaces.py`, `core/tests_competition_picker.py`, `core/tests_onboarding.py`, `core/tests_invitations.py`, `core/tests_space_invitations.py`.
 - [V] Vistas unidas (`core/spaces.py`): con más de un espacio, Enfrentamientos, Calendario, Inicio (Pendiente y próximo
   enfrentamiento) juntan los espacios con el filtro «Todas · SNP · LAPI» (`?espacio=`, se recuerda en sesión, por defecto
   «Todas»). Cada tarjeta lleva la etiqueta de su competición y sus acciones según el rol en ese espacio.
