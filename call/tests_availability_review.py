@@ -370,3 +370,15 @@ class SecurityTests(ReviewBase):
         request = RequestFactory().get("/", HTTP_HOST="otro-alias.example")
         self.assertEqual(availability.link_url(request, self.match),
                          "https://zyrapadel.com" + availability.link_path(self.match))
+
+
+class PickTooltipNotClippedTests(TestCase):
+    """El globo del «i» de la tarjeta de jugador no debe recortarse por la propia tarjeta."""
+
+    def test_pick_card_does_not_clip_overflow(self):
+        import re
+        from pathlib import Path
+        from django.conf import settings
+        css = (Path(settings.BASE_DIR) / "static" / "style.css").read_text(encoding="utf-8")
+        for rule in re.findall(r"(?m)^\.z-pick\s*\{([^}]*)\}", css):
+            self.assertNotIn("overflow", rule)
