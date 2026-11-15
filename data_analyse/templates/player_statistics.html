@@ -90,6 +90,8 @@
         {% include 'includes/venue_split.html' %}
       </div>
 
+      {% if squad_compare %}{% include 'includes/squad_compare.html' %}{% endif %}
+
       <section aria-labelledby="clutch-title" class="st-section" data-level="compare">
         <h2 class="st-section-title" id="clutch-title">{% if league %}{% translate "Sets y fases finales" %}{% else %}{% translate "Partidos y sets" %}{% endif %}</h2>
         <div class="st-row st-row--pair">

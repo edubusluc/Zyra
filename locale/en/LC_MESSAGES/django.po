@@ -16890,3 +16890,133 @@ msgstr "Crest image of"
 
 msgid "Quitar el escudo"
 msgstr "Remove the crest"
+
+#: data_analyse/squad_compare.py data_analyse/templates/includes/squad_compare.html
+msgid "% de victorias"
+msgstr "% of wins"
+
+#: data_analyse/squad_compare.py data_analyse/templates/includes/squad_compare.html
+msgid "Partidos ganados sobre los jugados."
+msgstr "Matches won out of those played."
+
+#: data_analyse/squad_compare.py data_analyse/templates/includes/squad_compare.html
+msgid "Convocatorias cerradas a las que se apuntó, desde que se incorporó al equipo."
+msgstr "Closed call-ups the player signed up for, since joining the team."
+
+#: data_analyse/squad_compare.py data_analyse/templates/includes/squad_compare.html
+msgid "% de sets ganados"
+msgstr "% of sets won"
+
+#: data_analyse/squad_compare.py data_analyse/templates/includes/squad_compare.html
+msgid "Sets ganados sobre los jugados."
+msgstr "Sets won out of those played."
+
+#: data_analyse/squad_compare.py data_analyse/templates/includes/squad_compare.html
+msgid "Puntos SNP de la última actualización de la temporada."
+msgstr "SNP points from the season's latest update."
+
+#: data_analyse/squad_compare.py data_analyse/templates/includes/squad_compare.html
+msgid "Jornadas de liga jugadas"
+msgstr "League rounds played"
+
+#: data_analyse/squad_compare.py data_analyse/templates/includes/squad_compare.html
+msgid "Jornadas de liga en las que ha jugado, sobre las disputadas."
+msgstr "League rounds the player has played, out of those held."
+
+#: data_analyse/squad_compare.py data_analyse/templates/includes/squad_compare.html
+msgid "Se compara con los jugadores de la plantilla que tienen al menos 3 partidos en el periodo elegido. La media es la de esos jugadores y el rango va del menor al mayor."
+msgstr "Compared with the squad players who have at least 3 matches in the chosen period. The average is theirs and the range goes from the lowest to the highest."
+
+#: data_analyse/squad_compare.py data_analyse/templates/includes/squad_compare.html
+#, python-format
+msgid "%(n)s %%"
+msgstr "%(n)s %%"
+
+#: data_analyse/squad_compare.py data_analyse/templates/includes/squad_compare.html
+#, python-format
+msgid "%(w)s de %(n)s partidos"
+msgstr "%(w)s of %(n)s matches"
+
+#: data_analyse/squad_compare.py data_analyse/templates/includes/squad_compare.html
+#, python-format
+msgid "%(w)s de %(n)s sets"
+msgstr "%(w)s of %(n)s sets"
+
+#: data_analyse/squad_compare.py data_analyse/templates/includes/squad_compare.html
+#, python-format
+msgid "%(w)s de %(n)s convocatorias"
+msgstr "%(w)s of %(n)s call-ups"
+
+#: data_analyse/squad_compare.py data_analyse/templates/includes/squad_compare.html
+msgid "última actualización"
+msgstr "latest update"
+
+#: data_analyse/squad_compare.py data_analyse/templates/includes/squad_compare.html
+#, python-format
+msgid "de %(n)s jornadas"
+msgstr "of %(n)s rounds"
+
+#: data_analyse/squad_compare.py data_analyse/templates/includes/squad_compare.html
+msgid "En la media"
+msgstr "On average"
+
+#: data_analyse/squad_compare.py data_analyse/templates/includes/squad_compare.html
+#, python-format
+msgid "%(a)s sobre la media"
+msgstr "%(a)s above average"
+
+#: data_analyse/squad_compare.py data_analyse/templates/includes/squad_compare.html
+#, python-format
+msgid "%(a)s bajo la media"
+msgstr "%(a)s below average"
+
+#: data_analyse/squad_compare.py data_analyse/templates/includes/squad_compare.html
+#, python-format
+msgid "%(n)s jornadas"
+msgstr "%(n)s rounds"
+
+#: data_analyse/squad_compare.py data_analyse/templates/includes/squad_compare.html
+#, python-format
+msgid "%(label)s: %(value)s, puesto %(rank)s de %(of)s, media %(mean)s"
+msgstr "%(label)s: %(value)s, rank %(rank)s of %(of)s, average %(mean)s"
+
+#: data_analyse/squad_compare.py data_analyse/templates/includes/squad_compare.html
+msgid "Frente a la plantilla"
+msgstr "Against the squad"
+
+#: data_analyse/squad_compare.py data_analyse/templates/includes/squad_compare.html
+msgid "Por debajo de la media o en ella en todas"
+msgstr "At or below average in all"
+
+#: data_analyse/squad_compare.py data_analyse/templates/includes/squad_compare.html
+#, python-format
+msgid "Por encima de la media en <strong>%(a)s de %(n)s</strong>"
+msgstr "Above average in <strong>%(a)s of %(n)s</strong>"
+
+#: data_analyse/squad_compare.py data_analyse/templates/includes/squad_compare.html
+msgid "Media"
+msgstr "Average"
+
+#: data_analyse/squad_compare.py data_analyse/templates/includes/squad_compare.html
+msgid "media"
+msgstr "average"
+
+#: data_analyse/squad_compare.py data_analyse/templates/includes/squad_compare.html
+msgid "mín."
+msgstr "min."
+
+#: data_analyse/squad_compare.py data_analyse/templates/includes/squad_compare.html
+msgid "máx."
+msgstr "max."
+
+#: data_analyse/squad_compare.py data_analyse/templates/includes/squad_compare.html
+#, python-format
+msgid "%(n)s.º de %(total)s"
+msgstr "%(n)s of %(total)s"
+
+#: data_analyse/templates/includes/squad_compare.html
+#, python-format
+msgid "Por encima de la media en la única medida"
+msgid_plural "Por encima de la media en las %(n)s medidas"
+msgstr[0] "Above average in the only measure"
+msgstr[1] "Above average in all %(n)s measures"

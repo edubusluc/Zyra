@@ -4632,3 +4632,38 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 @media (prefers-reduced-motion: no-preference) {
   .z-stage.has-crest:not(.has-photo) .z-stage-crest { animation: z-stage-float 4s ease-in-out infinite; }
 }
+
+/* ---- Estadísticas · «Frente a la plantilla» (includes/squad_compare.html) ---- */
+.st-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.st-squad { container-type: inline-size; display: flex; flex-direction: column; gap: 14px; }
+.st-squad-head { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px 16px; }
+.st-squad-sum { margin: 2px 0 0; font-size: var(--z-fs-sm); color: var(--z-muted); }
+.st-squad-sum strong { color: var(--z-text); }
+.st-squad-legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: var(--z-fs-xs); color: var(--z-muted); align-items: center; }
+.st-squad-legend i { display: inline-block; vertical-align: -2px; margin-right: 5px; }
+.st-squad-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--z-lime); border: 2px solid var(--z-ink); box-shadow: 0 0 0 1px var(--z-lime); }
+.st-squad-avg { width: 3px; height: 14px; border-radius: 2px; background: #FFFFFF; }
+.st-squad-band { width: 22px; height: 8px; border-radius: 6px; background: var(--z-surface-3); border: 1px solid var(--z-border-strong); }
+.st-squad-rows { display: flex; flex-direction: column; gap: 18px; margin: 0; padding: 0; list-style: none; }
+.st-squad-row { position: relative; display: grid; gap: 6px; }
+.st-squad-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.st-squad-label { display: flex; align-items: center; gap: 6px; font-size: var(--z-fs-xs); font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--z-muted); }
+.st-squad-rank { padding: 3px 10px; border-radius: 999px; font-size: var(--z-fs-xs); font-weight: 800; background: var(--z-surface-3); color: var(--z-text); white-space: nowrap; }
+.st-squad-rank.is-top { background: var(--z-lime); color: var(--z-ink); }
+.st-squad-main { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+.st-squad-val { font-family: var(--z-display); font-size: var(--z-fs-2xl); font-weight: 400; line-height: 1; color: #FFFFFF; }
+.st-squad-base { font-size: var(--z-fs-sm); color: var(--z-muted); }
+.st-squad-delta { margin-left: auto; font-size: var(--z-fs-sm); font-weight: 800; white-space: nowrap; }
+.st-squad-delta.is-up { color: var(--z-lime); }
+.st-squad-delta.is-down { color: var(--z-danger); }
+.st-squad-delta.is-eq { color: var(--z-muted); }
+.st-squad-track { position: relative; height: 12px; margin: 8px 0 2px; }
+.st-squad-track::before { content: ""; position: absolute; inset: 4px 0; border-radius: 6px; background: var(--z-surface); border: 1px solid var(--z-border); }
+.st-squad-range { position: absolute; top: 2px; height: 8px; border-radius: 6px; background: var(--z-surface-3); border: 1px solid var(--z-border-strong); }
+.st-squad-mean { position: absolute; top: -3px; width: 3px; height: 18px; margin-left: -1px; border-radius: 2px; background: #FFFFFF; }
+.st-squad-me { position: absolute; top: -2px; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%; background: var(--z-lime); border: 3px solid var(--z-ink); box-shadow: 0 0 0 1px var(--z-lime); }
+.st-squad-scale { display: flex; justify-content: space-between; gap: 8px; font-size: var(--z-fs-xs); color: var(--z-muted); font-variant-numeric: tabular-nums; }
+.st-squad-scale b { font-weight: 600; color: var(--z-text); }
+@container (max-width: 460px) {
+  .st-squad-delta { margin-left: 0; flex-basis: 100%; }
+}
