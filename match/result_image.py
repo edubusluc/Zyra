@@ -3,8 +3,8 @@ Imagen del resultado de un enfrentamiento para compartir por WhatsApp (JPEG: iOS
 
 Formato vertical 4:5 (1080×1350 px) con el estilo de la web: fondo oscuro de pista con la red en el
 centro, marcador en Anton (lima si se gana, rojo si se pierde, ámbar si se empata), insignia de la
-competición, escudos de local y visitante y una fila por partido con la pareja propia, los sets y los
-puntos que valía. Solo se guardan los jugadores del lado propio, así que la pareja rival no aparece.
+competición, escudos de local y visitante y una fila por partido con la pareja propia (nombres completos), los sets y los
+puntos que valía, en lima si la pareja propia ganó. Solo se guardan los jugadores del lado propio, así que la pareja rival no aparece.
 
 ``build_result_jpeg`` dibuja al doble de tamaño y reduce al final para que los bordes salgan suaves.
 """
@@ -126,19 +126,10 @@ def _pill(layer, box, fill, outline=None, width=2):
                                             outline=outline, width=_s(width) if outline else 0)
 
 
-def _short_name(game, slot):
-    """«A. Montaño»: inicial del nombre y primer apellido (o los dos primeros tokens si el jugador se eliminó)."""
-    player = getattr(game, slot)
-    if player:
-        return f"{player.name[:1].upper()}. {player.get_first_last_name()}".strip()
-    parts = game.player_name(slot).split()
-    return f"{parts[0][:1]}. {parts[1]}" if len(parts) > 1 else " ".join(parts)
-
-
 def _own_pair(game, own_is_local):
-    """Los dos nombres cortos de la pareja propia del partido (lista vacía si no se alineó ninguna)."""
+    """Los dos nombres completos de la pareja propia del partido (lista vacía si no se alineó ninguna)."""
     prefix = "local" if own_is_local else "visiting"
-    names = [_short_name(game, f"player_1_{prefix}"), _short_name(game, f"player_2_{prefix}")]
+    names = [game.player_name(f"player_1_{prefix}"), game.player_name(f"player_2_{prefix}")]
     return names if all(names) else []
 
 
@@ -190,63 +181,51 @@ def _team(canvas, draw, cx, top, name, side, own, team=None):
 
 
 def _rows(canvas, draw, match, games, own_is_local, rules):
-    """Panel con una fila por partido: nº, pareja propia, sets y puntos en el lado de quien ganó."""
+    """Panel con una fila por partido, siempre «Pareja - Resultado»: nº, pareja propia con nombres completos,
+    sets (en orden local-visitante) y, si la competición lo pide, los puntos. Pareja y sets van en lima si
+    la pareja propia ganó el partido."""
     n = max(len(games), 1)
     row_h = 112 if n > 3 else 128
     top = 620
     panel = [64, top, W - 64, top + 16 + row_h * n]
     draw.rounded_rectangle([_s(v) for v in panel], radius=_s(30), fill=SURFACE + (235,), outline=BORDER, width=_s(2))
-    x0 = 92
-    col_l, col_sets, col_v = (230, 446), (446, 696), (696, 912)
+    x_num, x_pair = 92, 170
+    x_sets = W - 92 - (92 if rules.ordered_pairs else 0)  # borde derecho de los sets (a su derecha, los puntos)
+    pair_width = 410
     for i, game in enumerate(games):
         y = top + 8 + i * row_h
         cy = y + row_h / 2
         if i:
             draw.line([(_s(92), _s(y)), (_s(W - 92), _s(y))], fill=BORDER, width=_s(2))
-        _text(draw, (x0, cy), f"P{game.n_game}", _font("Anton-Regular.ttf", 34), MUTED, "lm")
-        own_side_local = own_is_local
-        winner_local = game.winner == outcomes.WINNER_LOCAL
-        own_won = winner_local == own_side_local
-        own_col = col_l if own_side_local else col_v
+        _text(draw, (x_num, cy), f"P{game.n_game}", _font("Anton-Regular.ttf", 34), MUTED, "lm")
+        own_won = (game.winner == outcomes.WINNER_LOCAL) == own_is_local
         pair = [] if game.no_show in ("own", "both") else _own_pair(game, own_is_local)
-        if pair:
+        for j, name in enumerate(pair):
             fname = "Archivo-ExtraBold.ttf" if own_won else "Archivo-Bold.ttf"
-            width = own_col[1] - own_col[0]
-            for j, name in enumerate(pair):
-                font = _fit(draw, name, fname, 30, width)
-                ny = cy + (j - 0.5) * 36
-                if own_side_local:
-                    _text(draw, (own_col[1], ny), name, font, TEXT if own_won else MUTED, "rm")
-                else:
-                    _text(draw, (own_col[0], ny), name, font, TEXT if own_won else MUTED, "lm")
+            _text(draw, (x_pair, cy + (j - 0.5) * 36), name, _fit(draw, name, fname, 30, pair_width, 18),
+                  LIME if own_won else MUTED, "lm")
         sets = _sets(game)
-        # «No presentada»: en el lado de la pareja que faltó (propia, rival o ambas).
-        missing = {"own": [own_side_local], "rival": [not own_side_local], "both": [True, False]}.get(game.no_show, [])
-        for local_side in missing:
-            col = col_l if local_side else col_v
+        # «No presentada»: a la altura de la pareja que faltó (propia o ambas) o de los sets (rival).
+        if game.no_show:
             label = _("NO PRESENTADA")
             font = _font("Archivo-ExtraBold.ttf", 20)
             tw = _spaced_width(draw, label, font, 1.2) / SCALE + 24
-            x1 = col[1] if local_side else col[0] + tw
-            xs = x1 - tw
-            _pill(canvas, [xs, cy - 18, x1, cy + 18], (0, 0, 0, 0), outline=WARNING, width=2)
-            _text(draw, ((xs + x1) / 2, cy + 1), label, font, WARNING, "mm", spacing=1.2)
-        if sets and not missing:
-            _text(draw, ((col_sets[0] + col_sets[1]) / 2, cy), sets, _fit(draw, sets, "Archivo-ExtraBold.ttf", 32, 240), TEXT, "mm")
-        elif not missing:
-            _text(draw, ((col_sets[0] + col_sets[1]) / 2, cy), "—", _font("Archivo-ExtraBold.ttf", 32), MUTED, "mm")
-        # Puntos en juego (solo en las competiciones con valor distinto por partido): «+3» para quien
-        # gana y «0» para quien pierde, en los dos lados para que no se preste a confusión.
+            xs = x_pair if game.no_show in ("own", "both") else x_sets - tw
+            _pill(canvas, [xs, cy - 18, xs + tw, cy + 18], (0, 0, 0, 0), outline=WARNING, width=2)
+            _text(draw, (xs + tw / 2, cy + 1), label, font, WARNING, "mm", spacing=1.2)
+        if sets and game.no_show not in ("own", "both", "rival"):
+            _text(draw, (x_sets, cy), sets, _fit(draw, sets, "Archivo-ExtraBold.ttf", 32, 260),
+                  LIME if own_won else TEXT, "rm")
+        elif not game.no_show:
+            _text(draw, (x_sets, cy), "—", _font("Archivo-ExtraBold.ttf", 32), MUTED, "rm")
+        # Puntos en juego (solo en las competiciones con valor distinto por partido): los de la pareja propia.
         if rules.ordered_pairs and game.score:
             font = _font("Archivo-ExtraBold.ttf", 22)
-            for local_side in (True, False):
-                won = winner_local == local_side
-                label = f"+{game.score}" if won else "0"
-                tw = max(draw.textlength(label, font=font) / SCALE + 24, 54)
-                cx = 192 if local_side else 950
-                gain = won and own_won  # solo lima el «+N» de nuestra pareja
-                _pill(canvas, [cx - tw / 2, cy - 15, cx + tw / 2, cy + 15], LIME if gain else (42, 44, 39))
-                _text(draw, (cx, cy + 1), label, font, INK if gain else MUTED, "mm")
+            label = f"+{game.score}" if own_won else "0"
+            tw = max(draw.textlength(label, font=font) / SCALE + 24, 54)
+            cx = W - 92 - tw / 2
+            _pill(canvas, [cx - tw / 2, cy - 15, cx + tw / 2, cy + 15], LIME if own_won else (42, 44, 39))
+            _text(draw, (cx, cy + 1), label, font, INK if own_won else MUTED, "mm")
     return panel[3]
 
 
