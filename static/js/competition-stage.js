@@ -9,8 +9,8 @@
   const canvas = root.querySelector('[data-stage-canvas]');
   const fallback = root.querySelector('[data-stage-fallback]');
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const SCRIPT = (document.querySelector('script[src*="competition-stage.js"]') || {}).src || '';
-  const THREE_URL = SCRIPT.replace(/js\/competition-stage\.js.*$/, 'vendor/three/three.min.js');
+  // La plantilla da la URL real: en producción los estáticos llevan huella en el nombre (three.min.<huella>.js).
+  const THREE_URL = root.dataset.threeSrc || '';
 
   let pending = null;   // entrada pedida antes de que el 3D esté listo
   let api = null;       // { show, nudge } cuando el 3D está listo

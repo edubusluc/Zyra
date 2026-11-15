@@ -1,5 +1,5 @@
-{% load i18n %}{# Escenario del selector de competición: escudo 3D (canvas; si no hay WebGL, la insignia de reserva), nombre y datos de la competición elegida. Lo pintan competition-picker.js y competition-stage.js; recibe picker (core.competition_picker). #}
-<section class="z-stage" data-competition-stage aria-labelledby="stage-name">
+{% load i18n static %}{# Escenario del selector de competición: escudo 3D (canvas; si no hay WebGL, la insignia de reserva), nombre y datos de la competición elegida. Lo pintan competition-picker.js y competition-stage.js; recibe picker (core.competition_picker). #}
+<section class="z-stage" data-competition-stage data-three-src="{% static 'vendor/three/three.min.js' %}" aria-labelledby="stage-name">
     <div class="z-stage-head">
         <span class="z-stage-pill" data-stage-pill></span>
         <p class="z-stage-name" id="stage-name" data-stage-name></p>
