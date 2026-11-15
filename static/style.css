@@ -4617,3 +4617,11 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
   .z-stage.has-photo .z-stage-photo { animation: z-stage-float 4s ease-in-out infinite; }
   @keyframes z-stage-float { 50% { transform: translateY(-8px); } }
 }
+
+/* Escudo en imagen de la competición (back-office): sustituye al 3D salvo que el equipo suba el suyo. */
+.z-stage.has-crest .z-stage-crest { opacity: 1; transform: none; }
+.z-stage.has-crest .z-stage-canvas, .z-stage.has-crest .z-stage-fallback { opacity: 0; transform: scale(1.08); pointer-events: none; }
+.z-stage.has-photo .z-stage-crest { opacity: 0; transform: scale(.92); animation: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .z-stage.has-crest:not(.has-photo) .z-stage-crest { animation: z-stage-float 4s ease-in-out infinite; }
+}

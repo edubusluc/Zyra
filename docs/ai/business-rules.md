@@ -27,6 +27,8 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
   la tarjeta de una competición en la que la cuenta ya pertenece a un equipo (capitán, gestor o jugador) sale bloqueada
   con el nombre del equipo; cada ficha dice en qué países se juega (`Competition.countries`, `plays_in`; LAPI solo España)
   y `ClubForm.clean` lo exige; la división solo se pide si la ficha tiene `divisions`. Quien crea el equipo es su capitán.
+  El color y el escudo en imagen de cada competición los ajusta el personal en el back-office («Aspecto», `core.CompetitionStyle`,
+  `core/competition_style.py`); sin ajuste valen los de la ficha. Las reglas y las competiciones nuevas se añaden en el código.
   Tests: `core/tests_spaces.py`, `core/tests_competition_picker.py`, `core/tests_onboarding.py`, `core/tests_invitations.py`, `core/tests_space_invitations.py`.
 - [V] Vistas unidas (`core/spaces.py`): con más de un espacio, Enfrentamientos, Calendario, Inicio (Pendiente y próximo
   enfrentamiento) juntan los espacios con el filtro «Todas · SNP · LAPI» (`?espacio=`, se recuerda en sesión, por defecto

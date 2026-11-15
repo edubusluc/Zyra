@@ -1,0 +1,40 @@
+{% extends 'backoffice/base.html' %}
+{% load i18n %}
+{% block title %}{% translate "Aspecto de las competiciones" %}{% endblock %}
+
+{% block content %}
+<div class="z-page-head">
+    <div>
+        <span class="z-eyebrow">{% translate "Competiciones" %}</span>
+        <h1>{% translate "Aspecto de las competiciones" %}</h1>
+    </div>
+</div>
+
+{% if messages %}
+<div class="alert-message">{% for message in messages %}<p>{{ message }}</p>{% endfor %}</div>
+{% endif %}
+
+<p class="text-muted">{% translate "Color del escudo y de las etiquetas de cada competición y, solo si hay permiso para usarlo, su escudo en imagen (PNG con fondo transparente), que sustituye al escudo 3D genérico al añadir un equipo. Las reglas y las competiciones nuevas se añaden en el código." %}</p>
+
+<div class="z-table-wrap"><table class="table align-middle">
+    <thead><tr><th>{% translate "Competición" %}</th><th>{% translate "Color" %}</th><th>{% translate "Escudo en imagen" %}</th><th><span class="visually-hidden">{% translate "Acciones" %}</span></th></tr></thead>
+    <tbody>
+    {% for item in items %}
+        <tr>
+            <td><strong>{{ item.rules.name }}</strong><br><small class="text-muted">{{ item.rules.full_name }}</small></td>
+            <td colspan="3">
+                <form method="post" enctype="multipart/form-data" action="{% url 'backoffice:competition_style_save' item.rules.code %}" class="bo-filters" data-loading-text="{% translate 'Guardando…' %}">
+                    {% csrf_token %}
+                    <input type="color" name="color" value="{{ item.color }}" class="form-control form-control-color" aria-label="{% translate 'Color de' %} {{ item.rules.name }}">
+                    <label class="form-check"><input type="checkbox" name="reset_color" class="form-check-input"> <span class="form-check-label">{% blocktranslate with color=item.default_color %}Volver al color por defecto ({{ color }}){% endblocktranslate %}</span></label>
+                    {% if item.crest %}<img src="{{ item.crest }}" alt="{% translate 'Escudo actual' %}" class="z-avatar z-avatar--sm">{% endif %}
+                    <input type="file" name="crest" accept="image/png,image/webp,image/jpeg" class="form-control" aria-label="{% translate 'Escudo en imagen de' %} {{ item.rules.name }}">
+                    {% if item.crest %}<label class="form-check"><input type="checkbox" name="remove_crest" class="form-check-input"> <span class="form-check-label">{% translate "Quitar el escudo" %}</span></label>{% endif %}
+                    <button class="btn btn-primary"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> {% translate "Guardar" %}</button>
+                </form>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table></div>
+{% endblock %}

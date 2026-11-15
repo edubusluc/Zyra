@@ -28,6 +28,10 @@
     q('[data-stage-full]').textContent = entry.full_name;
     const view = q('.z-stage-view');
     view.setAttribute('aria-label', (view.dataset.stageLabel || '{name}').replace('{name}', entry.name));
+    // Con escudo en imagen (lo sube el personal desde el back-office) sustituye al 3D genérico.
+    const compCrest = q('[data-stage-crest]');
+    if (entry.crest) compCrest.setAttribute('src', entry.crest); else compCrest.removeAttribute('src');
+    stage.classList.toggle('has-crest', Boolean(entry.crest));
     stage.querySelectorAll('[data-facts-for]').forEach((dl) => { dl.hidden = dl.dataset.factsFor !== entry.code; });
     if (window.ZyraStage && window.ZyraStage.last !== entry.code) window.ZyraStage.show(entry);
     if (window.ZyraStage) window.ZyraStage.last = entry.code;

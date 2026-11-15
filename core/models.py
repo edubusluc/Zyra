@@ -537,3 +537,24 @@ class ServiceSwitch(models.Model):
     def __str__(self):
         """Nombre del servicio y si está activo."""
         return f"{self.name}: {'activo' if self.enabled else 'apagado'}"
+
+
+class CompetitionStyle(models.Model):
+    """
+    Aspecto de una competición que el personal ajusta desde el back-office: el color de su escudo y
+    de sus etiquetas y, si hay permiso para usarlo, el escudo en imagen (PNG con transparencia) que
+    sustituye al escudo 3D genérico en el selector de competición. Sin fila, o con un campo vacío,
+    vale lo que dice su ficha (``core.competitions``). Las reglas siguen en el código.
+    """
+    code = models.CharField(max_length=20, primary_key=True)
+    color = models.CharField(max_length=7, blank=True)
+    crest = models.ImageField(upload_to="competitions/", null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = _("aspecto de competición")
+        verbose_name_plural = _("aspecto de competiciones")
+
+    def __str__(self):
+        """Código de la competición."""
+        return self.code
