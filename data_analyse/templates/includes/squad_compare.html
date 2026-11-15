@@ -1,0 +1,40 @@
+{% load i18n %}{# «Frente a la plantilla»: recibe squad_compare (data_analyse.squad_compare.compare_to_squad) con legend. La barra es decorativa; cada fila lleva su texto para lectores de pantalla. #}
+<section aria-labelledby="squad-title" class="st-section" data-level="understand" id="sec-plantilla-comparada">
+  <article class="st-card st-squad">
+    <div class="st-squad-head">
+      <div>
+        <h2 class="st-card-title" id="squad-title">{% translate "Frente a la plantilla" %}{% include 'includes/stat_tip.html' with tip=squad_compare.tip %}</h2>
+        <p class="st-squad-sum">{% if squad_compare.all_above %}{% blocktranslate count n=squad_compare.count %}Por encima de la media en la única medida{% plural %}Por encima de la media en las {{ n }} medidas{% endblocktranslate %}{% elif squad_compare.none_above %}{% translate "Por debajo de la media o en ella en todas" %}{% else %}{% blocktranslate with a=squad_compare.above n=squad_compare.count %}Por encima de la media en <strong>{{ a }} de {{ n }}</strong>{% endblocktranslate %}{% endif %}</p>
+      </div>
+      <div class="st-squad-legend" aria-hidden="true">
+        <span><i class="st-squad-dot"></i>{{ squad_compare.legend }}</span>
+        <span><i class="st-squad-avg"></i>{% translate "Media" %}</span>
+        <span><i class="st-squad-band"></i>{% translate "Plantilla" %}</span>
+      </div>
+    </div>
+    <ul class="st-squad-rows">
+      {% for r in squad_compare.rows %}
+      <li class="st-squad-row">
+        <div class="st-squad-top">
+          <span class="st-squad-label">{{ r.label }}{% include 'includes/stat_tip.html' with tip=r.tip %}</span>
+          <span class="st-squad-rank{% if r.top %} is-top{% endif %}">{% blocktranslate with n=r.rank total=r.of %}{{ n }}.º de {{ total }}{% endblocktranslate %}</span>
+        </div>
+        <div class="st-squad-main">
+          <b class="st-squad-val">{{ r.value }}</b>
+          <span class="st-squad-base">{{ r.base }}</span>
+          <span class="st-squad-delta is-{{ r.tone }}">{{ r.arrow }} {{ r.delta }}</span>
+        </div>
+        <div class="st-squad-track" aria-hidden="true">
+          <span class="st-squad-range" style="left: {{ r.pos_low }}%; width: {{ r.range_width }}%"></span>
+          <span class="st-squad-mean" style="left: {{ r.pos_mean }}%"></span>
+          <span class="st-squad-me" style="left: {{ r.pos_me }}%"></span>
+        </div>
+        <div class="st-squad-scale" aria-hidden="true">
+          <span>{% translate "mín." %} <b>{{ r.low }}</b></span><span>{% translate "media" %} <b>{{ r.mean }}</b></span><span>{% translate "máx." %} <b>{{ r.high }}</b></span>
+        </div>
+        <span class="st-sr">{{ r.reader }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+  </article>
+</section>

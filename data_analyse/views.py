@@ -30,7 +30,7 @@ from players.models import current_season, joined_by
 from . import pairs as pair_stats
 from . import rivals as rival_stats
 from . import records
-from . import comparison, player_card, roster_table, team_card
+from . import comparison, player_card, roster_table, squad_compare, team_card
 from .attendance import signup_attendance
 from .sets import by_game_number, filled_of, own_sets, set_stats
 
@@ -1165,12 +1165,34 @@ def _player_page(request, player_id, history=False):
             'changes': [None] + [round(b.score - a.score, 1) for a, b in zip(snp_history, snp_history[1:])],
         },
     }
+    # «Frente a la plantilla»: con los mismos filtros que el resto de la ficha; no en fichas de equipos anteriores.
+    if not history:
+        context['squad_compare'] = _squad_compare(request, player, players, selected_season, match_type, is_me)
     # Su propio jugador, con jugador en varias competiciones: es «Mis estadísticas» de esta competición.
     if is_me and not history:
         mine = spaces.my_players(request)
         if spaces.my_stats_page(request):
             context.update(mine_chips(request, mine, request.club.competition))
     return render(request, 'player_statistics.html', context)
+
+
+def _squad_compare(request, player, squad, season, match_type, is_me):
+    """
+    Datos de la tarjeta «Frente a la plantilla» (``squad_compare.compare_to_squad``) para ``player`` con la temporada
+    y el tipo elegidos, o None si no hay con quién compararlo. ``legend`` es el nombre que lleva su marca en la barra.
+    """
+    squad = list(squad)
+    club = request.club
+    log = pair_stats.club_game_log(club, season, match_type)
+    signup = roster_table.signup_by_player(club, squad, season, match_type)
+    snp = None
+    if club.rules.has_snp:
+        snp = {r["player"].id: r for r in records.snp_ranking(club, season or current_season())["rows"]}
+    league = squad_compare.league_played(club, season, squad) if club.rules.league_type and not club.rules.has_snp else None
+    result = squad_compare.compare_to_squad(player, squad, log, signup, snp, league)
+    if result:
+        result["legend"] = _("Yo") if is_me else player.name
+    return result
 
 
 # ---------------------------------------------------------------
