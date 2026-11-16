@@ -106,12 +106,9 @@ class MatchForm(forms.ModelForm):
         self.rival_matches = []  # equipos existentes con un nombre igual o parecido al escrito (aviso al capitán)
         self.rival_exact = False  # True si alguno se llama igual: solo se puede unir, no crear otro
         self._neutral = False
-        # El equipo propio siempre se puede elegir, aunque no esté marcado "en el grupo".
-        # Y los rivales escritos a mano en partidos anteriores (fuera del grupo): se reutilizan sin darlos de alta.
-        played = Team.objects.filter(club=club, in_group=False, is_own=False).filter(
-            Q(local_matches__club=club) | Q(visiting_matches__club=club)).values('pk')
-        teams = Team.objects.filter(club=club).filter(
-            Q(in_group=True) | Q(is_own=True) | Q(pk__in=played)).order_by('-is_own', 'name')
+        # Solo los equipos con «En tu grupo» marcado; el propio siempre se puede elegir, esté o no en el grupo.
+        # Los rivales de fuera del grupo se escriben por su nombre (amistoso y Play Off).
+        teams = Team.objects.filter(club=club).filter(Q(in_group=True) | Q(is_own=True)).order_by('-is_own', 'name')
         missing_team = _("Uno de los equipos no existe.")
         self.fields['rival'].queryset = teams.filter(is_own=False)
         self.fields['rival'].empty_label = _("Elige equipo")

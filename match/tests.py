@@ -528,6 +528,15 @@ class CreateMatchOwnTeamTests(TestCase):
         self.post(self.own, self.rival)
         self.assertTrue(Match.objects.filter(local=self.own).exists())
 
+    def test_rival_choices_only_include_group_teams(self):
+        outside = Team.objects.create(club=self.club, name="Fuera SL", location="X", in_group=False)
+        Match.objects.create(club=self.club, local=self.own, visiting=outside, start_date=datetime.date(2026, 1, 1))
+        response = self.client.get(self.url)
+        rivals = set(response.context["form"].fields["rival"].queryset)
+        self.assertIn(self.rival, rivals)
+        self.assertNotIn(outside, rivals)
+        self.assertNotIn(self.own, rivals)
+
     def test_form_preselects_own_team_as_local(self):
         response = self.client.get(self.url)
         self.assertEqual(response.context["form"].initial["local"], self.own.pk)
@@ -699,12 +708,12 @@ class FriendlyManualRivalTests(TestCase):
         self.assertContains(response, "no puede llamarse igual que tu equipo")
         self.assertFalse(Match.objects.exists())
 
-    def test_form_suggests_existing_teams_and_ungrouped_rivals_can_be_picked(self):
+    def test_form_suggests_existing_teams_but_ungrouped_rivals_are_not_pickable(self):
         self.client.post(self.url, self.data)
         rival = Match.objects.get().visiting
         response = self.client.get(self.url)
         self.assertContains(response, '<option value="Pádel Norte">')
-        self.assertIn(rival, response.context["form"].fields["rival"].queryset)
+        self.assertNotIn(rival, response.context["form"].fields["rival"].queryset)
 
     def test_competitive_match_ignores_typed_rival(self):
         rival = Team.objects.create(club=self.club, name="Rival", location="X", in_group=True)
