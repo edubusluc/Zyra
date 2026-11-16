@@ -11,12 +11,17 @@
   const DRAFT_FIELDS = /^(name|location|gender|country|division|default_time|username|email|player-name|player-last_name)$/;
 
   function init() {
-    const forms = window.ZyraForms;
+    // form-errors.js se carga después de este script: se consulta al usarlo, no al arrancar.
+    const forms = {
+      setError: (...a) => window.ZyraForms.setError(...a),
+      focusControl: (...a) => window.ZyraForms.focusControl(...a),
+    };
     const steps = Array.from(form.querySelectorAll('[data-wizard-step]'));
     const progress = form.querySelector('[data-wizard-progress]');
     const summary = form.querySelector('[data-wizard-summary]');
     let current = 0;
     let serverErrors = form.querySelectorAll('.errorlist:not([data-js-error])').length;
+    let booted = false;
 
     form.classList.add('is-wizard');
     steps.forEach((step) => step.querySelectorAll('[data-wizard-next], [data-wizard-back]').forEach((b) => { b.hidden = false; }));
@@ -91,6 +96,8 @@
     }
     function go(index, focusTop) {
       current = Math.max(0, Math.min(steps.length - 1, index));
+      // El deslizamiento entre pasos solo al navegar, no al abrir la página (ya entra con su fundido)
+      if (booted) form.classList.add('is-stepping');
       steps.forEach((step, i) => { step.hidden = i !== current; });
       renderProgress();
       if (focusTop) {
@@ -174,23 +181,28 @@
         }
       });
     }
-    restoreDraft();
-
     // --- Arranque -----------------------------------------------------------------------
-    go(0, false);
+    // La estructura (pasos, progreso, botones) se monta de inmediato, antes del primer pintado, para
+    // que el formulario no cambie de forma al cargar; el resto espera a los desplegables propios.
+    let startStep = 0;
     if (serverErrors) {
       const firstBad = form.querySelector('.errorlist:not([data-js-error])');
-      const stepIndex = Math.max(0, steps.findIndex((s) => s.contains(firstBad)));
-      go(stepIndex, false);
+      startStep = Math.max(0, steps.findIndex((s) => s.contains(firstBad)));
+    }
+    go(startStep, false);
+    booted = true;
+
+    setTimeout(() => {
+      restoreDraft();
+      if (!serverErrors) return;
       const bad = [];
       form.querySelectorAll('[aria-invalid=true]').forEach((c) => bad.push(c));
       showSummary({ bad, allRequired: false });
-      const target = steps[stepIndex].querySelector('[aria-invalid=true]');
+      const target = steps[startStep].querySelector('[aria-invalid=true]');
       if (target) forms.focusControl(target);
-    }
+    }, 20);
   }
 
-  // Tras DOMContentLoaded: los desplegables propios y form-errors.js ya están listos
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(init, 20));
-  else setTimeout(init, 20);
+  // El script va al final del formulario: el DOM necesario ya está, se monta sin esperar.
+  init();
 })();

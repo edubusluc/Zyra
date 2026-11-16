@@ -68,6 +68,16 @@ class RegisterWizardTests(TestCase):
         # Nunca guarda contraseñas en el borrador.
         self.assertIn("el.type !== 'password'", source)
 
+    def test_wizard_mounts_before_first_paint_without_reanimating(self):
+        """Sin parpadeo: los pasos se montan al cargar el script, no 20 ms después, y el deslizamiento solo al navegar."""
+        from django.contrib.staticfiles import finders
+        source = open(finders.find("js/register-wizard.js"), encoding="utf-8").read()
+        self.assertTrue(source.rstrip().endswith("init();\n})();"))
+        self.assertNotIn("setTimeout(init", source)
+        self.assertIn("is-stepping", source)
+        css = open(finders.find("style.css"), encoding="utf-8").read()
+        self.assertNotIn(".is-wizard [data-wizard-step]:not([hidden])", css)
+
     def test_player_registration_page_warns_that_a_captain_must_invite(self):
         choose = self.client.get(reverse("register"))
         self.assertContains(choose, "Necesitas la invitación de tu capitán")
