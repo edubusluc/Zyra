@@ -1402,7 +1402,7 @@ def valid_close_match(games,match):
         return False, _("No se pueden cerrar actas, se requieren al menos %(n)s partidos.") % {"n": total}
     
     # Un partido con pareja no presentada no lleva resultado (``match.pair_no_show``).
-    missing = [g.n_game for g in games if not g.no_show and g.results.first() is None]
+    missing = [g.n_game for g in games if not g.no_show and not g.results.all()]  # .all() usa el prefetch
     if missing:
         names = [_("Partido %(n)s") % {"n": n} for n in sorted(missing)]
         return False, _("No se puede cerrar el acta: falta el resultado de %(games)s.") % {
@@ -1417,7 +1417,7 @@ def do_close_match(request, match):
     formulario traiga ``confirm_future`` (las páginas lo envían tras avisar de la fecha y los
     rivales). Calcula los puntos y el resultado final; todo o nada.
     """
-    games = match.games.all()
+    games = match.games.prefetch_related("results")
 
     # Validar si se pueden cerrar las actas
     is_valid, error_message = valid_close_match(games, match)
