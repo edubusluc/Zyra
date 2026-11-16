@@ -43,9 +43,12 @@ def recipients(match):
     club = match.club
     if club is None or club.suspended_at is not None:
         return []
-    members = (Membership.objects.filter(club=club, user__is_active=True).exclude(user__email="")
-               .select_related("user").order_by("user__username"))
-    return [m.user for m in members if UserPreference.match_result_for(m.user)]
+    members = list(Membership.objects.filter(club=club, user__is_active=True).exclude(user__email="")
+                   .select_related("user").order_by("user__username"))
+    # Una sola consulta con los que se han dado de baja (por defecto el aviso está activado).
+    opted_out = set(UserPreference.objects.filter(user__in=[m.user_id for m in members], match_result_email=False)
+                    .values_list("user_id", flat=True))
+    return [m.user for m in members if m.user_id not in opted_out]
 
 
 def queue_match_result(match, force=False):
@@ -57,12 +60,14 @@ def queue_match_result(match, force=False):
     """
     now = timezone.now()
     queued = []
-    for user in recipients(match):
-        delivery, created = MatchResultDelivery.objects.get_or_create(
-            match=match, user=user,
-            defaults={"email": user.email, "result_points": match.result_points, "next_attempt_at": now})
-        if created:
-            queued.append(delivery)
+    users = recipients(match)
+    existing = {d.user_id: d for d in MatchResultDelivery.objects.filter(match=match, user__in=users)}
+    created = []
+    for user in users:
+        delivery = existing.get(user.pk)
+        if delivery is None:
+            created.append(MatchResultDelivery(match=match, user=user, email=user.email,
+                                               result_points=match.result_points, next_attempt_at=now))
         elif force or delivery.result_points != match.result_points:
             changed = delivery.result_points != match.result_points
             delivery.previous_points, delivery.result_points = delivery.result_points, match.result_points
@@ -71,6 +76,15 @@ def queue_match_result(match, force=False):
             delivery.next_attempt_at, delivery.last_error, delivery.sent_at = now, "", None
             delivery.save()
             queued.append(delivery)
+    if created:
+        # bulk_create (el public_id lo asigna PublicIdQuerySet): una consulta en vez de tres por destinatario.
+        # ``ignore_conflicts`` por si otra petición creó la misma fila entre medias (restricción match+user).
+        MatchResultDelivery.objects.bulk_create(created, ignore_conflicts=True)
+        fresh = list(MatchResultDelivery.objects.filter(match=match, user__in=[d.user for d in created])
+                     .select_related("user"))
+        for delivery in fresh:
+            delivery.match = match
+        queued = fresh + queued
     return queued
 
 
@@ -120,27 +134,62 @@ def _sets_text(result, own_is_local):
     return f"{text} · {_('Lesión')}" if result.retired else text
 
 
+def _game_data(match):
+    """Datos de los partidos de ``match`` iguales para todos los destinatarios (una vez por enfrentamiento):
+    filas sin el marcador «mine», que depende de la cuenta, y los ids de jugadores propios de cada partido."""
+    own_side = "local" if match.own_is_local else "visiting"
+    own_winner = outcomes.WINNER_LOCAL if match.own_is_local else outcomes.WINNER_VISITING
+    slots = [f"player_{n}_{s}" for n in (1, 2) for s in ("local", "visiting")]
+    rows, ids = [], []
+    for game in match.games.order_by("n_game").select_related(*slots).prefetch_related("results"):
+        result = next(iter(game.results.all()), None)  # no .first(): con el prefetch haría otra consulta
+        rows.append({
+            "n": game.n_game, "pair": game.pair_label,
+            "sets": _sets_text(result, match.own_is_local) if result else (game.get_no_show_display() if game.no_show else ""),
+            "won": game.winner == own_winner, "points": game.score or 0, "mine": False,
+        })
+        ids.append({getattr(game, f"player_{n}_{own_side}_id") for n in (1, 2)})
+    return rows, ids
+
+
+def _players_of_users(match):
+    """{id de cuenta: ids de sus fichas del club}: una sola consulta para todos los destinatarios."""
+    mapping = {}
+    for user_id, pk in Player.objects.filter(club=match.club, user__isnull=False).values_list("user_id", "pk"):
+        mapping.setdefault(user_id, set()).add(pk)
+    return mapping
+
+
+class MatchData:
+    """Lo que el correo del resultado necesita de un enfrentamiento y no cambia de un destinatario a otro.
+
+    ``deliver`` crea uno por enfrentamiento y lo comparte entre todos los envíos: así, con 30 destinatarios, las
+    consultas de partidos, parejas y resultados se hacen una vez y no treinta.
+    """
+
+    def __init__(self, match):
+        """Calcula las filas por partido y el resultado del club; las fichas por cuenta se piden al usarlas."""
+        self.match = match
+        self._rows, self._ids = _game_data(match)
+        self.outcome = _outcome(match)
+        self._players = None
+
+    def rows(self, user=None):
+        """Una fila por partido; ``mine`` marca el de la cuenta ``user`` si su jugador enlazado del club jugó."""
+        mine = set()
+        if user is not None:
+            if self._players is None:
+                self._players = _players_of_users(self.match)
+            mine = self._players.get(user.pk, set())
+        return [{**row, "mine": bool(mine & ids)} for row, ids in zip(self._rows, self._ids)]
+
+
 def game_rows(match, user=None):
     """
     Una fila por partido (pareja propia, sets, si se ganó y puntos que suma). ``mine`` marca el
     partido de la cuenta ``user`` si su jugador enlazado del club jugó en él.
     """
-    mine = set()
-    if user is not None:
-        mine = set(Player.objects.filter(club=match.club, user=user).values_list("pk", flat=True))
-    own_side = "local" if match.own_is_local else "visiting"
-    own_winner = outcomes.WINNER_LOCAL if match.own_is_local else outcomes.WINNER_VISITING
-    rows = []
-    for game in match.games.order_by("n_game").prefetch_related("results"):
-        result = game.results.first()
-        ids = {getattr(game, f"player_{n}_{own_side}_id") for n in (1, 2)}
-        won = game.winner == own_winner
-        rows.append({
-            "n": game.n_game, "pair": game.pair_label,
-            "sets": _sets_text(result, match.own_is_local) if result else (game.get_no_show_display() if game.no_show else ""),
-            "won": won, "points": game.score or 0, "mine": bool(mine & ids),
-        })
-    return rows
+    return MatchData(match).rows(user)
 
 
 def _outcome(match):
@@ -150,10 +199,14 @@ def _outcome(match):
     return match_outcome(match), own, rival
 
 
-def build_message(delivery):
-    """Correo con el resultado para una cuenta: asunto, texto, HTML con la cabecera según el resultado y baja."""
+def build_message(delivery, data=None):
+    """Correo con el resultado para una cuenta: asunto, texto, HTML con la cabecera según el resultado y baja.
+
+    ``data`` (``MatchData``) permite compartir entre destinatarios lo que no depende de la cuenta.
+    """
     match, user = delivery.match, delivery.user
-    outcome, own, rival = _outcome(match)
+    data = data or MatchData(match)
+    outcome, own, rival = data.outcome
     friendly = match.is_friendly
     club = match.club.name
     date = f"{match.start_date:%d/%m/%Y}"
@@ -169,7 +222,7 @@ def build_message(delivery):
     if delivery.correction:
         subject = _("Resultado corregido: %(subject)s") % {"subject": subject}
 
-    rows = game_rows(match, user)
+    rows = data.rows(user)
     mine = next((r for r in rows if r["mine"]), None)
     band, accent = BANDS["A" if friendly else outcome]
     unsubscribe_url = f"{settings.SITE_URL}{result_unsubscribe_path(user)}"
@@ -200,10 +253,13 @@ def deliver(deliveries, now=None):
     now = now or timezone.now()
     claimed = [d for d in deliveries if d.status == MatchResultDelivery.PENDING and _claim(d, now)]
     connection = None
+    shared = {}  # id del enfrentamiento -> MatchData, para no repetir las consultas por destinatario
     try:
         for delivery in claimed:
             try:
-                message = build_message(delivery)
+                if delivery.match_id not in shared:
+                    shared[delivery.match_id] = MatchData(delivery.match)
+                message = build_message(delivery, shared[delivery.match_id])
                 if connection is None:
                     connection = get_connection(fail_silently=False)
                     connection.open()

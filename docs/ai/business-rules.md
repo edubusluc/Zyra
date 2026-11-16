@@ -263,7 +263,7 @@ ni se editan parejas (`edit_game_match`).
   reabre y se vuelve a cerrar (`Match.reopened_at`) no se envía nada más salvo que el capitán marque la casilla «Volver a enviar el correo» (`resend_email`, desmarcada por defecto) en la confirmación del cierre. Cuatro cabeceras (victoria, derrota, empate, amistoso, que avisa de que no
   cuenta en lo competitivo) con las 5 parejas, sets y puntos y el partido de quien lo recibe resaltado. Un fallo de envío
   nunca impide cerrar el acta. Back-office: «Salud de los servicios» muestra enviados/fallidos/pendientes, último envío y
-  los avisos con problemas; los fallidos de 7 días suben a la bandeja de atención, a las alertas y al resumen semanal. Tests: `match/tests_result_email.py`.
+  los avisos con problemas; los fallidos de 7 días suben a la bandeja de atención, a las alertas y al resumen semanal. Tests: `match/tests_result_email.py`. El envío comparte por enfrentamiento los partidos, parejas y resultados (`MatchData`) y encola con `bulk_create`: las consultas no crecen por destinatario (`match/tests_close_queries.py`).
 - [V] Al cerrar la convocatoria se encola un `ReportDelivery` por capitán con email
   (`match/notifications.py`); se intenta al momento y `send_call_reports` reintenta a los 2, 10,
   30 y 120 min (`RETRY_DELAYS`); tras 5 intentos queda `failed` y se avisa al personal.
