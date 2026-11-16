@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 16/11/2026 · Rival del enfrentamiento: solo equipos del grupo
+
+- El desplegable del rival solo lista los equipos con «En tu grupo» marcado; los de fuera del grupo ya no salen mezclados (se escriben por su nombre en Amistoso y Play Off).
+
 ## 15/11/2026 · Play Off en sede neutral y rival escrito a mano
 
 - Los Play Off de la SNP se crean sin «En casa / Fuera»: se juegan en una sede fijada por la organización, que se escribe en «Lugar». No cuentan en Local y visitante (sí en el balance total, las rachas y los rivales) y la ficha, el listado, las imágenes y el informe PDF no muestran Local ni Visitante.
