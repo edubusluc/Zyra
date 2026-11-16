@@ -190,14 +190,14 @@ Orden obligatorio del ciclo (`match/views.py`) [V], cubierto por `match/tests_fl
    pregunta el lugar (el del propio); fuera se escribe y es también el del equipo nuevo. Esos rivales vuelven a
    salir en el selector de rival y la importación de SNP puede darlos de alta en el grupo. `Match.rival_name` (sin
    `Team`, ese lado `NULL`) solo queda en los amistosos antiguos.
-   **Sede neutral** (`Competition.neutral_types`, SNP: Play Off): `MatchForm` fija `Match.neutral_venue=True`, sin
+   **Sede neutral** (`Competition.neutral_types`, SNP: Play Off; LAPI: Playoffs y Fase final, tipos distintos): `MatchForm` fija `Match.neutral_venue=True`, sin
    «En casa / Fuera» (el propio ocupa el lado local solo para guardar el resultado) y con el rival escrito por su nombre
    (mismo aviso de coincidencia que en el amistoso); el lugar (la sede) siempre se pide, no se copia del equipo y
    el equipo nuevo se crea sin localidad.
    Un partido neutral cuenta en balance, rachas y rivales, pero no en Local y visitante (`Match.venue_side` None;
    `neutral` en `club_game_log`, `venue_matches`, `?lado=`, `advisor.build_forms`) y no muestra Local/Visitante en la
    ficha, el listado, las imágenes ni el informe PDF (`sede neutral`, sin columnas «Como …»). Los Play Off anteriores
-   no se tocan; en LAPI, Playoffs no es neutral. Tests: `match/tests.py` (`PlayOffNeutralVenueTests`,
+   no se tocan; la Liga de LAPI no es neutral. Tests: `match/tests.py` (`PlayOffNeutralVenueTests`), `match/tests_league.py` (`LapiNeutralVenueTests`,
    `FriendlyManualRivalTests`), `data_analyse/tests_rivals.py` (`NeutralVenueStatsTests`).
 2. **Convocatoria** (se crea y se edita con cualquier número de apuntados ≥ 1; el mínimo `min_call_players` de la competición, 10 SNP y 6 LAPI, solo cuenta al cerrarla): una por partido; si ya existe o el acta está cerrada → `existing_call`.
    Se edita mientras el acta siga abierta (`edit_call` mira `match.draft_mode`). Ya no hay historial de cambios de la convocatoria (se quitó `CallLog`); `view_call_log` solo muestra y pone advertencias, y responde 404 si la convocatoria no existe o es de otro club. Solo se convoca a jugadores con `in_team` (`club_players`; al editar se admiten los ya convocados).

@@ -798,14 +798,6 @@ class PlayOffNeutralVenueTests(TestCase):
         self.assertFalse(match.neutral_venue)
         self.assertEqual((match.local, match.visiting), (rival, self.own))
 
-    def test_lapi_playoffs_are_not_neutral(self):
-        self.club.competition = "lapi"
-        self.club.save()
-        rival = Team.objects.create(club=self.club, name="Rival", location="X", in_group=True)
-        self.client.post(self.url, {"mode": "competitivo", "match_type": "playoff", "own_side": "visiting",
-                                    "rival": rival.id, "start_date": "2026-11-15"})
-        self.assertFalse(Match.objects.get().neutral_venue)
-
     def test_pages_do_not_show_local_or_visitante(self):
         self.client.post(self.url, self.data)
         match = Match.objects.get()

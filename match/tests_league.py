@@ -11,6 +11,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from core.services import create_club
+from core.testing import TeamClient
 from match.forms import MatchForm
 from match.league import finals_shortfall, season_league_points
 from call.models import Call
@@ -21,6 +22,57 @@ from team.models import Team
 
 User = get_user_model()
 PASSWORD = "pass-12345-x"
+
+
+class LapiNeutralVenueTests(TestCase):
+    """LAPI: Playoffs y Fase final son tipos distintos y los dos se juegan en sede neutral; la Liga no."""
+    client_class = TeamClient
+
+    def setUp(self):
+        self.user = User.objects.create_user("capi", password=PASSWORD, email="capi@example.com")
+        self.club = create_club("Gladiadores LAPI", "Sevilla", self.user, competition="lapi")
+        self.own = self.club.own_team
+        self.client.login(username="capi", password=PASSWORD)
+        self.url = reverse("create_match")
+
+    def _data(self, match_type, **extra):
+        return {"mode": "competitivo", "match_type": match_type, "own_side": "visiting",
+                "rival_name": "Pádel Norte", "location": "Club Sede, Madrid", "start_date": "2026-11-15", **extra}
+
+    def test_playoffs_and_final_phase_are_neutral(self):
+        for match_type in ("playoff", "fase_final"):
+            Match.objects.all().delete()
+            Team.objects.filter(name="Pádel Norte").delete()
+            self.client.post(self.url, self._data(match_type))
+            match = Match.objects.get()
+            self.assertEqual(match.match_type, match_type)
+            self.assertTrue(match.neutral_venue)
+            self.assertIsNone(match.venue_side)
+            self.assertEqual((match.local, match.visiting.name, match.visiting.in_group), (self.own, "Pádel Norte", False))
+            self.assertEqual(match.location, "Club Sede, Madrid")
+
+    def test_final_phase_asks_for_location(self):
+        response = self.client.post(self.url, self._data("fase_final", location=" "))
+        self.assertContains(response, "Escribe la localización de la sede")
+        self.assertFalse(Match.objects.exists())
+
+    def test_final_phase_warns_when_the_rival_exists(self):
+        old = Team.objects.create(club=self.club, name="Pádel Norte", location="X", in_group=False,
+                                  division=self.own.division)
+        response = self.client.post(self.url, self._data("fase_final"))
+        self.assertContains(response, "Ya existe un equipo con un nombre igual o parecido")
+        self.assertFalse(Match.objects.exists())
+        self.client.post(self.url, self._data("fase_final", rival_link=str(old.pk)))
+        match = Match.objects.get()
+        self.assertEqual((match.visiting, match.neutral_venue), (old, True))
+
+    def test_regular_league_keeps_its_side(self):
+        rival = Team.objects.create(club=self.club, name="Rival", location="X", in_group=True)
+        self.client.post(self.url, {"mode": "competitivo", "match_type": "liga", "own_side": "visiting",
+                                    "rival": rival.id, "start_date": "2026-11-15"})
+        match = Match.objects.get()
+        self.assertFalse(match.neutral_venue)
+        self.assertEqual((match.local, match.visiting), (rival, self.own))
 
 
 class LapiMatchTests(TestCase):
