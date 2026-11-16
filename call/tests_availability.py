@@ -184,6 +184,16 @@ class AvailabilityTests(TestCase):
         self.assertNotIn("Dice que sí · seleccionado", html)
         self.assertIn("data-warn-one-no=", html)
 
+    def test_selector_tooltip_only_shows_remarks(self):
+        """El tooltip de la respuesta muestra solo «Observaciones: …», o «Sin especificar» si no hay motivo."""
+        availability.set_answer(self.match, self.ana, "maybe", "Confirmo el jueves")
+        availability.set_answer(self.match, self.luis, "maybe")
+        self.client.force_login(self.captain)
+        html = self.client.get(reverse("create_call", args=[self.match.public_id])).content.decode()
+        self.assertIn("Observaciones: Confirmo el jueves", html)
+        self.assertIn("Observaciones: Sin especificar", html)
+        self.assertNotIn("Ha respondido", html)
+
     def test_no_answer_never_blocks_the_call(self):
         """Se puede convocar a quien dijo «No»: el servidor no valida la respuesta y la respuesta no cambia."""
         availability.set_answer(self.match, self.ana, "no")

@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 16/11/2026 · Convocatoria: el tooltip de la respuesta solo muestra las observaciones
+
+- El tooltip junto a «Dice que sí / no» o «Pendiente de responder» muestra únicamente «Observaciones: …» con el motivo que escribió el jugador en el enlace de disponibilidad, o «Observaciones: Sin especificar» si no escribió ninguno.
+
 ## 16/11/2026 · Rival del enfrentamiento: solo equipos del grupo
 
 - El desplegable del rival solo lista los equipos con «En tu grupo» marcado; los de fuera del grupo ya no salen mezclados (se escriben por su nombre en Amistoso y Play Off).
