@@ -16116,14 +16116,8 @@ msgstr[1] ""
 "%(n)s players short of the competition minimum: confirm the warning to close"
 " anyway."
 
-msgid "Ha respondido Sí en el enlace de disponibilidad"
-msgstr "Answered Yes on the availability link"
-
-msgid "Ha respondido No en el enlace de disponibilidad"
-msgstr "Answered No on the availability link"
-
-msgid "Ha respondido Pendiente en el enlace de disponibilidad"
-msgstr "Answered Pending on the availability link"
+msgid "Observaciones: Sin especificar"
+msgstr "Remarks: Not specified"
 
 #, python-format
 msgid "Observaciones: %(text)s"
