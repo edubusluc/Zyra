@@ -4578,13 +4578,13 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .z-role-chip > i { color: var(--z-lime); }
 /* Cada paso del registro entra con un deslizamiento suave (la animación se repite cada vez que el paso pasa de oculto a visible). */
 @media (prefers-reduced-motion: no-preference) {
-    .is-wizard [data-wizard-step]:not([hidden]) { animation: z-wizard-in .42s var(--z-ease); }
-    .is-wizard [data-wizard-step]:not([hidden]) > * { animation: z-wizard-rise .38s var(--z-ease) backwards; }
-    .is-wizard [data-wizard-step]:not([hidden]) > :nth-child(2) { animation-delay: .06s; }
-    .is-wizard [data-wizard-step]:not([hidden]) > :nth-child(3) { animation-delay: .11s; }
-    .is-wizard [data-wizard-step]:not([hidden]) > :nth-child(4) { animation-delay: .16s; }
-    .is-wizard [data-wizard-step]:not([hidden]) > :nth-child(5) { animation-delay: .21s; }
-    .is-wizard [data-wizard-step]:not([hidden]) > :nth-child(n+6) { animation-delay: .26s; }
+    .is-wizard.is-stepping [data-wizard-step]:not([hidden]) { animation: z-wizard-in .42s var(--z-ease); }
+    .is-wizard.is-stepping [data-wizard-step]:not([hidden]) > * { animation: z-wizard-rise .38s var(--z-ease) backwards; }
+    .is-wizard.is-stepping [data-wizard-step]:not([hidden]) > :nth-child(2) { animation-delay: .06s; }
+    .is-wizard.is-stepping [data-wizard-step]:not([hidden]) > :nth-child(3) { animation-delay: .11s; }
+    .is-wizard.is-stepping [data-wizard-step]:not([hidden]) > :nth-child(4) { animation-delay: .16s; }
+    .is-wizard.is-stepping [data-wizard-step]:not([hidden]) > :nth-child(5) { animation-delay: .21s; }
+    .is-wizard.is-stepping [data-wizard-step]:not([hidden]) > :nth-child(n+6) { animation-delay: .26s; }
 }
 @keyframes z-wizard-in { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
 @keyframes z-wizard-rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
