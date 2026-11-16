@@ -7,6 +7,10 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 - El tooltip junto a «Dice que sí / no» o «Pendiente de responder» muestra únicamente «Observaciones: …» con el motivo que escribió el jugador en el enlace de disponibilidad, o «Observaciones: Sin especificar» si no escribió ninguno.
 
+## 16/11/2026 · Playoffs y Fase final de la LAPI en sede neutral
+
+- En la LAPI, Playoffs y Fase final (dos tipos distintos) se crean igual que el Play Off de la SNP: sin «En casa / Fuera», con el rival escrito por su nombre y la sede en «Lugar». Si el rival coincide o se parece a un equipo existente, se pide confirmar si es el mismo o uno nuevo. No cuentan en Local y visitante. La Liga no cambia.
+
 ## 16/11/2026 · Rival del enfrentamiento: solo equipos del grupo
 
 - El desplegable del rival solo lista los equipos con «En tu grupo» marcado; los de fuera del grupo ya no salen mezclados (se escriben por su nombre en Amistoso y Play Off).

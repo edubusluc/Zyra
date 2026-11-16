@@ -33,7 +33,8 @@ class Competition:
     alinean por puntos y cada partido vale distinto); en la LAPI las parejas se cruzan por
     sorteo y Estadísticas no muestra el balance por número de partido ni el de 3 y 2 puntos.
 
-    ``neutral_types`` son los tipos que siempre se juegan en una sede fijada por la organización (SNP: Play Off):
+    ``neutral_types`` son los tipos que siempre se juegan en una sede fijada por la organización (SNP: Play Off;
+    LAPI: Playoffs y Fase final, que son dos tipos distintos):
     no tienen equipo local ni visitante y no cuentan en las estadísticas de Local y visitante.
 
     ``max_roster`` es el máximo de jugadores de la plantilla (LAPI 15): al copiar jugadores se avisa
@@ -162,6 +163,7 @@ LAPI = Competition(
     final_types=("playoff", "fase_final"),
     finals_min_regular=2,
     ordered_pairs=False,
+    neutral_types=("playoff", "fase_final"),
     no_show=True,
     max_roster=15,
     injury_completes=True,
