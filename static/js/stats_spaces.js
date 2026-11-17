@@ -73,9 +73,28 @@
         ctx.restore();
       },
     };
+    // Si una temporada solo tiene barra de una competición, Chart.js deja hueco para la otra y el grupo queda
+    // descentrado: se recoloca cada grupo (solo las barras que existen) justo bajo la etiqueta de su temporada.
+    const centerGroups = {
+      id: 'centerGroups',
+      afterUpdate(chart) {
+        const metas = chart.data.datasets.map((_, i) => chart.getDatasetMeta(i));
+        const first = metas.find((m) => m.data.length);
+        if (!first) return;
+        first.data.forEach((_, j) => {
+          const bars = metas.map((m, i) => ({ bar: m.data[j], v: chart.data.datasets[i].data[j] }))
+            .filter((b) => b.bar && b.v !== null && b.v !== undefined).map((b) => b.bar);
+          if (!bars.length) return;
+          const left = Math.min(...bars.map((b) => b.x - b.width / 2));
+          const right = Math.max(...bars.map((b) => b.x + b.width / 2));
+          const shift = chart.scales.x.getPixelForTick(j) - (left + right) / 2;
+          bars.forEach((b) => { b.x += shift; });
+        });
+      },
+    };
     const chart = new Chart(yearsCanvas, {
       type: 'bar',
-      plugins: [valueOnTop],
+      plugins: [centerGroups, valueOnTop],
       data: {
         labels: labels.map(seasonLabel),
         datasets: comps.map((c, i) => ({ label: c.name, data: data.years.pct[i], backgroundColor: color(c.code), maxBarThickness: 48, borderRadius: 10, minBarLength: 6, borderColor: '#151515', borderWidth: 2 })),
@@ -83,6 +102,7 @@
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        datasets: { bar: { barPercentage: 1, categoryPercentage: 0.8 } },
         layout: { padding: { top: 18 } },
         plugins: {
           legend: { display: false },
