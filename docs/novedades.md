@@ -11,6 +11,10 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 - Corrección del ajuste anterior: Chart.js recolocaba las barras al animar y las dejaba otra vez descentradas; ahora el centrado se aplica en cada dibujado.
 
+## 17/11/2026 · Mis estadísticas: gráfico de victorias por temporada centrado en vertical
+
+- La tarjeta «% de victorias por temporada» rellena su altura: el gráfico crece y las barras quedan centradas también en vertical, sin hueco vacío debajo.
+
 ## 16/11/2026 · Convocatoria: el tooltip de la respuesta solo muestra las observaciones
 
 - El tooltip junto a «Dice que sí / no» o «Pendiente de responder» muestra únicamente «Observaciones: …» con el motivo que escribió el jugador en el enlace de disponibilidad, o «Observaciones: Sin especificar» si no escribió ninguno.
