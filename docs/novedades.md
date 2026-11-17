@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 17/11/2026 · Mis estadísticas: gráfico de victorias por temporada centrado
+
+- En «% de victorias por temporada», cada temporada queda centrada bajo su etiqueta: si solo hay barra de una competición ya no se descuadra, y con SNP y LAPI el par de barras se agrupa como en «Local y visitante».
+
 ## 16/11/2026 · Convocatoria: el tooltip de la respuesta solo muestra las observaciones
 
 - El tooltip junto a «Dice que sí / no» o «Pendiente de responder» muestra únicamente «Observaciones: …» con el motivo que escribió el jugador en el enlace de disponibilidad, o «Observaciones: Sin especificar» si no escribió ninguno.
