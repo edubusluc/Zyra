@@ -74,10 +74,10 @@
       },
     };
     // Si una temporada solo tiene barra de una competición, Chart.js deja hueco para la otra y el grupo queda
-    // descentrado: se recoloca cada grupo (solo las barras que existen) justo bajo la etiqueta de su temporada.
+    // descentrado: en cada dibujado (Chart.js recoloca las barras al animar) se recoloca cada grupo (solo las barras que existen) justo bajo la etiqueta de su temporada.
     const centerGroups = {
       id: 'centerGroups',
-      afterUpdate(chart) {
+      beforeDatasetsDraw(chart) {
         const metas = chart.data.datasets.map((_, i) => chart.getDatasetMeta(i));
         const first = metas.find((m) => m.data.length);
         if (!first) return;
