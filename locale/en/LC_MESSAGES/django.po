@@ -17073,3 +17073,26 @@ msgstr "No, it's a new team"
 
 msgid "Ya existe un equipo parecido"
 msgstr "A similar team already exists"
+
+#: data_analyse/templates/includes/game_share.html
+msgid "Reparto por partidos"
+msgstr "Matches by number"
+
+#: data_analyse/templates/includes/game_share.html
+msgid ""
+"Partidos jugados en cada número de partido de la alineación SNP, con la "
+"temporada y el tipo elegidos."
+msgstr ""
+"Matches played in each match number of the SNP line-up, for the chosen "
+"season and type."
+
+#: data_analyse/templates/includes/game_share.html
+#, python-format
+msgid "Partido %(n)s · %(pct)s%%"
+msgstr "Match %(n)s · %(pct)s%%"
+
+#: data_analyse/templates/includes/game_share.html
+msgid "partido"
+msgid_plural "partidos"
+msgstr[0] "match"
+msgstr[1] "matches"

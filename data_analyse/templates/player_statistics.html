@@ -94,8 +94,9 @@
 
       <section aria-labelledby="clutch-title" class="st-section" data-level="compare">
         <h2 class="st-section-title" id="clutch-title">{% if league %}{% translate "Sets y fases finales" %}{% else %}{% translate "Partidos y sets" %}{% endif %}</h2>
-        <div class="st-row st-row--pair">
+        <div class="st-row st-row--pair{% if not league and current_club.rules.ordered_pairs %} st-row--trio{% endif %}">
           {% if not league and current_club.rules.ordered_pairs %}
+          {% include 'includes/game_share.html' %}
           <article class="st-card">
             <span class="z-comp-badge z-comp-badge--snp st-only">{% translate "Solo SNP" %}</span>
             <h3 class="st-card-title">{% translate "Por número de partido" %}</h3>
@@ -300,6 +301,7 @@
       <script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
 <script src="{% static 'js/chart-style.js' %}"></script>
       <script src="{% static 'js/player_statistics.js' %}"></script>
+      <script src="{% static 'js/game-share.js' %}" defer></script>
       <script src="{% static 'js/stats-tips.js' %}"></script>
 
     {% endif %}

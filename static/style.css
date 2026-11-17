@@ -3949,6 +3949,38 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .st-kpi-row--records { align-content: start; margin: 0; }
 @media (max-width: 640px) { .st-kpi-row--three { grid-template-columns: repeat(2, minmax(0, 1fr)); } .st-balance { padding: 18px; } .st-balance-main { align-items: center; } }
 
+/* Ficha del jugador · «Reparto por partidos» (SNP): anillo con una escala de lima, del partido 1 al 5. */
+.st-row--trio { grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
+.st-gs { --gs1: var(--z-lime); --gs2: #93CC00; --gs3: #72A300; --gs4: #567C0A; --gs5: #3F5C10; display: flex; flex-direction: column; gap: 14px; margin-top: 14px; }
+.st-gs-ring { position: relative; width: 148px; height: 148px; margin-inline: auto; }
+.st-gs-ring svg { display: block; width: 100%; height: 100%; }
+.st-gs-seg { transition: opacity .15s, stroke-width .15s; }
+.st-gs-c1, .st-gs-d1 { stroke: var(--gs1); background: var(--gs1); }
+.st-gs-c2, .st-gs-d2 { stroke: var(--gs2); background: var(--gs2); }
+.st-gs-c3, .st-gs-d3 { stroke: var(--gs3); background: var(--gs3); }
+.st-gs-c4, .st-gs-d4 { stroke: var(--gs4); background: var(--gs4); }
+.st-gs-c5, .st-gs-d5 { stroke: var(--gs5); background: var(--gs5); }
+.st-gs-base { stroke: var(--z-surface-3); }
+.st-gs-num { font: 800 11px var(--z-body); fill: var(--z-ink); pointer-events: none; }
+.st-gs-t4, .st-gs-t5 { fill: var(--z-text); }
+.st-gs.is-dim .st-gs-seg { opacity: .35; }
+.st-gs.is-dim .st-gs-seg.is-on { opacity: 1; stroke-width: 24; }
+.st-gs-mid { position: absolute; inset: 0; display: grid; place-content: center; padding: 0 30px; text-align: center; pointer-events: none; }
+.st-gs-mid b { font-family: var(--z-display); font-size: 2.1rem; font-weight: 400; line-height: 1; }
+.st-gs-mid small { font-size: var(--z-fs-xs); color: var(--z-muted); letter-spacing: .06em; text-transform: uppercase; line-height: 1.2; }
+.st-gs-legend { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.st-gs-legend li { display: grid; grid-template-columns: 12px 1fr auto 44px; gap: 8px; align-items: center; padding: 5px 8px; font-size: var(--z-fs-md); border-radius: var(--z-radius-xs); }
+.st-gs-legend li.is-on { background: var(--z-surface-3); }
+.st-gs-legend li:focus-visible { outline: 2px solid var(--z-lime); outline-offset: 1px; }
+.st-gs-dot { width: 12px; height: 12px; border-radius: 4px; }
+.st-gs-name { font-weight: 800; }
+.st-gs-name small { font-weight: 400; color: var(--z-muted); }
+.st-gs-count { font-weight: 700; font-variant-numeric: tabular-nums; }
+.st-gs-pct { text-align: right; color: var(--z-muted); font-variant-numeric: tabular-nums; }
+.st-gs--empty .st-gs-legend li, .st-gs--few .st-gs-legend li { color: var(--z-muted); }
+.st-gs--empty .st-gs-dot, .st-gs--few .st-gs-dot { background: var(--z-surface-3); }
+@media (prefers-reduced-motion: reduce) { .st-gs-seg { transition: none; } }
+
 /* Rivales y parejas (fases 5 y 6): tarjeta lima de cifras y empate en la racha. */
 .st-kpi-tile--lime { color: var(--z-ink); background: var(--z-lime); border-color: var(--z-lime); }
 .st-kpi-tile--lime span, .st-kpi-tile--lime small { color: var(--z-ink); }

@@ -32,6 +32,7 @@ from . import rivals as rival_stats
 from . import records
 from . import comparison, player_card, roster_table, squad_compare, team_card
 from .attendance import signup_attendance
+from .game_share import game_share
 from .sets import by_game_number, filled_of, own_sets, set_stats
 
 def _zero_state(request, title):
@@ -1153,6 +1154,7 @@ def _player_page(request, player_id, history=False):
         'lineup_rate': lineup_rate,
         'signup_rate': signup_rate,
         'game_numbers': player_numbers,
+        'game_share': game_share(player_numbers),
         'clutch': clutch,
         'clutch_rows': comparison.set_situation_rows(clutch),
         'venue': comparison.venue_split(
