@@ -1,0 +1,33 @@
+{% load i18n l10n %}
+{# Tarjeta «Reparto por partidos» (solo SNP). Recibe game_share (data_analyse.game_share.game_share): state, total, circumference, single, segments. El anillo es decorativo (SVG oculto); los datos van en la lista. static/js/game-share.js resalta un sector al pasar el ratón o enfocar una fila. #}
+{% blocktranslate asvar tip_text %}Partidos jugados en cada número de partido de la alineación SNP, con la temporada y el tipo elegidos.{% endblocktranslate %}
+<article class="st-card st-card--gshare">
+  <span class="z-comp-badge z-comp-badge--snp st-only">{% translate "Solo SNP" %}</span>
+  <h3 class="st-card-title">{% translate "Reparto por partidos" %}{% include 'includes/stat_tip.html' with tip=tip_text %}</h3>
+  <div class="st-gs st-gs--{{ game_share.state }}" data-game-share>
+    <div class="st-gs-ring">
+      <svg viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+        {% if game_share.state == 'full' %}
+          {% for s in game_share.segments %}{% if s.dash %}<circle class="st-gs-seg st-gs-c{{ s.n }}" data-n="{{ s.n }}" cx="60" cy="60" r="46" fill="none" stroke-width="20" stroke-dasharray="{{ s.dash }} {{ game_share.circumference }}" stroke-dashoffset="{{ s.offset }}" transform="rotate(-90 60 60)"/>{% endif %}{% endfor %}
+          {% for s in game_share.segments %}{% if s.label_x %}<text class="st-gs-num st-gs-t{{ s.n }}" x="{{ s.label_x }}" y="{{ s.label_y }}" text-anchor="middle" dominant-baseline="central">{{ s.n }}</text>{% endif %}{% endfor %}
+        {% else %}
+          <circle class="st-gs-base" cx="60" cy="60" r="46" fill="none" stroke-width="20"{% if game_share.total %} stroke-dasharray="3 5"{% endif %}/>
+        {% endif %}
+      </svg>
+      <div class="st-gs-mid" data-gs-mid>
+        {% if game_share.total %}<b>{{ game_share.total }}</b><small>{% blocktranslate count n=game_share.total %}partido{% plural %}partidos{% endblocktranslate %}</small>
+        {% else %}<b>—</b><small>{% translate "Sin partidos todavía" %}</small>{% endif %}
+      </div>
+    </div>
+    <ul class="st-gs-legend" aria-label="{% translate 'Reparto por partidos' %}">
+      {% for s in game_share.segments %}
+      <li data-n="{{ s.n }}"{% if s.pct is not None and s.played %} data-center="{{ s.played }}" data-center-label="{% blocktranslate with n=s.n pct=s.pct %}Partido {{ n }} · {{ pct }}%{% endblocktranslate %}"{% endif %}{% if s.played and game_share.state == 'full' %} tabindex="0"{% endif %}>
+        <i class="st-gs-dot st-gs-d{{ s.n }}" aria-hidden="true"></i>
+        <span class="st-gs-name">{% blocktranslate with n=s.n %}Partido {{ n }}{% endblocktranslate %} <small>{% blocktranslate with n=s.value %}{{ n }} pts{% endblocktranslate %}</small></span>
+        <span class="st-gs-count">{{ s.played }}</span>
+        <span class="st-gs-pct">{% if s.pct is not None %}{{ s.pct|unlocalize }}%{% endif %}</span>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</article>
