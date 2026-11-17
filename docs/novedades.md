@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 17/11/2026 · Ficha del jugador: tarjetas de «Partidos y sets» alineadas
+
+- En SNP, «Reparto por partidos», «Por número de partido» y «Sets» ocupan todo el alto de su fila y reparten sus filas de arriba abajo, de modo que empiezan y acaban a la misma altura.
+
 ## 17/11/2026 · Ficha del jugador: «Reparto por partidos»
 
 - Nueva tarjeta circular en «Partidos y sets» (solo SNP) con los partidos que el jugador ha jugado como partido 1, 2, 3, 4 y 5, en una escala de lima con su número dentro de cada sector. Sigue la temporada y el tipo elegidos; con menos de 3 partidos se muestran los recuentos sin porcentajes. «Por número de partido» se mantiene.
