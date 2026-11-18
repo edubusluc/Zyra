@@ -256,6 +256,8 @@ API_TOKEN_TOUCH_SECONDS = config('API_TOKEN_TOUCH_SECONDS', default=300, cast=in
 API_RATE_LIMIT_PER_MINUTE = config('API_RATE_LIMIT_PER_MINUTE', default=120, cast=int)
 API_PUBLIC_LIMIT_PER_MINUTE = config('API_PUBLIC_LIMIT_PER_MINUTE', default=30, cast=int)
 API_AUTH_FAILURES_PER_MINUTE = config('API_AUTH_FAILURES_PER_MINUTE', default=30, cast=int)
+# Tickets de /api/v1/auth/web-session que puede pedir un mismo token por minuto.
+API_WEB_SESSION_LIMIT_PER_MINUTE = config('API_WEB_SESSION_LIMIT_PER_MINUTE', default=10, cast=int)
 # Cuerpo máximo de una petición sin fotos (las fotos tienen su propio límite: PHOTO_MAX_UPLOAD_MB).
 DATA_UPLOAD_MAX_MEMORY_SIZE = config('DATA_UPLOAD_MAX_MEMORY_SIZE', default=2 * 1024 * 1024, cast=int)
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 2000

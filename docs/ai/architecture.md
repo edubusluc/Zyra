@@ -39,6 +39,11 @@ falla si una ruta no la usa o si es pública (`public = True`) sin declararla.
 - **Acceso**: `POST /api/v1/auth/login` (público; cuerpo `{"login", "password", "device_name"?}`, `login` = usuario o email como en la web) devuelve el token en claro una sola vez
   (201); `POST /api/v1/auth/logout` revoca el token usado. Los fallos de contraseña usan el mismo freno que el login web (`core/login_throttle.py`: 5 por IP y usuario,
   30 por cuenta, 15 min): los fallos de uno bloquean al otro. 401 `invalid_credentials` es idéntico para cuenta inexistente, contraseña mala y cuenta desactivada. No llama a `login()` de Django: no hay sesión.
+- **Puente app → web** (`POST /api/v1/auth/web-session`, `api/web_session.py`): devuelve una URL `/app/session/<ticket>/` de un solo uso y 60 s (`TICKET_TTL_SECONDS`).
+  El canje (`api/views_web.py`, vista web, no JSON) crea la sesión web normal (`login()` + duración de «Mantener la sesión iniciada», 12 h si es del personal) y redirige a la ruta `next`
+  sin el ticket en la URL ni en `Referer` (`Referrer-Policy: no-referrer`, sin caché). Solo se canjea con el User-Agent `ZyraApp/` (un navegador o una vista previa de enlaces ni lo gasta). Seguridad:
+  ticket de 256 bits guardado como hash; gasto atómico (`UPDATE` condicional); vale solo mientras el token del dispositivo y la cuenta estén activos; `next` solo rutas relativas (sin `//`, dominios, esquemas ni `/api/`), validado al pedir el ticket;
+  no se liga a la IP (la red móvil cambia). Revocar el token (`api.tokens.revoke_token`, logout incluido) cierra las sesiones web que abrió ese dispositivo. Límite por token: `API_WEB_SESSION_LIMIT_PER_MINUTE`.
 - **Modo app en la web**: la app muestra páginas de la web (p. ej. tras `web-session`) con el User-Agent `ZyraApp/<versión>`;
   `core.context_processors.app_mode` pone `is_app` y `core/templates/base.html` quita la cabecera y el menú inferior (`<body class="z-app">`; el CSS del final de `static/style.css` no reserva su hueco). Solo cambia la presentación, no da permisos. Con cualquier otro User-Agent el HTML es idéntico (`core/tests_app_mode.py`).
 - **Sin efectos en la web**: sin cookie no hay sesión ni consulta de membresías; `core.tests_safety_net` no recorre `api/`.

@@ -6,6 +6,7 @@ from . import views, views_auth
 urlpatterns = [
     re_path(r"^auth/login/?$", views_auth.LoginView.as_view(), name="api_login"),
     re_path(r"^auth/logout/?$", views_auth.LogoutView.as_view(), name="api_logout"),
+    re_path(r"^auth/web-session/?$", views_auth.WebSessionView.as_view(), name="api_web_session"),
     re_path(r"^ping/?$", views.PingView.as_view(), name="api_ping"),
     re_path(r"^.*$", views.NotFoundView.as_view(), name="api_not_found"),
 ]

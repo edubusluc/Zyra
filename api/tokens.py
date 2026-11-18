@@ -4,21 +4,17 @@ Ciclo de vida de los tokens de dispositivo: crear, resolver, renovar y revocar.
 Lógica sin HTTP (las vistas solo la llaman). El token tiene 256 bits de entropía, por eso basta un
 SHA-256 (no hace falta un hash lento). El reloj es un parámetro (``now``) para poder probarla.
 """
-import hashlib
 import secrets
 from datetime import timedelta
 
 from django.conf import settings
 from django.utils import timezone
 
+from . import web_session
+from .hashing import hash_token
 from .models import DeviceToken
 
 TOKEN_PREFIX = "zyra_"
-
-
-def hash_token(raw):
-    """SHA-256 en hexadecimal del token en claro."""
-    return hashlib.sha256(raw.encode()).hexdigest()
 
 
 def issue_token(user, device_name="", now=None):
@@ -63,5 +59,9 @@ def touch(device, now):
 
 
 def revoke_token(device, now=None):
-    """Revoca el token (idempotente: no cambia la fecha si ya estaba revocado)."""
+    """
+    Revoca el token (idempotente: no cambia la fecha si ya estaba revocado) y cierra las sesiones web que la
+    app abrió con él (``api.web_session``): revocar un dispositivo corta todo lo que tenía.
+    """
+    web_session.end_sessions(device)
     DeviceToken.objects.filter(pk=device.pk, revoked_at__isnull=True).update(revoked_at=now or timezone.now())

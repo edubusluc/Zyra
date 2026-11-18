@@ -12,6 +12,7 @@ Mapa de URLs del proyecto.
 - callLog/: registro de convocatorias (app callLog).
 - penalty/: sanciones (app penalty).
 - api/v1/: API JSON de la app iOS, con tokens de dispositivo y sin sesión (app api).
+- app/: canje del ticket de un solo uso con el que la app abre la web (app api, api/web_urls.py).
 - core/: inicio de sesión, alta de club, miembros e invitaciones (app core).
 - accounts/: cuentas de django-allauth (inicio de sesión con Google, contraseñas...); solo las rutas aprobadas de core/allauth_urls.py.
 - i18n/ y jsi18n/: selector de idioma y traducciones para el JavaScript.
@@ -62,6 +63,7 @@ urlpatterns = [
     path('callLog/',include('callLog.urls')),
     path('penalty/',include('penalty.urls')),
     path('api/v1/', include('api.urls')),
+    path('app/', include('api.web_urls')),
     path('core/', include('core.urls')),
     path('accounts/', include('core.allauth_urls')),
     # Selector de idioma (vista set_language) y traducciones de los textos de static/js.
