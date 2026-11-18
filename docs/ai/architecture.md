@@ -39,6 +39,8 @@ falla si una ruta no la usa o si es pública (`public = True`) sin declararla.
 - **Acceso**: `POST /api/v1/auth/login` (público; cuerpo `{"login", "password", "device_name"?}`, `login` = usuario o email como en la web) devuelve el token en claro una sola vez
   (201); `POST /api/v1/auth/logout` revoca el token usado. Los fallos de contraseña usan el mismo freno que el login web (`core/login_throttle.py`: 5 por IP y usuario,
   30 por cuenta, 15 min): los fallos de uno bloquean al otro. 401 `invalid_credentials` es idéntico para cuenta inexistente, contraseña mala y cuenta desactivada. No llama a `login()` de Django: no hay sesión.
+- **Modo app en la web**: la app muestra páginas de la web (p. ej. tras `web-session`) con el User-Agent `ZyraApp/<versión>`;
+  `core.context_processors.app_mode` pone `is_app` y `core/templates/base.html` quita la cabecera y el menú inferior (`<body class="z-app">`; el CSS del final de `static/style.css` no reserva su hueco). Solo cambia la presentación, no da permisos. Con cualquier otro User-Agent el HTML es idéntico (`core/tests_app_mode.py`).
 - **Sin efectos en la web**: sin cookie no hay sesión ni consulta de membresías; `core.tests_safety_net` no recorre `api/`.
 
 ## Contexto de club por petición [V]

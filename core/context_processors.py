@@ -105,6 +105,21 @@ def navigation(request):
     return {"nav_section": NAV_SECTIONS.get(app, "")}
 
 
+# Prefijo del User-Agent de la app iOS («ZyraApp/1.0 …»). Solo cambia la presentación (se oculta la cabecera y el
+# menú de la web, que la app ya trae): no da ningún permiso, así que no importa que cualquiera pueda enviarlo.
+APP_USER_AGENT_PREFIX = "ZyraApp/"
+
+
+def is_app_request(request):
+    """True si la petición viene de la app iOS (User-Agent que empieza por ``ZyraApp/``, sin distinguir versión)."""
+    return request.META.get("HTTP_USER_AGENT", "").startswith(APP_USER_AGENT_PREFIX)
+
+
+def app_mode(request):
+    """``is_app``: la web se ve dentro de la app, sin cabecera ni menú (``core/templates/base.html``)."""
+    return {"is_app": is_app_request(request)}
+
+
 def google_login(request):
     """Si se muestra el botón de iniciar sesión con Google."""
     return {"google_login_enabled": settings.GOOGLE_LOGIN_ENABLED}

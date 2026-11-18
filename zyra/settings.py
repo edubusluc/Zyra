@@ -214,6 +214,7 @@ TEMPLATES = [
                 'core.context_processors.navigation',
                 'core.context_processors.sync_bar',
                 'core.context_processors.google_login',
+                'core.context_processors.app_mode',
                 'core.context_processors.site',
                 'backoffice.context_processors.impersonation',
                 'backoffice.context_processors.menu_counters',

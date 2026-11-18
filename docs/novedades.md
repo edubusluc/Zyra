@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 18/11/2026 · Modo app: la web sin cabecera ni menú dentro de la app iOS
+
+- Con el User-Agent `ZyraApp/…` la web oculta la cabecera y el menú inferior (la app ya trae los suyos) y no reserva su hueco. Con cualquier otro User-Agent la web es idéntica.
+
 ## 18/11/2026 · API de la app iOS: login y logout
 
 - `POST /api/v1/auth/login` (usuario o email y contraseña) devuelve el token de dispositivo y `POST /api/v1/auth/logout` lo revoca. Usa el mismo freno que el login web, ahora en `core/login_throttle.py` (sin cambios de comportamiento en la web).
