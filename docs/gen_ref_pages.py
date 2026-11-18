@@ -22,6 +22,7 @@ APPS = {
     "penalty": "Sanciones",
     "data_analyse": "Estadísticas",
     "backoffice": "Back-office",
+    "api": "API de la app iOS",
     "zyra": "Configuración del proyecto",
 }
 SCRIPTS = ["clear_database.py", "manage.py"]

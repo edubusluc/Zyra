@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 18/11/2026 · API de la app iOS: base y tokens de dispositivo
+
+- Nueva app `api/` con `/api/v1/`: token por dispositivo (solo se guarda su hash, revocable y con caducidad), límite por token y errores en JSON. Sin cambios para la web: solo se exenta `/api/` del freno general por IP. Por ahora solo `GET /api/v1/ping`.
+
 ## 17/11/2026 · Ficha del jugador: tarjetas de «Partidos y sets» alineadas
 
 - En SNP, «Reparto por partidos», «Por número de partido» y «Sets» ocupan todo el alto de su fila y reparten sus filas de arriba abajo, de modo que empiezan y acaban a la misma altura.

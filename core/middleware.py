@@ -157,9 +157,11 @@ class FloodProtectionMiddleware:
     gunicorn el límite efectivo es hasta N veces mayor. Los POST tienen un límite más bajo que
     los GET. Responde 429 con la página «Demasiadas solicitudes». Se salta ``/healthz/`` y los
     estáticos (los sirve WhiteNoise antes de llegar aquí). Si la caché falla deja pasar.
+    La API (``/api/``) también queda fuera: las IP móviles se comparten entre muchos usuarios, así que
+    limita por token (``api.throttle``).
     """
 
-    EXEMPT_PREFIXES = ("/healthz/", "/static/", "/media/")
+    EXEMPT_PREFIXES = ("/healthz/", "/static/", "/media/", "/api/")
 
     def __init__(self, get_response):
         """Guarda la siguiente capa de la cadena de middlewares."""

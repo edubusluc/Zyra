@@ -5,7 +5,7 @@ Verificado contra `main` el 11/11/2026 (tras #345). [V] comprobado · [I] inferi
 
 ## Capas
 
-Proyecto Django monolítico con renderizado en servidor. No hay API REST ni SPA; algunos endpoints
+Proyecto Django monolítico con renderizado en servidor. No hay SPA; la única API REST es `/api/v1/` para la app iOS (ver [API](#api-de-la-app-ios-apiv1)); algunos endpoints
 devuelven JSON para el JavaScript de la página (p. ej. `suggested_lineup`, `complete_team_status`,
 `run_live`, `password_check`). [V]
 
@@ -22,6 +22,21 @@ devuelven JSON para el JavaScript de la página (p. ej. `suggested_lineup`, `com
 | Plantillas | `<app>/templates/`, base en `core/templates/base.html` | Errores en popup y éxitos en toast desde la plantilla base (`core/templates/includes/messages_popup.html`). [V] |
 | Estáticos | `static/style.css`, `static/js/*.js`, `static/zyra/` (marca y fuentes del PDF) | JS sin framework ni build. [V] |
 | Procesos | `<app>/management/commands/`, `backoffice/jobs.py` | Ver [workflows.md](workflows.md#procesos-programados). |
+
+## API de la app iOS (`/api/v1/`) [V]
+
+App `api/`, aparte de la web. Autenticación por token de dispositivo (`Authorization: Bearer zyra_…`), sin sesión
+ni cookies. Toda vista hereda de `api.views_base.ApiView`, que es la única puerta: exime del CSRF, autentica, limita,
+elige el idioma (`Accept-Language`) y devuelve los errores como `{"error": código, "detail": texto}`; `api/tests_routes.py`
+falla si una ruta no la usa o si es pública (`public = True`) sin declararla.
+
+- **Token**: `DeviceToken` guarda solo el SHA-256 (`api/tokens.py`); revocable, caduca a `API_TOKEN_TTL_DAYS` (90) y se renueva al usarlo;
+  `last_used_at` se anota como mucho cada `API_TOKEN_TOUCH_SECONDS` (300): dentro de esa ventana una petición no escribe en la base de datos.
+- **Límites** (`api/throttle.py`, caché `ratelimit` en memoria de cada proceso, hasta N veces el límite con N procesos): por token
+  (`API_RATE_LIMIT_PER_MINUTE`), por IP en rutas públicas (`API_PUBLIC_LIMIT_PER_MINUTE`) y por IP con tokens inválidos
+  (`API_AUTH_FAILURES_PER_MINUTE`, corta antes de consultar la base de datos). `/api/` está exento del freno general por IP
+  (`FloodProtectionMiddleware`): las IP móviles se comparten.
+- **Sin efectos en la web**: sin cookie no hay sesión ni consulta de membresías; `core.tests_safety_net` no recorre `api/`.
 
 ## Contexto de club por petición [V]
 

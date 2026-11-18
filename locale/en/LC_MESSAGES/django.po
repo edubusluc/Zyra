@@ -17096,3 +17096,19 @@ msgid "partido"
 msgid_plural "partidos"
 msgstr[0] "match"
 msgstr[1] "matches"
+
+#: api/auth.py
+msgid "Sesión no válida. Inicia sesión de nuevo."
+msgstr "Invalid session. Please sign in again."
+
+#: api/views_base.py
+msgid "Demasiadas peticiones. Espera un momento."
+msgstr "Too many requests. Please wait a moment."
+
+#: api/views_base.py
+msgid "No encontrado."
+msgstr "Not found."
+
+#: api/views_base.py
+msgid "Método no permitido."
+msgstr "Method not allowed."

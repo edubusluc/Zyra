@@ -19,7 +19,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 INDEX = ROOT / "ZYRA_CONTEXT.md"
 DOCS = [INDEX, ROOT / "CLAUDE.md", *sorted((ROOT / "docs" / "ai").glob("*.md"))]
-APPS = ["backoffice", "call", "callLog", "core", "data_analyse", "match", "penalty", "players", "team"]
+APPS = ["api", "backoffice", "call", "callLog", "core", "data_analyse", "match", "penalty", "players", "team"]
 PATH_RE = re.compile(r"`([A-Za-z_][A-Za-z0-9_./-]*(?:\.(?:py|md|html|yml|toml|txt|css|js|po)|/))`")
 
 

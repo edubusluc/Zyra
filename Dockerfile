@@ -19,6 +19,7 @@ COPY manage.py ./
 COPY zyra ./zyra
 COPY locale ./locale
 COPY static ./static
+COPY api ./api
 COPY backoffice ./backoffice
 COPY call ./call
 COPY callLog ./callLog

@@ -61,7 +61,7 @@ EXEMPT = {
 
 
 def _routes():
-    """Todas las rutas de la web (sin back-office, admin, allauth ni archivos subidos): (nombre, patrón, vista)."""
+    """Todas las rutas de la web (sin back-office, admin, allauth, la API ni archivos subidos): (nombre, patrón, vista)."""
     rows = []
 
     def walk(patterns, prefix=""):
@@ -73,7 +73,7 @@ def _routes():
                 rows.append((pattern.name or "", text, pattern.callback))
 
     walk(get_resolver().url_patterns)
-    return [r for r in rows if not r[1].startswith(("backoffice", "accounts", "^media", "admin", "panel", "gestion"))]
+    return [r for r in rows if not r[1].startswith(("backoffice", "api/", "accounts", "^media", "admin", "panel", "gestion"))]
 
 
 class RoutesAreExplicitAboutTheTeamTests(SimpleTestCase):
