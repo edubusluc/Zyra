@@ -1652,7 +1652,7 @@ a.z-location:hover span { text-decoration: underline; }
     border: 1px dashed var(--z-border-strong);
     border-radius: var(--z-radius);
 }
-.z-empty i { display: block; margin-bottom: 10px; font-size: var(--z-fs-xl); color: var(--z-lime); }
+.z-empty > i { display: block; margin-bottom: 10px; font-size: var(--z-fs-xl); color: var(--z-lime); }
 
 /* ==================================================================
    Estadísticas (equipo y jugador). Prefijo st- para no chocar con el
