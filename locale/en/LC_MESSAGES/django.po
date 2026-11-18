@@ -17112,3 +17112,16 @@ msgstr "Not found."
 #: api/views_base.py
 msgid "Método no permitido."
 msgstr "Method not allowed."
+
+#: api/views_base.py
+msgid "El cuerpo debe ser un objeto JSON."
+msgstr "The body must be a JSON object."
+
+#: api/views_auth.py
+#, python-format
+msgid "Campo no válido: %(name)s."
+msgstr "Invalid field: %(name)s."
+
+#: api/views_auth.py
+msgid "Usuario o contraseña incorrectos."
+msgstr "Incorrect username or password."

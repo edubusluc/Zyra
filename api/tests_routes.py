@@ -6,6 +6,7 @@ from api.views_base import ApiView
 
 # Rutas que no exigen token, con el motivo. Una ruta pública nueva se añade aquí a propósito.
 PUBLIC_ROUTES = {
+    "api_login": "aún no hay token: se obtiene aquí (freno de login compartido con la web)",
     "api_not_found": "404 en JSON para lo desconocido",
 }
 
