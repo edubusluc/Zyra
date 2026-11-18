@@ -39,6 +39,8 @@ falla si una ruta no la usa o si es pública (`public = True`) sin declararla.
 - **Acceso**: `POST /api/v1/auth/login` (público; cuerpo `{"login", "password", "device_name"?}`, `login` = usuario o email como en la web) devuelve el token en claro una sola vez
   (201); `POST /api/v1/auth/logout` revoca el token usado. Los fallos de contraseña usan el mismo freno que el login web (`core/login_throttle.py`: 5 por IP y usuario,
   30 por cuenta, 15 min): los fallos de uno bloquean al otro. 401 `invalid_credentials` es idéntico para cuenta inexistente, contraseña mala y cuenta desactivada. No llama a `login()` de Django: no hay sesión.
+- **Registro push** (`POST /api/v1/devices`, `DELETE /api/v1/devices`, `api/push.py`): guarda el token de APNs del dispositivo (hexadecimal, `environment` `production`/`sandbox`, `app_version`); alta idempotente (201 la primera vez, 200 después) y **sin envío todavía**
+  (cuando lo haya irá a un proceso aparte, nunca en un hilo web). Revocar el token (logout incluido) retira el registro. Los campos del cuerpo se validan en `api/fields.py`.
 - **Puente app → web** (`POST /api/v1/auth/web-session`, `api/web_session.py`): devuelve una URL `/app/session/<ticket>/` de un solo uso y 60 s (`TICKET_TTL_SECONDS`).
   El canje (`api/views_web.py`, vista web, no JSON) crea la sesión web normal (`login()` + duración de «Mantener la sesión iniciada», 12 h si es del personal) y redirige a la ruta `next`
   sin el ticket en la URL ni en `Referer` (`Referrer-Policy: no-referrer`, sin caché). Solo se canjea con el User-Agent `ZyraApp/` (un navegador o una vista previa de enlaces ni lo gasta). Seguridad:
