@@ -222,6 +222,20 @@ def account_delete_blocker(user):
     return None
 
 
+# Intentos de confirmar el borrado de cuenta por hora y usuario (web y API comparten el mismo freno).
+DELETE_ACCOUNT_LIMIT, DELETE_ACCOUNT_WINDOW = 5, 60 * 60
+
+
+def account_delete_confirmed(user, typed):
+    """
+    True si ``typed`` confirma el borrado de ``user``: su contraseña o, en las cuentas sin contraseña
+    (Google/Apple), su nombre de usuario tal cual (sin distinguir mayúsculas). Lo usan la web y la API.
+    """
+    if user.has_usable_password():
+        return user.check_password(typed)
+    return (typed or "").strip().lower() == user.username.lower()
+
+
 @transaction.atomic
 def delete_account(user, delete_player=False):
     """
