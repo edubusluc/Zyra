@@ -17133,3 +17133,11 @@ msgstr "The destination path is not valid."
 #: api/views_web.py
 msgid "El enlace de acceso ha caducado. Vuelve a abrir la sección desde la app."
 msgstr "The access link has expired. Open the section again from the app."
+
+#: api/views_account.py
+msgid "La confirmación no es correcta."
+msgstr "The confirmation is not correct."
+
+#: api/views_account.py
+msgid "«delete_player» debe ser verdadero o falso."
+msgstr "“delete_player” must be true or false."

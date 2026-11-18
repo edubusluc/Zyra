@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 18/11/2026 · API de la app iOS: eliminar la cuenta
+
+- `POST /api/v1/account/delete` elimina la cuenta con las mismas reglas que la web (el capitán debe traspasar antes la capitanía; se confirma con la contraseña) y cierra todos sus dispositivos. Las constantes y la comprobación de confirmación pasan a `core/services.py` sin cambiar el comportamiento de la web.
+
 ## 18/11/2026 · API de la app iOS: registro de notificaciones push
 
 - `POST /api/v1/devices` guarda el token de APNs del dispositivo (alta idempotente) y `DELETE /api/v1/devices` lo retira; cerrar sesión en la app también lo retira. Todavía no se envía ninguna notificación.

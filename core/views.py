@@ -51,7 +51,8 @@ from . import email_verification, login_throttle, ratelimit, seo, sessions
 from players import copy as player_copy, snp_service
 from .unsubscribe import user_from_news_token, user_from_result_token, user_from_token
 from .services import (
-    CaptaincyError, InvitationError, accept_invitation, account_delete_blocker, club_name_matches, club_of,
+    CaptaincyError, DELETE_ACCOUNT_LIMIT, DELETE_ACCOUNT_WINDOW, InvitationError, accept_invitation,
+    account_delete_blocker, account_delete_confirmed, club_name_matches, club_of,
     ensure_space_free, free_competitions, one_space_message, SpaceTaken,
     archive_club, create_club, delete_account, eligible_successors, is_last_admin, is_only_member,
     ManagerError, notify_removal, remove_membership, set_manager, transfer_captaincy,
@@ -81,7 +82,6 @@ REGISTER_LIMIT, REGISTER_WINDOW = 5, 60 * 60
 INVITE_SIGNUP_LIMIT, INVITE_SIGNUP_WINDOW = 10, 60 * 60
 PASSWORD_CHECK_LIMIT, PASSWORD_CHECK_WINDOW = 60, 60
 RESEND_LIMIT, RESEND_WINDOW = 5, 60 * 60
-DELETE_ACCOUNT_LIMIT, DELETE_ACCOUNT_WINDOW = 5, 60 * 60
 
 
 def email_needs_confirmation(user):
@@ -1114,8 +1114,7 @@ def delete_account_view(request):
         if ratelimit.too_many(request, "delete-account", DELETE_ACCOUNT_LIMIT, DELETE_ACCOUNT_WINDOW):
             return render(request, "429.html", status=429)
         typed = request.POST.get("confirm", "")
-        confirmed = user.check_password(typed) if needs_password else typed.strip().lower() == user.username.lower()
-        if not confirmed:
+        if not account_delete_confirmed(user, typed):
             error = _("La contraseña no es correcta.") if needs_password else _("Escribe tu nombre de usuario tal cual para confirmar.")
         else:
             delete_player = request.POST.get("delete_player") == "on"
