@@ -43,6 +43,8 @@ falla si una ruta no la usa o si es pública (`public = True`) sin declararla.
   (cuando lo haya irá a un proceso aparte, nunca en un hilo web). Revocar el token (logout incluido) retira el registro. Los campos del cuerpo se validan en `api/fields.py`.
 - **Eliminar cuenta** (`POST /api/v1/account/delete`, `api/views_account.py`): reutiliza `core.services.delete_account` y `account_delete_blocker` (misma regla que la web: el capitán debe traspasar antes, el personal no puede). Cuerpo `{"confirm", "delete_player"?}`:
   `confirm` es la contraseña (o el nombre de usuario en cuentas sin contraseña, `account_delete_confirmed`). 409 `account_blocked` con el motivo, 403 `confirmation_failed`, 429 tras 5 intentos por hora y usuario (`DELETE_ACCOUNT_LIMIT`). Revoca todos los dispositivos y borra la cuenta en una transacción.
+- **Credenciales y personal**: cambiar, fijar o restablecer la contraseña (señales de allauth, `api/signals.py`) revoca todos los dispositivos de la cuenta (`tokens.revoke_all`). Los tokens de cuentas del
+  personal (`is_staff`/`is_superuser`) duran 12 h como su sesión web (`STAFF_SESSION_AGE`) y no se renuevan por uso.
 - **Puente app → web** (`POST /api/v1/auth/web-session`, `api/web_session.py`): devuelve una URL `/app/session/<ticket>/` de un solo uso y 60 s (`TICKET_TTL_SECONDS`).
   El canje (`api/views_web.py`, vista web, no JSON) crea la sesión web normal (`login()` + duración de «Mantener la sesión iniciada», 12 h si es del personal) y redirige a la ruta `next`
   sin el ticket en la URL ni en `Referer` (`Referrer-Policy: no-referrer`, sin caché). Solo se canjea con el User-Agent `ZyraApp/` (un navegador o una vista previa de enlaces ni lo gasta). Seguridad:

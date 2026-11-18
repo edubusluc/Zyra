@@ -11,10 +11,19 @@ from django.conf import settings
 from django.utils import timezone
 
 from . import push, web_session
+from core.sessions import STAFF_SESSION_AGE
+
 from .hashing import hash_token
 from .models import DeviceToken
 
 TOKEN_PREFIX = "zyra_"
+# El personal de Zyra tiene la misma duración que en la web (12 h, ``core.sessions.STAFF_SESSION_AGE``), sin renovación.
+STAFF_TOKEN_TTL = timedelta(seconds=STAFF_SESSION_AGE)
+
+
+def is_staff(user):
+    """True si la cuenta es del personal de Zyra (sus tokens caducan a las 12 h y no se renuevan)."""
+    return user.is_staff or user.is_superuser
 
 
 def issue_token(user, device_name="", now=None):
@@ -23,7 +32,7 @@ def issue_token(user, device_name="", now=None):
     raw = TOKEN_PREFIX + secrets.token_urlsafe(32)
     device = DeviceToken.objects.create(
         user=user, token_hash=hash_token(raw), device_name=device_name.strip()[:100],
-        last_used_at=now, expires_at=now + timedelta(days=settings.API_TOKEN_TTL_DAYS),
+        last_used_at=now, expires_at=now + (STAFF_TOKEN_TTL if is_staff(user) else timedelta(days=settings.API_TOKEN_TTL_DAYS)),
     )
     return device, raw
 
@@ -45,14 +54,15 @@ def resolve_token(raw, now=None):
 
 def touch(device, now):
     """
-    Anota el uso y renueva la caducidad, como mucho una vez cada ``API_TOKEN_TOUCH_SECONDS`` para no
+    Anota el uso y renueva la caducidad (salvo el personal), como mucho una vez cada ``API_TOKEN_TOUCH_SECONDS`` para no
     escribir en la base de datos en cada petición (dentro de la ventana no hace ninguna consulta). El
     ``UPDATE`` es condicional: con varias peticiones a la vez solo una escribe.
     """
     stale = now - timedelta(seconds=settings.API_TOKEN_TOUCH_SECONDS)
     if device.last_used_at >= stale:
         return
-    expires_at = now + timedelta(days=settings.API_TOKEN_TTL_DAYS)
+    # El personal no renueva: su token muere a las 12 h de emitirlo, como su sesión web.
+    expires_at = device.expires_at if is_staff(device.user) else now + timedelta(days=settings.API_TOKEN_TTL_DAYS)
     if DeviceToken.objects.filter(pk=device.pk, last_used_at__lt=stale).update(
             last_used_at=now, expires_at=expires_at):
         device.last_used_at, device.expires_at = now, expires_at
@@ -66,3 +76,11 @@ def revoke_token(device, now=None):
     web_session.end_sessions(device)
     push.unregister(device)
     DeviceToken.objects.filter(pk=device.pk, revoked_at__isnull=True).update(revoked_at=now or timezone.now())
+
+
+def revoke_all(user, now=None):
+    """Revoca todos los dispositivos activos de ``user`` (p. ej. al cambiar la contraseña). Devuelve cuántos."""
+    devices = list(DeviceToken.objects.active(now).filter(user=user))
+    for device in devices:
+        revoke_token(device, now)
+    return len(devices)
