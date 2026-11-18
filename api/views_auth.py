@@ -13,22 +13,12 @@ from core import login_throttle
 
 from . import throttle, web_session
 from .errors import ApiError
+from .fields import text_field
 from .responses import json_ok
 from .tokens import issue_token, revoke_token
 from .views_base import ApiView
 
-MAX_LOGIN_LENGTH = 254
 MAX_PASSWORD_LENGTH = 1024
-
-
-def _text(body, name, required=True, max_length=MAX_LOGIN_LENGTH):
-    """Campo de texto del cuerpo: ``ApiError`` 400 (``invalid_field``) si falta (cuando es obligatorio) o no es texto razonable."""
-    value = body.get(name)
-    if value is None and not required:
-        return ""
-    if not isinstance(value, str) or (required and not value.strip()) or len(value) > max_length:
-        raise ApiError("invalid_field", _("Campo no válido: %(name)s.") % {"name": name}, 400)
-    return value
 
 
 class LoginView(ApiView):
@@ -42,9 +32,9 @@ class LoginView(ApiView):
         mala o cuenta desactivada. Con éxito devuelve el token en claro (única vez) y los datos básicos de la cuenta.
         """
         body = self.json_body(request)
-        login = _text(body, "login").strip()
-        password = _text(body, "password", max_length=MAX_PASSWORD_LENGTH)
-        device_name = _text(body, "device_name", required=False, max_length=100)
+        login = text_field(body, "login").strip()
+        password = text_field(body, "password", max_length=MAX_PASSWORD_LENGTH)
+        device_name = text_field(body, "device_name", required=False, max_length=100)
         if login_throttle.is_locked(request, login):
             raise ApiError("login_locked", _("Demasiados intentos fallidos. Espera 15 minutos y vuelve a intentarlo."),
                            429, {"Retry-After": str(login_throttle.LOGIN_LOCKOUT_SECONDS)})

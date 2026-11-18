@@ -43,6 +43,7 @@ entero sigue siendo la clave de los FK. Excepciones sin `public_id`: `backoffice
 
 - **DeviceToken** (`DVT`): `user` (`CASCADE`), `token_hash` (SHA-256 único; el token en claro no se guarda), `device_name`, `last_used_at`, `expires_at`, `revoked_at`.
   `DeviceToken.objects.active()` = sin revocar y sin caducar. Lógica en `api/tokens.py`.
+- **PushDevice** (sin `public_id`): `device_token` (1:1, `CASCADE`), `apns_token` (único, en minúsculas), `environment` (`production`/`sandbox`), `app_version`. Se borra al revocar el token del dispositivo o eliminar la cuenta; el mismo token de APNs en otra cuenta pasa a esa cuenta. Lógica en `api/push.py`. Todavía no se envía nada.
 - **WebLoginTicket** (sin `public_id`, no sale en URLs): `device_token` (`CASCADE`), `ticket_hash` (SHA-256 único), `next_path`, `expires_at` (60 s), `used_at`, `session_key` (sesión web que creó, para cerrarla al revocar el dispositivo). Lógica en `api/web_session.py`.
 
 ### team (`team/models.py`)

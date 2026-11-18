@@ -10,7 +10,7 @@ from datetime import timedelta
 from django.conf import settings
 from django.utils import timezone
 
-from . import web_session
+from . import push, web_session
 from .hashing import hash_token
 from .models import DeviceToken
 
@@ -61,7 +61,8 @@ def touch(device, now):
 def revoke_token(device, now=None):
     """
     Revoca el token (idempotente: no cambia la fecha si ya estaba revocado) y cierra las sesiones web que la
-    app abrió con él (``api.web_session``): revocar un dispositivo corta todo lo que tenía.
+    app abrió con él (``api.web_session``) y retira su registro push: revocar un dispositivo corta todo lo que tenía.
     """
     web_session.end_sessions(device)
+    push.unregister(device)
     DeviceToken.objects.filter(pk=device.pk, revoked_at__isnull=True).update(revoked_at=now or timezone.now())

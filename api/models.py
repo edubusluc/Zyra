@@ -60,3 +60,21 @@ class WebLoginTicket(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+
+
+class PushDevice(models.Model):
+    """
+    Registro para notificaciones push del dispositivo de la app (token de APNs). Uno por ``DeviceToken``; el token
+    de APNs es único: si el mismo teléfono entra con otra cuenta, pasa a esta. Aún no se envía nada: solo se guarda
+    para cuando haya envío. Desaparece al revocar el token del dispositivo o al eliminar la cuenta.
+    """
+    SANDBOX = "sandbox"
+    PRODUCTION = "production"
+    ENVIRONMENTS = (SANDBOX, PRODUCTION)
+
+    device_token = models.OneToOneField(DeviceToken, on_delete=models.CASCADE, related_name="push_device")
+    apns_token = models.CharField(max_length=200, unique=True)
+    environment = models.CharField(max_length=10, default=PRODUCTION)
+    app_version = models.CharField(max_length=32, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)

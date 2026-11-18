@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 18/11/2026 · API de la app iOS: registro de notificaciones push
+
+- `POST /api/v1/devices` guarda el token de APNs del dispositivo (alta idempotente) y `DELETE /api/v1/devices` lo retira; cerrar sesión en la app también lo retira. Todavía no se envía ninguna notificación.
+
 ## 18/11/2026 · API de la app iOS: abrir la web desde la app sin volver a iniciar sesión
 
 - `POST /api/v1/auth/web-session` devuelve una URL de un solo uso y 60 s que, abierta por la app, inicia la sesión web normal de la cuenta. Caduca, no se puede reutilizar, no la canjea un navegador y cerrar sesión en la app cierra también esa sesión web.
