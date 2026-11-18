@@ -26,7 +26,7 @@ class PasswordChangeTests(TestCase):
     def test_each_password_signal_revokes_all_tokens(self):
         """Cambio, alta y restablecimiento de contraseña revocan todos los dispositivos de la cuenta."""
         for signal in (password_changed, password_set, password_reset):
-            device, raw = tokens.issue_token(self.user, "nuevo")
+            _device, raw = tokens.issue_token(self.user, "nuevo")
             signal.send(sender=User, request=None, user=self.user)
             self.assertIsNone(tokens.resolve_token(raw))
         self.assertIsNone(tokens.resolve_token(self.phone_raw))
