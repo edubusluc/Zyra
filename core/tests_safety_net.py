@@ -56,7 +56,7 @@ EXEMPT = {
     "register_account": "alta", "switch_club": "elige el equipo de forma explícita (id en el POST)",
     # Enlaces con token propio.
     "monthly_unsubscribe": "token", "result_unsubscribe": "token", "news_unsubscribe": "token",
-    "invitation": "token de invitación", "availability": "token de disponibilidad",
+    "invitation": "token de invitación", "availability": "token de disponibilidad", "app_web_session": "ticket de un solo uso de la app",
 }
 
 

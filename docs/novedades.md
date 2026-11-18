@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 18/11/2026 · API de la app iOS: abrir la web desde la app sin volver a iniciar sesión
+
+- `POST /api/v1/auth/web-session` devuelve una URL de un solo uso y 60 s que, abierta por la app, inicia la sesión web normal de la cuenta. Caduca, no se puede reutilizar, no la canjea un navegador y cerrar sesión en la app cierra también esa sesión web.
+
 ## 18/11/2026 · Modo app: la web sin cabecera ni menú dentro de la app iOS
 
 - Con el User-Agent `ZyraApp/…` la web oculta la cabecera y el menú inferior (la app ya trae los suyos) y no reserva su hueco. Con cualquier otro User-Agent la web es idéntica.

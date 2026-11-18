@@ -17125,3 +17125,11 @@ msgstr "Invalid field: %(name)s."
 #: api/views_auth.py
 msgid "Usuario o contraseña incorrectos."
 msgstr "Incorrect username or password."
+
+#: api/views_auth.py
+msgid "La ruta de destino no es válida."
+msgstr "The destination path is not valid."
+
+#: api/views_web.py
+msgid "El enlace de acceso ha caducado. Vuelve a abrir la sección desde la app."
+msgstr "The access link has expired. Open the section again from the app."

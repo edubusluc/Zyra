@@ -42,3 +42,21 @@ class DeviceToken(PublicIdModel):
     def __str__(self):
         """Nombre del dispositivo y su identificador público (nunca el token)."""
         return f"{self.device_name or 'Dispositivo'} ({self.public_id})"
+
+
+class WebLoginTicket(models.Model):
+    """
+    Ticket de un solo uso para abrir la web dentro de la app sin pedir la contraseña (``api.web_session``): vale
+    ``TICKET_TTL_SECONDS`` y se gasta al canjearlo. Solo se guarda el hash del ticket. Tras canjearlo apunta
+    a la sesión web que creó (``session_key``), para cerrarla cuando se revoca el token del dispositivo.
+    """
+    device_token = models.ForeignKey(DeviceToken, on_delete=models.CASCADE, related_name="web_tickets")
+    ticket_hash = models.CharField(max_length=64, unique=True, editable=False)
+    next_path = models.CharField(max_length=500, default="/")
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    used_at = models.DateTimeField(null=True, blank=True)
+    session_key = models.CharField(max_length=40, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
