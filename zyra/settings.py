@@ -162,6 +162,7 @@ INSTALLED_APPS = [
     'callLog',
     'penalty',
     'backoffice',
+    'api',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
@@ -246,6 +247,14 @@ TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
 # Freno general por IP y minuto (por proceso de gunicorn). Generoso: un club entero puede compartir wifi.
 FLOOD_LIMIT_GET_PER_MINUTE = config('FLOOD_LIMIT_GET_PER_MINUTE', default=240, cast=int)
 FLOOD_LIMIT_POST_PER_MINUTE = config('FLOOD_LIMIT_POST_PER_MINUTE', default=60, cast=int)
+# API de la app (api/): vida del token de dispositivo (se renueva al usarlo), cada cuánto se anota el uso
+# (para no escribir en cada petición) y límites por minuto y proceso: por token, por IP en las rutas
+# públicas y por IP para los intentos con token inválido. Ver api/throttle.py.
+API_TOKEN_TTL_DAYS = config('API_TOKEN_TTL_DAYS', default=90, cast=int)
+API_TOKEN_TOUCH_SECONDS = config('API_TOKEN_TOUCH_SECONDS', default=300, cast=int)
+API_RATE_LIMIT_PER_MINUTE = config('API_RATE_LIMIT_PER_MINUTE', default=120, cast=int)
+API_PUBLIC_LIMIT_PER_MINUTE = config('API_PUBLIC_LIMIT_PER_MINUTE', default=30, cast=int)
+API_AUTH_FAILURES_PER_MINUTE = config('API_AUTH_FAILURES_PER_MINUTE', default=30, cast=int)
 # Cuerpo máximo de una petición sin fotos (las fotos tienen su propio límite: PHOTO_MAX_UPLOAD_MB).
 DATA_UPLOAD_MAX_MEMORY_SIZE = config('DATA_UPLOAD_MAX_MEMORY_SIZE', default=2 * 1024 * 1024, cast=int)
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 2000

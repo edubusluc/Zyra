@@ -39,6 +39,11 @@ entero sigue siendo la clave de los FK. Excepciones sin `public_id`: `backoffice
 - **PhotoCheck** (`approved`/`rejected`/`unchecked`), **PhotoRemoval**, **BlockedEmail** (`email`
   único, normalizado por `core/blocklist.py`): moderación. FKs con `SET_NULL` para conservar el registro.
 
+### api (`api/models.py`)
+
+- **DeviceToken** (`DVT`): `user` (`CASCADE`), `token_hash` (SHA-256 único; el token en claro no se guarda), `device_name`, `last_used_at`, `expires_at`, `revoked_at`.
+  `DeviceToken.objects.active()` = sin revocar y sin caducar. Lógica en `api/tokens.py`.
+
 ### team (`team/models.py`)
 
 - **Team**: `club`, `is_own` (máx. uno por club: `unique_own_team_per_club`), `in_group`,

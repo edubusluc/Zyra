@@ -217,6 +217,7 @@ El id numérico sigue siendo la clave interna de la base de datos y de las relac
 | `SNA` | Cuenta SNP | `PEN` | Penalización |
 | `SNH` | Histórico de puntos SNP | `IMP` | Importación (back-office) |
 | `SNI` | Completar equipo | `RUN` | Ejecución de proceso (back-office) |
+| `DVT` | Token de dispositivo de la API | | |
 | | | `QRY` | Consulta guardada (back-office) |
 
 Los objetos nuevos lo reciben al guardarse (`core/public_id.py`). Los enlaces antiguos
