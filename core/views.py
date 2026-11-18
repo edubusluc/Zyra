@@ -47,6 +47,7 @@ from .forms import CaptainPlayerForm, CaptainSnpForm, ClubForm, EmailChangeForm,
 from .middleware import SESSION_KEY
 from .models import REPORT_SCOPES, Club, Invitation, Membership, UserPreference
 from .onboarding import onboarding_for
+from api import tokens as api_tokens
 from . import email_verification, login_throttle, ratelimit, seo, sessions
 from players import copy as player_copy, snp_service
 from .unsubscribe import user_from_news_token, user_from_result_token, user_from_token
@@ -961,8 +962,12 @@ def _change_own_email(request, user, email):
 @login_required
 @require_POST
 def logout_everywhere(request):
-    """«Cerrar sesión en todos los dispositivos»: borra las demás sesiones de la cuenta y deja la actual."""
+    """
+    «Cerrar sesión en todos los dispositivos»: borra las demás sesiones de la cuenta, deja la actual y revoca
+    todos los dispositivos de la app iOS (``api.tokens.revoke_all``); estos últimos no cuentan en el aviso.
+    """
     closed = sessions.end_other_sessions(request.user, request.session.session_key)
+    api_tokens.revoke_all(request.user)
     messages.success(request, ngettext("Se cerró la sesión en %(n)s dispositivo más.",
                                        "Se cerró la sesión en %(n)s dispositivos más.", closed) % {"n": closed}
                      if closed else _("No había más sesiones abiertas."))

@@ -5,7 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 18/11/2026 · API de la app iOS: seguridad de los tokens
 
-- Cambiar o restablecer la contraseña cierra la sesión en todas las apps de la cuenta. Los tokens del personal de Zyra duran 12 h (como su sesión web) y no se renuevan.
+- Cambiar o restablecer la contraseña cierra la sesión en todas las apps de la cuenta, igual que «Cerrar sesión en todos los dispositivos» de Mi perfil. Los tokens del personal de Zyra duran 12 h (como su sesión web) y no se renuevan.
 
 ## 18/11/2026 · API de la app iOS: eliminar la cuenta
 

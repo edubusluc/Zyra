@@ -72,3 +72,19 @@ class StaffTokenTests(TestCase):
         self.assertIsNotNone(tokens.resolve_token(raw, now=later))
         self.assertEqual(DeviceToken.objects.get(pk=device.pk).expires_at, self.now + timedelta(hours=12))
         self.assertIsNone(tokens.resolve_token(raw, now=self.now + timedelta(hours=12, minutes=1)))
+
+
+class LogoutEverywhereTests(TestCase):
+    """«Cerrar sesión en todos los dispositivos» (Mi perfil) también cierra la app."""
+
+    def test_revokes_app_tokens_of_the_account_only(self):
+        """Los tokens de la cuenta quedan revocados y los de otra cuenta no."""
+        user = User.objects.create_user("ana", "ana@example.com", "pass-12345-x")
+        other = User.objects.create_user("bea", "bea@example.com", "pass-12345-x")
+        _device, raw = tokens.issue_token(user, "iPhone")
+        _other_device, other_raw = tokens.issue_token(other, "iPhone de Bea")
+        self.client.force_login(user)
+        response = self.client.post("/core/profile/logout-everywhere/")
+        self.assertEqual(response.status_code, 302)
+        self.assertIsNone(tokens.resolve_token(raw))
+        self.assertIsNotNone(tokens.resolve_token(other_raw))
