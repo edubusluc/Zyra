@@ -17141,3 +17141,19 @@ msgstr "The confirmation is not correct."
 #: api/views_account.py
 msgid "«delete_player» debe ser verdadero o falso."
 msgstr "“delete_player” must be true or false."
+
+#: api/apple_accounts.py api/views_apple.py
+msgid "No se pudo iniciar sesión con Apple."
+msgstr "Could not sign in with Apple."
+
+#: api/apple_accounts.py api/views_apple.py
+msgid "Apple no ha facilitado un email verificado."
+msgstr "Apple did not provide a verified email."
+
+#: api/apple_accounts.py api/views_apple.py
+msgid "Ya existe una cuenta con ese email sin confirmar. Confirma el email o usa «Olvidé mi contraseña»."
+msgstr "An account with that email already exists and is unconfirmed. Confirm the email or use “Forgot my password”."
+
+#: api/apple_accounts.py api/views_apple.py
+msgid "Apple no responde. Inténtalo de nuevo en un momento."
+msgstr "Apple is not responding. Please try again in a moment."

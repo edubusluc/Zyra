@@ -21,6 +21,15 @@ from .views_base import ApiView
 MAX_PASSWORD_LENGTH = 1024
 
 
+def token_response(user, device_name):
+    """Respuesta 201 de los accesos (contraseña o Apple): token en claro (única vez), dispositivo y datos básicos."""
+    device, token = issue_token(user, device_name)
+    return json_ok({
+        "token": token, "device": device.public_id, "expires_at": device.expires_at.isoformat(),
+        "user": {"username": user.get_username(), "email": user.email},
+    }, status=201)
+
+
 class LoginView(ApiView):
     """``POST /api/v1/auth/login``: usuario o email y contraseña → token de dispositivo."""
     public = True
@@ -43,11 +52,7 @@ class LoginView(ApiView):
             login_throttle.record_failure(request, login)
             raise ApiError("invalid_credentials", _("Usuario o contraseña incorrectos."), 401)
         login_throttle.record_success(request, login, user)
-        device, token = issue_token(user, device_name)
-        return json_ok({
-            "token": token, "device": device.public_id, "expires_at": device.expires_at.isoformat(),
-            "user": {"username": user.get_username(), "email": user.email},
-        }, status=201)
+        return token_response(user, device_name)
 
 
 class LogoutView(ApiView):
