@@ -78,3 +78,14 @@ class PushDevice(models.Model):
     app_version = models.CharField(max_length=32, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+class AppleIdentity(models.Model):
+    """
+    Enlace de una cuenta con su identidad de «Iniciar sesión con Apple». ``subject`` es el identificador estable
+    de Apple para esa persona y esa app (``sub`` del ``identity_token``): se usa para reconocerla aunque cambie de
+    email. Se borra con la cuenta.
+    """
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="apple_identity")
+    subject = models.CharField(max_length=255, unique=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)

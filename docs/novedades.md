@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 18/11/2026 · API de la app iOS: iniciar sesión con Apple
+
+- `POST /api/v1/auth/apple` entra (o crea la cuenta) con el `identity_token` de Apple, verificado con las claves de Apple. Desactivado hasta configurar `APPLE_CLIENT_IDS`. Solo se enlaza con una cuenta existente si el email está verificado en ambos lados.
+
 ## 18/11/2026 · API de la app iOS: seguridad de los tokens
 
 - Cambiar o restablecer la contraseña cierra la sesión en todas las apps de la cuenta, igual que «Cerrar sesión en todos los dispositivos» de Mi perfil. Los tokens del personal de Zyra duran 12 h (como su sesión web) y no se renuevan.
