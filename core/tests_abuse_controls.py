@@ -84,7 +84,7 @@ class AccountLoginThrottleTests(TestCase):
 
     def test_many_ips_and_both_spellings_hit_the_account_limit(self):
         """Con 30 fallos repartidos entre IP y entre usuario/email la cuenta se bloquea, incluso con la contraseña buena."""
-        from core.views import LOGIN_MAX_FAILURES_PER_ACCOUNT
+        from core.login_throttle import LOGIN_MAX_FAILURES_PER_ACCOUNT
         for n in range(LOGIN_MAX_FAILURES_PER_ACCOUNT):
             self.assertEqual(self.attempt("ana" if n % 2 else "ANA@example.com", f"9.9.{n}.1").status_code, 200)
         response = self.attempt("ana", "5.5.5.5", password="pass-12345-x")
@@ -92,7 +92,7 @@ class AccountLoginThrottleTests(TestCase):
 
     def test_other_accounts_are_not_affected(self):
         """Los fallos contra una cuenta no bloquean a otra."""
-        from core.views import LOGIN_MAX_FAILURES_PER_ACCOUNT
+        from core.login_throttle import LOGIN_MAX_FAILURES_PER_ACCOUNT
         User.objects.create_user("luis", "luis@example.com", "pass-12345-y")
         for n in range(LOGIN_MAX_FAILURES_PER_ACCOUNT):
             self.attempt("ana", f"9.8.{n}.1")

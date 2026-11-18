@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 18/11/2026 · API de la app iOS: login y logout
+
+- `POST /api/v1/auth/login` (usuario o email y contraseña) devuelve el token de dispositivo y `POST /api/v1/auth/logout` lo revoca. Usa el mismo freno que el login web, ahora en `core/login_throttle.py` (sin cambios de comportamiento en la web).
+
 ## 18/11/2026 · API de la app iOS: base y tokens de dispositivo
 
 - Nueva app `api/` con `/api/v1/`: token por dispositivo (solo se guarda su hash, revocable y con caducidad), límite por token y errores en JSON. Sin cambios para la web: solo se exenta `/api/` del freno general por IP. Por ahora solo `GET /api/v1/ping`.

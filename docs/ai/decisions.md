@@ -110,7 +110,7 @@ cambios: `docs/novedades.md`. Índice general: `ZYRA_CONTEXT.md`. Verificado el 
 
 - **Decisión**: `/api/v1/` (app `api/`) sin sesión: token por dispositivo (hash, revocable, caducidad deslizante), límite por token y no por IP, y toda vista por `ApiView`. La web no cambia: lo único tocado en código web es exentar `/api/` del freno por IP.
 - **Motivo**: estudio de viabilidad de carga (Fase B): las IP móviles se comparten, las sesiones y consultas por petición no escalan y las tareas largas no van en los hilos web.
-- **Consecuencias**: un endpoint nuevo hereda de `ApiView` (si no, `api/tests_routes.py` falla); nada de SQL, hash ni límites dentro de una vista; no hay escritura por petición salvo el renovado de `last_used_at`.
+- **Consecuencias**: el freno del login (`core/login_throttle.py`) es uno solo para la web y la API; un endpoint nuevo hereda de `ApiView` (si no, `api/tests_routes.py` falla); nada de SQL, hash ni límites dentro de una vista; no hay escritura por petición salvo el renovado de `last_used_at`.
 
 ## Documentación del repositorio desfasada respecto al código
 

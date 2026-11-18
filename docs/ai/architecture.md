@@ -36,6 +36,9 @@ falla si una ruta no la usa o si es pública (`public = True`) sin declararla.
   (`API_RATE_LIMIT_PER_MINUTE`), por IP en rutas públicas (`API_PUBLIC_LIMIT_PER_MINUTE`) y por IP con tokens inválidos
   (`API_AUTH_FAILURES_PER_MINUTE`, corta antes de consultar la base de datos). `/api/` está exento del freno general por IP
   (`FloodProtectionMiddleware`): las IP móviles se comparten.
+- **Acceso**: `POST /api/v1/auth/login` (público; cuerpo `{"login", "password", "device_name"?}`, `login` = usuario o email como en la web) devuelve el token en claro una sola vez
+  (201); `POST /api/v1/auth/logout` revoca el token usado. Los fallos de contraseña usan el mismo freno que el login web (`core/login_throttle.py`: 5 por IP y usuario,
+  30 por cuenta, 15 min): los fallos de uno bloquean al otro. 401 `invalid_credentials` es idéntico para cuenta inexistente, contraseña mala y cuenta desactivada. No llama a `login()` de Django: no hay sesión.
 - **Sin efectos en la web**: sin cookie no hay sesión ni consulta de membresías; `core.tests_safety_net` no recorre `api/`.
 
 ## Contexto de club por petición [V]

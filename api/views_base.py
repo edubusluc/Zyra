@@ -3,6 +3,8 @@ Clase base de todas las vistas de la API. Es la única puerta: aquí (y solo aqu
 autentica por token, se aplican los límites, se elige el idioma y se da formato a los errores. Una vista
 concreta solo escribe ``get``/``post``/… y devuelve ``json_ok``.
 """
+import json
+
 from django.conf import settings
 from django.http import Http404
 from django.utils import translation
@@ -66,6 +68,16 @@ class ApiView(View):
             raise _too_many()
         request.device_token = device
         request.user = device.user
+
+    def json_body(self, request):
+        """Cuerpo de la petición como diccionario JSON. ``ApiError`` 400 (``invalid_json``) si no lo es."""
+        try:
+            body = json.loads(request.body or b"{}")
+        except (ValueError, UnicodeDecodeError):
+            body = None
+        if not isinstance(body, dict):
+            raise ApiError("invalid_json", _("El cuerpo debe ser un objeto JSON."), 400)
+        return body
 
     def http_method_not_allowed(self, request, *args, **kwargs):
         """405 en JSON (la de Django es HTML), con la cabecera ``Allow``."""

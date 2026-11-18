@@ -47,7 +47,7 @@ from .forms import CaptainPlayerForm, CaptainSnpForm, ClubForm, EmailChangeForm,
 from .middleware import SESSION_KEY
 from .models import REPORT_SCOPES, Club, Invitation, Membership, UserPreference
 from .onboarding import onboarding_for
-from . import email_verification, ratelimit, seo, sessions
+from . import email_verification, login_throttle, ratelimit, seo, sessions
 from players import copy as player_copy, snp_service
 from .unsubscribe import user_from_news_token, user_from_result_token, user_from_token
 from .services import (
@@ -74,14 +74,6 @@ FROM_GOOGLE_PARAM = "google"
 LOGIN_BACKEND = "django.contrib.auth.backends.ModelBackend"
 
 User = get_user_model()
-
-# Inicio de sesión: tras LOGIN_MAX_FAILURES contraseñas erróneas seguidas para el mismo
-# usuario desde la misma IP, se bloquea durante LOGIN_LOCKOUT_SECONDS.
-LOGIN_MAX_FAILURES = 5
-LOGIN_LOCKOUT_SECONDS = 15 * 60
-# Contador adicional por CUENTA (da igual la IP o si se escribió usuario o email): frena el ataque
-# repartido entre muchas IP. Es más alto que el de IP para que no sea fácil dejar fuera a alguien.
-LOGIN_MAX_FAILURES_PER_ACCOUNT = 30
 
 # Límites por IP (core/ratelimit.py): altas de club, altas de cuenta por invitación y
 # comprobaciones de contraseña mientras se escribe.
@@ -315,25 +307,13 @@ class ThrottledLoginView(LoginView):
     contraseñas sin límite. (El login de allauth, /accounts/login/, ya tiene el suyo.)
     """
 
-    def _key(self):
-        """Clave de caché del contador de fallos: IP y usuario escrito."""
-        username = (self.request.POST.get("username") or "").strip().lower()
-        return f"login-failures:{ratelimit.client_ip(self.request)}:{username}"
-
-    def _account_key(self):
-        """Clave del contador por cuenta: la persona que corresponde al usuario o email escrito (None si no existe)."""
-        typed = (self.request.POST.get("username") or "").strip()
-        if not typed:
-            return None
-        users = get_user_model().objects
-        user = users.filter(username__iexact=typed).first() or users.filter(email__iexact=typed).order_by("pk").first()
-        return f"login-failures-account:{user.pk}" if user else None
+    def _typed(self):
+        """Usuario o email escrito en el formulario."""
+        return self.request.POST.get("username")
 
     def post(self, request, *args, **kwargs):
         """Con demasiados fallos seguidos (de esa IP o contra esa cuenta) responde 429 sin comprobar la contraseña."""
-        account_key = self._account_key()
-        if (ratelimit.get_count(self._key()) >= LOGIN_MAX_FAILURES
-                or (account_key and ratelimit.get_count(account_key) >= LOGIN_MAX_FAILURES_PER_ACCOUNT)):
+        if login_throttle.is_locked(request, self._typed()):
             # Sin validar el formulario: validarlo comprobaría la contraseña.
             form = self.get_form()
             form._errors, form.cleaned_data = ErrorDict(), {}
@@ -342,17 +322,13 @@ class ThrottledLoginView(LoginView):
         return super().post(request, *args, **kwargs)
 
     def form_invalid(self, form):
-        """Suma un fallo a los contadores de IP y de cuenta (caducan a los LOGIN_LOCKOUT_SECONDS)."""
-        ratelimit.add_hit(self._key(), LOGIN_LOCKOUT_SECONDS)
-        account_key = self._account_key()
-        if account_key:
-            ratelimit.add_hit(account_key, LOGIN_LOCKOUT_SECONDS)
+        """Suma un fallo a los contadores de IP y de cuenta."""
+        login_throttle.record_failure(self.request, self._typed())
         return super().form_invalid(form)
 
     def form_valid(self, form):
         """Inicio de sesión correcto: pone a cero el contador de fallos."""
-        ratelimit.clear(self._key())
-        ratelimit.clear(f"login-failures-account:{form.get_user().pk}")
+        login_throttle.record_success(self.request, self._typed(), form.get_user())
         response = super().form_valid(form)
         sessions.apply_login_expiry(self.request, form.get_user(), self.request.POST.get("remember") == "on")
         return response
