@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 18/11/2026 · API de la app iOS: seguridad de los tokens
+
+- Cambiar o restablecer la contraseña cierra la sesión en todas las apps de la cuenta, igual que «Cerrar sesión en todos los dispositivos» de Mi perfil. Los tokens del personal de Zyra duran 12 h (como su sesión web) y no se renuevan.
+
 ## 18/11/2026 · API de la app iOS: eliminar la cuenta
 
 - `POST /api/v1/account/delete` elimina la cuenta con las mismas reglas que la web (el capitán debe traspasar antes la capitanía; se confirma con la contraseña) y cierra todos sus dispositivos. Las constantes y la comprobación de confirmación pasan a `core/services.py` sin cambiar el comportamiento de la web.
