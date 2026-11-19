@@ -179,6 +179,34 @@ class OwnPlayerTests(MediaMixin, TestCase):
         invitation = Invitation.objects.create(club=self.club, created_by=self.captain, reusable=True)
         self.client.force_login(self.user)
         self.client.post(reverse("invitation", args=[invitation.token]))
+        # Con una única ficha anterior se pide confirmación antes de enseñar la lista.
+        page = self.client.get(reverse("my_player"))
+        self.assertContains(page, "¿Eres tú?")
+        self.assertContains(page, "Ana Ruiz Gómez")
+        self.assertContains(self.client.get(reverse("my_player") + "?todos=1"), "¿Quién eres en el equipo?")
+        self.ana.refresh_from_db()
+        self.assertIsNone(self.ana.user)  # no se enlaza sin confirmar
+        self.client.post(reverse("link_player", args=[self.ana.public_id]))
+        self.ana.refresh_from_db()
+        self.assertEqual((self.ana.user, self.ana.in_team, self.ana.past_user), (self.user, True, None))
+
+    def test_no_previous_sheet_prompt_when_released_taken_or_ambiguous(self):
+        self.ana.user = self.user
+        self.ana.save()
+        membership = Membership.objects.get(user=self.user, club=self.club)
+        self.client.force_login(self.captain)
+        self.client.post(reverse("remove_member", args=[membership.public_id]))
+        Membership.objects.create(user=self.user, club=self.club, role=Membership.MEMBER)
+        self.client.force_login(self.user)
+        # Ficha liberada por el capitán: lista normal.
+        Player.objects.filter(pk=self.ana.pk).update(past_user=None)
+        self.assertContains(self.client.get(reverse("my_player")), "¿Quién eres en el equipo?")
+        # Ficha reclamada por otra cuenta: lista normal.
+        Player.objects.filter(pk=self.ana.pk).update(past_user=self.user, user=self.captain)
+        self.assertContains(self.client.get(reverse("my_player")), "¿Quién eres en el equipo?")
+        # Dos fichas anteriores: no se adivina.
+        Player.objects.filter(pk=self.ana.pk).update(user=None)
+        Player.objects.filter(pk=self.other.pk).update(past_user=self.user)
         self.assertContains(self.client.get(reverse("my_player")), "¿Quién eres en el equipo?")
 
     def test_member_leaves_club_and_is_unlinked(self):

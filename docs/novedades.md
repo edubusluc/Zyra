@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 20/11/2026 · Volver al equipo con tu ficha anterior
+
+- Si sales de un equipo y vuelves a entrar con una invitación, la web y la app te preguntan «¿Eres tú?» con tu ficha anterior; al confirmar recuperas tu ficha y tus estadísticas y vuelves a la plantilla. Con «No, soy otra persona» (o si hay varias fichas anteriores, o el capitán la liberó) sigue saliendo la lista de siempre.
+
 ## 17/11/2026 · Ficha del jugador: tarjetas de «Partidos y sets» alineadas
 
 - En SNP, «Reparto por partidos», «Por número de partido» y «Sets» ocupan todo el alto de su fila y reparten sus filas de arriba abajo, de modo que empiezan y acaban a la misma altura.
