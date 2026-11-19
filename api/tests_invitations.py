@@ -122,4 +122,6 @@ class PingTeamTests(TestCase):
         header = {"HTTP_AUTHORIZATION": f"Bearer {raw}"}
         self.assertEqual(self.client.get(reverse("api_ping"), **header).json()["team"]["name"], "Club A")
         Membership.objects.filter(user=user, club=club).delete()
-        self.assertIsNone(self.client.get(reverse("api_ping"), **header).json()["team"])
+        after = self.client.get(reverse("api_ping"), **header).json()
+        self.assertIsNone(after["team"])
+        self.assertIn("has_history", after)

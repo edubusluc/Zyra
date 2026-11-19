@@ -10,14 +10,19 @@ class PingView(ApiView):
 
     def get(self, request):
         """
-        Devuelve el identificador público del dispositivo, su caducidad y ``team`` (nombre y escudo del primer club, o None):
-        la app lo usa para saber si la cuenta salió de su equipo o entró en uno desde la web.
+        Devuelve el identificador público del dispositivo, su caducidad, ``team`` (nombre y escudo del primer club, o None) y
+        ``has_history`` (tiene fichas actuales o de equipos anteriores: hay «Mis estadísticas» que ver). La app lo usa para
+        saber si la cuenta salió de su equipo o entró en uno desde la web, y si ofrece sus estadísticas sin equipo.
         """
+        from django.db.models import Q
+        from players.models import Player
+
         from .views_auth import team_summary
 
         device = request.device_token
         return json_ok({"device": device.public_id, "expires_at": device.expires_at.isoformat(),
-                        "team": team_summary(request.user)})
+                        "team": team_summary(request.user),
+                        "has_history": Player.objects.filter(Q(user=request.user) | Q(past_user=request.user)).exists()})
 
 
 class NotFoundView(ApiView):

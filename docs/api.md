@@ -41,10 +41,10 @@ va autenticada con un **token de dispositivo**. El código está en `api/`; las 
 ### `GET /ping`
 
 ```json
-{"device": "DVTxxxxxxxxxxxx", "expires_at": "2027-02-16T21:10:00+00:00", "team": {"name": "Club A", "crest": null}}
+{"device": "DVTxxxxxxxxxxxx", "expires_at": "2027-02-16T21:10:00+00:00", "team": {"name": "Club A", "crest": null}, "has_history": true}
 ```
 
-`team` es el equipo propio del primer club de la cuenta, o `null` si no está en ninguno. La app lo comprueba al volver a primer plano para saber si salió de su equipo (o entró en uno) desde la web.
+`team` es el equipo propio del primer club de la cuenta, o `null` si no está en ninguno. `has_history` es verdadero si la cuenta tiene fichas, actuales o de equipos anteriores (la app ofrece entonces «Mis estadísticas» a quien no tiene equipo). La app lo comprueba al volver a primer plano para saber si salió de su equipo (o entró en uno) desde la web.
 
 ### `POST /auth/login`
 

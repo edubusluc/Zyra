@@ -5,7 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 19/11/2026 · API de la app iOS: aceptar invitaciones
 
-- `GET /api/v1/invitations/<token>` enseña el club que invita y `POST /api/v1/invitations/<token>/accept` une a la cuenta al equipo (mismas reglas y correo de bienvenida que la web). Añade `/.well-known/apple-app-site-association` para los enlaces universales, apagado hasta definir `APPLE_APP_LINK_IDS`. `GET /api/v1/ping` devuelve además `team` (equipo de la cuenta o `null`) para que la app detecte que salió de su club.
+- `GET /api/v1/invitations/<token>` enseña el club que invita y `POST /api/v1/invitations/<token>/accept` une a la cuenta al equipo (mismas reglas y correo de bienvenida que la web). Añade `/.well-known/apple-app-site-association` para los enlaces universales, apagado hasta definir `APPLE_APP_LINK_IDS`. `GET /api/v1/ping` devuelve además `team` (equipo de la cuenta o `null`) y `has_history` (si tiene estadísticas de equipos) para que la app detecte que salió de su club.
 
 ## 19/11/2026 · API de la app iOS: alta de club
 
