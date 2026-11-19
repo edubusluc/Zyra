@@ -107,3 +107,19 @@ class AppleAppSiteAssociationTests(TestCase):
         details = json.loads(response.content)["applinks"]["details"][0]
         self.assertEqual(details["appIDs"], ["ABCDE12345.com.example.zyra"])
         self.assertEqual(details["components"], [{"/": "/invite/*"}])
+
+
+class PingTeamTests(TestCase):
+    """``GET /ping`` dice a qué equipo pertenece la cuenta (la app detecta así que salió de su club)."""
+
+    def test_team_follows_membership(self):
+        """Con club devuelve su equipo; al salir, None."""
+        from core.models import Membership
+        from api import tokens
+        user = User.objects.create_user("ana", "ana@example.com", "pass-12345-x")
+        club = create_club("Club A", "Sevilla", user)
+        _device, raw = tokens.issue_token(user, "iPhone")
+        header = {"HTTP_AUTHORIZATION": f"Bearer {raw}"}
+        self.assertEqual(self.client.get(reverse("api_ping"), **header).json()["team"]["name"], "Club A")
+        Membership.objects.filter(user=user, club=club).delete()
+        self.assertIsNone(self.client.get(reverse("api_ping"), **header).json()["team"])

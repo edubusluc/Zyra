@@ -26,7 +26,7 @@ va autenticada con un **token de dispositivo**. El código está en `api/`; las 
 
 | Método y ruta | Público | Para qué |
 |---|---|---|
-| `GET /ping` | no | Comprueba que el token sirve y cuándo caduca |
+| `GET /ping` | no | Comprueba que el token sirve, cuándo caduca y a qué equipo pertenece |
 | `POST /auth/login` | sí | Usuario o email y contraseña → token |
 | `POST /auth/apple` | sí | `identity_token` de Apple → token (desactivado hasta configurarlo) |
 | `POST /auth/google` | sí | `id_token` de Google → token (desactivado hasta configurarlo) |
@@ -41,8 +41,10 @@ va autenticada con un **token de dispositivo**. El código está en `api/`; las 
 ### `GET /ping`
 
 ```json
-{"device": "DVTxxxxxxxxxxxx", "expires_at": "2027-02-16T21:10:00+00:00"}
+{"device": "DVTxxxxxxxxxxxx", "expires_at": "2027-02-16T21:10:00+00:00", "team": {"name": "Club A", "crest": null}}
 ```
+
+`team` es el equipo propio del primer club de la cuenta, o `null` si no está en ninguno. La app lo comprueba al volver a primer plano para saber si salió de su equipo (o entró en uno) desde la web.
 
 ### `POST /auth/login`
 

@@ -6,12 +6,18 @@ from .views_base import ApiView
 
 
 class PingView(ApiView):
-    """``GET /api/v1/ping``: comprueba que el token sirve y cuándo caduca (sin datos de la cuenta)."""
+    """``GET /api/v1/ping``: comprueba que el token sirve y cuándo caduca, y si la cuenta sigue en algún club."""
 
     def get(self, request):
-        """Devuelve el identificador público del dispositivo y su caducidad."""
+        """
+        Devuelve el identificador público del dispositivo, su caducidad y ``team`` (nombre y escudo del primer club, o None):
+        la app lo usa para saber si la cuenta salió de su equipo o entró en uno desde la web.
+        """
+        from .views_auth import team_summary
+
         device = request.device_token
-        return json_ok({"device": device.public_id, "expires_at": device.expires_at.isoformat()})
+        return json_ok({"device": device.public_id, "expires_at": device.expires_at.isoformat(),
+                        "team": team_summary(request.user)})
 
 
 class NotFoundView(ApiView):
