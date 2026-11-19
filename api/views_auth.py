@@ -21,12 +21,25 @@ from .views_base import ApiView
 MAX_PASSWORD_LENGTH = 1024
 
 
+def team_summary(user):
+    """Equipo propio del primer club de ``user`` para la pantalla de acceso: ``{"name", "crest"}`` (``crest`` es la
+    ruta o URL del escudo, o None). None si la cuenta no tiene club."""
+    from core.services import club_of
+
+    club = club_of(user)
+    team = club.own_team if club else None
+    if team is None:
+        return None
+    return {"name": team.name, "crest": team.photo.url if team.photo else None}
+
+
 def token_response(user, device_name):
-    """Respuesta 201 de los accesos (contraseña o Apple): token en claro (única vez), dispositivo y datos básicos."""
+    """Respuesta 201 de los accesos (contraseña, Apple, Google o alta): token en claro (única vez), dispositivo, datos básicos y equipo."""
     device, token = issue_token(user, device_name)
     return json_ok({
         "token": token, "device": device.public_id, "expires_at": device.expires_at.isoformat(),
         "user": {"username": user.get_username(), "email": user.email},
+        "team": team_summary(user),
     }, status=201)
 
 

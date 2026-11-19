@@ -8,8 +8,8 @@ def json_ok(data=None, status=200):
 
 
 def json_error(error):
-    """Respuesta de error a partir de un ``ApiError``: ``{"error": código, "detail": texto}``."""
-    response = JsonResponse({"error": error.code, "detail": str(error.detail)}, status=error.status)
+    """Respuesta de error a partir de un ``ApiError``: ``{"error": código, "detail": texto}`` (más ``error.extra``)."""
+    response = JsonResponse({"error": error.code, "detail": str(error.detail), **error.extra}, status=error.status)
     for name, value in error.headers.items():
         response[name] = value
     return response

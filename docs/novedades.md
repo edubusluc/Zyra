@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 19/11/2026 · API de la app iOS: alta de club
+
+- `GET /api/v1/club/options` y `POST /api/v1/club/register` permiten crear la cuenta y el club desde la app con las mismas reglas que la web: competición, división y país, escudo, capitán escrito o con la cuenta de SNP, y cuenta con contraseña o con Google. Los errores salen por campo. Las respuestas de acceso añaden `team` (nombre y escudo) para mostrar el equipo en la pantalla de acceso.
+
 ## 19/11/2026 · API de la app iOS: continuar con Google
 
 - `POST /api/v1/auth/google` entra (o crea la cuenta) con el `id_token` de Google que la app obtiene con el acceso nativo del sistema (la WebView no vale: Google la bloquea). Desactivado hasta configurar `GOOGLE_IOS_CLIENT_IDS`. Usa la misma identidad de Google que la web; entra en la cuenta que ya exista con ese email, igual que la web (si no tenía el email verificado, pierde la contraseña y sus otros emails). En la app ya no se ofrece «Entrar con Google» dentro de las páginas web.
