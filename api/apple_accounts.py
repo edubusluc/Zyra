@@ -51,7 +51,7 @@ def _link_or_create(claims, email, first_name, last_name):
     """Enlaza ``claims["sub"]`` con la cuenta de ese email o crea una nueva (dentro de una transacción)."""
     user = User.objects.filter(email__iexact=email).first()
     if user is None:
-        user = _create_user(email, first_name, last_name)
+        user = create_user(email, first_name, last_name)
     elif not user.is_active:
         raise _invalid()
     elif not email_verification.is_verified(user):
@@ -61,9 +61,9 @@ def _link_or_create(claims, email, first_name, last_name):
     return user
 
 
-def _create_user(email, first_name, last_name):
-    """Cuenta nueva sin contraseña (como las de Google) con el email verificado por Apple."""
-    username = get_adapter().generate_unique_username([f"{first_name} {last_name}".strip(), email.split("@")[0], "apple"])
+def create_user(email, first_name, last_name, fallback="apple"):
+    """Cuenta nueva sin contraseña (como las de Google) con el email verificado por el proveedor (Apple o Google)."""
+    username = get_adapter().generate_unique_username([f"{first_name} {last_name}".strip(), email.split("@")[0], fallback])
     user = User(username=username, email=email, first_name=first_name[:150], last_name=last_name[:150])
     user.set_unusable_password()
     user.save()

@@ -1,11 +1,12 @@
 """URLs de ``/api/v1/``. La última ruta recoge lo desconocido y responde 404 en JSON."""
 from django.urls import re_path
 
-from . import views, views_account, views_apple, views_auth, views_devices
+from . import views, views_account, views_apple, views_auth, views_devices, views_google
 
 urlpatterns = [
     re_path(r"^auth/login/?$", views_auth.LoginView.as_view(), name="api_login"),
     re_path(r"^auth/apple/?$", views_apple.AppleView.as_view(), name="api_apple"),
+    re_path(r"^auth/google/?$", views_google.GoogleView.as_view(), name="api_google"),
     re_path(r"^auth/logout/?$", views_auth.LogoutView.as_view(), name="api_logout"),
     re_path(r"^auth/web-session/?$", views_auth.WebSessionView.as_view(), name="api_web_session"),
     re_path(r"^account/delete/?$", views_account.DeleteAccountView.as_view(), name="api_account_delete"),

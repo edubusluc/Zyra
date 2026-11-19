@@ -29,6 +29,7 @@ va autenticada con un **token de dispositivo**. El código está en `api/`; las 
 | `GET /ping` | no | Comprueba que el token sirve y cuándo caduca |
 | `POST /auth/login` | sí | Usuario o email y contraseña → token |
 | `POST /auth/apple` | sí | `identity_token` de Apple → token (desactivado hasta configurarlo) |
+| `POST /auth/google` | sí | `id_token` de Google → token (desactivado hasta configurarlo) |
 | `POST /auth/logout` | no | Revoca el token usado |
 | `POST /auth/web-session` | no | URL de un solo uso para abrir la web ya con la sesión iniciada |
 | `POST /devices` | no | Registra o actualiza el token de APNs de este dispositivo |
@@ -66,6 +67,18 @@ Cuerpo: `{"identity_token": "<jwt>", "nonce": "<valor en claro>", "first_name"?,
 - `409 apple_account_unconfirmed`: existe una cuenta con ese email sin confirmar; no se enlaza ni se crea nada.
 - `503 apple_unavailable`: el servidor no pudo obtener las claves de Apple; reintenta.
 - Apple da nombre y email solo la primera vez que una persona autoriza la app: envía `first_name` y `last_name` en esa primera llamada.
+
+### `POST /auth/google`
+
+Cuerpo: `{"id_token": "<jwt>", "nonce": "<valor en claro>", "device_name"?}`. Respuesta **201** igual que el login.
+
+- **Desactivado por defecto**: sin `GOOGLE_IOS_CLIENT_IDS` (ID de cliente OAuth de tipo iOS, separados por comas) responde `404 not_found`. Es independiente del `GOOGLE_CLIENT_ID` del botón de la web.
+- La app obtiene el `id_token` con el flujo OAuth nativo (`ASWebAuthenticationSession`, PKCE, `scope=openid email profile`) y envía a Google el `nonce` en claro; Google lo devuelve tal cual dentro del token. El nombre sale del propio token.
+- Cuenta: la ya enlazada a esa identidad de Google (la misma de la web, `allauth`); si no, la que tenga el mismo email **solo si** Google lo verificó y la cuenta lo tenía verificado; si no existe, se crea sin contraseña.
+- `401 invalid_google_token`: firma, app, caducidad o nonce incorrectos, o token ya usado (cada token vale una vez).
+- `403 google_email_unverified`, `403 email_blocked`.
+- `409 google_account_unconfirmed`: existe una cuenta con ese email sin confirmar; no se enlaza ni se crea nada.
+- `503 google_unavailable`: el servidor no pudo obtener las claves de Google; reintenta.
 
 ### `POST /auth/logout`
 
@@ -111,14 +124,15 @@ Respuesta 200: `{"deleted": true}`. Revoca todos los dispositivos y borra la cue
 | 401 | `unauthorized` | Sin token, caducado, revocado o inexistente (`WWW-Authenticate: Bearer`) |
 | 401 | `invalid_credentials` | Login fallido |
 | 401 | `invalid_apple_token` | Token de Apple no válido, repetido o de una cuenta desactivada |
+| 401 | `invalid_google_token` | Token de Google no válido, repetido o de una cuenta desactivada |
 | 403 | `confirmation_failed` | Confirmación de borrado incorrecta |
-| 403 | `apple_email_unverified`, `email_blocked` | Ver `/auth/apple` |
-| 404 | `not_found` | Ruta desconocida, o Apple sin configurar |
+| 403 | `apple_email_unverified`, `google_email_unverified`, `email_blocked` | Ver `/auth/apple` y `/auth/google` |
+| 404 | `not_found` | Ruta desconocida, o Apple o Google sin configurar |
 | 405 | `method_not_allowed` | Método no permitido (`Allow` lo indica) |
-| 409 | `account_blocked`, `apple_account_unconfirmed` | Ver cada endpoint |
+| 409 | `account_blocked`, `apple_account_unconfirmed`, `google_account_unconfirmed` | Ver cada endpoint |
 | 429 | `rate_limited` | Demasiadas peticiones (`Retry-After` en segundos) |
 | 429 | `login_locked` | Frenos de login |
-| 503 | `apple_unavailable` | Sin respuesta de Apple |
+| 503 | `apple_unavailable`, `google_unavailable` | Sin respuesta de Apple o de Google |
 
 ## Límites
 
