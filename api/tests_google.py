@@ -164,11 +164,23 @@ class GoogleEndpointTests(GoogleTestCase):
         self.assertTrue(user.has_usable_password())
         self.assertEqual(User.objects.count(), 1)
 
-    def test_unconfirmed_existing_account_is_not_linked(self):
-        """Si el email existe sin confirmar, no se enlaza ni se crea nada (409)."""
-        User.objects.create_user("ana", "ana@example.com", "pass-12345-x")
+    def test_unconfirmed_existing_account_is_taken_over_like_the_web(self):
+        """Como en la web: la cuenta sin email verificado entra, pierde la contraseña y sus otros emails."""
+        user = User.objects.create_user("ana", "ana@example.com", "pass-12345-x")
+        EmailAddress.objects.create(user=user, email="otra@example.com", verified=False, primary=True)
         response = self.post()
-        self.assertEqual((response.status_code, response.json()["error"]), (409, "google_account_unconfirmed"))
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(SocialAccount.objects.get().user, user)
+        user.refresh_from_db()
+        self.assertFalse(user.has_usable_password())
+        self.assertEqual(list(EmailAddress.objects.filter(user=user).values_list("email", "verified")),
+                         [("ana@example.com", True)])
+        self.assertEqual(User.objects.count(), 1)
+
+    def test_only_inactive_account_with_that_email_is_refused(self):
+        """Si el único con ese email está desactivado, no entra ni se crea otra cuenta."""
+        User.objects.create_user("ana", "ana@example.com", "pass-12345-x", is_active=False)
+        self.assertEqual(self.post().status_code, 401)
         self.assertEqual((SocialAccount.objects.count(), User.objects.count()), (0, 1))
 
     def test_unverified_google_email_is_refused(self):

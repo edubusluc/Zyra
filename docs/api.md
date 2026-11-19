@@ -74,10 +74,9 @@ Cuerpo: `{"id_token": "<jwt>", "nonce": "<valor en claro>", "device_name"?}`. Re
 
 - **Desactivado por defecto**: sin `GOOGLE_IOS_CLIENT_IDS` (ID de cliente OAuth de tipo iOS, separados por comas) responde `404 not_found`. Es independiente del `GOOGLE_CLIENT_ID` del botón de la web.
 - La app obtiene el `id_token` con el flujo OAuth nativo (`ASWebAuthenticationSession`, PKCE, `scope=openid email profile`) y envía a Google el `nonce` en claro; Google lo devuelve tal cual dentro del token. El nombre sale del propio token.
-- Cuenta: la ya enlazada a esa identidad de Google (la misma de la web, `allauth`); si no, la que tenga el mismo email **solo si** Google lo verificó y la cuenta lo tenía verificado; si no existe, se crea sin contraseña.
+- Cuenta: la ya enlazada a esa identidad de Google (la misma de la web, `allauth`); si no, la que tenga el mismo email (Google lo verificó), igual que en la web: si la cuenta no tenía ese email verificado, se anula su contraseña y se borran sus otros emails y conexiones; si no existe, se crea sin contraseña.
 - `401 invalid_google_token`: firma, app, caducidad o nonce incorrectos, o token ya usado (cada token vale una vez).
 - `403 google_email_unverified`, `403 email_blocked`.
-- `409 google_account_unconfirmed`: existe una cuenta con ese email sin confirmar; no se enlaza ni se crea nada.
 - `503 google_unavailable`: el servidor no pudo obtener las claves de Google; reintenta.
 
 ### `POST /auth/logout`
@@ -129,7 +128,7 @@ Respuesta 200: `{"deleted": true}`. Revoca todos los dispositivos y borra la cue
 | 403 | `apple_email_unverified`, `google_email_unverified`, `email_blocked` | Ver `/auth/apple` y `/auth/google` |
 | 404 | `not_found` | Ruta desconocida, o Apple o Google sin configurar |
 | 405 | `method_not_allowed` | Método no permitido (`Allow` lo indica) |
-| 409 | `account_blocked`, `apple_account_unconfirmed`, `google_account_unconfirmed` | Ver cada endpoint |
+| 409 | `account_blocked`, `apple_account_unconfirmed` | Ver cada endpoint |
 | 429 | `rate_limited` | Demasiadas peticiones (`Retry-After` en segundos) |
 | 429 | `login_locked` | Frenos de login |
 | 503 | `apple_unavailable`, `google_unavailable` | Sin respuesta de Apple o de Google |
