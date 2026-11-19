@@ -7,6 +7,10 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 - Nueva página [API de la app iOS](api.md): endpoints, errores, límites, ejemplo de Apple en Swift y lista para validar la app contra el servidor.
 
+## 19/11/2026 · API de la app iOS: continuar con Google
+
+- `POST /api/v1/auth/google` entra (o crea la cuenta) con el `id_token` de Google que la app obtiene con el acceso nativo del sistema (la WebView no vale: Google la bloquea). Desactivado hasta configurar `GOOGLE_IOS_CLIENT_IDS`. Usa la misma identidad de Google que la web; solo se enlaza con una cuenta existente si el email está verificado en ambos lados. En la app ya no se ofrece «Entrar con Google» dentro de las páginas web.
+
 ## 18/11/2026 · API de la app iOS: iniciar sesión con Apple
 
 - `POST /api/v1/auth/apple` entra (o crea la cuenta) con el `identity_token` de Apple, verificado con las claves de Apple. Desactivado hasta configurar `APPLE_CLIENT_IDS`. Solo se enlaza con una cuenta existente si el email está verificado en ambos lados.

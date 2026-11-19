@@ -264,6 +264,10 @@ API_WEB_SESSION_LIMIT_PER_MINUTE = config('API_WEB_SESSION_LIMIT_PER_MINUTE', de
 # por comas; el bundle id de la app). Vacío = desactivado (el endpoint responde 404). Claves públicas de Apple.
 APPLE_CLIENT_IDS = config('APPLE_CLIENT_IDS', default='')
 APPLE_JWKS_URL = config('APPLE_JWKS_URL', default='https://appleid.apple.com/auth/keys')
+# Inicio de sesión con Google en la app (api/google.py): ID de cliente OAuth de tipo iOS (``aud`` del id_token, separados
+# por comas). Vacío = desactivado (el endpoint responde 404). Es independiente del GOOGLE_CLIENT_ID de la web.
+GOOGLE_IOS_CLIENT_IDS = config('GOOGLE_IOS_CLIENT_IDS', default='')
+GOOGLE_JWKS_URL = config('GOOGLE_JWKS_URL', default='https://www.googleapis.com/oauth2/v3/certs')
 # Cuerpo máximo de una petición sin fotos (las fotos tienen su propio límite: PHOTO_MAX_UPLOAD_MB).
 DATA_UPLOAD_MAX_MEMORY_SIZE = config('DATA_UPLOAD_MAX_MEMORY_SIZE', default=2 * 1024 * 1024, cast=int)
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 2000
