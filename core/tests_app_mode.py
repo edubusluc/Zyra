@@ -92,7 +92,7 @@ class AppChromeTests(TestCase):
         self.assertEqual(self.page(None), self.page(BROWSER_UA))
 
     def test_app_hides_header_and_menu_but_keeps_content(self):
-        """Con la app no hay cabecera ni menú inferior, pero sí contenido, pie y enlace de salto."""
+        """Con la app no hay cabecera, menú inferior ni pie legal, pero sí contenido y enlace de salto."""
         html = self.page(APP_UA)
         self.assertNotIn("z-header", html)
         self.assertNotIn("z-bottom-nav", html)
@@ -100,13 +100,14 @@ class AppChromeTests(TestCase):
         self.assertIn('<body class="z-app">', html)
         self.assertIn('id="contenido"', html)
         self.assertIn('class="z-skip-link"', html)
-        self.assertIn('class="z-footer footer"', html)
+        self.assertNotIn("z-footer", html)
 
     def test_app_page_differs_only_by_the_chrome(self):
-        """Quitando la cabecera, el menú y la clase del cuerpo, las dos páginas son iguales."""
+        """Quitando la cabecera, el menú, el pie y la clase del cuerpo, las dos páginas son iguales."""
         browser, app = self.page(BROWSER_UA), self.page(APP_UA)
         stripped = re.sub(r'<header class="z-header">.*?</header>', "", browser, flags=re.S)
         stripped = re.sub(r'<nav class="z-bottom-nav".*?</nav>', "", stripped, flags=re.S)
+        stripped = re.sub(r'<footer class="z-footer footer">.*?</footer>', "", stripped, flags=re.S)
         blank_lines = re.compile(r"\n\s*\n+")  # las etiquetas {% if %} dejan líneas en blanco distintas
         self.assertEqual(blank_lines.sub("\n", stripped.replace("<body>", '<body class="z-app">')),
                          blank_lines.sub("\n", app))

@@ -4714,10 +4714,9 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 }
 
 /* ---------- Modo app (User-Agent ZyraApp/, core.context_processors.app_mode) ----------
-   Sin cabecera ni barra inferior: no se reserva su hueco (el margen inferior del móvil respeta la zona segura). */
+   Sin cabecera, barra inferior ni pie legal: no se reserva su hueco (el margen inferior del móvil respeta la zona segura). */
 html:has(body.z-app) { scroll-padding-top: 12px; scroll-padding-bottom: 24px; }
 @media (max-width: 991.98px) {
     body.z-app .main-content { padding-bottom: calc(40px + env(safe-area-inset-bottom)); }
-    body.z-app .z-footer { padding-bottom: calc(30px + env(safe-area-inset-bottom)); }
     body.z-app .z-selector-tools { top: 0; }
 }
