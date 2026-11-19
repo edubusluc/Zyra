@@ -264,6 +264,9 @@ API_WEB_SESSION_LIMIT_PER_MINUTE = config('API_WEB_SESSION_LIMIT_PER_MINUTE', de
 # por comas; el bundle id de la app). Vacío = desactivado (el endpoint responde 404). Claves públicas de Apple.
 APPLE_CLIENT_IDS = config('APPLE_CLIENT_IDS', default='')
 APPLE_JWKS_URL = config('APPLE_JWKS_URL', default='https://appleid.apple.com/auth/keys')
+# Enlaces universales de iOS (api.views_invitations.apple_app_site_association): ``<ID de equipo>.<bundle id>`` de la app,
+# separados por comas. Vacío = el fichero de asociación responde 404.
+APPLE_APP_LINK_IDS = config('APPLE_APP_LINK_IDS', default='')
 # Inicio de sesión con Google en la app (api/google.py): ID de cliente OAuth de tipo iOS (``aud`` del id_token, separados
 # por comas). Vacío = desactivado (el endpoint responde 404). Es independiente del GOOGLE_CLIENT_ID de la web.
 GOOGLE_IOS_CLIENT_IDS = config('GOOGLE_IOS_CLIENT_IDS', default='')

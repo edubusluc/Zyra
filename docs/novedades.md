@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 19/11/2026 · API de la app iOS: aceptar invitaciones
+
+- `GET /api/v1/invitations/<token>` enseña el club que invita y `POST /api/v1/invitations/<token>/accept` une a la cuenta al equipo (mismas reglas y correo de bienvenida que la web). Añade `/.well-known/apple-app-site-association` para los enlaces universales, apagado hasta definir `APPLE_APP_LINK_IDS`.
+
 ## 19/11/2026 · API de la app iOS: alta de club
 
 - `GET /api/v1/club/options` y `POST /api/v1/club/register` permiten crear la cuenta y el club desde la app con las mismas reglas que la web: competición, división y país, escudo, capitán escrito o con la cuenta de SNP, y cuenta con contraseña o con Google. Los errores salen por campo. Las respuestas de acceso añaden `team` (nombre y escudo) para mostrar el equipo en la pantalla de acceso.

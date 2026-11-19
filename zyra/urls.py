@@ -32,6 +32,7 @@ from django.contrib.sitemaps.views import sitemap
 
 from core.guides import callup_template_pdf, guide_detail, guide_index, TEMPLATE_PDF
 from core.sitemaps import GuidesSitemap, PublicPagesSitemap
+from api.views_invitations import apple_app_site_association
 from core.views import error_403_view, error_404_view, healthz, home, bing_site_auth, favicon_ico, legal_page, robots_txt
 
 # <pid:...>: identificador público de un objeto (core/public_id.py). Se registra antes de
@@ -43,6 +44,7 @@ urlpatterns = [
     path('backoffice/', include('backoffice.urls')),
     path("", home, name="home"),
     # Páginas públicas para buscadores y obligaciones legales.
+    path(".well-known/apple-app-site-association", apple_app_site_association, name="apple_app_site_association"),
     path("robots.txt", robots_txt, name="robots_txt"),
     path("favicon.ico", favicon_ico, name="favicon_ico"),
     path("BingSiteAuth.xml", bing_site_auth, name="bing_site_auth"),
