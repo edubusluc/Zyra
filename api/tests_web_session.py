@@ -263,3 +263,21 @@ class PurgeTests(WebSessionTestCase):
         web_session.issue_ticket(self.device, "/", now=now)
         self.assertFalse(WebLoginTicket.objects.filter(pk=old.pk).exists())
         self.assertTrue(WebLoginTicket.objects.filter(pk=used.pk).exists())
+
+
+class SecondTabKeepsCsrfTests(WebSessionTestCase):
+    """Las pestañas canjean un ticket cada una con las mismas cookies: la segunda no rompe los formularios de la primera."""
+
+    def test_second_ticket_keeps_session_and_csrf(self):
+        """Con la sesión ya iniciada, canjear otro ticket no cambia la sesión ni rota el token CSRF."""
+        client = Client()
+        first = self.open(self.ticket_path(), client=client)
+        self.assertEqual(first.status_code, 302)
+        session_key = client.cookies["sessionid"].value
+        csrf = client.cookies.get("csrftoken")
+        second = self.open(self.ticket_path(), client=client)
+        self.assertEqual(second.status_code, 302)
+        self.assertEqual(client.cookies["sessionid"].value, session_key)
+        self.assertEqual(client.cookies.get("csrftoken").value if csrf else None,
+                         csrf.value if csrf else None)
+        self.assertEqual(int(client.session["_auth_user_id"]), self.user.pk)

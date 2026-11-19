@@ -35,8 +35,11 @@ def start_web_session(request, ticket):
     if used is None:
         return _rejected(request)
     user = used.device_token.user
-    login(request, user, backend=BACKEND)
-    sessions.apply_login_expiry(request, user, remember=True)
+    # Las pestañas de la app comparten cookies y canjean un ticket cada una. Si la sesión ya es de esta cuenta no se vuelve a
+    # iniciar: login() rota el token CSRF y rompería los formularios de las páginas ya abiertas en otras pestañas.
+    if not (request.user.is_authenticated and request.user.pk == user.pk):
+        login(request, user, backend=BACKEND)
+        sessions.apply_login_expiry(request, user, remember=True)
     if request.session.session_key is None:  # login() de otra cuenta vacía la sesión y la clave se crea al guardar
         request.session.save()
     web_session.remember_session(used, request.session.session_key)
