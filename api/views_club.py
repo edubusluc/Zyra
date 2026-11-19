@@ -115,7 +115,11 @@ class RegisterClubView(ApiView):
         team, captain = _section(body, "team"), _section(body, "captain")
         account, google_body = _section(body, "account"), _section(body, "google")
         device_name = text_field(body, "device_name", required=False, max_length=100)
-        if bool(account) == bool(google_body):
+        # Con la cuenta ya creada (``CreateClubView``) el club se crea para ella: no se envía ni «account» ni «google».
+        existing = not self.public
+        if existing and (account or google_body):
+            raise ApiError("invalid_field", _("Esta llamada usa tu cuenta: no envíes «account» ni «google»."), 400)
+        if not existing and bool(account) == bool(google_body):
             raise ApiError("invalid_field", _("Envía «account» o «google», uno de los dos."), 400)
 
         photo = _crest(team)
@@ -150,7 +154,10 @@ class RegisterClubView(ApiView):
             claims = self._google_claims(google_body)
         try:
             with transaction.atomic():
-                user = user_form.save() if user_form else google_accounts.resolve_user(claims)
+                if existing:
+                    user = request.user
+                else:
+                    user = user_form.save() if user_form else google_accounts.resolve_user(claims)
                 if is_user_blocked(user):
                     raise ApiError("email_blocked", _("Tu email está bloqueado en Zyra y no puede crear clubes."), 403)
                 data = club_form.cleaned_data
@@ -179,7 +186,8 @@ class RegisterClubView(ApiView):
             # Dos altas a la vez con el mismo usuario o email: gana la primera.
             raise ApiError("validation_error", _("Revisa los datos del formulario."), 400, extra={"fields": {
                 f"{ACCOUNT_LABEL}.username": [SignUpForm.USERNAME_TAKEN]}})
-        return self._created(request, user, club, use_snp, device_name, new_password_account=bool(user_form))
+        return self._created(request, user, club, use_snp, device_name, new_password_account=bool(user_form),
+                             existing=existing)
 
     def _google_claims(self, google_body):
         """Datos verificados del ``id_token`` de Google (mismos errores que ``/auth/google``)."""
@@ -194,18 +202,22 @@ class RegisterClubView(ApiView):
         except google.GoogleUnavailable:
             raise ApiError("google_unavailable", _("Google no responde. Inténtalo de nuevo en un momento."), 503)
 
-    def _created(self, request, user, club, use_snp, device_name, new_password_account):
-        """Correos, importación de SNP y respuesta 201 con el token de dispositivo."""
+    def _created(self, request, user, club, use_snp, device_name, new_password_account, existing=False):
+        """Correos, importación de SNP y respuesta 201 (con token de dispositivo salvo con la cuenta ya creada)."""
         if new_password_account:
             email_verification.start_verification(request, user)
         send_welcome_email(user, club, created=True, site_url=request.build_absolute_uri("/"))
-        device, token = issue_token(user, device_name)
-        data = {
-            "token": token, "device": device.public_id, "expires_at": device.expires_at.isoformat(),
-            "user": {"username": user.get_username(), "email": user.email},
-            "team": team_summary(user),
-            "club": {"name": club.name, "competition": club.competition},
-        }
+        if existing:
+            data = {"user": {"username": user.get_username(), "email": user.email}, "team": team_summary(user),
+                    "club": {"name": club.name, "competition": club.competition}}
+        else:
+            device, token = issue_token(user, device_name)
+            data = {
+                "token": token, "device": device.public_id, "expires_at": device.expires_at.isoformat(),
+                "user": {"username": user.get_username(), "email": user.email},
+                "team": team_summary(user),
+                "club": {"name": club.name, "competition": club.competition},
+            }
         if use_snp:
             if snp_service.is_enabled():
                 from players import snp_import
@@ -214,3 +226,10 @@ class RegisterClubView(ApiView):
             else:
                 data["snp_unavailable"] = True
         return json_ok(data, status=201)
+
+
+class CreateClubView(RegisterClubView):
+    """``POST /api/v1/club/create``: crea el club de una cuenta que ya tiene sesión en la app (p. ej. un jugador sin club
+    que decide registrar su equipo). Mismo cuerpo que ``club/register`` sin ``account`` ni ``google``; usa el token del
+    dispositivo y no emite otro. 409 ``space_taken`` si la cuenta ya tiene equipo en esa competición."""
+    public = False
