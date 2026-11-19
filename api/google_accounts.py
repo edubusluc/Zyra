@@ -1,15 +1,15 @@
 """
 Qué cuenta corresponde a una identidad de Google ya verificada (``api.google``): la enlazada, una existente con el
 mismo email o una nueva. La identidad es la misma que usa la web (``allauth.SocialAccount``, proveedor ``google``), así
-que una cuenta creada desde la app entra también con Google en la web y al revés. Nunca se enlaza ni se crea nada en
-silencio si el email no está demostrado.
+que una cuenta creada desde la app entra también con Google en la web y al revés. El email lo ha verificado Google; sin eso
+no se enlaza ni se crea nada.
 """
 from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError, transaction
 from django.utils.translation import gettext as _
 
-from core import email_verification
+from core.adapters import claim_account, find_account_by_email
 from core.blocklist import is_blocked
 
 from .apple_accounts import create_user
@@ -27,8 +27,8 @@ def _invalid():
 def resolve_user(claims):
     """
     Cuenta de ``claims`` (resultado de ``verify_id_token``). Orden: 1) la ya enlazada a ese ``sub`` (entra aunque cambie
-    el email); 2) la que tenga ese email, solo si Google lo verificó y la cuenta lo tenía verificado (si no, 409
-    ``google_account_unconfirmed``); 3) una cuenta nueva sin contraseña, con el email ya verificado. Un email bloqueado
+    el email); 2) la que tenga ese email (Google lo verificó), igual que en la web: si la cuenta no lo tenía
+    verificado, se anula su contraseña y se borran sus otros emails y conexiones (``core.adapters.claim_account``); 3) una cuenta nueva sin contraseña, con el email ya verificado. Un email bloqueado
     por el personal o una cuenta desactivada no entran.
     """
     linked = SocialAccount.objects.select_related("user").filter(provider=PROVIDER, uid=claims["sub"]).first()
@@ -51,13 +51,12 @@ def resolve_user(claims):
 
 def _link_or_create(claims, email):
     """Enlaza ``claims["sub"]`` con la cuenta de ese email o crea una nueva (dentro de una transacción)."""
-    user = User.objects.filter(email__iexact=email).first()
+    user = find_account_by_email(email)
     if user is None:
+        if User.objects.filter(email__iexact=email).exists():
+            raise _invalid()  # solo hay cuentas desactivadas con ese email
         user = create_user(email, claims["first_name"], claims["last_name"], fallback="google")
-    elif not user.is_active:
-        raise _invalid()
-    elif not email_verification.is_verified(user):
-        raise ApiError("google_account_unconfirmed", _(
-            "Ya existe una cuenta con ese email sin confirmar. Confirma el email o usa «Olvidé mi contraseña»."), 409)
+    else:
+        claim_account(user, email)
     SocialAccount.objects.create(user=user, provider=PROVIDER, uid=claims["sub"], extra_data={"email": email})
     return user

@@ -117,26 +117,39 @@ class SocialAccountAdapter(DefaultSocialAccountAdapter):
         for address in sociallogin.email_addresses:
             if not address.verified or not self.can_authenticate_by_email(sociallogin, address.email):
                 continue
-            user = (
-                User.objects.filter(email__iexact=address.email, is_active=True)
-                .annotate(n_clubs=Count("memberships"))
-                .order_by("-n_clubs", "id")
-                .first()
-            )
+            user = find_account_by_email(address.email)
             if user is not None:
-                if not _is_verified(user, address.email):
-                    # Nadie ha demostrado que ese email fuera suyo: quien creó la cuenta pudo
-                    # registrarla con el email de otra persona. Se anula su contraseña para que
-                    # no pueda seguir entrando; el dueño real usa Google o «Olvidé mi contraseña».
-                    user.set_unusable_password()
-                    user.save(update_fields=["password"])
-                    # Y se borran los demás emails y conexiones sociales de la cuenta: pudo
-                    # añadirlos quien la creó para recuperar la contraseña después.
-                    EmailAddress.objects.filter(user=user).exclude(email__iexact=address.email).delete()
-                    user.socialaccount_set.all().delete()
-                _mark_verified(user, address.email)
+                claim_account(user, address.email)
                 return user, address.email
         return None
+
+
+def find_account_by_email(email):
+    """
+    Cuenta activa con ese email (sin distinguir mayúsculas). Si por datos antiguos hay varias, la que
+    pertenece a más clubes y, a igualdad, la más antigua. Compartido por la web y por la API de la app.
+    """
+    return (
+        get_user_model().objects.filter(email__iexact=email, is_active=True)
+        .annotate(n_clubs=Count("memberships"))
+        .order_by("-n_clubs", "id")
+        .first()
+    )
+
+
+def claim_account(user, email):
+    """
+    Quien acaba de demostrar con Google que ``email`` es suyo toma la cuenta ``user``. Si el email ya
+    estaba verificado, la cuenta conserva todo (también la contraseña). Si no, nadie había demostrado que
+    fuera suyo (quien creó la cuenta pudo usar el email de otra persona): se anula la contraseña y se
+    borran los demás emails y conexiones sociales, que pudo añadir para recuperarla después.
+    """
+    if not _is_verified(user, email):
+        user.set_unusable_password()
+        user.save(update_fields=["password"])
+        EmailAddress.objects.filter(user=user).exclude(email__iexact=email).delete()
+        user.socialaccount_set.all().delete()
+    _mark_verified(user, email)
 
 
 def _is_verified(user, email):
