@@ -12,7 +12,7 @@ from django.utils.translation import gettext as _
 from django.db import IntegrityError, transaction
 
 from core import email_verification, login_throttle, ratelimit
-from core.forms import SignUpForm
+from core.forms import SignUpForm, ZyraResetPasswordForm
 from core.views import REGISTER_LIMIT, REGISTER_WINDOW
 
 from . import throttle, web_session
@@ -134,3 +134,24 @@ class RegisterAccountView(ApiView):
             raise ApiError("validation_error", _("Revisa los datos del formulario."), 400, extra={"fields": fields})
         email_verification.start_verification(request, user)
         return token_response(user, device_name)
+
+
+class PasswordResetView(ApiView):
+    """``POST /api/v1/auth/password-reset``: «¿Has olvidado tu contraseña?», igual que la web."""
+    public = True
+
+    def post(self, request):
+        """
+        Cuerpo ``{"email"}``. Reutiliza ``ZyraResetPasswordForm`` (mismos frenos por IP y por email que la web): manda el
+        enlace de recuperación (una página de la web) si el email es el principal de una cuenta, y responde siempre
+        200 ``{"sent": true}``, exista o no, para no delatar qué emails tienen cuenta. 400 ``validation_error`` solo si lo
+        escrito no es un email.
+        """
+        body = self.json_body(request)
+        form = ZyraResetPasswordForm({"email": str(body.get("email", "")).strip()})
+        if not form.is_valid():
+            fields = {f"account.{field}" if field != "__all__" else "account": [str(m) for m in messages]
+                      for field, messages in form.errors.items()}
+            raise ApiError("validation_error", _("Revisa los datos del formulario."), 400, extra={"fields": fields})
+        form.save(request)
+        return json_ok({"sent": True})

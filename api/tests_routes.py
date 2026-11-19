@@ -12,6 +12,7 @@ PUBLIC_ROUTES = {
     "api_club_options": "datos del formulario de alta (competiciones, países...): igual que en la web pública",
     "api_club_register": "alta de club y cuenta nueva: aún no hay token, se obtiene aquí (límite por IP como el de la web)",
     "api_register": "alta de cuenta sin club (jugador): aún no hay token, se obtiene aquí (mismo límite que register_account)",
+    "api_password_reset": "recuperar contraseña sin sesión: mismos frenos por IP y email que la web, respuesta siempre igual",
     "api_not_found": "404 en JSON para lo desconocido",
 }
 
