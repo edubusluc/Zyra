@@ -57,6 +57,7 @@ falla si una ruta no la usa o si es pública (`public = True`) sin declararla.
   no se liga a la IP (la red móvil cambia). Revocar el token (`api.tokens.revoke_token`, logout incluido) cierra las sesiones web que abrió ese dispositivo. Límite por token: `API_WEB_SESSION_LIMIT_PER_MINUTE`.
 - **Modo app en la web**: la app muestra páginas de la web (p. ej. tras `web-session`) con el User-Agent `ZyraApp/<versión>`;
   `core.context_processors.app_mode` pone `is_app` y `core/templates/base.html` quita la cabecera y el menú inferior (`<body class="z-app">`; el CSS del final de `static/style.css` no reserva su hueco). Solo cambia la presentación, no da permisos. Con cualquier otro User-Agent el HTML es idéntico (`core/tests_app_mode.py`).
+  En modo app tampoco se ofrece «Entrar con Google» (`google_login` pone `google_login_enabled` a falso con `is_app`): Google bloquea su pantalla de acceso en una WebView.
 - **Sin efectos en la web**: sin cookie no hay sesión ni consulta de membresías; `core.tests_safety_net` no recorre `api/`.
 
 ## Contexto de club por petición [V]
