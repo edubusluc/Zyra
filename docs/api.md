@@ -26,7 +26,7 @@ va autenticada con un **token de dispositivo**. El código está en `api/`; las 
 
 | Método y ruta | Público | Para qué |
 |---|---|---|
-| `GET /ping` | no | Comprueba que el token sirve y cuándo caduca |
+| `GET /ping` | no | Comprueba que el token sirve, cuándo caduca y a qué equipo pertenece |
 | `POST /auth/login` | sí | Usuario o email y contraseña → token |
 | `POST /auth/apple` | sí | `identity_token` de Apple → token (desactivado hasta configurarlo) |
 | `POST /auth/google` | sí | `id_token` de Google → token (desactivado hasta configurarlo) |
@@ -41,8 +41,10 @@ va autenticada con un **token de dispositivo**. El código está en `api/`; las 
 ### `GET /ping`
 
 ```json
-{"device": "DVTxxxxxxxxxxxx", "expires_at": "2027-02-16T21:10:00+00:00"}
+{"device": "DVTxxxxxxxxxxxx", "expires_at": "2027-02-16T21:10:00+00:00", "team": {"name": "Club A", "crest": null}, "has_history": true}
 ```
+
+`team` es el equipo propio del primer club de la cuenta, o `null` si no está en ninguno. `has_history` es verdadero si la cuenta tiene fichas, actuales o de equipos anteriores (la app ofrece entonces «Mis estadísticas» a quien no tiene equipo). La app lo comprueba al volver a primer plano para saber si salió de su equipo (o entró en uno) desde la web.
 
 ### `POST /auth/login`
 
@@ -108,6 +110,17 @@ Alta de club desde la app, con las mismas reglas que la web. Cuerpo:
 - `400 validation_error` con `fields`: errores por campo con clave `seccion.campo` (`team.name`, `captain.snp_username`, `account.email`, `account.password`, `team.crest`…), cada uno una lista de textos.
 - `409 space_taken`: la cuenta ya tiene equipo en esa competición. `403 email_blocked`. `429 rate_limited`: 5 altas por hora y por IP (el mismo límite que la web). Errores de Google como en `/auth/google`.
 
+### `GET /invitations/<token>` y `POST /invitations/<token>/accept`
+
+Con token. `<token>` es el de la invitación del enlace web `/invite/<token>/` (la app acepta el enlace entero o solo el código).
+
+- `GET`: 200 `{"club": {"name", "competition", "crest", "captains": [..]}, "can_join": bool, "message": "…"}`. `can_join` es falso (con `message`) si la cuenta ya está en ese equipo o ya tiene sitio en esa competición. `404 not_found` si el código no existe; `410 invitation_invalid` si ya se usó, caducó o el club está suspendido.
+- `POST`: une a la cuenta al equipo con las mismas reglas que la web y manda el correo de bienvenida. 201 `{"club", "team", "next_path"}`; `next_path` es la página web donde se elige qué jugador eres (se abre con `/auth/web-session`). `409 invitation_error` si no se puede (ya usada, ya es miembro, ya tiene equipo en la competición).
+
+### `GET /.well-known/apple-app-site-association`
+
+Fuera de `/api/v1/`. Para los enlaces universales: responde 404 hasta definir `APPLE_APP_LINK_IDS` (`TEAMID.bundle.id`, separados por comas); con ello sirve el JSON que Apple pide, con la ruta `/invite/*`. Hace falta además la capacidad Associated Domains en la app (cuenta de pago de Apple).
+
 ### `POST /auth/logout`
 
 Respuesta 200: `{"revoked": true}`. Revoca también el registro push y las sesiones web que ese dispositivo abrió con `/auth/web-session`. El siguiente uso del token da 401.
@@ -158,6 +171,8 @@ Respuesta 200: `{"deleted": true}`. Revoca todos los dispositivos y borra la cue
 | 403 | `apple_email_unverified`, `google_email_unverified`, `email_blocked` | Ver `/auth/apple` y `/auth/google` |
 | 404 | `not_found` | Ruta desconocida, o Apple o Google sin configurar |
 | 405 | `method_not_allowed` | Método no permitido (`Allow` lo indica) |
+| 410 | `invitation_invalid` | Invitación usada, caducada o club suspendido |
+| 409 | `invitation_error` | La invitación no se puede aceptar |
 | 409 | `account_blocked`, `apple_account_unconfirmed`, `space_taken` | Ver cada endpoint |
 | 429 | `rate_limited` | Demasiadas peticiones (`Retry-After` en segundos) |
 | 429 | `login_locked` | Frenos de login |

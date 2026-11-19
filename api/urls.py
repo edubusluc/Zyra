@@ -1,7 +1,7 @@
 """URLs de ``/api/v1/``. La última ruta recoge lo desconocido y responde 404 en JSON."""
 from django.urls import re_path
 
-from . import views, views_account, views_apple, views_auth, views_club, views_devices, views_google
+from . import views, views_account, views_apple, views_auth, views_club, views_devices, views_google, views_invitations
 
 urlpatterns = [
     re_path(r"^auth/login/?$", views_auth.LoginView.as_view(), name="api_login"),
@@ -12,6 +12,9 @@ urlpatterns = [
     re_path(r"^club/create/?$", views_club.CreateClubView.as_view(), name="api_club_create"),
     re_path(r"^auth/password-reset/?$", views_auth.PasswordResetView.as_view(), name="api_password_reset"),
     re_path(r"^auth/register/?$", views_auth.RegisterAccountView.as_view(), name="api_register"),
+    re_path(r"^invitations/(?P<token>[\w-]+)/accept/?$", views_invitations.AcceptInvitationView.as_view(),
+            name="api_invitation_accept"),
+    re_path(r"^invitations/(?P<token>[\w-]+)/?$", views_invitations.InvitationView.as_view(), name="api_invitation"),
     re_path(r"^auth/logout/?$", views_auth.LogoutView.as_view(), name="api_logout"),
     re_path(r"^auth/web-session/?$", views_auth.WebSessionView.as_view(), name="api_web_session"),
     re_path(r"^account/delete/?$", views_account.DeleteAccountView.as_view(), name="api_account_delete"),
