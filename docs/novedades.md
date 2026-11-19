@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 19/11/2026 · Modo app: sin pie legal
+
+- Dentro de la app iOS (User-Agent `ZyraApp/`) las páginas ya no muestran el pie con Privacidad, Términos, Cookies, Guías, Contacto y TikTok: la app los enlaza desde su menú de perfil. Con un navegador no cambia nada.
+
 ## 19/11/2026 · API de la app iOS: aceptar invitaciones
 
 - `GET /api/v1/invitations/<token>` enseña el club que invita y `POST /api/v1/invitations/<token>/accept` une a la cuenta al equipo (mismas reglas y correo de bienvenida que la web). Añade `/.well-known/apple-app-site-association` para los enlaces universales, apagado hasta definir `APPLE_APP_LINK_IDS`. `GET /api/v1/ping` devuelve además `team` (equipo de la cuenta o `null`) y `has_history` (si tiene estadísticas de equipos) para que la app detecte que salió de su club. Canjear el ticket de otra pestaña con la sesión ya iniciada ya no vuelve a iniciar sesión: antes rotaba el token CSRF y fallaban los formularios de las pestañas ya abiertas («no se ha podido comprobar el formulario»).

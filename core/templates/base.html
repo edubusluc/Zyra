@@ -154,7 +154,8 @@
   {% endblock %}
 </main>
 
-<footer class="z-footer footer">
+{# Pie legal: la app no lo muestra (su menú de perfil enlaza esas páginas). #}
+{% if not is_app %}<footer class="z-footer footer">
   <nav class="z-footer-links" aria-label="{% translate 'Información legal' %}">
     <a href="{% url 'privacy' %}">{% translate "Privacidad" %}</a>
     <a href="{% url 'terms' %}">{% translate "Términos" %}</a>
@@ -164,7 +165,7 @@
     <a class="z-footer-social" href="https://www.tiktok.com/@zyrapadel" target="_blank" rel="noopener noreferrer" aria-label="{% translate 'Zyra en TikTok (se abre en una pestaña nueva)' %}"><i class="fa-brands fa-tiktok" aria-hidden="true"></i></a>
   </nav>
   <p>&copy; {% now "Y" %} Zyra{% if current_club and user_teams|length < 2 %} · {{ current_club.name }}{% endif %}</p>
-</footer>
+</footer>{% endif %}
 
 {% if current_club and not is_app %}
 <nav class="z-bottom-nav" aria-label="{% translate 'Navegación móvil' %}">
