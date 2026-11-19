@@ -77,3 +77,50 @@ class RegisterAccountTests(TestCase):
         response = self.client.post(reverse("api_club_create"), json.dumps({"account": {"username": "x"}}),
                                     content_type="application/json", HTTP_AUTHORIZATION=f"Bearer {token}")
         self.assertEqual((response.status_code, response.json()["error"]), (400, "invalid_field"))
+
+
+class PasswordResetApiTests(TestCase):
+    """``POST /api/v1/auth/password-reset``: mismo correo y mismos frenos que la web, sin delatar si la cuenta existe."""
+
+    def setUp(self):
+        """Limpia cachés y crea una cuenta."""
+        from django.core.cache import cache, caches
+        from django.contrib.auth import get_user_model
+        cache.clear()
+        caches["ratelimit"].clear()
+        get_user_model().objects.create_user("ana", "ana@example.com", "Clave-Segura-123")
+
+    def ask(self, email):
+        """POST con el email indicado."""
+        import json
+        return self.client.post(reverse("api_password_reset"), json.dumps({"email": email}),
+                                content_type="application/json")
+
+    def test_sends_email_for_existing_account(self):
+        """Con una cuenta real sale un correo con enlace a la web y la respuesta es ``sent``."""
+        from django.core import mail
+        response = self.ask("ana@example.com")
+        self.assertEqual((response.status_code, response.json()), (200, {"sent": True}))
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("/accounts/password/reset/key/", mail.outbox[0].body)
+
+    def test_same_answer_for_unknown_email(self):
+        """Un email sin cuenta da la misma respuesta y no recibe ningún enlace de recuperación (allauth avisa de que no hay cuenta)."""
+        from django.core import mail
+        response = self.ask("nadie@example.com")
+        self.assertEqual((response.status_code, response.json()), (200, {"sent": True}))
+        self.assertTrue(all("/accounts/password/reset/key/" not in message.body for message in mail.outbox))
+
+    def test_rejects_text_that_is_not_an_email(self):
+        """Lo que no es un email da 400 con el campo."""
+        response = self.ask("no-es-email")
+        self.assertEqual((response.status_code, response.json()["error"]), (400, "validation_error"))
+        self.assertIn("account.email", response.json()["fields"])
+
+    @override_settings(RATE_LIMITS_ENABLED=True)
+    def test_email_limit_applies_like_the_web(self):
+        """Pasado el límite por email no salen más correos, con la misma respuesta."""
+        from django.core import mail
+        for _ in range(5):
+            self.assertEqual(self.ask("ana@example.com").status_code, 200)
+        self.assertEqual(len(mail.outbox), 3)

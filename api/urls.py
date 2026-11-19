@@ -10,6 +10,7 @@ urlpatterns = [
     re_path(r"^club/options/?$", views_club.ClubOptionsView.as_view(), name="api_club_options"),
     re_path(r"^club/register/?$", views_club.RegisterClubView.as_view(), name="api_club_register"),
     re_path(r"^club/create/?$", views_club.CreateClubView.as_view(), name="api_club_create"),
+    re_path(r"^auth/password-reset/?$", views_auth.PasswordResetView.as_view(), name="api_password_reset"),
     re_path(r"^auth/register/?$", views_auth.RegisterAccountView.as_view(), name="api_register"),
     re_path(r"^auth/logout/?$", views_auth.LogoutView.as_view(), name="api_logout"),
     re_path(r"^auth/web-session/?$", views_auth.WebSessionView.as_view(), name="api_web_session"),
