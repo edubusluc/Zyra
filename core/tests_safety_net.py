@@ -37,6 +37,7 @@ EXEMPT = {
     "sitemap": "público", "privacy": "público", "terms": "público", "cookies": "público", "guide_index": "público",
     "callup_template_pdf": "público", "guide_detail": "público", "healthz": "público",
     "javascript-catalog": "público", "set_language": "idioma de la cuenta",
+    "apple_app_site_association": "público (enlaces universales de iOS)",
     # Páginas de consulta (GET) del equipo activo.
     "list_players": "consulta", "sync_status": "consulta (JSON)", "list_match": "consulta", "calendar_match": "consulta",
     "my_statistics": "consulta", "team_statistics": "consulta", "player_statistics": "consulta",
