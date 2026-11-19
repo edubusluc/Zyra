@@ -146,6 +146,20 @@ let identityToken = String(data: credential.identityToken!, encoding: .utf8)!
 //  "first_name": credential.fullName?.givenName, "last_name": credential.fullName?.familyName}
 ```
 
+## Probar en local desde el móvil (túnel)
+
+La app exige `https://` y un iPhone no alcanza el `127.0.0.1` del Mac, así que se expone el servidor local con un túnel (ngrok o cloudflared) y se arranca con:
+
+```
+SITE_URL= DJANGO_DEBUG=True DJANGO_BEHIND_PROXY=True \
+DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,<dominio-del-túnel> \
+DJANGO_CSRF_TRUSTED_ORIGINS=https://<dominio-del-túnel> \
+python manage.py runserver 8000
+```
+
+- `SITE_URL=` vacío: si el `.env` lo tiene definido, Django redirige con un 301 a ese dominio y el móvil no puede seguirlo.
+- `DJANGO_BEHIND_PROXY=True`: Django usa `X-Forwarded-Proto` y `web-session` devuelve una URL `https://` (con `http://` iOS la bloquea en el navegador interno).
+
 ## Lista de validación (probar la app contra el servidor)
 
 Prueba en un entorno desplegado desde `zyra-ios`, no en producción. Sustituye `$H` por el dominio de `SITE_URL`.
