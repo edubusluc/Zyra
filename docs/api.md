@@ -30,6 +30,8 @@ va autenticada con un **token de dispositivo**. El código está en `api/`; las 
 | `POST /auth/login` | sí | Usuario o email y contraseña → token |
 | `POST /auth/apple` | sí | `identity_token` de Apple → token (desactivado hasta configurarlo) |
 | `POST /auth/google` | sí | `id_token` de Google → token (desactivado hasta configurarlo) |
+| `GET /club/options` | sí | Competiciones, divisiones, países y categorías del alta de club |
+| `POST /club/register` | sí | Crea cuenta (o usa Google) y club en una llamada → token |
 | `POST /auth/logout` | no | Revoca el token usado |
 | `POST /auth/web-session` | no | URL de un solo uso para abrir la web ya con la sesión iniciada |
 | `POST /devices` | no | Registra o actualiza el token de APNs de este dispositivo |
@@ -49,8 +51,10 @@ Cuerpo: `{"login": "usuario o email", "password": "…", "device_name": "iPhone 
 Respuesta **201**:
 
 ```json
-{"token": "zyra_…", "device": "DVTxxxxxxxxxxxx", "expires_at": "…", "user": {"username": "ana", "email": "ana@example.com"}}
+{"token": "zyra_…", "device": "DVTxxxxxxxxxxxx", "expires_at": "…", "user": {"username": "ana", "email": "ana@example.com"}, "team": {"name": "Club Norte", "crest": "/media/…"}}
 ```
+
+`team` es el equipo propio del primer club de la cuenta (`null` si no tiene club); `crest` es la ruta o URL del escudo (`null` si no hay). Lo devuelven igual `/auth/apple`, `/auth/google` y `/club/register`.
 
 - `401 invalid_credentials`: mismo mensaje para cuenta inexistente, contraseña mala o cuenta desactivada.
 - `429 login_locked`: el freno de contraseñas es el mismo que el de la web (5 fallos por IP y usuario, 30 por cuenta, 15 min); `Retry-After` indica los segundos. Los fallos en la web y en la app se suman.
@@ -78,6 +82,31 @@ Cuerpo: `{"id_token": "<jwt>", "nonce": "<valor en claro>", "device_name"?}`. Re
 - `401 invalid_google_token`: firma, app, caducidad o nonce incorrectos, o token ya usado (cada token vale una vez).
 - `403 google_email_unverified`, `403 email_blocked`.
 - `503 google_unavailable`: el servidor no pudo obtener las claves de Google; reintenta.
+
+### `GET /club/options`
+
+Datos del formulario de alta: `competitions` (cada una con `code`, `name`, `full_name`, `color`, `snp` —si admite conectar la cuenta de SNP—, `divisions` y `countries` como `{code, label}`), `genders`, `google` (si se puede continuar con Google) y `snp_available`.
+
+### `POST /club/register`
+
+Alta de club desde la app, con las mismas reglas que la web. Cuerpo:
+
+```json
+{
+  "team": {"name": "", "location": "", "competition": "snp", "gender": "M", "country": "ES", "division": "500",
+           "default_time": "20:30", "crest": "<imagen en base64, opcional>"},
+  "captain": {"mode": "manual", "name": "", "last_name": ""},
+  "account": {"username": "", "email": "", "password": ""},
+  "device_name": "iPhone"
+}
+```
+
+- `captain.mode` es `manual` (con `name` y `last_name`) o `snp` (con `snp_username` y `snp_password`; solo en competiciones con SNP: en las demás se ignora).
+- En lugar de `account`, `"google": {"id_token", "nonce"}` usa la cuenta de Google (nueva o ya existente) sin contraseña.
+- `team.crest`: imagen en base64 (hasta ~2,2 MB); se reduce y valida igual que en la web.
+- Con éxito, 201 como el login, más `club` (`name`, `competition`) y, con SNP, `next_path`: la página web donde se elige qué jugador es el capitán (se abre con `/auth/web-session`); si SNP está apagado, `snp_unavailable: true`.
+- `400 validation_error` con `fields`: errores por campo con clave `seccion.campo` (`team.name`, `captain.snp_username`, `account.email`, `account.password`, `team.crest`…), cada uno una lista de textos.
+- `409 space_taken`: la cuenta ya tiene equipo en esa competición. `403 email_blocked`. `429 rate_limited`: 5 altas por hora y por IP (el mismo límite que la web). Errores de Google como en `/auth/google`.
 
 ### `POST /auth/logout`
 
@@ -119,6 +148,7 @@ Respuesta 200: `{"deleted": true}`. Revoca todos los dispositivos y borra la cue
 |---|---|---|
 | 400 | `invalid_json` | El cuerpo no es un objeto JSON |
 | 400 | `invalid_field` | Falta un campo, no es texto, es muy largo o no cumple el formato; `detail` nombra el campo |
+| 400 | `validation_error` | Errores del formulario de alta; `fields` los da por campo |
 | 400 | `invalid_next` | Destino de `web-session` no válido |
 | 401 | `unauthorized` | Sin token, caducado, revocado o inexistente (`WWW-Authenticate: Bearer`) |
 | 401 | `invalid_credentials` | Login fallido |
@@ -128,7 +158,7 @@ Respuesta 200: `{"deleted": true}`. Revoca todos los dispositivos y borra la cue
 | 403 | `apple_email_unverified`, `google_email_unverified`, `email_blocked` | Ver `/auth/apple` y `/auth/google` |
 | 404 | `not_found` | Ruta desconocida, o Apple o Google sin configurar |
 | 405 | `method_not_allowed` | Método no permitido (`Allow` lo indica) |
-| 409 | `account_blocked`, `apple_account_unconfirmed` | Ver cada endpoint |
+| 409 | `account_blocked`, `apple_account_unconfirmed`, `space_taken` | Ver cada endpoint |
 | 429 | `rate_limited` | Demasiadas peticiones (`Retry-After` en segundos) |
 | 429 | `login_locked` | Frenos de login |
 | 503 | `apple_unavailable`, `google_unavailable` | Sin respuesta de Apple o de Google |
