@@ -124,10 +124,12 @@ if not DEBUG:
     SILENCED_SYSTEM_CHECKS = ['security.W005', 'security.W021']
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SECURE_REFERRER_POLICY = 'same-origin'
-    # Si el hosting pone delante un proxy que termina el https (lo habitual), activa
-    # esto para que Django sepa que la petición original era https y no entre en bucle.
-    if BEHIND_PROXY:
-        SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Si el hosting pone delante un proxy que termina el https (lo habitual), activa DJANGO_BEHIND_PROXY para que
+# Django sepa que la petición original era https y no entre en bucle. También con DJANGO_DEBUG=True: probar la API
+# desde el móvil con un túnel (ngrok, cloudflared) necesita que las URL absolutas que genera (web-session) sean https.
+if BEHIND_PROXY:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Content-Security-Policy (core/middleware.py). CSP_MODE: «report-only» (por defecto: el navegador solo
 # avisa a /csp-report/ de lo que bloquearía), «enforce» (bloquea) u «off». Se pasa a «enforce» cuando el
