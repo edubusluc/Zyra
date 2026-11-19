@@ -6,6 +6,7 @@ bloqueados, ficha copiada). También sirve el fichero de asociación de los enla
 from django.conf import settings
 from django.http import Http404, JsonResponse
 from django.urls import reverse
+from django.views.decorators.http import require_GET
 from django.utils.translation import gettext as _
 
 from core.emails import send_welcome_email
@@ -82,6 +83,7 @@ class AcceptInvitationView(ApiView):
         }, status=201)
 
 
+@require_GET
 def apple_app_site_association(request):
     """
     ``/.well-known/apple-app-site-association``: asocia los enlaces de invitación (``/invite/…``) con la app de iOS para que
