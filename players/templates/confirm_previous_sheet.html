@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block page_title %}{% translate "¿Eres tú?" %} · {% endblock %}
+
+{% block content %}
+<div class="z-page-head">
+    <div>
+        <span class="z-eyebrow">{{ current_club.name }}</span>
+        <h1>{% translate "¿Eres tú?" %}</h1>
+    </div>
+</div>
+
+<div class="z-panel text-center">
+    {% include 'includes/player_avatar.html' with player=player size="z-avatar--lg" alt="" %}
+    <p class="z-claim-confirm-name mt-3">{{ player.full_name }}</p>
+    <p class="text-muted">{% translate "Tu ficha anterior" %}. {% translate "Si eres tú, vuelves a la plantilla con tus estadísticas." %}</p>
+    <form method="post" action="{% url 'link_player' player.public_id %}" data-loading-text="{% translate 'Vinculando tu jugador…' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">{% translate "Sí, soy yo" %}</button>
+        <a href="{% url 'my_player' %}?todos=1" class="btn btn-outline-secondary">{% translate "No, soy otra persona" %}</a>
+    </form>
+</div>
+{% endblock %}

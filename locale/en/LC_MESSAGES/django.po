@@ -17157,3 +17157,15 @@ msgstr "An account with that email already exists and is unconfirmed. Confirm th
 #: api/apple_accounts.py api/views_apple.py
 msgid "Apple no responde. Inténtalo de nuevo en un momento."
 msgstr "Apple is not responding. Please try again in a moment."
+
+#: players/templates/confirm_previous_sheet.html
+msgid "¿Eres tú?"
+msgstr "Is this you?"
+
+#: players/templates/confirm_previous_sheet.html
+msgid "Si eres tú, vuelves a la plantilla con tus estadísticas."
+msgstr "If this is you, you rejoin the squad with your statistics."
+
+#: players/templates/confirm_previous_sheet.html
+msgid "No, soy otra persona"
+msgstr "No, I'm someone else"
