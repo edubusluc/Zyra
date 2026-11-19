@@ -9,7 +9,11 @@ from django.contrib.auth import authenticate
 from django.urls import reverse
 from django.utils.translation import gettext as _
 
-from core import login_throttle
+from django.db import IntegrityError, transaction
+
+from core import email_verification, login_throttle, ratelimit
+from core.forms import SignUpForm
+from core.views import REGISTER_LIMIT, REGISTER_WINDOW
 
 from . import throttle, web_session
 from .errors import ApiError
@@ -94,3 +98,39 @@ class WebSessionView(ApiView):
         ticket, raw = web_session.issue_ticket(request.device_token, next_path)
         return json_ok({"url": request.build_absolute_uri(reverse("app_web_session", args=[raw])),
                         "expires_at": ticket.expires_at.isoformat()}, status=201)
+
+
+class RegisterAccountView(ApiView):
+    """``POST /api/v1/auth/register``: crea una cuenta sin club (jugador que espera la invitación de su capitán)."""
+    public = True
+
+    def post(self, request):
+        """
+        Cuerpo ``{"username", "email", "password", "device_name"?}`` con las reglas de ``SignUpForm`` (las de la web).
+        400 ``validation_error`` con ``fields`` (``account.<campo>``); 429 si se pasa del límite de altas (el mismo que
+        ``register_account``). 201 como el login, con ``team`` a None y verificación de email iniciada.
+        """
+        if ratelimit.too_many(request, "register-account", REGISTER_LIMIT, REGISTER_WINDOW):
+            raise ApiError("rate_limited", _("Demasiados intentos. Inténtalo más tarde."), 429)
+        body = self.json_body(request)
+        device_name = text_field(body, "device_name", required=False, max_length=100)
+        password = body.get("password", "")
+        form = SignUpForm({"username": body.get("username", ""), "email": body.get("email", ""),
+                           "password1": password, "password2": password})
+        user = None
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    user = form.save()
+            except IntegrityError:
+                if not form.report_taken():
+                    raise
+        if user is None:
+            names = {"password1": "password", "password2": "password"}
+            fields = {}
+            for field, messages in form.errors.items():
+                key = "account" if field == "__all__" else f"account.{names.get(field, field)}"
+                fields.setdefault(key, []).extend(str(m) for m in messages)
+            raise ApiError("validation_error", _("Revisa los datos del formulario."), 400, extra={"fields": fields})
+        email_verification.start_verification(request, user)
+        return token_response(user, device_name)
