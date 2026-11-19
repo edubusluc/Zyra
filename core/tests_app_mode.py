@@ -2,10 +2,10 @@
 import re
 
 from django.contrib.auth import get_user_model
-from django.test import RequestFactory, TestCase
+from django.test import RequestFactory, TestCase, override_settings
 from django.urls import reverse
 
-from core.context_processors import app_mode, is_app_request
+from core.context_processors import app_mode, google_login, is_app_request
 from core.services import create_club
 
 User = get_user_model()
@@ -36,6 +36,32 @@ class AppFlagTests(TestCase):
         """``is_app_request`` es lo que usa el procesador de contexto."""
         request = RequestFactory().get("/", HTTP_USER_AGENT=APP_UA)
         self.assertTrue(is_app_request(request))
+
+
+class GoogleButtonTests(TestCase):
+    """«Entrar con Google» no se ofrece dentro de la app (Google bloquea su acceso en una WebView)."""
+
+    def enabled(self, user_agent=None):
+        """Valor de ``google_login_enabled`` para una petición con ese User-Agent."""
+        extra = {} if user_agent is None else {"HTTP_USER_AGENT": user_agent}
+        return google_login(RequestFactory().get("/", **extra))["google_login_enabled"]
+
+    @override_settings(GOOGLE_LOGIN_ENABLED=True)
+    def test_browser_keeps_the_button(self):
+        """Con un navegador (o sin User-Agent) y Google configurado, el botón sigue."""
+        self.assertTrue(self.enabled(BROWSER_UA))
+        self.assertTrue(self.enabled(None))
+
+    @override_settings(GOOGLE_LOGIN_ENABLED=True)
+    def test_app_hides_the_button(self):
+        """Con el User-Agent de la app el botón no se muestra aunque Google esté configurado."""
+        self.assertFalse(self.enabled(APP_UA))
+
+    @override_settings(GOOGLE_LOGIN_ENABLED=False)
+    def test_disabled_google_stays_disabled(self):
+        """Sin Google configurado no hay botón en ningún caso."""
+        self.assertFalse(self.enabled(BROWSER_UA))
+        self.assertFalse(self.enabled(APP_UA))
 
 
 class AppChromeTests(TestCase):

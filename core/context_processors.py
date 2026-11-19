@@ -121,8 +121,11 @@ def app_mode(request):
 
 
 def google_login(request):
-    """Si se muestra el botón de iniciar sesión con Google."""
-    return {"google_login_enabled": settings.GOOGLE_LOGIN_ENABLED}
+    """
+    Si se muestra el botón de iniciar sesión con Google. Dentro de la app no: Google bloquea su pantalla de acceso en
+    una WebView (``disallowed_useragent``), así que allí se entra con usuario y contraseña o con Apple.
+    """
+    return {"google_login_enabled": settings.GOOGLE_LOGIN_ENABLED and not is_app_request(request)}
 
 
 def site(request):
