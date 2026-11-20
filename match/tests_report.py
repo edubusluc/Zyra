@@ -282,6 +282,23 @@ class ReportTests(TestCase):
         self.assertEqual([m.to[0] for m in mail.outbox], ["capitan@example.com"])
         self.assertTrue(all(len(m.to) == 1 and not m.cc and not m.bcc for m in mail.outbox))
 
+    def test_closing_call_twice_at_once_sends_one_report(self):
+        """Si otra petición ya cerró la convocatoria entre la comprobación y el cierre, esta no repite el informe."""
+        Call.objects.filter(pk=self.call.pk).update(draft_mode=False)
+        with mock.patch("match.views.validate_call", return_value=(True, None)):
+            response = self.client.post(reverse("close_call", args=[self.match.public_id]), follow=True)
+        self.assertContains(response, "ya estaba cerrada")
+        self.assertEqual(mail.outbox, [])
+
+    def test_closing_match_twice_at_once_notifies_once(self):
+        """Si otra petición ya cerró el acta tras la comprobación, esta no vuelve a cerrar ni avisa."""
+        Match.objects.filter(pk=self.match.pk).update(draft_mode=False)
+        with mock.patch("match.views.valid_close_match", return_value=(True, None)), \
+                mock.patch("match.views.notify_match_closed") as notify:
+            response = self.client.post(reverse("close_match", args=[self.match.public_id]), follow=True)
+        self.assertContains(response, "ya está cerrada")
+        notify.assert_not_called()
+
     def test_email_failure_does_not_block_closing(self):
         with mock.patch("match.views.send_call_report", side_effect=OSError("SMTP caído")):
             response = self.client.post(reverse("close_call", args=[self.match.public_id]), follow=True)

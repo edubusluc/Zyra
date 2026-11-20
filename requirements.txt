@@ -430,9 +430,8 @@ django==5.2.18 \
     #   django-allauth
     #   django-flatpickr
     #   sentry-sdk
-django-allauth==65.19.5 \
-    --hash=sha256:03fdb1431e8cecd55071e6c3a3006f2fe1a45b916ee2bf5d14ed0fdadea3b7e5 \
-    --hash=sha256:eda48d77cd790d2e60862993fe19e59ff2e18c6be8aa490d407e0ee1108dd385
+django-allauth==65.20.0 \
+    --hash=sha256:83e22cb65b742d28c49e22a2dbfb475d5ceabc844f16b7a8a5c6a2676e612e9e
     # via -r requirements.in
 django-flatpickr==2.0.3 \
     --hash=sha256:48f8fac131e8a1a512492277bd0b548fab10696c0a52ed58cab53c59d86e8f20 \
@@ -527,9 +526,8 @@ jmespath==1.1.0 \
     # via
     #   boto3
     #   botocore
-oauthlib==3.3.1 \
-    --hash=sha256:0f0f8aa759826a193cf66c12ea1af1637f87b9b4622d46e866952bb022e538c9 \
-    --hash=sha256:88119c938d2b8fb88561af5f6ee0eec8cc8d552b7bb1f712743136eb7523b7a1
+oauthlib==4.0.1 \
+    --hash=sha256:498a298876e996301950a5b053d12c31628bb7b895db03666430c69ce182eb61
     # via django-allauth
 packaging==26.3 \
     --hash=sha256:94edc256424af38762eb31306eed28beb9f0efc50a8837492c9d6fd6004aed79 \

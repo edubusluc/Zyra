@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 20/11/2026 · Seguridad: carreras al cerrar y dependencias de acceso social
+
+- Cerrar una convocatoria o un acta a la vez desde dos sitios (doble toque, dos dispositivos) ya no envía el aviso ni el informe dos veces: la segunda petición ve que ya estaba cerrado.
+- `django-allauth` pasa a 65.20.0 y `oauthlib` a 4.0.1, que corrige los avisos de seguridad; `pip-audit` en CI ya no ignora ninguno.
+
 ## 20/11/2026 · API de la app iOS: último intento de SNP
 
 - El estado de «Sincronizar datos» (`snp_sync` y el paso SNP de la temporada) incluye `attempted_at`, la hora del último intento, para que la app deje rastro de cada reintento. Documentado en [API de la app iOS](api.md).
