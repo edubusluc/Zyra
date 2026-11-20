@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 20/11/2026 · API de la app iOS: último intento de SNP
+
+- El estado de «Sincronizar datos» (`snp_sync` y el paso SNP de la temporada) incluye `attempted_at`, la hora del último intento, para que la app deje rastro de cada reintento. Documentado en [API de la app iOS](api.md).
+
 ## 20/11/2026 · API de la app iOS: sede y hora habitual desde el Inicio
 
 - El aviso `manager_tip` («Añade un gestor») solo sale cuando el club tiene otros miembros con cuenta a quienes nombrar.

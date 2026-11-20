@@ -58,6 +58,7 @@ def _sync(club, sync):
         "state": sync["state"], "message": sync["message"] or "", "can_retry": bool(sync["can_retry"]),
         "blocked": bool(sync["blocked"]), "service_off": bool(sync["service_off"]),
         "same_account": bool(sync["same_account"]),
+        "attempted_at": timezone.localtime(sync["import"].created_at).isoformat() if sync.get("import") else None,
         "wait_label": f"{timezone.localtime(wait):%d/%m/%Y %H:%M}" if wait else None,
         "team_fix_path": _web(sync["team_fix_url"], club) or None,
     }
