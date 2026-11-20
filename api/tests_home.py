@@ -281,3 +281,98 @@ class HomePendingTests(TestCase):
                               photo="x.jpg")
         self.match(30)
         self.assertEqual(self.home(self.member_token)["todos"], [])
+
+
+class HomeMyFormTests(TestCase):
+    """``my_form`` de ``GET /api/v1/home`` y ``POST /api/v1/home/my-form`` (ocultar o mostrar)."""
+
+    def setUp(self):
+        """Club con un jugador (``me``) enlazado a una cuenta, un compañero y un rival."""
+        cache.clear()
+        caches["ratelimit"].clear()
+        self.captain = User.objects.create_user("capi", "capi@example.com", "Clave-Segura-123")
+        self.club = create_club("Club Norte", "Gijón", self.captain, player_name="Ana", player_last_name="Ruiz")
+        self.user = User.objects.create_user("jugador", "j@example.com", "Clave-Segura-123")
+        Membership.objects.create(user=self.user, club=self.club, role=Membership.MEMBER)
+        self.me = Player.objects.create(club=self.club, name="Luz", last_name="Gil", user=self.user, snp_score=436)
+        self.mate = Player.objects.create(club=self.club, name="Bea", last_name="Beta")
+        self.rival = Team.objects.create(club=self.club, name="Rival", location="X", in_group=True)
+        _, self.token = issue_token(self.user, "iPhone")
+        _, self.captain_token = issue_token(self.captain, "iPhone")
+
+    def home(self, token=None):
+        """Respuesta del Inicio."""
+        return self.client.get(reverse("api_home"), HTTP_AUTHORIZATION=f"Bearer {token or self.token}").json()
+
+    def play(self, won, days_ago):
+        """Enfrentamiento cerrado con un partido de ``me`` (al que estaba apuntada)."""
+        from call.models import Call
+        from match.models import Game
+        from players.models import current_season
+        match = Match.objects.create(
+            club=self.club, local=self.club.own_team, visiting=self.rival, draft_mode=False,
+            start_date=datetime.date.today() - datetime.timedelta(days=days_ago), season=current_season(),
+            result="Victoria Local" if won else "Victoria Visitante")
+        Game.objects.create(match=match, n_game=1, score=3, winner="Local" if won else "Visitante",
+                            draft_mode=False, player_1_local=self.me, player_2_local=self.mate)
+        Call.objects.create(match=match, draft_mode=False).players.add(self.me)
+
+    def test_none_without_linked_player(self):
+        """Quien no tiene ficha enlazada no tiene tarjeta."""
+        Player.objects.filter(user=self.user).update(user=None)
+        self.assertIsNone(self.home()["my_form"])
+
+    def test_empty(self):
+        """Con ficha y sin partidos jugados: tarjeta vacía con puntos SNP y sin gráfica."""
+        form = self.home()["my_form"]
+        self.assertEqual((form["hidden"], form["empty"], form["has_snp"]), (False, True, True))
+        self.assertEqual(form["snp"]["score"], 436)
+        self.assertIsNone(form["snp"]["chart"])
+        self.assertIn("player_statistics", form["stats_path"])
+
+    def test_balance_last_games_and_run(self):
+        """Balance, últimos partidos, racha y convocatorias de la temporada."""
+        for days, won in [(4, False), (3, True), (2, True), (1, True)]:
+            self.play(won, days)
+        form = self.home()["my_form"]
+        self.assertEqual((form["wins"], form["losses"], form["empty"]), (3, 1, False))
+        self.assertEqual([g["won"] for g in form["last_games"]], [False, True, True, True])
+        self.assertEqual(form["run"], {"kind": "V", "count": 3})
+        self.assertEqual((form["called"], form["played"], form["played_pct"]), (4, 4, 100))
+        self.assertEqual(form["by_competition"], [])
+
+    def test_snp_chart(self):
+        """Con histórico de varios días, la gráfica trae el trazado y los puntos."""
+        from players.models import SnpScoreHistory
+        today = datetime.date.today()
+        SnpScoreHistory.objects.create(player=self.me, date=today - datetime.timedelta(days=10), score=400)
+        SnpScoreHistory.objects.create(player=self.me, date=today - datetime.timedelta(days=2), score=436)
+        snp = self.home()["my_form"]["snp"]
+        self.assertEqual(snp["delta"], 36)
+        chart = snp["chart"]
+        self.assertEqual((chart["low"], chart["high"]), (400, 436))
+        self.assertEqual(chart["path"][-1][0], 100.0)
+        self.assertEqual([p["score"] for p in chart["points"]], [400, 436])
+
+    def test_hide_and_show(self):
+        """Ocultar deja ``hidden`` y se puede volver a mostrar; es la misma preferencia que la web."""
+        url = reverse("api_home_my_form")
+        auth = {"HTTP_AUTHORIZATION": f"Bearer {self.token}"}
+        response = self.client.post(url, {"hide": True}, content_type="application/json", **auth)
+        self.assertEqual((response.status_code, response.json()), (200, {"hidden": True}))
+        self.assertEqual(self.home()["my_form"], {"hidden": True})
+        self.client.post(url, {"hide": False}, content_type="application/json", **auth)
+        self.assertFalse(self.home()["my_form"]["hidden"])
+
+    def test_hide_validates_body(self):
+        """``hide`` debe ser booleano y hace falta token."""
+        url = reverse("api_home_my_form")
+        bad = self.client.post(url, {"hide": "si"}, content_type="application/json",
+                               HTTP_AUTHORIZATION=f"Bearer {self.token}")
+        self.assertEqual((bad.status_code, bad.json()["error"]), (400, "invalid_field"))
+        self.assertEqual(self.client.post(url, {"hide": True}, content_type="application/json").status_code, 401)
+
+    def test_captain_without_sheet_has_none(self):
+        """El capitán sin ficha enlazada no tiene «Mi forma»."""
+        Player.objects.filter(user=self.captain).update(user=None)
+        self.assertIsNone(self.home(self.captain_token)["my_form"])
