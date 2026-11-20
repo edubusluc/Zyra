@@ -4,6 +4,7 @@ Vistas de acceso de la API: iniciar sesión (token de dispositivo) y cerrarla (r
 El login usa el mismo freno que el de la web (``core.login_throttle``): los fallos de uno cuentan en el
 otro. No crea sesión web: no llama a ``login()``, solo emite un token.
 """
+from allauth.account.adapter import get_adapter
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.urls import reverse
@@ -106,8 +107,9 @@ class RegisterAccountView(ApiView):
 
     def post(self, request):
         """
-        Cuerpo ``{"username", "email", "password", "device_name"?}`` con las reglas de ``SignUpForm`` (las de la web).
-        400 ``validation_error`` con ``fields`` (``account.<campo>``); 429 si se pasa del límite de altas (el mismo que
+        Cuerpo ``{"email", "password", "username"?, "device_name"?}`` con las reglas de ``SignUpForm`` (las de la web).
+        Sin ``username`` (o vacío) se genera uno libre a partir del email (``Zyra`` solo lo pide en la web): la app lo
+        deja cambiar en el perfil y el acceso sigue aceptando usuario o email. 400 ``validation_error`` con ``fields`` (``account.<campo>``); 429 si se pasa del límite de altas (el mismo que
         ``register_account``). 201 como el login, con ``team`` a None y verificación de email iniciada.
         """
         if ratelimit.too_many(request, "register-account", REGISTER_LIMIT, REGISTER_WINDOW):
@@ -115,7 +117,11 @@ class RegisterAccountView(ApiView):
         body = self.json_body(request)
         device_name = text_field(body, "device_name", required=False, max_length=100)
         password = body.get("password", "")
-        form = SignUpForm({"username": body.get("username", ""), "email": body.get("email", ""),
+        username = body.get("username", "")
+        if not str(username or "").strip():
+            local_part = str(body.get("email", "") or "").strip().split("@")[0]
+            username = get_adapter().generate_unique_username([local_part, "jugador"])
+        form = SignUpForm({"username": username, "email": body.get("email", ""),
                            "password1": password, "password2": password})
         user = None
         if form.is_valid():

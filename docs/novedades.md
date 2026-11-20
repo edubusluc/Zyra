@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 20/11/2026 · API de la app iOS: alta de jugador sin usuario
+
+- `POST /api/v1/auth/register` ya no exige `username`: sin él (o vacío) genera uno libre a partir del email, para que la app pida solo email y contraseña. Con `username` se comporta como antes y la web no cambia. Documentado en [API de la app iOS](api.md).
+
 ## 20/11/2026 · API de la app iOS: base del Inicio nativo
 
 - `GET /api/v1/home` devuelve la situación de la cuenta (`ok`, `no_team` o `suspended`), sus equipos con el rol en cada uno y los datos del saludo. Es la base del Inicio nativo de la app; las tarjetas se irán añadiendo a esta respuesta. Solo lectura, sin cambios en la web.
