@@ -85,6 +85,7 @@ class OnboardingTests(SetupBase):
         block = self.block()
         self.assertFalse(block["snp_missing"])
         self.assertEqual(block["snp_sync"]["state"], "idle")
+        self.assertIsNone(block["snp_sync"]["attempted_at"])
 
     def test_completes_and_disappears(self):
         """Con la jugadora y la invitación hechos faltan 2 de 3; al crear el enfrentamiento los pasos desaparecen."""
@@ -205,6 +206,7 @@ class SnpSyncTests(SetupBase):
                                      message="No se encontró")
         sync = self.block()["snp_sync"]
         self.assertEqual((sync["state"], sync["message"]), ("failed", "No se encontró"))
+        self.assertTrue(sync["attempted_at"])  # la app enseña «Último intento» para que quede rastro de cada reintento
 
     def test_done_hides_task(self):
         """Con un resultado correcto la tarea desaparece."""
