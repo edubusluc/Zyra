@@ -7,6 +7,10 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 - `GET /api/v1/home` devuelve la situación de la cuenta (`ok`, `no_team` o `suspended`), sus equipos con el rol en cada uno y los datos del saludo. Es la base del Inicio nativo de la app; las tarjetas se irán añadiendo a esta respuesta. Solo lectura, sin cambios en la web.
 
+## 20/11/2026 · API de la app iOS: «Mi forma» en el Inicio
+
+- `GET /api/v1/home` incluye `my_form` (balance, últimos partidos, racha, convocatorias y puntos SNP con su gráfica, con los mismos datos que la web) y `POST /api/v1/home/my-form` oculta o vuelve a mostrar la tarjeta. Sin cambios en la web.
+
 ## 20/11/2026 · API de la app iOS: pendientes en el Inicio
 
 - `GET /api/v1/home` incluye `pending` (el «Pendiente» del capitán o gestor), `todos` («Tus pendientes» del jugador) y `pending_count` (la campana), con las mismas reglas que el Inicio de la web. Solo lectura.

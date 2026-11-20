@@ -8,12 +8,14 @@ from django.utils.translation import gettext as _
 from call import availability as availability_logic
 from call.models import Call
 from core.competitions import COMPETITIONS
-from core.models import Membership
+from core.models import Membership, UserPreference
 from core.templatetags.zyra_format import date_short
+from data_analyse import my_form as my_form_stats
 from match.models import Game, Match
 from match.phase import CLOSE_MATCH, CREATE_CALL, CREATE_GAMES, ENTER_RESULTS, phases_for, player_status
 from players.models import Player, current_season
 
+from .fields import invalid
 from .responses import json_ok
 from .views_base import ApiView
 
@@ -225,12 +227,75 @@ def _todos(user, memberships, upcoming, today):
     return todos
 
 
+def _snp_card(snp):
+    """Puntos SNP de «Mi forma»: puntuación, variación y gráfica escalonada (puntos en % del lienzo, ``y`` hacia abajo)."""
+    if snp is None:
+        return None
+    chart = snp["chart"]
+    out = {"score": snp["score"], "delta": snp["delta"], "chart": None}
+    if chart:
+        width, height = my_form_stats.CHART_WIDTH, my_form_stats.CHART_HEIGHT
+        path = [[round(float(x) / width * 100, 1), round(float(y) / height * 100, 1)]
+                for x, y in (pair.split(",") for pair in chart["line"].split())]
+        out["chart"] = {
+            "path": path,
+            "low": chart["low"], "high": chart["high"], "start": chart["start"].isoformat(),
+            "points": [{"x": p["x"], "y": p["y"], "score": p["score"], "date": p["date"].isoformat()}
+                       for p in chart["points"]],
+        }
+    return out
+
+
+def _my_form(user, memberships, today):
+    """
+    Tarjeta «Mi forma»: None si la cuenta no tiene ficha enlazada en ningún equipo activo; ``{"hidden": true}`` si
+    la ocultó; si no, el resumen de ``data_analyse.my_form`` con las mismas reglas que la web (suma todas las
+    competiciones de la cuenta, en el orden de las competiciones).
+    """
+    clubs = [m.club for m in memberships]
+    players = sorted(Player.objects.filter(club__in=clubs, user=user).select_related("club"),
+                     key=lambda p: clubs.index(p.club))
+    if not players:
+        return None
+    if UserPreference.my_form_is_hidden(user):
+        return {"hidden": True}
+    main = players[0]
+    data = my_form_stats.my_form(main.club, main, today=today, others=players[1:])
+    run_kind, run_count = data["run"]
+    return {
+        "hidden": False,
+        "season": current_season(),
+        "stats_path": f"{reverse('player_statistics')}?en={main.club.competition}&player={main.public_id}",
+        "empty": data["empty"],
+        "has_snp": any(p.club.rules.has_snp for p in players),
+        "wins": data["wins"], "losses": data["losses"],
+        "by_competition": [{**c, "name": str(c["name"])} for c in data["by_competition"]],
+        "last_games": data["last_games"],
+        "run": {"kind": run_kind, "count": run_count},
+        "called": data["called"], "played": data["played"], "played_pct": data["played_pct"],
+        "snp": _snp_card(data["snp"]),
+    }
+
+
+class MyFormView(ApiView):
+    """``POST /api/v1/home/my-form``: oculta o vuelve a mostrar «Mi forma» (la misma preferencia que la web)."""
+
+    def post(self, request):
+        """Cuerpo ``{"hide": true | false}``. Devuelve ``{"hidden": bool}``."""
+        body = self.json_body(request)
+        hide = body.get("hide")
+        if not isinstance(hide, bool):
+            raise invalid("hide")
+        UserPreference.objects.update_or_create(user=request.user, defaults={"my_form_hidden": hide})
+        return json_ok({"hidden": hide})
+
+
 class HomeView(ApiView):
     """
     ``GET /api/v1/home``: base del Inicio nativo. Dice en qué situación está la cuenta (``state``: ``ok``,
     ``no_team`` o ``suspended``), sus equipos con el rol en cada uno, los datos para el saludo y ``upcoming``, el
     carrusel «Próximo enfrentamiento», ``pending`` («Pendiente» de quien gestiona: filas, lejanos y vencidos),
-    ``todos`` («Tus pendientes» del jugador) y ``pending_count`` (el contador de la campana). Las demás tarjetas del Inicio (pendientes, «Mi forma», avisos…) se irán
+    ``todos`` («Tus pendientes» del jugador) y ``pending_count`` (el contador de la campana) y ``my_form`` («Mi forma»). Las demás tarjetas del Inicio (pendientes, «Mi forma», avisos…) se irán
     añadiendo a esta respuesta.
     """
 
@@ -259,6 +324,7 @@ class HomeView(ApiView):
             "pending": {"rows": rows, "far": far, "overdue": sum(1 for r in rows if r["overdue"]),
                         "page_size": PENDING_PAGE_SIZE},
             "todos": todos,
+            "my_form": _my_form(user, active, today),
             "pending_count": len(rows) + len(todos),
             "has_player": players.filter(user=user, club__in=[m.club_id for m in active]).exists(),
             "has_history": players.exists(),

@@ -20,6 +20,7 @@ urlpatterns = [
     re_path(r"^auth/web-session/?$", views_auth.WebSessionView.as_view(), name="api_web_session"),
     re_path(r"^account/delete/?$", views_account.DeleteAccountView.as_view(), name="api_account_delete"),
     re_path(r"^devices/?$", views_devices.DevicesView.as_view(), name="api_devices"),
+    re_path(r"^home/my-form/?$", views_home.MyFormView.as_view(), name="api_home_my_form"),
     re_path(r"^home/?$", views_home.HomeView.as_view(), name="api_home"),
     re_path(r"^ping/?$", views.PingView.as_view(), name="api_ping"),
     re_path(r"^.*$", views.NotFoundView.as_view(), name="api_not_found"),
