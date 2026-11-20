@@ -219,3 +219,38 @@ class SnpSyncTests(SetupBase):
         with mock.patch("players.snp_service.is_enabled", return_value=True):
             r = self.act("api_setup_snp_sync", {})
         self.assertEqual((r.status_code, r.json()["error"]), (409, "closed"))
+
+
+class ClubDetailsTests(SetupBase):
+    """Sede y hora habitual: el alta de la app no las pide y el capitán las pone desde el Inicio."""
+
+    def empty_location(self):
+        """Deja el equipo sin sede, como tras el alta de la app."""
+        team = self.club.own_team
+        team.location = ""
+        team.save(update_fields=["location"])
+
+    def test_block_only_without_location(self):
+        """Con sede no hay ``club_details``; sin ella sí, con la hora actual."""
+        self.assertIsNone((self.block() or {}).get("club_details"))
+        self.empty_location()
+        self.assertEqual(self.block()["club_details"], {"location": "", "default_time": None})
+
+    def test_saves_location_and_time(self):
+        """Guarda sede y hora; con la sede puesta la tarjeta desaparece."""
+        self.empty_location()
+        response = self.act("api_setup_club_details", {"location": "Club Padel Norte", "default_time": "20:30"})
+        self.assertEqual(response.status_code, 200)
+        team = self.club.own_team
+        team.refresh_from_db()
+        self.assertEqual((team.location, str(team.default_time)), ("Club Padel Norte", "20:30:00"))
+        self.assertIsNone((self.block() or {}).get("club_details"))
+
+    def test_time_is_optional_and_location_required(self):
+        """Sin hora vale; sin sede o con hora mala, 400 con el campo."""
+        self.empty_location()
+        self.assertEqual(self.act("api_setup_club_details", {"location": "  "}).status_code, 400)
+        bad = self.act("api_setup_club_details", {"location": "Pista 1", "default_time": "25:99"})
+        self.assertEqual(bad.status_code, 400)
+        self.assertIn("default_time", bad.json()["fields"])
+        self.assertEqual(self.act("api_setup_club_details", {"location": "Pista 1"}).status_code, 200)
