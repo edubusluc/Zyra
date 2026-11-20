@@ -661,6 +661,13 @@ def my_player(request):
         messages.success(request, _("Jugador creado y enlazado a tu cuenta."))
         return redirect(player_sheet_url(player))
 
+    # Quien vuelve al club y tuvo una única ficha en él: se le pregunta si es esa antes de enseñar la lista
+    # (``todos=1`` es «No soy yo»). El enlace sigue siendo «Soy yo» (``link_player``): un alta de vuelta.
+    if request.method == "GET" and not request.GET.get("q") and not request.GET.get("todos"):
+        previous = list(Player.objects.filter(club=request.club, user__isnull=True, past_user=request.user)[:2])
+        if len(previous) == 1:
+            return render(request, "confirm_previous_sheet.html", {"player": previous[0]})
+
     # Todos los jugadores del club: primero los que se pueden elegir (sin cuenta, se ven en
     # lima) y después los ya enlazados (apagados). El buscador filtra la lista mientras se
     # escribe; ``q`` queda para quien navega sin JavaScript.
