@@ -5,6 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 20/11/2026 · API de la app iOS: sede y hora habitual desde el Inicio
 
+- El aviso `manager_tip` («Añade un gestor») solo sale cuando el club tiene otros miembros con cuenta a quienes nombrar.
 - `GET /api/v1/home` añade `club_details` al bloque de configuración del capitán mientras su equipo no tiene sede, y `POST /api/v1/home/setup/club-details` guarda la sede y la hora habitual (las mismas reglas que la edición del equipo en la web). Así el alta de la app puede no pedirlas. Documentado en [API de la app iOS](api.md).
 
 ## 20/11/2026 · API de la app iOS: alta de club sin sede ni usuario

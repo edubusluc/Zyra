@@ -94,6 +94,13 @@ class NoticesTests(NoticesBase):
         self.assertEqual(self.post(reverse("api_home_dismiss"), {"notice": "manager_welcome"}).status_code, 400)
         self.assertEqual(self.post(reverse("api_home_dismiss"), {"notice": "otro"}).status_code, 400)
 
+    def test_manager_tip_waits_for_members(self):
+        """Un club recién creado, sin más miembros con cuenta, no recibe «Añade un gestor»."""
+        Membership.objects.filter(user=self.marta).delete()
+        self.assertEqual(self.kinds(self.captain_token), [])
+        Membership.objects.create(user=self.marta, club=self.club, role=Membership.MEMBER)
+        self.assertEqual(self.kinds(self.captain_token), ["manager_tip"])
+
     def test_manager_tip_only_without_manager(self):
         """«Añade un gestor» es para el capitán, sin gestor y hasta que lo cierra."""
         self.assertEqual(self.kinds(self.captain_token), ["manager_tip"])

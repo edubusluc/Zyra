@@ -253,6 +253,13 @@ def _todos(user, memberships, upcoming, today):
     return todos
 
 
+def _can_name_manager(club):
+    """Hay jugadores con cuenta que nombrar y aún no hay gestor: antes, «Añade un gestor» no tiene sentido."""
+    members = Membership.objects.filter(club=club)
+    return (members.filter(role=Membership.MEMBER).exists()
+            and not members.filter(role=Membership.MANAGER).exists())
+
+
 def _notices(user, memberships):
     """
     Avisos del Inicio, en el orden de la web: email sin confirmar, invitaciones de ficha, bienvenida de gestor y
@@ -277,7 +284,7 @@ def _notices(user, memberships):
                         "has_snp": bool(m.club.rules.has_snp)})
     if UserPreference.manager_tip_pending(user):
         for m in memberships:
-            if m.is_admin and not Membership.objects.filter(club=m.club, role=Membership.MANAGER).exists():
+            if m.is_admin and _can_name_manager(m.club):
                 out.append({"kind": "manager_tip", "team_id": str(m.club.public_id), "team_name": m.club.name})
                 break
     return out
