@@ -7,6 +7,10 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 - `GET /api/v1/home` devuelve la situación de la cuenta (`ok`, `no_team` o `suspended`), sus equipos con el rol en cada uno y los datos del saludo. Es la base del Inicio nativo de la app; las tarjetas se irán añadiendo a esta respuesta. Solo lectura, sin cambios en la web.
 
+## 20/11/2026 · API de la app iOS: próximo enfrentamiento en el Inicio
+
+- `GET /api/v1/home` incluye `upcoming`: los enfrentamientos de la semana del más cercano con fecha, hora, lugar, lados y el estado del jugador en la convocatoria, con las mismas reglas que el Inicio de la web. Solo lectura.
+
 ## 20/11/2026 · Volver al equipo con tu ficha anterior
 
 - Si sales de un equipo y vuelves a entrar con una invitación, la web y la app te preguntan «¿Eres tú?» con tu ficha anterior; al confirmar recuperas tu ficha y tus estadísticas y vuelves a la plantilla. Con «No, soy otra persona» (o si hay varias fichas anteriores, o el capitán la liberó) sigue saliendo la lista de siempre.

@@ -58,6 +58,10 @@ Base del Inicio nativo. Las tarjetas (próximo enfrentamiento, pendientes, «Mi 
   "season": "2026-2027",
   "teams": [{"id": "…", "name": "Club Norte", "crest": "/media/…", "competition": "snp", "competition_name": "SNP", "has_snp": true,
              "role": "admin", "role_label": "Capitán", "can_manage": true, "division": "500", "division_label": "500"}],
+  "upcoming": [{"id": "MAT…", "team_id": "…", "competition": "snp", "competition_name": "SNP", "kind_label": "Jornada 6",
+                "date": "2026-11-21", "days_left": 1, "time": "17:00", "location": "Pistas Norte", "maps_url": "https://www.google.com/maps/…",
+                "neutral_venue": false, "local": {"name": "Club Norte", "is_own": true}, "visiting": {"name": "Club Este", "is_own": false},
+                "me": {"state": "called", "game": 2, "points": 3, "partner": "Laura Gil"}, "web_path": "/match/…"}],
   "suspended_clubs": [],
   "has_player": true,
   "has_history": true
@@ -66,6 +70,8 @@ Base del Inicio nativo. Las tarjetas (próximo enfrentamiento, pendientes, «Mi 
 
 - `state`: `ok` (tiene equipo), `no_team` (ninguno) o `suspended` (solo tiene clubes suspendidos; sus nombres van en `suspended_clubs`). No cuentan los clubes suspendidos ni los archivados.
 - `teams` va en el orden de las competiciones (SNP, LAPI…). `role` es `admin` (capitán), `manager` (gestor) o `member` (jugador); `can_manage` es cierto para capitán y gestor. `crest` y `division_label` son `null` si no hay.
+- `upcoming` es el carrusel «Próximo enfrentamiento»: los enfrentamientos abiertos de todos los equipos activos que caen en la semana natural del más cercano (como en la web), por fecha. `time`, `location` y `maps_url` son `null` si no hay (`neutral_venue` quita Local y Visitante). `web_path` es la ficha del enfrentamiento en la web (se abre con `/auth/web-session`).
+- `upcoming[].me` es el estado de la cuenta en la convocatoria: `null` si no aplica (capitán o gestor sin ficha enlazada); `{"state": …}` con `unlinked` (sin ficha enlazada), `no_call` (aún no hay convocatoria), `applied_open` (apuntado, convocatoria abierta), `called` (convocado: `game`, `points` en juego y `partner`), `called_no_pair` (convocado, parejas sin decidir), `not_called` o `not_called_open`.
 - `display_name` es el nombre de pila o, si no hay, el usuario. `has_player`: tiene ficha enlazada en un equipo activo. `has_history`: como en `/ping`.
 
 ### `POST /auth/login`
