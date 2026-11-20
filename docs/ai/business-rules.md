@@ -328,7 +328,7 @@ ni se editan parejas (`edit_game_match`).
 - [V] Cambiar de equipo no pierde estadísticas: al salir del club la ficha conserva `past_user` y `left_on` (`remove_membership`) y
   «Yo» (`my_statistics`, solo `login_required`: funciona sin ningún club) muestra una fila por ficha, con la etiqueta «Equipo anterior» y sin
   enlace a ficha propia, y los gráficos juntan por competición las fichas de la misma (varios clubes); los puntos no se suman entre
-  competiciones. Quien vuelve a un club ve «Tu ficha anterior» en `my_player` y, al enlazarla, se limpian `past_user` y `left_on`.
+  competiciones. Quien vuelve a un club (con cualquier invitación, web o app) y tiene una única ficha anterior sin cuenta en él (`past_user`) ve en `my_player` la pantalla «¿Eres tú?» (`players/templates/confirm_previous_sheet.html`): «Sí, soy yo» la enlaza (`link_player`, alta de vuelta) y «No, soy otra persona» (`?todos=1`) enseña la lista; sin ficha anterior, con la ficha liberada o reclamada por otra cuenta, o con varias, sale la lista con «Tu ficha anterior» marcada. Al enlazarla se limpian `past_user` y `left_on`.
   Una ficha con cuenta (`user` o `past_user`) no se elimina (`delete_player`), solo se da de baja; el capitán puede «Liberar ficha»
   (`release_player`) y solo entonces otra cuenta puede reclamarla (`Player.is_claimable_by`). Desde «Yo» se abren la ficha
   (`my_history_player`) y el enfrentamiento (`my_history_match`, solo si jugó en él; mismo 3D/clásico) de un equipo anterior, de solo

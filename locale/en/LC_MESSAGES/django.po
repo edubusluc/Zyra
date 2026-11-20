@@ -17096,3 +17096,15 @@ msgid "partido"
 msgid_plural "partidos"
 msgstr[0] "match"
 msgstr[1] "matches"
+
+#: players/templates/confirm_previous_sheet.html
+msgid "¿Eres tú?"
+msgstr "Is this you?"
+
+#: players/templates/confirm_previous_sheet.html
+msgid "Si eres tú, vuelves a la plantilla con tus estadísticas."
+msgstr "If this is you, you rejoin the squad with your statistics."
+
+#: players/templates/confirm_previous_sheet.html
+msgid "No, soy otra persona"
+msgstr "No, I'm someone else"
