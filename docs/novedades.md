@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 20/11/2026 · Sin mancha negra al pasar el ratón por los escudos
+
+- En la ficha del enfrentamiento, al mover el ratón sobre los escudos ya no aparece una franja negra difuminada a media altura: la sombra bajo el escudo es plana y se queda en su sitio.
+
 ## 20/11/2026 · Volver al equipo con tu ficha anterior
 
 - Si sales de un equipo y vuelves a entrar con una invitación, la web y la app te preguntan «¿Eres tú?» con tu ficha anterior; al confirmar recuperas tu ficha y tus estadísticas y vuelves a la plantilla. Con «No, soy otra persona» (o si hay varias fichas anteriores, o el capitán la liberó) sigue saliendo la lista de siempre.
