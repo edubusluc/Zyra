@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 20/11/2026 · API de la app iOS: base del Inicio nativo
+
+- `GET /api/v1/home` devuelve la situación de la cuenta (`ok`, `no_team` o `suspended`), sus equipos con el rol en cada uno y los datos del saludo. Es la base del Inicio nativo de la app; las tarjetas se irán añadiendo a esta respuesta. Solo lectura, sin cambios en la web.
+
 ## 20/11/2026 · Volver al equipo con tu ficha anterior
 
 - Si sales de un equipo y vuelves a entrar con una invitación, la web y la app te preguntan «¿Eres tú?» con tu ficha anterior; al confirmar recuperas tu ficha y tus estadísticas y vuelves a la plantilla. Con «No, soy otra persona» (o si hay varias fichas anteriores, o el capitán la liberó) sigue saliendo la lista de siempre.

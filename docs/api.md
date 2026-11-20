@@ -26,6 +26,7 @@ va autenticada con un **token de dispositivo**. El código está en `api/`; las 
 
 | Método y ruta | Público | Para qué |
 |---|---|---|
+| `GET /home` | no | Datos del Inicio nativo: situación de la cuenta, equipos y rol en cada uno |
 | `GET /ping` | no | Comprueba que el token sirve, cuándo caduca y a qué equipo pertenece |
 | `POST /auth/login` | sí | Usuario o email y contraseña → token |
 | `POST /auth/apple` | sí | `identity_token` de Apple → token (desactivado hasta configurarlo) |
@@ -45,6 +46,27 @@ va autenticada con un **token de dispositivo**. El código está en `api/`; las 
 ```
 
 `team` es el equipo propio del primer club de la cuenta, o `null` si no está en ninguno. `has_history` es verdadero si la cuenta tiene fichas, actuales o de equipos anteriores (la app ofrece entonces «Mis estadísticas» a quien no tiene equipo). La app lo comprueba al volver a primer plano para saber si salió de su equipo (o entró en uno) desde la web.
+
+### `GET /home`
+
+Base del Inicio nativo. Las tarjetas (próximo enfrentamiento, pendientes, «Mi forma», avisos) se añadirán a esta respuesta en las siguientes fases.
+
+```json
+{
+  "state": "ok",
+  "user": {"username": "ana", "display_name": "Ana"},
+  "season": "2026-2027",
+  "teams": [{"id": "…", "name": "Club Norte", "crest": "/media/…", "competition": "snp", "competition_name": "SNP", "has_snp": true,
+             "role": "admin", "role_label": "Capitán", "can_manage": true, "division": "500", "division_label": "500"}],
+  "suspended_clubs": [],
+  "has_player": true,
+  "has_history": true
+}
+```
+
+- `state`: `ok` (tiene equipo), `no_team` (ninguno) o `suspended` (solo tiene clubes suspendidos; sus nombres van en `suspended_clubs`). No cuentan los clubes suspendidos ni los archivados.
+- `teams` va en el orden de las competiciones (SNP, LAPI…). `role` es `admin` (capitán), `manager` (gestor) o `member` (jugador); `can_manage` es cierto para capitán y gestor. `crest` y `division_label` son `null` si no hay.
+- `display_name` es el nombre de pila o, si no hay, el usuario. `has_player`: tiene ficha enlazada en un equipo activo. `has_history`: como en `/ping`.
 
 ### `POST /auth/login`
 
