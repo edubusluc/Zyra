@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.utils.translation import gettext as _
 
 from call import availability as availability_logic
-from call.models import Call
+from call.models import Availability, Call
 from core.competitions import COMPETITIONS
 from core import email_verification
 from core.models import Membership, UserPreference
@@ -193,6 +193,25 @@ def _pending(memberships, today):
     return rows, len(matches) - len(rows)
 
 
+def _maybe_matches(players, matches):
+    """
+    Enfrentamientos abiertos en los que la ficha respondió «Pendiente»: siguen en «Tus pendientes» hasta que
+    responda Sí o No (con Sí o No dejan de ser una tarea). Mismas condiciones que ``availability.unanswered``:
+    convocatoria sin cerrar y sin estar ya apuntada por el capitán.
+    """
+    by_club = {p.club_id: p for p in players.values() if p.in_team}
+    open_matches = [m for m in matches if m.club_id in by_club and m.draft_mode]
+    if not open_matches:
+        return []
+    ids = [m.id for m in open_matches]
+    maybe = set(Availability.objects.filter(match_id__in=ids, player__in=by_club.values(), answer=Availability.MAYBE)
+                .values_list("match_id", "player_id"))
+    called = set(Call.objects.filter(match_id__in=ids, players__in=by_club.values()).values_list("match_id", "players"))
+    closed = set(Call.objects.filter(match_id__in=ids, draft_mode=False).values_list("match_id", flat=True))
+    return [m for m in open_matches
+            if m.id not in closed and (m.id, by_club[m.club_id].id) in maybe - called]
+
+
 def _todos(user, memberships, upcoming, today):
     """
     «Tus pendientes» del jugador: enlazar la ficha, subir la foto, la pareja del próximo enfrentamiento y las
@@ -219,11 +238,15 @@ def _todos(user, memberships, upcoming, today):
                           "partner": first["me"]["partner"]}})
     horizon = today + datetime.timedelta(days=PENDING_DAYS)
     clubs = [m.club for m in memberships]
-    open_matches = Match.objects.filter(club__in=clubs, draft_mode=True, start_date__gte=today,
-                                        start_date__lte=horizon).select_related("local", "visiting", "club")
-    for m, _player in availability_logic.unanswered(list(players.values()), list(open_matches.order_by("start_date", "id"))):
+    open_matches = list(Match.objects.filter(club__in=clubs, draft_mode=True, start_date__gte=today,
+                                             start_date__lte=horizon).select_related("local", "visiting", "club")
+                        .order_by("start_date", "id"))
+    rows = [(m, None) for m, _player in availability_logic.unanswered(list(players.values()), open_matches)]
+    rows += [(m, Availability.MAYBE) for m in _maybe_matches(players, open_matches)]
+    rows.sort(key=lambda row: (row[0].start_date, row[0].id))
+    for m, answer in rows:
         todos.append({"kind": "availability", "team_id": str(m.club.public_id), "match_id": str(m.public_id),
-                      "web_path": reverse("call_for_match", args=[m.public_id]),
+                      "answer": answer, "web_path": reverse("call_for_match", args=[m.public_id]),
                       "text": _("Responde si puedes jugar: %(rival)s, %(date)s") % {
                           "rival": m.rival_label, "date": date_short(m.start_date)}})
     return todos
