@@ -182,6 +182,26 @@ class AvailabilityTests(NoticesBase):
         self.assertEqual(Availability.objects.get(match=self.match, player=self.me).answer, "yes")
         self.assertFalse([t for t in self.home()["todos"] if t["kind"] == "availability"])
 
+    def test_maybe_stays_in_pending_until_yes_or_no(self):
+        """«Pendiente» no cierra la tarea: la entrada sigue con su respuesta y desaparece al decir Sí o No."""
+        self.post(self.url, {"answer": "maybe"})
+        todo = next(t for t in self.home()["todos"] if t["kind"] == "availability")
+        self.assertEqual((todo["match_id"], todo["answer"]), (str(self.match.public_id), "maybe"))
+        self.assertEqual(self.home()["pending_count"], 2)  # la foto y la convocatoria
+        self.post(self.url, {"answer": "no"})
+        self.assertFalse([t for t in self.home()["todos"] if t["kind"] == "availability"])
+
+    def test_maybe_leaves_when_call_is_closed_or_called(self):
+        """Con la convocatoria cerrada o ya apuntada por el capitán, «Pendiente» deja de ser tarea."""
+        self.post(self.url, {"answer": "maybe"})
+        Call.objects.create(match=self.match).players.add(self.me)
+        self.assertFalse([t for t in self.home()["todos"] if t["kind"] == "availability"])
+
+    def test_unanswered_has_no_answer(self):
+        """Sin responder, ``answer`` es null."""
+        todo = next(t for t in self.home()["todos"] if t["kind"] == "availability")
+        self.assertIsNone(todo["answer"])
+
     def test_change_answer_and_comment_only_with_maybe(self):
         """Se puede cambiar; el comentario solo se guarda con «Pendiente»."""
         self.post(self.url, {"answer": "maybe", "comment": "Llego tarde"})
