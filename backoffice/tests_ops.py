@@ -520,7 +520,9 @@ class MetricsTests(StaffTestCase):
     def setUp(self):
         super().setUp()
         from django.core.cache import cache
+        from backoffice.middleware import activity_cache
         cache.clear()
+        activity_cache().clear()
 
     def test_daily_activity_is_recorded_once_per_day(self):
         self.client.login(username="capi", password=PASSWORD)

@@ -8,7 +8,7 @@ import threading
 import time
 
 from django.conf import settings
-from django.core.cache import cache
+from django.core.cache import cache, caches
 from django.db import IntegrityError, connection, transaction
 from django.db.models import F
 from django.db.models.functions import Greatest
@@ -111,6 +111,15 @@ def flush_metrics():
         _save(data)
 
 
+def activity_cache():
+    """
+    Caché en memoria del proceso para anotar la actividad. Se consulta en cada petición de un usuario con
+    sesión, así que no va a la tabla ``django_cache``: con varios procesos, lo peor es una escritura de
+    actividad más por minuto y proceso.
+    """
+    return caches["ratelimit"]
+
+
 def activity_cache_key(user_id):
     """Clave de caché que limita a una escritura por usuario cada ACTIVITY_EVERY segundos."""
     return f"backoffice:seen:{user_id}"
@@ -172,7 +181,7 @@ class ActivityMiddleware:
             seen = (
                 user is not None and user.is_authenticated and getattr(request, "impersonator", None) is None
             )
-            if seen and cache.add(activity_cache_key(user.pk), 1, ACTIVITY_EVERY):
+            if seen and activity_cache().add(activity_cache_key(user.pk), 1, ACTIVITY_EVERY):
                 UserActivity.objects.update_or_create(user=user, defaults={
                     "last_seen": now,
                     "last_path": request.path[:200],
@@ -180,7 +189,7 @@ class ActivityMiddleware:
                 })
             if seen:
                 today = timezone.localdate()
-                if cache.add(f"backoffice:day:{user.pk}:{today}", 1, 24 * 3600):
+                if activity_cache().add(f"backoffice:day:{user.pk}:{today}", 1, 24 * 3600):
                     DailyActivity.objects.get_or_create(user=user, date=today)
             if response.status_code >= 500 or ms >= SLOW_EVENT_MS:
                 _record_event(request, response.status_code, ms, user, db_timer)

@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 20/11/2026 · Más capacidad del servidor
+
+- Gunicorn pasa de 3 a 5 procesos y recicla cada ~5.000 peticiones (antes 1.000), y el contenedor `web` sube de 900 a 1.000 MB. Los frenos por IP y minuto son por proceso, así que el límite efectivo crece en la misma proporción.
+- La actividad de los usuarios con sesión (`backoffice.middleware`) ya no escribe en la tabla `django_cache` en cada petición: usa la caché en memoria del proceso. Lo peor que puede pasar con varios procesos es una escritura de actividad más por minuto y proceso.
+
 ## 20/11/2026 · Seguridad: carreras al cerrar y dependencias de acceso social
 
 - Cerrar una convocatoria o un acta a la vez desde dos sitios (doble toque, dos dispositivos) ya no envía el aviso ni el informe dos veces: la segunda petición ve que ya estaba cerrado.

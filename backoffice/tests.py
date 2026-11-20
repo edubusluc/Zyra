@@ -180,7 +180,9 @@ class BackofficeDataTests(TestCase):
 class ActivityAndLoadTests(TestCase):
     def setUp(self):
         from django.core.cache import cache
+        from backoffice.middleware import activity_cache
         cache.clear()
+        activity_cache().clear()
         flush_metrics()
         RequestMetric.objects.all().delete()
         self.staff = User.objects.create_user("staff", password="pass-12345", is_staff=True)
