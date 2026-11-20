@@ -30,6 +30,7 @@ urlpatterns = [
     re_path(r"^home/setup/onboarding/dismiss/?$", views_setup.DismissOnboardingView.as_view(),
             name="api_setup_onboarding_dismiss"),
     re_path(r"^home/setup/season-prep/?$", views_setup.SeasonPrepView.as_view(), name="api_setup_season_prep"),
+    re_path(r"^home/setup/club-details/?$", views_setup.ClubDetailsView.as_view(), name="api_setup_club_details"),
     re_path(r"^home/setup/snp-sync/?$", views_setup.SnpSyncView.as_view(), name="api_setup_snp_sync"),
     re_path(r"^home/setup/snp-request/?$", views_setup.SnpUpdateRequestView.as_view(), name="api_setup_snp_request"),
     re_path(r"^home/my-form/?$", views_home.MyFormView.as_view(), name="api_home_my_form"),

@@ -7,10 +7,14 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
+from django import forms
+
 from core import onboarding, ratelimit, season_prep
 from core.models import Membership
+from core.validators import plain_text
 from players import snp_import, snp_requests, snp_service
 from players.models import SnpAccount
+from team.forms import default_time_field
 
 from .errors import ApiError
 from .fields import choice_field, invalid, text_field
@@ -84,10 +88,19 @@ def _season_prep(membership):
             "is_captain": prep["is_captain"], "steps": steps}
 
 
+def _club_details(membership):
+    """Sede y hora habitual del equipo propio si el capitán aún no puso la sede (el alta de la app no la pide), o None."""
+    team = membership.club.own_team
+    if not membership.is_admin or team is None or team.location:
+        return None
+    return {"location": team.location, "default_time": f"{team.default_time:%H:%M}" if team.default_time else None}
+
+
 def setup_blocks(memberships):
     """
     Un bloque por equipo en el que haya algo que configurar: ``onboarding``, ``season_prep``, ``snp_missing`` (el
-    capitán aún no registró su cuenta SNP) y ``snp_sync`` («Sincronizar datos»). Las mismas condiciones que ``home.html``:
+    capitán aún no registró su cuenta SNP), ``snp_sync`` («Sincronizar datos») y ``club_details`` (sede y hora
+    habitual, mientras el equipo no tenga sede). Las mismas condiciones que ``home.html``:
     la preparación de temporada lleva dentro el paso SNP y los primeros pasos esconden el aviso de cuenta.
     """
     out = []
@@ -102,11 +115,12 @@ def setup_blocks(memberships):
         sync = None
         if m.is_admin and prep is None and club.rules.has_snp:
             sync = _sync(club, snp_import.sync_task(club))
-        if not (first or prep or missing or sync):
+        details = _club_details(m)
+        if not (first or prep or missing or sync or details):
             continue
         out.append({"team_id": str(club.public_id), "team_name": club.name, "competition": club.competition,
                     "is_captain": m.is_admin, "onboarding": first, "season_prep": prep, "snp_missing": missing,
-                    "snp_sync": sync, "snp_account_path": _web(reverse("snp_account"), club)})
+                    "snp_sync": sync, "club_details": details, "snp_account_path": _web(reverse("snp_account"), club)})
     return out
 
 
@@ -199,3 +213,36 @@ class SnpUpdateRequestView(ApiView):
             raise invalid("note")
         _req, created = snp_requests.create_request(m.club, request.user, note)
         return json_ok({"created": created})
+
+
+class ClubDetailsForm(forms.Form):
+    """Sede (obligatoria) y hora habitual (opcional) del equipo propio: los mismos campos que la edición web."""
+    location = forms.CharField(max_length=100)
+    default_time = default_time_field()
+
+    def __init__(self, *args, **kwargs):
+        """Sede en texto plano (``core.validators``)."""
+        super().__init__(*args, **kwargs)
+        plain_text(self, "location")
+
+
+class ClubDetailsView(ApiView):
+    """``POST /api/v1/home/setup/club-details``: el capitán pone la sede y la hora habitual de su equipo."""
+
+    def post(self, request):
+        """
+        Cuerpo ``{"team_id", "location", "default_time"?}`` (HH:MM), solo capitán. 400 ``validation_error`` con
+        ``fields`` (``location``, ``default_time``). Devuelve ``{"ok": true}``.
+        """
+        body = self.json_body(request)
+        m = _membership(request, body, admin=True)
+        form = ClubDetailsForm({"location": str(body.get("location") or "").strip(),
+                                "default_time": body.get("default_time") or ""})
+        if not form.is_valid():
+            raise ApiError("validation_error", _("Revisa los datos del formulario."), 400, extra={"fields": {
+                name: [str(e) for e in errors] for name, errors in form.errors.items()}})
+        team = m.club.own_team
+        team.location = form.cleaned_data["location"]
+        team.default_time = form.cleaned_data["default_time"]
+        team.save(update_fields=["location", "default_time"])
+        return json_ok({"ok": True})
