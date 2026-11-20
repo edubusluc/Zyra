@@ -11,6 +11,10 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 - En `GET /api/v1/home`, las entradas «Responde si puedes jugar» de `todos` traen `answer`, y quien contesta «Pendiente» sigue viéndolas hasta que responde Sí o No. La web no cambia.
 
+## 20/11/2026 · API de la app iOS: configuración del capitán en el Inicio
+
+- `GET /api/v1/home` incluye `setup` («Primeros pasos», «Prepara la temporada», aviso de cuenta SNP y «Sincronizar datos», con las mismas reglas que la portada web) y nuevas acciones con token: cerrar los primeros pasos, marcar u ocultar la preparación de temporada, lanzar la sincronización con SNP y pedir la actualización a Zyra. Sin cambios en la web.
+
 ## 20/11/2026 · API de la app iOS: avisos y acciones en el Inicio
 
 - `GET /api/v1/home` incluye `notices` (email sin confirmar, invitaciones de ficha, bienvenida de gestor y «Añade un gestor»). Nuevas acciones con token: reenviar el email de confirmación, aceptar o rechazar una invitación de ficha, cerrar la bienvenida o el aviso del gestor y responder si se puede jugar un enfrentamiento. Mismas reglas que la web; sin cambios en ella.
