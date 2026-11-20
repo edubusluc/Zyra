@@ -83,6 +83,14 @@ def _crest(team):
     return SimpleUploadedFile("crest.jpg", content, content_type="image/jpeg")
 
 
+def _with_username(account):
+    """``account`` con un usuario libre generado del email si no trae ninguno (como ``/auth/register``)."""
+    if not account or str(account.get("username") or "").strip():
+        return account
+    local_part = str(account.get("email") or "").strip().split("@")[0]
+    return {**account, "username": get_adapter().generate_unique_username([local_part, "jugador"])}
+
+
 def _collect(errors, prefix, form, rename=None):
     """Añade a ``errors`` los de ``form`` como ``<prefijo>.<campo>`` (``rename`` cambia el nombre de algún campo)."""
     for field, messages in form.errors.items():
@@ -136,10 +144,7 @@ class RegisterClubView(ApiView):
                                    "snp-password": captain.get("snp_password", "")}, prefix="snp")
         player_form = CaptainPlayerForm({"player-name": captain.get("name", ""),
                                          "player-last_name": captain.get("last_name", "")}, prefix="player")
-        if account and not str(account.get("username") or "").strip():
-            # Sin usuario: se genera del email (como ``/auth/register``); la persona lo cambia en el perfil.
-            local_part = str(account.get("email") or "").strip().split("@")[0]
-            account = {**account, "username": get_adapter().generate_unique_username([local_part, "jugador"])}
+        account = _with_username(account)
         user_form = SignUpForm({"username": account.get("username", ""), "email": account.get("email", ""),
                                 "password1": account.get("password", ""),
                                 "password2": account.get("password", "")}) if account else None
