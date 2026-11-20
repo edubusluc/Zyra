@@ -57,4 +57,4 @@ CMD ["python", "manage.py", "run_scheduler", "--loop"]
 # Web: última etapa, la que construye `docker build` sin --target.
 FROM base AS web
 EXPOSE 8000
-CMD ["gunicorn", "zyra.wsgi", "--bind", "0.0.0.0:8000", "--workers", "3", "--worker-class", "gthread", "--threads", "4", "--timeout", "60", "--graceful-timeout", "30", "--max-requests", "1000", "--max-requests-jitter", "100", "--limit-request-line", "4094", "--access-logfile", "-"]
+CMD ["gunicorn", "zyra.wsgi", "--bind", "0.0.0.0:8000", "--workers", "5", "--worker-class", "gthread", "--threads", "4", "--timeout", "60", "--graceful-timeout", "30", "--max-requests", "5000", "--max-requests-jitter", "500", "--limit-request-line", "4094", "--access-logfile", "-"]
