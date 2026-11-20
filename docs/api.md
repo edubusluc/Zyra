@@ -154,6 +154,7 @@ Alta de club desde la app, con las mismas reglas que la web. Cuerpo:
 }
 ```
 
+- `team.location` (sede) y `account.username` son opcionales: sin sede el equipo queda sin ella (la web sigue pidiéndola) y sin usuario el servidor genera uno libre a partir del email.
 - `captain.mode` es `manual` (con `name` y `last_name`) o `snp` (con `snp_username` y `snp_password`; solo en competiciones con SNP: en las demás se ignora).
 - En lugar de `account`, `"google": {"id_token", "nonce"}` usa la cuenta de Google (nueva o ya existente) sin contraseña.
 - `team.crest`: imagen en base64 (hasta ~2,2 MB); se reduce y valida igual que en la web.

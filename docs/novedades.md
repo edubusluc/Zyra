@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 20/11/2026 · API de la app iOS: alta de club sin sede ni usuario
+
+- `POST /api/v1/club/register` acepta el alta sin `team.location` (la sede queda vacía) y sin `account.username` (se genera del email), para que la app pida menos campos. La web sigue exigiendo la sede. Documentado en [API de la app iOS](api.md).
+
 ## 20/11/2026 · API de la app iOS: alta de jugador sin usuario
 
 - `POST /api/v1/auth/register` ya no exige `username`: sin él (o vacío) genera uno libre a partir del email, para que la app pida solo email y contraseña. Con `username` se comporta como antes y la web no cambia. Documentado en [API de la app iOS](api.md).
