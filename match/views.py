@@ -609,8 +609,11 @@ def close_call(request, match_id):
         # informe» (o la casilla de las fases finales, que ocupa su lugar en el aviso).
         already_sent = call.report_deliveries.filter(status=ReportDelivery.SENT).exists()
         resend = request.POST.get("resend_report") == "1" or bool(request.POST.get("force_finals"))
+        # Cierre atómico: si otra petición (doble pulsación, dos capitanes) la cerró en el mismo instante, esta no repite el informe.
+        if not Call.objects.filter(pk=call.pk, draft_mode=True).update(draft_mode=False):
+            messages.info(request, _("La convocatoria ya estaba cerrada."))
+            return redirect('call_for_match', call.match.public_id)
         call.draft_mode = False
-        call.save()
         if is_past_match(call.match) and not already_sent and not resend:
             messages.success(request, _("Convocatoria cerrada. La fecha del enfrentamiento ya pasó: no se ha enviado el informe "
                                         "por email, pero puedes descargarlo desde esta página."))
@@ -1441,6 +1444,10 @@ def do_close_match(request, match):
 
     # Todo o nada: si algo falla a medias, el acta sigue abierta y se puede volver a cerrar.
     with transaction.atomic():
+        # Con el enfrentamiento bloqueado se vuelve a comprobar que sigue abierto: dos cierres a la vez no suman ni avisan dos veces.
+        if not Match.objects.select_for_update().get(pk=match.pk).draft_mode:
+            messages.error(request, _("El acta de este enfrentamiento ya está cerrada."))
+            return False
         # Dar por finalizado los juegos
         for game in games:
             game.draft_mode = False
