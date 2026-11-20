@@ -7,6 +7,10 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 - `GET /api/v1/home` devuelve la situación de la cuenta (`ok`, `no_team` o `suspended`), sus equipos con el rol en cada uno y los datos del saludo. Es la base del Inicio nativo de la app; las tarjetas se irán añadiendo a esta respuesta. Solo lectura, sin cambios en la web.
 
+## 20/11/2026 · API de la app iOS: avisos y acciones en el Inicio
+
+- `GET /api/v1/home` incluye `notices` (email sin confirmar, invitaciones de ficha, bienvenida de gestor y «Añade un gestor»). Nuevas acciones con token: reenviar el email de confirmación, aceptar o rechazar una invitación de ficha, cerrar la bienvenida o el aviso del gestor y responder si se puede jugar un enfrentamiento. Mismas reglas que la web; sin cambios en ella.
+
 ## 20/11/2026 · API de la app iOS: «Mi forma» en el Inicio
 
 - `GET /api/v1/home` incluye `my_form` (balance, últimos partidos, racha, convocatorias y puntos SNP con su gráfica, con los mismos datos que la web) y `POST /api/v1/home/my-form` oculta o vuelve a mostrar la tarjeta. Sin cambios en la web.

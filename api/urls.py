@@ -2,7 +2,7 @@
 from django.urls import re_path
 
 from . import (views, views_account, views_apple, views_auth, views_club, views_devices, views_google, views_home,
-               views_invitations)
+               views_invitations, views_notices)
 
 urlpatterns = [
     re_path(r"^auth/login/?$", views_auth.LoginView.as_view(), name="api_login"),
@@ -20,6 +20,13 @@ urlpatterns = [
     re_path(r"^auth/web-session/?$", views_auth.WebSessionView.as_view(), name="api_web_session"),
     re_path(r"^account/delete/?$", views_account.DeleteAccountView.as_view(), name="api_account_delete"),
     re_path(r"^devices/?$", views_devices.DevicesView.as_view(), name="api_devices"),
+    re_path(r"^account/resend-verification/?$", views_notices.ResendVerificationView.as_view(),
+            name="api_resend_verification"),
+    re_path(r"^copy-invitations/(?P<token>[\w-]+)/?$", views_notices.CopyInvitationView.as_view(),
+            name="api_copy_invitation"),
+    re_path(r"^matches/(?P<match_id>[\w-]+)/availability/?$", views_notices.AvailabilityView.as_view(),
+            name="api_match_availability"),
+    re_path(r"^home/dismiss/?$", views_notices.DismissNoticeView.as_view(), name="api_home_dismiss"),
     re_path(r"^home/my-form/?$", views_home.MyFormView.as_view(), name="api_home_my_form"),
     re_path(r"^home/?$", views_home.HomeView.as_view(), name="api_home"),
     re_path(r"^ping/?$", views.PingView.as_view(), name="api_ping"),

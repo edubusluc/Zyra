@@ -8,11 +8,13 @@ from django.utils.translation import gettext as _
 from call import availability as availability_logic
 from call.models import Call
 from core.competitions import COMPETITIONS
+from core import email_verification
 from core.models import Membership, UserPreference
 from core.templatetags.zyra_format import date_short
 from data_analyse import my_form as my_form_stats
 from match.models import Game, Match
 from match.phase import CLOSE_MATCH, CREATE_CALL, CREATE_GAMES, ENTER_RESULTS, phases_for, player_status
+from players import copy as player_copy
 from players.models import Player, current_season
 
 from .fields import invalid
@@ -220,11 +222,41 @@ def _todos(user, memberships, upcoming, today):
     open_matches = Match.objects.filter(club__in=clubs, draft_mode=True, start_date__gte=today,
                                         start_date__lte=horizon).select_related("local", "visiting", "club")
     for m, _player in availability_logic.unanswered(list(players.values()), list(open_matches.order_by("start_date", "id"))):
-        todos.append({"kind": "availability", "team_id": str(m.club.public_id),
+        todos.append({"kind": "availability", "team_id": str(m.club.public_id), "match_id": str(m.public_id),
                       "web_path": reverse("call_for_match", args=[m.public_id]),
                       "text": _("Responde si puedes jugar: %(rival)s, %(date)s") % {
                           "rival": m.rival_label, "date": date_short(m.start_date)}})
     return todos
+
+
+def _notices(user, memberships):
+    """
+    Avisos del Inicio, en el orden de la web: email sin confirmar, invitaciones de ficha, bienvenida de gestor y
+    «Añade un gestor». Cada uno con ``kind`` y sus datos; las acciones son ``api/views_notices.py``.
+    """
+    out = []
+    if user.email and user.has_usable_password() and not email_verification.is_verified(user):
+        out.append({"kind": "email", "email": user.email})
+    for inv in player_copy.pending_for(user):
+        inviter = inv.created_by
+        out.append({
+            "kind": "copy_invitation", "token": inv.token,
+            "club": {"name": inv.club.name, "competition": inv.club.competition,
+                     "competition_name": inv.club.rules.name},
+            "invited_by": (inviter.get_full_name().strip() or inviter.get_username()) if inviter else None,
+            "player_name": inv.player.full_name,
+            "returning": inv.player.past_user_id == user.id,
+        })
+    for m in memberships:
+        if m.is_manager and m.manager_welcome_pending:
+            out.append({"kind": "manager_welcome", "team_id": str(m.club.public_id), "team_name": m.club.name,
+                        "has_snp": bool(m.club.rules.has_snp)})
+    if UserPreference.manager_tip_pending(user):
+        for m in memberships:
+            if m.is_admin and not Membership.objects.filter(club=m.club, role=Membership.MANAGER).exists():
+                out.append({"kind": "manager_tip", "team_id": str(m.club.public_id), "team_name": m.club.name})
+                break
+    return out
 
 
 def _snp_card(snp):
@@ -295,7 +327,7 @@ class HomeView(ApiView):
     ``GET /api/v1/home``: base del Inicio nativo. Dice en qué situación está la cuenta (``state``: ``ok``,
     ``no_team`` o ``suspended``), sus equipos con el rol en cada uno, los datos para el saludo y ``upcoming``, el
     carrusel «Próximo enfrentamiento», ``pending`` («Pendiente» de quien gestiona: filas, lejanos y vencidos),
-    ``todos`` («Tus pendientes» del jugador) y ``pending_count`` (el contador de la campana) y ``my_form`` («Mi forma»). Las demás tarjetas del Inicio (pendientes, «Mi forma», avisos…) se irán
+    ``todos`` («Tus pendientes» del jugador) y ``pending_count`` (el contador de la campana) ``my_form`` («Mi forma») y ``notices`` (avisos: email, invitaciones de ficha, gestor). Las demás tarjetas del Inicio (pendientes, «Mi forma», avisos…) se irán
     añadiendo a esta respuesta.
     """
 
@@ -325,6 +357,7 @@ class HomeView(ApiView):
                         "page_size": PENDING_PAGE_SIZE},
             "todos": todos,
             "my_form": _my_form(user, active, today),
+            "notices": _notices(user, active),
             "pending_count": len(rows) + len(todos),
             "has_player": players.filter(user=user, club__in=[m.club_id for m in active]).exists(),
             "has_history": players.exists(),
