@@ -6,6 +6,7 @@ que las reglas son las mismas. Los errores salen por campo (``fields``) para que
 import base64
 import binascii
 
+from allauth.account.adapter import get_adapter
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import IntegrityError, transaction
 from django.urls import reverse
@@ -82,6 +83,14 @@ def _crest(team):
     return SimpleUploadedFile("crest.jpg", content, content_type="image/jpeg")
 
 
+def _with_username(account):
+    """``account`` con un usuario libre generado del email si no trae ninguno (como ``/auth/register``)."""
+    if not account or str(account.get("username") or "").strip():
+        return account
+    local_part = str(account.get("email") or "").strip().split("@")[0]
+    return {**account, "username": get_adapter().generate_unique_username([local_part, "jugador"])}
+
+
 def _collect(errors, prefix, form, rename=None):
     """Añade a ``errors`` los de ``form`` como ``<prefijo>.<campo>`` (``rename`` cambia el nombre de algún campo)."""
     for field, messages in form.errors.items():
@@ -98,11 +107,11 @@ class RegisterClubView(ApiView):
         """
         Cuerpo ``{"team": {...}, "captain": {...}, "account": {...} | "google": {...}, "device_name"?}``:
 
-        - ``team``: ``name``, ``location``, ``competition``, ``gender``, ``country``, ``division``?, ``default_time``?
+        - ``team``: ``name``, ``location``? (opcional), ``competition``, ``gender``, ``country``, ``division``?, ``default_time``?
           (HH:MM) y ``crest``? (imagen en base64).
         - ``captain``: ``mode`` ``manual`` (con ``name`` y ``last_name``) o ``snp`` (con ``snp_username`` y
           ``snp_password``; solo en competiciones con SNP).
-        - ``account``: ``username``, ``email``, ``password``; o ``google``: ``id_token`` y ``nonce`` para entrar con
+        - ``account``: ``username``? (si falta se genera del email), ``email``, ``password``; o ``google``: ``id_token`` y ``nonce`` para entrar con
           Google (cuenta nueva o existente).
 
         400 ``validation_error`` con ``fields``; 409 ``space_taken`` si la cuenta ya tiene equipo en esa competición;
@@ -127,12 +136,15 @@ class RegisterClubView(ApiView):
                               ("name", "location", "competition", "gender", "country", "division", "default_time")},
                              {"photo": photo} if photo else None, competitions=COMPETITIONS.values())
         club_form.uploader = None
+        # La app no pide la sede en el alta (se rellena después): en la API es opcional; la web sigue exigiéndola.
+        club_form.fields["location"].required = False
         use_snp = club_form.rules.has_snp and captain.get("mode") == CaptainSnpForm.SNP
         snp_form = CaptainSnpForm({"snp-mode": CaptainSnpForm.SNP if use_snp else CaptainSnpForm.MANUAL,
                                    "snp-username": captain.get("snp_username", ""),
                                    "snp-password": captain.get("snp_password", "")}, prefix="snp")
         player_form = CaptainPlayerForm({"player-name": captain.get("name", ""),
                                          "player-last_name": captain.get("last_name", "")}, prefix="player")
+        account = _with_username(account)
         user_form = SignUpForm({"username": account.get("username", ""), "email": account.get("email", ""),
                                 "password1": account.get("password", ""),
                                 "password2": account.get("password", "")}) if account else None

@@ -95,6 +95,18 @@ class RegisterTests(ClubTestCase):
         self.assertTrue(data["token"])
         self.assertTrue(len(mail.outbox) >= 1)
 
+    def test_location_and_username_are_optional(self):
+        """Sin sede ni usuario el alta sale: la sede queda vacía y el usuario se genera del email."""
+        data = body(team={"location": ""}, account={"email": "ana.ruiz@example.com", "password": "Clave-Segura-123"})
+        del data["account"]["username"]
+        response = self.post(data)
+        self.assertEqual(response.status_code, 201)
+        club = Club.objects.get(name="Club Norte")
+        self.assertEqual(club.own_team.location, "")
+        user = User.objects.get(email="ana.ruiz@example.com")
+        self.assertEqual(response.json()["user"]["username"], user.username)
+        self.assertTrue(user.username.startswith("ana"))
+
     def test_lapi_does_not_ask_division_country(self):
         """LAPI exige su división; sin ella, error en ``team.division``."""
         response = self.post(body(team={"competition": "lapi", "division": ""}))
