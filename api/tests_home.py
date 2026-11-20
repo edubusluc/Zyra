@@ -206,3 +206,78 @@ class HomeUpcomingTests(TestCase):
         sooner = Match.objects.create(club=lapi, local=lapi.own_team, visiting=rival, start_date=self.today)
         self.assertEqual([i["id"] for i in self.upcoming()], [str(sooner.public_id), str(later.public_id)])
         self.assertEqual(self.upcoming()[0]["competition"], "lapi")
+
+
+class HomePendingTests(TestCase):
+    """``pending``, ``todos`` y ``pending_count``: «Pendiente» del capitán y «Tus pendientes» del jugador."""
+
+    def setUp(self):
+        """Capitán con club, un rival y un jugador con cuenta."""
+        cache.clear()
+        caches["ratelimit"].clear()
+        self.captain = User.objects.create_user("capi", "capi@example.com", "Clave-Segura-123")
+        self.club = create_club("Club Norte", "Gijón", self.captain, player_name="Ana", player_last_name="Ruiz")
+        self.rival = Team.objects.create(club=self.club, name="Club Este", location="X", in_group=True)
+        self.today = datetime.date.today()
+        self.member = User.objects.create_user("marta", "marta@example.com", "Clave-Segura-123")
+        Membership.objects.create(user=self.member, club=self.club, role=Membership.MEMBER)
+        _, self.captain_token = issue_token(self.captain, "iPhone")
+        _, self.member_token = issue_token(self.member, "iPhone")
+
+    def match(self, days):
+        """Enfrentamiento abierto a ``days`` días de hoy (negativo: vencido)."""
+        return Match.objects.create(club=self.club, local=self.club.own_team, visiting=self.rival,
+                                    start_date=self.today + datetime.timedelta(days=days))
+
+    def home(self, token):
+        """Respuesta del Inicio con ese token."""
+        return self.client.get(reverse("api_home"), HTTP_AUTHORIZATION=f"Bearer {token}").json()
+
+    def test_all_clear(self):
+        """Capitán sin nada pendiente: filas y contador a cero («Todo al día»)."""
+        data = self.home(self.captain_token)
+        self.assertEqual(data["pending"], {"rows": [], "far": 0, "overdue": 0, "page_size": 3})
+        self.assertEqual((data["todos"], data["pending_count"]), ([], 0))
+
+    def test_captain_rows(self):
+        """Filas con fase y destino directo; el vencido va marcado y el lejano solo se cuenta."""
+        late = self.match(-3)
+        soon = self.match(2)
+        self.match(40)
+        data = self.home(self.captain_token)
+        rows = data["pending"]["rows"]
+        self.assertEqual([r["match_id"] for r in rows], [str(late.public_id), str(soon.public_id)])
+        self.assertEqual((data["pending"]["far"], data["pending"]["overdue"], data["pending_count"]), (1, 1, 3))
+        # El capitán también juega: su convocatoria sin responder suma a la campana, como en la web.
+        self.assertEqual([t["kind"] for t in data["todos"]], ["availability"])
+        self.assertEqual((rows[0]["overdue"], rows[1]["overdue"]), (True, False))
+        self.assertEqual(rows[1]["rival"], "Club Este")
+        self.assertEqual((rows[1]["action"], rows[1]["status_label"], rows[1]["action_label"]),
+                         ("create_call", "Por convocar", "Convocar"))
+        self.assertEqual(rows[1]["web_path"], reverse("create_call", args=[soon.public_id]))
+
+    def test_member_has_no_rows(self):
+        """Quien no gestiona no ve «Pendiente», sino «Tus pendientes»."""
+        self.match(2)
+        data = self.home(self.member_token)
+        self.assertEqual(data["pending"]["rows"], [])
+        self.assertEqual([t["kind"] for t in data["todos"]], ["link"])
+        self.assertEqual(data["pending_count"], 1)
+
+    def test_member_todos(self):
+        """Foto y convocatoria sin responder; al responder, desaparece."""
+        player = Player.objects.create(club=self.club, name="Marta", last_name="Gil", user=self.member, in_team=True)
+        m = self.match(3)
+        todos = self.home(self.member_token)["todos"]
+        self.assertEqual([t["kind"] for t in todos], ["photo", "availability"])
+        self.assertTrue(todos[1]["text"].startswith("Responde si puedes jugar: Club Este"))
+        self.assertEqual(todos[1]["web_path"], reverse("call_for_match", args=[m.public_id]))
+        Call.objects.create(match=m).players.add(player)
+        self.assertEqual([t["kind"] for t in self.home(self.member_token)["todos"]], ["photo"])
+
+    def test_availability_only_within_14_days(self):
+        """Una convocatoria a más de 14 días aún no pide respuesta."""
+        Player.objects.create(club=self.club, name="Marta", last_name="Gil", user=self.member, in_team=True,
+                              photo="x.jpg")
+        self.match(30)
+        self.assertEqual(self.home(self.member_token)["todos"], [])
