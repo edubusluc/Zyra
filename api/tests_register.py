@@ -31,6 +31,27 @@ class RegisterAccountTests(TestCase):
         self.assertEqual(data["user"], {"username": "marta", "email": "marta@example.com"})
         self.assertFalse(Membership.objects.filter(user__username="marta").exists())
 
+    def test_username_is_optional_and_generated_from_email(self):
+        """Sin usuario (o vacío) se crea uno libre a partir del email; con dos emails iguales antes de la @ no chocan."""
+        import json
+        first = self.client.post(reverse("api_register"), json.dumps(
+            {"email": "marta.ruiz@example.com", "password": "Clave-Segura-123"}), content_type="application/json")
+        self.assertEqual(first.status_code, 201)
+        first_name = first.json()["user"]["username"]
+        self.assertTrue(first_name.startswith("marta"))
+        second = self.register(username="", email="marta.ruiz@otro.com")
+        self.assertEqual(second.status_code, 201)
+        second_name = second.json()["user"]["username"]
+        self.assertNotEqual(first_name.lower(), second_name.lower())
+        self.assertTrue(second_name.startswith("marta"))
+        login = self.client.post(reverse("api_login"), json.dumps(
+            {"login": "marta.ruiz@example.com", "password": "Clave-Segura-123"}), content_type="application/json")
+        self.assertEqual(login.status_code, 201)
+
+    def test_explicit_username_still_wins(self):
+        """Con usuario en el cuerpo se usa tal cual: la web y las apps antiguas no cambian."""
+        self.assertEqual(self.register(username="capitana_norte").json()["user"]["username"], "capitana_norte")
+
     def test_validation_errors_come_by_field(self):
         """Usuario repetido, email malo y contraseña floja salen como ``account.<campo>``."""
         self.register()

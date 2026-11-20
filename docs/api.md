@@ -29,6 +29,7 @@ va autenticada con un **token de dispositivo**. El código está en `api/`; las 
 | `GET /home` | no | Datos del Inicio nativo: situación de la cuenta, equipos y rol en cada uno |
 | `GET /ping` | no | Comprueba que el token sirve, cuándo caduca y a qué equipo pertenece |
 | `POST /auth/login` | sí | Usuario o email y contraseña → token |
+| `POST /auth/register` | sí | Cuenta de jugador sin club (email y contraseña; el usuario es opcional) → token |
 | `POST /auth/apple` | sí | `identity_token` de Apple → token (desactivado hasta configurarlo) |
 | `POST /auth/google` | sí | `id_token` de Google → token (desactivado hasta configurarlo) |
 | `GET /club/options` | sí | Competiciones, divisiones, países y categorías del alta de club |
@@ -99,6 +100,17 @@ Respuesta **201**:
 
 - `401 invalid_credentials`: mismo mensaje para cuenta inexistente, contraseña mala o cuenta desactivada.
 - `429 login_locked`: el freno de contraseñas es el mismo que el de la web (5 fallos por IP y usuario, 30 por cuenta, 15 min); `Retry-After` indica los segundos. Los fallos en la web y en la app se suman.
+
+### `POST /auth/register`
+
+Crea una cuenta sin club: la de un jugador que espera la invitación de su capitán. Cuerpo: `{"email": "ana@example.com", "password": "…", "username": "ana", "device_name": "iPhone de Ana"}`. `username` y `device_name` son opcionales.
+
+Sin `username` (o vacío) el servidor genera uno libre a partir del email (la parte anterior a la `@`, con un número si ya existe). La app no lo pide: se cambia en el perfil y el acceso acepta usuario o email. Con `username` se usa tal cual, con las reglas de la web.
+
+Respuesta **201** igual que `/auth/login`, con `team` a `null`; se envía el correo de confirmación.
+
+- `400 validation_error` con `fields` (`account.email`, `account.password`, `account.username`) si algún dato no cumple las reglas de la web.
+- `429 rate_limited`: mismo límite de altas por hora que la web.
 
 ### `POST /auth/apple`
 
