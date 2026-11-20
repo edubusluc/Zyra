@@ -2,7 +2,7 @@
 from django.urls import re_path
 
 from . import (views, views_account, views_apple, views_auth, views_club, views_devices, views_google, views_home,
-               views_invitations, views_notices)
+               views_invitations, views_notices, views_setup)
 
 urlpatterns = [
     re_path(r"^auth/login/?$", views_auth.LoginView.as_view(), name="api_login"),
@@ -27,6 +27,11 @@ urlpatterns = [
     re_path(r"^matches/(?P<match_id>[\w-]+)/availability/?$", views_notices.AvailabilityView.as_view(),
             name="api_match_availability"),
     re_path(r"^home/dismiss/?$", views_notices.DismissNoticeView.as_view(), name="api_home_dismiss"),
+    re_path(r"^home/setup/onboarding/dismiss/?$", views_setup.DismissOnboardingView.as_view(),
+            name="api_setup_onboarding_dismiss"),
+    re_path(r"^home/setup/season-prep/?$", views_setup.SeasonPrepView.as_view(), name="api_setup_season_prep"),
+    re_path(r"^home/setup/snp-sync/?$", views_setup.SnpSyncView.as_view(), name="api_setup_snp_sync"),
+    re_path(r"^home/setup/snp-request/?$", views_setup.SnpUpdateRequestView.as_view(), name="api_setup_snp_request"),
     re_path(r"^home/my-form/?$", views_home.MyFormView.as_view(), name="api_home_my_form"),
     re_path(r"^home/?$", views_home.HomeView.as_view(), name="api_home"),
     re_path(r"^ping/?$", views.PingView.as_view(), name="api_ping"),

@@ -19,6 +19,7 @@ from players.models import Player, current_season
 
 from .fields import invalid
 from .responses import json_ok
+from .views_setup import setup_blocks
 from .views_base import ApiView
 
 
@@ -381,6 +382,7 @@ class HomeView(ApiView):
             "todos": todos,
             "my_form": _my_form(user, active, today),
             "notices": _notices(user, active),
+            "setup": setup_blocks(active),
             "pending_count": len(rows) + len(todos),
             "has_player": players.filter(user=user, club__in=[m.club_id for m in active]).exists(),
             "has_history": players.exists(),
