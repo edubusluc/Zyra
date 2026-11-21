@@ -738,6 +738,10 @@ def edit_call(request, call_id):
 
     if call.match.draft_mode == False:
         return redirect('call_for_match', call.match.public_id)
+    elif match_phase.has_results(call.match):
+        messages.error(request, _("Ya hay resultados guardados: la convocatoria no se puede cambiar. "
+                                  "Borra antes los resultados si necesitas corregirla."))
+        return redirect('call_for_match', call.match.public_id)
     else:
         if request.method == "POST":
             selected_players_ids = list(club_players(request, request.POST.getlist("players"), keep=selected_players)
@@ -1037,6 +1041,7 @@ def _ficha_page(request, match, history=False):
         "match_id": match.public_id,
         "game_for_match": games,
         "games_count": len(games),
+        "results_locked": any(g.result for g in games),
         "match": match,
         "convocados": convocados,
         "players_count": len(convocados),
@@ -1273,6 +1278,29 @@ def edit_result(request, game_id):
     values = {f: '' if getattr(result, f) is None else getattr(result, f) for f in SET_FIELDS}
     return render(request, "edit_result.html", {"game": game, "result": result, "values": values})
 
+
+
+@spaces.follow_game
+@club_manager_required
+@require_POST
+def delete_result(request, game_id):
+    """Borra el resultado de un partido (solo POST, capitán o gestor, con el acta abierta).
+
+    Es la salida del bloqueo por resultados: con algún resultado guardado la convocatoria y las
+    parejas de los partidos con resultado no se pueden cambiar; borrando el resultado vuelven a poder.
+    """
+    game = get_object_or_404(Game.objects.select_related('match'), public_id=game_id, match__club=request.club)
+    if not game.match.draft_mode:
+        messages.error(request, _("No se pueden borrar los resultados de un enfrentamiento ya confirmado"))
+    elif not game.results.exists():
+        messages.info(request, _("Este partido no tiene resultado."))
+    else:
+        with transaction.atomic():
+            game.results.all().delete()
+            game.winner = None
+            game.save(update_fields=['winner'])
+        messages.success(request, _("Resultado del partido %(n)s borrado.") % {"n": game.n_game})
+    return redirect(reverse('call_for_match', args=[game.match.public_id]) + f"#partido-{game.n_game}")
 
 
 RESULT_FIELDS = SET_FIELDS

@@ -7,7 +7,7 @@
 <li{% if focus %} class="is-focus"{% endif %}>
 {% if focus %}<div class="z-menu-focus">{% endif %}
   {% firstof "" as card_url %}
-  {% if can_manage %}{% if forloop.counter == 1 %}{% if not call_for_match %}{% url 'create_call' match_id as card_url %}{% elif match.draft_mode %}{% url 'edit_call' call_for_match.public_id as card_url %}{% endif %}
+  {% if can_manage %}{% if forloop.counter == 1 %}{% if not call_for_match %}{% url 'create_call' match_id as card_url %}{% elif match.draft_mode and not results_locked %}{% url 'edit_call' call_for_match.public_id as card_url %}{% endif %}
   {% elif forloop.counter == 2 %}{% if games_count %}{% url 'edit_games_match' match.public_id as card_url %}{% elif phase.action == 'create_games' %}{% url 'create_game' match_id as card_url %}{% endif %}
   {% elif forloop.counter == 3 %}{% if games_count %}{% url 'enter_results' match.public_id as card_url %}{% endif %}{% endif %}{% endif %}
   {% if can_manage and forloop.counter == 1 and phase.action == 'close_call' %}{% include 'includes/ficha_close_call.html' with card=True figure=c.figure %}

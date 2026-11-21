@@ -109,7 +109,7 @@
     <h2 class="z-finals-rule-title" id="finals-rule-title"><i class="fa-solid fa-flag" aria-hidden="true"></i> {% translate "Reglamento" %}</h2>
     <p>{% blocktranslate trimmed count n=finals_call_short|length with min=finals_minimum %}{{ n }} apuntado no ha jugado {{ min }} enfrentamientos de liga con el equipo esta temporada:{% plural %}{{ n }} apuntados no han jugado {{ min }} enfrentamientos de liga con el equipo esta temporada:{% endblocktranslate %}
        {% for player, played in finals_call_short %}<strong>{{ player.short_name }}</strong> ({{ played }}){% if not forloop.last %}, {% endif %}{% endfor %}.
-       {% if phase.action == 'close_call' %}<a href="{% url 'edit_call' call_for_match.public_id %}">{% translate "Revisar convocatoria" %}</a>{% endif %}</p>
+       {% if phase.action == 'close_call' and not results_locked %}<a href="{% url 'edit_call' call_for_match.public_id %}">{% translate "Revisar convocatoria" %}</a>{% endif %}</p>
 </section>
 {% endif %}
 
@@ -215,6 +215,7 @@
                 {% if can_manage %}
                 {% if r and match.draft_mode %}
                 <a href="{% url 'edit_result' g.public_id %}" class="z-edit position-static" aria-label="{% translate 'Editar resultado' %}"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
+                <form method="post" action="{% url 'delete_result' g.public_id %}" class="d-inline" data-confirm-title="{% translate 'Borrar el resultado' %}" data-confirm-action="{% translate 'Borrar' %}" data-loading-text="{% translate 'Borrando…' %}" data-confirm-danger data-confirm="{% translate 'Se borrará el resultado de este partido. Podrás volver a ponerlo o cambiar la convocatoria y las parejas.' %}">{% csrf_token %}<button type="submit" class="z-edit position-static" aria-label="{% translate 'Borrar resultado' %}"><i class="fa-solid fa-trash" aria-hidden="true"></i></button></form>
                 {% elif g.no_show and match.draft_mode %}
                 <a href="{% url 'enter_results' match.public_id %}#partido-{{ g.n_game }}" class="z-edit position-static" aria-label="{% translate 'Editar resultado' %}"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
                 {% elif not r and not g.no_show %}

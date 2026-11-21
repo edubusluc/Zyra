@@ -1,0 +1,73 @@
+"""Con algún resultado guardado, la convocatoria y las parejas con resultado no se tocan; «Borrar resultado» las libera."""
+import json
+
+from django.urls import reverse
+
+from call.models import Call
+from match import phase
+from match.models import Game, Result
+from match.tests_ux import UxBase
+
+
+class ResultsLockTests(UxBase):
+    def setUp(self):
+        super().setUp()
+        self.m = self.match()
+        self.call = self.closed_call(self.m)
+        self.games = self.lineup(self.m)
+        self.client.post(reverse("create_result", args=[self.games[0].public_id]), {
+            "set1_local": "6", "set1_visiting": "2", "set2_local": "6", "set2_visiting": "3"})
+
+    def _lineup(self, order):
+        """Alineación del formulario: el partido k-ésimo (por su id) lleva la pareja ``order[k-1]``."""
+        return json.dumps([{"gameId": self.games[k].id, "player1Id": self.players[2 * i].id,
+                            "player2Id": self.players[2 * i + 1].id} for k, i in enumerate(order)])
+
+    def test_has_results(self):
+        self.assertTrue(phase.has_results(self.m))
+        other = self.match()
+        self.assertFalse(phase.has_results(other))
+
+    def test_edit_call_is_refused_once_there_is_a_result(self):
+        url = reverse("edit_call", args=[self.call.public_id])
+        response = self.client.post(url, {"players": [p.id for p in self.players]})
+        self.assertRedirects(response, reverse("call_for_match", args=[self.m.public_id]), fetch_redirect_response=False)
+        self.assertEqual(self.call.players.count(), 12)
+        self.assertRedirects(self.client.get(url), reverse("call_for_match", args=[self.m.public_id]),
+                             fetch_redirect_response=False)
+
+    def test_edit_call_links_are_hidden(self):
+        page = self.client.get(reverse("call_for_match", args=[self.m.public_id]))
+        self.assertNotContains(page, reverse("edit_call", args=[self.call.public_id]))
+
+    def test_cannot_move_a_pair_with_result(self):
+        before = [(g.n_game, g.player_1_local_id) for g in self.m.games.order_by("n_game")]
+        self.client.post(reverse("edit_games_match", args=[self.m.public_id]), {"ordered_games": self._lineup([1, 0, 2, 3, 4])})
+        after = [(g.n_game, g.player_1_local_id) for g in self.m.games.order_by("n_game")]
+        self.assertEqual(before, after)
+
+    def test_can_still_change_pairs_without_result(self):
+        # Los partidos 4 y 5 (sin resultado) intercambian parejas; el 1 se queda igual.
+        self.client.post(reverse("edit_games_match", args=[self.m.public_id]), {"ordered_games": self._lineup([0, 1, 2, 4, 3])})
+        game4 = self.m.games.get(n_game=4)
+        self.assertEqual(game4.player_1_local_id, self.players[8].id)
+
+    def test_delete_call_refused_with_pairs(self):
+        self.client.post(reverse("delete_call", args=[self.m.public_id]))
+        self.assertTrue(Call.objects.filter(match=self.m).exists())
+
+    def test_delete_result_frees_the_call(self):
+        game = self.games[0]
+        self.client.post(reverse("delete_result", args=[game.public_id]))
+        self.assertFalse(Result.objects.filter(game=game).exists())
+        game.refresh_from_db()
+        self.assertIsNone(game.winner)
+        self.assertEqual(self.client.get(reverse("edit_call", args=[self.call.public_id])).status_code, 200)
+
+    def test_delete_result_requires_post_and_open_acta(self):
+        url = reverse("delete_result", args=[self.games[0].public_id])
+        self.assertEqual(self.client.get(url).status_code, 405)
+        self.m.draft_mode = False
+        self.m.save()
+        self.client.post(url)
+        self.assertTrue(Result.objects.filter(game=self.games[0]).exists())

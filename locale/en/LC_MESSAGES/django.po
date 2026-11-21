@@ -17156,3 +17156,45 @@ msgstr "Your answer is pending"
 #: match/templates/includes/stage_me.html
 msgid "El capitán te ha apuntado"
 msgstr "The captain has signed you up"
+
+#: match/views.py
+msgid "Ya hay resultados guardados: la convocatoria no se puede cambiar. Borra antes los resultados si necesitas corregirla."
+msgstr "There are saved results: the call-up can't be changed. Delete the results first if you need to correct it."
+
+#: call/views.py
+msgid "Ya hay parejas alineadas: no se puede borrar la convocatoria."
+msgstr "The pairs are already set: the call-up can't be deleted."
+
+#: match/views.py
+msgid "No se pueden borrar los resultados de un enfrentamiento ya confirmado"
+msgstr "Results can't be deleted from a confirmed match"
+
+#: match/views.py
+msgid "Este partido no tiene resultado."
+msgstr "This game has no result."
+
+#: match/views.py
+#, python-format
+msgid "Resultado del partido %(n)s borrado."
+msgstr "Result of game %(n)s deleted."
+
+#: match/lineup.py
+#, python-format
+msgid "El partido %(n)s ya tiene resultado: no se pueden cambiar su pareja ni su orden. Borra antes su resultado."
+msgstr "Game %(n)s already has a result: its pair and order can't be changed. Delete its result first."
+
+#: match/templates/call_for_match.html
+msgid "Borrar el resultado"
+msgstr "Delete the result"
+
+#: match/templates/call_for_match.html
+msgid "Se borrará el resultado de este partido. Podrás volver a ponerlo o cambiar la convocatoria y las parejas."
+msgstr "This game's result will be deleted. You will be able to enter it again or change the call-up and the pairs."
+
+#: match/templates/call_for_match.html
+msgid "Borrar resultado"
+msgstr "Delete result"
+
+#: match/templates/call_for_match.html
+msgid "Borrando…"
+msgstr "Deleting…"

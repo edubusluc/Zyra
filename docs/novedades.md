@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 22/11/2026 · Con resultados guardados no se cambia la convocatoria ni las parejas con resultado
+
+- En cuanto un partido tiene resultado, la convocatoria deja de poder editarse y las parejas de los partidos con resultado no se pueden cambiar ni reordenar (sus sets irían a otra pareja). Los partidos sin resultado siguen editables. No se puede borrar la convocatoria con parejas alineadas.
+- Nuevo botón «Borrar resultado» (papelera) en cada partido de la ficha, con confirmación, para volver a poder corregir la convocatoria o las parejas.
+
 ## 21/11/2026 · El capitán decide si los jugadores ven la lista de convocados
 
 - En «Equipo» el capitán tiene el interruptor «Lista de convocados · Visible para los jugadores». Por defecto está apagado: los jugadores no ven nunca a los apuntados. Si se enciende, ven el listado final de convocados cuando se cierra la convocatoria.
