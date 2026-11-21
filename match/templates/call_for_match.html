@@ -55,8 +55,8 @@
 {% if not hide_phase_cards %}<ol class="z-status4{% if not can_manage %} z-status4--short{% endif %}" aria-label="{% translate 'Fases del enfrentamiento' %}">
     {# UX-020: quien no gestiona solo ve la convocatoria y el acta; las fases de gestión (parejas, resultados) no le sirven. #}
     {% for c in status_cards %}{% if can_manage or forloop.first or forloop.last %}
-    <li class="{% if c.state == 'done' %}is-done{% elif c.state == 'cur' %}is-cur{% endif %}"{% if c.state == 'cur' %} aria-current="step"{% endif %}>
-        <span class="z-status4-ic" aria-hidden="true">{% if c.state == 'done' %}&#10003;{% elif c.state == 'cur' %}!{% elif can_manage or forloop.first %}{{ forloop.counter }}{% else %}2{% endif %}</span>
+    <li class="{% if c.missed %}is-missed{% elif c.state == 'done' %}is-done{% elif c.state == 'cur' %}is-cur{% endif %}"{% if c.state == 'cur' %} aria-current="step"{% endif %}>
+        <span class="z-status4-ic" aria-hidden="true">{% if c.missed %}&#10007;{% elif c.state == 'done' %}&#10003;{% elif c.state == 'cur' %}!{% elif can_manage or forloop.first %}{{ forloop.counter }}{% else %}2{% endif %}</span>
         <b>{{ c.figure }}</b>
         <span class="z-status4-label">{{ c.label }}{% if c.state == 'done' %}<span class="visually-hidden"> ({% translate "hecho" %})</span>{% endif %}</span>
         <span class="z-status4-bar" aria-hidden="true"><i style="width: {{ c.pct|unlocalize }}%"></i></span>

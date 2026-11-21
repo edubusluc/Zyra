@@ -4714,3 +4714,9 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
   .st-squad-delta { margin-left: 0; flex-basis: 100%; }
 }
 .z-stage-hidden { margin: 0; color: var(--z-muted); font-size: var(--z-fs-sm); }
+.z-status4 .is-missed .z-status4-ic { color: var(--z-ink); background: var(--z-danger); }
+.z-status4 .is-missed .z-status4-label { color: var(--z-text); }
+@media (min-width: 0) {
+    .z-menu-card.is-missed { border-top-color: var(--z-danger); }
+    .z-menu-card.is-missed .z-menu-ic { color: var(--z-danger); }
+}

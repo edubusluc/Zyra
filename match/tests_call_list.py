@@ -131,3 +131,18 @@ class CallListVisibilityTests(UxBase):
         Call.objects.all().delete()
         self.call(False)
         self.assertContains(self.ficha(self.user), "Fases del enfrentamiento")
+
+    def test_closed_call_shows_a_check_if_called_and_a_red_cross_if_not(self):
+        from players.models import Player
+        call = self.call(True)
+        Player.objects.filter(id=self.players[10].id).update(user=self.member)
+        for stage in (True, False):
+            page = self.ficha(self.member, stage)
+            self.assertContains(page, "is-missed")
+            self.assertContains(page, "No convocado")
+        Player.objects.filter(id=self.players[10].id).update(user=None)
+        Player.objects.filter(id=self.players[0].id).update(user=self.member)
+        for stage in (True, False):
+            page = self.ficha(self.member, stage)
+            self.assertNotContains(page, "is-missed")
+            self.assertContains(page, "Estás convocado")

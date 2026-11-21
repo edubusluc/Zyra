@@ -829,11 +829,12 @@ def own_call_figure(my_status):
     return _("No convocado") if my_status["closed"] else _("Sin apuntar")
 
 
-def status_cards(phase, call_figure=None):
+def status_cards(phase, call_figure=None, missed=False):
     """
     Las cuatro tarjetas de estado de la ficha: ``[{"label", "figure", "pct", "state"}]`` con state «done»,
     «cur» o «». La convocatoria cuenta apuntados contra el mínimo; parejas y resultados, partidos contra
-    el total; el acta es «Cerrada» o «Abierta». ``call_figure`` sustituye el texto de la convocatoria.
+    el total; el acta es «Cerrada» o «Abierta». ``call_figure`` sustituye el texto de la convocatoria y ``missed`` marca la primera tarjeta
+    como «no convocado» (cruz roja en lugar del check).
     """
     total = phase.total_games or 1
     figures = [
@@ -846,7 +847,7 @@ def status_cards(phase, call_figure=None):
     if call_figure is not None:  # jugador sin acceso a la lista: sin contador, la barra solo dice si la fase está hecha
         figures[0] = (call_figure, 1 if phase.step >= 1 else 0)
     return [
-        {"label": label, "figure": figure, "pct": round(pct * 100),
+        {"label": label, "figure": figure, "pct": round(pct * 100), "missed": missed and i == 0,
          "state": "done" if i < phase.step else "cur" if i == phase.step else ""}
         for i, (label, (figure, pct)) in enumerate(zip(match_phase.STEPS, figures))
     ]
@@ -1046,7 +1047,8 @@ def _ficha_page(request, match, history=False):
                                  and not (not me and not history and not request.membership.can_manage)),
         "rosters": [{"players": [p for p in convocados if not p.is_sub], "is_subs": False},
                     {"players": [p for p in convocados if p.is_sub], "is_subs": True}] if show_names else [],
-        "status_cards": status_cards(phase, None if show_names else own_call_figure(my_status)),
+        "status_cards": status_cards(phase, None if show_names else own_call_figure(my_status),
+                                     missed=bool(not show_names and my_status and my_status["closed"] and not my_status["called"])),
         "kind": match_kind(match),
         "report_deliveries": list(call.report_deliveries.order_by("email")) if call else [],
         "phase": phase,
