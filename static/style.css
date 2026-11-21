@@ -4309,6 +4309,7 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
     .z-menu { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; gap: 10px; margin: 0 0 14px; padding: 0; list-style: none; }
     .z-menu--short { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     @media (min-width: 992px) { .z-menu { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+    @media (min-width: 992px) { .z-menu--short:not(.has-focus) { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
     @media (max-width: 991.98px) { .z-menu:not(.has-focus) > :last-child:nth-child(odd) { grid-column: 1 / -1; } }
     .z-menu > li { display: grid; min-width: 0; }
     .z-menu > li > form, .z-menu > li > .z-more { display: grid; min-width: 0; }
