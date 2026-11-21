@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from django.db.models import Count
 from django.utils.translation import gettext_lazy as _, ngettext
 
-from call.models import Call
+from call.models import Availability, Call
 from core.competitions import competition_for, get_competition
 from core.models import Club
 from .models import Game, Result
@@ -157,8 +157,9 @@ def phase_for(match):
 
 def player_status(player, call, games):
     """
-    Qué le toca a un jugador en un enfrentamiento: ``{"has_call", "called", "closed", "game",
-    "partner"}`` (la pareja y el partido solo existen cuando ya están alineadas). ``games`` son
+    Qué le toca a un jugador en un enfrentamiento: ``{"has_call", "answer", "called", "closed",
+    "game", "partner"}``. ``answer`` es lo que respondió el propio jugador (yes, no, maybe) mientras la
+    convocatoria está abierta, o vacío: que el capitán lo apuntara no es una respuesta suya. (La pareja y el partido solo existen cuando ya están alineadas). ``games`` son
     los partidos del enfrentamiento con sus jugadores cargados.
     """
     game = next((g for g in games if player.id in (
@@ -167,8 +168,12 @@ def player_status(player, call, games):
     if game:
         partner = next((p for p in (game.player_1_local, game.player_2_local, game.player_1_visiting,
                                     game.player_2_visiting) if p and p.id != player.id), None)
+    answer = ""
+    if call and call.draft_mode:  # convocatoria abierta: lo que dijo el propio jugador, no lo que apuntó el capitán
+        answer = Availability.objects.filter(match_id=call.match_id, player=player).values_list("answer", flat=True).first() or ""
     return {
         "has_call": bool(call),
+        "answer": answer,
         "called": bool(call and call.players.filter(id=player.id).exists()),
         "closed": bool(call and not call.draft_mode),
         "game": game,

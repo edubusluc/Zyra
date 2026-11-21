@@ -52,17 +52,17 @@
 {# Estado de cada fase: cifra y barra (match/phase.py). EST-039: con el acta cerrada el estado ya está junto al marcador. #}
 {% if match.draft_mode %}
 {% if stage_view %}{% include 'includes/action_cards.html' %}{% else %}
-<ol class="z-status4{% if not can_manage %} z-status4--short{% endif %}" aria-label="{% translate 'Fases del enfrentamiento' %}">
+{% if not hide_phase_cards %}<ol class="z-status4{% if not can_manage %} z-status4--short{% endif %}" aria-label="{% translate 'Fases del enfrentamiento' %}">
     {# UX-020: quien no gestiona solo ve la convocatoria y el acta; las fases de gestión (parejas, resultados) no le sirven. #}
     {% for c in status_cards %}{% if can_manage or forloop.first or forloop.last %}
-    <li class="{% if c.state == 'done' %}is-done{% elif c.state == 'cur' %}is-cur{% endif %}"{% if c.state == 'cur' %} aria-current="step"{% endif %}>
-        <span class="z-status4-ic" aria-hidden="true">{% if c.state == 'done' %}&#10003;{% elif c.state == 'cur' %}!{% elif can_manage or forloop.first %}{{ forloop.counter }}{% else %}2{% endif %}</span>
+    <li class="{% if c.missed %}is-missed{% elif c.state == 'done' %}is-done{% elif c.state == 'cur' %}is-cur{% endif %}"{% if c.state == 'cur' %} aria-current="step"{% endif %}>
+        <span class="z-status4-ic" aria-hidden="true">{% if c.missed %}&#10007;{% elif c.state == 'done' %}&#10003;{% elif c.state == 'cur' %}!{% elif can_manage or forloop.first %}{{ forloop.counter }}{% else %}2{% endif %}</span>
         <b>{{ c.figure }}</b>
         <span class="z-status4-label">{{ c.label }}{% if c.state == 'done' %}<span class="visually-hidden"> ({% translate "hecho" %})</span>{% endif %}</span>
         <span class="z-status4-bar" aria-hidden="true"><i style="width: {{ c.pct|unlocalize }}%"></i></span>
     </li>
     {% endif %}{% endfor %}
-</ol>
+</ol>{% endif %}
 {% endif %}
 {% endif %}
 
@@ -83,29 +83,26 @@
 {% if history_url and not history_view %}<p class="z-rival-history"><a href="{{ history_url }}"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> {% blocktranslate with rival=match.rival_label %}Historial contra {{ rival }}{% endblocktranslate %} <i class="fa-solid fa-chevron-right" aria-hidden="true"></i></a></p>{% endif %}
 {% endif %}
 
-{% if my_status and not match.no_show and not stage_view %}
+{% if my_status and not match.no_show and not stage_view %}{% if not my_status.has_call or my_status.closed or my_status.answer %}
 {# El jugador enlazado a esta cuenta ve si juega y con quién (H-06). #}
-<div class="z-mystatus {% if my_status.called %}is-in{% endif %}" role="status">
-    <i class="fa-solid {% if my_status.called %}fa-circle-check{% else %}fa-circle-info{% endif %}" aria-hidden="true"></i>
+<div class="z-mystatus {% if my_status.closed and my_status.called or not my_status.closed and my_status.answer == 'yes' %}is-in{% endif %}" role="status">
+    <i class="fa-solid {% if my_status.closed and my_status.called or not my_status.closed and my_status.answer == 'yes' %}fa-circle-check{% else %}fa-circle-info{% endif %}" aria-hidden="true"></i>
     <div>
         {% if not my_status.has_call %}
         <strong>{% translate "Todavía no hay convocatoria" %}</strong>
-        {% elif my_status.called and not my_status.closed %}
-        <strong>{% translate "Te has apuntado" %}</strong>
-        <span>{% if can_manage %}{% translate "La convocatoria sigue abierta: puede cambiar." %}{% else %}{% translate "Si cambia tu disponibilidad, avisa a tu capitán." %}{% endif %}</span>
+        {% elif not my_status.closed %}
+        <strong>{% if my_status.answer == 'yes' %}{% translate "Te has apuntado" %}{% elif my_status.answer == 'no' %}{% translate "Has dicho que no" %}{% else %}{% translate "Tu respuesta está pendiente" %}{% endif %}</strong>
+        <span>{% translate "Si cambia tu disponibilidad, avisa a tu capitán." %}</span>
         {% elif my_status.called %}
         <strong>{% translate "Estás convocado" %}</strong>
         {% if my_status.game %}<span>{% blocktranslate with n=my_status.game.n_game pts=my_status.game.score|snp_points:"" %}Partido {{ n }} · {{ pts }} pts{% endblocktranslate %}{% if my_status.partner %} · {% blocktranslate with name=my_status.partner.full_name %}con {{ name }}{% endblocktranslate %}{% endif %}</span>
         {% elif my_status.closed %}<span>{% translate "Las parejas aún no están decididas." %}</span>{% endif %}
-        {% elif not my_status.closed %}
-        <strong>{% translate "Todavía no te has apuntado" %}</strong>
-        <span>{% if can_manage %}{% translate "La convocatoria sigue abierta: puede cambiar." %}{% else %}{% translate "Si cambia tu disponibilidad, avisa a tu capitán." %}{% endif %}</span>
         {% else %}
         <strong>{% translate "No estás convocado" %}</strong>
         {% endif %}
     </div>
 </div>
-{% endif %}
+{% endif %}{% endif %}
 
 {% if finals_call_short %}
 <section class="z-finals-rule" aria-labelledby="finals-rule-title">
@@ -161,11 +158,11 @@
 {% endif %}
 
 {% if not stage_view or not match.draft_mode %}
-{% if call_for_match %}
+{% if call_for_match and show_names %}
 <div class="z-call">
     <div class="z-call-head">
         <span>{% if call_for_match.draft_mode %}{% blocktranslate trimmed count n=players_count %}<b>{{ n }}</b> apuntado{% plural %}<b>{{ n }}</b> apuntados{% endblocktranslate %}{% else %}{% blocktranslate trimmed count n=players_count %}<b>{{ n }}</b> convocado{% plural %}<b>{{ n }}</b> convocados{% endblocktranslate %}{% endif %}</span>
-        {% if call_for_match.draft_mode %}<span class="z-badge">{% translate "Abierta" %}</span>{% else %}<span class="z-badge z-badge--lime"><i class="fa-solid fa-lock" aria-hidden="true"></i> {% translate "Cerrada" %}</span>{% endif %}
+        {% if call_for_match.draft_mode %}<span class="z-badge">{% translate "Abierta" %}</span>{% else %}<span class="z-badge z-badge--lime"><i class="fa-solid fa-lock" aria-hidden="true"></i> {% translate "Cerrada" %}</span>{% endif %}{% include 'includes/call_list_tip.html' %}
     </div>
     {% for roster in rosters %}{% if roster.players %}
     {% if roster.is_subs %}<button type="button" class="z-call-more" aria-controls="call-subs" aria-expanded="false"
@@ -196,7 +193,7 @@
     });
   });
 </script>
-{% else %}
+{% elif not call_for_match %}
 <div class="z-empty"><i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>{% if can_manage %}{% translate "Crea la convocatoria para elegir quién juega este enfrentamiento." %}{% else %}{% translate "Tu capitán aún no ha creado la convocatoria de este enfrentamiento." %}{% endif %}</div>
 {% endif %}
 
@@ -266,5 +263,6 @@
     <button type="submit" class="btn btn-outline-secondary"><i class="fa-solid fa-lock-open me-1" aria-hidden="true"></i> {% translate "Reabrir acta para corregirla" %}</button>
 </form>
 {% endif %}
+{% if can_manage and call_for_match %}<script src="{% static 'js/stats-tips.js' %}"></script>{% endif %}
 {% if stage_view %}<script src="{% static 'js/stage-light.js' %}"></script><script src="{% static 'js/stage-list.js' %}"></script>{% endif %}
 {% endblock %}

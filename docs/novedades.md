@@ -3,6 +3,15 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 21/11/2026 · El capitán decide si los jugadores ven la lista de convocados
+
+- En «Equipo» el capitán tiene el interruptor «Lista de convocados · Visible para los jugadores». Por defecto está apagado: los jugadores no ven nunca a los apuntados. Si se enciende, ven el listado final de convocados cuando se cierra la convocatoria.
+- Capitán y gestores siguen viendo siempre la lista, con un «i» que explica quién la ve y dónde cambiarlo. Sin lista visible, el jugador no ve ni nombres ni cuántos hay apuntados: la tarjeta de convocatoria es pequeña y solo le dice si está apuntado o convocado. Con la convocatoria abierta ni siquiera ve las tarjetas de fase: solo «¿Puedes jugar?» y la Previa. Al cerrar la convocatoria, la tarjeta lleva un check (convocado) o una cruz roja (no convocado).
+
+## 21/11/2026 · «Te has apuntado» según lo que responde el jugador
+
+- Con la convocatoria abierta, el mensaje del jugador sale de su propia respuesta («Te has apuntado», «Has dicho que no» o «Tu respuesta está pendiente») y no de que el capitán lo haya apuntado: si no ha respondido, no sale ningún mensaje. Al cerrar la convocatoria sigue diciendo si está convocado.
+
 ## 20/11/2026 · Sin mancha negra al pasar el ratón por los escudos
 
 - En la ficha del enfrentamiento, al mover el ratón sobre los escudos ya no aparece una franja negra difuminada a media altura: la sombra bajo el escudo es plana y se queda en su sitio.

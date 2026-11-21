@@ -1,6 +1,6 @@
 {# Tarjetas de acción de la ficha (vista «previa»). La fase que tiene lista (apuntados, convocados o parejas) es la tarjeta enfocada: ocupa el doble y la lleva dentro. cada fase es una tarjeta; la actual va en ámbar y las hechas en lima. Cerrar la convocatoria y el acta son formularios con confirmación dentro de su tarjeta; «Más» es la última. #}
 {% load i18n static %}
-<nav aria-label="{% translate 'Fases del enfrentamiento' %}">
+{% if not hide_phase_cards %}<nav aria-label="{% translate 'Fases del enfrentamiento' %}">
 <ol class="z-menu{% if not can_manage %} z-menu--short{% endif %}{% if stage_card %} has-focus{% endif %}">
 {% for c in status_cards %}{% if can_manage or forloop.first or forloop.last or forloop.counter == 2 and stage_card.kind == 'pairs' %}
 {% firstof "" as focus %}{% if stage_card %}{% if stage_card.kind == 'pairs' %}{% if forloop.counter == 2 %}{% firstof "1" as focus %}{% endif %}{% elif forloop.counter == 1 %}{% firstof "1" as focus %}{% endif %}{% endif %}
@@ -14,8 +14,8 @@
   {% elif can_manage and forloop.last and phase.action == 'close_match' %}{% include 'includes/ficha_close_match.html' with card=True figure=c.figure %}
   {% else %}
   {% if can_manage and not card_url and c.state != 'done' and c.state != 'cur' %}{% if forloop.counter == 2 %}{% translate "Cierra antes la convocatoria" as lock_reason %}{% elif forloop.counter == 3 %}{% translate "Alinea antes las parejas" as lock_reason %}{% else %}{% translate "Faltan los resultados" as lock_reason %}{% endif %}{% else %}{% firstof "" as lock_reason %}{% endif %}
-  <{% if card_url %}a href="{{ card_url }}"{% else %}div{% endif %} class="z-menu-card{% if c.state == 'done' %} is-done{% elif c.state == 'cur' %} is-next{% elif lock_reason %} is-locked{% endif %}"{% if c.state == 'cur' %} aria-current="step"{% endif %}{% if lock_reason %} aria-disabled="true" title="{{ lock_reason }}"{% endif %}>
-    <i class="z-menu-ic fa-solid {% if c.state == 'done' %}fa-circle-check{% elif lock_reason %}fa-lock{% elif forloop.counter == 1 %}fa-users{% elif forloop.counter == 2 %}fa-shuffle{% elif forloop.counter == 3 %}fa-pen-to-square{% else %}fa-flag-checkered{% endif %}" aria-hidden="true"></i>
+  <{% if card_url %}a href="{{ card_url }}"{% else %}div{% endif %} class="z-menu-card{% if c.missed %} is-missed{% elif c.state == 'done' %} is-done{% elif c.state == 'cur' %} is-next{% elif lock_reason %} is-locked{% endif %}"{% if c.state == 'cur' %} aria-current="step"{% endif %}{% if lock_reason %} aria-disabled="true" title="{{ lock_reason }}"{% endif %}>
+    <i class="z-menu-ic fa-solid {% if c.missed %}fa-circle-xmark{% elif c.state == 'done' %}fa-circle-check{% elif lock_reason %}fa-lock{% elif forloop.counter == 1 %}fa-users{% elif forloop.counter == 2 %}fa-shuffle{% elif forloop.counter == 3 %}fa-pen-to-square{% else %}fa-flag-checkered{% endif %}" aria-hidden="true"></i>
     <b>{{ c.label }}</b>
     <small>{{ c.figure }}{% if c.state == 'cur' %} · {% translate "siguiente paso" %}{% endif %}{% if c.state == 'done' %}<span class="visually-hidden"> ({% translate "hecho" %})</span>{% endif %}{% if lock_reason %}<span class="visually-hidden"> ({{ lock_reason }})</span>{% endif %}</small>
   </{% if card_url %}a{% else %}div{% endif %}>
@@ -25,5 +25,5 @@
 {% endif %}{% endfor %}
 {% if can_manage %}<li>{% include 'includes/ficha_more.html' with card=True %}</li>{% elif must_link %}<li class="z-menu-link">{% include 'includes/availability_link.html' %}</li>{% endif %}
 </ol>
-</nav>
+</nav>{% endif %}
 {% if can_manage and phase.missing_players and phase.action == 'close_call' %}<div class="z-menu-hint">{% include 'includes/ficha_hint.html' %}</div>{% endif %}

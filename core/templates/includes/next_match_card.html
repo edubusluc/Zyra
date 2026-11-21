@@ -9,11 +9,11 @@
         <p class="z-next-match-day">{{ item.match.start_date|date_short }}<small>{{ item.match.start_date|date:"Y" }}</small></p>
         <p class="z-next-match-meta">{% if item.match.start_time %}<strong>{{ item.match.start_time|time:"H:i" }}</strong>{% endif %}{% if item.match.location %}<a class="z-location" href="{{ item.match.maps_url }}" target="_blank" rel="noopener" title="{% translate 'Cómo llegar' %}"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>{{ item.match.location }}</span></a>{% else %}<span class="z-location"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>{% translate "Sin ubicación" %}</span></span>{% endif %}</p>
     </div>
-    {% if item.status %}
-    <p class="z-next-match-me{% if item.status.called %} is-in{% endif %}" role="status">
-        <i class="fa-solid {% if item.status.called %}fa-circle-check{% else %}fa-circle-info{% endif %}" aria-hidden="true"></i>
+    {% if item.status and not item.status.has_call or item.status and item.status.closed or item.status.answer %}
+    <p class="z-next-match-me{% if item.status.closed and item.status.called or not item.status.closed and item.status.answer == 'yes' %} is-in{% endif %}" role="status">
+        <i class="fa-solid {% if item.status.closed and item.status.called or not item.status.closed and item.status.answer == 'yes' %}fa-circle-check{% else %}fa-circle-info{% endif %}" aria-hidden="true"></i>
         <span>{% if not item.status.has_call %}{% translate "Todavía no hay convocatoria" %}
-        {% elif item.status.called and not item.status.closed %}<strong>{% translate "Te has apuntado" %}</strong> · {% translate "la convocatoria sigue abierta" %}
+        {% elif not item.status.closed %}<strong>{% if item.status.answer == 'yes' %}{% translate "Te has apuntado" %}{% elif item.status.answer == 'no' %}{% translate "Has dicho que no" %}{% else %}{% translate "Tu respuesta está pendiente" %}{% endif %}</strong> · {% translate "la convocatoria sigue abierta" %}
         {% elif item.status.called %}<strong>{% translate "Estás convocado" %}</strong>{% if item.status.game %} · {% blocktranslate with n=item.status.game.n_game pts=item.status.game.score|snp_points:"" %}Partido {{ n }} · {{ pts }} pts{% endblocktranslate %}{% if item.status.partner %} · {% blocktranslate with name=item.status.partner.full_name %}con {{ name }}{% endblocktranslate %}{% endif %}{% elif item.status.closed %} · {% translate "las parejas aún no están decididas" %}{% endif %}
         {% else %}<strong>{% translate "No estás convocado" %}</strong>{% if not item.status.closed %} · {% translate "la convocatoria sigue abierta" %}{% endif %}{% endif %}</span>
     </p>
