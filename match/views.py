@@ -815,11 +815,25 @@ def call_roster(call, games):
     return players
 
 
-def status_cards(phase):
+def own_call_figure(my_status):
+    """Lo que dice la primera tarjeta de estado a un jugador que no ve la lista: solo si está apuntado o convocado.
+
+    Sin contador ni nombres. Vacío si su cuenta no tiene ficha de jugador enlazada.
+    """
+    if my_status is None:
+        return ""
+    if not my_status["has_call"]:
+        return _("Sin crear")
+    if my_status["called"]:
+        return _("Estás convocado") if my_status["closed"] else _("Te has apuntado")
+    return _("No convocado") if my_status["closed"] else _("Sin apuntar")
+
+
+def status_cards(phase, call_figure=None):
     """
     Las cuatro tarjetas de estado de la ficha: ``[{"label", "figure", "pct", "state"}]`` con state «done»,
     «cur» o «». La convocatoria cuenta apuntados contra el mínimo; parejas y resultados, partidos contra
-    el total; el acta es «Cerrada» o «Abierta».
+    el total; el acta es «Cerrada» o «Abierta». ``call_figure`` sustituye el texto de la convocatoria.
     """
     total = phase.total_games or 1
     figures = [
@@ -829,6 +843,8 @@ def status_cards(phase):
         (_("%(n)s de %(total)s") % {"n": phase.results, "total": phase.total_games}, min(phase.results / total, 1)),
         (_("Cerrada") if phase.step >= 4 else _("Abierta"), 1 if phase.step >= 4 else 0),
     ]
+    if call_figure is not None:  # jugador sin acceso a la lista: sin contador, la barra solo dice si la fase está hecha
+        figures[0] = (call_figure, 1 if phase.step >= 1 else 0)
     return [
         {"label": label, "figure": figure, "pct": round(pct * 100),
          "state": "done" if i < phase.step else "cur" if i == phase.step else ""}
@@ -863,7 +879,8 @@ def stage_card(match, call, convocados, games, rows, min_call, show_names=True):
 
     Sin convocatoria o con el acta cerrada no hay tarjeta (devuelve None): el marcador ya cuenta
     el desenlace. ``rows`` son las parejas propias (``lineup_rows``) y ``min_call`` los apuntados
-    que pide la competición. Con ``show_names`` falso (jugador sin acceso a la lista) solo lleva el contador.
+    que pide la competición. Con ``show_names`` falso (jugador sin acceso a la lista) no hay tarjeta de
+    apuntados ni de convocados: ni nombres ni contador; las parejas sí se enseñan.
     """
     if not call or not match.draft_mode:
         return None
@@ -871,17 +888,17 @@ def stage_card(match, call, convocados, games, rows, min_call, show_names=True):
         return {"kind": "pairs", "title": _("Parejas"), "meta": "", "rows": rows}
     players = [{"name": p.short_name, "sub": p.is_sub, "me": getattr(p, "is_me", False)} for p in convocados]
     count = len(players)
-    if not show_names:
-        players = []
+    if not show_names and not rows:
+        return None
     if call.draft_mode:
         return {"kind": "open", "title": _("Apuntados"),
                 "meta": _("%(n)s de %(total)s") % {"n": count, "total": min_call},
                 "pct": min(100, round(100 * count / min_call)) if min_call else 0,
-                "players": players, "hidden": not show_names}
+                "players": players}
     subs = sum(1 for p in convocados if p.is_sub)
     meta = _("%(n)s · %(s)s suplentes") % {"n": count, "s": subs} if subs else str(count)
     return {"kind": "called", "title": _("Convocados"), "meta": meta,
-            "players": players, "hidden": not show_names}
+            "players": players}
 
 
 def stage_countdown(match, today):
@@ -1026,8 +1043,7 @@ def _ficha_page(request, match, history=False):
         "show_names": show_names,
         "rosters": [{"players": [p for p in convocados if not p.is_sub], "is_subs": False},
                     {"players": [p for p in convocados if p.is_sub], "is_subs": True}] if show_names else [],
-        "list_to_publish": bool(call and call.draft_mode and match.club.call_list_public and not show_names),
-        "status_cards": status_cards(phase),
+        "status_cards": status_cards(phase, None if show_names else own_call_figure(my_status)),
         "kind": match_kind(match),
         "report_deliveries": list(call.report_deliveries.order_by("email")) if call else [],
         "phase": phase,

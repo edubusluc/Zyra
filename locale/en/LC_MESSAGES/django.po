@@ -17137,6 +17137,10 @@ msgstr "Players see the list of called-up players when you close the call-up. Th
 msgid "Los jugadores no ven esta lista. El capitán puede cambiarlo en Equipo."
 msgstr "Players don't see this list. The captain can change this in Team."
 
-#: core/templates/club.html match/templates/includes/call_list_tip.html
-msgid "La lista se publicará al cerrar la convocatoria"
-msgstr "The list will be published when the call-up is closed"
+#: match/views.py
+msgid "Sin crear"
+msgstr "Not created"
+
+#: match/views.py
+msgid "Sin apuntar"
+msgstr "Not signed up"

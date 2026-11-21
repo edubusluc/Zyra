@@ -37,13 +37,26 @@ class CallListVisibilityTests(UxBase):
                 self.assertNotContains(page, "Jug00")
                 self.assertNotContains(page, "Jug03")
 
-    def test_public_hides_names_while_open_and_says_when_it_will_appear(self):
+    def test_public_hides_names_and_count_while_open(self):
         self.set_public(True)
         self.call(False)
         for stage in (True, False):
             page = self.ficha(self.member, stage)
             self.assertNotContains(page, "Jug00")
-            self.assertContains(page, "La lista se publicará al cerrar la convocatoria")
+            self.assertNotContains(page, "4 de 10")
+            self.assertNotContains(page, "z-stage-card")
+
+    def test_hidden_list_shows_no_count_and_a_compact_card(self):
+        from players.models import Player
+        Player.objects.filter(id=self.players[10].id).update(user=self.member)
+        self.call(True)
+        for stage in (True, False):
+            page = self.ficha(self.member, stage)
+            self.assertNotContains(page, "apuntados</")
+            self.assertNotContains(page, "convocados</")
+            self.assertNotContains(page, "z-stage-card")
+            self.assertNotContains(page, "has-focus")
+            self.assertContains(page, "No convocado")
 
     def test_public_shows_final_list_once_closed(self):
         self.set_public(True)
@@ -51,17 +64,14 @@ class CallListVisibilityTests(UxBase):
         for stage in (True, False):
             page = self.ficha(self.member, stage)
             self.assertContains(page, "Jug00")
-            self.assertNotContains(page, "La lista se publicará")
-
-    def test_private_shows_no_publication_notice(self):
-        self.call(False)
-        self.assertNotContains(self.ficha(self.member), "La lista se publicará")
 
     def test_player_still_sees_own_status_when_list_is_hidden(self):
         from players.models import Player
         Player.objects.filter(id=self.players[0].id).update(user=self.member)
         self.call(False)
-        self.assertContains(self.ficha(self.member), "Te has apuntado")
+        page = self.ficha(self.member)
+        self.assertContains(page, "Te has apuntado")
+        self.assertNotContains(page, "4 de 10")
 
     def test_managers_always_see_the_list_and_the_tip(self):
         self.call(False)

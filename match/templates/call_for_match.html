@@ -161,13 +161,12 @@
 {% endif %}
 
 {% if not stage_view or not match.draft_mode %}
-{% if call_for_match %}
+{% if call_for_match and show_names %}
 <div class="z-call">
     <div class="z-call-head">
         <span>{% if call_for_match.draft_mode %}{% blocktranslate trimmed count n=players_count %}<b>{{ n }}</b> apuntado{% plural %}<b>{{ n }}</b> apuntados{% endblocktranslate %}{% else %}{% blocktranslate trimmed count n=players_count %}<b>{{ n }}</b> convocado{% plural %}<b>{{ n }}</b> convocados{% endblocktranslate %}{% endif %}</span>
         {% if call_for_match.draft_mode %}<span class="z-badge">{% translate "Abierta" %}</span>{% else %}<span class="z-badge z-badge--lime"><i class="fa-solid fa-lock" aria-hidden="true"></i> {% translate "Cerrada" %}</span>{% endif %}{% include 'includes/call_list_tip.html' %}
     </div>
-    {% if list_to_publish %}<p class="z-stage-hidden">{% translate "La lista se publicará al cerrar la convocatoria" %}</p>{% endif %}
     {% for roster in rosters %}{% if roster.players %}
     {% if roster.is_subs %}<button type="button" class="z-call-more" aria-controls="call-subs" aria-expanded="false"
         data-more="{% blocktranslate with n=subs_count %}Ver suplentes ({{ n }}){% endblocktranslate %}" data-less="{% translate 'Ocultar suplentes' %}">{% blocktranslate with n=subs_count %}Ver suplentes ({{ n }}){% endblocktranslate %}</button>{% endif %}
@@ -197,7 +196,7 @@
     });
   });
 </script>
-{% else %}
+{% elif not call_for_match %}
 <div class="z-empty"><i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>{% if can_manage %}{% translate "Crea la convocatoria para elegir quién juega este enfrentamiento." %}{% else %}{% translate "Tu capitán aún no ha creado la convocatoria de este enfrentamiento." %}{% endif %}</div>
 {% endif %}
 
