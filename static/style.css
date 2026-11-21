@@ -4245,6 +4245,7 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
     .z-stage-me { display: inline-flex; align-items: center; gap: 6px; margin: 10px 0 0; padding: 5px 12px; font-size: var(--z-fs-sm); font-weight: 700; color: var(--z-text); background: rgba(0, 0, 0, .35); border: 1px solid var(--z-border-strong); border-radius: 999px; }
     .z-stage-me.is-in { color: var(--z-lime); border-color: rgba(var(--z-lime-rgb), .5); }
     .z-stage-me.is-out { color: var(--z-warning); border-color: color-mix(in srgb, var(--z-warning) 50%, transparent); }
+    .z-stage-me.is-missed { color: var(--z-danger); border-color: color-mix(in srgb, var(--z-danger) 50%, transparent); }
     .z-stage-me.is-warn { color: var(--z-warning); border-color: color-mix(in srgb, var(--z-warning) 50%, transparent); flex-wrap: wrap; }
     .z-stage-me a { color: var(--z-text); font-weight: 800; text-decoration: underline; }
     .z-closed-actions { justify-content: center; margin-top: 14px; }

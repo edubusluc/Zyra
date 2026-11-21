@@ -146,3 +146,11 @@ class CallListVisibilityTests(UxBase):
             page = self.ficha(self.member, stage)
             self.assertNotContains(page, "is-missed")
             self.assertContains(page, "Estás convocado")
+
+    def test_not_called_pill_is_red_once_the_call_is_closed(self):
+        from players.models import Player
+        Player.objects.filter(id=self.players[10].id).update(user=self.member)
+        self.call(True)
+        page = self.ficha(self.member)
+        self.assertContains(page, "z-stage-me is-missed")
+        self.assertContains(page, "No estás convocado")
