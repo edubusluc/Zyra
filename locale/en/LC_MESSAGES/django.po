@@ -17144,3 +17144,11 @@ msgstr "Not created"
 #: match/views.py
 msgid "Sin apuntar"
 msgstr "Not signed up"
+
+#: match/templates/includes/stage_me.html
+msgid "Has dicho que no"
+msgstr "You said no"
+
+#: match/templates/includes/stage_me.html
+msgid "Tu respuesta está pendiente"
+msgstr "Your answer is pending"

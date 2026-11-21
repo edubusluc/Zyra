@@ -521,6 +521,8 @@ class FichaPreviewTests(UxBase):
         m = self.match(FUTURE)
         Call.objects.create(match=m, draft_mode=True).players.set(self.players[:3])
         Player.objects.filter(id=self.players[0].id).update(user=self.user)
+        from call.models import Availability
+        Availability.objects.create(match=m, player=self.players[0], answer=Availability.YES)
         page = self.ficha(m)
         self.assertContains(page, 'class="is-me"')
         self.assertContains(page, "z-stage-me is-in")
@@ -640,9 +642,17 @@ class FichaPreviewTests(UxBase):
         call = Call.objects.create(match=m, draft_mode=True)
         call.players.set(self.players[:2])
         Player.objects.filter(id=self.players[0].id).update(user=self.user)
+        from call.models import Availability
+        Availability.objects.create(match=m, player=self.players[0], answer=Availability.YES)
         self.assertContains(self.ficha(m), "Te has apuntado")
-        call.players.remove(self.players[0])
-        self.assertContains(self.ficha(m), "Todavía no te has apuntado")
+        Availability.objects.update(answer=Availability.NO)
+        self.assertContains(self.ficha(m), "Has dicho que no")
+        Availability.objects.update(answer=Availability.MAYBE)
+        self.assertContains(self.ficha(m), "Tu respuesta está pendiente")
+        Availability.objects.all().delete()  # el capitán lo apuntó pero él no ha respondido: ningún mensaje
+        page = self.ficha(m)
+        for text in ("Te has apuntado", "Has dicho que no", "Tu respuesta está pendiente", "Todavía no te has apuntado"):
+            self.assertNotContains(page, text)
 
     def test_stage_has_a_countdown_and_the_roster_sits_outside_the_stage(self):
         import datetime

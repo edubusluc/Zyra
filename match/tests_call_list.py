@@ -69,6 +69,8 @@ class CallListVisibilityTests(UxBase):
         from players.models import Player
         Player.objects.filter(id=self.players[0].id).update(user=self.member)
         self.call(False)
+        from call.models import Availability
+        Availability.objects.create(match=self.match_, player=self.players[0], answer=Availability.YES)
         page = self.ficha(self.member)
         self.assertContains(page, "Te has apuntado")
         self.assertNotContains(page, "4 de 10")
@@ -154,3 +156,16 @@ class CallListVisibilityTests(UxBase):
         page = self.ficha(self.member)
         self.assertContains(page, "z-stage-me is-missed")
         self.assertContains(page, "No estás convocado")
+
+    def test_captain_signing_a_player_up_is_not_an_answer_in_any_view(self):
+        from players.models import Player
+        Player.objects.filter(id=self.players[0].id).update(user=self.member)
+        self.call(False)
+        for stage in (True, False):
+            page = self.ficha(self.member, stage)
+            for text in ("Te has apuntado", "Has dicho que no", "Tu respuesta está pendiente"):
+                self.assertNotContains(page, text)
+        from call.models import Availability
+        Availability.objects.create(match=self.match_, player=self.players[0], answer=Availability.NO)
+        for stage in (True, False):
+            self.assertContains(self.ficha(self.member, stage), "Has dicho que no")

@@ -1,7 +1,14 @@
-{% load i18n %}{# Qué le toca al jugador enlazado a esta cuenta, en una pastilla bajo el VS de la ficha (my_status, match/phase.py). #}
+{% load i18n %}{# Qué le toca al jugador enlazado a esta cuenta, en una pastilla bajo el VS de la ficha (my_status, match/phase.py). Con la convocatoria abierta dice lo que respondió él (si no ha respondido, no dice nada aunque el capitán lo haya apuntado); al cerrarla, si está convocado. #}
 {% if my_status.has_call %}
+{% if not my_status.closed %}
+{% if my_status.answer %}
+<p class="z-stage-me {% if my_status.answer == 'yes' %}is-in{% elif my_status.answer == 'no' %}is-missed{% else %}is-out{% endif %}" role="status"><i class="fa-solid {% if my_status.answer == 'yes' %}fa-circle-check{% elif my_status.answer == 'no' %}fa-circle-xmark{% else %}fa-clock{% endif %}" aria-hidden="true"></i>
+<span>{% if my_status.answer == 'yes' %}{% translate "Te has apuntado" %}{% elif my_status.answer == 'no' %}{% translate "Has dicho que no" %}{% else %}{% translate "Tu respuesta está pendiente" %}{% endif %}</span></p>
+{% endif %}
+{% else %}
 {% with said_no=my_availability.answer %}
-<p class="z-stage-me {% if my_status.called and said_no == 'no' %}is-warn{% elif my_status.called %}is-in{% elif my_status.closed %}is-missed{% else %}is-out{% endif %}" role="status"><i class="fa-solid {% if my_status.called and said_no == 'no' %}fa-triangle-exclamation{% elif my_status.called %}fa-circle-check{% elif my_status.closed %}fa-circle-xmark{% else %}fa-circle-info{% endif %}" aria-hidden="true"></i>
-<span>{% if my_status.called and not my_status.closed %}{% translate "Te has apuntado" %}{% elif my_status.called %}{% translate "Estás convocado" %}{% if my_status.game %} · {% blocktranslate with n=my_status.game.n_game %}Partido {{ n }}{% endblocktranslate %}{% if my_status.partner %} · {% blocktranslate with name=my_status.partner.short_name %}con {{ name }}{% endblocktranslate %}{% endif %}{% endif %}{% elif not my_status.closed %}{% translate "Todavía no te has apuntado" %}{% else %}{% translate "No estás convocado" %}{% endif %}{% if my_status.called and said_no == 'no' %} · {% translate "Tu respuesta era No" %}{% if can_answer %} · <a href="{% url 'availability' match.availability_token %}?cambiar=1">{% translate "Cambiar respuesta" %}</a>{% endif %}{% endif %}</span></p>
+<p class="z-stage-me {% if my_status.called and said_no == 'no' %}is-warn{% elif my_status.called %}is-in{% else %}is-missed{% endif %}" role="status"><i class="fa-solid {% if my_status.called and said_no == 'no' %}fa-triangle-exclamation{% elif my_status.called %}fa-circle-check{% else %}fa-circle-xmark{% endif %}" aria-hidden="true"></i>
+<span>{% if my_status.called %}{% translate "Estás convocado" %}{% if my_status.game %} · {% blocktranslate with n=my_status.game.n_game %}Partido {{ n }}{% endblocktranslate %}{% if my_status.partner %} · {% blocktranslate with name=my_status.partner.short_name %}con {{ name }}{% endblocktranslate %}{% endif %}{% endif %}{% else %}{% translate "No estás convocado" %}{% endif %}{% if my_status.called and said_no == 'no' %} · {% translate "Tu respuesta era No" %}{% endif %}</span></p>
 {% endwith %}
+{% endif %}
 {% endif %}
