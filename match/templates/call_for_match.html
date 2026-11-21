@@ -215,7 +215,7 @@
                 {% if can_manage %}
                 {% if r and match.draft_mode %}
                 <a href="{% url 'edit_result' g.public_id %}" class="z-edit position-static" aria-label="{% translate 'Editar resultado' %}"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
-                <form method="post" action="{% url 'delete_result' g.public_id %}" class="d-inline" data-loading-text="{% translate 'Borrando…' %}">{% csrf_token %}<button type="submit" class="z-edit position-static" aria-label="{% translate 'Borrar resultado' %}"><i class="fa-solid fa-trash" aria-hidden="true"></i></button></form>
+                <form method="post" action="{% url 'delete_result' g.public_id %}" class="d-inline" data-no-submit-lock data-delete-result="{{ g.n_game }}">{% csrf_token %}<button type="submit" class="z-edit position-static" aria-label="{% translate 'Borrar resultado' %}"><i class="fa-solid fa-trash" aria-hidden="true"></i></button></form>
                 {% elif g.no_show and match.draft_mode %}
                 <a href="{% url 'enter_results' match.public_id %}#partido-{{ g.n_game }}" class="z-edit position-static" aria-label="{% translate 'Editar resultado' %}"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
                 {% elif not r and not g.no_show %}
@@ -264,6 +264,7 @@
     <button type="submit" class="btn btn-outline-secondary"><i class="fa-solid fa-lock-open me-1" aria-hidden="true"></i> {% translate "Reabrir acta para corregirla" %}</button>
 </form>
 {% endif %}
+{% if can_manage %}<script src="{% static 'js/delete-result.js' %}" defer></script>{% endif %}
 {% if can_manage and call_for_match %}<script src="{% static 'js/stats-tips.js' %}"></script>{% endif %}
 {% if stage_view %}<script src="{% static 'js/stage-light.js' %}"></script><script src="{% static 'js/stage-list.js' %}"></script>{% endif %}
 {% endblock %}

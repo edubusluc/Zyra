@@ -2,7 +2,7 @@
 // popup de Zyra en vez del diálogo del navegador («127.0.0.1 dice…»).
 // Opcionales: data-confirm-title, data-confirm-action (texto del botón) y
 // data-confirm-danger (botón rojo) y data-confirm-check (+ -name, -hint): casilla desmarcada en el popup;
-// data-confirm-info: el popup solo informa (un único botón) y no envía el formulario;
+// [data-info-popup]: botón que abre un popup solo informativo (un único botón «Entendido», sin enviar nada);
 // si se marca, el formulario envía ese campo con valor 1. Sin JS el formulario se envía sin pedir confirmación.
 (function () {
   if (!globalThis.bootstrap) return;
@@ -34,13 +34,30 @@
     return modalEl;
   }
 
+  // Popup solo informativo (sin formulario ni recarga): un botón con data-info-popup, data-popup-title,
+  // data-popup-text y data-popup-action. «Entendido» solo lo cierra.
+  document.addEventListener('click', function (event) {
+    const trigger = event.target.closest?.('[data-info-popup]');
+    if (!trigger) return;
+    event.preventDefault();
+    const el = modalEl || build();
+    el.querySelector('[data-z-confirm-cancel]').toggleAttribute('hidden', true);
+    el.querySelector('#zConfirmTitle').textContent = trigger.dataset.popupTitle || L.title;
+    el.querySelector('[data-z-confirm-text]').textContent = trigger.dataset.popupText || '';
+    el.querySelector('[data-z-confirm-check]').hidden = true;
+    const ok = el.querySelector('[data-z-confirm-ok]');
+    ok.textContent = trigger.dataset.popupAction || L.ok;
+    ok.className = 'btn btn-primary';
+    ok.onclick = () => bootstrap.Modal.getInstance(el).hide();
+    bootstrap.Modal.getOrCreateInstance(el).show();
+  });
+
   document.addEventListener('submit', function (event) {
     const form = event.target;
     if (!form.hasAttribute?.('data-confirm') || form.dataset.confirmed) return;
     event.preventDefault();
     const el = modalEl || build();
-    const info = 'confirmInfo' in form.dataset;  // solo informa: «Entendido» cierra y no envía
-    el.querySelector('[data-z-confirm-cancel]').toggleAttribute('hidden', info);
+    el.querySelector('[data-z-confirm-cancel]').toggleAttribute('hidden', false);
     el.querySelector('#zConfirmTitle').textContent = form.dataset.confirmTitle || L.title;
     el.querySelector('[data-z-confirm-text]').textContent = form.getAttribute('data-confirm');
     const check = el.querySelector('[data-z-confirm-check]');
@@ -53,10 +70,6 @@
     ok.textContent = form.dataset.confirmAction || L.ok;
     ok.className = 'btn ' + (form.hasAttribute('data-confirm-danger') ? 'btn-danger' : 'btn-primary');
     ok.onclick = () => {
-      if (info) {
-        bootstrap.Modal.getInstance(el).hide();
-        return;
-      }
       form.dataset.confirmed = '1';
       if (form.dataset.confirmCheck && box.checked) {
         const field = document.createElement('input');

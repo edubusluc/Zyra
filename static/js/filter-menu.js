@@ -15,10 +15,19 @@
     const list = menu.querySelector('ul');
     if (!list) return;
     menu.classList.remove('is-up');
+    list.style.maxHeight = '';
+    list.style.overflowY = '';
     const box = menu.getBoundingClientRect();
     const need = list.offsetHeight + 6;
-    const below = window.innerHeight - box.bottom;
-    if (below < need && box.top > below) menu.classList.add('is-up');
+    const below = window.innerHeight - box.bottom - 12;
+    const above = box.top - 12;
+    const up = below < need && above > below;
+    menu.classList.toggle('is-up', up);
+    const room = Math.max(up ? above : below, 160);
+    if (need > room) {  // no cabe ni arriba ni abajo: la lista del menú se desplaza dentro de su hueco
+      list.style.maxHeight = room - 16 + 'px';
+      list.style.overflowY = 'auto';
+    }
   }, true);
   document.addEventListener('keydown', (event) => {
     if (event.key !== 'Escape') return;

@@ -23,7 +23,7 @@
             {% blocktranslate with n=game.n_game %}Partido {{ n }}{% endblocktranslate %}
             <span class="text-muted fw-semibold">· {% blocktranslate with score=game.score|snp_points:"" %}{{ score }} pts{% endblocktranslate %}</span>
             {% if row.has_result %}<span class="z-badge z-badge--lime">{% translate "Guardado" %}</span>{% endif %}
-            {% if row.has_saved_result %}<button type="submit" form="delete-result-{{ game.n_game }}" class="btn btn-link btn-sm text-danger z-delete-result"><i class="fa-solid fa-trash me-1" aria-hidden="true"></i>{% translate "Borrar resultado" %}</button>{% endif %}
+            <button type="button" class="btn btn-link btn-sm text-danger z-delete-result" data-clear-result{% if row.has_saved_result %} data-delete-form="delete-result-{{ game.n_game }}"{% endif %}><i class="fa-solid fa-trash me-1" aria-hidden="true"></i>{% translate "Borrar resultado" %}</button>
         </legend>
         {% if row.errors %}
         <div class="alert-message warning">{% for e in row.errors %}<p>{{ e }}</p>{% endfor %}</div>
@@ -100,8 +100,9 @@
     </div>
 </form>
 {% for row in rows %}{% if row.has_saved_result %}
-<form id="delete-result-{{ row.game.n_game }}" method="post" action="{% url 'delete_result' row.game.public_id %}" data-loading-text="{% translate 'Borrando…' %}">{% csrf_token %}<input type="hidden" name="next" value="results"></form>
+<form id="delete-result-{{ row.game.n_game }}" method="post" action="{% url 'delete_result' row.game.public_id %}" data-no-submit-lock data-delete-result="{{ row.game.n_game }}">{% csrf_token %}<input type="hidden" name="next" value="results"></form>
 {% endif %}{% endfor %}
 <script src="{% static 'js/result-form.js' %}" defer></script>
+<script src="{% static 'js/delete-result.js' %}" defer></script>
 <script src="{% static 'js/stats-tips.js' %}" defer></script>
 {% endblock %}

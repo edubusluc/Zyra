@@ -1289,17 +1289,27 @@ def delete_result(request, game_id):
 
     Es la salida del bloqueo por resultados: con algún resultado guardado la convocatoria y las
     parejas de los partidos con resultado no se pueden cambiar; borrando el resultado vuelven a poder.
+    Con ``X-Requested-With: XMLHttpRequest`` (static/js/delete-result.js) responde JSON y no deja mensajes:
+    la pantalla se limpia sin recargar.
     """
     game = get_object_or_404(Game.objects.select_related('match'), public_id=game_id, match__club=request.club)
+    ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
     if not game.match.draft_mode:
-        messages.error(request, _("No se pueden borrar los resultados de un enfrentamiento ya confirmado"))
+        error = _("No se pueden borrar los resultados de un enfrentamiento ya confirmado")
+        if ajax:
+            return JsonResponse({"ok": False, "error": str(error)}, status=409)
+        messages.error(request, error)
     elif not game.results.exists():
+        if ajax:
+            return JsonResponse({"ok": True})
         messages.info(request, _("Este partido no tiene resultado."))
     else:
         with transaction.atomic():
             game.results.all().delete()
             game.winner = None
             game.save(update_fields=['winner'])
+        if ajax:
+            return JsonResponse({"ok": True})
         messages.success(request, _("Resultado del partido %(n)s borrado.") % {"n": game.n_game})
     if request.POST.get("next") == "results":
         return redirect(reverse('enter_results', args=[game.match.public_id]) + f"#partido-{game.n_game}")

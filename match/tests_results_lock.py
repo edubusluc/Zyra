@@ -38,14 +38,15 @@ class ResultsLockTests(UxBase):
 
     def test_edit_call_button_shows_a_popup_listing_the_games_with_result(self):
         page = self.client.get(reverse("call_for_match", args=[self.m.public_id]))
-        self.assertContains(page, "data-confirm-info")
+        self.assertContains(page, "data-info-popup")
         self.assertContains(page, "Partido 1.")
         self.assertNotContains(page, "Partido 2.")
 
     def test_enter_results_has_a_delete_button_only_for_saved_results(self):
         page = self.client.get(reverse("enter_results", args=[self.m.public_id]))
-        self.assertContains(page, "delete-result-1")
-        self.assertNotContains(page, "delete-result-2")
+        self.assertContains(page, 'data-delete-form="delete-result-1"')
+        self.assertNotContains(page, 'data-delete-form="delete-result-2"')
+        self.assertContains(page, "data-clear-result", count=5)  # también limpia lo escrito sin guardar
         response = self.client.post(reverse("delete_result", args=[self.games[0].public_id]), {"next": "results"})
         self.assertRedirects(response, reverse("enter_results", args=[self.m.public_id]) + "#partido-1",
                              fetch_redirect_response=False)
@@ -87,5 +88,11 @@ class ResultsLockTests(UxBase):
         form = results[results.index('id="delete-result-1"'):][:300]
         self.assertNotIn("data-confirm=", form)
         # El aviso no apunta a edit_call (su rechazo saldría como un segundo mensaje de error).
-        self.assertContains(self.client.get(reverse("call_for_match", args=[self.m.public_id])),
-                            f'action="{reverse("call_for_match", args=[self.m.public_id])}" method="get" data-confirm-info')
+        self.assertContains(self.client.get(reverse("call_for_match", args=[self.m.public_id])), "data-info-popup")
+
+    def test_ajax_delete_answers_json_without_leaving_messages(self):
+        response = self.client.post(reverse("delete_result", args=[self.games[0].public_id]),
+                                    headers={"X-Requested-With": "XMLHttpRequest"})
+        self.assertEqual(response.json(), {"ok": True})
+        self.assertFalse(Result.objects.filter(game=self.games[0]).exists())
+        self.assertNotContains(self.client.get(reverse("call_for_match", args=[self.m.public_id])), "borrado.")
