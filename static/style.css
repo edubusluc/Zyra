@@ -2952,6 +2952,7 @@ a.z-hub-card:hover, a.z-hub-card:focus-visible { border-color: var(--z-lime); co
 .z-next-main .btn { white-space: normal; text-align: left; }
 .z-next-hint { margin: 0; font-size: var(--z-fs-sm); color: var(--z-muted); }
 .z-more { position: relative; }
+.z-more.is-up ul { top: auto; bottom: calc(100% + 6px); margin: 0; }
 .z-more summary { list-style: none; cursor: pointer; }
 .z-more summary::-webkit-details-marker { display: none; }
 .z-more ul { position: absolute; right: 0; z-index: 20; min-width: 230px; margin: 6px 0 0; padding: 6px; list-style: none; background: var(--z-surface-2); border: 1px solid var(--z-border); border-radius: var(--z-radius); box-shadow: 0 14px 34px -8px rgba(0, 0, 0, .7); }

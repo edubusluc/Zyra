@@ -8,6 +8,18 @@
     if (!event.target.matches || !event.target.matches('[data-filter-menu]') || !event.target.open) return;
     menus().forEach((menu) => { if (menu !== event.target) menu.open = false; });
   }, true);
+  // «Más»: se abre hacia abajo y, si ahí no cabe y arriba hay más sitio, hacia arriba (sin scroll innecesario).
+  document.addEventListener('toggle', (event) => {
+    const menu = event.target;
+    if (!menu.matches || !menu.matches('details.z-more') || !menu.open) return;
+    const list = menu.querySelector('ul');
+    if (!list) return;
+    menu.classList.remove('is-up');
+    const box = menu.getBoundingClientRect();
+    const need = list.offsetHeight + 6;
+    const below = window.innerHeight - box.bottom;
+    if (below < need && box.top > below) menu.classList.add('is-up');
+  }, true);
   document.addEventListener('keydown', (event) => {
     if (event.key !== 'Escape') return;
     menus().forEach((menu) => {
