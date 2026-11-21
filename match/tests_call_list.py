@@ -1,0 +1,100 @@
+"""Visibilidad del listado de la convocatoria para los jugadores (``Club.call_list_public``)."""
+from django.urls import reverse
+
+from call.models import Call
+from core.models import Membership
+from match.tests_ux import FUTURE, UxBase, User
+
+
+class CallListVisibilityTests(UxBase):
+    def setUp(self):
+        super().setUp()
+        self.match_ = self.match(FUTURE)
+        self.member = User.objects.create_user("socio", password="pass-12345")
+        Membership.objects.create(user=self.member, club=self.club, role=Membership.MEMBER)
+
+    def ficha(self, user, stage=True):
+        from core.models import UserPreference
+        self.client.force_login(user)
+        UserPreference.objects.update_or_create(user=user, defaults={"match_stage_view": stage})
+        return self.client.get(reverse("call_for_match", args=[self.match_.public_id]))
+
+    def call(self, closed):
+        call = Call.objects.create(match=self.match_, draft_mode=not closed)
+        call.players.set(self.players[:4])
+        return call
+
+    def set_public(self, value):
+        self.club.call_list_public = value
+        self.club.save()
+
+    def test_private_by_default_hides_names_open_and_closed(self):
+        for closed in (False, True):
+            Call.objects.all().delete()
+            self.call(closed)
+            for stage in (True, False):
+                page = self.ficha(self.member, stage)
+                self.assertNotContains(page, "Jug00")
+                self.assertNotContains(page, "Jug03")
+
+    def test_public_hides_names_while_open_and_says_when_it_will_appear(self):
+        self.set_public(True)
+        self.call(False)
+        for stage in (True, False):
+            page = self.ficha(self.member, stage)
+            self.assertNotContains(page, "Jug00")
+            self.assertContains(page, "La lista se publicará al cerrar la convocatoria")
+
+    def test_public_shows_final_list_once_closed(self):
+        self.set_public(True)
+        self.call(True)
+        for stage in (True, False):
+            page = self.ficha(self.member, stage)
+            self.assertContains(page, "Jug00")
+            self.assertNotContains(page, "La lista se publicará")
+
+    def test_private_shows_no_publication_notice(self):
+        self.call(False)
+        self.assertNotContains(self.ficha(self.member), "La lista se publicará")
+
+    def test_player_still_sees_own_status_when_list_is_hidden(self):
+        from players.models import Player
+        Player.objects.filter(id=self.players[0].id).update(user=self.member)
+        self.call(False)
+        self.assertContains(self.ficha(self.member), "Te has apuntado")
+
+    def test_managers_always_see_the_list_and_the_tip(self):
+        self.call(False)
+        for stage in (True, False):
+            page = self.ficha(self.user, stage)
+            self.assertContains(page, "Jug00")
+            self.assertContains(page, "Los jugadores no ven esta lista")
+        self.set_public(True)
+        self.assertContains(self.ficha(self.user), "Los jugadores ven la lista de convocados")
+
+    def test_player_does_not_get_the_tip(self):
+        self.call(False)
+        self.assertNotContains(self.ficha(self.member), "El capitán puede cambiarlo en Equipo")
+
+    def test_only_the_captain_changes_the_setting(self):
+        url = reverse("set_call_list_visibility")
+        self.client.force_login(self.member)
+        self.assertEqual(self.client.post(url, {"public": "1", "team": self.club.public_id}).status_code, 403)
+        manager = User.objects.create_user("gestor", password="pass-12345")
+        Membership.objects.create(user=manager, club=self.club, role=Membership.MANAGER)
+        self.client.force_login(manager)
+        self.assertEqual(self.client.post(url, {"public": "1", "team": self.club.public_id}).status_code, 403)
+        self.client.force_login(self.user)
+        self.assertEqual(self.client.get(url).status_code, 405)
+        self.client.post(url, {"public": "1", "team": self.club.public_id})
+        self.club.refresh_from_db()
+        self.assertTrue(self.club.call_list_public)
+        self.client.post(url, {"team": self.club.public_id})
+        self.club.refresh_from_db()
+        self.assertFalse(self.club.call_list_public)
+
+    def test_club_page_shows_the_switch_to_the_captain_only(self):
+        self.client.force_login(self.user)
+        self.assertContains(self.client.get(reverse("club_home")), 'name="public"')
+        self.client.force_login(self.member)
+        self.assertNotContains(self.client.get(reverse("club_home")), 'name="public"')

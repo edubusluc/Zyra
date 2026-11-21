@@ -4712,3 +4712,4 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 @container (max-width: 460px) {
   .st-squad-delta { margin-left: 0; flex-basis: 100%; }
 }
+.z-stage-hidden { margin: 0; color: var(--z-muted); font-size: var(--z-fs-sm); }

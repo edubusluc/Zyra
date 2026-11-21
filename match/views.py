@@ -847,27 +847,41 @@ def match_kind(match):
 
 
 
-def stage_card(match, call, convocados, games, rows, min_call):
+def players_see_list(request, match, call):
+    """True si quien mira la ficha puede ver los nombres de la convocatoria.
+
+    Capitán y gestores siempre. Los jugadores solo con la convocatoria cerrada y si el capitán publica la lista
+    (``Club.call_list_public``); los apuntados nunca se les enseñan.
+    """
+    if request.membership.can_manage:
+        return True
+    return bool(call and not call.draft_mode and match.club.call_list_public)
+
+
+def stage_card(match, call, convocados, games, rows, min_call, show_names=True):
     """Contenido de la tarjeta sobre el VS de la ficha: apuntados, convocados o parejas.
 
     Sin convocatoria o con el acta cerrada no hay tarjeta (devuelve None): el marcador ya cuenta
     el desenlace. ``rows`` son las parejas propias (``lineup_rows``) y ``min_call`` los apuntados
-    que pide la competición.
+    que pide la competición. Con ``show_names`` falso (jugador sin acceso a la lista) solo lleva el contador.
     """
     if not call or not match.draft_mode:
         return None
     if rows:
         return {"kind": "pairs", "title": _("Parejas"), "meta": "", "rows": rows}
     players = [{"name": p.short_name, "sub": p.is_sub, "me": getattr(p, "is_me", False)} for p in convocados]
+    count = len(players)
+    if not show_names:
+        players = []
     if call.draft_mode:
         return {"kind": "open", "title": _("Apuntados"),
-                "meta": _("%(n)s de %(total)s") % {"n": len(players), "total": min_call},
-                "pct": min(100, round(100 * len(players) / min_call)) if min_call else 0,
-                "players": players}
-    subs = sum(1 for p in players if p["sub"])
-    meta = _("%(n)s · %(s)s suplentes") % {"n": len(players), "s": subs} if subs else str(len(players))
+                "meta": _("%(n)s de %(total)s") % {"n": count, "total": min_call},
+                "pct": min(100, round(100 * count / min_call)) if min_call else 0,
+                "players": players, "hidden": not show_names}
+    subs = sum(1 for p in convocados if p.is_sub)
+    meta = _("%(n)s · %(s)s suplentes") % {"n": count, "s": subs} if subs else str(count)
     return {"kind": "called", "title": _("Convocados"), "meta": meta,
-            "players": players}
+            "players": players, "hidden": not show_names}
 
 
 def stage_countdown(match, today):
@@ -992,6 +1006,7 @@ def _ficha_page(request, match, history=False):
             p.is_me = p.id == me.id
 
     stage_pairs = lineup_rows(match, games, me.id if me else None)
+    show_names = players_see_list(request, match, call)
     return render(request, "call_for_match.html", {
         "history_view": history,
         "my_availability": Availability.objects.filter(match=match, player=me).first() if me else None,
@@ -1008,8 +1023,10 @@ def _ficha_page(request, match, history=False):
         "convocados": convocados,
         "players_count": len(convocados),
         "subs_count": sum(1 for p in convocados if p.is_sub),
+        "show_names": show_names,
         "rosters": [{"players": [p for p in convocados if not p.is_sub], "is_subs": False},
-                    {"players": [p for p in convocados if p.is_sub], "is_subs": True}],
+                    {"players": [p for p in convocados if p.is_sub], "is_subs": True}] if show_names else [],
+        "list_to_publish": bool(call and call.draft_mode and match.club.call_list_public and not show_names),
         "status_cards": status_cards(phase),
         "kind": match_kind(match),
         "report_deliveries": list(call.report_deliveries.order_by("email")) if call else [],
@@ -1025,7 +1042,7 @@ def _ficha_page(request, match, history=False):
         "stage_view": UserPreference.match_stage_for(request.user),
         "countdown": stage_countdown(match, today),
         "stage_card": stage_card(match, call, convocados, games, stage_pairs,
-                                 competition_for(match).min_call_players),
+                                 competition_for(match).min_call_players, show_names),
         "my_status": my_status,
         "report_emails": ", ".join(admin_emails(request.club)) if call else "",
         "report_already_sent": bool(call and call.report_deliveries.filter(status=ReportDelivery.SENT).exists()),

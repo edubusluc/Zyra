@@ -164,6 +164,7 @@ Comportamiento visible para el usuario, explicado en lenguaje llano: `docs/funci
 
 ## Partidos, convocatorias y actas
 
+- [V] Visibilidad de la lista para jugadores (rol miembro): `Club.call_list_public` (por defecto falso; solo lo cambia el capitán, `core.views.set_call_list_visibility`, tarjeta «Lista de convocados» de Equipo). Capitán y gestores ven siempre los nombres; un jugador solo los ve con la convocatoria cerrada y el ajuste encendido (`match.views.players_see_list`). En otro caso la ficha (3D, clásica e histórica) deja el contador, su propia pastilla y las parejas, sin nombres de apuntados. Tests: `match/tests_call_list.py`.
 - [V] Los números del ciclo salen de la ficha de la competición (`core/competitions.py`, `competition_for`): partidos por enfrentamiento y sus puntos, convocados mínimos y partido de desempate. Hay dos: SNP (5 partidos 3-3-2-2-2, 10 convocados, desempate en el 3) y LAPI (3 partidos de 1 punto, 6 convocados, sin empate posible); cada club juega la de su espacio (`Club.competition`). El recomendador `match/advisor.py` recibe la ficha: en la SNP ordena las parejas por puntos SNP; sin `has_snp` (LAPI) usa solo historial y afinidad, sin orden de juego (cruce por sorteo), y la pantalla de parejas y el PDF no muestran puntos ni orden. Por eso mismo (`ordered_pairs=False`) Estadísticas no muestra en LAPI «Por número de partido» (equipo y jugador) ni «Balance de partidos por jugador». Tests: `core/tests_competitions.py`.
 
 Orden obligatorio del ciclo (`match/views.py`) [V], cubierto por `match/tests_flow.py`:

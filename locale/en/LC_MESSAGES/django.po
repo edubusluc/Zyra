@@ -17108,3 +17108,35 @@ msgstr "If this is you, you rejoin the squad with your statistics."
 #: players/templates/confirm_previous_sheet.html
 msgid "No, soy otra persona"
 msgstr "No, I'm someone else"
+
+#: core/templates/club.html match/templates/includes/call_list_tip.html
+msgid "Los jugadores verán la lista de convocados al cerrar la convocatoria."
+msgstr "Players will see the list of called-up players when the call-up is closed."
+
+#: core/templates/club.html match/templates/includes/call_list_tip.html
+msgid "Los jugadores ya no verán la lista de convocados."
+msgstr "Players will no longer see the list of called-up players."
+
+#: core/templates/club.html match/templates/includes/call_list_tip.html
+msgid "Lista de convocados"
+msgstr "Call-up list"
+
+#: core/templates/club.html match/templates/includes/call_list_tip.html
+msgid "Si lo activas, los jugadores ven el listado final de convocados cuando cierras la convocatoria. Si no, solo lo ven el capitán y los gestores. Los apuntados nunca se enseñan a los jugadores."
+msgstr "If you turn it on, players see the final list of called-up players once you close the call-up. If not, only the captain and managers see it. Players never see who has signed up."
+
+#: core/templates/club.html match/templates/includes/call_list_tip.html
+msgid "Visible para los jugadores"
+msgstr "Visible to players"
+
+#: core/templates/club.html match/templates/includes/call_list_tip.html
+msgid "Los jugadores ven la lista de convocados cuando cierras la convocatoria. El capitán puede cambiarlo en Equipo."
+msgstr "Players see the list of called-up players when you close the call-up. The captain can change this in Team."
+
+#: core/templates/club.html match/templates/includes/call_list_tip.html
+msgid "Los jugadores no ven esta lista. El capitán puede cambiarlo en Equipo."
+msgstr "Players don't see this list. The captain can change this in Team."
+
+#: core/templates/club.html match/templates/includes/call_list_tip.html
+msgid "La lista se publicará al cerrar la convocatoria"
+msgstr "The list will be published when the call-up is closed"

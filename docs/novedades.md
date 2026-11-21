@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 21/11/2026 · El capitán decide si los jugadores ven la lista de convocados
+
+- En «Equipo» el capitán tiene el interruptor «Lista de convocados · Visible para los jugadores». Por defecto está apagado: los jugadores no ven nunca a los apuntados. Si se enciende, ven el listado final de convocados cuando se cierra la convocatoria.
+- Capitán y gestores siguen viendo siempre la lista, con un «i» que explica quién la ve y dónde cambiarlo. El jugador conserva su pastilla («Te has apuntado / Estás convocado») y el contador.
+
 ## 20/11/2026 · Sin mancha negra al pasar el ratón por los escudos
 
 - En la ficha del enfrentamiento, al mover el ratón sobre los escudos ya no aparece una franja negra difuminada a media altura: la sombra bajo el escudo es plana y se queda en su sitio.

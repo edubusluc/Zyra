@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static i18n %}
-{% block page_title %}{% translate "Equipo" %} · {% endblock %}
+{% block page_title %}{% translate "Equipo" %} · {% if is_club_admin %}<script src="{% static 'js/stats-tips.js' %}"></script>{% endif %}
+{% endblock %}
 
 {% block content %}
 <div class="z-page-head">
@@ -53,6 +54,21 @@
             {% if rivals_count == 0 and can_manage %}<span class="z-hub-status is-todo">{% translate "Añade tu primer rival" %} <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>{% endif %}
         </a>
     </li>
+    {% if is_club_admin %}
+    <li>
+        <form method="post" action="{% url 'set_call_list_visibility' %}" class="z-hub-card z-hub-form" data-loading-text="{% translate 'Guardando…' %}">
+            {% csrf_token %}
+            <input type="hidden" name="team" value="{{ request.club.public_id }}">
+            <i class="fa-solid fa-eye" aria-hidden="true"></i>
+            <span class="z-hub-title">{% translate "Lista de convocados" %}{% translate "Si lo activas, los jugadores ven el listado final de convocados cuando cierras la convocatoria. Si no, solo lo ven el capitán y los gestores. Los apuntados nunca se enseñan a los jugadores." as tip %}{% include 'includes/stat_tip.html' with tip=tip %}</span>
+            <span class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="call-list-public" name="public" value="1"{% if call_list_public %} checked{% endif %}>
+                <label class="form-check-label" for="call-list-public">{% translate "Visible para los jugadores" %}</label>
+            </span>
+            <button type="submit" class="btn btn-secondary btn-sm">{% translate "Guardar" %}</button>
+        </form>
+    </li>
+    {% endif %}
     {% if is_club_admin and current_club.rules.has_snp %}
     <li>
         <a href="{% url 'snp_account' %}" class="z-hub-card">
@@ -71,4 +87,5 @@
     <p class="text-muted">{% translate "Si abandonas este equipo dejarás de ver sus jugadores, enfrentamientos y estadísticas; tus otros equipos no cambian. Te pediremos confirmarlo." %}</p>
     <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#leaveClubModal"><i class="fa-solid fa-door-open me-1" aria-hidden="true"></i> {% blocktranslate with club=current_club.name %}Abandonar {{ club }}{% endblocktranslate %}</button>
 </section>
+{% if is_club_admin %}<script src="{% static 'js/stats-tips.js' %}"></script>{% endif %}
 {% endblock %}

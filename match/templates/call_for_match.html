@@ -165,8 +165,9 @@
 <div class="z-call">
     <div class="z-call-head">
         <span>{% if call_for_match.draft_mode %}{% blocktranslate trimmed count n=players_count %}<b>{{ n }}</b> apuntado{% plural %}<b>{{ n }}</b> apuntados{% endblocktranslate %}{% else %}{% blocktranslate trimmed count n=players_count %}<b>{{ n }}</b> convocado{% plural %}<b>{{ n }}</b> convocados{% endblocktranslate %}{% endif %}</span>
-        {% if call_for_match.draft_mode %}<span class="z-badge">{% translate "Abierta" %}</span>{% else %}<span class="z-badge z-badge--lime"><i class="fa-solid fa-lock" aria-hidden="true"></i> {% translate "Cerrada" %}</span>{% endif %}
+        {% if call_for_match.draft_mode %}<span class="z-badge">{% translate "Abierta" %}</span>{% else %}<span class="z-badge z-badge--lime"><i class="fa-solid fa-lock" aria-hidden="true"></i> {% translate "Cerrada" %}</span>{% endif %}{% include 'includes/call_list_tip.html' %}
     </div>
+    {% if list_to_publish %}<p class="z-stage-hidden">{% translate "La lista se publicará al cerrar la convocatoria" %}</p>{% endif %}
     {% for roster in rosters %}{% if roster.players %}
     {% if roster.is_subs %}<button type="button" class="z-call-more" aria-controls="call-subs" aria-expanded="false"
         data-more="{% blocktranslate with n=subs_count %}Ver suplentes ({{ n }}){% endblocktranslate %}" data-less="{% translate 'Ocultar suplentes' %}">{% blocktranslate with n=subs_count %}Ver suplentes ({{ n }}){% endblocktranslate %}</button>{% endif %}
@@ -266,5 +267,6 @@
     <button type="submit" class="btn btn-outline-secondary"><i class="fa-solid fa-lock-open me-1" aria-hidden="true"></i> {% translate "Reabrir acta para corregirla" %}</button>
 </form>
 {% endif %}
+{% if can_manage and call_for_match %}<script src="{% static 'js/stats-tips.js' %}"></script>{% endif %}
 {% if stage_view %}<script src="{% static 'js/stage-light.js' %}"></script><script src="{% static 'js/stage-list.js' %}"></script>{% endif %}
 {% endblock %}
