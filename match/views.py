@@ -1042,6 +1042,7 @@ def _ficha_page(request, match, history=False):
         "game_for_match": games,
         "games_count": len(games),
         "results_locked": any(g.result for g in games),
+        "results_games_label": ", ".join(_("Partido %(n)s") % {"n": g.n_game} for g in games if g.result),
         "match": match,
         "convocados": convocados,
         "players_count": len(convocados),
@@ -1300,6 +1301,8 @@ def delete_result(request, game_id):
             game.winner = None
             game.save(update_fields=['winner'])
         messages.success(request, _("Resultado del partido %(n)s borrado.") % {"n": game.n_game})
+    if request.POST.get("next") == "results":
+        return redirect(reverse('enter_results', args=[game.match.public_id]) + f"#partido-{game.n_game}")
     return redirect(reverse('call_for_match', args=[game.match.public_id]) + f"#partido-{game.n_game}")
 
 
@@ -1392,7 +1395,7 @@ def enter_results(request, match_id):
             values["injured_side"] = result.injured_side if result else ""
             values["no_show"] = game.no_show
             errors = []
-        rows.append({"game": game, "values": values, "errors": errors, "has_result": result is not None or bool(game.no_show),
+        rows.append({"game": game, "values": values, "errors": errors, "has_result": result is not None or bool(game.no_show), "has_saved_result": result is not None,
                      "prefix": f"g{game.n_game}_"})
 
     if request.method == "POST" and not failed:

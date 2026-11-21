@@ -2,6 +2,7 @@
 // popup de Zyra en vez del diálogo del navegador («127.0.0.1 dice…»).
 // Opcionales: data-confirm-title, data-confirm-action (texto del botón) y
 // data-confirm-danger (botón rojo) y data-confirm-check (+ -name, -hint): casilla desmarcada en el popup;
+// data-confirm-info: el popup solo informa (un único botón) y no envía el formulario;
 // si se marca, el formulario envía ese campo con valor 1. Sin JS el formulario se envía sin pedir confirmación.
 (function () {
   if (!globalThis.bootstrap) return;
@@ -38,6 +39,8 @@
     if (!form.hasAttribute?.('data-confirm') || form.dataset.confirmed) return;
     event.preventDefault();
     const el = modalEl || build();
+    const info = form.hasAttribute('data-confirm-info');  // solo informa: «Entendido» cierra y no envía
+    el.querySelector('.btn-outline-light[data-bs-dismiss]').hidden = info;
     el.querySelector('#zConfirmTitle').textContent = form.dataset.confirmTitle || L.title;
     el.querySelector('[data-z-confirm-text]').textContent = form.getAttribute('data-confirm');
     const check = el.querySelector('[data-z-confirm-check]');
@@ -50,6 +53,10 @@
     ok.textContent = form.dataset.confirmAction || L.ok;
     ok.className = 'btn ' + (form.hasAttribute('data-confirm-danger') ? 'btn-danger' : 'btn-primary');
     ok.onclick = () => {
+      if (info) {
+        bootstrap.Modal.getInstance(el).hide();
+        return;
+      }
       form.dataset.confirmed = '1';
       if (form.dataset.confirmCheck && box.checked) {
         const field = document.createElement('input');

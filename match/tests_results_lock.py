@@ -36,9 +36,19 @@ class ResultsLockTests(UxBase):
         self.assertRedirects(self.client.get(url), reverse("call_for_match", args=[self.m.public_id]),
                              fetch_redirect_response=False)
 
-    def test_edit_call_links_are_hidden(self):
+    def test_edit_call_button_shows_a_popup_listing_the_games_with_result(self):
         page = self.client.get(reverse("call_for_match", args=[self.m.public_id]))
-        self.assertNotContains(page, reverse("edit_call", args=[self.call.public_id]))
+        self.assertContains(page, "data-confirm-info")
+        self.assertContains(page, "Partido 1.")
+        self.assertNotContains(page, "Partido 2.")
+
+    def test_enter_results_has_a_delete_button_only_for_saved_results(self):
+        page = self.client.get(reverse("enter_results", args=[self.m.public_id]))
+        self.assertContains(page, "delete-result-1")
+        self.assertNotContains(page, "delete-result-2")
+        response = self.client.post(reverse("delete_result", args=[self.games[0].public_id]), {"next": "results"})
+        self.assertRedirects(response, reverse("enter_results", args=[self.m.public_id]) + "#partido-1",
+                             fetch_redirect_response=False)
 
     def test_cannot_move_a_pair_with_result(self):
         before = [(g.n_game, g.player_1_local_id) for g in self.m.games.order_by("n_game")]

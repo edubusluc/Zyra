@@ -23,19 +23,19 @@
             {% blocktranslate with n=game.n_game %}Partido {{ n }}{% endblocktranslate %}
             <span class="text-muted fw-semibold">· {% blocktranslate with score=game.score|snp_points:"" %}{{ score }} pts{% endblocktranslate %}</span>
             {% if row.has_result %}<span class="z-badge z-badge--lime">{% translate "Guardado" %}</span>{% endif %}
+            {% if row.has_saved_result %}<button type="submit" form="delete-result-{{ game.n_game }}" class="btn btn-link btn-sm text-danger z-delete-result"><i class="fa-solid fa-trash me-1" aria-hidden="true"></i>{% translate "Borrar resultado" %}</button>{% endif %}
         </legend>
         {% if row.errors %}
         <div class="alert-message warning">{% for e in row.errors %}<p>{{ e }}</p>{% endfor %}</div>
         {% endif %}
         {% if match.club.rules.pair_no_show %}
-        <div class="z-result-noshow mb-2" data-noshow-box{% if not values.no_show %} hidden{% endif %}>
+        <div class="z-result-noshow mb-2">
             <label class="form-label small" for="id_{{ row.prefix }}no_show">{% translate "¿Se presentaron las dos parejas?" %}</label>
             <select class="form-select form-select-sm" name="{{ row.prefix }}no_show" id="id_{{ row.prefix }}no_show" data-pair-no-show>
                 <option value="">{% translate "Sí, se jugó el partido" %}</option>
                 {% for value, label in no_show_choices %}<option value="{{ value }}"{% if values.no_show == value %} selected{% endif %}>{{ label }}</option>{% endfor %}
             </select>
         </div>
-        <button type="button" class="btn btn-link btn-sm z-noshow-link mb-2" data-noshow-toggle aria-expanded="{% if values.no_show %}true{% else %}false{% endif %}"{% if values.no_show %} hidden{% endif %}>{% translate "Una pareja no se presentó" %}</button>
         {% endif %}
         <div data-played>
         <div class="z-result-grid">
@@ -99,6 +99,9 @@
     </aside>
     </div>
 </form>
+{% for row in rows %}{% if row.has_saved_result %}
+<form id="delete-result-{{ row.game.n_game }}" method="post" action="{% url 'delete_result' row.game.public_id %}" data-loading-text="{% translate 'Borrando…' %}" data-confirm-title="{% translate 'Borrar el resultado' %}" data-confirm-action="{% translate 'Borrar' %}" data-confirm-danger data-confirm="{% blocktranslate with n=row.game.n_game %}Se borrará el resultado del partido {{ n }}. Lo que hayas escrito sin guardar en esta pantalla se perderá.{% endblocktranslate %}">{% csrf_token %}<input type="hidden" name="next" value="results"></form>
+{% endif %}{% endfor %}
 <script src="{% static 'js/result-form.js' %}" defer></script>
 <script src="{% static 'js/stats-tips.js' %}" defer></script>
 {% endblock %}

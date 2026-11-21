@@ -17198,3 +17198,17 @@ msgstr "Delete result"
 #: match/templates/call_for_match.html
 msgid "Borrando…"
 msgstr "Deleting…"
+
+#: match/templates/includes/ficha_call_locked.html
+msgid "Hay resultados puestos"
+msgstr "Results are already entered"
+
+#: match/templates/includes/ficha_call_locked.html
+#, python-format
+msgid "Para modificar la convocatoria tienes que borrar antes el resultado de los partidos que ya lo tienen: %(games)s. Puedes hacerlo con el botón «Borrar resultado» de cada partido."
+msgstr "To change the call-up you must first delete the result of the games that already have one: %(games)s. You can do it with each game's «Delete result» button."
+
+#: match/templates/enter_results.html
+#, python-format
+msgid "Se borrará el resultado del partido %(n)s. Lo que hayas escrito sin guardar en esta pantalla se perderá."
+msgstr "The result of game %(n)s will be deleted. Anything you typed on this screen without saving will be lost."

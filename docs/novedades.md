@@ -6,7 +6,9 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 ## 22/11/2026 · Con resultados guardados no se cambia la convocatoria ni las parejas con resultado
 
 - En cuanto un partido tiene resultado, la convocatoria deja de poder editarse y las parejas de los partidos con resultado no se pueden cambiar ni reordenar (sus sets irían a otra pareja). Los partidos sin resultado siguen editables. No se puede borrar la convocatoria con parejas alineadas.
-- Nuevo botón «Borrar resultado» (papelera) en cada partido de la ficha, con confirmación, para volver a poder corregir la convocatoria o las parejas.
+- Nuevo botón «Borrar resultado» (papelera) en cada partido de la ficha y en «Poner resultados», con confirmación, para volver a poder corregir la convocatoria o las parejas.
+- Con resultados guardados, «Editar convocatoria» abre un aviso que lista los partidos con resultado que hay que borrar antes.
+- En «Poner resultados» la pregunta «¿Se presentaron las dos parejas?» se ve desde el principio en cada partido, sin pulsar «Una pareja no se presentó».
 
 ## 21/11/2026 · El capitán decide si los jugadores ven la lista de convocados
 
