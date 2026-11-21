@@ -39,7 +39,7 @@
       const card = document.getElementById('partido-' + form.dataset.deleteResult);
       if (card?.matches('fieldset[data-result]')) {
         clearCard(card);
-        document.querySelectorAll('[data-delete-form="' + form.id + '"]').forEach((button) => button.removeAttribute('data-delete-form'));
+        document.querySelectorAll('[data-delete-form="' + form.id + '"]').forEach((button) => { delete button.dataset.deleteForm; });
         form.remove();
       } else {
         window.location.reload();
