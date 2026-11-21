@@ -227,10 +227,10 @@ class EnterResultsTests(UxBase):
         self.assertNotContains(page, "z-preview")
         self.assertNotContains(page, "z-f2f")
 
-    def test_no_show_select_hides_behind_a_link_and_order_panel_collapses_on_mobile(self):
+    def test_no_show_select_is_visible_from_the_start_and_order_panel_collapses_on_mobile(self):
         page = self.client.get(self.url)
-        self.assertContains(page, "data-noshow-toggle")
-        self.assertContains(page, "data-noshow-box hidden")
+        self.assertContains(page, "data-pair-no-show")
+        self.assertNotContains(page, "data-noshow-toggle")
         lineup = self.client.get(reverse("edit_games_match", args=[self.m.public_id]))
         self.assertContains(lineup, "data-order-toggle")
 

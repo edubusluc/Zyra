@@ -106,6 +106,12 @@ class MatchPhase:
         return ""
 
 
+def has_results(match):
+    """True si el enfrentamiento ya tiene algún resultado guardado: desde entonces la convocatoria y las
+    parejas de los partidos con resultado no se tocan (hay que borrar antes el resultado)."""
+    return Result.objects.filter(game__match=match).exists()
+
+
 def phase_of(match, *, has_call, call_closed, called, games, results, competition=None):
     """Fase de ``match`` a partir de los recuentos de su convocatoria, partidos y resultados.
 

@@ -94,10 +94,21 @@ class MatchLifecycleTests(TestCase):
         # Cambiar el orden de las parejas: el partido 2 pasa a ser el último
         order = [games[0], games[2], games[3], games[4], games[1]]
         edited = [{"gameId": g.id, "player1Id": g.player_1_local_id, "player2Id": g.player_2_local_id} for g in order]
+        # Con resultados guardados el orden no se puede cambiar: primero se borran los de los partidos que se mueven
+        self.client.post(reverse("edit_games_match", args=[match.public_id]), {"ordered_games": json.dumps(edited)})
+        self.assertEqual(Game.objects.get(pk=games[1].pk).n_game, 2)
+        for g in games[1:]:
+            self.client.post(reverse("delete_result", args=[g.public_id]))
         self.client.post(reverse("edit_games_match", args=[match.public_id]), {"ordered_games": json.dumps(edited)})
         moved = Game.objects.get(pk=games[1].pk)
         self.assertEqual((moved.n_game, moved.score), (5, 2))
         self.assertEqual(Game.objects.get(pk=games[2].pk).score, 3)  # el antiguo 3 sube al puesto 2
+        # Se vuelven a apuntar: el antiguo 2 (ahora 5) lo pierde el club; los demás los gana
+        for g in games[1:]:
+            ours, theirs = ("2", "6") if g.pk == games[1].pk else ("6", "2")
+            self.client.post(reverse("create_result", args=[g.public_id]), {
+                "set1_local": ours, "set1_visiting": theirs, "set2_local": ours, "set2_visiting": theirs,
+            })
 
         # Cerrar actas: 3 + 3 + 2 + 2 ganados por el club, 2 perdidos (el antiguo 2, ahora 5)
         self.client.post(reverse("close_match", args=[match.public_id]))

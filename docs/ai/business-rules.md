@@ -235,6 +235,8 @@ Orden obligatorio del ciclo (`match/views.py`) [V], cubierto por `match/tests_fl
    `match/phase.py` (`phase_of`/`phases_for`), que usan el inicio, el listado y la página del enfrentamiento. Siempre son 5 partidos: no se contempla un acta con menos. Todo en una transacción.
 7. **Reabrir acta** (`reopen_match`, POST, capitán o gestor): vuelve a borrador, resultado `NONE`, anota `reopened_at/by`. Un enfrentamiento con `was_closed` (reabrir el acta o `undo_no_show`) solo lo elimina el capitán (`delete_match`): el gestor puede reabrir para corregir, nunca borrar lo que ya estuvo cerrado.
 
+**Bloqueo por resultados** [V] (`match.phase.has_results`, `match/tests_results_lock.py`): con algún `Result` guardado la convocatoria no se edita (`edit_call`; con `results_locked` su botón pasa a ser un popup) y `lineup.update_games` no deja cambiar pareja ni número de un partido con resultado (los sets irían a otra pareja). `delete_call` se rechaza con parejas alineadas. «Editar convocatoria» con resultados abre un popup informativo (botón `data-info-popup` de `static/js/confirm-modal.js`, `match/templates/includes/ficha_call_locked.html`) con los partidos que tienen resultado. La salida es `delete_result` (POST, desde la ficha y desde «Poner resultados» con `next=results`, acta abierta, capitán o gestor), que borra el resultado de un partido y su ganador sin recargar (`static/js/delete-result.js`, JSON con `X-Requested-With`).
+
 Con el acta cerrada [V]: no se borra el partido (`delete_match`) ni su convocatoria (`delete_call`),
 ni se editan parejas (`edit_game_match`).
 
