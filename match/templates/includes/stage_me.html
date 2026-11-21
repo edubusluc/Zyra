@@ -2,8 +2,8 @@
 {% if my_status.has_call %}
 {% if not my_status.closed %}
 {% if my_status.answer %}
-<p class="z-stage-me {% if my_status.answer == 'yes' %}is-in{% elif my_status.answer == 'no' %}is-missed{% else %}is-out{% endif %}" role="status"><i class="fa-solid {% if my_status.answer == 'yes' %}fa-circle-check{% elif my_status.answer == 'no' %}fa-circle-xmark{% else %}fa-clock{% endif %}" aria-hidden="true"></i>
-<span>{% if my_status.answer == 'yes' %}{% translate "Te has apuntado" %}{% elif my_status.answer == 'no' %}{% translate "Has dicho que no" %}{% else %}{% translate "Tu respuesta está pendiente" %}{% endif %}</span></p>
+<p class="z-stage-me {% if my_status.answer == 'yes' %}is-in{% elif my_status.answer == 'no' and my_status.called %}is-warn{% elif my_status.answer == 'no' %}is-missed{% else %}is-out{% endif %}" role="status"><i class="fa-solid {% if my_status.answer == 'yes' %}fa-circle-check{% elif my_status.answer == 'no' and my_status.called %}fa-triangle-exclamation{% elif my_status.answer == 'no' %}fa-circle-xmark{% else %}fa-clock{% endif %}" aria-hidden="true"></i>
+<span>{% if my_status.answer == 'yes' %}{% translate "Te has apuntado" %}{% elif my_status.answer == 'no' %}{% translate "Has dicho que no" %}{% if my_status.called %} · {% translate "El capitán te ha apuntado" %}{% if can_answer %} · <a href="{% url 'availability' match.availability_token %}?cambiar=1">{% translate "Cambiar respuesta" %}</a>{% endif %}{% endif %}{% else %}{% translate "Tu respuesta está pendiente" %}{% endif %}</span></p>
 {% endif %}
 {% else %}
 {% with said_no=my_availability.answer %}

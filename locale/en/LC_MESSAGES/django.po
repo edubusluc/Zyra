@@ -17152,3 +17152,7 @@ msgstr "You said no"
 #: match/templates/includes/stage_me.html
 msgid "Tu respuesta está pendiente"
 msgstr "Your answer is pending"
+
+#: match/templates/includes/stage_me.html
+msgid "El capitán te ha apuntado"
+msgstr "The captain has signed you up"
