@@ -100,7 +100,7 @@
     </div>
 </form>
 {% for row in rows %}{% if row.has_saved_result %}
-<form id="delete-result-{{ row.game.n_game }}" method="post" action="{% url 'delete_result' row.game.public_id %}" data-loading-text="{% translate 'Borrando…' %}" data-confirm-title="{% translate 'Borrar el resultado' %}" data-confirm-action="{% translate 'Borrar' %}" data-confirm-danger data-confirm="{% blocktranslate with n=row.game.n_game %}Se borrará el resultado del partido {{ n }}. Lo que hayas escrito sin guardar en esta pantalla se perderá.{% endblocktranslate %}">{% csrf_token %}<input type="hidden" name="next" value="results"></form>
+<form id="delete-result-{{ row.game.n_game }}" method="post" action="{% url 'delete_result' row.game.public_id %}" data-loading-text="{% translate 'Borrando…' %}">{% csrf_token %}<input type="hidden" name="next" value="results"></form>
 {% endif %}{% endfor %}
 <script src="{% static 'js/result-form.js' %}" defer></script>
 <script src="{% static 'js/stats-tips.js' %}" defer></script>

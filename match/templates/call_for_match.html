@@ -215,7 +215,7 @@
                 {% if can_manage %}
                 {% if r and match.draft_mode %}
                 <a href="{% url 'edit_result' g.public_id %}" class="z-edit position-static" aria-label="{% translate 'Editar resultado' %}"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
-                <form method="post" action="{% url 'delete_result' g.public_id %}" class="d-inline" data-confirm-title="{% translate 'Borrar el resultado' %}" data-confirm-action="{% translate 'Borrar' %}" data-loading-text="{% translate 'Borrando…' %}" data-confirm-danger data-confirm="{% translate 'Se borrará el resultado de este partido. Podrás volver a ponerlo o cambiar la convocatoria y las parejas.' %}">{% csrf_token %}<button type="submit" class="z-edit position-static" aria-label="{% translate 'Borrar resultado' %}"><i class="fa-solid fa-trash" aria-hidden="true"></i></button></form>
+                <form method="post" action="{% url 'delete_result' g.public_id %}" class="d-inline" data-loading-text="{% translate 'Borrando…' %}">{% csrf_token %}<button type="submit" class="z-edit position-static" aria-label="{% translate 'Borrar resultado' %}"><i class="fa-solid fa-trash" aria-hidden="true"></i></button></form>
                 {% elif g.no_show and match.draft_mode %}
                 <a href="{% url 'enter_results' match.public_id %}#partido-{{ g.n_game }}" class="z-edit position-static" aria-label="{% translate 'Editar resultado' %}"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
                 {% elif not r and not g.no_show %}

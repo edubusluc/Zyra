@@ -81,3 +81,11 @@ class ResultsLockTests(UxBase):
         self.m.save()
         self.client.post(url)
         self.assertTrue(Result.objects.filter(game=self.games[0]).exists())
+
+    def test_delete_buttons_do_not_ask_for_confirmation_and_the_popup_does_not_hit_the_server_error(self):
+        results = self.client.get(reverse("enter_results", args=[self.m.public_id])).content.decode()
+        form = results[results.index('id="delete-result-1"'):][:300]
+        self.assertNotIn("data-confirm=", form)
+        # El aviso no apunta a edit_call (su rechazo saldría como un segundo mensaje de error).
+        self.assertContains(self.client.get(reverse("call_for_match", args=[self.m.public_id])),
+                            f'action="{reverse("call_for_match", args=[self.m.public_id])}" method="get" data-confirm-info')
