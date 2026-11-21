@@ -11,7 +11,7 @@
   // «Más»: se abre hacia abajo y, si ahí no cabe y arriba hay más sitio, hacia arriba (sin scroll innecesario).
   document.addEventListener('toggle', (event) => {
     const menu = event.target;
-    if (!menu.matches || !menu.matches('details.z-more') || !menu.open) return;
+    if (!menu.matches?.('details.z-more') || !menu.open) return;
     const list = menu.querySelector('ul');
     if (!list) return;
     menu.classList.remove('is-up');
