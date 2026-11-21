@@ -153,8 +153,9 @@ class HomeUpcomingTests(TestCase):
         sunday = near + datetime.timedelta(days=6 - near.weekday())
         far = sunday + datetime.timedelta(days=1)
         self.match(days=(far - self.today).days)
-        second = self.match(days=(sunday - self.today).days)
+        # Los dos primeros se crean en orden: si hoy es sábado caen el mismo día y el desempate es el id.
         first = self.match(days=1)
+        second = self.match(days=(sunday - self.today).days)
         self.assertEqual([i["id"] for i in self.upcoming()], [str(first.public_id), str(second.public_id)])
 
     def test_player_states(self):
