@@ -108,3 +108,26 @@ class CallListVisibilityTests(UxBase):
         self.assertContains(self.client.get(reverse("club_home")), 'name="public"')
         self.client.force_login(self.member)
         self.assertNotContains(self.client.get(reverse("club_home")), 'name="public"')
+
+    def link_player(self):
+        from players.models import Player
+        Player.objects.filter(id=self.players[10].id).update(user=self.member)
+
+    def test_player_without_list_gets_no_phase_cards_while_the_call_is_open(self):
+        self.link_player()
+        for call in (False, None):
+            Call.objects.all().delete()
+            if call is not None:
+                self.call(call)
+            for stage in (True, False):
+                page = self.ficha(self.member, stage)
+                self.assertNotContains(page, "Fases del enfrentamiento")
+                self.assertContains(page, "¿Puedes jugar?")
+
+    def test_phase_cards_come_back_once_the_call_is_closed_or_for_managers(self):
+        self.link_player()
+        self.call(True)
+        self.assertContains(self.ficha(self.member), "Fases del enfrentamiento")
+        Call.objects.all().delete()
+        self.call(False)
+        self.assertContains(self.ficha(self.user), "Fases del enfrentamiento")

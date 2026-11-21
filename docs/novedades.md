@@ -6,7 +6,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 ## 21/11/2026 · El capitán decide si los jugadores ven la lista de convocados
 
 - En «Equipo» el capitán tiene el interruptor «Lista de convocados · Visible para los jugadores». Por defecto está apagado: los jugadores no ven nunca a los apuntados. Si se enciende, ven el listado final de convocados cuando se cierra la convocatoria.
-- Capitán y gestores siguen viendo siempre la lista, con un «i» que explica quién la ve y dónde cambiarlo. Sin lista visible, el jugador no ve ni nombres ni cuántos hay apuntados: la tarjeta de convocatoria es pequeña y solo le dice si está apuntado o convocado.
+- Capitán y gestores siguen viendo siempre la lista, con un «i» que explica quién la ve y dónde cambiarlo. Sin lista visible, el jugador no ve ni nombres ni cuántos hay apuntados: la tarjeta de convocatoria es pequeña y solo le dice si está apuntado o convocado. Con la convocatoria abierta ni siquiera ve las tarjetas de fase: solo «¿Puedes jugar?» y la Previa.
 
 ## 20/11/2026 · Sin mancha negra al pasar el ratón por los escudos
 

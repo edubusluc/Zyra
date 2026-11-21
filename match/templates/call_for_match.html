@@ -52,7 +52,7 @@
 {# Estado de cada fase: cifra y barra (match/phase.py). EST-039: con el acta cerrada el estado ya está junto al marcador. #}
 {% if match.draft_mode %}
 {% if stage_view %}{% include 'includes/action_cards.html' %}{% else %}
-<ol class="z-status4{% if not can_manage %} z-status4--short{% endif %}" aria-label="{% translate 'Fases del enfrentamiento' %}">
+{% if not hide_phase_cards %}<ol class="z-status4{% if not can_manage %} z-status4--short{% endif %}" aria-label="{% translate 'Fases del enfrentamiento' %}">
     {# UX-020: quien no gestiona solo ve la convocatoria y el acta; las fases de gestión (parejas, resultados) no le sirven. #}
     {% for c in status_cards %}{% if can_manage or forloop.first or forloop.last %}
     <li class="{% if c.state == 'done' %}is-done{% elif c.state == 'cur' %}is-cur{% endif %}"{% if c.state == 'cur' %} aria-current="step"{% endif %}>
@@ -62,7 +62,7 @@
         <span class="z-status4-bar" aria-hidden="true"><i style="width: {{ c.pct|unlocalize }}%"></i></span>
     </li>
     {% endif %}{% endfor %}
-</ol>
+</ol>{% endif %}
 {% endif %}
 {% endif %}
 

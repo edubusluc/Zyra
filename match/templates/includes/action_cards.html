@@ -1,6 +1,6 @@
 {# Tarjetas de acción de la ficha (vista «previa»). La fase que tiene lista (apuntados, convocados o parejas) es la tarjeta enfocada: ocupa el doble y la lleva dentro. cada fase es una tarjeta; la actual va en ámbar y las hechas en lima. Cerrar la convocatoria y el acta son formularios con confirmación dentro de su tarjeta; «Más» es la última. #}
 {% load i18n static %}
-<nav aria-label="{% translate 'Fases del enfrentamiento' %}">
+{% if not hide_phase_cards %}<nav aria-label="{% translate 'Fases del enfrentamiento' %}">
 <ol class="z-menu{% if not can_manage %} z-menu--short{% endif %}{% if stage_card %} has-focus{% endif %}">
 {% for c in status_cards %}{% if can_manage or forloop.first or forloop.last or forloop.counter == 2 and stage_card.kind == 'pairs' %}
 {% firstof "" as focus %}{% if stage_card %}{% if stage_card.kind == 'pairs' %}{% if forloop.counter == 2 %}{% firstof "1" as focus %}{% endif %}{% elif forloop.counter == 1 %}{% firstof "1" as focus %}{% endif %}{% endif %}
@@ -25,5 +25,5 @@
 {% endif %}{% endfor %}
 {% if can_manage %}<li>{% include 'includes/ficha_more.html' with card=True %}</li>{% elif must_link %}<li class="z-menu-link">{% include 'includes/availability_link.html' %}</li>{% endif %}
 </ol>
-</nav>
+</nav>{% endif %}
 {% if can_manage and phase.missing_players and phase.action == 'close_call' %}<div class="z-menu-hint">{% include 'includes/ficha_hint.html' %}</div>{% endif %}

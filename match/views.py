@@ -1041,6 +1041,9 @@ def _ficha_page(request, match, history=False):
         "players_count": len(convocados),
         "subs_count": sum(1 for p in convocados if p.is_sub),
         "show_names": show_names,
+        # Jugador sin acceso a la lista con la convocatoria abierta (o sin crear): las tarjetas de fase no le dicen nada.
+        "hide_phase_cards": bool(not show_names and match.draft_mode and not (call and not call.draft_mode)
+                                 and not (not me and not history and not request.membership.can_manage)),
         "rosters": [{"players": [p for p in convocados if not p.is_sub], "is_subs": False},
                     {"players": [p for p in convocados if p.is_sub], "is_subs": True}] if show_names else [],
         "status_cards": status_cards(phase, None if show_names else own_call_figure(my_status)),
