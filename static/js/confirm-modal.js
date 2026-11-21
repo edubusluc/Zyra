@@ -26,11 +26,11 @@
       '<div class="form-check mt-3" data-z-confirm-check hidden><input class="form-check-input" type="checkbox" id="zConfirmCheck">' +
       '<label class="form-check-label" for="zConfirmCheck"></label>' +
       '<p class="form-text mb-0" data-z-confirm-hint></p></div></div>' +
-      '<div class="modal-footer"><button type="button" class="btn btn-outline-light" data-bs-dismiss="modal"></button>' +
+      '<div class="modal-footer"><button type="button" class="btn btn-outline-light" data-bs-dismiss="modal" data-z-confirm-cancel></button>' +
       '<button type="button" class="btn" data-z-confirm-ok></button></div></div></div>';
     document.body.appendChild(modalEl);
     modalEl.querySelector('.btn-close').setAttribute('aria-label', L.close);
-    modalEl.querySelector('[data-bs-dismiss="modal"].btn-outline-light').textContent = L.cancel;
+    modalEl.querySelector('[data-z-confirm-cancel]').textContent = L.cancel;
     return modalEl;
   }
 
@@ -40,7 +40,7 @@
     event.preventDefault();
     const el = modalEl || build();
     const info = form.hasAttribute('data-confirm-info');  // solo informa: «Entendido» cierra y no envía
-    el.querySelector('.btn-outline-light[data-bs-dismiss]').hidden = info;
+    el.querySelector('[data-z-confirm-cancel]').toggleAttribute('hidden', info);
     el.querySelector('#zConfirmTitle').textContent = form.dataset.confirmTitle || L.title;
     el.querySelector('[data-z-confirm-text]').textContent = form.getAttribute('data-confirm');
     const check = el.querySelector('[data-z-confirm-check]');
