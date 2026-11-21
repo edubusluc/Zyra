@@ -39,7 +39,7 @@
     if (!form.hasAttribute?.('data-confirm') || form.dataset.confirmed) return;
     event.preventDefault();
     const el = modalEl || build();
-    const info = form.hasAttribute('data-confirm-info');  // solo informa: «Entendido» cierra y no envía
+    const info = 'confirmInfo' in form.dataset;  // solo informa: «Entendido» cierra y no envía
     el.querySelector('[data-z-confirm-cancel]').toggleAttribute('hidden', info);
     el.querySelector('#zConfirmTitle').textContent = form.dataset.confirmTitle || L.title;
     el.querySelector('[data-z-confirm-text]').textContent = form.getAttribute('data-confirm');
