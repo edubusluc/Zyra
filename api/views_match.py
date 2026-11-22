@@ -112,6 +112,10 @@ class MatchView(ApiView):
         open_for_answers = bool(match.draft_mode and availability_logic.is_open(match))
         code = match_outcome(match)
         own, rival = club_score(match)
+        # La lista de apuntados o convocados solo la ve quien gestiona; los jugadores, con la convocatoria cerrada y el
+        # ajuste del equipo ``call_list_public`` encendido (como la web: ``Club.call_list_public``).
+        show_call = call is not None and (
+            can_manage or (not call.draft_mode and getattr(match.club, "call_list_public", False)))
         data = {
             "match": {
                 "id": str(match.public_id), "team_id": str(match.club.public_id),
@@ -133,7 +137,7 @@ class MatchView(ApiView):
             "me": _me(status, player is not None, can_manage),
             "can_manage": can_manage,
             "primary": _primary(match, phase, can_manage),
-            "call": None if call is None else {
+            "call": None if not show_call else {
                 "count": len(convocados), "min": competition_for(match).min_call_players, "closed": not call.draft_mode,
                 "players": [{"name": p.short_name, "sub": p.is_sub, "me": bool(player) and p.id == player.id}
                             for p in convocados]},

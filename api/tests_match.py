@@ -102,3 +102,10 @@ class MatchApiTests(TestCase):
         self.assertEqual((data["outcome"]["own"], data["outcome"]["rival"]), ("7", "5"))
         self.assertFalse(data["answer"]["can_answer"])
         self.assertEqual(data["match"]["status_label"], "Acta cerrada")
+
+    def test_players_do_not_see_the_call_list_by_default(self):
+        """Sin el ajuste del equipo, el jugador no recibe la lista de la convocatoria (sí quien gestiona)."""
+        call = Call.objects.create(match=self.match)
+        call.players.add(self.me)
+        self.assertIsNone(self.get(self.user_token).json()["call"])
+        self.assertIsNotNone(self.get(self.captain_token).json()["call"])
