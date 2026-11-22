@@ -134,7 +134,7 @@ class MatchView(ApiView):
                 "code": code, "label": str(OUTCOME_LABELS[code]), "own": own, "rival": rival,
                 "league_points": match.league_points},
             "steps": _steps(phase),
-            "me": _me(status, player is not None, can_manage),
+            "me": _me(status, player is not None, can_manage, bool(games)),
             "can_manage": can_manage,
             "primary": _primary(match, phase, can_manage),
             "call": None if not show_call else {

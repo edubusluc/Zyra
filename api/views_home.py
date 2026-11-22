@@ -78,11 +78,12 @@ def _side(team, name):
     return {"name": name, "is_own": bool(team and team.is_own)}
 
 
-def _me(status, linked, can_manage):
+def _me(status, linked, can_manage, has_games=False):
     """
     Estado del jugador en un enfrentamiento: ``{"state", "game"?, "points"?, "partner"?}`` o None si no aplica.
     ``unlinked`` (cuenta sin ficha enlazada y sin gestionar), ``no_call``, ``applied_open``, ``called``,
-    ``called_no_pair``, ``not_called`` o ``not_called_open``. Mismas reglas que la tarjeta de la web.
+    ``called_no_pair`` (convocado y las parejas aún no están alineadas), ``called_sub`` (convocado, parejas ya alineadas y
+    sin partido: suplente), ``not_called`` o ``not_called_open``. Mismas reglas que la tarjeta de la web.
     """
     if not linked:
         return None if can_manage else {"state": "unlinked"}
@@ -93,7 +94,7 @@ def _me(status, linked, can_manage):
     if status["called"]:
         game = status["game"]
         if game is None:
-            return {"state": "called_no_pair"}
+            return {"state": "called_sub" if has_games else "called_no_pair"}
         partner = status["partner"]
         return {"state": "called", "game": game.n_game, "points": game.score,
                 "partner": partner.full_name if partner else None}
@@ -138,7 +139,7 @@ def _upcoming(user, memberships, today):
             "neutral_venue": bool(m.neutral_venue),
             "local": _side(m.local, m.local_name),
             "visiting": _side(m.visiting, m.visiting_name),
-            "me": _me(status, player is not None, can_manage),
+            "me": _me(status, player is not None, can_manage, bool(games.get(m.id))),
             "web_path": reverse("call_for_match", args=[m.public_id]),
         })
     return out

@@ -11,7 +11,7 @@ from api.tokens import issue_token
 from call.models import Call
 from core.models import Membership
 from core.services import create_club
-from match.models import Match
+from match.models import Game, Match
 from players.models import Player
 from team.models import Team
 
@@ -177,6 +177,11 @@ class HomeUpcomingTests(TestCase):
         call.draft_mode = False
         call.save()
         self.assertEqual(me(), {"state": "called_no_pair"})
+        # Con las parejas ya alineadas y sin partido para él, es suplente (no «las parejas no están decididas»).
+        other = Player.objects.create(club=self.club, name="Otra", last_name="Ruiz", in_team=True)
+        another = Player.objects.create(club=self.club, name="Otro", last_name="Gil", in_team=True)
+        Game.objects.create(match=m, n_game=1, score=3, player_1_local=other, player_2_local=another)
+        self.assertEqual(me(), {"state": "called_sub"})
         call.players.remove(player)
         self.assertEqual(me(), {"state": "not_called"})
 
@@ -202,9 +207,11 @@ class HomeUpcomingTests(TestCase):
         """Con dos equipos salen los enfrentamientos de los dos, mezclados por fecha."""
         lapi = create_club("Norte LAPI", "Gijón", self.captain, competition="lapi")
         rival = Team.objects.create(club=lapi, name="Sur", location="Y", in_group=True)
+        # Lunes y martes de la próxima semana: el carrusel llega hasta el domingo, y hoy puede ser sábado o domingo.
+        monday = self.today + datetime.timedelta(days=7 - self.today.weekday())
         later = Match.objects.create(club=self.club, local=self.club.own_team, visiting=self.rival,
-                                     start_date=self.today + datetime.timedelta(days=1))
-        sooner = Match.objects.create(club=lapi, local=lapi.own_team, visiting=rival, start_date=self.today)
+                                     start_date=monday + datetime.timedelta(days=1))
+        sooner = Match.objects.create(club=lapi, local=lapi.own_team, visiting=rival, start_date=monday)
         self.assertEqual([i["id"] for i in self.upcoming()], [str(sooner.public_id), str(later.public_id)])
         self.assertEqual(self.upcoming()[0]["competition"], "lapi")
 
