@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 21/11/2026 · API de la app iOS: ficha del enfrentamiento
+
+- Nuevo `GET /api/v1/matches/<id>` (solo lectura) con estado, fases, convocados, parejas, resultado, la respuesta del jugador y la acción principal de quien gestiona, para la ficha nativa de la app.
+
 ## 20/11/2026 · Más capacidad del servidor
 
 - Gunicorn pasa de 3 a 5 procesos y recicla cada ~5.000 peticiones (antes 1.000), y el contenedor `web` sube de 900 a 1.000 MB. Los frenos por IP y minuto son por proceso, así que el límite efectivo crece en la misma proporción.

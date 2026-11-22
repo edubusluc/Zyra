@@ -2,7 +2,7 @@
 from django.urls import re_path
 
 from . import (views, views_account, views_apple, views_auth, views_club, views_devices, views_google, views_home,
-               views_invitations, views_notices, views_setup)
+               views_invitations, views_match, views_notices, views_setup)
 
 urlpatterns = [
     re_path(r"^auth/login/?$", views_auth.LoginView.as_view(), name="api_login"),
@@ -24,6 +24,7 @@ urlpatterns = [
             name="api_resend_verification"),
     re_path(r"^copy-invitations/(?P<token>[\w-]+)/?$", views_notices.CopyInvitationView.as_view(),
             name="api_copy_invitation"),
+    re_path(r"^matches/(?P<match_id>[\w-]+)/?$", views_match.MatchView.as_view(), name="api_match"),
     re_path(r"^matches/(?P<match_id>[\w-]+)/availability/?$", views_notices.AvailabilityView.as_view(),
             name="api_match_availability"),
     re_path(r"^home/dismiss/?$", views_notices.DismissNoticeView.as_view(), name="api_home_dismiss"),
