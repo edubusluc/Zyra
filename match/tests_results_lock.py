@@ -96,3 +96,21 @@ class ResultsLockTests(UxBase):
         self.assertEqual(response.json(), {"ok": True})
         self.assertFalse(Result.objects.filter(game=self.games[0]).exists())
         self.assertNotContains(self.client.get(reverse("call_for_match", args=[self.m.public_id])), "borrado.")
+
+
+class SectionOrderTests(UxBase):
+    """Con el acta cerrada los resultados van antes que los convocados."""
+
+    def _order(self, match):
+        html = self.client.get(reverse("call_for_match", args=[match.public_id])).content.decode()
+        return html.index('id="partido-1"'), html.index('class="z-call"')
+
+    def test_closed_report_shows_results_before_call(self):
+        m = self.match()
+        self.closed_call(m)
+        games = self.lineup(m)
+        self.client.post(reverse("enter_results", args=[m.public_id]), self.results_post(games, action="close"))
+        m.refresh_from_db()
+        self.assertFalse(m.draft_mode)
+        games_pos, call_pos = self._order(m)
+        self.assertLess(games_pos, call_pos)

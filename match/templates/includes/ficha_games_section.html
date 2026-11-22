@@ -1,0 +1,60 @@
+{# Sección «Partidos» de la ficha (resultados por partido). #}
+{% load static i18n l10n rivals %}{% load zyra_format %}
+{% if not stage_view or not match.draft_mode %}
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2{% if match.draft_mode %} mt-4{% endif %}">
+    <h2 class="z-section-title my-0">{% translate "Partidos" %}</h2>
+    {% if can_manage and match.draft_mode and games_count %}
+    <a href="{% url 'enter_results' match.public_id %}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-pen-to-square me-1" aria-hidden="true"></i> {% translate "Poner resultados" %}</a>
+    {% endif %}
+</div>
+
+<div class="mt-3">
+{% for g in game_for_match %}
+    {% with r=g.result %}
+    <div class="z-card z-game" id="partido-{{ g.n_game }}">
+        <div class="z-game-head">
+            <h3>{% blocktranslate with n=g.n_game %}Partido {{ n }}{% endblocktranslate %} {% if match.club.rules.ordered_pairs %}<span class="text-muted fw-semibold">· {% blocktranslate with score=g.score|snp_points:"" %}{{ score }} pts{% endblocktranslate %}</span>{% endif %}{% if r.retired %} <span class="z-badge z-badge--outline" title="{% translate 'Partido finalizado por lesión' %}"><i class="fa-solid fa-bandage me-1" aria-hidden="true"></i>{% translate "Lesión" %}{% if r.injured_side == 'local' %} · {{ match.local_name }}{% elif r.injured_side == 'visiting' %} · {{ match.visiting_name }}{% endif %}</span>{% endif %}{% if g.no_show %} <span class="z-badge z-badge--outline"><i class="fa-solid fa-user-slash me-1" aria-hidden="true"></i>{{ g.get_no_show_display }}</span>{% endif %}</h3>
+            <div class="d-flex align-items-center gap-3">
+                <div class="z-game-sets-head" aria-hidden="true"><span>S1</span><span>S2</span><span>S3</span></div>
+                {% if can_manage %}
+                {% if r and match.draft_mode %}
+                <a href="{% url 'edit_result' g.public_id %}" class="z-edit position-static" aria-label="{% translate 'Editar resultado' %}"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
+                <form method="post" action="{% url 'delete_result' g.public_id %}" class="d-inline" data-no-submit-lock data-delete-result="{{ g.n_game }}">{% csrf_token %}<button type="submit" class="z-edit position-static" aria-label="{% translate 'Borrar resultado' %}"><i class="fa-solid fa-trash" aria-hidden="true"></i></button></form>
+                {% elif g.no_show and match.draft_mode %}
+                <a href="{% url 'enter_results' match.public_id %}#partido-{{ g.n_game }}" class="z-edit position-static" aria-label="{% translate 'Editar resultado' %}"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
+                {% elif not r and not g.no_show %}
+                <a href="{% url 'create_result' g.public_id %}" class="z-edit position-static" aria-label="{% translate 'Añadir resultado' %}"><i class="fa-solid fa-plus" aria-hidden="true"></i></a>
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+        <div class="z-game-row {% if g.winner == 'Local' %}is-winner{% endif %}{% if match.local.is_own %} is-own{% endif %}">
+            <div class="z-game-side">
+                <strong>{{ match.local_name }}</strong>
+                {{ g.local_pair_label }}
+            </div>
+            <span class="z-set">{{ r.set1_local|default_if_none:"–" }}</span>
+            <span class="z-set">{{ r.set2_local|default_if_none:"–" }}</span>
+            <span class="z-set">{{ r.set3_local|default_if_none:"–" }}</span>
+        </div>
+        <div class="z-game-row {% if g.winner == 'Visitante' %}is-winner{% endif %}{% if match.visiting.is_own %} is-own{% endif %}">
+            <div class="z-game-side">
+                <strong>{{ match.visiting_name }}</strong>
+                {{ g.visiting_pair_label }}
+            </div>
+            <span class="z-set">{{ r.set1_visiting|default_if_none:"–" }}</span>
+            <span class="z-set">{{ r.set2_visiting|default_if_none:"–" }}</span>
+            <span class="z-set">{{ r.set3_visiting|default_if_none:"–" }}</span>
+        </div>
+    </div>
+    {% endwith %}
+{% empty %}
+    <div class="z-empty">
+        <i class="fa-solid {% if match.no_show %}fa-user-slash{% else %}fa-table-tennis-paddle-ball{% endif %}" aria-hidden="true"></i>
+        {% if match.no_show %}{% blocktranslate with team=match.no_show_team %}No se jugó: {{ team }} no se presentó.{% endblocktranslate %}
+        {% elif call_for_match and not call_for_match.draft_mode %}{% translate "Todavía no hay partidos. La convocatoria está cerrada: ya puedes alinear las parejas." %}
+        {% else %}{% translate "Todavía no hay partidos. Primero hay que cerrar la convocatoria y alinear las parejas." %}{% endif %}
+    </div>
+{% endfor %}
+</div>
+{% endif %}
