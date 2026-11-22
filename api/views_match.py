@@ -82,6 +82,53 @@ def _games(match, games, me_id):
     return rows
 
 
+def _action(key, label, group, web_path, *, locked=False, reason=None, danger=False):
+    """Una acción de la hoja «Acciones»: abre ``web_path`` (o muestra ``reason`` si está bloqueada)."""
+    return {"key": key, "label": str(label), "group": group, "web_path": web_path, "locked": locked,
+            "reason": str(reason) if reason else None, "danger": danger}
+
+
+def _actions(match, call, games, membership):
+    """
+    Acciones de la hoja de quien gestiona, agrupadas (``call``, ``pairs``, ``report``, ``match``). Las que no se pueden
+    hacer salen con ``locked`` y el motivo en ``reason``. Por ahora todas abren una página de la web: las que en la web
+    son un envío (reabrir, reenviar, no presentado) abren la ficha, donde está el botón.
+    """
+    ficha = reverse("call_for_match", args=[match.public_id])
+    has_results = any(g.result is not None for g in games)
+    all_results = bool(games) and all(g.result is not None for g in games)
+    out = []
+    if call is not None:
+        locked = has_results
+        out.append(_action("edit_call", _("Editar convocatoria"), "call", reverse("edit_call", args=[call.public_id]),
+                           locked=locked, reason=_("Hay resultados guardados: no se puede cambiar la convocatoria. "
+                                                   "Borra el resultado del partido para poder hacerlo.") if locked else None))
+        if not call.draft_mode:
+            blocked = bool(games)
+            out.append(_action("reopen_call", _("Reabrir convocatoria"), "call", ficha, locked=blocked,
+                               reason=_("Hay parejas alineadas: no se puede reabrir la convocatoria.") if blocked else None))
+        out.append(_action("call_log", _("Advertencias"), "call", reverse("view_call_log", args=[call.public_id])))
+    if games:
+        out.append(_action("edit_games", _("Editar parejas"), "pairs", reverse("edit_games_match", args=[match.public_id]),
+                           locked=all_results,
+                           reason=_("Todos los partidos tienen resultado: no se pueden cambiar las parejas. "
+                                    "Borra el resultado del partido para poder hacerlo.") if all_results else None))
+        out.append(_action("enter_results", _("Poner resultados"), "pairs", reverse("enter_results", args=[match.public_id])))
+    if call is not None:
+        out.append(_action("report_pdf", _("Informe PDF"), "report", reverse("call_report", args=[match.public_id])))
+        if not call.draft_mode:
+            out.append(_action("resend_report", _("Reenviar informe"), "report", ficha))
+    if match.draft_mode:
+        out.append(_action("edit_date", _("Cambiar fecha y hora"), "match", reverse("edit_match_date", args=[match.public_id])))
+        if match.club.rules.no_show and not match.is_friendly:
+            out.append(_action("no_show_rival", _("No se presentó el rival"), "match", ficha))
+            out.append(_action("no_show_own", _("No nos presentamos"), "match", ficha, danger=True))
+        if not match.was_closed or membership.is_admin:
+            out.append(_action("delete", _("Eliminar enfrentamiento"), "match",
+                               reverse("delete_match", args=[match.public_id]) + "?desde=ficha", danger=True))
+    return out
+
+
 class MatchView(ApiView):
     """``GET /api/v1/matches/<id>``: ficha de un enfrentamiento de un equipo activo de la cuenta."""
 
@@ -97,7 +144,8 @@ class MatchView(ApiView):
             public_id=match_id, club_id__in=list(members)).first()
         if match is None:
             raise ApiError("not_found", _("No encontrado."), 404)
-        can_manage = members[match.club_id].can_manage
+        membership = members[match.club_id]
+        can_manage = membership.can_manage
         call = Call.objects.filter(match=match).first()
         games = list(Game.objects.filter(match=match).order_by("n_game").select_related(
             "player_1_local", "player_2_local", "player_1_visiting", "player_2_visiting").prefetch_related("results"))
@@ -142,6 +190,7 @@ class MatchView(ApiView):
                 "players": [{"name": p.short_name, "sub": p.is_sub, "me": bool(player) and p.id == player.id}
                             for p in convocados]},
             "games": _games(match, games, player.id if player else None),
+            "actions": _actions(match, call, games, membership) if can_manage else [],
             "answer": None if player is None else {
                 "can_answer": open_for_answers, "value": availability.answer if availability else None,
                 "comment": availability.comment if availability else ""},

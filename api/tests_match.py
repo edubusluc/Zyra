@@ -11,7 +11,7 @@ from call.models import Availability, Call
 from core.models import Membership
 from core.services import create_club
 from match import outcomes
-from match.models import Match
+from match.models import Game, Match, Result
 from players.models import Player
 from team.models import Team
 
@@ -109,3 +109,19 @@ class MatchApiTests(TestCase):
         call.players.add(self.me)
         self.assertIsNone(self.get(self.user_token).json()["call"])
         self.assertIsNotNone(self.get(self.captain_token).json()["call"])
+
+    def test_actions_only_for_managers_and_locked_with_results(self):
+        """Las acciones solo las recibe quien gestiona; con resultados guardados editar la convocatoria sale bloqueada."""
+        call = Call.objects.create(match=self.match)
+        call.players.add(self.me)
+        self.assertEqual(self.get(self.user_token).json()["actions"], [])
+        actions = {a["key"]: a for a in self.get(self.captain_token).json()["actions"]}
+        self.assertFalse(actions["edit_call"]["locked"])
+        self.assertIn("edit_date", actions)
+        self.assertTrue(actions["delete"]["danger"])
+        game = Game.objects.create(match=self.match, n_game=1, score=3, player_1_local=self.me,
+                                   player_2_local=Player.objects.create(club=self.club, name="Ana", last_name="Gil", in_team=True))
+        Result.objects.create(game=game, result=outcomes.LOCAL_WIN, set1_local=6, set1_visiting=3, set2_local=6, set2_visiting=4)
+        actions = {a["key"]: a for a in self.get(self.captain_token).json()["actions"]}
+        self.assertTrue(actions["edit_call"]["locked"])
+        self.assertTrue(actions["edit_call"]["reason"])
