@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 22/11/2026 · Con el acta cerrada, primero los resultados
+
+- En la ficha del enfrentamiento con el acta cerrada aparece primero «Partidos» (resultados) y después «Convocatoria» (convocados). Con el acta abierta el orden no cambia, y la visibilidad de la lista para jugadores tampoco.
+
 ## 22/11/2026 · Con resultados guardados no se cambia la convocatoria ni las parejas con resultado
 
 - En cuanto un partido tiene resultado, la convocatoria deja de poder editarse y las parejas de los partidos con resultado no se pueden cambiar ni reordenar (sus sets irían a otra pareja). Los partidos sin resultado siguen editables. No se puede borrar la convocatoria con parejas alineadas.
