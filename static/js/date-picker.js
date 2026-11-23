@@ -218,8 +218,12 @@
       const inside = e.composedPath ? e.composedPath().includes(wrap) : wrap.contains(e.target);
       if (!inside && e.target.isConnected) close(false);
     });
-    wrap.addEventListener('focusout', (e) => {
-      if (e.relatedTarget && !wrap.contains(e.relatedTarget)) close(false);
+    // Tab hacia fuera: se mira dónde queda el foco ya asentado (Safari informa mal de relatedTarget)
+    wrap.addEventListener('focusout', () => {
+      setTimeout(() => {
+        const now = document.activeElement;
+        if (wrap.classList.contains('is-open') && now && now !== document.body && !wrap.contains(now)) close(false);
+      }, 0);
     });
 
     // Un input oculto no pasa por la validación del navegador: se comprueba aquí
