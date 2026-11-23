@@ -133,3 +133,49 @@ class MyStatsApiTests(ClubDataMixin, TestCase):
     def test_invalid_filter_is_400(self):
         """Una temporada desconocida: 400."""
         self.assertEqual(self.get(self.token, season="1999-2000").status_code, 400)
+
+
+class PlayerStatsApiTests(ClubDataMixin, TestCase):
+    """Ficha de un jugador de la plantilla: mismas cifras que la web, filtros por petición y acceso por equipo."""
+
+    def setUp(self):
+        """Un token del capitán, otro de un extraño y la jugadora A del club de los datos."""
+        super().setUp()
+        cache.clear()
+        caches["ratelimit"].clear()
+        _, self.token = issue_token(self.user, "iPhone")
+        stranger = User.objects.create_user("otro", password="pass-12345")
+        create_club("Club Vacío", "Gijón", stranger)
+        _, self.stranger_token = issue_token(stranger, "iPhone")
+        self.player = Player.objects.filter(club=self.club, in_team=True).order_by("name").first()
+
+    def get(self, token, player=None, **params):
+        """GET de la ficha con el token dado."""
+        url = reverse("api_player_stats", args=[self.club.public_id, (player or self.player).public_id])
+        return self.client.get(url, params, HTTP_AUTHORIZATION=f"Bearer {token}")
+
+    def test_requires_token_and_team(self):
+        """Sin token 401; con un token de otro equipo 404."""
+        url = reverse("api_player_stats", args=[self.club.public_id, self.player.public_id])
+        self.assertEqual(self.client.get(url).status_code, 401)
+        self.assertEqual(self.get(self.stranger_token).status_code, 404)
+
+    def test_numbers_match_the_web(self):
+        """Cifras, temporadas y partidos coinciden con la ficha de la web."""
+        response = self.get(self.token, season="all", match_type="todos")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        web = self.client.get(reverse("player_statistics"), {"player": self.player.public_id, "season": "all", "match_type": "todos"})
+        self.assertEqual(data["summary"]["played"], web.context["s"]["played"])
+        self.assertEqual(data["summary"]["wins"], web.context["s"]["wins"])
+        self.assertEqual(len(data["games"]), len(web.context["games"]))
+        self.assertEqual(len(data["game_numbers"]), 5)
+        self.assertEqual(data["hero"]["id"], str(self.player.public_id))
+
+    def test_unknown_player_and_filters(self):
+        """Un jugador de otro club da 404; una temporada o tipo desconocidos, 400."""
+        other = Player.objects.exclude(club=self.club).first()
+        if other:
+            self.assertEqual(self.get(self.token, player=other).status_code, 404)
+        self.assertEqual(self.get(self.token, season="1999-2000").status_code, 400)
+        self.assertEqual(self.get(self.token, match_type="raro").status_code, 400)
