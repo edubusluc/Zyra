@@ -29,18 +29,24 @@
             </div>
         </div>
         <div class="z-game-row {% if g.winner == 'Local' %}is-winner{% endif %}{% if match.local.is_own %} is-own{% endif %}">
-            <div class="z-game-side">
-                <strong>{{ match.local_name }}</strong>
-                {{ g.local_pair_label }}
+            <div class="z-game-side{% if g.local_pair_label %} has-pair{% endif %}">
+                {% if g.local_pair_label %}{% include 'includes/game_pair_avatars.html' with p1=g.player_1_local p2=g.player_2_local n1=g.removed_player_names.player_1_local n2=g.removed_player_names.player_2_local %}{% endif %}
+                <span class="z-game-who">
+                    <strong>{{ match.local_name }}</strong>
+                    {{ g.local_pair_label }}
+                </span>
             </div>
             <span class="z-set">{{ r.set1_local|default_if_none:"–" }}</span>
             <span class="z-set">{{ r.set2_local|default_if_none:"–" }}</span>
             <span class="z-set">{{ r.set3_local|default_if_none:"–" }}</span>
         </div>
         <div class="z-game-row {% if g.winner == 'Visitante' %}is-winner{% endif %}{% if match.visiting.is_own %} is-own{% endif %}">
-            <div class="z-game-side">
-                <strong>{{ match.visiting_name }}</strong>
-                {{ g.visiting_pair_label }}
+            <div class="z-game-side{% if g.visiting_pair_label %} has-pair{% endif %}">
+                {% if g.visiting_pair_label %}{% include 'includes/game_pair_avatars.html' with p1=g.player_1_visiting p2=g.player_2_visiting n1=g.removed_player_names.player_1_visiting n2=g.removed_player_names.player_2_visiting %}{% endif %}
+                <span class="z-game-who">
+                    <strong>{{ match.visiting_name }}</strong>
+                    {{ g.visiting_pair_label }}
+                </span>
             </div>
             <span class="z-set">{{ r.set1_visiting|default_if_none:"–" }}</span>
             <span class="z-set">{{ r.set2_visiting|default_if_none:"–" }}</span>

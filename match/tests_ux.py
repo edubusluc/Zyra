@@ -725,3 +725,17 @@ class FichaPreviewTests(UxBase):
         page = self.ficha(m)
         self.assertContains(page, "z-stage-closed")
         self.assertContains(page, "z-game-head")
+
+    def test_game_pair_shows_overlapped_avatars_photo_or_initials(self):
+        m = self.match(PAST)
+        self.closed_call(m)
+        games = self.lineup(m)
+        player = games[0].player_1_local
+        player.photo = "players/foto.webp"
+        player.save()
+        m.draft_mode = False
+        m.save()
+        page = self.ficha(m)
+        self.assertContains(page, 'class="z-game-pair"')
+        self.assertContains(page, "players/foto.webp")
+        self.assertContains(page, "z-avatar--initials z-avatar--game")
