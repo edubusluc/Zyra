@@ -29,6 +29,7 @@ va autenticada con un **token de dispositivo**. El código está en `api/`; las 
 | `GET /me` | no | Arranque de la app: cuenta, equipos con rol, temporada y capacidades. Con `ETag` (304 si no cambió) |
 | `GET /me/stats` | no | «Yo» (Mis estadísticas): lo de la persona en todas sus fichas, con filtros `season` y `match_type`. Con `ETag` |
 | `GET /teams/<id>/stats/team` | no | Estadísticas · Equipo del equipo `<id>` (cualquier miembro): balance, forma, puntos, sets, récords, plantilla, SNP y asistencia. Con `ETag` |
+| `GET /teams/<id>/stats/players/<player_id>` | no | Ficha de un jugador de la plantilla (la de «Yo» si es el propio): cabecera, cifras, temporadas, sets, convocatorias, compañeros, frente a la plantilla, SNP y partidos. Filtros `season` y `match_type`. Con `ETag` |
 | `GET /home` | no | Datos del Inicio nativo: situación de la cuenta, equipos y rol en cada uno |
 | `GET /matches/<id>` | no | Ficha de un enfrentamiento del equipo de la cuenta: estado, fases, convocados, parejas, respuesta del jugador y acción principal de quien gestiona |
 | `GET /ping` | no | Comprueba que el token sirve, cuándo caduca y a qué equipo pertenece |
@@ -61,6 +62,7 @@ Estadísticas de solo lectura para la app. No calculan nada propio: juntan lo qu
 
 - `/me/stats`: `state` (`ok` o `no_player` sin ficha enlazada), `filters`, `headline` (frase calculada en el servidor), `teams`, `single_player` (con una sola ficha, para abrirla directamente), `me` (cifras de todas las fichas), `players` (una fila por ficha) y `charts` (series por competición).
 - `/teams/<id>/stats/team`: `filters`, `has_matches` y, si hay partidos cerrados, `balance`, `tiebreaks`, `pairs_chart`, `game_numbers`, `sets`, `set_rows`, `records`, `form`, `league`, `points`, `venue`, `walkovers`, `attendance`, `snp` y `roster`. Un equipo ajeno responde 404.
+- `/teams/<id>/stats/players/<player_id>`: `filters`, `hero` (nombre, papel, puesto, mano, pareja habitual, puntos y puesto SNP), `summary`, `form`, `league`, `finals`, `seasons`, `trend`, `snp_seasons`, `signup`, `lineup`, `game_numbers`, `set_rows`, `partners`, `squad` (comparación calculada por `_squad_compare`) y `games`. Sin `season` vale «todas». Un jugador de otro equipo da 404.
 
 ### `GET /ping`
 

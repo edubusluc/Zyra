@@ -4,18 +4,22 @@ No calcula nada: junta lo que ya calculan las funciones de ``data_analyse`` (las
 La web guarda la temporada elegida en la sesión; aquí la temporada y el tipo van siempre en la petición (``season``,
 ``match_type``) y, sin ``season``, vale la temporada actual si el equipo tiene partidos en ella y, si no, «todas».
 """
+from types import SimpleNamespace
+
+from django.http import Http404
 from django.utils.translation import gettext as _, ngettext
 
 from core.season_choice import ALL_SEASONS
-from data_analyse import comparison, pairs as pair_stats, records, roster_table, team_card
+from data_analyse import comparison, pairs as pair_stats, player_card, records, roster_table, team_card
 from data_analyse.attendance import signup_attendance
 from data_analyse.sets import by_game_number, set_stats
 from core.spaces import player_history
-from data_analyse.views import (ALL_TYPES, COMPETITIVE, build_game_log, calculate_match_statistics, calculate_tiebreak_stats,
+from data_analyse.views import (ALL_TYPES, COMPETITIVE, _squad_compare, aligned_by_season, build_game_log, degree_of_affinity,
+                                lineup_summary, season_games, summarize_by_season, calculate_match_statistics, calculate_tiebreak_stats,
                                 calls_by_season, column_chart, format_for_chart, get_total_season, players_charts,
                                 signup_summary, summarize)
 from match.models import Match
-from players.models import Player, current_season
+from players.models import Player, current_season, joined_by
 
 from .errors import ApiError
 from .responses import json_ok
@@ -161,4 +165,80 @@ class MyStatsView(ApiView):
             "players": rows,
             "charts": players_charts(players, logs, season, kind),
         })
+        return json_ok(data)
+
+
+class PlayerStatsView(ApiView):
+    """
+    ``GET /api/v1/teams/<id>/stats/players/<player_id>``: la ficha de un jugador de la plantilla (la de «Yo» cuando es el propio
+    jugador). Filtros ``season`` y ``match_type`` como en Equipo; sin ``season`` vale «todas» (la ficha enseña la evolución).
+    Junta lo que calcula ``_player_page`` en la web: cabecera, cifras, temporadas, sets, reparto por partido, convocatorias,
+    compañeros, «Frente a la plantilla», puntos SNP y los partidos jugados. Lleva ``ETag``.
+    """
+    etag = True
+
+    def get(self, request, team_id, player_id):
+        """``filters``, ``hero``, ``summary``, ``seasons``, ``trend``, ``set_rows``, ``game_numbers``, ``signup``, ``lineup``, ``partners``, ``squad``, ``snp`` y ``games``."""
+        membership = membership_for_team(request.user, team_id)
+        club = membership.club
+        player = Player.objects.filter(public_id=player_id, club=club).first()
+        if player is None:
+            raise Http404("Jugador no encontrado")
+        squad = list(Player.objects.filter(club=club, in_team=True).order_by("name", "last_name"))
+        seasons_all = sorted(get_total_season(Match.objects.filter(club=club, draft_mode=False)),
+                             key=lambda s: int(s.split("-")[0]), reverse=True)
+        played = {g["season"] for g in build_game_log(player)}
+        seasons = [s for s in seasons_all if s in played or joined_by(player.joined_season, s)]
+        asked = request.GET.get("season")
+        if asked and asked != ALL_SEASONS and asked not in seasons:
+            raise ApiError("invalid", _("Temporada no válida."), 400)
+        season = asked if asked in seasons else None
+        _s, kind = _filters(request, seasons or [None])
+        log = build_game_log(player, kind)
+        season_log = [g for g in log if g["season"] == season] if season else log
+        present, total = calls_by_season(player, kind)
+        rows = summarize_by_season(log, present, total)
+        aligned = aligned_by_season(player, kind)
+        for r in rows:
+            r["aligned"] = aligned.get(r["season"], 0)
+        only = (lambda d: {k: v for k, v in d.items() if k == season}) if season else (lambda d: d)
+        affinity = degree_of_affinity(player, kind, season)
+        snp_updated = player.snp_history.order_by("-date").values_list("date", flat=True).first()
+        is_me = request.user.id in (player.user_id, player.past_user_id)
+        summary = summarize(season_log)
+        clutch = set_stats(season_log)
+        games = season_games(player, season, kind)
+        data = {
+            "filters": {"seasons": seasons, "season": season or ALL_SEASONS, "match_type": kind or ALL_TYPES,
+                        "match_types": [ALL_TYPES, COMPETITIVE, Match.AMISTOSO]},
+            "hero": {"id": str(player.public_id), "name": player.full_name, "role": str(player_card.role_label(player)),
+                     "position": player.get_position_display(), "hand": player.get_skillfull_hand_display(),
+                     "joined_season": player.joined_season, "partner": player_card.usual_partner(affinity),
+                     "competition": club.competition, "has_snp": club.rules.has_snp, "snp_score": player.snp_score,
+                     "snp_rank": player_card.snp_rank(player), "snp_updated": snp_updated,
+                     "snp_stale": records.snp_is_stale(snp_updated), "is_me": bool(is_me)},
+            "summary": {k: summary[k] for k in ("played", "wins", "losses", "pct", "points", "points_possible", "streak_type",
+                                                "streak_len", "best_win_streak", "worst_loss_streak", "local_played",
+                                                "local_wins", "local_losses", "visiting_played", "visiting_wins",
+                                                "visiting_losses")},
+            "form": [g["won"] for g in season_log][-5:],
+            "league": player_card.league_rounds(player, season),
+            "finals": player_card.league_rounds(player, current_season()),
+            "seasons": rows,
+            "trend": comparison.trend(rows),
+            "snp_seasons": player_card.snp_by_season(player),
+            "signup": signup_summary(only(present), only(total)),
+            "lineup": lineup_summary(only(present), only(aligned)),
+            "game_numbers": by_game_number(season_log),
+            "set_rows": [{"label": str(label), "hint": str(hint), **situation}
+                         for label, hint, situation in comparison.set_situation_rows(clutch)],
+            "partners": [{"id": a.get("public_id") and str(a["public_id"]), "name": a["name"], "games": a["games"],
+                          "wins": a["wins"], "losses": a["losses"], "pct": a["pct"]}
+                         for a in comparison.partner_rows(affinity)],
+            "squad": _squad_compare(SimpleNamespace(club=club), player, squad, season, kind, bool(is_me))
+            if player in squad else None,
+            "games": [{"match_id": str(g["match_public_id"]), "n_game": g["n_game"], "date": g["date"], "rival": g["rival"],
+                       "local": g["local"], "neutral": g["neutral"], "partner": g["partner"].short_name if g["partner"] else None,
+                       "sets": g["sets"], "won": g["won"], "points": g["points"]} for g in games],
+        }
         return json_ok(data)

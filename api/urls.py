@@ -38,6 +38,8 @@ urlpatterns = [
     re_path(r"^home/my-form/?$", views_home.MyFormView.as_view(), name="api_home_my_form"),
     re_path(r"^home/?$", views_home.HomeView.as_view(), name="api_home"),
     re_path(r"^teams/(?P<team_id>[\w-]+)/stats/team/?$", views_stats.TeamStatsView.as_view(), name="api_team_stats"),
+    re_path(r"^teams/(?P<team_id>[\w-]+)/stats/players/(?P<player_id>[\w-]+)/?$", views_stats.PlayerStatsView.as_view(),
+            name="api_player_stats"),
     re_path(r"^me/stats/?$", views_stats.MyStatsView.as_view(), name="api_my_stats"),
     re_path(r"^me/?$", views.MeView.as_view(), name="api_me"),
     re_path(r"^ping/?$", views.PingView.as_view(), name="api_ping"),
