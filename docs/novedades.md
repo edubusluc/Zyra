@@ -5,7 +5,7 @@ añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la docume
 
 ## 23/11/2026 · Fotos de la pareja en «Partidos»
 
-- En la sección «Partidos» de la ficha, la pareja propia de cada partido muestra sus dos avatares solapados junto al nombre: la foto del jugador o, si no tiene, sus iniciales. Un jugador eliminado conserva solo las iniciales. No hay consultas nuevas.
+- En la sección «Partidos» de la ficha, la pareja propia de cada partido muestra sus dos avatares, uno junto al otro, junto al nombre: la foto del jugador o, si no tiene, sus iniciales. Un jugador eliminado conserva solo las iniciales. No hay consultas nuevas.
 
 ## 23/11/2026 · Cambiar el lugar de un enfrentamiento
 
