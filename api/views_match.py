@@ -4,7 +4,7 @@ import logging
 
 from django.db import transaction
 from django.urls import reverse
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext as _, ngettext
 
 from call import availability as availability_logic
 from call.models import Availability, Call, ReportDelivery
@@ -12,7 +12,7 @@ from core.competitions import competition_for
 from core.templatetags.zyra_format import date_short
 from match import league, lineup, outcomes
 from match.models import Game, Match
-from match.notifications import is_past_match, send_call_report
+from match.notifications import admin_emails, is_past_match, send_call_report
 from match.phase import (CLOSE_CALL, CLOSE_MATCH, CREATE_CALL, CREATE_GAMES, ENTER_RESULTS, NOTHING, STEPS, phase_for,
                          player_status)
 from match.views import OUTCOME_LABELS, validate_call, call_roster, club_score, lineup_rows, match_outcome, stage_countdown
@@ -33,7 +33,48 @@ def _steps(phase):
             for label, step in zip(STEPS, phase.track)]
 
 
-def _primary(match, phase, can_manage):
+def _close_confirm(match, phase, call):
+    """
+    Aviso previo a cerrar la convocatoria, con los mismos textos que el de la web (``ficha_close_call.html``): ``title``,
+    ``message``, ``action``, ``allow_short`` (cerrar por debajo del mínimo, ya admitido por la competición) y, si procede,
+    ``check`` (``name``, ``label``, ``hint``: la casilla que la app envía como booleano con ese nombre).
+    """
+    count = call.players.count() if call else phase.called
+    parts = []
+    short = phase.missing_players and not phase.blocked_by_min
+    if short:
+        parts.append(ngettext(
+            "Se va a cerrar la convocatoria con %(n)s jugador menos del mínimo (%(called)s de %(total)s). Hazlo solo si hay bajas, por ejemplo por lesión.",
+            "Se va a cerrar la convocatoria con %(n)s jugadores menos del mínimo (%(called)s de %(total)s). Hazlo solo si hay bajas, por ejemplo por lesión.",
+            phase.missing_players) % {"n": phase.missing_players, "called": phase.called, "total": phase.min_call})
+    parts.append(ngettext("Se cierra la convocatoria con %(n)s convocado: ya no se podrá apuntar ni quitar a nadie.",
+                          "Se cierra la convocatoria con %(n)s convocados: ya no se podrá apuntar ni quitar a nadie.", count) % {"n": count})
+    finals = bool(call) and bool(league.finals_shortfall(match, call.players.all()))
+    already = bool(call and call.report_deliveries.filter(status=ReportDelivery.SENT).exists())
+    past = is_past_match(match)
+    emails = ", ".join(admin_emails(match.club))
+    check = None
+    if finals:
+        check = {"name": "force_finals", "label": _("Convocarlos igualmente (la organización lo ha autorizado)"), "hint": None}
+    elif already:
+        check = {"name": "resend_report", "label": _("Volver a enviar el informe"),
+                 "hint": _("El informe de esta convocatoria ya se envió a los capitanes. Márcalo solo si ha cambiado algo que deban saber.")}
+    elif past:
+        check = {"name": "resend_report", "label": _("Enviar el informe por email"),
+                 "hint": _("La fecha del enfrentamiento ya pasó: por defecto no se envía el informe. Márcalo solo si lo necesitas.")}
+    if already and not finals:
+        parts.append(_("El informe ya se envió a los capitanes: marca la casilla si quieres enviarlo otra vez."))
+    elif past:
+        parts.append(_("La fecha del enfrentamiento ya pasó: no se enviará el informe salvo que marques la casilla."))
+    elif emails:
+        parts.append(_("Se enviará el informe PDF a: %(emails)s") % {"emails": emails})
+    else:
+        parts.append(_("Ningún capitán tiene email: no se enviará el informe."))
+    return {"title": _("Cerrar la convocatoria"), "message": " ".join(parts), "action": _("Cerrar y enviar"),
+            "allow_short": bool(short), "check": check}
+
+
+def _primary(match, phase, can_manage, call=None):
     """
     Acción principal de quien gestiona: ``{"key", "label", "web_path", "enabled", "reason"}``. En esta fase la app
     abre el paso en la web; ``enabled`` es falso (con ``reason``) si todavía no se puede dar el paso.
@@ -48,7 +89,7 @@ def _primary(match, phase, can_manage):
         blocked = phase.blocked_by_min
         reason = (_("Faltan %(n)s apuntados") % {"n": phase.missing_players}) if blocked else None
         return {"key": "close_call", "label": _("Cerrar convocatoria"), "web_path": ficha, "enabled": not blocked,
-                "reason": reason}
+                "reason": reason, "confirm": None if blocked else _close_confirm(match, phase, call)}
     if phase.action == CREATE_GAMES:
         return {"key": "create_games", "label": _("Alinear parejas"), "web_path": reverse("create_game", args=[match.public_id]),
                 "enabled": True, "reason": None}
@@ -190,7 +231,7 @@ class MatchView(ApiView):
             "steps": _steps(phase),
             "me": _me(status, player is not None, can_manage, bool(games)),
             "can_manage": can_manage,
-            "primary": _primary(match, phase, can_manage),
+            "primary": _primary(match, phase, can_manage, call),
             "call": None if not show_call else {
                 "count": len(convocados), "min": competition_for(match).min_call_players, "closed": not call.draft_mode,
                 "players": [{"name": p.short_name, "sub": p.is_sub, "me": bool(player) and p.id == player.id}

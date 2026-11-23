@@ -186,3 +186,15 @@ class CloseCallApiTests(TestCase):
         """Las marcas deben ser booleanos."""
         self._call(3)
         self.assertEqual(self.post(self.captain_token, {"allow_short": "si"}).status_code, 400)
+
+    def test_primary_close_call_carries_confirmation(self):
+        """«Cerrar convocatoria» trae el aviso de la web: título, texto, acción y, si procede, casilla."""
+        from core.competitions import competition_for
+        self._call(competition_for(self.match).min_call_players)
+        confirm = self.client.get(reverse("api_match", args=[self.match.public_id]),
+                                  HTTP_AUTHORIZATION=f"Bearer {self.captain_token}").json()["primary"]["confirm"]
+        self.assertEqual(confirm["title"], "Cerrar la convocatoria")
+        self.assertEqual(confirm["action"], "Cerrar y enviar")
+        self.assertIn("Se cierra la convocatoria con", confirm["message"])
+        self.assertFalse(confirm["allow_short"])
+        self.assertIsNone(confirm["check"])
