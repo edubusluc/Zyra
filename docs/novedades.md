@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 22/11/2026 · Disponibilidad debajo de la convocatoria
+
+- En la ficha, la tarjeta «¿Puedes jugar?» / «Disponibilidad» pasa a ir justo debajo de «Convocatoria» (antes iba encima de la «Previa»).
+
 ## 22/11/2026 · Con el acta cerrada, primero los resultados
 
 - En la ficha del enfrentamiento con el acta cerrada aparece primero «Partidos» (resultados) y después «Convocatoria» (convocados). Con el acta abierta el orden no cambia, y la visibilidad de la lista para jugadores tampoco.
