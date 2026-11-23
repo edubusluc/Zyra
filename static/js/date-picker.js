@@ -220,11 +220,13 @@
       const inside = e.composedPath ? e.composedPath().includes(wrap) : wrap.contains(e.target);
       if (!inside && e.target.isConnected) close(false);
     });
-    // Tab hacia fuera: se cierra cuando el foco ENTRA en otro elemento. No se usa focusout porque
-    // Safari lo dispara al pulsar una flecha (sus botones no reciben foco) y el calendario se
-    // cerraba antes de que llegara el clic.
-    document.addEventListener('focusin', (e) => {
-      if (wrap.classList.contains('is-open') && !wrap.contains(e.target)) close(false);
+    // Tab hacia fuera: solo con el teclado. Con el ratón Safari manda el foco al contenedor de la
+    // página (<main>) al pulsar una flecha, así que el foco no sirve para saber si se pulsó fuera.
+    wrap.addEventListener('keydown', (e) => {
+      if (e.key !== 'Tab') return;
+      setTimeout(() => {
+        if (wrap.classList.contains('is-open') && !wrap.contains(document.activeElement)) close(false);
+      }, 0);
     });
 
     // Un input oculto no pasa por la validación del navegador: se comprueba aquí
