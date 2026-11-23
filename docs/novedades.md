@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 23/11/2026 · Cambiar el lugar de un enfrentamiento
+
+- El formulario de edición de un enfrentamiento abierto permite cambiar también el lugar. El cambio es solo de ese partido: no modifica la localización del equipo propio ni la del rival.
+
 ## 23/11/2026 · El calendario de fechas no se cierra al cambiar de mes
 
 - En el selector de fecha (crear enfrentamiento, cambiar fecha) las flechas de mes anterior y siguiente mantienen el calendario abierto y el foco en la flecha.

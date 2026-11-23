@@ -11584,6 +11584,12 @@ msgstr[1] "%(n)s league points"
 msgid "Cambiar fecha y hora"
 msgstr "Change date and time"
 
+#: match/templates/includes/ficha_more.html:31
+#: match/templates/edit_match_date.html:4
+#: match/templates/edit_match_date.html:7
+msgid "Cambiar fecha, hora y lugar"
+msgstr "Change date, time and place"
+
 #: match/templates/call_for_match.html:36
 msgid "Fases del enfrentamiento"
 msgstr "Fixture stages"
