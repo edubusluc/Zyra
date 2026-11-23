@@ -27,6 +27,8 @@ va autenticada con un **token de dispositivo**. El código está en `api/`; las 
 | Método y ruta | Público | Para qué |
 |---|---|---|
 | `GET /me` | no | Arranque de la app: cuenta, equipos con rol, temporada y capacidades. Con `ETag` (304 si no cambió) |
+| `GET /me/stats` | no | «Yo» (Mis estadísticas): lo de la persona en todas sus fichas, con filtros `season` y `match_type`. Con `ETag` |
+| `GET /teams/<id>/stats/team` | no | Estadísticas · Equipo del equipo `<id>` (cualquier miembro): balance, forma, puntos, sets, récords, plantilla, SNP y asistencia. Con `ETag` |
 | `GET /home` | no | Datos del Inicio nativo: situación de la cuenta, equipos y rol en cada uno |
 | `GET /matches/<id>` | no | Ficha de un enfrentamiento del equipo de la cuenta: estado, fases, convocados, parejas, respuesta del jugador y acción principal de quien gestiona |
 | `GET /ping` | no | Comprueba que el token sirve, cuándo caduca y a qué equipo pertenece |
@@ -53,6 +55,12 @@ va autenticada con un **token de dispositivo**. El código está en `api/`; las 
 `state`, `teams` (con los mismos campos que en `/home` más `can_admin`, verdadero para el capitán), `suspended_clubs`, `has_player` y `has_history` se calculan igual que en `/home`.
 Es la única respuesta de la API que se puede guardar en el cliente: lleva `ETag` y `Cache-Control: private, no-cache`; con `If-None-Match` igual responde **304** sin cuerpo.
 El resto de respuestas siguen con `Cache-Control: no-store`.
+
+### `GET /me/stats` y `GET /teams/<id>/stats/team`
+Estadísticas de solo lectura para la app. No calculan nada propio: juntan lo que ya calculan las funciones de `data_analyse` (las mismas que la web), así que las cifras coinciden. Filtros por parámetro (la API no tiene sesión): `season` (`2025-2026` o `all`; sin ella, la temporada actual si hay partidos en ella y, si no, `all`) y `match_type` (`competitivo` por defecto, `todos`, `amistoso` o un tipo concreto); un valor desconocido responde 400 `invalid`. En Equipo, `lado` y `orden` ordenan la tabla de plantilla como en la web. Ambas llevan `ETag`.
+
+- `/me/stats`: `state` (`ok` o `no_player` sin ficha enlazada), `filters`, `headline` (frase calculada en el servidor), `teams`, `single_player` (con una sola ficha, para abrirla directamente), `me` (cifras de todas las fichas), `players` (una fila por ficha) y `charts` (series por competición).
+- `/teams/<id>/stats/team`: `filters`, `has_matches` y, si hay partidos cerrados, `balance`, `tiebreaks`, `pairs_chart`, `game_numbers`, `sets`, `set_rows`, `records`, `form`, `league`, `points`, `venue`, `walkovers`, `attendance`, `snp` y `roster`. Un equipo ajeno responde 404.
 
 ### `GET /ping`
 

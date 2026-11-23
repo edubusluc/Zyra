@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 23/11/2026 · API de la app iOS: estadísticas de «Yo» y de Equipo
+
+Nuevos `GET /api/v1/me/stats` y `GET /api/v1/teams/<id>/stats/team` (solo lectura, con `ETag`) con los mismos cálculos que la web. `core.spaces.player_history` saca las fichas de la persona sin necesitar una petición web. Sin cambios en la web.
+
 ## 23/11/2026 · API de la app iOS: arranque (`GET /me`) y caché con ETag
 
 Nueva respuesta `GET /api/v1/me` con la cuenta, sus equipos y el rol en cada uno, que la app podrá guardar con `ETag`. Ayudante `api/teams.py` para resolver equipos por token. Sin cambios en la web.
