@@ -18,6 +18,7 @@ from players import copy as player_copy
 from players.models import Player, current_season
 
 from .fields import invalid
+from .teams import active_memberships
 from .responses import json_ok
 from .views_setup import setup_blocks
 from .views_base import ApiView
@@ -29,16 +30,8 @@ def _display_name(user):
 
 
 def _memberships(user):
-    """Membresías de la cuenta: (activas, clubes suspendidos), con las activas en el orden de las competiciones.
-
-    Mismo criterio que el middleware de la web: no cuentan los clubes suspendidos ni los archivados.
-    """
-    memberships = list(Membership.objects.filter(user=user).select_related("club").order_by("club__name"))
-    suspended = [m.club for m in memberships if m.club.is_suspended]
-    active = [m for m in memberships if not m.club.is_suspended and not m.club.is_archived]
-    order = list(COMPETITIONS)
-    active.sort(key=lambda m: order.index(m.club.competition) if m.club.competition in order else len(order))
-    return active, suspended
+    """Membresías de la cuenta: (activas, clubes suspendidos). Ver ``api.teams.active_memberships``."""
+    return active_memberships(user)
 
 
 def _team(membership):

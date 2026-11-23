@@ -3,10 +3,11 @@ Clase base de todas las vistas de la API. Es la única puerta: aquí (y solo aqu
 autentica por token, se aplican los límites, se elige el idioma y se da formato a los errores. Una vista
 concreta solo escribe ``get``/``post``/… y devuelve ``json_ok``.
 """
+import hashlib
 import json
 
 from django.conf import settings
-from django.http import Http404
+from django.http import Http404, HttpResponseNotModified
 from django.utils import translation
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext as _
@@ -36,6 +37,10 @@ class ApiView(View):
     por IP, para frenar a quien los pruebe a ciegas sin gastar consultas.
     """
     public = False
+    #: Las lecturas que se pueden guardar en el cliente ponen ``etag = True``: la respuesta lleva ``ETag`` y
+    #: ``Cache-Control: private, no-cache`` (el cliente puede guardarla pero debe preguntar antes de usarla), y un
+    #: ``If-None-Match`` igual recibe 304 sin cuerpo. Por defecto nada se guarda (``no-store``).
+    etag = False
 
     def dispatch(self, request, *args, **kwargs):
         """Idioma, autenticación y límite; después la vista. Todo ``ApiError`` sale como JSON y sin caché."""
@@ -47,7 +52,20 @@ class ApiView(View):
                 response = json_error(error)
             except Http404:
                 response = json_error(ApiError("not_found", _("No encontrado."), 404))
-        response["Cache-Control"] = "no-store"
+        return self.apply_cache(request, response)
+
+    def apply_cache(self, request, response):
+        """``no-store`` por defecto; con ``etag`` y un 200 a un GET, ``ETag`` y 304 si el cliente ya tiene esa versión."""
+        if not (self.etag and request.method == "GET" and response.status_code == 200):
+            response["Cache-Control"] = "no-store"
+            return response
+        tag = '"' + hashlib.sha256(response.content).hexdigest()[:32] + '"'
+        headers = {"ETag": tag, "Cache-Control": "private, no-cache", "Vary": "Authorization, Accept-Language"}
+        sent = [value.strip().removeprefix("W/") for value in request.META.get("HTTP_IF_NONE_MATCH", "").split(",")]
+        if tag in sent or "*" in sent:
+            response = HttpResponseNotModified()
+        for name, value in headers.items():
+            response[name] = value
         return response
 
     def check_access(self, request):

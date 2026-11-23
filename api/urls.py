@@ -37,6 +37,7 @@ urlpatterns = [
     re_path(r"^home/setup/snp-request/?$", views_setup.SnpUpdateRequestView.as_view(), name="api_setup_snp_request"),
     re_path(r"^home/my-form/?$", views_home.MyFormView.as_view(), name="api_home_my_form"),
     re_path(r"^home/?$", views_home.HomeView.as_view(), name="api_home"),
+    re_path(r"^me/?$", views.MeView.as_view(), name="api_me"),
     re_path(r"^ping/?$", views.PingView.as_view(), name="api_ping"),
     re_path(r"^.*$", views.NotFoundView.as_view(), name="api_not_found"),
 ]

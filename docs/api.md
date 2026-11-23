@@ -26,6 +26,7 @@ va autenticada con un **token de dispositivo**. El código está en `api/`; las 
 
 | Método y ruta | Público | Para qué |
 |---|---|---|
+| `GET /me` | no | Arranque de la app: cuenta, equipos con rol, temporada y capacidades. Con `ETag` (304 si no cambió) |
 | `GET /home` | no | Datos del Inicio nativo: situación de la cuenta, equipos y rol en cada uno |
 | `GET /matches/<id>` | no | Ficha de un enfrentamiento del equipo de la cuenta: estado, fases, convocados, parejas, respuesta del jugador y acción principal de quien gestiona |
 | `GET /ping` | no | Comprueba que el token sirve, cuándo caduca y a qué equipo pertenece |
@@ -40,6 +41,18 @@ va autenticada con un **token de dispositivo**. El código está en `api/`; las 
 | `POST /devices` | no | Registra o actualiza el token de APNs de este dispositivo |
 | `DELETE /devices` | no | Retira el registro push |
 | `POST /account/delete` | no | Elimina la cuenta |
+
+### `GET /me`
+
+```json
+{"state": "ok", "user": {"username": "capi", "display_name": "Ana", "email": "capi@example.com"}, "season": "2026-2027",
+ "teams": [{"id": "CLB…", "name": "Club Norte", "role": "admin", "can_manage": true, "can_admin": true, "competition": "snp", "…": "…"}],
+ "suspended_clubs": [], "capabilities": {"can_manage_any": true, "can_admin_any": true, "multi_team": false}, "has_player": true, "has_history": true}
+```
+
+`state`, `teams` (con los mismos campos que en `/home` más `can_admin`, verdadero para el capitán), `suspended_clubs`, `has_player` y `has_history` se calculan igual que en `/home`.
+Es la única respuesta de la API que se puede guardar en el cliente: lleva `ETag` y `Cache-Control: private, no-cache`; con `If-None-Match` igual responde **304** sin cuerpo.
+El resto de respuestas siguen con `Cache-Control: no-store`.
 
 ### `GET /ping`
 
