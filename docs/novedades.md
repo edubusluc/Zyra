@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 23/11/2026 · API de la app iOS: arranque (`GET /me`) y caché con ETag
+
+Nueva respuesta `GET /api/v1/me` con la cuenta, sus equipos y el rol en cada uno, que la app podrá guardar con `ETag`. Ayudante `api/teams.py` para resolver equipos por token. Sin cambios en la web.
+
 ## 21/11/2026 · API de la app iOS: ficha del enfrentamiento
 
 - Nuevo `GET /api/v1/matches/<id>` (solo lectura) con estado, fases, convocados, parejas, resultado, la respuesta del jugador y la acción principal de quien gestiona, para la ficha nativa de la app.
