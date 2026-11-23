@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 23/11/2026 · Mensaje claro cuando falla la web de SNP
+
+- Si no se puede leer SNP (plazo agotado, conexión cortada, web en mantenimiento), al crear el equipo o al sincronizar se muestra un mensaje en lenguaje llano que dice que el fallo es de SNP, no de Zyra ni de la cuenta, y que se reintente más tarde. El texto técnico del navegador ya no se ve: queda en el log del servidor.
+
 ## 23/11/2026 · Fotos de la pareja en «Partidos»
 
 - En la sección «Partidos» de la ficha, la pareja propia de cada partido muestra sus dos avatares, uno junto al otro, junto al nombre: la foto del jugador o, si no tiene, sus iniciales. Un jugador eliminado conserva solo las iniciales. No hay consultas nuevas.

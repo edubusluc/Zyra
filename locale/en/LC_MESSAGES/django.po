@@ -13136,9 +13136,8 @@ msgid "Jugadores de Zyra que no aparecen en SNP: %(names)s"
 msgstr "Zyra players not found in SNP: %(names)s"
 
 #: players/snp.py:170
-#, python-format
-msgid "Error inesperado: %(error)s"
-msgstr "Unexpected error: %(error)s"
+msgid "Ha ocurrido un error inesperado al leer SNP. Inténtalo de nuevo más tarde."
+msgstr "An unexpected error occurred while reading SNP. Please try again later."
 
 #: players/snp.py:207
 #, python-format
