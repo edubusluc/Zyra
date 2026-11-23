@@ -190,8 +190,9 @@ class PlayerStatsView(ApiView):
         played = {g["season"] for g in build_game_log(player)}
         seasons = [s for s in seasons_all if s in played or joined_by(player.joined_season, s)]
         asked = request.GET.get("season")
-        if asked and asked != ALL_SEASONS and asked not in seasons:
+        if asked and asked != ALL_SEASONS and asked not in seasons_all:
             raise ApiError("invalid", _("Temporada no válida."), 400)
+        # Una temporada del club en la que el jugador aún no estaba equivale a «todas» (la app comparte filtros con «Yo»).
         season = asked if asked in seasons else None
         _s, kind = _filters(request, seasons or [None])
         log = build_game_log(player, kind)
