@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 23/11/2026 · Crear rival: aviso si el equipo ya existe
+
+- Al crear un rival con el nombre de un equipo que ya estuvo en el grupo (sin distinguir mayúsculas, tildes ni signos), un aviso dice que «Este equipo ya existe» y permite darlo de alta de nuevo en lugar de crear otro.
+- Se quita del formulario la nota sobre la categoría, nacionalidad y división copiadas del equipo propio.
+
 ## 22/11/2026 · Con el acta cerrada, primero los resultados
 
 - En la ficha del enfrentamiento con el acta cerrada aparece primero «Partidos» (resultados) y después «Convocatoria» (convocados). Con el acta abierta el orden no cambia, y la visibilidad de la lista para jugadores tampoco.

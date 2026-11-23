@@ -37,11 +37,6 @@
             <small class="form-text text-muted d-block mt-1">{% translate "Los equipos de tu grupo los ven todos los miembros y se pueden elegir al crear un enfrentamiento." %}</small>
         </div>
 
-        {% if own_team and form.group_fields %}
-        <p class="z-hint" data-group-note>{% blocktranslate trimmed with team=own_team.name %}Al ser de tu grupo, juega en la misma categoría, nacionalidad y división que {{ team }}: se copian de tu equipo.{% endblocktranslate %}</p>
-        <p class="z-hint" data-group-note-out hidden>{% blocktranslate trimmed with team=own_team.name %}Categoría, nacionalidad y división vienen rellenas con las de {{ team }}. Cámbialas si este equipo es distinto.{% endblocktranslate %}</p>
-        {% endif %}
-
         <div class="mb-3"{% if "gender" in form.group_fields %} data-group-field{% endif %}>
             <label for="{{ form.gender.id_for_label }}" class="form-label">{% translate "Categoría" %}</label>
             {{ form.gender }}
@@ -89,12 +84,8 @@
         const inGroup = document.getElementById('{{ form.in_group.id_for_label }}');
         const fields = document.querySelectorAll('[data-group-field]');
         if (!inGroup || !fields.length) return;
-        const note = document.querySelector('[data-group-note]');
-        const noteOut = document.querySelector('[data-group-note-out]');
         function sync() {
             fields.forEach(function (f) { f.hidden = inGroup.checked; });
-            if (note) note.hidden = !inGroup.checked;
-            if (noteOut) noteOut.hidden = inGroup.checked;
         }
         inGroup.addEventListener('change', sync);
         sync();
@@ -102,5 +93,7 @@
 </script>
 {% translate "Ya hay un equipo con un nombre parecido" as t_title %}
 {% translate "En tu club ya existe un equipo con este nombre o uno muy parecido:" as t_message %}
-{% include 'includes/similar_modal.html' with title=t_title message=t_message similar=similar %}
+{% translate "Este equipo ya existe" as t_exists_title %}
+{% translate "Ya estuvo en tu grupo. Puedes darlo de alta de nuevo en lugar de crear otro:" as t_exists_message %}
+{% include 'includes/similar_modal.html' with title=t_title message=t_message similar=similar exists=exists exists_title=t_exists_title exists_message=t_exists_message %}
 {% endblock %}

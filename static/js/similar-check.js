@@ -21,7 +21,18 @@
 
   // Cada parecido es un texto o {label, reactivate_url}: con dirección se ofrece volver a dar de alta
   // el equipo existente (POST con el token CSRF del formulario) en vez de crear otro.
-  function show(items) {
+  // Si el nombre es idéntico al de un equipo ya existente no se puede crear otro: solo se ofrece darlo de alta.
+  function setExists(exists) {
+    const d = modalEl.dataset;
+    if (!d.existsTitle) return;
+    modalEl.querySelector('[data-similar-title]').textContent = exists ? d.existsTitle : d.title;
+    modalEl.querySelector('[data-similar-message]').textContent = exists ? d.existsMessage : d.message;
+    modalEl.querySelector('[data-similar-ask]').hidden = exists;
+    modalEl.querySelector('[data-similar-continue]').hidden = exists;
+  }
+
+  function show(items, exists) {
+    setExists(Boolean(exists));
     const token = form.querySelector('input[name="csrfmiddlewaretoken"]');
     list.replaceChildren(...items.map((item) => {
       const li = document.createElement('li');
@@ -68,7 +79,7 @@
       .then((result) => {
         if (result && result.valid && result.similar.length) {
           if (window.ZyraSubmitLock) window.ZyraSubmitLock.unlock(form);
-          show(result.similar);
+          show(result.similar, result.exists);
         }
         else send(); // sin parecidos (o con errores, que muestra el servidor)
       })

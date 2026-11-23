@@ -41,6 +41,7 @@ class Teamform (forms.ModelForm):
         equipo propio si el equipo nuevo es del grupo (las que este tiene rellenas).
         """
         self.club = club
+        self.exact_matches = []  # homónimos fuera del grupo (se rellena en clean)
         super().__init__(*args, **kwargs)
         own = club.own_team if club else None
         self.own_team = own
@@ -101,6 +102,10 @@ class Teamform (forms.ModelForm):
         name, division = cleaned.get('name'), cleaned.get('division')
         if name and division:
             others = Team.objects.filter(club=self.club, division__in=[division, ""]).exclude(pk=self.instance.pk)
-            if any(same_name(name, t.name) for t in others):
+            same = [t for t in others if same_name(name, t.name)]
+            # En un alta, un homónimo dado de baja del grupo no es error: el formulario avisa y ofrece
+            # darlo de alta de nuevo (``exact_matches``). Cualquier otro homónimo sí bloquea.
+            self.exact_matches = [t for t in same if not t.in_group] if self.instance.pk is None else []
+            if len(self.exact_matches) != len(same):
                 self.add_error('name', _("Ya existe un equipo con ese nombre en esa división en tu club."))
         return cleaned

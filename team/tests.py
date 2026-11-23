@@ -68,19 +68,38 @@ class CreateTeamTests(TestCase):
 
     def test_check_request_returns_similar_names_without_creating(self):
         response = self.client.post(self.url, self.data, HTTP_X_SIMILAR_CHECK="1")
-        self.assertEqual(response.json(), {"valid": True, "similar": [{
+        self.assertEqual(response.json(), {"valid": True, "exists": False, "similar": [{
             "label": "CD Tomares (Masculino · España · 500) · fuera de tu grupo",
             "reactivate_url": reverse("reactivate_team", args=[self.rival.public_id])}]})
         response = self.client.post(self.url, {"name": ""}, HTTP_X_SIMILAR_CHECK="1")
         self.assertEqual(response.json(), {"valid": False, "similar": []})
         self.assertFalse(Team.objects.filter(name="Tomares").exists())
 
-    def test_same_name_in_same_division_is_rejected_even_after_confirming(self):
+    def test_same_name_in_group_is_rejected_even_after_confirming(self):
         # Sin distinguir mayúsculas, tildes ni signos, y aunque cambie la categoría
+        self.rival.in_group = True
+        self.rival.save()
         response = self.client.post(self.url, {**self.data, "name": "C.D. TOMARES", "confirm_similar": "1"})
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Ya existe un equipo con ese nombre en esa división")
         self.assertEqual(Team.objects.filter(club=self.club).count(), 2)
+
+    def test_same_name_as_team_out_of_group_offers_to_reactivate_it(self):
+        data = {**self.data, "name": "cd  TOMARES"}
+        response = self.client.post(self.url, {**data, "confirm_similar": "1"})
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["exists"])
+        self.assertContains(response, 'data-exists="1"')
+        self.assertEqual(response.context["similar"][0]["reactivate_url"],
+                         reverse("reactivate_team", args=[self.rival.public_id]))
+        self.assertEqual(Team.objects.filter(club=self.club).count(), 2)
+        check = self.client.post(self.url, data, HTTP_X_SIMILAR_CHECK="1").json()
+        self.assertTrue(check["valid"])
+        self.assertTrue(check["exists"])
+
+    def test_merely_similar_name_does_not_block(self):
+        check = self.client.post(self.url, self.data, HTTP_X_SIMILAR_CHECK="1").json()
+        self.assertFalse(check["exists"])
 
     def test_same_name_in_other_division_asks_and_can_be_created(self):
         data = {**self.data, "name": "CD Tomares", "division": "1000"}
@@ -161,7 +180,8 @@ class NewTeamDefaultsTests(TestCase):
         self.assertFalse(Team.objects.filter(name="Gines").exists())
 
     def test_copied_division_counts_for_duplicate_names(self):
-        Team.objects.create(club=self.club, name="Tomares", location="X", gender="F", country="IT", division="1000")
+        Team.objects.create(club=self.club, name="Tomares", location="X", gender="F", country="IT", division="1000",
+                            in_group=True)
         response = self.client.post(reverse("create_team"), {"name": "TOMARES", "location": "X", "in_group": "on",
                                                              "confirm_similar": "1"})
         self.assertContains(response, "Ya existe un equipo con ese nombre en esa división")
