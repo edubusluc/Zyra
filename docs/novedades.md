@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 23/11/2026 · Fotos de la pareja en «Partidos»
+
+- En la sección «Partidos» de la ficha, la pareja propia de cada partido muestra sus dos avatares solapados junto al nombre: la foto del jugador o, si no tiene, sus iniciales. Un jugador eliminado conserva solo las iniciales. No hay consultas nuevas.
+
 ## 23/11/2026 · Cambiar el lugar de un enfrentamiento
 
 - El formulario de edición de un enfrentamiento abierto permite cambiar también el lugar. El cambio es solo de ese partido: no modifica la localización del equipo propio ni la del rival.
