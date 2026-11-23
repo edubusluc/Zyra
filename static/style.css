@@ -1348,12 +1348,12 @@ a.z-card:hover, .z-card--link:hover {
 .z-game-side.has-pair { display: flex; align-items: center; gap: 12px; }
 .z-game-who { min-width: 0; overflow-wrap: anywhere; }
 .z-game-pair { display: inline-flex; flex-shrink: 0; }
-.z-avatar--game { width: 36px; height: 36px; box-shadow: 0 0 0 2px var(--z-surface); }
-.z-avatar--game + .z-avatar--game { margin-left: -12px; }
-.z-avatar--game.z-avatar--initials { font-size: var(--z-fs-sm); border-width: 2px; }
+.z-avatar--game { width: 52px; height: 52px; box-shadow: 0 0 0 2px var(--z-surface); }
+.z-avatar--game + .z-avatar--game { margin-left: -18px; }
+.z-avatar--game.z-avatar--initials { font-size: var(--z-fs-lg); border-width: 2px; }
 .z-game-row:not(.is-winner) .z-avatar--game { border-color: var(--z-border-strong); }
 .z-game-sets-head { display: grid; grid-template-columns: repeat(3, 44px); gap: 4px; font-size: var(--z-fs-xs); font-weight: 800; color: var(--z-muted); text-align: center; }
-@media (max-width: 575.98px) { .z-game-row { grid-template-columns: 1fr repeat(3, 32px); padding-inline: 12px; } .z-game-sets-head { grid-template-columns: repeat(3, 32px); } .z-game-side.has-pair { gap: 8px; font-size: var(--z-fs-sm); } }
+@media (max-width: 575.98px) { .z-game-row { grid-template-columns: 1fr repeat(3, 32px); padding-inline: 12px; } .z-game-sets-head { grid-template-columns: repeat(3, 32px); } .z-game-side.has-pair { gap: 8px; font-size: var(--z-fs-sm); } .z-avatar--game { width: 44px; height: 44px; } .z-avatar--game + .z-avatar--game { margin-left: -14px; } .z-avatar--game.z-avatar--initials { font-size: var(--z-fs-md); } }
 
 @media (max-width: 767.98px) {
     .z-positions { grid-template-columns: 1fr; }
