@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 23/11/2026 · El calendario de fechas no se cierra al cambiar de mes
+
+- En el selector de fecha (crear enfrentamiento, cambiar fecha) las flechas de mes anterior y siguiente mantienen el calendario abierto y el foco en la flecha.
+
 ## 23/11/2026 · Crear rival: aviso si el equipo ya existe
 
 - Al crear un rival con el nombre de un equipo que ya estuvo en el grupo (sin distinguir mayúsculas, tildes ni signos), un aviso dice que «Este equipo ya existe» y permite darlo de alta de nuevo en lugar de crear otro.
