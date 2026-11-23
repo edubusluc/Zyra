@@ -163,6 +163,8 @@
     trigger.addEventListener('click', () => (wrap.classList.contains('is-open') ? close(false) : open()));
 
     pop.addEventListener('click', (e) => {
+      // Lo pulsado dentro del calendario nunca cuenta como «clic fuera»
+      e.stopPropagation();
       const nav = e.target.closest('[data-nav]');
       if (nav) {
         focused = addMonths(focused, +nav.dataset.nav);
