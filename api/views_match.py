@@ -1,24 +1,30 @@
 """``GET /api/v1/matches/<id>``: la ficha nativa de un enfrentamiento (solo lectura)."""
 import datetime
+import logging
 
+from django.db import transaction
 from django.urls import reverse
 from django.utils.translation import gettext as _
 
 from call import availability as availability_logic
-from call.models import Availability, Call
+from call.models import Availability, Call, ReportDelivery
 from core.competitions import competition_for
 from core.templatetags.zyra_format import date_short
-from match import outcomes
+from match import league, lineup, outcomes
 from match.models import Game, Match
+from match.notifications import is_past_match, send_call_report
 from match.phase import (CLOSE_CALL, CLOSE_MATCH, CREATE_CALL, CREATE_GAMES, ENTER_RESULTS, NOTHING, STEPS, phase_for,
                          player_status)
-from match.views import OUTCOME_LABELS, call_roster, club_score, lineup_rows, match_outcome, stage_countdown
+from match.views import OUTCOME_LABELS, validate_call, call_roster, club_score, lineup_rows, match_outcome, stage_countdown
 from players.models import Player
 
 from .errors import ApiError
+from .fields import invalid
 from .responses import json_ok
 from .views_base import ApiView
 from .views_home import _kind_label, _me, _memberships, _side
+
+logger = logging.getLogger(__name__)
 
 
 def _steps(phase):
@@ -200,3 +206,68 @@ class MatchView(ApiView):
             data["availability"] = {"open": open_for_answers,
                                     "counts": {key: board["counts"].get(key, 0) for key in ("yes", "no", "maybe")}}
         return json_ok(data)
+
+
+def _report_state(call, match, user, resend):
+    """
+    Envía el informe del cierre como la web (``match.views.close_call``) y devuelve cómo quedó: ``skipped`` (partido
+    pasado o ya enviado y sin pedir reenvío), ``sent``, ``pending`` (se reintenta solo), ``no_email`` o ``failed``.
+    """
+    already_sent = call.report_deliveries.filter(status=ReportDelivery.SENT).exists()
+    if (is_past_match(match) or already_sent) and not resend:
+        return "skipped"
+    try:
+        deliveries = send_call_report(call, sender=user)
+    except Exception:
+        logger.exception("No se pudo enviar el informe de la convocatoria %s", call.pk)
+        return "failed"
+    if not deliveries:
+        return "no_email"
+    return "sent" if all(d.status == ReportDelivery.SENT for d in deliveries) else "pending"
+
+
+class CloseCallView(ApiView):
+    """``POST /api/v1/matches/<id>/close-call``: cierra la convocatoria (mismas reglas que ``match.views.close_call``)."""
+
+    def post(self, request, match_id):
+        """
+        Cuerpo opcional ``{"allow_short"?, "force_finals"?, "resend_report"?}`` (booleanos). Solo quien gestiona el
+        equipo (404 si no). 409 ``cannot_close`` con el motivo de la web si no se puede cerrar (sin apuntados, por
+        debajo del mínimo, ya cerrada); 409 ``short_call`` si falta gente pero la competición deja cerrar con
+        ``allow_short``; 409 ``finals_rule`` si la regla de fases finales pide ``force_finals``. Devuelve
+        ``{"closed": true, "report": "sent" | "pending" | "no_email" | "failed" | "skipped"}``.
+        """
+        body = self.json_body(request)
+        flags = {}
+        for name in ("allow_short", "force_finals", "resend_report"):
+            value = body.get(name, False)
+            if not isinstance(value, bool):
+                raise invalid(name)
+            flags[name] = value
+        active, _suspended = _memberships(request.user)
+        members = {m.club_id: m for m in active if m.can_manage}
+        call = Call.objects.select_related("match__club").filter(
+            match__public_id=match_id, match__club_id__in=list(members)).first()
+        if call is None:
+            raise ApiError("not_found", _("No encontrado."), 404)
+        match = call.match
+        is_valid, message = validate_call(call, allow_short=flags["allow_short"])
+        if not is_valid:
+            # Falta gente pero la competición deja cerrar si se confirma: la app pregunta y vuelve a enviar.
+            count = call.players.count()
+            can_confirm = (call.draft_mode and 0 < count < competition_for(match).min_call_players
+                           and lineup.short_call_allowed(match.club.rules, count) and not flags["allow_short"])
+            code = "short_call" if can_confirm else "cannot_close"
+            raise ApiError(code, str(message), 409)
+        short = league.finals_shortfall(match, call.players.all())
+        if short and not flags["force_finals"]:
+            names = ", ".join(p.full_name for p, _n in short)
+            raise ApiError("finals_rule", _("Según el reglamento, en esta fase solo pueden jugar quienes han jugado al "
+                                            "menos %(n)s enfrentamientos de liga esta temporada. No lo cumplen: "
+                                            "%(names)s.") % {"n": match.club.rules.finals_min_regular, "names": names}, 409)
+        with transaction.atomic():
+            # Cierre atómico: si otra petición la cerró en el mismo instante, esta no repite el informe.
+            if not Call.objects.filter(pk=call.pk, draft_mode=True).update(draft_mode=False):
+                raise ApiError("cannot_close", _("La convocatoria ya estaba cerrada."), 409)
+        call.draft_mode = False
+        return json_ok({"closed": True, "report": _report_state(call, match, request.user, flags["resend_report"])})

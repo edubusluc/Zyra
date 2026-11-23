@@ -125,3 +125,64 @@ class MatchApiTests(TestCase):
         actions = {a["key"]: a for a in self.get(self.captain_token).json()["actions"]}
         self.assertTrue(actions["edit_call"]["locked"])
         self.assertTrue(actions["edit_call"]["reason"])
+
+
+class CloseCallApiTests(TestCase):
+    """``POST /matches/<id>/close-call``: cerrar la convocatoria desde la ficha nativa."""
+
+    setUp = MatchApiTests.setUp
+
+    def post(self, token, body=None, match=None):
+        """POST con el token indicado."""
+        match = match or self.match
+        return self.client.post(reverse("api_match_close_call", args=[match.public_id]), data=body or {},
+                                content_type="application/json", HTTP_AUTHORIZATION=f"Bearer {token}")
+
+    def _call(self, n):
+        """Convocatoria abierta con ``n`` jugadores."""
+        call = Call.objects.create(match=self.match)
+        players = [Player.objects.create(club=self.club, name=f"J{i}", last_name="X", in_team=True) for i in range(n)]
+        call.players.set(players)
+        return call
+
+    def test_closes_with_enough_players(self):
+        """Con los mínimos, cierra de verdad y deja la convocatoria cerrada."""
+        from core.competitions import competition_for
+        call = self._call(competition_for(self.match).min_call_players)
+        response = self.post(self.captain_token)
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertTrue(response.json()["closed"])
+        call.refresh_from_db()
+        self.assertFalse(call.draft_mode)
+
+    def test_player_cannot_close(self):
+        """Un jugador sin gestión recibe 404 y no se cierra nada."""
+        call = self._call(3)
+        self.assertEqual(self.post(self.user_token).status_code, 404)
+        call.refresh_from_db()
+        self.assertTrue(call.draft_mode)
+
+    def test_no_call_is_404(self):
+        """Sin convocatoria no hay nada que cerrar."""
+        self.assertEqual(self.post(self.captain_token).status_code, 404)
+
+    def test_empty_call_cannot_close(self):
+        """Sin apuntados: 409 y sigue abierta."""
+        call = Call.objects.create(match=self.match)
+        response = self.post(self.captain_token)
+        self.assertEqual(response.status_code, 409)
+        self.assertEqual(response.json()["error"], "cannot_close")
+        call.refresh_from_db()
+        self.assertTrue(call.draft_mode)
+
+    def test_closing_twice_conflicts(self):
+        """Cerrar una convocatoria ya cerrada da 409."""
+        from core.competitions import competition_for
+        self._call(competition_for(self.match).min_call_players)
+        self.assertEqual(self.post(self.captain_token).status_code, 200)
+        self.assertEqual(self.post(self.captain_token).status_code, 409)
+
+    def test_rejects_non_boolean_flags(self):
+        """Las marcas deben ser booleanos."""
+        self._call(3)
+        self.assertEqual(self.post(self.captain_token, {"allow_short": "si"}).status_code, 400)
