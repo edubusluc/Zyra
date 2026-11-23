@@ -106,30 +106,37 @@ def my_players(request):
     pero con otra ficha) o ``suspended`` (equipo suspendido por el personal). Van en el orden de las
     competiciones, las actuales antes que las anteriores y, entre estas, las más recientes primero.
     """
-    from django.db.models import Q
-    from players.models import Player
     if not request.user.is_authenticated:
         return []
     if hasattr(request, "_my_players"):
         return request._my_players
-    current_clubs = {c.id for c in user_clubs(request)}
-    players = list(Player.objects.filter(Q(user=request.user) | Q(past_user=request.user)).select_related("club"))
+    request._my_players = player_history(request.user, {c.id for c in user_clubs(request)},
+                                         {c.id for c in getattr(request, "suspended_clubs", [])})
+    return request._my_players
+
+
+def player_history(user, current_club_ids, suspended_club_ids=()):
+    """
+    Las fichas de ``user`` (ver ``my_players``) a partir de los clubes actuales de la cuenta y de los suspendidos, sin
+    necesitar una petición web: la usa también la API (``/me/stats``), que no tiene sesión.
+    """
+    from django.db.models import Q
+    from players.models import Player
+    players = list(Player.objects.filter(Q(user=user) | Q(past_user=user)).select_related("club"))
     order = list(COMPETITIONS)
-    suspended = {c.id for c in getattr(request, "suspended_clubs", [])}
     for p in players:
-        p.is_former = not (p.user_id == request.user.id and p.club_id in current_clubs)
+        p.is_former = not (p.user_id == user.id and p.club_id in current_club_ids)
         if not p.is_former:
             p.history_kind = "current"
-        elif p.club_id in suspended:
+        elif p.club_id in suspended_club_ids:
             p.history_kind = "suspended"
-        elif p.club_id in current_clubs:
+        elif p.club_id in current_club_ids:
             p.history_kind = "sheet"
         else:
             p.history_kind = "team"
-    request._my_players = sorted(players, key=lambda p: (
+    return sorted(players, key=lambda p: (
         order.index(p.club.competition) if p.club.competition in order else len(order),
         p.is_former, -(p.left_on.toordinal() if p.left_on else 0), p.pk))
-    return request._my_players
 
 
 def history_request(request, club):
