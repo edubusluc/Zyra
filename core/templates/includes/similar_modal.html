@@ -1,24 +1,25 @@
 {% load i18n static %}
 {# Aviso de nombres parecidos al crear un equipo o un jugador (core/similarity.py). #}
 {# Recibe: title, message, similar (lista de nombres si el servidor ya los encontró). #}
-<div class="modal fade" id="similarModal" tabindex="-1" aria-labelledby="similarModalTitle" aria-hidden="true" data-reactivate-label="{% translate 'Dar de alta de nuevo' %}"{% if similar %} data-open="1"{% endif %}>
+<div class="modal fade" id="similarModal" tabindex="-1" aria-labelledby="similarModalTitle" aria-hidden="true" data-reactivate-label="{% translate 'Dar de alta de nuevo' %}"{% if similar %} data-open="1"{% endif %}{% if exists_title %} data-exists-title="{{ exists_title }}" data-exists-message="{{ exists_message }}" data-title="{{ title }}" data-message="{{ message }}"{% if exists %} data-exists="1"{% endif %}{% endif %}>
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 class="modal-title h5" id="similarModalTitle">{{ title }}</h2>
+                <h2 class="modal-title h5" id="similarModalTitle" data-similar-title>{% if exists %}{{ exists_title }}{% else %}{{ title }}{% endif %}</h2>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% translate 'Cerrar' %}"></button>
             </div>
             <div class="modal-body">
-                <p>{{ message }}</p>
+                <p data-similar-message>{% if exists %}{{ exists_message }}{% else %}{{ message }}{% endif %}</p>
                 <ul data-similar-list>
                     {% for item in similar %}<li>{% firstof item.label item %}
-                        {% if item.reactivate_url %}<form method="post" action="{{ item.reactivate_url }}" class="d-inline" data-loading-text="{% translate 'Dando de alta el equipo…' %}">{% csrf_token %}<button type="submit" class="btn btn-link btn-sm p-0 align-baseline">{% translate "Dar de alta de nuevo" %}</button></form>{% endif %}</li>{% endfor %}
+                        {% if item.reactivate_url and not exists %}<form method="post" action="{{ item.reactivate_url }}" class="d-inline" data-loading-text="{% translate 'Dando de alta el equipo…' %}">{% csrf_token %}<button type="submit" class="btn btn-link btn-sm p-0 align-baseline">{% translate "Dar de alta de nuevo" %}</button></form>{% endif %}</li>{% endfor %}
                 </ul>
-                <p class="mb-0">{% translate "¿Quieres continuar con la creación?" %}</p>
+                <p class="mb-0" data-similar-ask{% if exists %} hidden{% endif %}>{% translate "¿Quieres continuar con la creación?" %}</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{% translate "Cancelar" %}</button>
-                <button type="button" class="btn btn-primary" data-similar-continue>{% translate "Continuar" %}</button>
+                <form method="post" action="{{ reactivate_url }}" data-similar-reactivate data-loading-text="{% translate 'Dando de alta el equipo…' %}"{% if not exists %} hidden{% endif %}>{% csrf_token %}<button type="submit" class="btn btn-primary">{% translate "Dar de alta de nuevo" %}</button></form>
+                <button type="button" class="btn btn-primary" data-similar-continue{% if exists %} hidden{% endif %}>{% translate "Continuar" %}</button>
             </div>
         </div>
     </div>

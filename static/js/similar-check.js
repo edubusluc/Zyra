@@ -21,12 +21,29 @@
 
   // Cada parecido es un texto o {label, reactivate_url}: con dirección se ofrece volver a dar de alta
   // el equipo existente (POST con el token CSRF del formulario) en vez de crear otro.
-  function show(items) {
+  // Si el nombre es idéntico al de un equipo ya existente no se puede crear otro: solo se ofrece darlo de alta.
+  function setExists(exists) {
+    const d = modalEl.dataset;
+    if (!d.existsTitle) return;
+    modalEl.querySelector('[data-similar-title]').textContent = exists ? d.existsTitle : d.title;
+    modalEl.querySelector('[data-similar-message]').textContent = exists ? d.existsMessage : d.message;
+    modalEl.querySelector('[data-similar-ask]').hidden = exists;
+    modalEl.querySelector('[data-similar-continue]').hidden = exists;
+  }
+
+  // Con un equipo idéntico ya existente, «Dar de alta de nuevo» va en el pie, junto a «Cancelar».
+  function show(items, exists, reactivateUrl) {
+    setExists(Boolean(exists));
+    const footerForm = modalEl.querySelector('[data-similar-reactivate]');
+    if (footerForm) {
+      footerForm.hidden = !exists;
+      if (reactivateUrl) footerForm.action = reactivateUrl;
+    }
     const token = form.querySelector('input[name="csrfmiddlewaretoken"]');
     list.replaceChildren(...items.map((item) => {
       const li = document.createElement('li');
       li.append(typeof item === 'string' ? item : item.label);
-      if (item.reactivate_url && token) {
+      if (item.reactivate_url && token && !exists) {
         const f = document.createElement('form');
         f.method = 'post';
         f.action = item.reactivate_url;
@@ -68,7 +85,7 @@
       .then((result) => {
         if (result && result.valid && result.similar.length) {
           if (window.ZyraSubmitLock) window.ZyraSubmitLock.unlock(form);
-          show(result.similar);
+          show(result.similar, result.exists, result.reactivate_url);
         }
         else send(); // sin parecidos (o con errores, que muestra el servidor)
       })

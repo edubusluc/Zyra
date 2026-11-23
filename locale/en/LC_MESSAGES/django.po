@@ -14350,24 +14350,6 @@ msgstr ""
 "Your group's teams are visible to all members and can be chosen when "
 "creating a match."
 
-#: team/templates/create_team.html:30
-#, python-format
-msgid ""
-"Al ser de tu grupo, juega en la misma categoría, nacionalidad y división que"
-" %(team)s: se copian de tu equipo."
-msgstr ""
-"As it is in your group, it plays in the same category, nationality and "
-"division as %(team)s: they are copied from your team."
-
-#: team/templates/create_team.html:31
-#, python-format
-msgid ""
-"Categoría, nacionalidad y división vienen rellenas con las de %(team)s. "
-"Cámbialas si este equipo es distinto."
-msgstr ""
-"Category, nationality and division are prefilled with those of %(team)s. "
-"Change them if this team is different."
-
 #: team/templates/create_team.html:35 team/templates/edit_team.html:20
 msgid "Categoría:"
 msgstr "Category:"
@@ -14381,6 +14363,12 @@ msgid "División:"
 msgstr "Division:"
 
 #: team/templates/create_team.html:81
+msgid "Este equipo ya existe"
+msgstr "This team already exists"
+
+msgid "Ya estuvo en tu grupo. Puedes darlo de alta de nuevo en lugar de crear otro:"
+msgstr "It was in your group before. You can add it back instead of creating another one:"
+
 msgid "Ya hay un equipo con un nombre parecido"
 msgstr "There is already a team with a similar name"
 
