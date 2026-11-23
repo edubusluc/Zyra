@@ -363,17 +363,20 @@ class MatchForm(forms.ModelForm):
         return match
 
 class MatchDateForm(forms.ModelForm):
-    """Cambio de la fecha y la hora de un partido ya creado (mismos campos, formato y mensajes que el alta).
+    """Cambio de la fecha, la hora y el lugar de un partido ya creado (mismos campos y mensajes que el alta).
 
-    Al cambiar la fecha se recalcula la temporada, que se deriva de ella. La hora es opcional.
+    Al cambiar la fecha se recalcula la temporada, que se deriva de ella. La hora es opcional. El lugar
+    es solo de este partido (``Match.location``): no toca ``Team.location`` de ningún equipo. Si se deja
+    vacío en un partido que no es de sede neutral, se usa el lugar del equipo local al guardar.
     """
 
     class Meta:
         model = Match
-        fields = ['start_date', 'start_time']
-        labels = {'start_date': _('Fecha'), 'start_time': _('Hora (opcional)')}
+        fields = ['start_date', 'start_time', 'location']
+        labels = {'start_date': _('Fecha'), 'start_time': _('Hora (opcional)'), 'location': _('Lugar')}
         widgets = {'start_date': MatchForm.Meta.widgets['start_date'],
-                   'start_time': MatchForm.Meta.widgets['start_time']}
+                   'start_time': MatchForm.Meta.widgets['start_time'],
+                   'location': MatchForm.Meta.widgets['location']}
 
     def __init__(self, *args, **kwargs):
         """Fija el formato ISO y el mensaje de fecha no válida, como en ``MatchForm``."""
@@ -384,9 +387,19 @@ class MatchDateForm(forms.ModelForm):
         self.fields['start_time'].required = False
         self.fields['start_time'].input_formats = ['%H:%M']
         self.fields['start_time'].error_messages.update(invalid=_("Hora no válida. Usa el formato HH:MM."))
+        self.fields['location'].required = False
+
+    def clean_location(self):
+        """Normaliza el lugar; sin el campo en el envío conserva el actual y en sede neutral es obligatorio."""
+        if 'location' not in self.data:
+            return self.instance.location
+        location = " ".join((self.cleaned_data.get('location') or "").split())
+        if not location and self.instance.neutral_venue:
+            raise forms.ValidationError(_("Escribe la localización de la sede."))
+        return location
 
     def save(self, commit=True):
-        """Guarda la fecha y la hora y, si cambió, deja que ``Match.save`` recalcule la temporada."""
+        """Guarda la fecha, la hora y el lugar del partido y, si cambió, deja que ``Match.save`` recalcule la temporada."""
         match = super().save(commit=False)
         if 'start_date' in self.changed_data:
             match.season = ""

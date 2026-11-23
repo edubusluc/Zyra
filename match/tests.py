@@ -848,6 +848,38 @@ class EditMatchDateTests(TestCase):
         self.match.refresh_from_db()
         self.assertIsNone(self.match.start_time)
 
+    def test_changes_location_only_in_match(self):
+        self.client.post(self.url, {"start_date": "2026-03-01", "location": "  Pista   Nueva "})
+        self.match.refresh_from_db()
+        self.assertEqual(self.match.location, "Pista Nueva")
+        self.club.own_team.refresh_from_db()
+        self.rival.refresh_from_db()
+        self.assertEqual(self.club.own_team.location, "Sevilla")
+        self.assertEqual(self.rival.location, "X")
+
+    def test_changing_location_does_not_touch_other_matches(self):
+        other = Match.objects.create(club=self.club, local=self.club.own_team, visiting=self.rival,
+                                     start_date=datetime.date(2026, 4, 1))
+        self.client.post(self.url, {"start_date": "2026-03-01", "location": "Pista Nueva"})
+        other.refresh_from_db()
+        self.assertEqual(other.location, "Sevilla")
+
+    def test_missing_location_keeps_current(self):
+        Match.objects.filter(pk=self.match.pk).update(location="Pista Vieja")
+        self.client.post(self.url, {"start_date": "2026-03-02"})
+        self.match.refresh_from_db()
+        self.assertEqual(self.match.location, "Pista Vieja")
+
+    def test_form_shows_location_field(self):
+        self.assertContains(self.client.get(self.url), 'name="location"')
+
+    def test_neutral_match_requires_location(self):
+        Match.objects.filter(pk=self.match.pk).update(neutral_venue=True, location="Sede")
+        response = self.client.post(self.url, {"start_date": "2026-03-01", "location": ""})
+        self.assertContains(response, "Escribe la localización de la sede.")
+        self.match.refresh_from_db()
+        self.assertEqual(self.match.location, "Sede")
+
     def test_invalid_time_shows_error(self):
         response = self.client.post(self.url, {"start_date": "2026-03-01", "start_time": "25:99"})
         self.assertContains(response, "Hora no válida")
