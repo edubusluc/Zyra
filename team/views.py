@@ -76,7 +76,7 @@ def create_team(request):
     lista de equipos o, si se llegó desde el formulario de enfrentamiento (``?volver=enfrentamiento``),
     de vuelta a él.
     """
-    similar, exists = [], False
+    similar, exists, exact_url = [], False, ""
     if request.method == "POST":
         form = Teamform(request.POST, request.FILES, club=request.club)
         form.uploader, form.check_only = request.user, similarity.is_check_request(request)
@@ -85,8 +85,9 @@ def create_team(request):
             similar = similarity.similar_teams(request.club, form.cleaned_data['name'])
             # Mismo nombre que un equipo dado de baja del grupo: no se crea otro, se ofrece darlo de alta.
             exists = bool(form.exact_matches)
+            exact_url = reverse("reactivate_team", args=[form.exact_matches[0].public_id]) if exists else ""
             if similarity.is_check_request(request):
-                return JsonResponse({"valid": True, "exists": exists, "similar": [similar_team_item(t) for t in similar]})
+                return JsonResponse({"valid": True, "exists": exists, "reactivate_url": exact_url, "similar": [similar_team_item(t) for t in similar]})
             if not exists and (not similar or similarity.confirmed(request)):
                 team = form.save(commit=False)
                 team.club = request.club
@@ -113,6 +114,7 @@ def create_team(request):
         "own_team": request.club.own_team,
         "similar": [similar_team_item(t) for t in similar],
         "exists": exists,
+        "reactivate_url": exact_url,
     })
 
 

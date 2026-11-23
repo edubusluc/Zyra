@@ -68,7 +68,7 @@ class CreateTeamTests(TestCase):
 
     def test_check_request_returns_similar_names_without_creating(self):
         response = self.client.post(self.url, self.data, HTTP_X_SIMILAR_CHECK="1")
-        self.assertEqual(response.json(), {"valid": True, "exists": False, "similar": [{
+        self.assertEqual(response.json(), {"valid": True, "exists": False, "reactivate_url": "", "similar": [{
             "label": "CD Tomares (Masculino · España · 500) · fuera de tu grupo",
             "reactivate_url": reverse("reactivate_team", args=[self.rival.public_id])}]})
         response = self.client.post(self.url, {"name": ""}, HTTP_X_SIMILAR_CHECK="1")
@@ -96,6 +96,8 @@ class CreateTeamTests(TestCase):
         check = self.client.post(self.url, data, HTTP_X_SIMILAR_CHECK="1").json()
         self.assertTrue(check["valid"])
         self.assertTrue(check["exists"])
+        self.assertEqual(check["reactivate_url"], reverse("reactivate_team", args=[self.rival.public_id]))
+        self.assertContains(response, 'action="%s" data-similar-reactivate' % check["reactivate_url"])
 
     def test_merely_similar_name_does_not_block(self):
         check = self.client.post(self.url, self.data, HTTP_X_SIMILAR_CHECK="1").json()

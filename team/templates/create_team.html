@@ -95,5 +95,5 @@
 {% translate "En tu club ya existe un equipo con este nombre o uno muy parecido:" as t_message %}
 {% translate "Este equipo ya existe" as t_exists_title %}
 {% translate "Ya estuvo en tu grupo. Puedes darlo de alta de nuevo en lugar de crear otro:" as t_exists_message %}
-{% include 'includes/similar_modal.html' with title=t_title message=t_message similar=similar exists=exists exists_title=t_exists_title exists_message=t_exists_message %}
+{% include 'includes/similar_modal.html' with title=t_title message=t_message similar=similar exists=exists reactivate_url=reactivate_url exists_title=t_exists_title exists_message=t_exists_message %}
 {% endblock %}

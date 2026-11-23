@@ -31,13 +31,19 @@
     modalEl.querySelector('[data-similar-continue]').hidden = exists;
   }
 
-  function show(items, exists) {
+  // Con un equipo idéntico ya existente, «Dar de alta de nuevo» va en el pie, junto a «Cancelar».
+  function show(items, exists, reactivateUrl) {
     setExists(Boolean(exists));
+    const footerForm = modalEl.querySelector('[data-similar-reactivate]');
+    if (footerForm) {
+      footerForm.hidden = !exists;
+      if (reactivateUrl) footerForm.action = reactivateUrl;
+    }
     const token = form.querySelector('input[name="csrfmiddlewaretoken"]');
     list.replaceChildren(...items.map((item) => {
       const li = document.createElement('li');
       li.append(typeof item === 'string' ? item : item.label);
-      if (item.reactivate_url && token) {
+      if (item.reactivate_url && token && !exists) {
         const f = document.createElement('form');
         f.method = 'post';
         f.action = item.reactivate_url;
@@ -79,7 +85,7 @@
       .then((result) => {
         if (result && result.valid && result.similar.length) {
           if (window.ZyraSubmitLock) window.ZyraSubmitLock.unlock(form);
-          show(result.similar, result.exists);
+          show(result.similar, result.exists, result.reactivate_url);
         }
         else send(); // sin parecidos (o con errores, que muestra el servidor)
       })
