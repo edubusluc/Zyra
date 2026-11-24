@@ -124,7 +124,11 @@ def _games(match, games, me_id):
                    else (game.player_1_visiting_id, game.player_2_visiting_id))
         state = "" if not game.winner else ("win" if game.winner == own_win else "loss")
         result = getattr(game, "result", None)
+        own_players = ((game.player_1_local, game.player_2_local) if own_is_local
+                       else (game.player_1_visiting, game.player_2_visiting))
+        people = [{"name": p.short_name, "me": bool(me_id) and p.id == me_id} for p in own_players if p is not None]
         rows.append({"n": game.n_game, "pair": label, "state": state, "me": bool(me_id) and me_id in own_ids,
+                     "players": people,
                      "score": _sets(result, own_is_local) if result is not None and state else None})
     return rows
 
