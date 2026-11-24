@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 24/11/2026 · Derrota en rojo en las tarjetas de «Partidos»
+
+- En cada partido de la ficha, si gana el rival ya no se marca en verde su fila: se marca en rojo nuestra pareja (barra lateral, fondo y sets), y la victoria sigue en verde en nuestra fila. Un texto oculto «Victoria» / «Derrota» lo anuncia a los lectores de pantalla. La imagen de «Compartir resultado» pinta también en rojo la pareja y los sets de los partidos perdidos.
+
 ## 24/11/2026 · «Frente a la plantilla»: «Sin datos suficientes» en lugar de filas que desaparecen
 
 - La tarjeta muestra siempre las mismas medidas. Si una no se puede calcular (al jugador le faltan partidos o convocatorias, o menos de 3 jugadores tienen datos), sale atenuada con «Sin datos suficientes» en vez de desaparecer. Si ninguna se puede calcular, la tarjeta sigue sin dibujarse.

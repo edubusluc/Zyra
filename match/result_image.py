@@ -199,11 +199,12 @@ def _rows(canvas, draw, match, games, own_is_local, rules):
             draw.line([(_s(92), _s(y)), (_s(W - 92), _s(y))], fill=BORDER, width=_s(2))
         _text(draw, (x_num, cy), f"P{game.n_game}", _font("Anton-Regular.ttf", 34), MUTED, "lm")
         own_won = (game.winner == outcomes.WINNER_LOCAL) == own_is_local
+        own_lost = bool(game.winner) and not own_won and not game.no_show
         pair = [] if game.no_show in ("own", "both") else _own_pair(game, own_is_local)
         for j, name in enumerate(pair):
             fname = "Archivo-ExtraBold.ttf" if own_won else "Archivo-Bold.ttf"
             _text(draw, (x_pair, cy + (j - 0.5) * 36), name, _fit(draw, name, fname, 30, pair_width, 18),
-                  LIME if own_won else MUTED, "lm")
+                  LIME if own_won else DANGER if own_lost else MUTED, "lm")
         sets = _sets(game)
         # «No presentada»: a la altura de la pareja que faltó (propia o ambas) o de los sets (rival).
         if game.no_show:
@@ -215,7 +216,7 @@ def _rows(canvas, draw, match, games, own_is_local, rules):
             _text(draw, (xs + tw / 2, cy + 1), label, font, WARNING, "mm", spacing=1.2)
         if sets and game.no_show not in ("own", "both", "rival"):
             _text(draw, (x_sets, cy), sets, _fit(draw, sets, "Archivo-ExtraBold.ttf", 32, 260),
-                  LIME if own_won else TEXT, "rm")
+                  LIME if own_won else DANGER if own_lost else TEXT, "rm")
         elif not game.no_show:
             _text(draw, (x_sets, cy), "—", _font("Archivo-ExtraBold.ttf", 32), MUTED, "rm")
         # Puntos en juego (solo en las competiciones con valor distinto por partido): los de la pareja propia.
