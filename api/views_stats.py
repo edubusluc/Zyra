@@ -107,6 +107,8 @@ class TeamStatsView(ApiView):
             "records": records.team_records(club, season, kind, log),
             "form": team_card.form_and_streak(club, season, kind),
             "league": team_card.league_summary(club, season or current_season()),
+            # Como la web: la elegibilidad es de la temporada en curso (solo sin temporada elegida o con la actual).
+            "finals": team_card.finals_roster(club, current_season()) if season in (None, current_season()) else None,
             "points": team_card.points_series(club, season, kind),
             "venue": team_card.venue_matches(club, season, kind),
             "walkovers": team_card.walkovers(club, season, kind),

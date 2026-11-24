@@ -8,7 +8,7 @@ from api.tokens import issue_token
 from core.models import Membership
 from core.services import create_club
 from data_analyse.tests_extra import ClubDataMixin
-from players.models import Player
+from players.models import Player, current_season
 
 User = get_user_model()
 
@@ -57,6 +57,14 @@ class TeamStatsApiTests(ClubDataMixin, TestCase):
         web = self.client.get(reverse("team_statistics"), {"season": "2025-2026", "match_type": "todos"})
         self.assertEqual(web.context["total_matches"], data["balance"]["total"])
         self.assertEqual(web.context["won_matches"], data["balance"]["won"])
+
+    def test_finals_matches_the_web_card(self):
+        """``finals`` sale de ``team_card.finals_roster`` (None sin esa regla, como la tarjeta de la web)."""
+        from data_analyse import team_card
+        data = self.get(self.token, season="all", match_type="todos").json()
+        self.assertIn("finals", data)
+        expected = team_card.finals_roster(self.club, current_season())
+        self.assertEqual(data["finals"], expected)
 
     def test_roster_side_and_sort_options(self):
         """``lado`` y ``orden`` llegan a la tabla; un valor desconocido vuelve al de por defecto."""
