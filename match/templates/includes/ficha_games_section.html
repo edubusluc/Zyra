@@ -28,11 +28,11 @@
                 {% endif %}
             </div>
         </div>
-        <div class="z-game-row {% if g.winner == 'Local' %}is-winner{% endif %}{% if match.local.is_own %} is-own{% endif %}">
+        <div class="z-game-row {% if g.winner == 'Local' %}is-winner{% endif %}{% if match.local.is_own %} is-own{% if g.winner == 'Visitante' %} is-lost{% endif %}{% endif %}">
             <div class="z-game-side{% if g.local_pair_label %} has-pair{% endif %}">
                 {% if g.local_pair_label %}{% include 'includes/game_pair_avatars.html' with p1=g.player_1_local p2=g.player_2_local n1=g.removed_player_names.player_1_local n2=g.removed_player_names.player_2_local %}{% endif %}
                 <span class="z-game-who">
-                    <strong>{{ match.local_name }}</strong>
+                    <strong>{{ match.local_name }}</strong>{% if match.local.is_own and g.winner %}<span class="visually-hidden"> · {% if g.winner == 'Local' %}{% translate "Victoria" %}{% else %}{% translate "Derrota" %}{% endif %}</span>{% endif %}
                     {{ g.local_pair_label }}
                 </span>
             </div>
@@ -40,11 +40,11 @@
             <span class="z-set">{{ r.set2_local|default_if_none:"–" }}</span>
             <span class="z-set">{{ r.set3_local|default_if_none:"–" }}</span>
         </div>
-        <div class="z-game-row {% if g.winner == 'Visitante' %}is-winner{% endif %}{% if match.visiting.is_own %} is-own{% endif %}">
+        <div class="z-game-row {% if g.winner == 'Visitante' %}is-winner{% endif %}{% if match.visiting.is_own %} is-own{% if g.winner == 'Local' %} is-lost{% endif %}{% endif %}">
             <div class="z-game-side{% if g.visiting_pair_label %} has-pair{% endif %}">
                 {% if g.visiting_pair_label %}{% include 'includes/game_pair_avatars.html' with p1=g.player_1_visiting p2=g.player_2_visiting n1=g.removed_player_names.player_1_visiting n2=g.removed_player_names.player_2_visiting %}{% endif %}
                 <span class="z-game-who">
-                    <strong>{{ match.visiting_name }}</strong>
+                    <strong>{{ match.visiting_name }}</strong>{% if match.visiting.is_own and g.winner %}<span class="visually-hidden"> · {% if g.winner == 'Visitante' %}{% translate "Victoria" %}{% else %}{% translate "Derrota" %}{% endif %}</span>{% endif %}
                     {{ g.visiting_pair_label }}
                 </span>
             </div>

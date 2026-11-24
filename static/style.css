@@ -1343,6 +1343,7 @@ a.z-card:hover, .z-card--link:hover {
 .z-game-row .z-set { font-size: var(--z-fs-base); font-weight: 800; text-align: center; font-variant-numeric: tabular-nums; color: var(--z-muted); }
 .z-game-row.is-winner .z-set, .z-game-row.is-winner .z-game-side { color: #FFFFFF; }
 .z-game-row.is-winner.is-own .z-set { color: var(--z-lime); }
+.z-game-row.is-lost .z-set { color: var(--z-danger); }
 .z-game-side { min-width: 0; font-size: var(--z-fs-md); color: var(--z-muted); }
 .z-game-side strong { display: block; font-size: var(--z-fs-sm); letter-spacing: .01em; }
 .z-game-side.has-pair { display: flex; align-items: center; gap: 12px; }
@@ -4416,7 +4417,9 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
     .z-stage-closed .z-call, .z-stage-closed .z-card.z-game { background: linear-gradient(180deg, var(--z-stage-card-a), var(--z-stage-card-b)); border: 1px solid var(--z-stage-card-border); border-top-color: var(--z-stage-card-bevel); border-radius: var(--z-radius); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 8px 16px -10px rgba(0, 0, 0, .9); }
     .z-stage-closed > .mt-3, .z-stage-closed > div > .mt-3 { display: grid; gap: 12px; margin-top: 0 !important; }
     @media (min-width: 992px) { .z-stage-closed .mt-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    .z-stage-closed .z-game-row.is-winner { background: rgba(var(--z-lime-rgb), .08); box-shadow: inset 3px 0 0 var(--z-lime); }
+    .z-stage-closed .z-game-row.is-winner.is-own { background: rgba(var(--z-lime-rgb), .08); box-shadow: inset 3px 0 0 var(--z-lime); }
+    .z-stage-closed .z-game-row.is-lost { background: rgba(255, 92, 99, .08); box-shadow: inset 3px 0 0 var(--z-danger); }
+    .z-stage-closed .z-game-row.is-lost .z-game-side { color: #FFFFFF; }
     .z-stage-closed .z-set { font-size: 1.1rem; }
 
     /* Previa y primer enfrentamiento bajo las tarjetas */
