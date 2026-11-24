@@ -821,6 +821,30 @@ class CompleteTeamTests(TestCase):
         team_import, status = self.failed_import(SnpTemporaryError("Error del navegador al leer SNP: timeout"))
         self.assertEqual(status["redirect"], "")
 
+    def test_browser_timeout_shows_plain_message_blaming_snp(self):
+        """Un plazo agotado de Playwright no enseña el texto técnico y deja claro que el fallo es de SNP."""
+        from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
+        from . import scraper
+        timeout = PlaywrightTimeoutError("Page.goto: Timeout 30000ms exceeded.\nCall log: navigating")
+        with mock.patch.object(scraper, "_login", side_effect=timeout), \
+                self.assertLogs("players.scraper", level="WARNING") as logs:
+            with self.assertRaises(scraper.SnpTemporaryError) as ctx:
+                scraper._scrape("u", "p", None, lambda text: None, mock.MagicMock())
+        message = str(ctx.exception)
+        self.assertNotIn("Page.goto", message)
+        self.assertNotIn("Timeout 30000", message)
+        self.assertIn("SNP", message)
+        self.assertIn("No es un fallo de Zyra", message)
+        self.assertIn("Timeout 30000ms", "".join(logs.output))
+
+    def test_friendly_browser_error_for_other_failures(self):
+        from playwright.sync_api import Error as PlaywrightError
+        from . import scraper
+        with self.assertLogs("players.scraper", level="WARNING"):
+            message = scraper.friendly_browser_error(PlaywrightError("net::ERR_CONNECTION_RESET at https://x"))
+        self.assertNotIn("ERR_", message)
+        self.assertIn("No es un fallo de Zyra", message)
+
     def test_scraper_errors_say_where_to_fix_them(self):
         from . import scraper
         self.assertEqual(scraper.SnpScrapeError("x").kind, "")

@@ -1,0 +1,2 @@
+{% load i18n %}{# «i» de la lista de la convocatoria para capitán y gestores: quién la ve y dónde cambiarlo (Club.call_list_public). #}
+{% if can_manage %}{% if match.club.call_list_public %}{% translate "Los jugadores ven la lista de convocados cuando cierras la convocatoria. El capitán puede cambiarlo en Equipo." as tip %}{% else %}{% translate "Los jugadores no ven esta lista. El capitán puede cambiarlo en Equipo." as tip %}{% endif %}{% include 'includes/stat_tip.html' with tip=tip %}{% endif %}

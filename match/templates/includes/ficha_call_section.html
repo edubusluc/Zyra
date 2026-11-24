@@ -1,0 +1,54 @@
+{# Sección «Convocatoria» de la ficha (título, informe por email y lista). #}
+{% load static i18n l10n rivals %}{% load zyra_format %}
+{% if not stage_view or not match.draft_mode %}<h2 class="z-section-title {% if match.draft_mode %}mt-0{% else %}mt-4{% endif %}">{% translate "Convocatoria" %}</h2>{% endif %}
+
+{% if can_manage and report_deliveries %}
+<p class="small text-muted mb-2"><i class="fa-solid fa-envelope me-1" aria-hidden="true"></i> {% translate "Informe por email:" %}
+    {% for d in report_deliveries %}{{ d.email }}
+    {% if d.status == "sent" %}<span class="z-badge z-badge--lime">{% blocktranslate with when=d.sent_at|date:"d/m H:i" %}enviado {{ when }}{% endblocktranslate %}</span>
+    {% elif d.status == "pending" %}<span class="z-badge" title="{{ d.last_error }}">{% if d.attempts %}{% blocktranslate with when=d.next_attempt_at|date:"H:i" %}reintento {{ when }}{% endblocktranslate %}{% else %}{% translate "pendiente" %}{% endif %}</span>
+    {% else %}<span class="z-badge" title="{{ d.last_error }}">{% translate "no enviado" %}</span>{% endif %}{% if not forloop.last %} · {% endif %}
+    {% endfor %}
+</p>
+{% endif %}
+
+{% if not stage_view or not match.draft_mode %}
+{% if call_for_match and show_names %}
+<div class="z-call">
+    <div class="z-call-head">
+        <span>{% if call_for_match.draft_mode %}{% blocktranslate trimmed count n=players_count %}<b>{{ n }}</b> apuntado{% plural %}<b>{{ n }}</b> apuntados{% endblocktranslate %}{% else %}{% blocktranslate trimmed count n=players_count %}<b>{{ n }}</b> convocado{% plural %}<b>{{ n }}</b> convocados{% endblocktranslate %}{% endif %}</span>
+        {% if call_for_match.draft_mode %}<span class="z-badge">{% translate "Abierta" %}</span>{% else %}<span class="z-badge z-badge--lime"><i class="fa-solid fa-lock" aria-hidden="true"></i> {% translate "Cerrada" %}</span>{% endif %}{% include 'includes/call_list_tip.html' %}
+    </div>
+    {% for roster in rosters %}{% if roster.players %}
+    {% if roster.is_subs %}<button type="button" class="z-call-more" aria-controls="call-subs" aria-expanded="false"
+        data-more="{% blocktranslate with n=subs_count %}Ver suplentes ({{ n }}){% endblocktranslate %}" data-less="{% translate 'Ocultar suplentes' %}">{% blocktranslate with n=subs_count %}Ver suplentes ({{ n }}){% endblocktranslate %}</button>{% endif %}
+    <ul class="z-callist"{% if roster.is_subs %} id="call-subs" hidden{% endif %}>
+        {% for p in roster.players %}
+        <li class="z-pl{% if p.is_me %} is-me{% endif %}"{% if p.is_me %} aria-label="{{ p.full_name }} ({% translate 'tú' %})"{% endif %}>
+            {% if p.photo %}<img class="z-pl-av" src="{{ p.photo.url }}" alt="" loading="lazy">{% else %}<span class="z-pl-av" aria-hidden="true">{{ p.name|slice:":1" }}{{ p.last_name|slice:":1" }}</span>{% endif %}
+            <div class="z-pl-who"><b>{{ p.short_name }}</b>
+                <small>{% if p.pair_n %}<span class="z-pl-pair">P{{ p.pair_n }}</span>{% if p.partner %}{% blocktranslate with name=p.partner.short_name %}con {{ name }}{% endblocktranslate %}{% endif %}{% elif p.is_sub %}{% translate "Sin pareja asignada" %}{% endif %}</small></div>
+            {% if p.is_sub %}<span class="z-tag is-amber">{% translate "Suplente" %}</span>
+            {% elif call_for_match.draft_mode %}<span class="z-tag">{% translate "Apuntado" %}</span>
+            {% endif %}{# UX-012: sin pastilla «Convocado»: ya está bajo el título «Convocados» y el ancho es para el nombre. #}
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}{% endfor %}
+</div>
+<script>
+  // Suplentes de la convocatoria: ocultos hasta pulsar «Ver suplentes».
+  document.querySelectorAll('.z-call-more').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var list = document.getElementById(btn.getAttribute('aria-controls'));
+      var open = list.hidden;
+      list.hidden = !open;
+      btn.setAttribute('aria-expanded', String(open));
+      btn.textContent = open ? btn.dataset.less : btn.dataset.more;
+    });
+  });
+</script>
+{% elif not call_for_match %}
+<div class="z-empty"><i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>{% if can_manage %}{% translate "Crea la convocatoria para elegir quién juega este enfrentamiento." %}{% else %}{% translate "Tu capitán aún no ha creado la convocatoria de este enfrentamiento." %}{% endif %}</div>
+{% endif %}
+{% endif %}

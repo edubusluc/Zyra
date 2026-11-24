@@ -6,7 +6,8 @@ Medidas: % de victorias, % de convocatorias a las que se apunta, % de sets ganad
 puntos SNP o jornadas de liga jugadas (LAPI). La media, el rango y el puesto cuentan solo a quienes
 tienen al menos ``MIN_SAMPLE`` partidos (o convocatorias en «Se apunta»), o los que lleve el que más ha jugado
 si aún son menos (principio de temporada, o una liga con pocas jornadas); si el jugador no llega, esa medida
-no sale, y si menos de ``MIN_SAMPLE`` jugadores tienen datos no hay con quién compararse.
+sale como «Sin datos suficientes», igual que si menos de ``MIN_SAMPLE`` jugadores tienen datos; si ninguna medida se
+puede calcular no hay tarjeta.
 """
 from django.utils.formats import number_format
 from django.utils.translation import gettext as _
@@ -104,11 +105,12 @@ def compare_to_squad(player, squad, log, signup, snp_rows=None, league=None):
     ``{id: fila de records.snp_ranking}`` (None sin SNP) y ``league`` es ``(jugadas por jugador, total)`` de
     ``league_played`` (None sin liga).
 
-    Devuelve None si no hay comparación que enseñar, o ``{'rows', 'above', 'count'}``: cada fila trae
-    ``key``, ``label``, ``tip``, ``value`` (texto), ``base`` (texto), ``rank``, ``of``, ``top``, ``tone``
+    Devuelve None si no hay comparación que enseñar, o ``{'rows', 'above', 'count'}``: cada fila de una
+    medida que no se puede calcular trae solo ``key``, ``label``, ``tip``, ``empty`` (True) y ``reader`` («Sin datos
+    suficientes»); las demás, con ``empty`` False, traen ``key``, ``label``, ``tip``, ``value`` (texto), ``base`` (texto), ``rank``, ``of``, ``top``, ``tone``
     (up/down/eq), ``arrow``, ``delta``, ``mean``, ``low``, ``high`` (textos), las cuatro posiciones de la barra
     en tanto por ciento entero (``pos_low``, ``pos_high``, ``pos_mean``, ``pos_me``, más ``range_width``) y ``reader`` (texto para
-    lectores de pantalla). ``above`` son las medidas por encima de la media.
+    lectores de pantalla). ``above`` son las medidas por encima de la media y ``count`` las que se han podido calcular.
     """
     if player.id not in {p.id for p in squad}:
         return None
@@ -151,10 +153,9 @@ def compare_to_squad(player, squad, log, signup, snp_rows=None, league=None):
 
     rows, above = [], 0
     for key, counts, value, fmt, base, unit, axis in table:
-        if not counts(player):
-            continue
         values = [value(p) for p in squad if counts(p)]
-        if len(values) < MIN_SAMPLE:
+        if not counts(player) or len(values) < MIN_SAMPLE:
+            rows.append(_empty_row(key))
             continue
         mine = value(player)
         mean, low, high = sum(values) / len(values), min(values), max(values)
@@ -178,17 +179,24 @@ def compare_to_squad(player, squad, log, signup, snp_rows=None, league=None):
             delta = (_("%(a)s sobre la media") if diff > 0 else _("%(a)s bajo la media")) % {"a": amount}
             above += diff > 0
         rows.append({
-            "key": key, "label": LABELS[key], "tip": TIPS[key], "value": fmt(mine), "base": base(player),
+            "empty": False, "key": key, "label": LABELS[key], "tip": TIPS[key], "value": fmt(mine), "base": base(player),
             "rank": rank, "of": len(values), "top": rank == 1, "tone": tone, "arrow": arrow, "delta": delta,
             "mean": fmt(mean), "low": fmt(low), "high": fmt(high),
             "pos_low": pos(low), "pos_high": pos(high), "range_width": pos(high) - pos(low), "pos_mean": pos(mean), "pos_me": pos(mine),
             "reader": _("%(label)s: %(value)s, puesto %(rank)s de %(of)s, media %(mean)s") % {
                 "label": LABELS[key], "value": fmt(mine), "rank": rank, "of": len(values), "mean": fmt(mean)},
         })
-    if not rows:
+    real = [r for r in rows if not r["empty"]]
+    if not real:
         return None
-    return {"rows": rows, "above": above, "count": len(rows), "all_above": above == len(rows),
+    return {"rows": rows, "above": above, "count": len(real), "all_above": above == len(real),
             "none_above": above == 0, "tip": CARD_TIP}
+
+
+def _empty_row(key):
+    """Fila de una medida que no se puede calcular (el jugador no llega a la muestra o no hay con quién compararlo)."""
+    return {"key": key, "label": LABELS[key], "tip": TIPS[key], "empty": True,
+            "reader": _("%(label)s: sin datos suficientes") % {"label": LABELS[key]}}
 
 
 def _plural_rounds(size):

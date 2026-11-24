@@ -220,7 +220,8 @@ class AvailabilityTests(TestCase):
         availability.set_answer(self.match, self.ana, "no")
         self.client.force_login(self.user)
         response = self.client.get(reverse("call_for_match", args=[self.match.public_id]))
-        self.assertContains(response, "Tu respuesta era No")
+        self.assertContains(response, "Has dicho que no")
+        self.assertContains(response, "El capitán te ha apuntado")
         self.assertContains(response, "?cambiar=1")
 
     def test_ficha_shows_card_only_to_managers(self):

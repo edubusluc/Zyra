@@ -1,0 +1,6 @@
+{# Avatares de una pareja del partido: foto o iniciales; el jugador eliminado solo tiene iniciales. Recibe p1, p2 (jugadores o None), n1, n2 (nombres) y alt vacío (decorativo: el nombre ya va al lado). #}
+{% load zyra_format %}
+<span class="z-game-pair" aria-hidden="true">
+{% if p1 %}{% include 'includes/player_avatar.html' with player=p1 size="z-avatar--game" alt="" %}{% else %}<span class="z-avatar z-avatar--initials z-avatar--game">{{ n1|crest_initials }}</span>{% endif %}
+{% if p2 %}{% include 'includes/player_avatar.html' with player=p2 size="z-avatar--game" alt="" %}{% else %}<span class="z-avatar z-avatar--initials z-avatar--game">{{ n2|crest_initials }}</span>{% endif %}
+</span>

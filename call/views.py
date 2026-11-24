@@ -26,6 +26,8 @@ def delete_call(request, match_id):
     # Un partido con el acta cerrada no se toca: borrar su convocatoria rompería sus estadísticas.
     if not call.match.draft_mode:
         messages.error(request, _("No se puede borrar la convocatoria de un enfrentamiento ya confirmado."))
+    elif call.match.games.exists():
+        messages.error(request, _("Ya hay parejas alineadas: no se puede borrar la convocatoria."))
     else:
         call.delete()
     return redirect('call_for_match', match_id)

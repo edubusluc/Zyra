@@ -11584,6 +11584,12 @@ msgstr[1] "%(n)s league points"
 msgid "Cambiar fecha y hora"
 msgstr "Change date and time"
 
+#: match/templates/includes/ficha_more.html:31
+#: match/templates/edit_match_date.html:4
+#: match/templates/edit_match_date.html:7
+msgid "Cambiar fecha, hora y lugar"
+msgstr "Change date, time and place"
+
 #: match/templates/call_for_match.html:36
 msgid "Fases del enfrentamiento"
 msgstr "Fixture stages"
@@ -13130,9 +13136,8 @@ msgid "Jugadores de Zyra que no aparecen en SNP: %(names)s"
 msgstr "Zyra players not found in SNP: %(names)s"
 
 #: players/snp.py:170
-#, python-format
-msgid "Error inesperado: %(error)s"
-msgstr "Unexpected error: %(error)s"
+msgid "Ha ocurrido un error inesperado al leer SNP. Inténtalo de nuevo más tarde."
+msgstr "An unexpected error occurred while reading SNP. Please try again later."
 
 #: players/snp.py:207
 #, python-format
@@ -14350,24 +14355,6 @@ msgstr ""
 "Your group's teams are visible to all members and can be chosen when "
 "creating a match."
 
-#: team/templates/create_team.html:30
-#, python-format
-msgid ""
-"Al ser de tu grupo, juega en la misma categoría, nacionalidad y división que"
-" %(team)s: se copian de tu equipo."
-msgstr ""
-"As it is in your group, it plays in the same category, nationality and "
-"division as %(team)s: they are copied from your team."
-
-#: team/templates/create_team.html:31
-#, python-format
-msgid ""
-"Categoría, nacionalidad y división vienen rellenas con las de %(team)s. "
-"Cámbialas si este equipo es distinto."
-msgstr ""
-"Category, nationality and division are prefilled with those of %(team)s. "
-"Change them if this team is different."
-
 #: team/templates/create_team.html:35 team/templates/edit_team.html:20
 msgid "Categoría:"
 msgstr "Category:"
@@ -14381,6 +14368,12 @@ msgid "División:"
 msgstr "Division:"
 
 #: team/templates/create_team.html:81
+msgid "Este equipo ya existe"
+msgstr "This team already exists"
+
+msgid "Ya estuvo en tu grupo. Puedes darlo de alta de nuevo en lugar de crear otro:"
+msgstr "It was in your group before. You can add it back instead of creating another one:"
+
 msgid "Ya hay un equipo con un nombre parecido"
 msgstr "There is already a team with a similar name"
 
@@ -17169,3 +17162,116 @@ msgstr "If this is you, you rejoin the squad with your statistics."
 #: players/templates/confirm_previous_sheet.html
 msgid "No, soy otra persona"
 msgstr "No, I'm someone else"
+
+#: core/templates/club.html match/templates/includes/call_list_tip.html
+msgid "Los jugadores verán la lista de convocados al cerrar la convocatoria."
+msgstr "Players will see the list of called-up players when the call-up is closed."
+
+#: core/templates/club.html match/templates/includes/call_list_tip.html
+msgid "Los jugadores ya no verán la lista de convocados."
+msgstr "Players will no longer see the list of called-up players."
+
+#: core/templates/club.html match/templates/includes/call_list_tip.html
+msgid "Lista de convocados"
+msgstr "Call-up list"
+
+#: core/templates/club.html match/templates/includes/call_list_tip.html
+msgid "Si lo activas, los jugadores ven el listado final de convocados cuando cierras la convocatoria. Si no, solo lo ven el capitán y los gestores. Los apuntados nunca se enseñan a los jugadores."
+msgstr "If you turn it on, players see the final list of called-up players once you close the call-up. If not, only the captain and managers see it. Players never see who has signed up."
+
+#: core/templates/club.html match/templates/includes/call_list_tip.html
+msgid "Visible para los jugadores"
+msgstr "Visible to players"
+
+#: core/templates/club.html match/templates/includes/call_list_tip.html
+msgid "Los jugadores ven la lista de convocados cuando cierras la convocatoria. El capitán puede cambiarlo en Equipo."
+msgstr "Players see the list of called-up players when you close the call-up. The captain can change this in Team."
+
+#: core/templates/club.html match/templates/includes/call_list_tip.html
+msgid "Los jugadores no ven esta lista. El capitán puede cambiarlo en Equipo."
+msgstr "Players don't see this list. The captain can change this in Team."
+
+#: match/views.py
+msgid "Sin crear"
+msgstr "Not created"
+
+#: match/views.py
+msgid "Sin apuntar"
+msgstr "Not signed up"
+
+#: match/templates/includes/stage_me.html
+msgid "Has dicho que no"
+msgstr "You said no"
+
+#: match/templates/includes/stage_me.html
+msgid "Tu respuesta está pendiente"
+msgstr "Your answer is pending"
+
+#: match/templates/includes/stage_me.html
+msgid "El capitán te ha apuntado"
+msgstr "The captain has signed you up"
+
+#: match/views.py
+msgid "Ya hay resultados guardados: la convocatoria no se puede cambiar. Borra antes los resultados si necesitas corregirla."
+msgstr "There are saved results: the call-up can't be changed. Delete the results first if you need to correct it."
+
+#: call/views.py
+msgid "Ya hay parejas alineadas: no se puede borrar la convocatoria."
+msgstr "The pairs are already set: the call-up can't be deleted."
+
+#: match/views.py
+msgid "No se pueden borrar los resultados de un enfrentamiento ya confirmado"
+msgstr "Results can't be deleted from a confirmed match"
+
+#: match/views.py
+msgid "Este partido no tiene resultado."
+msgstr "This game has no result."
+
+#: match/views.py
+#, python-format
+msgid "Resultado del partido %(n)s borrado."
+msgstr "Result of game %(n)s deleted."
+
+#: match/lineup.py
+#, python-format
+msgid "El partido %(n)s ya tiene resultado: no se pueden cambiar su pareja ni su orden. Borra antes su resultado."
+msgstr "Game %(n)s already has a result: its pair and order can't be changed. Delete its result first."
+
+#: match/templates/call_for_match.html
+msgid "Borrar el resultado"
+msgstr "Delete the result"
+
+#: match/templates/call_for_match.html
+msgid "Se borrará el resultado de este partido. Podrás volver a ponerlo o cambiar la convocatoria y las parejas."
+msgstr "This game's result will be deleted. You will be able to enter it again or change the call-up and the pairs."
+
+#: match/templates/call_for_match.html
+msgid "Borrar resultado"
+msgstr "Delete result"
+
+#: match/templates/call_for_match.html
+msgid "Borrando…"
+msgstr "Deleting…"
+
+#: match/templates/includes/ficha_call_locked.html
+msgid "Hay resultados puestos"
+msgstr "Results are already entered"
+
+#: match/templates/includes/ficha_call_locked.html
+#, python-format
+msgid "Para modificar la convocatoria tienes que borrar antes el resultado de los partidos que ya lo tienen: %(games)s. Puedes hacerlo con el botón «Borrar resultado» de cada partido."
+msgstr "To change the call-up you must first delete the result of the games that already have one: %(games)s. You can do it with each game's «Delete result» button."
+
+#: match/templates/enter_results.html
+#, python-format
+msgid "Se borrará el resultado del partido %(n)s. Lo que hayas escrito sin guardar en esta pantalla se perderá."
+msgstr "The result of game %(n)s will be deleted. Anything you typed on this screen without saving will be lost."
+
+#: data_analyse/templates/includes/squad_compare.html
+msgid "Sin datos suficientes"
+msgstr "Not enough data"
+
+#: data_analyse/squad_compare.py
+#, python-format
+msgid "%(label)s: sin datos suficientes"
+msgstr "%(label)s: not enough data"

@@ -163,10 +163,15 @@
     trigger.addEventListener('click', () => (wrap.classList.contains('is-open') ? close(false) : open()));
 
     pop.addEventListener('click', (e) => {
+      // Lo pulsado dentro del calendario nunca cuenta como «clic fuera»
+      e.stopPropagation();
       const nav = e.target.closest('[data-nav]');
       if (nav) {
         focused = addMonths(focused, +nav.dataset.nav);
         renderGrid();
+        // El foco se queda en la flecha: al rehacer la cuadrícula el día enfocado desaparece y,
+        // sin esto, el foco cae al <body> y el calendario se trata como "fuera".
+        nav.focus({ preventScroll: true });
         return;
       }
       const day = e.target.closest('.z-datepicker-day');
@@ -208,11 +213,20 @@
       }
     });
 
+    // Clic fuera: se mira el recorrido del evento y no el nodo pulsado, porque al rehacer la
+    // cuadrícula (cambio de mes, selección) el nodo pulsado puede haber salido ya del DOM.
     document.addEventListener('click', (e) => {
-      if (!wrap.contains(e.target)) close(false);
+      if (!wrap.classList.contains('is-open')) return;
+      const inside = e.composedPath ? e.composedPath().includes(wrap) : wrap.contains(e.target);
+      if (!inside && e.target.isConnected) close(false);
     });
-    wrap.addEventListener('focusout', (e) => {
-      if (e.relatedTarget && !wrap.contains(e.relatedTarget)) close(false);
+    // Tab hacia fuera: solo con el teclado. Con el ratón Safari manda el foco al contenedor de la
+    // página (<main>) al pulsar una flecha, así que el foco no sirve para saber si se pulsó fuera.
+    wrap.addEventListener('keydown', (e) => {
+      if (e.key !== 'Tab') return;
+      setTimeout(() => {
+        if (wrap.classList.contains('is-open') && !wrap.contains(document.activeElement)) close(false);
+      }, 0);
     });
 
     // Un input oculto no pasa por la validación del navegador: se comprueba aquí
