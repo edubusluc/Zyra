@@ -110,6 +110,14 @@ class MatchApiTests(TestCase):
         self.assertIsNone(self.get(self.user_token).json()["call"])
         self.assertIsNotNone(self.get(self.captain_token).json()["call"])
 
+    def test_games_carry_the_players_of_each_pair(self):
+        """Cada pareja trae sus jugadores (nombre corto y si soy yo) para pintar los avatares."""
+        partner = Player.objects.create(club=self.club, name="Ana", last_name="Gil", in_team=True)
+        Game.objects.create(match=self.match, n_game=1, score=3, player_1_local=self.me, player_2_local=partner)
+        game = self.get(self.user_token).json()["games"][0]
+        self.assertEqual([p["me"] for p in game["players"]], [True, False])
+        self.assertEqual(game["players"][1]["name"], partner.short_name)
+
     def test_actions_only_for_managers_and_locked_with_results(self):
         """Las acciones solo las recibe quien gestiona; con resultados guardados editar la convocatoria sale bloqueada."""
         call = Call.objects.create(match=self.match)
