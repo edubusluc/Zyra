@@ -258,3 +258,68 @@ class AvailabilityLinkApiTests(TestCase):
         self.assertEqual(self.client.post(url, **self.auth(token)).status_code, 403)
         Call.objects.create(match=self.match, draft_mode=False)
         self.assertEqual(self.client.post(url, **self.auth(self.captain_token)).json()["error"], "closed")
+
+
+class MatchCallApiTests(TestCase):
+    """``GET`` y ``PUT /matches/<id>/call``: seleccionar jugadores al crear y editar la convocatoria."""
+
+    setUp = MatchApiTests.setUp
+
+    def url(self, match=None):
+        """Ruta de la convocatoria del enfrentamiento."""
+        return reverse("api_match_call", args=[(match or self.match).public_id])
+
+    def auth(self, token):
+        """Cabecera de autenticación con el token indicado."""
+        return {"HTTP_AUTHORIZATION": f"Bearer {token}"}
+
+    def put(self, token, body, match=None):
+        """PUT JSON con el token indicado."""
+        return self.client.put(self.url(match), body, content_type="application/json", **self.auth(token))
+
+    def test_players_only_for_managers(self):
+        """Un jugador recibe 404 y quien gestiona la lista de seleccionables."""
+        self.assertEqual(self.client.get(self.url(), **self.auth(self.user_token)).status_code, 404)
+        data = self.client.get(self.url(), **self.auth(self.captain_token)).json()
+        self.assertFalse(data["exists"])
+        self.assertIn(str(self.me.public_id), [p["id"] for p in data["players"]])
+        self.assertIsNone(data["locked"])
+
+    def test_yes_answers_arrive_selected_before_the_call_exists(self):
+        """Sin convocatoria, los «Sí» del enlace llegan marcados y cada jugador trae su respuesta."""
+        Availability.objects.create(match=self.match, player=self.me, answer="yes")
+        data = self.client.get(self.url(), **self.auth(self.captain_token)).json()
+        mine = next(p for p in data["players"] if p["id"] == str(self.me.public_id))
+        self.assertEqual((mine["answer"], mine["selected"]), ("yes", True))
+
+    def test_create_and_edit_the_call(self):
+        """Crear con una selección; volver a enviar cambia los jugadores en la misma convocatoria."""
+        other = Player.objects.create(club=self.club, name="Ana", last_name="Gil", in_team=True)
+        first = self.put(self.captain_token, {"players": [str(self.me.public_id)]})
+        self.assertEqual((first.status_code, first.json()), (200, {"created": True, "count": 1}))
+        second = self.put(self.captain_token, {"players": [str(self.me.public_id), str(other.public_id)]})
+        self.assertEqual(second.json(), {"created": False, "count": 2})
+        self.assertEqual(Call.objects.get(match=self.match).players.count(), 2)
+
+    def test_rejects_empty_unknown_and_foreign_players(self):
+        """Selección vacía, ids desconocidos o de otro club: error y no se crea nada."""
+        self.assertEqual(self.put(self.captain_token, {"players": []}).json()["error"], "invalid_call")
+        self.assertEqual(self.put(self.captain_token, {"players": ["nope"]}).status_code, 400)
+        self.assertEqual(self.put(self.captain_token, {"players": "x"}).status_code, 400)
+        self.assertFalse(Call.objects.filter(match=self.match).exists())
+
+    def test_players_cannot_change_the_call(self):
+        """Un jugador recibe 404 al enviar."""
+        self.assertEqual(self.put(self.user_token, {"players": [str(self.me.public_id)]}).status_code, 404)
+
+    def test_locked_with_results_or_closed_match(self):
+        """Con resultados guardados o el acta cerrada no se puede cambiar la convocatoria."""
+        call = Call.objects.create(match=self.match)
+        call.players.add(self.me)
+        game = Game.objects.create(match=self.match, n_game=1, score=3, player_1_local=self.me,
+                                   player_2_local=Player.objects.create(club=self.club, name="Ana", last_name="Gil", in_team=True))
+        Result.objects.create(game=game, result=outcomes.LOCAL_WIN, set1_local=6, set1_visiting=3, set2_local=6, set2_visiting=4)
+        got = self.client.get(self.url(), **self.auth(self.captain_token)).json()
+        self.assertTrue(got["locked"])
+        response = self.put(self.captain_token, {"players": [str(self.me.public_id)]})
+        self.assertEqual((response.status_code, response.json()["error"]), (409, "locked"))
