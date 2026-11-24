@@ -81,7 +81,7 @@ class MatchApiTests(TestCase):
         self.assertIn("Falta", data["primary"]["reason"])
         self.assertEqual(data["call"]["count"], 1)
         self.assertEqual(data["call"]["players"][0]["name"], self.me.short_name)
-        self.assertEqual(data["availability"]["counts"], {"yes": 0, "no": 0, "maybe": 0})
+        self.assertEqual({k: v for k, v in data["availability"]["counts"].items() if k != "none"}, {"yes": 0, "no": 0, "maybe": 0})
 
     def test_my_answer_is_returned(self):
         """La respuesta del jugador y si aún puede cambiarla."""
@@ -206,3 +206,55 @@ class CloseCallApiTests(TestCase):
         self.assertIn("Se cierra la convocatoria con", confirm["message"])
         self.assertFalse(confirm["allow_short"])
         self.assertIsNone(confirm["check"])
+
+
+class AvailabilityLinkApiTests(TestCase):
+    """Respuestas antes de crear la convocatoria, enlace para compartir y recordatorio por correo."""
+
+    setUp = MatchApiTests.setUp
+    get = MatchApiTests.get
+
+    def auth(self, token):
+        """Cabecera de autenticación con el token indicado."""
+        return {"HTTP_AUTHORIZATION": f"Bearer {token}"}
+
+    def test_responses_are_visible_before_the_call_exists(self):
+        """Sin convocatoria creada, quien gestiona ya ve quién ha respondido qué."""
+        Availability.objects.create(match=self.match, player=self.me, answer="yes")
+        data = self.get(self.captain_token).json()
+        self.assertIsNone(data["call"])
+        groups = {g["key"]: g for g in data["availability"]["groups"]}
+        self.assertEqual([p["name"] for p in groups["yes"]["players"]], [self.me.short_name])
+        self.assertEqual(data["availability"]["counts"]["yes"], 1)
+        self.assertTrue(data["availability"]["can_remind"])
+        self.assertNotIn("availability", self.get(self.user_token).json())
+
+    def test_link_for_managers_only(self):
+        """El enlace y su texto salen para capitán y gestores; un jugador recibe 404."""
+        url = reverse("api_match_availability_link", args=[self.match.public_id])
+        data = self.client.get(url, **self.auth(self.captain_token)).json()
+        self.assertIn(self.match.availability_token, data["url"])
+        self.assertIn(data["url"], data["text"])
+        self.assertTrue(data["whatsapp_url"].startswith("https://wa.me/?text="))
+        self.assertEqual(self.client.get(url, **self.auth(self.user_token)).status_code, 404)
+
+    def test_remind_only_for_the_captain_and_once_per_hour(self):
+        """El capitán recuerda por correo a quien no ha respondido; el segundo intento espera una hora."""
+        url = reverse("api_match_availability_remind", args=[self.match.public_id])
+        self.assertEqual(self.client.post(url, **self.auth(self.user_token)).status_code, 404)
+        first = self.client.post(url, **self.auth(self.captain_token))
+        self.assertEqual(first.status_code, 200)
+        self.assertGreaterEqual(first.json()["sent"], 1)
+        again = self.client.post(url, **self.auth(self.captain_token))
+        self.assertEqual((again.status_code, again.json()["error"]), (409, "cooldown"))
+        self.assertGreaterEqual(again.json()["minutes"], 1)
+
+    def test_remind_is_refused_to_managers_and_when_closed(self):
+        """Un gestor (no capitán) no puede recordar y con la convocatoria cerrada tampoco."""
+        manager = User.objects.create_user("gest", "gest@example.com", "Clave-Segura-123")
+        Membership.objects.create(user=manager, club=self.club, role=Membership.MANAGER)
+        _, token = issue_token(manager, "iPhone")
+        url = reverse("api_match_availability_remind", args=[self.match.public_id])
+        self.assertEqual(self.client.post(url, **self.auth(token)).status_code, 403)
+        Call.objects.create(match=self.match, draft_mode=False)
+        self.assertEqual(self.client.post(url, **self.auth(self.captain_token)).json()["error"], "closed")
