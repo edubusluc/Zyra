@@ -14,6 +14,16 @@
     </div>
     <ul class="st-squad-rows">
       {% for r in squad_compare.rows %}
+      {% if r.empty %}
+      <li class="st-squad-row is-empty">
+        <div class="st-squad-top">
+          <span class="st-squad-label">{{ r.label }}{% include 'includes/stat_tip.html' with tip=r.tip %}</span>
+        </div>
+        <div class="st-squad-main"><b class="st-squad-val">{% translate "Sin datos suficientes" %}</b></div>
+        <div class="st-squad-track" aria-hidden="true"></div>
+        <span class="st-sr">{{ r.reader }}</span>
+      </li>
+      {% else %}
       <li class="st-squad-row">
         <div class="st-squad-top">
           <span class="st-squad-label">{{ r.label }}{% include 'includes/stat_tip.html' with tip=r.tip %}</span>
@@ -34,6 +44,7 @@
         </div>
         <span class="st-sr">{{ r.reader }}</span>
       </li>
+      {% endif %}
       {% endfor %}
     </ul>
   </article>

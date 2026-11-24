@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 24/11/2026 · «Frente a la plantilla»: «Sin datos suficientes» en lugar de filas que desaparecen
+
+- La tarjeta muestra siempre las mismas medidas. Si una no se puede calcular (al jugador le faltan partidos o convocatorias, o menos de 3 jugadores tienen datos), sale atenuada con «Sin datos suficientes» en vez de desaparecer. Si ninguna se puede calcular, la tarjeta sigue sin dibujarse.
+
 ## 23/11/2026 · Mensaje claro cuando falla la web de SNP
 
 - Si no se puede leer SNP (plazo agotado, conexión cortada, web en mantenimiento), al crear el equipo o al sincronizar se muestra un mensaje en lenguaje llano que dice que el fallo es de SNP, no de Zyra ni de la cuenta, y que se reintente más tarde. El texto técnico del navegador ya no se ve: queda en el log del servidor.

@@ -17205,3 +17205,12 @@ msgstr "To change the call-up you must first delete the result of the games that
 #, python-format
 msgid "Se borrará el resultado del partido %(n)s. Lo que hayas escrito sin guardar en esta pantalla se perderá."
 msgstr "The result of game %(n)s will be deleted. Anything you typed on this screen without saving will be lost."
+
+#: data_analyse/templates/includes/squad_compare.html
+msgid "Sin datos suficientes"
+msgstr "Not enough data"
+
+#: data_analyse/squad_compare.py
+#, python-format
+msgid "%(label)s: sin datos suficientes"
+msgstr "%(label)s: not enough data"

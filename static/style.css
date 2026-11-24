@@ -4720,6 +4720,9 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .st-squad-me { position: absolute; top: -2px; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%; background: var(--z-lime); border: 3px solid var(--z-ink); box-shadow: 0 0 0 1px var(--z-lime); }
 .st-squad-scale { display: flex; justify-content: space-between; gap: 8px; font-size: var(--z-fs-xs); color: var(--z-muted); font-variant-numeric: tabular-nums; }
 .st-squad-scale b { font-weight: 600; color: var(--z-text); }
+.st-squad-row.is-empty { opacity: .6; }
+.st-squad-row.is-empty .st-squad-val { font-family: var(--z-body); font-size: var(--z-fs-md); font-weight: 800; color: var(--z-muted); }
+.st-squad-row.is-empty .st-squad-track::before { border-style: dashed; border-color: var(--z-border-strong); }
 @container (max-width: 460px) {
   .st-squad-delta { margin-left: 0; flex-basis: 100%; }
 }
