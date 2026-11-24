@@ -11,7 +11,7 @@ from django.http import Http404
 from django.utils.translation import gettext as _, ngettext
 
 from core.season_choice import ALL_SEASONS
-from data_analyse import comparison, pairs as pair_stats, player_card, records, roster_table, team_card
+from data_analyse import comparison, pairs as pair_stats, player_card, records, rivals as rival_stats, roster_table, team_card
 from data_analyse.attendance import signup_attendance
 from data_analyse.sets import by_game_number, set_stats
 from core.spaces import player_history
@@ -21,6 +21,7 @@ from data_analyse.views import (ALL_TYPES, COMPETITIVE, _squad_compare, aligned_
                                 signup_summary, summarize)
 from match.models import Match
 from players.models import Player, current_season, joined_by
+from team.models import Team
 
 from .errors import ApiError
 from .responses import json_ok
@@ -335,4 +336,77 @@ class PairStatsView(ApiView):
                        "rival": g["rival"], "local": g["local"], "neutral": g["neutral"], "sets": g["sets"],
                        "won": g["won"], "points": g["points"]} for g in games],
         }
+        return json_ok(data)
+
+
+def _rival_ref(row):
+    """Datos que identifican a un rival (equipo del grupo o nombre escrito a mano) sin modelos."""
+    team = row["team"]
+    return {"team_id": str(team.public_id) if team else None, "name": row["label"]}
+
+
+def _rival_entry(e):
+    """Una línea del historial de un rival sin el modelo ``Match``."""
+    return {"match_id": str(e["match"].public_id), "date": e["date"], "season": e["season"], "outcome": e["outcome"],
+            "own": e["own"], "other": e["other"], "local": e["local"], "neutral": e["neutral"], "friendly": e["friendly"],
+            "type_label": str(e["type_label"]), "round": e["round"], "league_points": e["league_points"],
+            "rival_no_show": e["rival_no_show"]}
+
+
+def _rival_tally(row):
+    """Balance de un rival (lista y ficha): enfrentamientos, puntos, forma y último resultado."""
+    last = row["last"]
+    return {**{k: row[k] for k in ("played", "won", "drawn", "lost", "pct", "points_for", "points_against", "league_points",
+                                   "form")},
+            "last": {k: last[k] for k in ("date", "outcome", "own", "other", "local")} if last else None}
+
+
+class RivalsStatsView(ApiView):
+    """
+    ``GET /api/v1/teams/<id>/stats/rivals``: «Estadísticas · Rivales», el balance contra cada rival (lo mismo que la lista de
+    la web). Filtros ``season`` y ``match_type`` como en Equipo y ``sort`` (``rival``, ``pct``, ``worst``, ``balance`` o ``last``).
+    Sin paginar: la búsqueda por nombre la hace la app. Lleva ``ETag``.
+    """
+    etag = True
+
+    def get(self, request, team_id):
+        """``filters``, ``has_matches``, ``sort``, ``sorts`` y ``rows`` (cada rival con ``team_id`` o solo ``name``)."""
+        club = membership_for_team(request.user, team_id).club
+        filters, season, kind = _club_filters(club, request)
+        sort = request.GET.get("sort")
+        sort = sort if sort in rival_stats.SORTS else rival_stats.SORT_RIVAL
+        data = {"filters": filters, "has_matches": bool(filters["seasons"]), "sort": sort, "sorts": list(rival_stats.SORTS)}
+        if filters["seasons"]:
+            data["rows"] = [{**_rival_ref(r), "friendly_only": r["friendly_only"], **_rival_tally(r)}
+                            for r in rival_stats.rival_summary(club, season, kind, sort)]
+        return json_ok(data)
+
+
+class RivalStatsView(ApiView):
+    """
+    ``GET /api/v1/teams/<id>/stats/rival?team=<id público>`` (o ``?name=`` en un amistoso con rival escrito a mano): la ficha
+    de un rival, con balance, historial y las mejores y peores parejas contra él (lo que enseña la web). Filtros ``season`` y
+    ``match_type``. Un equipo que no es del club, 404; un rival sin enfrentamientos con esos filtros, ``detail`` nulo. Lleva ``ETag``.
+    """
+    etag = True
+
+    def get(self, request, team_id):
+        """``filters``, ``name``, ``team_id``, ``detail`` (balance, ``history``, ``pairs_best``, ``pairs_worst``) y ``min_games_pair``."""
+        club = membership_for_team(request.user, team_id).club
+        team, name = None, (request.GET.get("name") or "").strip()
+        if request.GET.get("team"):
+            team = Team.objects.filter(public_id=request.GET["team"], club=club).first()
+            if team is None:
+                raise Http404("Rival no encontrado")
+        elif not name:
+            raise ApiError("invalid", _("Falta el rival."), 400)
+        filters, season, kind = _club_filters(club, request)
+        detail = rival_stats.rival_detail(club, list(Player.objects.filter(club=club)), team, name, season, kind)
+        data = {"filters": filters, "team_id": str(team.public_id) if team else None, "name": detail["label"] if detail else (team.name if team else name),
+                "min_games_pair": pair_stats.MIN_GAMES_PAIR, "detail": None}
+        if detail:
+            pair = lambda r: {"p1": _player(r["p1"]), "p2": _player(r["p2"]), **{k: r[k] for k in ("played", "wins", "losses", "pct")}}  # noqa: E731
+            data["detail"] = {**_rival_tally(detail), "history": [_rival_entry(e) for e in detail["history"]],
+                              "pairs_best": [pair(r) for r in detail["pairs_best"]],
+                              "pairs_worst": [pair(r) for r in detail["pairs_worst"]]}
         return json_ok(data)
