@@ -50,11 +50,16 @@ class CompareLogicTests(SimpleTestCase):
 
     def test_player_without_sample_has_no_row(self):
         res = self.compare(4)
-        self.assertEqual([r["key"] for r in res["rows"]], ["signup"])  # tiene 4 convocatorias, pero solo 2 partidos
+        # Tiene 4 convocatorias, pero solo 2 partidos: victorias y sets salen como «Sin datos suficientes».
+        self.assertEqual([r["key"] for r in res["rows"] if not r["empty"]], ["signup"])
+        self.assertEqual([r["key"] for r in res["rows"] if r["empty"]], ["pct", "sets"])
+        self.assertEqual(res["count"], 1)
 
     def test_signup_needs_three_calls(self):
         self.signup[1] = {"signed": 1, "total": 2, "pct": 50}
-        self.assertNotIn("signup", [r["key"] for r in self.compare()["rows"]])
+        signup = next(r for r in self.compare()["rows"] if r["key"] == "signup")
+        self.assertTrue(signup["empty"])
+        self.assertEqual(signup["reader"], "Se apunta: sin datos suficientes")
 
     def test_too_small_squad_has_no_card(self):
         self.log = [entry((1, 2), True)] * 3  # solo 1 y 2 tienen partidos
@@ -92,7 +97,7 @@ class CompareLogicTests(SimpleTestCase):
         row = next(r for r in res["rows"] if r["key"] == "snp")
         self.assertEqual(row["rank"], 1)
         self.assertEqual(row["value"].replace("\xa0", " ").replace(".", " "), "1 400 pts")
-        for r in res["rows"]:
+        for r in (r for r in res["rows"] if not r["empty"]):
             self.assertTrue(all(2 <= r[k] <= 98 for k in ("pos_low", "pos_high", "pos_mean", "pos_me")))
             self.assertEqual(r["range_width"], r["pos_high"] - r["pos_low"])
 

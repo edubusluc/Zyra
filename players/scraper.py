@@ -14,11 +14,14 @@ SnpBlockedError para que el proceso por lotes pare en vez de insistir.
 """
 import base64
 import binascii
+import logging
 import re
 from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urlsplit
 
-from playwright.sync_api import Error as PlaywrightError, sync_playwright
+from playwright.sync_api import Error as PlaywrightError, TimeoutError as PlaywrightTimeoutError, sync_playwright
+
+logger = logging.getLogger(__name__)
 
 SNP_HOST = "snpgalaxy.com"
 LOGIN_URL = "https://snpgalaxy.com/usuario/login"
@@ -79,6 +82,21 @@ class SnpTemporaryError(SnpScrapeError):
 
 class SnpBlockedError(SnpTemporaryError):
     """SNP limita o rechaza nuestras peticiones: hay que parar y dejarle descansar."""
+
+
+SNP_TIMEOUT_MESSAGE = ("La web de SNP no responde o tarda demasiado en cargar. No es un fallo de Zyra ni de tu cuenta: "
+                       "inténtalo de nuevo más tarde.")
+SNP_BROWSER_MESSAGE = ("No hemos podido leer la web de SNP: ha fallado al cargar o está en mantenimiento. "
+                       "No es un fallo de Zyra ni de tu cuenta: inténtalo de nuevo más tarde.")
+
+
+def friendly_browser_error(exc):
+    """
+    Mensaje en lenguaje llano para un fallo de Playwright al leer SNP (plazo agotado, conexión
+    cortada…). El detalle técnico va al log, nunca a la pantalla del capitán.
+    """
+    logger.warning("Fallo del navegador al leer SNP: %s", str(exc).splitlines()[0] if str(exc) else exc.__class__.__name__)
+    return SNP_TIMEOUT_MESSAGE if isinstance(exc, PlaywrightTimeoutError) else SNP_BROWSER_MESSAGE
 
 
 def parse_team_id(value):
@@ -367,7 +385,8 @@ class SnpBrowser:
             self.browser = self._playwright.chromium.launch(headless=not self.headed, slow_mo=500 if self.headed else 0)
         except PlaywrightError as exc:
             self.close()
-            raise SnpTemporaryError(f"No se ha podido abrir el navegador: {str(exc).splitlines()[0]}") from exc
+            logger.error("No se ha podido abrir el navegador de lectura de SNP: %s", str(exc).splitlines()[0])
+            raise SnpTemporaryError("No hemos podido iniciar la lectura de SNP. Inténtalo de nuevo más tarde.") from exc
 
     def new_context(self):
         """
@@ -536,7 +555,7 @@ def _scrape(username, password, team_id, log, browser, country=None, team_name=N
             raise SnpBlockedError(f"SNP ha respondido {blocked[-1]} mientras se leía el equipo: "
                                   "está limitando o rechazando nuestras peticiones.") from exc
         if isinstance(exc, PlaywrightError):
-            raise SnpTemporaryError(f"Error del navegador al leer SNP: {str(exc).splitlines()[0]}") from exc
+            raise SnpTemporaryError(friendly_browser_error(exc)) from exc
         raise
     finally:
         if context is not None:

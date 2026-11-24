@@ -615,7 +615,24 @@ def club_home(request):
         "rivals_count": club.teams.filter(is_own=False, in_group=True).count(),
         "members_count": club.memberships.count(),
         "snp_account": SnpAccount.objects.filter(club=club).first() if request.membership.is_admin else None,
+        "call_list_public": club.call_list_public,
     })
+
+
+@club_admin_required
+@require_POST
+@spaces.team_explicit("club_home")
+def set_call_list_visibility(request):
+    """
+    El capitán decide si los jugadores ven el listado final de convocados cuando se cierra la convocatoria
+    (``public=1``) o no lo ven nunca (``public=0``, por defecto). Solo el capitán, solo POST; vuelve a «Equipo».
+    """
+    club = request.club
+    club.call_list_public = request.POST.get("public") == "1"
+    club.save(update_fields=["call_list_public"])
+    messages.success(request, _("Los jugadores verán la lista de convocados al cerrar la convocatoria.")
+                     if club.call_list_public else _("Los jugadores ya no verán la lista de convocados."))
+    return redirect("club_home")
 
 
 @spaces.management_view

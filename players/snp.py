@@ -192,7 +192,7 @@ def sync_club(account, scraper=None, **scrape_options):
                             blocked=isinstance(exc, SnpBlockedError))
     except Exception as exc:  # un fallo inesperado en un club no debe parar a los demás
         logger.exception("Error inesperado al actualizar los puntos SNP de %s", account.club)
-        result = SyncResult(ok=False, message=_("Error inesperado: %(error)s") % {"error": exc}, retryable=True)
+        result = SyncResult(ok=False, message=_("Ha ocurrido un error inesperado al leer SNP. Inténtalo de nuevo más tarde."), retryable=True)
     # Un fallo pasajero (red, web de SNP cambiada, bloqueo) cuenta para el aviso al personal;
     # los de la cuenta del capitán (contraseña, equipo) no son un fallo del servicio.
     if result.ok:

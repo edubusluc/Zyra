@@ -171,6 +171,9 @@ class Club(PublicIdModel):
     # Progreso de «Prepara la temporada» (core.season_prep): ``{"year": 2026, "done": ["roster", ...], "closed": false}``.
     # Solo vale para el año que indica; al empezar otra temporada se ignora y se parte de cero.
     season_prep = models.JSONField(default=dict, blank=True)
+    # El capitán decide si los jugadores (rol miembro) ven el listado final de convocados una vez cerrada la
+    # convocatoria. Por defecto no: los apuntados nunca se enseñan a los jugadores. Capitán y gestores lo ven siempre.
+    call_list_public = models.BooleanField(default=False)
 
     @property
     def rules(self):

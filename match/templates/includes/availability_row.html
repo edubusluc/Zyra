@@ -1,0 +1,7 @@
+{# «¿Puedes jugar?» y, para el capitán, «Disponibilidad» (enlace y respuestas): debajo de la «Convocatoria»; en dos columnas si salen las dos. #}
+{% if can_answer or availability or must_link and not stage_view %}
+<div class="z-av-row{% if can_answer and availability %} is-two{% endif %}">
+    {% if can_answer %}{% include 'includes/availability_me.html' %}{% elif must_link and not stage_view %}{% include 'includes/availability_link.html' %}{% endif %}
+    {% if availability %}{% include 'includes/availability_card.html' %}{% endif %}
+</div>
+{% endif %}

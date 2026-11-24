@@ -227,10 +227,10 @@ class EnterResultsTests(UxBase):
         self.assertNotContains(page, "z-preview")
         self.assertNotContains(page, "z-f2f")
 
-    def test_no_show_select_hides_behind_a_link_and_order_panel_collapses_on_mobile(self):
+    def test_no_show_select_is_visible_from_the_start_and_order_panel_collapses_on_mobile(self):
         page = self.client.get(self.url)
-        self.assertContains(page, "data-noshow-toggle")
-        self.assertContains(page, "data-noshow-box hidden")
+        self.assertContains(page, "data-pair-no-show")
+        self.assertNotContains(page, "data-noshow-toggle")
         lineup = self.client.get(reverse("edit_games_match", args=[self.m.public_id]))
         self.assertContains(lineup, "data-order-toggle")
 
@@ -521,6 +521,8 @@ class FichaPreviewTests(UxBase):
         m = self.match(FUTURE)
         Call.objects.create(match=m, draft_mode=True).players.set(self.players[:3])
         Player.objects.filter(id=self.players[0].id).update(user=self.user)
+        from call.models import Availability
+        Availability.objects.create(match=m, player=self.players[0], answer=Availability.YES)
         page = self.ficha(m)
         self.assertContains(page, 'class="is-me"')
         self.assertContains(page, "z-stage-me is-in")
@@ -640,9 +642,17 @@ class FichaPreviewTests(UxBase):
         call = Call.objects.create(match=m, draft_mode=True)
         call.players.set(self.players[:2])
         Player.objects.filter(id=self.players[0].id).update(user=self.user)
+        from call.models import Availability
+        Availability.objects.create(match=m, player=self.players[0], answer=Availability.YES)
         self.assertContains(self.ficha(m), "Te has apuntado")
-        call.players.remove(self.players[0])
-        self.assertContains(self.ficha(m), "Todavía no te has apuntado")
+        Availability.objects.update(answer=Availability.NO)
+        self.assertContains(self.ficha(m), "Has dicho que no")
+        Availability.objects.update(answer=Availability.MAYBE)
+        self.assertContains(self.ficha(m), "Tu respuesta está pendiente")
+        Availability.objects.all().delete()  # el capitán lo apuntó pero él no ha respondido: ningún mensaje
+        page = self.ficha(m)
+        for text in ("Te has apuntado", "Has dicho que no", "Tu respuesta está pendiente", "Todavía no te has apuntado"):
+            self.assertNotContains(page, text)
 
     def test_stage_has_a_countdown_and_the_roster_sits_outside_the_stage(self):
         import datetime
@@ -715,3 +725,17 @@ class FichaPreviewTests(UxBase):
         page = self.ficha(m)
         self.assertContains(page, "z-stage-closed")
         self.assertContains(page, "z-game-head")
+
+    def test_game_pair_shows_overlapped_avatars_photo_or_initials(self):
+        m = self.match(PAST)
+        self.closed_call(m)
+        games = self.lineup(m)
+        player = games[0].player_1_local
+        player.photo = "players/foto.webp"
+        player.save()
+        m.draft_mode = False
+        m.save()
+        page = self.ficha(m)
+        self.assertContains(page, 'class="z-game-pair"')
+        self.assertContains(page, "players/foto.webp")
+        self.assertContains(page, "z-avatar--initials z-avatar--game")

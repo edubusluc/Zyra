@@ -146,6 +146,14 @@ def update_games(match, lineup):
     if with_result:
         raise LineupError(_("No se pueden quitar de las parejas partidos que ya tienen resultado "
                             "(partido %(n)s): bórralo primero.") % {"n": with_result[0].n_game})
+    # Un partido con resultado conserva su pareja y su número: cambiarlos atribuiría los sets a otra pareja.
+    side = "local" if match.own_is_local else "visiting"
+    for n, (game, p1, p2) in enumerate(lineup, start=1):
+        if game.results.exists() and (
+                game.n_game != n
+                or {getattr(game, f"player_1_{side}_id"), getattr(game, f"player_2_{side}_id")} != {p1.id, p2.id}):
+            raise LineupError(_("El partido %(n)s ya tiene resultado: no se pueden cambiar su pareja ni su orden. "
+                                "Borra antes su resultado.") % {"n": game.n_game})
     # Primero se libera el número de cada partido para poder reordenarlos sin
     # chocar con la restricción de número único por enfrentamiento.
     Game.objects.filter(pk__in=[g.pk for g in games]).update(n_game=None)

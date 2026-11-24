@@ -69,6 +69,58 @@ Nueva respuesta `GET /api/v1/me` con la cuenta, sus equipos y el rol en cada uno
 ## 20/11/2026 · API de la app iOS: próximo enfrentamiento en el Inicio
 
 - `GET /api/v1/home` incluye `upcoming`: los enfrentamientos de la semana del más cercano con fecha, hora, lugar, lados y el estado del jugador en la convocatoria, con las mismas reglas que el Inicio de la web. Solo lectura.
+## 24/11/2026 · «Frente a la plantilla»: «Sin datos suficientes» en lugar de filas que desaparecen
+
+- La tarjeta muestra siempre las mismas medidas. Si una no se puede calcular (al jugador le faltan partidos o convocatorias, o menos de 3 jugadores tienen datos), sale atenuada con «Sin datos suficientes» en vez de desaparecer. Si ninguna se puede calcular, la tarjeta sigue sin dibujarse.
+
+## 23/11/2026 · Mensaje claro cuando falla la web de SNP
+
+- Si no se puede leer SNP (plazo agotado, conexión cortada, web en mantenimiento), al crear el equipo o al sincronizar se muestra un mensaje en lenguaje llano que dice que el fallo es de SNP, no de Zyra ni de la cuenta, y que se reintente más tarde. El texto técnico del navegador ya no se ve: queda en el log del servidor.
+
+## 23/11/2026 · Fotos de la pareja en «Partidos»
+
+- En la sección «Partidos» de la ficha, la pareja propia de cada partido muestra sus dos avatares, uno junto al otro, junto al nombre: la foto del jugador o, si no tiene, sus iniciales. Un jugador eliminado conserva solo las iniciales. No hay consultas nuevas.
+
+## 23/11/2026 · Cambiar el lugar de un enfrentamiento
+
+- El formulario de edición de un enfrentamiento abierto permite cambiar también el lugar. El cambio es solo de ese partido: no modifica la localización del equipo propio ni la del rival.
+
+## 23/11/2026 · El calendario de fechas no se cierra al cambiar de mes
+
+- En el selector de fecha (crear enfrentamiento, cambiar fecha) las flechas de mes anterior y siguiente mantienen el calendario abierto y el foco en la flecha.
+
+## 23/11/2026 · Crear rival: aviso si el equipo ya existe
+
+- Al crear un rival con el nombre de un equipo que ya estuvo en el grupo (sin distinguir mayúsculas, tildes ni signos), un aviso dice que «Este equipo ya existe» y permite darlo de alta de nuevo en lugar de crear otro.
+- Se quita del formulario la nota sobre la categoría, nacionalidad y división copiadas del equipo propio.
+
+## 22/11/2026 · Disponibilidad debajo de la convocatoria
+
+- En la ficha, la tarjeta «¿Puedes jugar?» / «Disponibilidad» pasa a ir justo debajo de «Convocatoria» (antes iba encima de la «Previa»).
+
+## 22/11/2026 · Con el acta cerrada, primero los resultados
+
+- En la ficha del enfrentamiento con el acta cerrada aparece primero «Partidos» (resultados) y después «Convocatoria» (convocados). Con el acta abierta el orden no cambia, y la visibilidad de la lista para jugadores tampoco.
+
+## 22/11/2026 · Con resultados guardados no se cambia la convocatoria ni las parejas con resultado
+
+- En cuanto un partido tiene resultado, la convocatoria deja de poder editarse y las parejas de los partidos con resultado no se pueden cambiar ni reordenar (sus sets irían a otra pareja). Los partidos sin resultado siguen editables. No se puede borrar la convocatoria con parejas alineadas.
+- Nuevo botón «Borrar resultado» (papelera) en cada partido de la ficha y en «Poner resultados», con confirmación, para volver a poder corregir la convocatoria o las parejas.
+- Con resultados guardados, «Editar convocatoria» abre un aviso que lista los partidos con resultado que hay que borrar antes.
+- En «Poner resultados» la pregunta «¿Se presentaron las dos parejas?» se ve desde el principio en cada partido, sin pulsar «Una pareja no se presentó».
+
+## 21/11/2026 · El capitán decide si los jugadores ven la lista de convocados
+
+- En «Equipo» el capitán tiene el interruptor «Lista de convocados · Visible para los jugadores». Por defecto está apagado: los jugadores no ven nunca a los apuntados. Si se enciende, ven el listado final de convocados cuando se cierra la convocatoria.
+- Capitán y gestores siguen viendo siempre la lista, con un «i» que explica quién la ve y dónde cambiarlo. Sin lista visible, el jugador no ve ni nombres ni cuántos hay apuntados: la tarjeta de convocatoria es pequeña y solo le dice si está apuntado o convocado. Con la convocatoria abierta ni siquiera ve las tarjetas de fase: solo «¿Puedes jugar?» y la Previa. Al cerrar la convocatoria, la tarjeta lleva un check (convocado) o una cruz roja (no convocado).
+
+## 21/11/2026 · «Te has apuntado» según lo que responde el jugador
+
+- Con la convocatoria abierta, el mensaje del jugador sale de su propia respuesta («Te has apuntado», «Has dicho que no» o «Tu respuesta está pendiente») y no de que el capitán lo haya apuntado: si no ha respondido, no sale ningún mensaje. Al cerrar la convocatoria sigue diciendo si está convocado.
+
+## 20/11/2026 · Sin mancha negra al pasar el ratón por los escudos
+
+- En la ficha del enfrentamiento, al mover el ratón sobre los escudos ya no aparece una franja negra difuminada a media altura: la sombra bajo el escudo es plana y se queda en su sitio.
 
 ## 20/11/2026 · Volver al equipo con tu ficha anterior
 

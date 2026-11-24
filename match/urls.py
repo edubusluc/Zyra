@@ -13,6 +13,7 @@ urlpatterns = (
     path("create_game/<pid:match_id>/",views.create_game_for_match, name='create_game'),
     path("create_result/<pid:game_id>/",views.create_result, name='create_result'),
     path("edit_result/<pid:game_id>/",views.edit_result, name='edit_result'),
+    path("delete_result/<pid:game_id>/", views.delete_result, name='delete_result'),
     path("results/<pid:match_id>/", views.enter_results, name='enter_results'),
     path("existing_call/<pid:match_id>/", views.existing_call_view, name="existing_call"),
     path("edit_call/<pid:call_id>/", views.edit_call, name='edit_call'),
