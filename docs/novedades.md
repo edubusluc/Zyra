@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 24/11/2026 · «Frente a la plantilla» con solo 2 partidos
+
+- La tarjeta compara a quien lleva al menos 2 partidos (antes 3), en SNP y en LAPI, así que el % de victorias y el % de sets ganados salen antes en la temporada. Siguen haciendo falta 3 jugadores comparables para dibujar una medida.
+
 ## 23/11/2026 · Mensaje claro cuando falla la web de SNP
 
 - Si no se puede leer SNP (plazo agotado, conexión cortada, web en mantenimiento), al crear el equipo o al sincronizar se muestra un mensaje en lenguaje llano que dice que el fallo es de SNP, no de Zyra ni de la cuenta, y que se reintente más tarde. El texto técnico del navegador ya no se ve: queda en el log del servidor.

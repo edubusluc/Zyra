@@ -6,7 +6,7 @@ Medidas: % de victorias, % de convocatorias a las que se apunta, % de sets ganad
 puntos SNP o jornadas de liga jugadas (LAPI). La media, el rango y el puesto cuentan solo a quienes
 tienen al menos ``MIN_SAMPLE`` partidos (o convocatorias en «Se apunta»), o los que lleve el que más ha jugado
 si aún son menos (principio de temporada, o una liga con pocas jornadas); si el jugador no llega, esa medida
-no sale, y si menos de ``MIN_SAMPLE`` jugadores tienen datos no hay con quién compararse.
+no sale, y si menos de ``MIN_PEERS`` jugadores tienen datos no hay con quién compararse.
 """
 from django.utils.formats import number_format
 from django.utils.translation import gettext as _
@@ -15,7 +15,9 @@ from django.utils.translation import gettext_lazy
 from match.models import Game, Match
 
 # Partidos (o convocatorias) mínimos para entrar en la comparación.
-MIN_SAMPLE = 3
+MIN_SAMPLE = 2
+# Jugadores comparables mínimos para dibujar una medida (media, rango y puesto necesitan con quién compararse).
+MIN_PEERS = 3
 # Diferencia por debajo de la cual se dice «En la media», según la unidad de la medida.
 NEAR = {"pct": 1, "points": 5, "rounds": 0.5}
 SLOTS = ("player_1_local", "player_2_local", "player_1_visiting", "player_2_visiting")
@@ -36,7 +38,7 @@ TIPS = {
     LEAGUE: gettext_lazy("Jornadas de liga en las que ha jugado, sobre las disputadas."),
 }
 CARD_TIP = gettext_lazy(
-    "Se compara con los jugadores de la plantilla que tienen al menos 3 partidos en el periodo elegido, "
+    "Se compara con los jugadores de la plantilla que tienen al menos 2 partidos en el periodo elegido, "
     "o los que lleve el que más ha jugado si son menos. La media es la de esos jugadores y el rango va del menor al mayor."
 )
 
@@ -154,7 +156,7 @@ def compare_to_squad(player, squad, log, signup, snp_rows=None, league=None):
         if not counts(player):
             continue
         values = [value(p) for p in squad if counts(p)]
-        if len(values) < MIN_SAMPLE:
+        if len(values) < MIN_PEERS:
             continue
         mine = value(player)
         mean, low, high = sum(values) / len(values), min(values), max(values)

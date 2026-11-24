@@ -16911,8 +16911,8 @@ msgid "Jornadas de liga en las que ha jugado, sobre las disputadas."
 msgstr "League rounds the player has played, out of those held."
 
 #: data_analyse/squad_compare.py data_analyse/templates/includes/squad_compare.html
-msgid "Se compara con los jugadores de la plantilla que tienen al menos 3 partidos en el periodo elegido, o los que lleve el que más ha jugado si son menos. La media es la de esos jugadores y el rango va del menor al mayor."
-msgstr "Compared with the squad players who have at least 3 matches in the chosen period, or as many as the most active player has if fewer. The average is theirs and the range goes from the lowest to the highest."
+msgid "Se compara con los jugadores de la plantilla que tienen al menos 2 partidos en el periodo elegido, o los que lleve el que más ha jugado si son menos. La media es la de esos jugadores y el rango va del menor al mayor."
+msgstr "Compared with the squad players who have at least 2 matches in the chosen period, or as many as the most active player has if fewer. The average is theirs and the range goes from the lowest to the highest."
 
 #: data_analyse/squad_compare.py data_analyse/templates/includes/squad_compare.html
 #, python-format

@@ -20,9 +20,9 @@ def entry(pair, won, sets=((6, 4), (6, 4))):
 class CompareLogicTests(SimpleTestCase):
     def setUp(self):
         self.squad = [Fake(i) for i in (1, 2, 3, 4)]
-        # 1 gana 3 de 3 (100 %); 2 gana 2 de 4 (50 %); 3 gana 2 de 5 (40 %); 4 solo juega 2 (no cuenta).
+        # 1 gana 3 de 3 (100 %); 2 gana 2 de 4 (50 %); 3 gana 2 de 5 (40 %); 4 solo juega 1 (no cuenta).
         log = [entry((1, 2), True), entry((1, 3), True), entry((1, 2), True),
-               entry((2, 3), False), entry((2, 3), False), entry((3, 4), True), entry((3, 4), False, ((4, 6), (6, 3), (2, 6)))]
+               entry((2, 3), False), entry((2, 3), False), entry((3, 4), True), entry((3, 9), False, ((4, 6), (6, 3), (2, 6)))]
         self.log = log
         self.signup = {p.id: {"signed": s, "total": 4, "pct": round(100 * s / 4)} for p, s in zip(self.squad, (4, 2, 3, 1))}
 
@@ -32,7 +32,7 @@ class CompareLogicTests(SimpleTestCase):
     def test_rank_mean_and_range(self):
         res = self.compare()
         pct = next(r for r in res["rows"] if r["key"] == "pct")
-        self.assertEqual((pct["rank"], pct["of"]), (1, 3))  # el jugador 4 no llega a 3 partidos
+        self.assertEqual((pct["rank"], pct["of"]), (1, 3))  # el jugador 4 no llega a 2 partidos
         self.assertEqual(pct["value"], "100 %")
         self.assertEqual(pct["low"], "40 %")
         self.assertEqual(pct["tone"], "up")
@@ -50,11 +50,23 @@ class CompareLogicTests(SimpleTestCase):
 
     def test_player_without_sample_has_no_row(self):
         res = self.compare(4)
-        self.assertEqual([r["key"] for r in res["rows"]], ["signup"])  # tiene 4 convocatorias, pero solo 2 partidos
+        self.assertEqual([r["key"] for r in res["rows"]], ["signup"])  # tiene 4 convocatorias, pero solo 1 partido
 
-    def test_signup_needs_three_calls(self):
-        self.signup[1] = {"signed": 1, "total": 2, "pct": 50}
+    def test_signup_needs_two_calls(self):
+        self.signup[1] = {"signed": 1, "total": 1, "pct": 100}
         self.assertNotIn("signup", [r["key"] for r in self.compare()["rows"]])
+
+    def test_two_matches_are_enough(self):
+        # Con 2 partidos ya se entra en la comparación (antes hacían falta 3).
+        self.log = [entry((1, 2), True), entry((1, 3), True), entry((2, 3), False), entry((4, 9), True)]
+        res = self.compare()
+        pct = next(r for r in res["rows"] if r["key"] == "pct")
+        self.assertEqual((pct["of"], pct["base"]), (3, "2 de 2 partidos"))  # el 4 solo tiene 1 y queda fuera
+
+    def test_two_comparable_players_are_not_enough(self):
+        self.log = [entry((1, 2), True), entry((1, 2), False), entry((3, 9), True), entry((4, 9), True)]
+        self.signup = {}
+        self.assertIsNone(self.compare())
 
     def test_too_small_squad_has_no_card(self):
         self.log = [entry((1, 2), True)] * 3  # solo 1 y 2 tienen partidos
