@@ -4,6 +4,7 @@ No calcula nada: junta lo que ya calculan las funciones de ``data_analyse`` (las
 La web guarda la temporada elegida en la sesión; aquí la temporada y el tipo van siempre en la petición (``season``,
 ``match_type``) y, sin ``season``, vale la temporada actual si el equipo tiene partidos en ella y, si no, «todas».
 """
+from collections import Counter
 from types import SimpleNamespace
 
 from django.http import Http404
@@ -15,7 +16,7 @@ from data_analyse.attendance import signup_attendance
 from data_analyse.sets import by_game_number, set_stats
 from core.spaces import player_history
 from data_analyse.views import (ALL_TYPES, COMPETITIVE, _squad_compare, aligned_by_season, build_game_log, degree_of_affinity,
-                                lineup_summary, season_games, summarize_by_season, calculate_match_statistics, calculate_tiebreak_stats,
+                                lineup_summary, PAIR_LAST_GAMES, pair_last_games, season_games, summarize_by_season, calculate_match_statistics, calculate_tiebreak_stats,
                                 calls_by_season, column_chart, format_for_chart, get_total_season, players_charts,
                                 signup_summary, summarize)
 from match.models import Match
@@ -27,8 +28,10 @@ from .teams import active_memberships, membership_for_team
 from .views_base import ApiView
 
 
-def _filters(request, seasons):
-    """(temporada elegida o None para «todas», tipo de partido o None para «todos») según los parámetros de la petición."""
+def _filters(request, seasons, default_all=False):
+    """(temporada elegida o None para «todas», tipo de partido o None para «todos») según los parámetros de la petición.
+
+    Sin ``season``, vale la actual si hay partidos en ella y, si no, «todas» (o siempre «todas» con ``default_all``)."""
     asked = request.GET.get("season")
     if asked == ALL_SEASONS:
         season = None
@@ -37,7 +40,7 @@ def _filters(request, seasons):
     elif asked:
         raise ApiError("invalid", _("Temporada no válida."), 400)
     else:
-        season = current_season() if current_season() in seasons else None
+        season = None if default_all else (current_season() if current_season() in seasons else None)
     kind = request.GET.get("match_type", COMPETITIVE)
     if kind == ALL_TYPES:
         kind = None
@@ -243,5 +246,93 @@ class PlayerStatsView(ApiView):
             "games": [{"match_id": str(g["match_public_id"]), "n_game": g["n_game"], "date": g["date"], "rival": g["rival"],
                        "local": g["local"], "neutral": g["neutral"], "partner": g["partner"].short_name if g["partner"] else None,
                        "sets": g["sets"], "won": g["won"], "points": g["points"]} for g in games],
+        }
+        return json_ok(data)
+
+
+def _pair_row(row):
+    """Fila de ``pairs.all_pairs`` sin modelos: los dos jugadores resumidos y el balance."""
+    return {"p1": _player(row["p1"]), "p2": _player(row["p2"]), **{k: row[k] for k in ("played", "wins", "losses", "pct")}}
+
+
+def _club_filters(club, request, default_all=False):
+    """(``filters``, temporada, tipo) de las pantallas de parejas, con las temporadas con enfrentamientos cerrados del club."""
+    seasons = sorted(get_total_season(Match.objects.filter(club=club, draft_mode=False)),
+                     key=lambda s: int(s.split("-")[0]), reverse=True)
+    season, kind = _filters(request, seasons, default_all)
+    return {"seasons": seasons, "season": season or ALL_SEASONS, "match_type": kind or ALL_TYPES,
+            "match_types": [ALL_TYPES, COMPETITIVE, Match.AMISTOSO]}, season, kind
+
+
+class PairsStatsView(ApiView):
+    """
+    ``GET /api/v1/teams/<id>/stats/pairs``: «Estadísticas · Parejas», todas las parejas que han jugado juntas. Filtros
+    ``season`` y ``match_type`` como en Equipo y ``sort`` (``comparison.PAIR_SORTS``; por defecto, más partidos). Sin
+    paginar: la búsqueda por nombre la hace la app. ``best`` y ``worst`` son las destacadas de la web. Lleva ``ETag``.
+    """
+    etag = True
+
+    def get(self, request, team_id):
+        """``filters``, ``has_matches``, ``sort``, ``min_games``, ``best``, ``worst`` y ``rows``."""
+        club = membership_for_team(request.user, team_id).club
+        filters, season, kind = _club_filters(club, request)
+        sort = request.GET.get("sort")
+        sort = sort if sort in comparison.PAIR_SORTS else comparison.PAIR_SORT_PLAYED
+        data = {"filters": filters, "has_matches": bool(filters["seasons"]), "sort": sort,
+                "sorts": list(comparison.PAIR_SORTS)}
+        if not filters["seasons"]:
+            return json_ok(data)
+        players = list(Player.objects.filter(club=club).order_by("name", "last_name"))
+        pairs = pair_stats.all_pairs(pair_stats.club_game_log(club, season, kind), players)
+        min_games = pair_stats.min_games_pair(kind)
+        best, worst = pair_stats.best_and_worst_pairs(pairs, min_games=min_games)
+        data.update({"min_games": min_games, "best": [_pair_row(r) for r in best], "worst": [_pair_row(r) for r in worst],
+                     "rows": [_pair_row(r) for r in comparison.sort_pairs(pairs, sort)]})
+        return json_ok(data)
+
+
+class PairStatsView(ApiView):
+    """
+    ``GET /api/v1/teams/<id>/stats/pairs/<p1_id>/<p2_id>``: la ficha de una pareja (lo que la web enseña con ``?p1=&p2=``).
+    Filtros ``season`` y ``match_type``; sin ``season`` vale «todas». Dos jugadores iguales dan 400 y uno que no es del club, 404.
+    Con una temporada elegida ``games`` lista todos los partidos de la pareja en ella y, si no, los últimos. Lleva ``ETag``.
+    """
+    etag = True
+
+    def get(self, request, team_id, p1_id, p2_id):
+        """``filters``, ``p1``, ``p2``, ``compact``, ``usual_number``, ``summary``, ``form``, ``seasons``, ``trend``, ``set_rows``, ``venue`` y ``games``."""
+        club = membership_for_team(request.user, team_id).club
+        by_public_id = {str(p.public_id): p for p in Player.objects.filter(club=club)}
+        p1, p2 = by_public_id.get(p1_id), by_public_id.get(p2_id)
+        if p1 is None or p2 is None:
+            raise Http404("Jugador no encontrado")
+        if p1 == p2:
+            raise ApiError("invalid", _("Elige dos jugadores distintos."), 400)
+        filters, season, kind = _club_filters(club, request, default_all=True)
+        log = pair_stats.club_game_log(club, season, kind)
+        summary = pair_stats.pair_summary(log, p1.id, p2.id)
+        pair_log = [g for g in log if g["pair"] == pair_stats.pair_key(p1.id, p2.id)]
+        numbers = Counter(g["n_game"] for g in pair_log)
+        games = pair_last_games(club, p1, p2, n=None if season else PAIR_LAST_GAMES, match_type=kind, season=season)
+        data = {
+            "filters": filters,
+            "p1": _player(p1), "p2": _player(p2),
+            "compact": summary["played"] < comparison.MIN_PAIR_SHEET_GAMES,
+            "min_trend_games": comparison.MIN_TREND_GAMES,
+            "usual_number": numbers.most_common(1)[0][0] if numbers else None,
+            "summary": {k: summary[k] for k in ("played", "wins", "losses", "pct", "points", "matches", "local_played",
+                                                "local_wins", "local_losses", "visiting_played", "visiting_wins",
+                                                "visiting_losses", "streak_type", "streak_len", "best_win_streak",
+                                                "worst_loss_streak")},
+            "form": summary["form"],
+            "seasons": summary["seasons"],
+            "trend": comparison.trend(summary["seasons"]),
+            "set_rows": [{"label": str(label), "hint": str(hint), **situation}
+                         for label, hint, situation in comparison.set_situation_rows(set_stats(pair_log))],
+            "venue": comparison.venue_split({"won": summary["local_wins"], "lost": summary["local_losses"]},
+                                            {"won": summary["visiting_wins"], "lost": summary["visiting_losses"]}, "games"),
+            "games": [{"match_id": str(g["match_public_id"]), "n_game": g["n_game"], "date": g["date"], "season": g["season"],
+                       "rival": g["rival"], "local": g["local"], "neutral": g["neutral"], "sets": g["sets"],
+                       "won": g["won"], "points": g["points"]} for g in games],
         }
         return json_ok(data)
