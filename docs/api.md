@@ -32,6 +32,8 @@ va autenticada con un **token de dispositivo**. El código está en `api/`; las 
 | `GET /teams/<id>/stats/players/<player_id>` | no | Ficha de un jugador de la plantilla (la de «Yo» si es el propio): cabecera, cifras, temporadas, sets, convocatorias, compañeros, frente a la plantilla, SNP y partidos. Filtros `season` y `match_type`. Con `ETag` |
 | `GET /teams/<id>/stats/pairs` | no | Estadísticas · Parejas: todas las parejas que han jugado juntas (`rows`, ordenables con `sort`: `jugados`, `mejor`, `peor`, `nombre`) y las destacadas (`best`, `worst`). Filtros `season` y `match_type`. Con `ETag` |
 | `GET /teams/<id>/stats/pairs/<p1_id>/<p2_id>` | no | Ficha de una pareja: cifras, forma, racha, temporadas, tendencia, sets, local y visitante y partidos. Filtros `season` y `match_type`. Con `ETag` |
+| `GET /teams/<id>/stats/rivals` | no | Estadísticas · Rivales: balance contra cada rival (`rows`, ordenables con `sort`: `rival`, `pct`, `worst`, `balance`, `last`). Filtros `season` y `match_type`. Con `ETag` |
+| `GET /teams/<id>/stats/rival?team=<id>` (o `?name=`) | no | Ficha de un rival: balance, historial y mejores y peores parejas contra él. Filtros `season` y `match_type`. Con `ETag` |
 | `GET /home` | no | Datos del Inicio nativo: situación de la cuenta, equipos y rol en cada uno |
 | `GET /matches/<id>` | no | Ficha de un enfrentamiento del equipo de la cuenta: estado, fases, convocados, parejas, respuesta del jugador y acción principal de quien gestiona |
 | `GET /ping` | no | Comprueba que el token sirve, cuándo caduca y a qué equipo pertenece |
@@ -67,6 +69,8 @@ Estadísticas de solo lectura para la app. No calculan nada propio: juntan lo qu
 - `/teams/<id>/stats/players/<player_id>`: `filters`, `hero` (nombre, papel, puesto, mano, pareja habitual, puntos y puesto SNP), `summary`, `form`, `league`, `finals`, `seasons`, `trend`, `snp_seasons`, `signup`, `lineup`, `game_numbers`, `set_rows`, `partners`, `squad` (comparación calculada por `_squad_compare`) y `games`. Sin `season` vale «todas». Un jugador de otro equipo da 404.
 - `/teams/<id>/stats/pairs`: `filters`, `has_matches`, `sort`, `sorts` y, si hay partidos cerrados, `min_games`, `best`, `worst` y `rows` (cada fila: `p1`, `p2`, `played`, `wins`, `losses`, `pct`); la búsqueda por nombre la hace la app.
 - `/teams/<id>/stats/pairs/<p1_id>/<p2_id>`: `filters`, `p1`, `p2`, `compact` (menos de `comparison.MIN_PAIR_SHEET_GAMES` partidos juntos), `min_trend_games`, `usual_number`, `summary`, `form`, `seasons`, `trend`, `set_rows`, `venue` y `games` (todos con temporada elegida; si no, los últimos 5). Sin `season` vale «todas». Dos jugadores iguales dan 400 y uno que no es del equipo, 404.
+- `/teams/<id>/stats/rivals`: `filters`, `has_matches`, `sort`, `sorts` y, si hay partidos cerrados, `rows` (cada rival: `team_id` o `null` si es un nombre escrito a mano, `name`, `friendly_only`, `played`, `won`, `drawn`, `lost`, `pct`, `points_for`, `points_against`, `league_points`, `form` y `last`); la búsqueda por nombre la hace la app.
+- `/teams/<id>/stats/rival`: `filters`, `team_id`, `name`, `min_games_pair` y `detail` (mismo balance que la lista más `history` e `pairs_best`/`pairs_worst`; `null` si no hay enfrentamientos con esos filtros). Sin `team` ni `name` da 400 y un equipo que no es del club, 404.
 
 ### `GET /ping`
 

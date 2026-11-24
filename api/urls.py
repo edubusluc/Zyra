@@ -43,6 +43,8 @@ urlpatterns = [
     re_path(r"^teams/(?P<team_id>[\w-]+)/stats/pairs/?$", views_stats.PairsStatsView.as_view(), name="api_pairs_stats"),
     re_path(r"^teams/(?P<team_id>[\w-]+)/stats/pairs/(?P<p1_id>[\w-]+)/(?P<p2_id>[\w-]+)/?$",
             views_stats.PairStatsView.as_view(), name="api_pair_stats"),
+    re_path(r"^teams/(?P<team_id>[\w-]+)/stats/rivals/?$", views_stats.RivalsStatsView.as_view(), name="api_rivals_stats"),
+    re_path(r"^teams/(?P<team_id>[\w-]+)/stats/rival/?$", views_stats.RivalStatsView.as_view(), name="api_rival_stats"),
     re_path(r"^me/stats/?$", views_stats.MyStatsView.as_view(), name="api_my_stats"),
     re_path(r"^me/?$", views.MeView.as_view(), name="api_me"),
     re_path(r"^ping/?$", views.PingView.as_view(), name="api_ping"),

@@ -280,3 +280,85 @@ class PairsStatsApiTests(ClubDataMixin, TestCase):
         self.assertEqual(self.get_pair(self.token, self.a, foreign).status_code, 404)
         self.assertEqual(self.get_pair(self.token, self.a, self.b, season="1999-2000").status_code, 400)
         self.assertEqual(self.get_pair(self.token, self.a, self.b, match_type="raro").status_code, 400)
+
+
+class RivalsStatsApiTests(ClubDataMixin, TestCase):
+    """Un único rival («Rival»): un empate y una victoria como visitante."""
+
+    def setUp(self):
+        """Token del administrador y de un extraño."""
+        super().setUp()
+        cache.clear()
+        caches["ratelimit"].clear()
+        _, self.token = issue_token(self.user, "iPhone")
+        stranger = User.objects.create_user("otro", password="pass-12345")
+        self.other_club = create_club("Club Vacío", "Gijón", stranger)
+        _, self.stranger_token = issue_token(stranger, "iPhone")
+
+    def get_list(self, token, **params):
+        """GET de la lista de rivales del club de los datos."""
+        url = reverse("api_rivals_stats", args=[self.club.public_id])
+        return self.client.get(url, params, HTTP_AUTHORIZATION=f"Bearer {token}")
+
+    def get_rival(self, token, **params):
+        """GET de la ficha de un rival del club de los datos."""
+        url = reverse("api_rival_stats", args=[self.club.public_id])
+        return self.client.get(url, params, HTTP_AUTHORIZATION=f"Bearer {token}")
+
+    def test_access(self):
+        """Sin token 401 y con un equipo ajeno 404, en lista y ficha."""
+        self.assertEqual(self.client.get(reverse("api_rivals_stats", args=[self.club.public_id])).status_code, 401)
+        self.assertEqual(self.get_list(self.stranger_token).status_code, 404)
+        self.assertEqual(self.get_rival(self.stranger_token, team=self.rival.public_id).status_code, 404)
+
+    def test_list_matches_the_web(self):
+        """El balance sale de ``rival_summary``: dos enfrentamientos, uno ganado y uno empatado."""
+        response = self.get_list(self.token, season="2025-2026", match_type="todos")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["sort"], "rival")
+        self.assertEqual(len(data["rows"]), 1)
+        row = data["rows"][0]
+        self.assertEqual((row["name"], row["team_id"]), (self.rival.name, str(self.rival.public_id)))
+        self.assertEqual((row["played"], row["won"], row["drawn"], row["lost"], row["pct"]), (2, 1, 1, 0, 50))
+        self.assertEqual(row["form"], ["E", "V"])
+        self.assertEqual(row["last"]["outcome"], "V")
+
+    def test_list_filters(self):
+        """Temporada o tipo desconocidos dan 400; un orden desconocido vuelve al de nombre."""
+        self.assertEqual(self.get_list(self.token, season="1999-2000").status_code, 400)
+        self.assertEqual(self.get_list(self.token, match_type="raro").status_code, 400)
+        self.assertEqual(self.get_list(self.token, sort="raro").json()["sort"], "rival")
+
+    def test_empty_club(self):
+        """Un club sin enfrentamientos cerrados responde ``has_matches`` falso y sin filas."""
+        url = reverse("api_rivals_stats", args=[self.other_club.public_id])
+        data = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.stranger_token}").json()
+        self.assertFalse(data["has_matches"])
+        self.assertNotIn("rows", data)
+
+    def test_detail_matches_the_web(self):
+        """La ficha coincide con la de la web: balance, historial (el más reciente primero) y parejas."""
+        response = self.get_rival(self.token, team=self.rival.public_id, season="2025-2026", match_type="todos")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        web = self.client.get(reverse("rival_detail"), {"team": self.rival.public_id, "season": "2025-2026",
+                                                        "match_type": "todos"})
+        detail = data["detail"]
+        self.assertEqual((detail["played"], detail["won"], detail["drawn"]), (2, 1, 1))
+        self.assertEqual(detail["pct"], web.context["detail"]["pct"])
+        self.assertEqual([h["outcome"] for h in detail["history"]], ["V", "E"])
+        self.assertEqual(len(detail["history"]), len(web.context["detail"]["history"]))
+        self.assertEqual(detail["history"][0]["match_id"], str(self.m2.public_id))
+        self.assertEqual(len(detail["pairs_best"]), len(web.context["detail"]["pairs_best"]))
+        self.assertEqual(data["min_games_pair"], 2)
+
+    def test_detail_by_name_and_errors(self):
+        """Sin equipo ni nombre: 400; un equipo de otro club: 404; un nombre sin enfrentamientos: ``detail`` nulo."""
+        self.assertEqual(self.get_rival(self.token).status_code, 400)
+        foreign = self.other_club.own_team
+        self.assertEqual(self.get_rival(self.token, team=foreign.public_id).status_code, 404)
+        data = self.get_rival(self.token, name="Nadie").json()
+        self.assertIsNone(data["detail"])
+        self.assertEqual(data["name"], "Nadie")
+        self.assertEqual(self.get_rival(self.token, team=self.rival.public_id, match_type="raro").status_code, 400)
