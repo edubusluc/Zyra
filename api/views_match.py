@@ -180,6 +180,23 @@ def _actions(match, call, games, membership):
     return out
 
 
+def _availability(match, membership, open_for_answers):
+    """
+    Respuestas del enlace de disponibilidad para quien gestiona, con o sin convocatoria creada: ``open``, ``counts``
+    (``yes``, ``no``, ``maybe`` y ``none``: sin respuesta o apuntados por el capitán), ``groups[]`` (``key``,
+    ``label`` y ``players[]`` con ``name``, ``comment`` y ``called``), ``pending`` (jugadores con correo a quienes
+    se puede recordar) y ``can_remind`` (solo el capitán, como la web).
+    """
+    board = availability_logic.board(match)
+    counts = {key: board["counts"].get(key, 0) for key in ("yes", "no", "maybe")}
+    counts["none"] = board["counts"].get(availability_logic.NO_ANSWER, 0) + board["counts"].get(availability_logic.BY_CAPTAIN, 0)
+    groups = [{"key": g["key"], "label": str(g["label"]),
+               "players": [{"name": r["player"].short_name, "comment": r["comment"], "called": r["called"]}
+                           for r in g["rows"]]} for g in board["groups"]]
+    return {"open": open_for_answers, "counts": counts, "groups": groups,
+            "pending": len(availability_logic.pending_players(match)), "can_remind": membership.is_admin}
+
+
 class MatchView(ApiView):
     """``GET /api/v1/matches/<id>``: ficha de un enfrentamiento de un equipo activo de la cuenta."""
 
@@ -246,10 +263,8 @@ class MatchView(ApiView):
                 "can_answer": open_for_answers, "value": availability.answer if availability else None,
                 "comment": availability.comment if availability else ""},
         }
-        if can_manage and call is not None:
-            board = availability_logic.board(match)
-            data["availability"] = {"open": open_for_answers,
-                                    "counts": {key: board["counts"].get(key, 0) for key in ("yes", "no", "maybe")}}
+        if can_manage:
+            data["availability"] = _availability(match, membership, open_for_answers)
         return json_ok(data)
 
 
@@ -316,3 +331,62 @@ class CloseCallView(ApiView):
                 raise ApiError("cannot_close", _("La convocatoria ya estaba cerrada."), 409)
         call.draft_mode = False
         return json_ok({"closed": True, "report": _report_state(call, match, request.user, flags["resend_report"])})
+
+
+def _managed_match(user, match_id):
+    """Enfrentamiento de un equipo que la cuenta gestiona, con su pertenencia; 404 si no."""
+    active, _suspended = _memberships(user)
+    members = {m.club_id: m for m in active if m.can_manage}
+    match = Match.objects.select_related("club", "local", "visiting").filter(
+        public_id=match_id, club_id__in=list(members)).first()
+    if match is None:
+        raise ApiError("not_found", _("No encontrado."), 404)
+    return match, members[match.club_id]
+
+
+class AvailabilityLinkView(ApiView):
+    """``GET /api/v1/matches/<id>/availability-link``: enlace de disponibilidad y su texto listo para compartir."""
+
+    def get(self, request, match_id):
+        """
+        Solo capitán y gestores (404 si no). Devuelve ``{"url", "text", "whatsapp_url", "open"}`` con el texto prefabricado
+        de la web (``call.availability.share_text``); la app no compone nada.
+        """
+        match, _membership = _managed_match(request.user, match_id)
+        url = availability_logic.link_url(request, match)
+        text = availability_logic.share_text(match, url)
+        return json_ok({"url": url, "text": text, "whatsapp_url": availability_logic.whatsapp_url(text),
+                        "open": availability_logic.is_open(match)})
+
+
+class AvailabilityRemindView(ApiView):
+    """``POST /api/v1/matches/<id>/availability/remind``: recordatorio por correo a quienes no han respondido."""
+
+    def post(self, request, match_id):
+        """
+        Solo el capitán (404 si no gestiona; 403 ``forbidden`` si es gestor), con las mismas reglas que la web: 409 ``closed``
+        si ya no se puede responder, ``nobody_pending`` si nadie tiene pendiente, ``cooldown`` (con ``minutes`` en la
+        respuesta) si hubo otro hace menos de una hora, ``daily_limit`` si el equipo pasó de 10 al día; 502
+        ``email_failed`` si no salió ningún correo. Devuelve ``{"sent": n}``.
+        """
+        match, membership = _managed_match(request.user, match_id)
+        if not membership.is_admin:
+            raise ApiError("forbidden", _("Solo el capitán puede enviar recordatorios."), 403)
+        if not availability_logic.is_open(match):
+            raise ApiError("closed", _("La convocatoria está cerrada."), 409)
+        if not availability_logic.pending_players(match):
+            raise ApiError("nobody_pending", _("Nadie tiene pendiente responder."), 409)
+        if not availability_logic.claim_reminder(match):
+            minutes = availability_logic.reminder_minutes_left(match) or 1
+            raise ApiError("cooldown", ngettext(
+                "Ya enviaste un recordatorio hace poco. Podrás enviar otro en %(n)s minuto.",
+                "Ya enviaste un recordatorio hace poco. Podrás enviar otro en %(n)s minutos.", minutes) % {"n": minutes},
+                409, extra={"minutes": minutes})
+        if availability_logic.club_over_daily_limit(match.club):
+            availability_logic.release_reminder(match)
+            raise ApiError("daily_limit", _("Has enviado muchos recordatorios hoy. Prueba de nuevo mañana."), 409)
+        sent = availability_logic.send_reminder(request, match)
+        if not sent:
+            availability_logic.release_reminder(match)
+            raise ApiError("email_failed", _("No se pudo enviar ningún correo. Inténtalo de nuevo en unos minutos."), 502)
+        return json_ok({"sent": sent})
