@@ -17,6 +17,7 @@
       <li class="st-squad-row">
         <div class="st-squad-top">
           <span class="st-squad-label">{{ r.label }}{% include 'includes/stat_tip.html' with tip=r.tip %}</span>
+          {% if r.provisional %}<span class="st-squad-prov">{% translate "Provisional" %}</span>{% endif %}
           <span class="st-squad-rank{% if r.top %} is-top{% endif %}">{% blocktranslate with n=r.rank total=r.of %}{{ n }}.º de {{ total }}{% endblocktranslate %}</span>
         </div>
         <div class="st-squad-main">

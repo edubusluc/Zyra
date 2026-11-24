@@ -63,6 +63,14 @@ class CompareLogicTests(SimpleTestCase):
         pct = next(r for r in res["rows"] if r["key"] == "pct")
         self.assertEqual((pct["of"], pct["base"]), (3, "2 de 2 partidos"))  # el 4 solo tiene 1 y queda fuera
 
+    def test_provisional_below_three_matches(self):
+        rows = {r["key"]: r for r in self.compare(2)["rows"]}
+        self.assertFalse(rows["pct"]["provisional"])  # el 2 lleva 4 partidos
+        self.log = [entry((1, 2), True), entry((1, 3), True), entry((2, 3), False), entry((4, 9), True)]
+        rows = {r["key"]: r for r in self.compare()["rows"]}
+        self.assertTrue(rows["pct"]["provisional"] and rows["sets"]["provisional"])  # 2 partidos
+        self.assertFalse(rows["signup"]["provisional"])  # 4 convocatorias
+
     def test_two_comparable_players_are_not_enough(self):
         self.log = [entry((1, 2), True), entry((1, 2), False), entry((3, 9), True), entry((4, 9), True)]
         self.signup = {}

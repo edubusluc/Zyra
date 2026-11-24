@@ -4705,6 +4705,8 @@ a.z-eyebrow { display: inline-flex; align-items: center; min-height: 24px; }
 .st-squad-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 .st-squad-label { display: flex; align-items: center; gap: 6px; font-size: var(--z-fs-xs); font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--z-muted); }
 .st-squad-rank { padding: 3px 10px; border-radius: 999px; font-size: var(--z-fs-xs); font-weight: 800; background: var(--z-surface-3); color: var(--z-text); white-space: nowrap; }
+.st-squad-prov { margin-left: auto; padding: 3px 10px; border-radius: 999px; font-size: var(--z-fs-xs); font-weight: 800; border: 1px dashed var(--z-muted); color: var(--z-muted); white-space: nowrap; }
+.st-squad-prov + .st-squad-rank { margin-left: 8px; }
 .st-squad-rank.is-top { background: var(--z-lime); color: var(--z-ink); }
 .st-squad-main { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
 .st-squad-val { font-family: var(--z-display); font-size: var(--z-fs-2xl); font-weight: 400; line-height: 1; color: #FFFFFF; }

@@ -16,6 +16,8 @@ from match.models import Game, Match
 
 # Partidos (o convocatorias) mínimos para entrar en la comparación.
 MIN_SAMPLE = 2
+# Partidos (o convocatorias) a partir de los cuales una medida se da por contrastada; por debajo sale «Provisional».
+SOLID_SAMPLE = 3
 # Jugadores comparables mínimos para dibujar una medida (media, rango y puesto necesitan con quién compararse).
 MIN_PEERS = 3
 # Diferencia por debajo de la cual se dice «En la media», según la unidad de la medida.
@@ -107,7 +109,7 @@ def compare_to_squad(player, squad, log, signup, snp_rows=None, league=None):
     ``league_played`` (None sin liga).
 
     Devuelve None si no hay comparación que enseñar, o ``{'rows', 'above', 'count'}``: cada fila trae
-    ``key``, ``label``, ``tip``, ``value`` (texto), ``base`` (texto), ``rank``, ``of``, ``top``, ``tone``
+    ``key``, ``provisional`` (menos de ``SOLID_SAMPLE`` partidos o convocatorias), ``label``, ``tip``, ``value`` (texto), ``base`` (texto), ``rank``, ``of``, ``top``, ``tone``
     (up/down/eq), ``arrow``, ``delta``, ``mean``, ``low``, ``high`` (textos), las cuatro posiciones de la barra
     en tanto por ciento entero (``pos_low``, ``pos_high``, ``pos_mean``, ``pos_me``, más ``range_width``) y ``reader`` (texto para
     lectores de pantalla). ``above`` son las medidas por encima de la media.
@@ -133,6 +135,15 @@ def compare_to_squad(player, squad, log, signup, snp_rows=None, league=None):
     # Muestra mínima: 3, o lo que lleve el que más ha jugado si aún son menos (así una liga con 2 jornadas compara).
     need_games = max(1, min(MIN_SAMPLE, max(x["played"] for x in tally.values())))
     need_calls = max(1, min(MIN_SAMPLE, max((signup.get(p.id) or {}).get("total", 0) for p in squad)))
+    def sample_games(p):
+        """Partidos jugados por ``p``."""
+        return tally[p.id]["played"]
+
+    def sample_calls(p):
+        """Convocatorias cerradas de ``p``."""
+        return (signup.get(p.id) or {}).get("total", 0)
+
+    samples = {PCT: sample_games, SETS: sample_games, SIGNUP: sample_calls}
     table = [
         # clave, ¿cuenta?, valor, formato, base, unidad, eje fijo
         (PCT, lambda p: tally[p.id]["played"] >= need_games,
@@ -180,7 +191,7 @@ def compare_to_squad(player, squad, log, signup, snp_rows=None, league=None):
             delta = (_("%(a)s sobre la media") if diff > 0 else _("%(a)s bajo la media")) % {"a": amount}
             above += diff > 0
         rows.append({
-            "key": key, "label": LABELS[key], "tip": TIPS[key], "value": fmt(mine), "base": base(player),
+            "key": key, "provisional": key in samples and samples[key](player) < SOLID_SAMPLE, "label": LABELS[key], "tip": TIPS[key], "value": fmt(mine), "base": base(player),
             "rank": rank, "of": len(values), "top": rank == 1, "tone": tone, "arrow": arrow, "delta": delta,
             "mean": fmt(mean), "low": fmt(low), "high": fmt(high),
             "pos_low": pos(low), "pos_high": pos(high), "range_width": pos(high) - pos(low), "pos_mean": pos(mean), "pos_me": pos(mine),
