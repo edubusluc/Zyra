@@ -427,6 +427,84 @@ class MatchResultImageApiTests(TestCase):
         self.assertTrue(response.content.startswith(b"\xff\xd8"))
 
 
+class MatchesListApiTests(TestCase):
+    """``GET /matches``: la lista de Partidos con grupos, resumen, filtros y paginación."""
+
+    setUp = MatchApiTests.setUp
+
+    def auth(self, token):
+        """Cabecera de autenticación con el token indicado."""
+        return {"HTTP_AUTHORIZATION": f"Bearer {token}"}
+
+    def list(self, token=None, **params):
+        """GET de la lista con los parámetros indicados."""
+        return self.client.get(reverse("api_matches"), params, **self.auth(token or self.captain_token))
+
+    def closed(self, days_ago, points="7/5", result=outcomes.LOCAL_WIN, **extra):
+        """Un enfrentamiento ya cerrado hace ``days_ago`` días."""
+        return Match.objects.create(
+            club=self.club, local=self.club.own_team, visiting=self.rival, draft_mode=False, result=result,
+            result_points=points, start_date=datetime.date.today() - datetime.timedelta(days=days_ago), **extra)
+
+    def test_requires_token(self):
+        """Sin token: 401."""
+        self.assertEqual(self.client.get(reverse("api_matches")).status_code, 401)
+
+    def test_groups_summary_and_order(self):
+        """Acción (capitán, fecha pasada), próximos y jugados, con el marcador propio y el resumen."""
+        late = Match.objects.create(club=self.club, local=self.club.own_team, visiting=self.rival,
+                                    start_date=datetime.date.today() - datetime.timedelta(days=2))
+        self.closed(10)
+        data = self.list().json()
+        self.assertEqual([m["group"] for m in data["matches"]], ["action", "upcoming", "played"])
+        self.assertEqual(data["matches"][0]["id"], str(late.public_id))
+        played = data["matches"][2]
+        self.assertEqual((played["outcome"], played["own_points"], played["rival_points"]), ("V", "7", "5"))
+        self.assertEqual(data["summary"], {"played": 1, "won": 1, "drawn": 0, "lost": 0, "pending": 2})
+        self.assertTrue(data["can_create"])
+
+    def test_player_sees_no_action_group(self):
+        """Un jugador ve los abiertos como próximos y no puede crear."""
+        data = self.list(self.user_token).json()
+        self.assertEqual([m["group"] for m in data["matches"]], ["upcoming"])
+        self.assertFalse(data["can_create"])
+        self.assertFalse(data["matches"][0]["can_manage"])
+
+    def test_stranger_sees_nothing_and_foreign_team_is_404(self):
+        """Una cuenta sin equipos recibe la lista vacía; pedir un equipo ajeno, 404."""
+        self.assertEqual(self.list(self.stranger_token).json()["matches"], [])
+        self.assertEqual(self.list(self.stranger_token, team=str(self.club.public_id)).status_code, 404)
+
+    def test_filters_by_rival_search_and_type(self):
+        """``rival``, ``q`` y ``match_type`` acotan la lista; un rival desconocido se ignora."""
+        other = Team.objects.create(club=self.club, name="Club Oeste", location="Y", in_group=True)
+        friendly = Match.objects.create(club=self.club, local=self.club.own_team, visiting=other,
+                                        match_type=Match.AMISTOSO,
+                                        start_date=datetime.date.today() + datetime.timedelta(days=1))
+        self.assertEqual(len(self.list().json()["matches"]), 2)
+        self.assertEqual([m["id"] for m in self.list(rival="Club Oeste").json()["matches"]], [str(friendly.public_id)])
+        self.assertEqual(len(self.list(rival="Nadie").json()["matches"]), 2)
+        self.assertEqual([m["id"] for m in self.list(q="oeste").json()["matches"]], [str(friendly.public_id)])
+        self.assertEqual([m["id"] for m in self.list(match_type="amistoso").json()["matches"]], [str(friendly.public_id)])
+        self.assertEqual([m["id"] for m in self.list(match_type="competitivo").json()["matches"]], [str(self.match.public_id)])
+
+    def test_far_matches_are_hidden_unless_asked(self):
+        """Los abiertos a más de 14 días se resumen en ``hidden_far``; ``all=1`` los muestra."""
+        Match.objects.create(club=self.club, local=self.club.own_team, visiting=self.rival,
+                             start_date=datetime.date.today() + datetime.timedelta(days=60))
+        data = self.list().json()
+        self.assertEqual((len(data["matches"]), data["hidden_far"]), (1, 1))
+        self.assertEqual(len(self.list(all=1).json()["matches"]), 2)
+
+    def test_pagination(self):
+        """De 12 en 12; una página fuera de rango devuelve la última."""
+        for i in range(14):
+            self.closed(20 + i)
+        data = self.list().json()
+        self.assertEqual((len(data["matches"]), data["pages"], data["page"]), (12, 2, 1))
+        self.assertEqual(self.list(page=9).json()["page"], 2)
+
+
 class CreateMatchApiTests(TestCase):
     """``GET /matches/new`` y ``POST /matches``: crear un enfrentamiento con las reglas de ``MatchForm``."""
 
