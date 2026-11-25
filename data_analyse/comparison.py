@@ -42,14 +42,14 @@ SET_UNITS = {'first_set': 'games', 'comeback': 'games', 'third': 'games', 'tiebr
 def set_situation_rows(st):
     """
     Filas ``(título, explicación, situación)`` de ``SET_ROWS`` para un set_stats ``st``; las mismas en todas
-    las vistas. Las situaciones sin ningún caso no se incluyen.
+    las vistas. Las situaciones sin ningún caso salen con ``empty`` True (la plantilla muestra «Sin datos
+    suficientes» en lugar de un 0 que parecería un dato real); sin ningún caso en ninguna, lista vacía.
     """
     rows = []
     for key, label, hint in SET_ROWS:
         situation = bagels_situation(st) if key == 'bagels' else st[key]
-        if situation['total']:
-            rows.append((label, hint, dict(situation, unit=SET_UNITS[key])))
-    return rows
+        rows.append((label, hint, dict(situation, unit=SET_UNITS[key], empty=not situation['total'])))
+    return rows if any(not r['empty'] for _l, _h, r in rows) else []
 
 
 def _share(won, total):

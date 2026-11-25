@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 25/11/2026 · Tarjeta «Sets»: «Sin datos suficientes» en las situaciones sin casos
+
+- En las situaciones de set (Equipo, Jugador y Pareja), las que no tienen ningún caso ya no desaparecen dejando la tarjeta descuadrada: salen atenuadas con «Sin datos suficientes» en lugar de barra y %. Si no hay ninguna, sigue el mensaje «Todavía no hay resultados set a set». Un 0 % con casos (p. ej. «0 de 4 sets») sigue siendo un dato real.
+
 ## 25/11/2026 · Eliminar un equipo rival
 
 - En «Editar equipo» de un rival, capitanes y gestores tienen «Eliminar equipo». Si el rival no tiene enfrentamientos, un popup pide confirmar el borrado. Si los tiene (jugados o abiertos), no se puede eliminar: el popup explica que se perderían resultados, estadísticas y hojas, y ofrece «Dar de baja», que conserva todo el historial y se puede revertir. El equipo propio no se puede eliminar.

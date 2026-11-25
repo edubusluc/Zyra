@@ -27,12 +27,13 @@ class SetSituationTests(SimpleTestCase):
             third=_situation(1, 2), sets_won=10, sets_lost=6, bagels_for=2))
         self.assertEqual([str(label) for label, _hint, _r in rows],
                          ["Tras ganar el 1.er set", "Tras perder el 1.er set", "Tie-breaks", "Set decisivo", "Roscos a favor"])
-        self.assertEqual(rows[-1][2], {'wins': 2, 'losses': 14, 'total': 16, 'pct': 12, 'unit': 'sets'})
+        self.assertEqual(rows[-1][2], {'wins': 2, 'losses': 14, 'total': 16, 'pct': 12, 'unit': 'sets', 'empty': False})
         self.assertEqual([r['unit'] for _l, _h, r in rows], ['games', 'games', 'sets', 'games', 'sets'])
 
-    def test_rows_without_cases_are_left_out(self):
+    def test_rows_without_cases_are_marked_empty(self):
         rows = comparison.set_situation_rows(self.stats(tiebreak=_situation(1, 1)))
-        self.assertEqual([str(label) for label, _hint, _r in rows], ["Tie-breaks"])
+        self.assertEqual(len(rows), 5)
+        self.assertEqual([str(l) for l, _h, r in rows if not r['empty']], ["Tie-breaks"])
         self.assertEqual(comparison.set_situation_rows(self.stats()), [])
 
 
