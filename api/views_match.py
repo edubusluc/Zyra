@@ -132,8 +132,16 @@ def _games(match, games, me_id):
         own_players = ((game.player_1_local, game.player_2_local) if own_is_local
                        else (game.player_1_visiting, game.player_2_visiting))
         people = [{"name": p.short_name, "me": bool(me_id) and p.id == me_id} for p in own_players if p is not None]
-        rows.append({"n": game.n_game, "pair": label, "state": state, "me": bool(me_id) and me_id in own_ids,
-                     "players": people,
+        sets = []
+        if result is not None:
+            own_key, rival_key = ("local", "visiting") if own_is_local else ("visiting", "local")
+            for k in (1, 2, 3):
+                a, b = getattr(result, f"set{k}_{own_key}"), getattr(result, f"set{k}_{rival_key}")
+                if a is not None and b is not None:
+                    sets.append([a, b])
+        rows.append({"id": str(game.public_id), "n": game.n_game, "pair": label, "state": state,
+                     "me": bool(me_id) and me_id in own_ids, "points": game.score, "sets": sets,
+                     "has_result": result is not None, "players": people,
                      "score": _sets(result, own_is_local) if result is not None and state else None})
     return rows
 
