@@ -473,3 +473,77 @@ class MatchLineupApiTests(TestCase):
         self.match.draft_mode = False
         self.match.save()
         self.assertEqual(self.put(self.captain_token, {"pairs": self.pairs(players)}).json()["error"], "locked")
+
+
+class MatchResultsApiTests(TestCase):
+    """Resultados por partido y cierre del acta de la app nativa."""
+
+    setUp = MatchApiTests.setUp
+
+    def auth(self, token):
+        """Cabecera de autenticación con el token indicado."""
+        return {"HTTP_AUTHORIZATION": f"Bearer {token}"}
+
+    def lined_up(self):
+        """Convocatoria cerrada con diez jugadores y cinco parejas alineadas; devuelve los partidos."""
+        players = [self.me] + [Player.objects.create(club=self.club, name=f"J{i}", last_name="X", in_team=True,
+                                                     snp_score=1000 - i) for i in range(9)]
+        call = Call.objects.create(match=self.match, draft_mode=False)
+        call.players.set(players)
+        ids = [str(p.public_id) for p in players]
+        self.client.put(reverse("api_match_lineup", args=[self.match.public_id]),
+                        {"pairs": [ids[i:i + 2] for i in range(0, 10, 2)]}, content_type="application/json",
+                        **self.auth(self.captain_token))
+        return list(self.match.games.order_by("n_game"))
+
+    def result_url(self, game):
+        """Ruta del resultado de un partido."""
+        return reverse("api_game_result", args=[self.match.public_id, game.public_id])
+
+    def put(self, game, body, token=None):
+        """PUT del resultado de un partido."""
+        return self.client.put(self.result_url(game), body, content_type="application/json",
+                               **self.auth(token or self.captain_token))
+
+    def test_only_managers(self):
+        """Un jugador recibe 404 en la lista y al poner un resultado."""
+        games = self.lined_up()
+        url = reverse("api_match_results", args=[self.match.public_id])
+        self.assertEqual(self.client.get(url, **self.auth(self.user_token)).status_code, 404)
+        self.assertEqual(self.put(games[0], {"sets": [[6, 3], [6, 4]]}, self.user_token).status_code, 404)
+
+    def test_put_get_and_delete_a_result(self):
+        """Poner un resultado (sets desde nuestro lado), verlo en la lista y borrarlo."""
+        games = self.lined_up()
+        response = self.put(games[0], {"sets": [[6, 3], [4, 6], [7, 5]]})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual((response.json()["state"], response.json()["result"]["sets"]), ("win", [[6, 3], [4, 6], [7, 5]]))
+        data = self.client.get(reverse("api_match_results", args=[self.match.public_id]), **self.auth(self.captain_token)).json()
+        self.assertEqual((data["missing"], data["can_close"]), ([2, 3, 4, 5], False))
+        self.assertEqual(data["games"][0]["points"], 3)
+        deleted = self.client.delete(self.result_url(games[0]), **self.auth(self.captain_token)).json()
+        self.assertEqual((deleted["state"], deleted["result"]), ("", None))
+
+    def test_invalid_sets_are_a_validation_error(self):
+        """Unos sets imposibles dan 400 con el motivo."""
+        games = self.lined_up()
+        response = self.put(games[0], {"sets": [[6, 6]]})
+        self.assertEqual(response.status_code, 400)
+        self.assertTrue(response.json()["fields"]["sets"])
+        self.assertEqual(self.put(games[0], {"sets": "x"}).status_code, 400)
+
+    def test_close_needs_all_results_and_confirmation_for_future_dates(self):
+        """Sin resultados 409 ``cannot_close``; con todos, la fecha futura pide ``confirm_future``."""
+        games = self.lined_up()
+        url = reverse("api_match_close", args=[self.match.public_id])
+        post = lambda body=None: self.client.post(url, body or {}, content_type="application/json",
+                                                  **self.auth(self.captain_token))
+        self.assertEqual(post().json()["error"], "cannot_close")
+        for game in games:
+            r = self.put(game, {"sets": [[6, 3], [6, 4]]}); self.assertEqual(r.status_code, 200, r.content)
+        self.assertEqual(post().json()["error"], "future_date")
+        done = post({"confirm_future": True})
+        self.assertEqual((done.status_code, done.json()["closed"]), (200, True))
+        self.match.refresh_from_db()
+        self.assertFalse(self.match.draft_mode)
+        self.assertEqual(self.put(games[0], {"sets": [[6, 0], [6, 0]]}).json()["error"], "locked")

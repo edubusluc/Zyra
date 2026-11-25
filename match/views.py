@@ -1492,27 +1492,25 @@ def valid_close_match(games,match):
 
     return True, None
 
-def do_close_match(request, match):
-    """Intenta cerrar el acta de ``match`` y apunta en mensajes lo que ocurra; True si se ha cerrado.
+def close_match_now(match, confirm_future=False, resend_email=False):
+    """
+    Cierra el acta de ``match`` sin tocar mensajes ni sesión (la usan la web y la API). Devuelve ``(código, mensaje)``:
+    ``("closed", resumen)``, ``("invalid", motivo)`` (faltan partidos o resultados, o ya estaba cerrada) o
+    ``("future", aviso)`` (la fecha es futura y no llegó ``confirm_future``).
 
-    Exige todos los partidos con resultado y, si la fecha del enfrentamiento es futura, que el
-    formulario traiga ``confirm_future`` (las páginas lo envían tras avisar de la fecha y los
-    rivales). Calcula los puntos y el resultado final; todo o nada.
+    Exige todos los partidos con resultado. Calcula los puntos y el resultado final; todo o nada.
     """
     games = match.games.prefetch_related("results")
 
     # Validar si se pueden cerrar las actas
     is_valid, error_message = valid_close_match(games, match)
     if not is_valid:
-        messages.error(request, error_message)
-        return False
+        return "invalid", error_message
 
-    if match.start_date > timezone.localdate() and not request.POST.get("confirm_future"):
-        messages.error(request, _("La fecha de %(local)s – %(visiting)s es el %(date)s y aún no se ha jugado. "
-                                  "Comprueba que es el enfrentamiento correcto antes de cerrar el acta.")
-                       % {"local": match.local_name, "visiting": match.visiting_name,
-                          "date": match.start_date.strftime(DATE_FORMAT)})
-        return False
+    if match.start_date > timezone.localdate() and not confirm_future:
+        return "future", _("La fecha de %(local)s – %(visiting)s es el %(date)s y aún no se ha jugado. "
+                           "Comprueba que es el enfrentamiento correcto antes de cerrar el acta.") % {
+            "local": match.local_name, "visiting": match.visiting_name, "date": match.start_date.strftime(DATE_FORMAT)}
 
     # Parejas no presentadas (SNP 20.2): reparto de puntos en cada partido antes de sumarlos.
     games = list(games)
@@ -1525,8 +1523,7 @@ def do_close_match(request, match):
     with transaction.atomic():
         # Con el enfrentamiento bloqueado se vuelve a comprobar que sigue abierto: dos cierres a la vez no suman ni avisan dos veces.
         if not Match.objects.select_for_update().get(pk=match.pk).draft_mode:
-            messages.error(request, _("El acta de este enfrentamiento ya está cerrada."))
-            return False
+            return "invalid", _("El acta de este enfrentamiento ya está cerrada.")
         # Dar por finalizado los juegos
         for game in games:
             game.draft_mode = False
@@ -1541,13 +1538,28 @@ def do_close_match(request, match):
         Availability.objects.filter(match=match).exclude(comment="").update(comment="")
 
     # Aviso del resultado a los miembros del club; si falla, el acta sigue cerrada y el envío se reintenta.
-    notify_match_closed(match, resend=bool(request.POST.get("resend_email")))
+    notify_match_closed(match, resend=resend_email)
 
     own_points, rival_points = club_score(match)
     label = OUTCOME_LABELS.get(match_outcome(match), "")
-    messages.success(request, _("Acta cerrada: %(outcome)s %(own)s-%(rival)s") % {
-        "outcome": label, "own": own_points, "rival": rival_points})
-    return True
+    return "closed", _("Acta cerrada: %(outcome)s %(own)s-%(rival)s") % {
+        "outcome": label, "own": own_points, "rival": rival_points}
+
+
+def do_close_match(request, match):
+    """Intenta cerrar el acta de ``match`` y apunta en mensajes lo que ocurra; True si se ha cerrado.
+
+    Exige todos los partidos con resultado y, si la fecha del enfrentamiento es futura, que el
+    formulario traiga ``confirm_future`` (las páginas lo envían tras avisar de la fecha y los
+    rivales). Calcula los puntos y el resultado final; todo o nada (ver ``close_match_now``).
+    """
+    code, message = close_match_now(match, confirm_future=bool(request.POST.get("confirm_future")),
+                                    resend_email=bool(request.POST.get("resend_email")))
+    if code == "closed":
+        messages.success(request, message)
+        return True
+    messages.error(request, message)
+    return False
 
 
 @spaces.follow_match
