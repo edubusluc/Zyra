@@ -481,3 +481,29 @@ class MatchResultImageView(ApiView):
         response["Content-Disposition"] = 'inline; filename="resultado-zyra.jpg"'
         response["Cache-Control"] = "private, no-store"
         return response
+
+
+class MatchLineupImageView(ApiView):
+    """``GET /api/v1/matches/<id>/lineup.jpg``: la imagen de la alineación (la misma de la web) para compartirla desde la app."""
+
+    def get(self, request, match_id):
+        """
+        Solo capitán y gestores. 404 si el acta está cerrada o aún no hay parejas alineadas; 429 si se pide más de 30
+        veces por minuto. Devuelve el JPEG de ``build_lineup_jpeg`` (``image/jpeg``).
+        """
+        from match.lineup_image import build_lineup_jpeg
+        from match.models import Game
+
+        match, _membership = _managed_match(request.user, match_id)
+        games = list(
+            Game.objects.filter(match=match).order_by("n_game")
+            .select_related("player_1_local", "player_2_local", "player_1_visiting", "player_2_visiting")
+        )
+        if not match.draft_mode or not lineup_rows(match, games):
+            raise ApiError("not_found", _("No encontrado."), 404)
+        if ratelimit.too_many_user(request, "lineup-image", 30, 60):
+            raise ApiError("rate_limited", _("Demasiadas peticiones. Espera un momento."), 429)
+        response = HttpResponse(build_lineup_jpeg(match, games), content_type="image/jpeg")
+        response["Content-Disposition"] = 'inline; filename="alineacion-zyra.jpg"'
+        response["Cache-Control"] = "private, no-store"
+        return response
