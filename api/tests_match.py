@@ -427,6 +427,67 @@ class MatchResultImageApiTests(TestCase):
         self.assertTrue(response.content.startswith(b"\xff\xd8"))
 
 
+class CreateMatchApiTests(TestCase):
+    """``GET /matches/new`` y ``POST /matches``: crear un enfrentamiento con las reglas de ``MatchForm``."""
+
+    setUp = MatchApiTests.setUp
+
+    def auth(self, token):
+        """Cabecera de autenticación con el token indicado."""
+        return {"HTTP_AUTHORIZATION": f"Bearer {token}"}
+
+    def post(self, body, token=None):
+        """POST de un enfrentamiento nuevo en el equipo del capitán."""
+        body = {"team": str(self.club.public_id), **body}
+        return self.client.post(reverse("api_matches"), body, content_type="application/json",
+                                **self.auth(token or self.captain_token))
+
+    def test_lists_managed_teams_and_options(self):
+        """Sin ``team`` lista los equipos gestionados; con ``team`` trae reglas, rivales y valores por defecto."""
+        data = self.client.get(reverse("api_match_new"), **self.auth(self.captain_token)).json()
+        self.assertEqual([t["id"] for t in data["teams"]], [str(self.club.public_id)])
+        url = reverse("api_match_new") + f"?team={self.club.public_id}"
+        options = self.client.get(url, **self.auth(self.captain_token)).json()
+        self.assertEqual([r["name"] for r in options["rivals"]], ["Club Este"])
+        self.assertIn("match_types", options["rules"])
+        self.assertEqual(options["defaults"]["own_team"], self.club.own_team.name)
+
+    def test_players_cannot_create(self):
+        """Un jugador (no gestiona) recibe 403 al pedir el equipo y al crear; un equipo ajeno, 404."""
+        url = reverse("api_match_new") + f"?team={self.club.public_id}"
+        self.assertEqual(self.client.get(url, **self.auth(self.user_token)).status_code, 403)
+        self.assertEqual(self.post({"rival": str(self.rival.public_id)}, self.user_token).status_code, 403)
+        self.assertEqual(self.post({"rival": str(self.rival.public_id)}, self.stranger_token).status_code, 404)
+
+    def test_creates_a_match_playing_away(self):
+        """Rival del grupo y «fuera»: el rival es local y nuestro equipo visitante."""
+        day = (datetime.date.today() + datetime.timedelta(days=9)).isoformat()
+        response = self.post({"mode": "competitivo", "own_side": "visiting", "rival": str(self.rival.public_id),
+                              "start_date": day, "start_time": "20:30", "location": "Pista 1"})
+        self.assertEqual(response.status_code, 201, response.content)
+        match = Match.objects.get(public_id=response.json()["id"])
+        self.assertEqual((match.local, match.visiting), (self.rival, self.club.own_team))
+        self.assertEqual(match.location, "Pista 1")
+
+    def test_missing_rival_returns_field_errors(self):
+        """Sin rival: 400 ``invalid_match`` con el error en ``fields``."""
+        day = (datetime.date.today() + datetime.timedelta(days=9)).isoformat()
+        response = self.post({"start_date": day})
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["error"], "invalid_match")
+        self.assertIn("rival", response.json()["fields"])
+
+    def test_friendly_with_similar_rival_asks_to_choose(self):
+        """Amistoso con un rival escrito parecido a uno existente: devuelve ``rival_matches`` hasta que se elige."""
+        day = (datetime.date.today() + datetime.timedelta(days=9)).isoformat()
+        body = {"mode": "amistoso", "rival_name": "Club Este", "start_date": day}
+        response = self.post(body)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["rival_matches"][0]["id"], str(self.rival.public_id))
+        body["rival_link"] = str(self.rival.public_id)
+        self.assertEqual(self.post(body).status_code, 201)
+
+
 class MatchLineupApiTests(TestCase):
     """``GET`` y ``PUT /matches/<id>/lineup``: alinear y editar las parejas."""
 
