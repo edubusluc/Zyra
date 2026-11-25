@@ -15,6 +15,7 @@ from .responses import json_ok
 from .teams import active_memberships, membership_for_team
 from .views_base import ApiView
 from .views_home import _team
+from .views_matches_list import list_matches
 
 
 def _rules(club):
@@ -73,7 +74,11 @@ class NewMatchView(ApiView):
 
 
 class MatchesView(ApiView):
-    """``POST /api/v1/matches``: crea un enfrentamiento."""
+    """``GET /api/v1/matches`` (lista, ver ``views_matches_list``) y ``POST /api/v1/matches`` (crea un enfrentamiento)."""
+
+    def get(self, request):
+        """Lista de Partidos con filtros y paginación."""
+        return list_matches(request)
 
     def post(self, request):
         """
