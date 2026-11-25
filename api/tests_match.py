@@ -505,6 +505,46 @@ class MatchesListApiTests(TestCase):
         self.assertEqual(self.list(page=9).json()["page"], 2)
 
 
+class MatchesCalendarApiTests(TestCase):
+    """``GET /matches/calendar``: los enfrentamientos de un mes agrupados por día."""
+
+    setUp = MatchApiTests.setUp
+
+    def get(self, token=None, **params):
+        """GET del calendario con el token del capitán por defecto."""
+        return self.client.get(reverse("api_matches_calendar"), params,
+                               HTTP_AUTHORIZATION=f"Bearer {token or self.captain_token}")
+
+    def test_requires_token(self):
+        """Sin token: 401."""
+        self.assertEqual(self.client.get(reverse("api_matches_calendar")).status_code, 401)
+
+    def test_groups_the_month_by_day_in_time_order(self):
+        """Solo salen los días del mes con partidos, y cada día ordena por hora."""
+        day = datetime.date(2027, 3, 14)
+        late = Match.objects.create(club=self.club, local=self.club.own_team, visiting=self.rival, start_date=day,
+                                    start_time=datetime.time(20, 0))
+        early = Match.objects.create(club=self.club, local=self.rival, visiting=self.club.own_team, start_date=day,
+                                     start_time=datetime.time(10, 0))
+        Match.objects.create(club=self.club, local=self.club.own_team, visiting=self.rival,
+                             start_date=datetime.date(2027, 4, 2))
+        data = self.get(month="2027-03").json()
+        self.assertEqual((data["month"], data["prev"], data["next"]), ("2027-03", "2027-02", "2027-04"))
+        self.assertEqual([d["date"] for d in data["days"]], ["2027-03-14"])
+        self.assertEqual([m["id"] for m in data["days"][0]["matches"]], [str(early.public_id), str(late.public_id)])
+        self.assertFalse(data["days"][0]["matches"][0]["own_is_local"])
+
+    def test_invalid_month_falls_back_to_current(self):
+        """Un mes mal escrito no falla: devuelve el actual."""
+        data = self.get(month="xx").json()
+        self.assertTrue(data["is_current"])
+
+    def test_stranger_sees_nothing_and_foreign_team_is_404(self):
+        """Una cuenta sin equipos recibe días vacíos; pedir un equipo ajeno, 404."""
+        self.assertEqual(self.get(self.stranger_token).json()["days"], [])
+        self.assertEqual(self.get(self.stranger_token, team=str(self.club.public_id)).status_code, 404)
+
+
 class CreateMatchApiTests(TestCase):
     """``GET /matches/new`` y ``POST /matches``: crear un enfrentamiento con las reglas de ``MatchForm``."""
 

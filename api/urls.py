@@ -25,6 +25,7 @@ urlpatterns = [
     re_path(r"^copy-invitations/(?P<token>[\w-]+)/?$", views_notices.CopyInvitationView.as_view(),
             name="api_copy_invitation"),
     re_path(r"^matches/new/?$", views_create_match.NewMatchView.as_view(), name="api_match_new"),
+    re_path(r"^matches/calendar/?$", views_create_match.MatchesCalendarView.as_view(), name="api_matches_calendar"),
     re_path(r"^matches/?$", views_create_match.MatchesView.as_view(), name="api_matches"),
     re_path(r"^matches/(?P<match_id>[\w-]+)/?$", views_match.MatchView.as_view(), name="api_match"),
     re_path(r"^matches/(?P<match_id>[\w-]+)/close-call/?$", views_match.CloseCallView.as_view(), name="api_match_close_call"),

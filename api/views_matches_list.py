@@ -9,7 +9,7 @@ from django.utils.translation import gettext as _
 from call.models import Call
 from core.season_choice import ALL_SEASONS
 from data_analyse.pairs import COMPETITIVE, FILTER_VALUES, match_type_lookup
-from match import phase as match_phase
+from match import month_view, phase as match_phase
 from match.models import Game, Match
 from match.views import (LIST_HORIZON_DAYS, MATCHES_PER_PAGE, club_score, filter_by_rival, match_outcome, rival_names,
                          search_matches)
@@ -58,6 +58,60 @@ def _row(match, *, today, managed, dual_role, called, pending_close, phase):
     }
 
 
+def _rows(matches, *, today, managed, dual_role):
+    """Las filas de ``matches`` (con convocados, acta por cerrar y fase de cada una: unas pocas consultas en total)."""
+    called = dict(Call.objects.filter(match__in=matches).annotate(n=Count("players")).values_list("match_id", "n"))
+    open_ids = [m.id for m in matches if m.draft_mode]
+    games_count = dict(Game.objects.filter(match_id__in=open_ids).values("match_id").annotate(n=Count("id"))
+                       .values_list("match_id", "n"))
+    with_result = dict(Game.objects.filter(match_id__in=open_ids, results__isnull=False).values("match_id")
+                       .annotate(n=Count("id", distinct=True)).values_list("match_id", "n"))
+    phases = match_phase.phases_for(matches)
+    rows = []
+    for m in matches:
+        n = games_count.get(m.id, 0)
+        pending_close = bool(m.draft_mode and n >= m.club.rules.games and with_result.get(m.id, 0) == n)
+        rows.append(_row(m, today=today, managed=managed, dual_role=dual_role, called=called.get(m.id),
+                         pending_close=pending_close, phase=phases[m.id]))
+    return rows
+
+
+def _scope(request):
+    """Equipos a mirar (``team`` o todos los de la cuenta): ``(todas las membresías, las elegidas, gestionados, doble rol)``."""
+    all_active, _suspended = active_memberships(request.user)
+    team_id = request.GET.get("team")
+    active = [membership_for_team(request.user, team_id)] if team_id else all_active
+    managed = {m.club_id for m in active if m.can_manage}
+    dual_role = 0 < len({m.club_id for m in all_active if m.can_manage}) < len(all_active)
+    return all_active, active, managed, dual_role
+
+
+def calendar_matches(request):
+    """
+    ``GET /api/v1/matches/calendar``: los enfrentamientos de un mes, agrupados por día (como el calendario de la web).
+    ``month`` (``AAAA-MM``; por defecto el actual) y ``team`` (opcional). Responde ``month``, ``prev``, ``next``,
+    ``is_current``, ``today``, ``teams`` y ``days`` (solo los días con enfrentamientos: ``date`` y ``matches``, con la
+    misma forma que en la lista), ordenados por hora.
+    """
+    today = timezone.localdate()
+    first = month_view.parse_month(request.GET.get(month_view.MONTH_PARAM), today)
+    all_active, active, managed, dual_role = _scope(request)
+    by_day = month_view.month_events([m.club for m in active], month_view.month_weeks(first))
+    flat = [m for d in sorted(by_day) if d.month == first.month for m in by_day[d]]
+    rows = iter(_rows(flat, today=today, managed=managed, dual_role=dual_role))
+    days = [{"date": d.isoformat(), "matches": [next(rows) for _ in by_day[d]]}
+            for d in sorted(by_day) if d.month == first.month]
+    return json_ok({
+        "month": month_view.month_key(first),
+        "prev": month_view.month_key(month_view.shift_month(first, -1)),
+        "next": month_view.month_key(month_view.shift_month(first, 1)),
+        "is_current": first == today.replace(day=1),
+        "today": today.isoformat(),
+        "teams": [_team(m) for m in all_active],
+        "days": days,
+    })
+
+
 def list_matches(request):
     """
     ``GET /api/v1/matches``: enfrentamientos de los equipos de la cuenta (o de ``team``), ordenados como la web: primero lo
@@ -70,14 +124,8 @@ def list_matches(request):
     lo filtrado), ``matches`` (cada uno con ``group``: ``action``, ``upcoming`` o ``played``), ``hidden_far`` (abiertos
     lejanos ocultos) y ``page``/``pages``.
     """
-    team_id = request.GET.get("team")
-    active, _suspended = active_memberships(request.user)
-    if team_id:
-        active = [membership_for_team(request.user, team_id)]
+    all_active, active, managed, dual_role = _scope(request)
     clubs = [m.club for m in active]
-    managed = {m.club_id for m in active if m.can_manage}
-    all_active, _s = active_memberships(request.user)
-    dual_role = 0 < len({m.club_id for m in all_active if m.can_manage}) < len(all_active)
 
     club_matches = Match.objects.filter(club__in=clubs).select_related("local", "visiting", "club")
     seasons = set(club_matches.values_list("season", flat=True)) | {current_season()}
@@ -136,20 +184,7 @@ def list_matches(request):
         page = paginator.page(paginator.num_pages if request.GET.get("page", "").isdigit() else 1)
     page_matches = list(page)
 
-    called = dict(Call.objects.filter(match__in=page_matches).annotate(n=Count("players"))
-                  .values_list("match_id", "n"))
-    open_ids = [m.id for m in page_matches if m.draft_mode]
-    games_count = dict(Game.objects.filter(match_id__in=open_ids).values("match_id").annotate(n=Count("id"))
-                       .values_list("match_id", "n"))
-    with_result = dict(Game.objects.filter(match_id__in=open_ids, results__isnull=False).values("match_id")
-                       .annotate(n=Count("id", distinct=True)).values_list("match_id", "n"))
-    phases = match_phase.phases_for(page_matches)
-    rows = []
-    for m in page_matches:
-        n = games_count.get(m.id, 0)
-        pending_close = bool(m.draft_mode and n >= m.club.rules.games and with_result.get(m.id, 0) == n)
-        rows.append(_row(m, today=today, managed=managed, dual_role=dual_role, called=called.get(m.id),
-                         pending_close=pending_close, phase=phases[m.id]))
+    rows = _rows(page_matches, today=today, managed=managed, dual_role=dual_role)
     return json_ok({
         "teams": [_team(m) for m in all_active],
         "seasons": seasons,
