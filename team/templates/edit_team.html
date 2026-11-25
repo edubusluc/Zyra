@@ -77,7 +77,16 @@
                 <label for="in_group" class="form-check-label">{% translate "¿Se encuentra en tu grupo?" %}{% if team.is_own %}{% translate "Tu equipo siempre está en tu grupo: no se puede dar de baja." as tip_group %}{% include 'includes/stat_tip.html' with tip=tip_group %}{% endif %}</label>
             </div>
 
-            <button type="submit" class="btn btn-primary">{% translate "Guardar" %}</button>
+            <div class="d-flex flex-wrap gap-2">
+                <button type="submit" class="btn btn-primary">{% translate "Guardar" %}</button>
+                {% if not team.is_own %}
+                {% if match_total and not team.in_group %}
+                <button type="button" class="btn btn-outline-danger" data-info-popup data-popup-title="{% blocktranslate with name=team.name %}No se puede eliminar «{{ name }}»{% endblocktranslate %}" data-popup-text="{% translate 'Tiene enfrentamientos y ya está dado de baja: no aparece en tus listas y conserva todo su historial. Eliminarlo borraría sus resultados, estadísticas y hojas de enfrentamiento.' %}" data-popup-action="{% translate 'Entendido' %}">{% translate "Eliminar equipo" %}</button>
+                {% else %}
+                <button type="submit" form="team-delete-form" class="btn btn-outline-danger">{% translate "Eliminar equipo" %}</button>
+                {% endif %}
+                {% endif %}
+            </div>
         </form>
 
 
@@ -95,26 +104,15 @@
             </div>
         </aside>
         </div>
-
         {% if not team.is_own %}
-        <section class="mt-4 pt-3 border-top" aria-labelledby="team-delete-title">
-            <h2 class="h6" id="team-delete-title">{% translate "Eliminar equipo" %}</h2>
-            {% if match_total %}
-            {% if team.in_group %}
-            <form method="POST" action="{% url 'deactivate_team' team.public_id %}" data-loading-text="{% translate 'Dando de baja el equipo…' %}" data-confirm-title="{% blocktranslate with name=team.name %}No se puede eliminar «{{ name }}»{% endblocktranslate %}" data-confirm-action="{% translate 'Dar de baja' %}" data-confirm-danger data-confirm="{% blocktranslate trimmed count n=match_total with played=match_played %}Tiene {{ n }} enfrentamiento ({{ played }} jugados). Si lo eliminaras, se perderían sus resultados, las estadísticas de los jugadores y de las parejas, y la hoja del enfrentamiento. Para dejar de verlo en tus listas puedes darlo de baja: conserva todo el historial y puedes volver a darlo de alta cuando quieras.{% plural %}Tiene {{ n }} enfrentamientos ({{ played }} jugados). Si lo eliminaras, se perderían sus resultados, las estadísticas de los jugadores y de las parejas, y la hoja de cada enfrentamiento. Para dejar de verlo en tus listas puedes darlo de baja: conserva todo el historial y puedes volver a darlo de alta cuando quieras.{% endblocktranslate %}">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-outline-danger">{% translate "Eliminar equipo" %}</button>
-            </form>
-            {% else %}
-            <button type="button" class="btn btn-outline-danger" data-info-popup data-popup-title="{% blocktranslate with name=team.name %}No se puede eliminar «{{ name }}»{% endblocktranslate %}" data-popup-text="{% translate 'Tiene enfrentamientos y ya está dado de baja: no aparece en tus listas y conserva todo su historial. Eliminarlo borraría sus resultados, estadísticas y hojas de enfrentamiento.' %}" data-popup-action="{% translate 'Entendido' %}">{% translate "Eliminar equipo" %}</button>
-            {% endif %}
-            {% else %}
-            <form method="POST" action="{% url 'delete_team' team.public_id %}" data-loading-text="{% translate 'Eliminando el equipo…' %}" data-confirm-title="{% blocktranslate with name=team.name %}¿Eliminar «{{ name }}»?{% endblocktranslate %}" data-confirm-action="{% translate 'Eliminar equipo' %}" data-confirm-danger data-confirm="{% translate 'Se borrará este equipo rival y su escudo. No tiene enfrentamientos, así que no cambia ninguna estadística. Esta acción no se puede deshacer.' %}">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-outline-danger">{% translate "Eliminar equipo" %}</button>
-            </form>
-            {% endif %}
-        </section>
+        {# Formularios del botón «Eliminar equipo» (junto a «Guardar», atributo form): no pueden ir anidados en el de edición. #}
+        {% if match_total %}
+        {% if team.in_group %}
+        <form id="team-delete-form" method="POST" action="{% url 'deactivate_team' team.public_id %}" data-loading-text="{% translate 'Dando de baja el equipo…' %}" data-confirm-title="{% blocktranslate with name=team.name %}No se puede eliminar «{{ name }}»{% endblocktranslate %}" data-confirm-action="{% translate 'Dar de baja' %}" data-confirm-danger data-confirm="{% blocktranslate trimmed count n=match_total with played=match_played %}Tiene {{ n }} enfrentamiento ({{ played }} jugados). Si lo eliminaras, se perderían sus resultados, las estadísticas de los jugadores y de las parejas, y la hoja del enfrentamiento. Para dejar de verlo en tus listas puedes darlo de baja: conserva todo el historial y puedes volver a darlo de alta cuando quieras.{% plural %}Tiene {{ n }} enfrentamientos ({{ played }} jugados). Si lo eliminaras, se perderían sus resultados, las estadísticas de los jugadores y de las parejas, y la hoja de cada enfrentamiento. Para dejar de verlo en tus listas puedes darlo de baja: conserva todo el historial y puedes volver a darlo de alta cuando quieras.{% endblocktranslate %}">{% csrf_token %}</form>
+        {% endif %}
+        {% else %}
+        <form id="team-delete-form" method="POST" action="{% url 'delete_team' team.public_id %}" data-loading-text="{% translate 'Eliminando el equipo…' %}" data-confirm-title="{% blocktranslate with name=team.name %}¿Eliminar «{{ name }}»?{% endblocktranslate %}" data-confirm-action="{% translate 'Eliminar equipo' %}" data-confirm-danger data-confirm="{% translate 'Se borrará este equipo rival y su escudo. No tiene enfrentamientos, así que no cambia ninguna estadística. Esta acción no se puede deshacer.' %}">{% csrf_token %}</form>
+        {% endif %}
         {% endif %}
     </div>
 <script src="{% static 'js/stats-tips.js' %}"></script>
