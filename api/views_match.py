@@ -3,17 +3,21 @@ import datetime
 import logging
 
 from django.db import transaction
+from django.http import HttpResponse
 from django.urls import reverse
 from django.utils.translation import gettext as _, ngettext
 
 from call import availability as availability_logic
+from core import ratelimit
 from call.models import Availability, Call, ReportDelivery
 from core.competitions import competition_for
 from core.templatetags.zyra_format import date_short
 from match import league, lineup, outcomes
 from match.forms import MatchDateForm
 from match.models import Game, Match
-from match.notifications import admin_emails, is_past_match, send_call_report
+from match.report import build_report
+from match.report_pdf import render_report
+from match.notifications import admin_emails, is_past_match, report_filename, send_call_report
 from match.phase import (CLOSE_CALL, CLOSE_MATCH, CREATE_CALL, CREATE_GAMES, ENTER_RESULTS, NOTHING, STEPS, phase_for,
                          player_status)
 from match.views import OUTCOME_LABELS, validate_call, call_roster, club_score, lineup_rows, match_outcome, stage_countdown
@@ -422,3 +426,22 @@ class AvailabilityRemindView(ApiView):
             availability_logic.release_reminder(match)
             raise ApiError("email_failed", _("No se pudo enviar ningún correo. Inténtalo de nuevo en unos minutos."), 502)
         return json_ok({"sent": sent})
+
+
+class MatchReportView(ApiView):
+    """``GET /api/v1/matches/<id>/report.pdf``: el informe de la convocatoria en PDF para verlo o compartirlo."""
+
+    def get(self, request, match_id):
+        """
+        Solo capitán y gestores (404 si no, o si aún no hay convocatoria). Devuelve el PDF (``application/pdf``) con el
+        nombre del informe en ``Content-Disposition``; 429 si se pide más de 30 veces por minuto, como la web.
+        """
+        match, _membership = _managed_match(request.user, match_id)
+        call = Call.objects.filter(match=match).first()
+        if call is None:
+            raise ApiError("not_found", _("No encontrado."), 404)
+        if ratelimit.too_many_user(request, "report-pdf", 30, 60):
+            raise ApiError("rate_limited", _("Demasiadas peticiones. Espera un momento."), 429)
+        response = HttpResponse(render_report(build_report(call)), content_type="application/pdf")
+        response["Content-Disposition"] = f'inline; filename="{report_filename(match)}"'
+        return response

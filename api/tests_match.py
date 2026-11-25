@@ -371,3 +371,30 @@ class MatchScheduleApiTests(TestCase):
         self.match.save()
         response = self.patch(self.captain_token, {"date": "2030-01-05"})
         self.assertEqual((response.status_code, response.json()["error"]), (409, "locked"))
+
+
+class MatchReportApiTests(TestCase):
+    """``GET /matches/<id>/report.pdf``: informe en PDF para quien gestiona."""
+
+    setUp = MatchApiTests.setUp
+
+    def get(self, token):
+        """GET con el token indicado."""
+        url = reverse("api_match_report", args=[self.match.public_id])
+        return self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {token}")
+
+    def test_needs_a_call_and_a_manager(self):
+        """Sin convocatoria o siendo jugador: 404."""
+        self.assertEqual(self.get(self.captain_token).status_code, 404)
+        Call.objects.create(match=self.match)
+        self.assertEqual(self.get(self.user_token).status_code, 404)
+
+    def test_returns_the_pdf(self):
+        """El capitán recibe un PDF con el nombre del informe."""
+        call = Call.objects.create(match=self.match)
+        call.players.add(self.me)
+        response = self.get(self.captain_token)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/pdf")
+        self.assertTrue(response.content.startswith(b"%PDF"))
+        self.assertIn(".pdf", response["Content-Disposition"])

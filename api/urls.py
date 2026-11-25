@@ -28,6 +28,7 @@ urlpatterns = [
     re_path(r"^matches/(?P<match_id>[\w-]+)/close-call/?$", views_match.CloseCallView.as_view(), name="api_match_close_call"),
     re_path(r"^matches/(?P<match_id>[\w-]+)/availability/?$", views_notices.AvailabilityView.as_view(),
             name="api_match_availability"),
+    re_path(r"^matches/(?P<match_id>[\w-]+)/report\.pdf$", views_match.MatchReportView.as_view(), name="api_match_report"),
     re_path(r"^matches/(?P<match_id>[\w-]+)/call/?$", views_call.MatchCallView.as_view(), name="api_match_call"),
     re_path(r"^matches/(?P<match_id>[\w-]+)/availability-link/?$", views_match.AvailabilityLinkView.as_view(),
             name="api_match_availability_link"),
