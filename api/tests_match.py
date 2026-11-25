@@ -400,6 +400,33 @@ class MatchReportApiTests(TestCase):
         self.assertIn(".pdf", response["Content-Disposition"])
 
 
+class MatchResultImageApiTests(TestCase):
+    """``GET /matches/<id>/result.jpg``: imagen del resultado para compartir."""
+
+    setUp = MatchApiTests.setUp
+
+    def get(self, token):
+        """GET con el token indicado."""
+        url = reverse("api_match_result_image", args=[self.match.public_id])
+        return self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {token}")
+
+    def test_needs_a_manager_and_a_closed_record(self):
+        """Un jugador recibe 404; con el acta abierta, también el capitán."""
+        self.assertEqual(self.get(self.user_token).status_code, 404)
+        self.match.draft_mode = True
+        self.match.save()
+        self.assertEqual(self.get(self.captain_token).status_code, 404)
+
+    def test_returns_the_jpeg(self):
+        """Con el acta cerrada el capitán recibe un JPEG."""
+        self.match.draft_mode = False
+        self.match.save()
+        response = self.get(self.captain_token)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "image/jpeg")
+        self.assertTrue(response.content.startswith(b"\xff\xd8"))
+
+
 class MatchLineupApiTests(TestCase):
     """``GET`` y ``PUT /matches/<id>/lineup``: alinear y editar las parejas."""
 
