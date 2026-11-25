@@ -15,7 +15,7 @@ from .responses import json_ok
 from .teams import active_memberships, membership_for_team
 from .views_base import ApiView
 from .views_home import _team
-from .views_matches_list import list_matches
+from .views_matches_list import calendar_matches, list_matches
 
 
 def _rules(club):
@@ -71,6 +71,14 @@ class NewMatchView(ApiView):
             return json_ok({"team": _team(membership), **_form_options(request, membership.club)})
         active, _suspended = active_memberships(request.user)
         return json_ok({"teams": [_team(m) for m in active if m.can_manage]})
+
+
+class MatchesCalendarView(ApiView):
+    """``GET /api/v1/matches/calendar``: los enfrentamientos de un mes (ver ``views_matches_list.calendar_matches``)."""
+
+    def get(self, request):
+        """Calendario mensual, con ``month`` y ``team`` opcionales."""
+        return calendar_matches(request)
 
 
 class MatchesView(ApiView):
