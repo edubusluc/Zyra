@@ -462,6 +462,12 @@ class MatchesListApiTests(TestCase):
         self.assertEqual((played["outcome"], played["own_points"], played["rival_points"]), ("V", "7", "5"))
         self.assertEqual(data["summary"], {"played": 1, "won": 1, "drawn": 0, "lost": 0, "pending": 2})
         self.assertTrue(data["can_create"])
+        self.assertFalse(any(m["has_lineup"] for m in data["matches"]))
+
+    def test_has_lineup_when_open_with_pairs(self):
+        """``has_lineup`` es cierto con el acta abierta y parejas alineadas."""
+        Game.objects.create(match=self.match, n_game=1)
+        self.assertTrue(self.list().json()["matches"][0]["has_lineup"])
 
     def test_player_sees_no_action_group(self):
         """Un jugador ve los abiertos como próximos y no puede crear."""

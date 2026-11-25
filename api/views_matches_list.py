@@ -27,7 +27,7 @@ def _match_types():
     return options
 
 
-def _row(match, *, today, managed, dual_role, called, pending_close, phase):
+def _row(match, *, today, managed, dual_role, called, pending_close, has_lineup, phase):
     """Una fila de la lista: lados, fecha, estado, marcador propio/rival y el grupo en el que va."""
     outcome = match_outcome(match)
     own, rival = club_score(match) if outcome else (None, None)
@@ -53,6 +53,7 @@ def _row(match, *, today, managed, dual_role, called, pending_close, phase):
         "called": called,
         "status_label": str(phase.label) if match.draft_mode else None,
         "pending_close": pending_close,
+        "has_lineup": has_lineup,
         "can_manage": can_manage,
         "group": group,
     }
@@ -72,7 +73,7 @@ def _rows(matches, *, today, managed, dual_role):
         n = games_count.get(m.id, 0)
         pending_close = bool(m.draft_mode and n >= m.club.rules.games and with_result.get(m.id, 0) == n)
         rows.append(_row(m, today=today, managed=managed, dual_role=dual_role, called=called.get(m.id),
-                         pending_close=pending_close, phase=phases[m.id]))
+                         pending_close=pending_close, has_lineup=bool(m.draft_mode and n), phase=phases[m.id]))
     return rows
 
 
