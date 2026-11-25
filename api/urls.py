@@ -1,7 +1,7 @@
 """URLs de ``/api/v1/``. La última ruta recoge lo desconocido y responde 404 en JSON."""
 from django.urls import re_path
 
-from . import (views, views_account, views_apple, views_auth, views_call, views_club, views_devices, views_google, views_home,
+from . import (views, views_account, views_apple, views_auth, views_call, views_lineup, views_club, views_devices, views_google, views_home,
                views_invitations, views_match, views_notices, views_setup, views_stats)
 
 urlpatterns = [
@@ -29,6 +29,7 @@ urlpatterns = [
     re_path(r"^matches/(?P<match_id>[\w-]+)/availability/?$", views_notices.AvailabilityView.as_view(),
             name="api_match_availability"),
     re_path(r"^matches/(?P<match_id>[\w-]+)/report\.pdf$", views_match.MatchReportView.as_view(), name="api_match_report"),
+    re_path(r"^matches/(?P<match_id>[\w-]+)/lineup/?$", views_lineup.MatchLineupView.as_view(), name="api_match_lineup"),
     re_path(r"^matches/(?P<match_id>[\w-]+)/call/?$", views_call.MatchCallView.as_view(), name="api_match_call"),
     re_path(r"^matches/(?P<match_id>[\w-]+)/availability-link/?$", views_match.AvailabilityLinkView.as_view(),
             name="api_match_availability_link"),
