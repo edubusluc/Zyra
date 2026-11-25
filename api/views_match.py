@@ -11,6 +11,7 @@ from call.models import Availability, Call, ReportDelivery
 from core.competitions import competition_for
 from core.templatetags.zyra_format import date_short
 from match import league, lineup, outcomes
+from match.forms import MatchDateForm
 from match.models import Game, Match
 from match.notifications import admin_emails, is_past_match, send_call_report
 from match.phase import (CLOSE_CALL, CLOSE_MATCH, CREATE_CALL, CREATE_GAMES, ENTER_RESULTS, NOTHING, STEPS, phase_for,
@@ -266,6 +267,37 @@ class MatchView(ApiView):
         if can_manage:
             data["availability"] = _availability(match, membership, open_for_answers)
         return json_ok(data)
+
+    def patch(self, request, match_id):
+        """
+        Cuerpo ``{"date"?: "AAAA-MM-DD", "time"?: "HH:MM" | null, "location"?: texto}``: cambia la fecha, la hora y el
+        lugar con ``MatchDateForm`` (mismas reglas que la web: lo que no llega se conserva, ``time`` nulo borra la
+        hora, un lugar vacío usa el del equipo local salvo en sede neutral, donde es obligatorio). Solo quien gestiona
+        (404 si no). 409 ``locked`` con el acta cerrada; 400 ``validation_error`` con ``fields``. Devuelve
+        ``{"date", "time", "location", "maps_url"}``.
+        """
+        body = self.json_body(request)
+        for name in ("date", "time", "location"):
+            value = body.get(name)
+            if name in body and not (isinstance(value, str) or (name == "time" and value is None)):
+                raise invalid(name)
+        match, _membership = _managed_match(request.user, match_id)
+        if not match.draft_mode:
+            raise ApiError("locked", _("Reabre el acta para cambiar la fecha y la hora del enfrentamiento."), 409)
+        current_time = match.start_time.strftime("%H:%M") if match.start_time else ""
+        data = {"start_date": body.get("date", match.start_date.isoformat()),
+                "start_time": (body.get("time") or "") if "time" in body else current_time}
+        if "location" in body:
+            data["location"] = body["location"]
+        form = MatchDateForm(data, instance=match)
+        if not form.is_valid():
+            names = {"start_date": "date", "start_time": "time"}
+            raise ApiError("validation_error", _("Revisa los datos del formulario."), 400, extra={"fields": {
+                names.get(field, field): [str(e) for e in errors] for field, errors in form.errors.items()}})
+        match = form.save()
+        return json_ok({"date": match.start_date.isoformat(),
+                        "time": match.start_time.strftime("%H:%M") if match.start_time else None,
+                        "location": match.location or None, "maps_url": match.maps_url or None})
 
 
 def _report_state(call, match, user, resend):

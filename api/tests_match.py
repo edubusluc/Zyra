@@ -323,3 +323,51 @@ class MatchCallApiTests(TestCase):
         self.assertTrue(got["locked"])
         response = self.put(self.captain_token, {"players": [str(self.me.public_id)]})
         self.assertEqual((response.status_code, response.json()["error"]), (409, "locked"))
+
+
+class MatchScheduleApiTests(TestCase):
+    """``PATCH /matches/<id>``: cambiar fecha, hora y sede."""
+
+    setUp = MatchApiTests.setUp
+
+    def url(self):
+        """Ruta de la ficha."""
+        return reverse("api_match", args=[self.match.public_id])
+
+    def patch(self, token, body):
+        """PATCH JSON con el token indicado."""
+        return self.client.patch(self.url(), body, content_type="application/json",
+                                 HTTP_AUTHORIZATION=f"Bearer {token}")
+
+    def test_only_managers(self):
+        """Un jugador recibe 404."""
+        self.assertEqual(self.patch(self.user_token, {"date": "2030-01-05"}).status_code, 404)
+
+    def test_changes_date_time_and_location(self):
+        """Cambia los tres campos y devuelve lo guardado."""
+        response = self.patch(self.captain_token, {"date": "2030-01-05", "time": "10:30", "location": "  Pádel  Sur "})
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual((data["date"], data["time"], data["location"]), ("2030-01-05", "10:30", "Pádel Sur"))
+        self.match.refresh_from_db()
+        self.assertEqual(self.match.start_date.isoformat(), "2030-01-05")
+
+    def test_omitted_fields_are_kept_and_null_clears_time(self):
+        """Sin campo se conserva y ``time`` nulo borra la hora."""
+        self.patch(self.captain_token, {"time": "09:00"})
+        kept = self.patch(self.captain_token, {"date": "2030-02-01"}).json()
+        self.assertEqual(kept["time"], "09:00")
+        self.assertIsNone(self.patch(self.captain_token, {"time": None}).json()["time"])
+
+    def test_invalid_date_is_a_validation_error(self):
+        """Una fecha mala da 400 con el motivo por campo."""
+        response = self.patch(self.captain_token, {"date": "mañana"})
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("date", response.json()["fields"])
+
+    def test_closed_acta_is_locked(self):
+        """Con el acta cerrada, 409 ``locked``."""
+        self.match.draft_mode = False
+        self.match.save()
+        response = self.patch(self.captain_token, {"date": "2030-01-05"})
+        self.assertEqual((response.status_code, response.json()["error"]), (409, "locked"))
