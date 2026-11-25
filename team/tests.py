@@ -611,3 +611,66 @@ class TeamLocationPropagationTests(TestCase):
         self.assertEqual((home.local, home.visiting), (self.own, self.rival))
         self.assertEqual((away.local, away.visiting), (self.rival, self.own))
         self.assertEqual(team_card.venue_matches(self.club), before)
+
+
+class DeleteRivalTests(TestCase):
+    """Eliminar un rival: solo sin enfrentamientos; con ellos, el popup ofrece darlo de baja."""
+    client_class = TeamClient
+
+    def setUp(self):
+        from datetime import date
+        from match.models import Match
+        self.user = User.objects.create_user("admin", password="pass-12345")
+        self.club = create_club("Club A", "Sevilla", self.user, gender="F", country="ES")
+        self.own = self.club.own_team
+        self.free = Team.objects.create(club=self.club, name="CD Libre", location="X", gender="F", country="ES",
+                                        division="500", in_group=True)
+        self.busy = Team.objects.create(club=self.club, name="CD Ocupado", location="X", gender="F", country="ES",
+                                        division="500", in_group=True)
+        self.match = Match.objects.create(club=self.club, local=self.own, visiting=self.busy,
+                                          start_date=date(2026, 1, 10))
+        self.client.force_login(self.user)
+
+    def test_delete_rival_without_matches(self):
+        response = self.client.post(reverse("delete_team", args=[self.free.public_id]))
+        self.assertRedirects(response, reverse("list_teams"))
+        self.assertFalse(Team.objects.filter(pk=self.free.pk).exists())
+
+    def test_delete_blocked_with_matches(self):
+        self.client.post(reverse("delete_team", args=[self.busy.public_id]))
+        self.assertTrue(Team.objects.filter(pk=self.busy.pk).exists())
+        self.match.refresh_from_db()
+        self.assertEqual(self.match.visiting, self.busy)
+
+    def test_own_team_cannot_be_deleted(self):
+        response = self.client.post(reverse("delete_team", args=[self.own.public_id]))
+        self.assertEqual(response.status_code, 404)
+        self.assertTrue(Team.objects.filter(pk=self.own.pk).exists())
+
+    def test_get_not_allowed(self):
+        self.assertEqual(self.client.get(reverse("delete_team", args=[self.free.public_id])).status_code, 405)
+
+    def test_deactivate_keeps_matches(self):
+        self.client.post(reverse("deactivate_team", args=[self.busy.public_id]))
+        self.busy.refresh_from_db()
+        self.assertFalse(self.busy.in_group)
+        self.match.refresh_from_db()
+        self.assertEqual(self.match.visiting, self.busy)
+
+    def test_edit_page_popup_texts(self):
+        free = self.client.get(reverse("edit_team", args=[self.free.public_id]))
+        self.assertContains(free, reverse("delete_team", args=[self.free.public_id]))
+        self.assertContains(free, "No tiene enfrentamientos")
+        busy = self.client.get(reverse("edit_team", args=[self.busy.public_id]))
+        self.assertContains(busy, reverse("deactivate_team", args=[self.busy.public_id]))
+        self.assertContains(busy, "Tiene 1 enfrentamiento")
+        own = self.client.get(reverse("edit_team", args=[self.own.public_id]))
+        self.assertNotContains(own, "Eliminar equipo")
+
+    def test_member_without_manage_rights_gets_403(self):
+        from core.models import Membership
+        other = User.objects.create_user("jug", password="pass-12345")
+        Membership.objects.create(user=other, club=self.club, role=Membership.MEMBER)
+        self.client.force_login(other)
+        self.assertEqual(self.client.post(reverse("delete_team", args=[self.free.public_id])).status_code, 403)
+        self.assertTrue(Team.objects.filter(pk=self.free.pk).exists())

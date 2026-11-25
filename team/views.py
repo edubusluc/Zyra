@@ -13,6 +13,7 @@ from django.db.models import Q
 from django.http import JsonResponse
 from core import similarity, spaces
 from match.locations import propagate_team_location
+from backoffice.audit import audit
 
 # Los grupos de SNP tienen unos 15-30 equipos: se ven de una vez, sin paginar.
 TEAMS_PER_PAGE = 30
@@ -150,6 +151,55 @@ def reactivate_team(request, team_id):
     return redirect("list_teams")
 
 
+def team_matches(team):
+    """(total, jugados) de enfrentamientos del equipo, como local o visitante; jugado = acta cerrada."""
+    from match.models import Match
+    qs = Match.objects.filter(Q(local=team) | Q(visiting=team))
+    return qs.count(), qs.filter(draft_mode=False).count()
+
+
+def _rival_or_404(request, team_id):
+    """Rival del club activo (nunca el equipo propio) o 404."""
+    return get_object_or_404(Team, public_id=team_id, club=request.club, is_own=False)
+
+
+@spaces.follow_object("team.Team", "team_id")
+@club_manager_required
+@not_while_syncing
+@require_POST
+def delete_team(request, team_id):
+    """
+    Elimina un rival. Solo capitanes y gestores, POST. Solo si no tiene ningún enfrentamiento (abierto o
+    cerrado): con partidos se bloquea, porque borrarlo se llevaría resultados, estadísticas y hojas
+    (``Match.local``/``visiting`` son PROTECT); la alternativa es darlo de baja (``deactivate_team``).
+    """
+    team = _rival_or_404(request, team_id)
+    total, _played = team_matches(team)
+    if total:
+        messages.error(request, _("«%(name)s» tiene enfrentamientos y no se puede eliminar. Puedes darlo de baja.")
+                       % {"name": team.name})
+        return redirect("edit_team", team.public_id)
+    audit(request, "team.delete", team, label=team.name[:200], club=request.club.name)
+    name = team.name
+    team.delete()
+    messages.success(request, _("«%(name)s» eliminado.") % {"name": name})
+    return redirect("list_teams")
+
+
+@spaces.follow_object("team.Team", "team_id")
+@club_manager_required
+@require_POST
+def deactivate_team(request, team_id):
+    """Da de baja un rival (sale del grupo, conserva todo su historial). Solo capitanes y gestores, POST."""
+    team = _rival_or_404(request, team_id)
+    if team.in_group:
+        team.in_group = False
+        team.save()
+        audit(request, "team.deactivate", team, label=team.name[:200], club=request.club.name)
+        messages.success(request, _("«%(name)s» dado de baja. Su historial se conserva.") % {"name": team.name})
+    return redirect("list_teams")
+
+
 @spaces.follow_object("team.Team", "team_id")
 @club_manager_required
 @require_http_methods(["GET", "POST"])
@@ -184,6 +234,8 @@ def edit_team(request, team_id):
         'countries': Team.COUNTRIES,
         'divisions': divisions_for(request.club.rules),
     }
+    if not team.is_own:
+        context['match_total'], context['match_played'] = team_matches(team)
     return render(request, 'edit_team.html', context)
 
 
