@@ -17,6 +17,8 @@ ACTIONS = {
     "club.snp_import_reset": "«Completar equipo» repuesto",
     "club.snp_account": "Cuenta SNP editada",
     "team.edit": "Equipo editado",
+    "team.delete": "Rival eliminado",
+    "team.deactivate": "Rival dado de baja",
     "player.edit": "Jugador editado",
     "club.delete": "Club eliminado",
     "club.captain_transfer": "Capitanía traspasada",

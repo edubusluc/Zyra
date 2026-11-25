@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 25/11/2026 · Eliminar un equipo rival
+
+- En «Editar equipo» de un rival, capitanes y gestores tienen «Eliminar equipo». Si el rival no tiene enfrentamientos, un popup pide confirmar el borrado. Si los tiene (jugados o abiertos), no se puede eliminar: el popup explica que se perderían resultados, estadísticas y hojas, y ofrece «Dar de baja», que conserva todo el historial y se puede revertir. El equipo propio no se puede eliminar.
+
 ## 24/11/2026 · Derrota en rojo en las tarjetas de «Partidos»
 
 - En cada partido de la ficha, si gana el rival ya no se marca en verde su fila: se marca en rojo nuestra pareja (barra lateral, fondo y sets), y la victoria sigue en verde en nuestra fila. Un texto oculto «Victoria» / «Derrota» lo anuncia a los lectores de pantalla. La imagen de «Compartir resultado» pinta también en rojo la pareja y los sets de los partidos perdidos.

@@ -17214,3 +17214,39 @@ msgstr "Not enough data"
 #, python-format
 msgid "%(label)s: sin datos suficientes"
 msgstr "%(label)s: not enough data"
+
+msgid "Eliminar equipo"
+msgstr "Delete team"
+
+msgid "Eliminando el equipo…"
+msgstr "Deleting the team…"
+
+msgid "¿Eliminar «%(name)s»?"
+msgstr "Delete “%(name)s”?"
+
+msgid "No se puede eliminar «%(name)s»"
+msgstr "“%(name)s” cannot be deleted"
+
+msgid "Se borrará este equipo rival y su escudo. No tiene enfrentamientos, así que no cambia ninguna estadística. Esta acción no se puede deshacer."
+msgstr "This rival team and its crest will be deleted. It has no matches, so no statistics change. This cannot be undone."
+
+msgid "Tiene enfrentamientos y ya está dado de baja: no aparece en tus listas y conserva todo su historial. Eliminarlo borraría sus resultados, estadísticas y hojas de enfrentamiento."
+msgstr "It has matches and is already removed from your group: it does not appear in your lists and keeps its whole history. Deleting it would erase its results, statistics and match sheets."
+
+msgid "«%(name)s» tiene enfrentamientos y no se puede eliminar. Puedes darlo de baja."
+msgstr "“%(name)s” has matches and cannot be deleted. You can remove it from your group instead."
+
+msgid "«%(name)s» eliminado."
+msgstr "“%(name)s” deleted."
+
+msgid "«%(name)s» dado de baja. Su historial se conserva."
+msgstr "“%(name)s” removed from your group. Its history is kept."
+
+#, python-format
+msgid "Tiene %(n)s enfrentamiento (%(played)s jugados). Si lo eliminaras, se perderían sus resultados, las estadísticas de los jugadores y de las parejas, y la hoja del enfrentamiento. Para dejar de verlo en tus listas puedes darlo de baja: conserva todo el historial y puedes volver a darlo de alta cuando quieras."
+msgid_plural "Tiene %(n)s enfrentamientos (%(played)s jugados). Si lo eliminaras, se perderían sus resultados, las estadísticas de los jugadores y de las parejas, y la hoja de cada enfrentamiento. Para dejar de verlo en tus listas puedes darlo de baja: conserva todo el historial y puedes volver a darlo de alta cuando quieras."
+msgstr[0] "It has %(n)s match (%(played)s played). If you deleted it, its results, the players' and pairs' statistics and the match sheet would be lost. To stop seeing it in your lists you can remove it from your group: it keeps the whole history and you can add it back whenever you want."
+msgstr[1] "It has %(n)s matches (%(played)s played). If you deleted it, its results, the players' and pairs' statistics and each match sheet would be lost. To stop seeing it in your lists you can remove it from your group: it keeps the whole history and you can add it back whenever you want."
+
+msgid "Dando de baja el equipo…"
+msgstr "Removing the team from your group…"
