@@ -462,6 +462,12 @@ class MatchesListApiTests(TestCase):
         self.assertEqual((played["outcome"], played["own_points"], played["rival_points"]), ("V", "7", "5"))
         self.assertEqual(data["summary"], {"played": 1, "won": 1, "drawn": 0, "lost": 0, "pending": 2})
         self.assertTrue(data["can_create"])
+        self.assertFalse(any(m["has_lineup"] for m in data["matches"]))
+
+    def test_has_lineup_when_open_with_pairs(self):
+        """``has_lineup`` es cierto con el acta abierta y parejas alineadas."""
+        Game.objects.create(match=self.match, n_game=1)
+        self.assertTrue(self.list().json()["matches"][0]["has_lineup"])
 
     def test_player_sees_no_action_group(self):
         """Un jugador ve los abiertos como próximos y no puede crear."""
@@ -753,3 +759,38 @@ class MatchResultsApiTests(TestCase):
         self.match.refresh_from_db()
         self.assertFalse(self.match.draft_mode)
         self.assertEqual(self.put(games[0], {"sets": [[6, 0], [6, 0]]}).json()["error"], "locked")
+
+
+class MatchLineupImageApiTests(TestCase):
+    """``GET /matches/<id>/lineup.jpg``: imagen de la alineación para compartir."""
+
+    setUp = MatchApiTests.setUp
+    url = MatchLineupApiTests.url
+    auth = MatchLineupApiTests.auth
+    closed_call = MatchLineupApiTests.closed_call
+    pairs = MatchLineupApiTests.pairs
+    put = MatchLineupApiTests.put
+
+    def image(self, token):
+        """GET de la imagen con el token indicado."""
+        url = reverse("api_match_lineup_image", args=[self.match.public_id])
+        return self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {token}")
+
+    def test_needs_a_manager_and_a_lineup(self):
+        """Sin parejas alineadas, 404 incluso para el capitán; un jugador, 404."""
+        self.assertEqual(self.image(self.captain_token).status_code, 404)
+        players = self.closed_call()
+        self.put(self.captain_token, {"pairs": self.pairs(players)})
+        self.assertEqual(self.image(self.user_token).status_code, 404)
+
+    def test_returns_the_jpeg_while_open(self):
+        """Con las parejas alineadas y el acta abierta, el capitán recibe un JPEG."""
+        players = self.closed_call()
+        self.assertEqual(self.put(self.captain_token, {"pairs": self.pairs(players)}).status_code, 200)
+        response = self.image(self.captain_token)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "image/jpeg")
+        self.assertTrue(response.content.startswith(b"\xff\xd8"))
+        self.match.draft_mode = False
+        self.match.save()
+        self.assertEqual(self.image(self.captain_token).status_code, 404)
