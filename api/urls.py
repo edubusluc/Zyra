@@ -29,6 +29,7 @@ urlpatterns = [
     re_path(r"^matches/(?P<match_id>[\w-]+)/availability/?$", views_notices.AvailabilityView.as_view(),
             name="api_match_availability"),
     re_path(r"^matches/(?P<match_id>[\w-]+)/report\.pdf$", views_match.MatchReportView.as_view(), name="api_match_report"),
+    re_path(r"^matches/(?P<match_id>[\w-]+)/result\.jpg$", views_match.MatchResultImageView.as_view(), name="api_match_result_image"),
     re_path(r"^matches/(?P<match_id>[\w-]+)/results/?$", views_results.MatchResultsView.as_view(), name="api_match_results"),
     re_path(r"^matches/(?P<match_id>[\w-]+)/games/(?P<game_id>[\w-]+)/result/?$", views_results.GameResultView.as_view(),
             name="api_game_result"),

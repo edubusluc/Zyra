@@ -453,3 +453,31 @@ class MatchReportView(ApiView):
         response = HttpResponse(render_report(build_report(call)), content_type="application/pdf")
         response["Content-Disposition"] = f'inline; filename="{report_filename(match)}"'
         return response
+
+
+class MatchResultImageView(ApiView):
+    """``GET /api/v1/matches/<id>/result.jpg``: la imagen del resultado (la misma de la web) para compartirla desde la app."""
+
+    def get(self, request, match_id):
+        """
+        Solo capitán y gestores (404 si no, o si el acta sigue abierta). Devuelve el JPEG de ``build_result_jpeg``
+        (``image/jpeg``); 429 si se pide más de 30 veces por minuto.
+        """
+        from match.models import Game
+        from match.result_image import build_result_jpeg
+        from match.views import match_outcome
+
+        match, _membership = _managed_match(request.user, match_id)
+        if match.draft_mode:
+            raise ApiError("not_found", _("No encontrado."), 404)
+        if ratelimit.too_many_user(request, "result-image", 30, 60):
+            raise ApiError("rate_limited", _("Demasiadas peticiones. Espera un momento."), 429)
+        games = list(
+            Game.objects.filter(match=match).order_by("n_game")
+            .select_related("player_1_local", "player_2_local", "player_1_visiting", "player_2_visiting")
+            .prefetch_related("results")
+        )
+        response = HttpResponse(build_result_jpeg(match, games, match_outcome(match)), content_type="image/jpeg")
+        response["Content-Disposition"] = 'inline; filename="resultado-zyra.jpg"'
+        response["Cache-Control"] = "private, no-store"
+        return response
