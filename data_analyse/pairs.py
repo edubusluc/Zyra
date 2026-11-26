@@ -75,13 +75,13 @@ def _current_run(results):
 def club_game_log(club, season=None, match_type=None):
     """
     Partidos cerrados del club en orden cronológico (de un tipo de partido si se indica). Cada elemento:
-    {'pair': (id, id), 'local': bool, 'won': bool, 'season', 'match_id', 'date', 'n_game',
+    {'pair': (id, id), 'local': bool, 'won': bool, 'season', 'match_id', 'date', 'rival', 'n_game',
     'points', 'sets'} (``sets``: sets jugados desde el lado del club, ver data_analyse.sets).
     """
     games = (
         Game.objects
         .filter(match__club=club, match__draft_mode=False, draft_mode=False, winner__in=outcomes.WINNERS)
-        .select_related('match')
+        .select_related('match', 'match__local', 'match__visiting')
         .prefetch_related('results')
         .order_by('match__start_date', 'match_id', 'n_game')
     )
@@ -107,6 +107,7 @@ def club_game_log(club, season=None, match_type=None):
             'season': g.match.season,
             'match_id': g.match_id,
             'date': g.match.start_date,
+            'rival': g.match.rival_label,
             'n_game': g.n_game,
             'points': (g.score or 0) if won else 0,
             'sets': own_sets(next(iter(g.results.all()), None), is_local, played_only=True),
