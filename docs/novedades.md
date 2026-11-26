@@ -3,6 +3,11 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 26/11/2026 · Estadísticas: mínimo de 3 partidos en el orden por %
+
+- **Jugadores**: en la tabla de plantilla, el orden por % de victorias ya no pone primero a quien ha ganado su único partido. Encabezan quienes han jugado 3 partidos o más; el resto sale detrás y apagado, con su % visible. Parejas sigue con su propio mínimo (2).
+- **API**: `roster.min_games` dice el mínimo y cada fila trae `enough`.
+
 ## 23/11/2026 · API de la app iOS: estadísticas de «Yo» y de Equipo
 
 Nuevos `GET /api/v1/me/stats` y `GET /api/v1/teams/<id>/stats/team` (solo lectura, con `ETag`) con los mismos cálculos que la web. `core.spaces.player_history` saca las fichas de la persona sin necesitar una petición web. Sin cambios en la web.

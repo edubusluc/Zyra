@@ -350,6 +350,8 @@ class HomeMyFormTests(TestCase):
         form = self.home()["my_form"]
         self.assertEqual((form["wins"], form["losses"], form["empty"]), (3, 1, False))
         self.assertEqual([g["won"] for g in form["last_games"]], [False, True, True, True])
+        # Cada partido trae el rival y la fecha (``yyyy-MM-dd``) para pintar la lista de últimos partidos.
+        self.assertTrue(all(g["rival"] and len(g["date"]) == 10 for g in form["last_games"]))
         self.assertEqual(form["run"], {"kind": "V", "count": 3})
         self.assertEqual((form["called"], form["played"], form["played_pct"]), (4, 4, 100))
         self.assertEqual(form["by_competition"], [])

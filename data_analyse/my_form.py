@@ -129,7 +129,8 @@ def my_form(club, player, today=None, others=()):
     snp_player = next((p for p in [player, *others] if p.club.rules.has_snp), None)
     return {
         "last": results[-LAST_GAMES:],
-        "last_games": [{"won": g["won"], "code": g["code"]} for g in entries[-LAST_GAMES:]],
+        "last_games": [{"won": g["won"], "code": g["code"], "rival": g["rival"], "date": g["date"].isoformat() if g["date"] else None}
+                       for g in entries[-LAST_GAMES:]],
         "by_competition": by_competition if others else [],
         "run": pairs._current_run(results),
         "wins": wins,

@@ -48,13 +48,25 @@ class RosterRowsTests(ClubDataMixin, TestCase):
         away = self._rows(side="visitante")
         self.assertEqual((away["C"]["played"], away["C"]["wins"]), (1, 1))
 
+    def test_below_the_minimum_goes_after_in_the_pct_order(self):
+        """Con el mínimo en 2, A-D (2 partidos) encabezan y E (0) va detrás; con el de verdad (3) nadie llega."""
+        squad = list(Player.objects.filter(club=self.club, in_team=True))
+        log = pair_stats.club_game_log(self.club)
+        signup = roster_table.signup_by_player(self.club, squad)
+        self.assertEqual(roster_table.MIN_RANKED_GAMES, 3)
+        self.assertFalse(any(r["enough"] for r in roster_table.roster_rows(squad, log, signup)))
+        with mock.patch.object(roster_table, "MIN_RANKED_GAMES", 2):
+            rows = roster_table.roster_rows(squad, log, signup)
+        self.assertEqual({r["player"].name for r in rows if r["enough"]}, {"A", "B", "C", "D"})
+        self.assertEqual(rows[-1]["player"].name, "E")
+
     def test_no_minimum_everyone_who_played_counts_and_the_rest_go_last(self):
         squad = list(Player.objects.filter(club=self.club, in_team=True))
         log = pair_stats.club_game_log(self.club)
         signup = roster_table.signup_by_player(self.club, squad)
         rows = roster_table.roster_rows(squad, log, signup)
         self.assertEqual([r["player"].name for r in rows][-1], "E")  # no ha jugado
-        self.assertTrue(all(r["enough"] for r in rows if r["played"]))
+        self.assertTrue(all(r["enough"] == (r["played"] >= roster_table.MIN_RANKED_GAMES) for r in rows))
         self.assertFalse(rows[-1]["enough"])
         self.assertEqual(rows[0]["pct"], 100)
         names = [r["player"].name for r in roster_table.roster_rows(squad, log, signup, sort="name")]
@@ -89,7 +101,7 @@ class RosterPagesTests(ClubDataMixin, TestCase):
                                                            "season": "all", "match_type": "todos"})
         roster = page.context["roster"]
         self.assertEqual((roster["side"], roster["sort"]), ("local", "played"))
-        self.assertTrue(all(r["enough"] for r in roster["rows"] if r["played"]))
+        self.assertTrue(all(r["enough"] == (r["played"] >= roster_table.MIN_RANKED_GAMES) for r in roster["rows"]))
 
     def test_rows_link_to_the_player_sheet_without_table_params(self):
         page = self.client.get(reverse("team_statistics"), {"lado": "local", "season": "all", "match_type": "todos"})
@@ -133,7 +145,7 @@ class RosterSideAndMinimumTests(ClubDataMixin, TestCase):
     def test_there_is_no_minimum_selector(self):
         page = self.client.get(reverse("team_statistics"), {"season": "all", "match_type": "todos"})
         rows = page.context["roster"]["rows"]
-        self.assertTrue(all(r["enough"] for r in rows if r["played"]))
+        self.assertTrue(all(r["enough"] == (r["played"] >= roster_table.MIN_RANKED_GAMES) for r in rows))
         self.assertNotContains(page, "minimo=")
         self.assertNotContains(page, "Mínimo")
 
