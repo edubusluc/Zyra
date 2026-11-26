@@ -3,8 +3,9 @@ Tabla de plantilla de «Estadísticas · Equipo» y de la entrada de «Jugadores
 equipo con sus partidos, balance, % de victorias, % de convocatorias a las que se apunta y, en SNP, sus puntos.
 
 Sustituye a los dos Top 5 (local y visitante) y a las tarjetas «Más victorias» y «Más partidos jugados», que
-eran el mismo ranking en listas distintas. Se ordena por columna y se filtra por local o visitante. Sin
-mínimo de partidos: cuenta el % de todo el que ha jugado. Solo lógica, sin vistas.
+eran el mismo ranking en listas distintas. Se ordena por columna y se filtra por local o visitante. Todos
+los jugadores salen en la tabla, pero en el orden por % solo encabezan quienes han jugado ``MIN_RANKED_GAMES``
+partidos o más: un 100 % con un partido no puede ser el primero. Solo lógica, sin vistas.
 """
 from call.models import Call
 from players.models import joined_by
@@ -17,6 +18,8 @@ SIDES = (SIDE_ALL, SIDE_LOCAL, SIDE_VISITING)
 # Columnas por las que se ordena (``?orden=``): % de victorias por defecto.
 SORTS = ("pct", "played", "signup", "snp", "name")
 DEFAULT_SORT = "pct"
+# Partidos mínimos para encabezar el orden por %: con menos, el jugador sale detrás y apagado (``enough`` falso).
+MIN_RANKED_GAMES = 3
 
 
 def parse_options(params, has_snp):
@@ -63,9 +66,9 @@ def roster_rows(players, log, signup, side=SIDE_ALL, sort=DEFAULT_SORT, snp=None
     sale de ``signup_by_player`` y ``snp`` es ``{id jugador: fila de records.snp_ranking}`` (None sin SNP).
 
     Cada fila: ``player``, ``played``, ``wins``, ``losses``, ``pct`` (None sin partidos), ``enough`` (ha
-    jugado alguno), ``signed``, ``calls``, ``signup`` y, con SNP, ``snp``, ``delta`` (puntos), ``rank_delta``
-    (puestos) y ``rank_moved``. No hay mínimo de partidos: cuenta el % de todo el que ha jugado. Quien
-    no ha jugado ninguno va al final del orden por %; el resto, por la columna elegida.
+    jugado ``MIN_RANKED_GAMES`` o más), ``signed``, ``calls``, ``signup`` y, con SNP, ``snp``, ``delta`` (puntos), ``rank_delta``
+    (puestos) y ``rank_moved``. Todos salen en la tabla; en el orden por % quien no llega al mínimo de partidos
+    va detrás de quien sí (y entre ellos, por %); en el resto de órdenes no cuenta el mínimo.
     """
     counts = {}
     for g in log:
@@ -80,7 +83,7 @@ def roster_rows(players, log, signup, side=SIDE_ALL, sort=DEFAULT_SORT, snp=None
         sign = signup.get(p.id) or {"signed": 0, "total": 0, "pct": None}
         row = {
             "player": p, "played": played, "wins": wins, "losses": played - wins,
-            "pct": round(100 * wins / played) if played else None, "enough": played > 0,
+            "pct": round(100 * wins / played) if played else None, "enough": played >= MIN_RANKED_GAMES,
             "signed": sign["signed"], "calls": sign["total"], "signup": sign["pct"],
             "snp": None, "delta": None, "rank_delta": None,
         }
@@ -97,5 +100,5 @@ def roster_rows(players, log, signup, side=SIDE_ALL, sort=DEFAULT_SORT, snp=None
 
     if sort == "name":
         return sorted(rows, key=lambda r: (r["player"].name.casefold(), r["player"].last_name.casefold()))
-    # Por %, quien no ha jugado ninguno va detrás.
+    # Por %, quien no llega al mínimo de partidos va detrás.
     return sorted(rows, key=lambda r: (sort == "pct" and not r["enough"], *key(r)))

@@ -72,7 +72,7 @@ def _roster(club, log, season, kind, params, snp):
     signup = roster_table.signup_by_player(club, squad, season, kind, side)
     snp_rows = {r["player"].id: r for r in (snp or {}).get("rows", [])}
     rows = roster_table.roster_rows(squad, log, signup, side, sort, snp_rows)
-    return {"side": side, "sort": sort, "has_snp": has_snp,
+    return {"side": side, "sort": sort, "has_snp": has_snp, "min_games": roster_table.MIN_RANKED_GAMES,
             "rows": [{**{k: v for k, v in r.items() if k != "player"}, "player": _player(r["player"])} for r in rows]}
 
 
