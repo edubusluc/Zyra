@@ -171,7 +171,7 @@ class HomeUpcomingTests(TestCase):
 
         self.assertEqual(me(), {"state": "no_call"})
         call = Call.objects.create(match=m)
-        self.assertEqual(me(), {"state": "not_called_open"})
+        self.assertEqual(me(), {"state": "not_called_open", "answer": ""})
         call.players.add(player)
         # Que el capitán lo apuntara no es una respuesta suya: sin disponibilidad, ``answer`` va vacío.
         self.assertEqual(me(), {"state": "applied_open", "answer": ""})
