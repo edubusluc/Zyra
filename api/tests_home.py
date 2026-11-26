@@ -8,7 +8,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from api.tokens import issue_token
-from call.models import Call
+from call.models import Availability, Call
 from core.models import Membership
 from core.services import create_club
 from match.models import Game, Match
@@ -173,7 +173,12 @@ class HomeUpcomingTests(TestCase):
         call = Call.objects.create(match=m)
         self.assertEqual(me(), {"state": "not_called_open"})
         call.players.add(player)
-        self.assertEqual(me(), {"state": "applied_open"})
+        # Que el capitán lo apuntara no es una respuesta suya: sin disponibilidad, ``answer`` va vacío.
+        self.assertEqual(me(), {"state": "applied_open", "answer": ""})
+        Availability.objects.create(match=m, player=player, answer="maybe")
+        self.assertEqual(me(), {"state": "applied_open", "answer": "maybe"})
+        Availability.objects.filter(match=m, player=player).update(answer="yes")
+        self.assertEqual(me(), {"state": "applied_open", "answer": "yes"})
         call.draft_mode = False
         call.save()
         self.assertEqual(me(), {"state": "called_no_pair"})
