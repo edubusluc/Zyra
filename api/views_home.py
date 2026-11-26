@@ -77,7 +77,7 @@ def _me(status, linked, can_manage, has_games=False):
     ``unlinked`` (cuenta sin ficha enlazada y sin gestionar), ``no_call``, ``applied_open``, ``called``,
     ``called_no_pair`` (convocado y las parejas aún no están alineadas), ``called_sub`` (convocado, parejas ya alineadas y
     sin partido: suplente), ``not_called`` o ``not_called_open``. Mismas reglas que la tarjeta de la web.
-    ``applied_open`` añade ``answer``: lo que respondió el propio jugador (``yes``, ``no``, ``maybe`` o vacío); que el
+    ``applied_open`` y ``not_called_open`` añaden ``answer``: lo que respondió el propio jugador (``yes``, ``no``, ``maybe`` o vacío); que el
     capitán lo apuntara no es una respuesta suya, y la app no debe decir «Te has apuntado» si no dijo que sí.
     """
     if not linked:
@@ -93,7 +93,9 @@ def _me(status, linked, can_manage, has_games=False):
         partner = status["partner"]
         return {"state": "called", "game": game.n_game, "points": game.score,
                 "partner": partner.full_name if partner else None}
-    return {"state": "not_called" if status["closed"] else "not_called_open"}
+    if status["closed"]:
+        return {"state": "not_called"}
+    return {"state": "not_called_open", "answer": status["answer"]}
 
 
 def _upcoming(user, memberships, today):
