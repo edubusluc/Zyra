@@ -7,12 +7,15 @@ from django.http import HttpResponse
 from django.urls import reverse
 from django.utils.translation import gettext as _, ngettext
 
+from backoffice.audit import audit
 from call import availability as availability_logic
 from core import ratelimit
 from call.models import Availability, Call, ReportDelivery
 from core.competitions import competition_for
 from core.templatetags.zyra_format import date_short
-from match import league, lineup, outcomes
+from django.utils import timezone
+
+from match import league, lineup, no_show_backup, outcomes
 from match.forms import MatchDateForm
 from match.models import Game, Match
 from match.report import build_report
@@ -20,7 +23,7 @@ from match.report_pdf import render_report
 from match.notifications import admin_emails, is_past_match, report_filename, send_call_report
 from match.phase import (CLOSE_CALL, CLOSE_MATCH, CREATE_CALL, CREATE_GAMES, ENTER_RESULTS, NOTHING, STEPS, phase_for,
                          player_status)
-from match.views import OUTCOME_LABELS, validate_call, call_roster, club_score, lineup_rows, match_outcome, stage_countdown
+from match.views import no_show_score, OUTCOME_LABELS, validate_call, call_roster, club_score, lineup_rows, match_outcome, stage_countdown
 from players.models import Player
 
 from .errors import ApiError
@@ -182,6 +185,10 @@ def _actions(match, call, games, membership):
         out.append(_action("report_pdf", _("Informe PDF"), "report", reverse("call_report", args=[match.public_id])))
         if not call.draft_mode:
             out.append(_action("resend_report", _("Reenviar informe"), "report", ficha))
+    if not match.draft_mode and not match.no_show:
+        out.append(_action("reopen_match", _("Reabrir acta"), "match", ficha))
+    if match.no_show:
+        out.append(_action("undo_no_show", _("Quitar «No presentado»"), "match", ficha))
     if match.draft_mode:
         out.append(_action("edit_date", _("Cambiar fecha y hora"), "match", reverse("edit_match_date", args=[match.public_id])))
         if match.club.rules.no_show and not match.is_friendly:
@@ -507,3 +514,125 @@ class MatchLineupImageView(ApiView):
         response["Content-Disposition"] = 'inline; filename="alineacion-zyra.jpg"'
         response["Cache-Control"] = "private, no-store"
         return response
+
+
+class ReopenCallView(ApiView):
+    """``POST /api/v1/matches/<id>/reopen-call``: reabre la convocatoria cerrada (como ``match.views.reopen_call``)."""
+
+    def post(self, request, match_id):
+        """
+        Solo quien gestiona (404 si no). 409 ``cannot_reopen`` con el motivo de la web: acta cerrada, convocatoria ya
+        abierta o con parejas alineadas. Devuelve ``{"reopened": true}``.
+        """
+        match, _membership = _managed_match(request.user, match_id)
+        call = Call.objects.filter(match=match).first()
+        if call is None:
+            raise ApiError("not_found", _("No encontrado."), 404)
+        if not match.draft_mode:
+            raise ApiError("cannot_reopen", _("El acta está cerrada: reábrela primero."), 409)
+        if call.draft_mode:
+            raise ApiError("cannot_reopen", _("La convocatoria ya estaba abierta."), 409)
+        if match.games.exists():
+            raise ApiError("cannot_reopen", _("Ya hay parejas alineadas: elimínalas antes de reabrir la convocatoria."), 409)
+        call.draft_mode = True
+        call.save()
+        return json_ok({"reopened": True})
+
+
+class ReopenMatchView(ApiView):
+    """``POST /api/v1/matches/<id>/reopen``: reabre el acta cerrada (como ``match.views.reopen_match``)."""
+
+    def post(self, request, match_id):
+        """Solo quien gestiona (404 si no). 409 ``cannot_reopen`` si el acta ya estaba abierta. Devuelve ``{"reopened": true}``."""
+        match, _membership = _managed_match(request.user, match_id)
+        if match.draft_mode:
+            raise ApiError("cannot_reopen", _("El acta ya estaba abierta."), 409)
+        with transaction.atomic():
+            match.games.update(draft_mode=True)
+            match.result, match.result_points, match.draft_mode = outcomes.NONE, outcomes.NONE, True
+            match.no_show = ""
+            match.reopened_at, match.reopened_by, match.was_closed = timezone.now(), request.user, True
+            match.save()
+        return json_ok({"reopened": True})
+
+
+class ResendReportView(ApiView):
+    """``POST /api/v1/matches/<id>/resend-report``: vuelve a enviar el informe de la convocatoria cerrada."""
+
+    def post(self, request, match_id):
+        """
+        Solo quien gestiona (404 si no; también si no hay convocatoria). 409 ``cannot_resend`` si la convocatoria sigue
+        abierta; 429 a partir de 10 reenvíos por hora. Devuelve ``{"report": "sent" | "pending" | "no_email" | "failed"}``.
+        """
+        match, _membership = _managed_match(request.user, match_id)
+        call = Call.objects.filter(match=match).first()
+        if call is None:
+            raise ApiError("not_found", _("No encontrado."), 404)
+        if ratelimit.too_many_user(request, "resend-report", 10, 60 * 60):
+            raise ApiError("rate_limited", _("Demasiadas peticiones. Espera un momento."), 429)
+        if call.draft_mode:
+            raise ApiError("cannot_resend", _("Cierra la convocatoria antes de enviar el informe."), 409)
+        return json_ok({"report": _report_state(call, match, request.user, True)})
+
+
+class NoShowView(ApiView):
+    """``POST /api/v1/matches/<id>/no-show``: marca el enfrentamiento como «No presentado» (``match.views.mark_no_show``)."""
+
+    def post(self, request, match_id):
+        """
+        Cuerpo ``{"side": "own" | "rival"}``. Solo quien gestiona (404 si no). 409 ``cannot_no_show`` si la competición no
+        lo permite, es amistoso o el acta está cerrada. Devuelve ``{"no_show": side}``.
+        """
+        side = self.json_body(request).get("side")
+        if side not in (Match.NO_SHOW_OWN, Match.NO_SHOW_RIVAL):
+            raise invalid("side")
+        match, _membership = _managed_match(request.user, match_id)
+        if not competition_for(match).no_show or match.is_friendly:
+            raise ApiError("cannot_no_show", _("Este enfrentamiento no se puede marcar como no presentado."), 409)
+        if not match.draft_mode:
+            raise ApiError("cannot_no_show", _("El acta ya está cerrada: reábrela antes de marcarlo como no presentado."), 409)
+        with transaction.atomic():
+            no_show_backup.snapshot(match)
+            match.games.all().delete()
+            match.result, match.result_points = no_show_score(match, side)
+            match.no_show, match.draft_mode = side, False
+            match.save()
+        return json_ok({"no_show": side})
+
+
+class UndoNoShowView(ApiView):
+    """``POST /api/v1/matches/<id>/undo-no-show``: quita el «No presentado» y reabre el acta."""
+
+    def post(self, request, match_id):
+        """Solo quien gestiona (404 si no). 409 ``cannot_undo`` si no estaba marcado. Devuelve ``{"undone": true, "recovered": bool}``."""
+        match, _membership = _managed_match(request.user, match_id)
+        if not match.no_show:
+            raise ApiError("cannot_undo", _("Este enfrentamiento no está marcado como no presentado."), 409)
+        with transaction.atomic():
+            match.no_show = ""
+            match.result, match.result_points, match.draft_mode = outcomes.NONE, outcomes.NONE, True
+            match.was_closed = True
+            recovered = no_show_backup.restore(match)
+            match.save()
+        return json_ok({"undone": True, "recovered": bool(recovered)})
+
+
+class DeleteMatchView(ApiView):
+    """``POST /api/v1/matches/<id>/delete``: elimina un enfrentamiento abierto (``match.views.delete_match``)."""
+
+    def post(self, request, match_id):
+        """
+        Solo quien gestiona (404 si no). 403 ``forbidden`` si ya tuvo el acta cerrada y quien pide no es el capitán; 409
+        ``cannot_delete`` si el acta está cerrada. Queda en el registro de auditoría. Devuelve ``{"deleted": true}``.
+        """
+        match, membership = _managed_match(request.user, match_id)
+        if match.was_closed and not membership.is_admin:
+            raise ApiError("forbidden", _("Este enfrentamiento ya tuvo el acta cerrada: solo el capitán puede eliminarlo. "
+                                          "Puedes corregir el acta y volver a cerrarla."), 403)
+        if not match.draft_mode:
+            raise ApiError("cannot_delete", _("No se puede eliminar un enfrentamiento ya confirmado"), 409)
+        audit(request, "match.delete", match, label=str(match)[:200], club=match.club.name,
+              date=match.start_date.isoformat() if match.start_date else None, season=match.season,
+              games=match.games.count(), was_closed=match.was_closed or None)
+        match.delete()
+        return json_ok({"deleted": True})
