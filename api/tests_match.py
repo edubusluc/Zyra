@@ -794,3 +794,105 @@ class MatchLineupImageApiTests(TestCase):
         self.match.draft_mode = False
         self.match.save()
         self.assertEqual(self.image(self.captain_token).status_code, 404)
+
+
+class MatchActionsApiTests(TestCase):
+    """Acciones de la hoja «Acciones» hechas dentro de la app: reabrir, reenviar, no presentado y eliminar."""
+
+    setUp = MatchApiTests.setUp
+
+    def post(self, name, token=None, body=None, match=None):
+        """POST a la acción ``name`` con el token del capitán por defecto."""
+        match = match or self.match
+        return self.client.post(reverse(name, args=[match.public_id]), data=body or {}, content_type="application/json",
+                                HTTP_AUTHORIZATION=f"Bearer {token or self.captain_token}")
+
+    def get(self, token):
+        """GET de la ficha."""
+        return self.client.get(reverse("api_match", args=[self.match.public_id]), HTTP_AUTHORIZATION=f"Bearer {token}")
+
+    def test_player_gets_404_everywhere(self):
+        """Quien no gestiona recibe 404 y no cambia nada."""
+        for name in ("api_match_reopen_call", "api_match_reopen", "api_match_resend_report", "api_match_no_show",
+                     "api_match_undo_no_show", "api_match_delete"):
+            self.assertEqual(self.post(name, self.user_token, {"side": "own"}).status_code, 404, name)
+        self.assertTrue(Match.objects.filter(pk=self.match.pk).exists())
+
+    def test_delete_open_match(self):
+        """Un enfrentamiento abierto se elimina."""
+        self.assertEqual(self.post("api_match_delete").json(), {"deleted": True})
+        self.assertFalse(Match.objects.filter(pk=self.match.pk).exists())
+
+    def test_delete_closed_match_is_refused(self):
+        """Con el acta cerrada no se elimina."""
+        Match.objects.filter(pk=self.match.pk).update(draft_mode=False)
+        response = self.post("api_match_delete")
+        self.assertEqual((response.status_code, response.json()["error"]), (409, "cannot_delete"))
+
+    def test_manager_cannot_delete_reopened_match(self):
+        """El gestor no elimina un enfrentamiento que ya tuvo el acta cerrada; el capitán sí."""
+        manager = User.objects.create_user("gest", "gest@example.com", "Clave-Segura-123")
+        Membership.objects.create(user=manager, club=self.club, role=Membership.MANAGER)
+        _, token = issue_token(manager, "iPhone")
+        Match.objects.filter(pk=self.match.pk).update(was_closed=True)
+        self.assertEqual(self.post("api_match_delete", token).status_code, 403)
+        self.assertEqual(self.post("api_match_delete").status_code, 200)
+
+    def test_reopen_match(self):
+        """Reabrir el acta la deja abierta y anota que estuvo cerrada."""
+        Match.objects.filter(pk=self.match.pk).update(draft_mode=False)
+        self.assertEqual(self.post("api_match_reopen").status_code, 200)
+        self.match.refresh_from_db()
+        self.assertTrue(self.match.draft_mode)
+        self.assertTrue(self.match.was_closed)
+        self.assertEqual(self.post("api_match_reopen").status_code, 409)
+
+    def test_reopen_call(self):
+        """Reabre la convocatoria cerrada; con parejas alineadas lo impide."""
+        call = Call.objects.create(match=self.match, draft_mode=False)
+        self.assertEqual(self.post("api_match_reopen_call").status_code, 200)
+        call.refresh_from_db()
+        self.assertTrue(call.draft_mode)
+        self.assertEqual(self.post("api_match_reopen_call").status_code, 409)
+
+    def test_reopen_call_with_games_is_refused(self):
+        """Con parejas alineadas no se reabre la convocatoria."""
+        Call.objects.create(match=self.match, draft_mode=False)
+        Game.objects.create(match=self.match, n_game=1)
+        self.assertEqual(self.post("api_match_reopen_call").json()["error"], "cannot_reopen")
+
+    def test_resend_report_needs_closed_call(self):
+        """Solo se reenvía el informe de una convocatoria cerrada."""
+        call = Call.objects.create(match=self.match)
+        self.assertEqual(self.post("api_match_resend_report").status_code, 409)
+        call.draft_mode = False
+        call.save()
+        response = self.post("api_match_resend_report")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(response.json()["report"], ("sent", "pending", "no_email", "failed"))
+
+    def test_no_show_and_undo(self):
+        """Marca «No presentado» (cierra el acta) y lo deshace (la reabre)."""
+        self.club.competition = "lapi"
+        self.club.save()
+        response = self.post("api_match_no_show", body={"side": "rival"})
+        self.assertEqual(response.status_code, 200, response.content)
+        self.match.refresh_from_db()
+        self.assertEqual((self.match.no_show, self.match.draft_mode), ("rival", False))
+        self.assertEqual(self.post("api_match_undo_no_show").status_code, 200)
+        self.match.refresh_from_db()
+        self.assertEqual((self.match.no_show, self.match.draft_mode), ("", True))
+
+    def test_no_show_validates_side(self):
+        """Un lado desconocido es un error de validación."""
+        self.assertEqual(self.post("api_match_no_show", body={"side": "x"}).status_code, 400)
+
+    def test_undo_without_no_show_is_409(self):
+        """Quitar un «No presentado» que no existe es 409."""
+        self.assertEqual(self.post("api_match_undo_no_show").status_code, 409)
+
+    def test_actions_list_offers_reopen_for_closed_match(self):
+        """La ficha de un acta cerrada ofrece «Reabrir acta» en las acciones."""
+        Match.objects.filter(pk=self.match.pk).update(draft_mode=False)
+        keys = [a["key"] for a in self.get(self.captain_token).json()["actions"]]
+        self.assertIn("reopen_match", keys)
