@@ -144,3 +144,48 @@ class ProfileApiTests(TestCase):
         args = [str(self.club.public_id)]
         self.assertEqual(self.call("post", "api_transfer_captaincy", self.captain_token, {"member": 99999}, args=args).status_code, 409)
         self.assertEqual(self.call("post", "api_transfer_captaincy", self.captain_token, {"member": "x"}, args=args).status_code, 400)
+
+
+class OwnPlayerApiTests(ProfileApiTests):
+    """``PATCH /teams/<id>/me/player``: editar la propia ficha."""
+
+    def patch_player(self, token, data, club=None):
+        """PATCH de la ficha propia del equipo indicado."""
+        return self.call("patch", "api_own_player", token, data, args=[str(club or self.club.public_id)])
+
+    def test_edit_position_and_hand(self):
+        """Cambia posición y mano; lo que no se envía se conserva."""
+        r = self.patch_player(self.user_token, {"position": "Revés"})
+        self.assertEqual(r.status_code, 200, r.content)
+        self.assertEqual(r.json()["player"]["position"], "Revés")
+        r = self.patch_player(self.user_token, {"hand": "Zurdo"})
+        self.assertEqual(r.json()["player"]["position"], "Revés")
+        self.assertEqual(r.json()["player"]["hand"], "Zurdo")
+
+    def test_invalid_position(self):
+        """Posición desconocida: 400 con el campo."""
+        r = self.patch_player(self.user_token, {"position": "Portero"})
+        self.assertEqual(r.status_code, 400)
+        self.assertIn("position", r.json()["fields"])
+
+    def test_invalid_photo(self):
+        """Foto que no es base64: 400 en ``photo``."""
+        r = self.patch_player(self.user_token, {"photo": "###"})
+        self.assertEqual(r.status_code, 400)
+        self.assertIn("photo", r.json()["fields"])
+
+    def test_no_linked_player(self):
+        """Sin ficha enlazada en ese equipo: 404."""
+        other = User.objects.create_user("otro", "otro@example.com", PASSWORD)
+        Membership.objects.create(user=other, club=self.club, role=Membership.MEMBER)
+        _, token = issue_token(other, "iPhone")
+        self.assertEqual(self.patch_player(token, {"position": "Revés"}).status_code, 404)
+
+    def test_remove_photo(self):
+        """``remove_photo`` quita la foto."""
+        player = Player.objects.get(user=self.user)
+        player.photo = "x.jpg"
+        player.save()
+        r = self.patch_player(self.user_token, {"remove_photo": True})
+        self.assertEqual(r.status_code, 200, r.content)
+        self.assertIsNone(r.json()["player"]["photo"])
