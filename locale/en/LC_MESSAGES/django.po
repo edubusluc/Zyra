@@ -17284,3 +17284,7 @@ msgstr "Some pairs did not show up (SNP 20.2): the match sheet will close as %(o
 #: api/views_match.py
 msgid "Al cerrarla ya no se podrá apuntar ni quitar a nadie."
 msgstr "Once closed, nobody can be added or removed."
+
+#: api/views_snp.py
+msgid "Esta búsqueda ya no se puede confirmar."
+msgstr "This search can no longer be confirmed."

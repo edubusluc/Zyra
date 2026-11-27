@@ -174,6 +174,23 @@ class MyStatsView(ApiView):
         return json_ok(data)
 
 
+def _player_club(user, team_id, player_id):
+    """
+    (club, historial) de la ficha ``player_id`` en ``team_id``: el equipo si la cuenta está en él y, si no, solo cuando la ficha es
+    suya de un equipo en el que ya no está (historial de «Yo», de solo lectura, como ``my_history_player`` en la web).
+    """
+    try:
+        return membership_for_team(user, team_id).club, False
+    except ApiError:
+        active, suspended = active_memberships(user)
+        players = player_history(user, {m.club_id for m in active}, {c.id for c in suspended})
+        own = next((p for p in players if p.is_former and str(p.public_id) == str(player_id) and str(p.club.public_id) == str(team_id)),
+                   None)
+        if own is None:
+            raise
+        return own.club, True
+
+
 class PlayerStatsView(ApiView):
     """
     ``GET /api/v1/teams/<id>/stats/players/<player_id>``: la ficha de un jugador de la plantilla (la de «Yo» cuando es el propio
@@ -185,12 +202,12 @@ class PlayerStatsView(ApiView):
 
     def get(self, request, team_id, player_id):
         """``filters``, ``hero``, ``summary``, ``seasons``, ``trend``, ``set_rows``, ``game_numbers``, ``signup``, ``lineup``, ``partners``, ``squad``, ``snp`` y ``games``."""
-        membership = membership_for_team(request.user, team_id)
-        club = membership.club
+        club, history = _player_club(request.user, team_id, player_id)
         player = Player.objects.filter(public_id=player_id, club=club).first()
         if player is None:
             raise Http404("Jugador no encontrado")
-        squad = list(Player.objects.filter(club=club, in_team=True).order_by("name", "last_name"))
+        # De un equipo anterior solo se ve la ficha propia y sin la comparación con la plantilla (ya no es la suya).
+        squad = [] if history else list(Player.objects.filter(club=club, in_team=True).order_by("name", "last_name"))
         seasons_all = sorted(get_total_season(Match.objects.filter(club=club, draft_mode=False)),
                              key=lambda s: int(s.split("-")[0]), reverse=True)
         played = {g["season"] for g in build_game_log(player)}
@@ -223,7 +240,8 @@ class PlayerStatsView(ApiView):
                      "joined_season": player.joined_season, "partner": player_card.usual_partner(affinity),
                      "competition": club.competition, "has_snp": club.rules.has_snp, "snp_score": player.snp_score,
                      "snp_rank": player_card.snp_rank(player), "snp_updated": snp_updated,
-                     "snp_stale": records.snp_is_stale(snp_updated), "is_me": bool(is_me)},
+                     "snp_stale": records.snp_is_stale(snp_updated), "is_me": bool(is_me), "history": history,
+                     "club": club.name},
             "summary": {k: summary[k] for k in ("played", "wins", "losses", "pct", "points", "points_possible", "streak_type",
                                                 "streak_len", "best_win_streak", "worst_loss_streak", "local_played",
                                                 "local_wins", "local_losses", "visiting_played", "visiting_wins",

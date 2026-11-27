@@ -153,6 +153,7 @@ class PlayerStatsApiTests(ClubDataMixin, TestCase):
         caches["ratelimit"].clear()
         _, self.token = issue_token(self.user, "iPhone")
         stranger = User.objects.create_user("otro", password="pass-12345")
+        self.stranger_user = stranger
         create_club("Club Vacío", "Gijón", stranger)
         _, self.stranger_token = issue_token(stranger, "iPhone")
         self.player = Player.objects.filter(club=self.club, in_team=True).order_by("name").first()
@@ -179,6 +180,18 @@ class PlayerStatsApiTests(ClubDataMixin, TestCase):
         self.assertEqual(len(data["games"]), len(web.context["games"]))
         self.assertEqual(len(data["game_numbers"]), 5)
         self.assertEqual(data["hero"]["id"], str(self.player.public_id))
+
+    def test_former_player_sheet_is_read_only(self):
+        """Quien ya no está en el equipo ve su ficha de entonces (historial, sin comparar con la plantilla); otra cuenta, 404."""
+        Player.objects.filter(pk=self.player.pk).update(user=None, past_user=self.stranger_user)
+        data = self.get(self.stranger_token).json()
+        self.assertEqual((data["hero"]["history"], data["hero"]["club"], data["squad"]), (True, "Club A", None))
+        self.assertEqual(data["hero"]["id"], str(self.player.public_id))
+        third = User.objects.create_user("tercero", password="pass-12345")
+        create_club("Club Tres", "Gijón", third)
+        _, third_token = issue_token(third, "iPhone")
+        self.assertEqual(self.get(third_token).status_code, 404)
+        self.assertFalse(self.get(self.token).json()["hero"]["history"])
 
     def test_unknown_player_and_filters(self):
         """Un jugador de otro club da 404; una temporada o tipo desconocidos, 400."""

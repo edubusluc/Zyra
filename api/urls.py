@@ -2,7 +2,7 @@
 from django.urls import re_path
 
 from . import (views, views_account, views_apple, views_auth, views_call, views_lineup, views_results, views_club, views_devices, views_google, views_home,
-               views_create_match, views_invitations, views_legal, views_match, views_members, views_notices, views_profile, views_roster, views_setup, views_stats)
+               views_create_match, views_invitations, views_legal, views_match, views_members, views_notices, views_profile, views_own_team, views_penalties, views_roster, views_setup, views_snp, views_stats)
 
 urlpatterns = [
     re_path(r"^auth/login/?$", views_auth.LoginView.as_view(), name="api_login"),
@@ -27,6 +27,9 @@ urlpatterns = [
     re_path(r"^matches/new/?$", views_create_match.NewMatchView.as_view(), name="api_match_new"),
     re_path(r"^matches/calendar/?$", views_create_match.MatchesCalendarView.as_view(), name="api_matches_calendar"),
     re_path(r"^matches/?$", views_create_match.MatchesView.as_view(), name="api_matches"),
+    re_path(r"^matches/(?P<match_id>[\w-]+)/penalties/?$", views_penalties.PenaltiesView.as_view(), name="api_match_penalties"),
+    re_path(r"^matches/(?P<match_id>[\w-]+)/penalties/(?P<penalty_id>[\w-]+)/?$", views_penalties.PenaltyView.as_view(),
+            name="api_match_penalty"),
     re_path(r"^matches/(?P<match_id>[\w-]+)/?$", views_match.MatchView.as_view(), name="api_match"),
     re_path(r"^matches/(?P<match_id>[\w-]+)/close-call/?$", views_match.CloseCallView.as_view(), name="api_match_close_call"),
     re_path(r"^matches/(?P<match_id>[\w-]+)/reopen-call/?$", views_match.ReopenCallView.as_view(), name="api_match_reopen_call"),
@@ -77,6 +80,13 @@ urlpatterns = [
     re_path(r"^me/password/?$", views_profile.PasswordView.as_view(), name="api_profile_password"),
     re_path(r"^me/sessions/revoke-others/?$", views_profile.RevokeOthersView.as_view(), name="api_profile_revoke_others"),
     re_path(r"^teams/(?P<team_id>[\w-]+)/roster/?$", views_roster.RosterView.as_view(), name="api_roster"),
+    re_path(r"^teams/(?P<team_id>[\w-]+)/snp-account/?$", views_snp.SnpAccountView.as_view(), name="api_snp_account"),
+    re_path(r"^teams/(?P<team_id>[\w-]+)/snp-import/?$", views_snp.SnpImportView.as_view(), name="api_snp_import"),
+    re_path(r"^teams/(?P<team_id>[\w-]+)/snp-import/(?P<import_id>[\w-]+)/confirm/?$", views_snp.SnpImportConfirmView.as_view(),
+            name="api_snp_import_confirm"),
+    re_path(r"^teams/(?P<team_id>[\w-]+)/snp-import/(?P<import_id>[\w-]+)/cancel/?$", views_snp.SnpImportCancelView.as_view(),
+            name="api_snp_import_cancel"),
+    re_path(r"^teams/(?P<team_id>[\w-]+)/own-team/?$", views_own_team.OwnTeamView.as_view(), name="api_own_team"),
     re_path(r"^legal/?$", views_legal.LegalListView.as_view(), name="api_legal"),
     re_path(r"^legal/(?P<slug>[\w-]+)/?$", views_legal.LegalDocumentView.as_view(), name="api_legal_document"),
     re_path(r"^teams/(?P<team_id>[\w-]+)/members/?$", views_members.MembersView.as_view(), name="api_members"),
