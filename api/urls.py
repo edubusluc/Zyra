@@ -2,7 +2,7 @@
 from django.urls import re_path
 
 from . import (views, views_account, views_apple, views_auth, views_call, views_lineup, views_results, views_club, views_devices, views_google, views_home,
-               views_create_match, views_invitations, views_legal, views_match, views_members, views_notices, views_profile, views_roster, views_setup, views_snp, views_stats)
+               views_create_match, views_invitations, views_legal, views_match, views_members, views_notices, views_profile, views_penalties, views_roster, views_setup, views_snp, views_stats)
 
 urlpatterns = [
     re_path(r"^auth/login/?$", views_auth.LoginView.as_view(), name="api_login"),
@@ -27,6 +27,9 @@ urlpatterns = [
     re_path(r"^matches/new/?$", views_create_match.NewMatchView.as_view(), name="api_match_new"),
     re_path(r"^matches/calendar/?$", views_create_match.MatchesCalendarView.as_view(), name="api_matches_calendar"),
     re_path(r"^matches/?$", views_create_match.MatchesView.as_view(), name="api_matches"),
+    re_path(r"^matches/(?P<match_id>[\w-]+)/penalties/?$", views_penalties.PenaltiesView.as_view(), name="api_match_penalties"),
+    re_path(r"^matches/(?P<match_id>[\w-]+)/penalties/(?P<penalty_id>[\w-]+)/?$", views_penalties.PenaltyView.as_view(),
+            name="api_match_penalty"),
     re_path(r"^matches/(?P<match_id>[\w-]+)/?$", views_match.MatchView.as_view(), name="api_match"),
     re_path(r"^matches/(?P<match_id>[\w-]+)/close-call/?$", views_match.CloseCallView.as_view(), name="api_match_close_call"),
     re_path(r"^matches/(?P<match_id>[\w-]+)/reopen-call/?$", views_match.ReopenCallView.as_view(), name="api_match_reopen_call"),
