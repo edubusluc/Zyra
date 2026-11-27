@@ -27,6 +27,12 @@ va autenticada con un **token de dispositivo**. El código está en `api/`; las 
 | Método y ruta | Público | Para qué |
 |---|---|---|
 | `GET /me` | no | Arranque de la app: cuenta, equipos con rol, temporada y capacidades. Con `ETag` (304 si no cambió) |
+| `GET /me/profile` | no | «Mi perfil»: cuenta, ficha por equipo, preferencias y capitanías con posibles sucesores |
+| `PATCH /me/preferences` | no | Cambia preferencias (booleanos y `monthly_scope`/`report_scope`; este último solo el capitán) |
+| `POST /me/email` | no | Cambia el email con la contraseña actual y envía la confirmación (409 `no_password` en cuentas de Google; 429 a las 5/h) |
+| `POST /me/password` | no | Cambia o añade la contraseña (`new_password`, `current_password` si ya hay; 403 `wrong_password`, 400 `weak_password`); revoca los demás dispositivos y deja este |
+| `POST /me/sessions/revoke-others` | no | Cierra la sesión en los demás dispositivos: `{"closed": n}` |
+| `POST /teams/<id>/transfer-captaincy` | no | El capitán traspasa la capitanía (`{"member": id}` de `captaincies[].successors`); él queda como miembro; 409 `cannot_transfer` |
 | `GET /me/stats` | no | «Yo» (Mis estadísticas): lo de la persona en todas sus fichas, con filtros `season` y `match_type`. Con `ETag` |
 | `GET /teams/<id>/stats/team` | no | Estadísticas · Equipo del equipo `<id>` (cualquier miembro): balance, forma, puntos, sets, récords, plantilla, SNP y asistencia. Con `ETag` |
 | `GET /teams/<id>/stats/players/<player_id>` | no | Ficha de un jugador de la plantilla (la de «Yo» si es el propio): cabecera, cifras, temporadas, sets, convocatorias, compañeros, frente a la plantilla, SNP y partidos. Filtros `season` y `match_type`. Con `ETag` |

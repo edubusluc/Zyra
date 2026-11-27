@@ -2,7 +2,7 @@
 from django.urls import re_path
 
 from . import (views, views_account, views_apple, views_auth, views_call, views_lineup, views_results, views_club, views_devices, views_google, views_home,
-               views_create_match, views_invitations, views_match, views_notices, views_setup, views_stats)
+               views_create_match, views_invitations, views_match, views_notices, views_profile, views_setup, views_stats)
 
 urlpatterns = [
     re_path(r"^auth/login/?$", views_auth.LoginView.as_view(), name="api_login"),
@@ -69,6 +69,13 @@ urlpatterns = [
             views_stats.PairStatsView.as_view(), name="api_pair_stats"),
     re_path(r"^teams/(?P<team_id>[\w-]+)/stats/rivals/?$", views_stats.RivalsStatsView.as_view(), name="api_rivals_stats"),
     re_path(r"^teams/(?P<team_id>[\w-]+)/stats/rival/?$", views_stats.RivalStatsView.as_view(), name="api_rival_stats"),
+    re_path(r"^me/profile/?$", views_profile.ProfileView.as_view(), name="api_profile"),
+    re_path(r"^me/preferences/?$", views_profile.PreferencesView.as_view(), name="api_profile_preferences"),
+    re_path(r"^me/email/?$", views_profile.EmailChangeView.as_view(), name="api_profile_email"),
+    re_path(r"^me/password/?$", views_profile.PasswordView.as_view(), name="api_profile_password"),
+    re_path(r"^me/sessions/revoke-others/?$", views_profile.RevokeOthersView.as_view(), name="api_profile_revoke_others"),
+    re_path(r"^teams/(?P<team_id>[\w-]+)/transfer-captaincy/?$", views_profile.TransferCaptaincyView.as_view(),
+            name="api_transfer_captaincy"),
     re_path(r"^me/stats/?$", views_stats.MyStatsView.as_view(), name="api_my_stats"),
     re_path(r"^me/?$", views.MeView.as_view(), name="api_me"),
     re_path(r"^ping/?$", views.PingView.as_view(), name="api_ping"),
