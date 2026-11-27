@@ -174,12 +174,14 @@ class SnpSyncView(ApiView):
 
     def post(self, request):
         """
-        Cuerpo ``{"team_id"}``, solo capitán. Mismas condiciones que la web: cuenta SNP registrada (409 ``no_account``),
+        Cuerpo ``{"team_id", "review"?}``, solo capitán. Con ``review`` la búsqueda no se confirma sola: queda ``ready`` para
+        revisarla en ``GET /teams/<id>/snp-import``. Mismas condiciones que la web: cuenta SNP registrada (409 ``no_account``),
         servicio activo (503 ``service_off``), límite por hora (429), no hecho ya o bloqueado (409 ``closed``), cuenta cambiada tras
         un fallo (409 ``same_account``) y espera entre búsquedas (429 ``wait``). Si hay una en curso no crea otra.
-        Devuelve ``{"started": bool}``; la búsqueda se confirma sola al terminar.
+        Devuelve ``{"started": bool, "import_id"}``; sin ``review`` la búsqueda se confirma sola al terminar.
         """
-        m = _membership(request, self.json_body(request), admin=True)
+        body = self.json_body(request)
+        m = _membership(request, body, admin=True)
         club = m.club
         if not SnpAccount.objects.filter(club=club).exists():
             raise ApiError("no_account", _("Primero registra la cuenta SNP del capitán."), 409)
@@ -189,8 +191,9 @@ class SnpSyncView(ApiView):
             raise ApiError("rate_limited", _("Demasiadas peticiones. Espera un momento."), 429)
         if snp_import.web_import_done(club) or snp_import.web_blocked(club):
             raise ApiError("closed", _("Esta temporada ya has completado el equipo desde SNP o ha fallado varias veces."), 409)
-        if snp_import.active_import(club):
-            return json_ok({"started": False})
+        active = snp_import.active_import(club)
+        if active:
+            return json_ok({"started": False, "import_id": str(active.public_id)})
         if snp_import.account_unchanged_after_failure(club):
             raise ApiError("same_account", _("SNP no aceptó el usuario o la contraseña. Cámbialos en la cuenta SNP antes de volver a intentarlo."), 409)
         wait = snp_import.search_limit(club)
@@ -198,8 +201,8 @@ class SnpSyncView(ApiView):
             raise ApiError("wait", _("Has buscado tu equipo en SNP varias veces seguidas. Para no saturar SNP, "
                                      "podrás volver a intentarlo a partir del %(date)s.")
                            % {"date": f"{timezone.localtime(wait):%d/%m/%Y %H:%M}"}, 429)
-        snp_import.start_search(club, request.user, auto_confirm=True)
-        return json_ok({"started": True})
+        team_import = snp_import.start_search(club, request.user, auto_confirm=not body.get("review"))
+        return json_ok({"started": True, "import_id": str(team_import.public_id)})
 
 
 class SnpUpdateRequestView(ApiView):
