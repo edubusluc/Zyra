@@ -110,3 +110,15 @@ class PhaseWithNoShowGamesTests(PairNoShowTests):
             Result.objects.create(game=Game.objects.get(match=self.match, n_game=n), set1_local=6, set1_visiting=2,
                                   set2_local=6, set2_visiting=3)
         self.assertEqual(match_phase.phase_for(self.match).action, match_phase.CLOSE_MATCH)
+
+    def test_close_confirm_warns_about_the_forced_score(self):
+        """El aviso de cerrar el acta de la ficha dice el marcador previsto cuando hay parejas sin presentar."""
+        for n in range(1, 4):
+            game = Game.objects.get(match=self.match, n_game=n)
+            game.no_show = Game.NO_SHOW_OWN
+            game.save(update_fields=["no_show"])
+        for n in (4, 5):
+            Result.objects.create(game=Game.objects.get(match=self.match, n_game=n), set1_local=6, set1_visiting=2,
+                                  set2_local=6, set2_visiting=3)
+        page = self.client.get(reverse("call_for_match", args=[self.match.public_id]))
+        self.assertContains(page, "el acta se cerrará con Derrota 0-12")

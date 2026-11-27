@@ -17,7 +17,7 @@ from .forms import MatchForm, MatchDateForm
 from .models import Match, Game, Result
 from . import league, lineup, month_view, pair_no_show, phase as match_phase
 from .notifications import admin_emails, is_old_match, is_past_match, send_call_report, report_filename
-from .result_email import notify_match_closed
+from .result_email import notify_match_closed, recipients as result_recipients
 from call.models import ReportDelivery
 from .report import build_report, suggested_lineups
 from .report_pdf import render_report
@@ -1045,6 +1045,7 @@ def _ficha_page(request, match, history=False):
         "game_for_match": games,
         "games_count": len(games),
         "results_locked": any(g.result for g in games),
+        "close_warning": close_warning(close_preview(match)) if match_phase.CLOSE_MATCH == phase.action and request.membership.can_manage else "",
         "results_games_label": ", ".join(_("Partido %(n)s") % {"n": g.n_game} for g in games if g.result),
         "match": match,
         "convocados": convocados,
@@ -1491,6 +1492,52 @@ def valid_close_match(games,match):
             "games": (", ".join(names[:-1]) + _(" y ") + names[-1]) if len(names) > 1 else names[0]}
 
     return True, None
+
+def close_preview(match):
+    """
+    Marcador con el que se cerraría el acta de ``match``, sin guardar nada (lo usa la hoja «Cerrar acta» de la app).
+
+    Devuelve ``{"can_close", "reason", "outcome", "own_points", "rival_points", "own_missing", "rival_missing",
+    "tiebreak", "recipients"}``: ``outcome`` es «V», «D» o «E» desde el punto de vista del club (None si no se puede
+    cerrar); ``own_missing`` y ``rival_missing`` cuentan las parejas no presentadas de cada equipo; ``tiebreak``
+    es True si el empate a puntos lo decide el partido de desempate (Reto y Play Off); ``recipients`` es a
+    cuántas cuentas llegaría el correo del resultado (0 si no se envía).
+    """
+    games = list(match.games.prefetch_related("results"))
+    valid, reason = valid_close_match(games, match)
+    data = {"can_close": bool(valid), "reason": "" if valid else str(reason), "outcome": None, "own_points": None,
+            "rival_points": None, "own_missing": 0, "rival_missing": 0, "tiebreak": False, "recipients": 0}
+    if not valid:
+        return data
+    competition = competition_for(match)
+    forced = pair_no_show.apply(match, games, competition) if competition.pair_no_show else None
+    points_local, points_visiting = calculate_points(games)
+    result = forced or determine_match_result(points_local, points_visiting, match, games)
+    own_local = match.own_is_local
+    own_points, rival_points = (points_local, points_visiting) if own_local else (points_visiting, points_local)
+    if result == outcomes.LOCAL_WIN:
+        outcome = "V" if own_local else "D"
+    elif result == outcomes.VISITING_WIN:
+        outcome = "V" if match.own_is_visiting else "D"
+    else:
+        outcome = "E"
+    data.update(
+        outcome=outcome, own_points=own_points, rival_points=rival_points,
+        own_missing=sum(1 for g in games if g.no_show in (Game.NO_SHOW_OWN, Game.NO_SHOW_BOTH)),
+        rival_missing=sum(1 for g in games if g.no_show in (Game.NO_SHOW_RIVAL, Game.NO_SHOW_BOTH)),
+        tiebreak=bool(match.no_draw and points_local == points_visiting and not forced))
+    notifies = match.reopened_at is None and not is_old_match(match)
+    data["recipients"] = len(result_recipients(match)) if notifies else 0
+    return data
+
+
+def close_warning(preview):
+    """Aviso de la web al cerrar el acta con parejas no presentadas (marcador previsto), o cadena vacía si no hace falta."""
+    if not preview.get("can_close") or not (preview["own_missing"] or preview["rival_missing"]):
+        return ""
+    return _("Hay parejas sin presentar (SNP 20.2): el acta se cerrará con %(outcome)s %(own)s-%(rival)s.") % {
+        "outcome": OUTCOME_LABELS[preview["outcome"]], "own": preview["own_points"], "rival": preview["rival_points"]}
+
 
 def close_match_now(match, confirm_future=False, resend_email=False):
     """

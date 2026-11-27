@@ -46,6 +46,8 @@ urlpatterns = [
     re_path(r"^matches/(?P<match_id>[\w-]+)/games/(?P<game_id>[\w-]+)/no-show/?$", views_results.GameNoShowView.as_view(),
             name="api_game_no_show"),
     re_path(r"^matches/(?P<match_id>[\w-]+)/close/?$", views_results.CloseMatchView.as_view(), name="api_match_close"),
+    re_path(r"^matches/(?P<match_id>[\w-]+)/close-preview/?$", views_results.CloseMatchPreviewView.as_view(),
+            name="api_match_close_preview"),
     re_path(r"^matches/(?P<match_id>[\w-]+)/lineup/?$", views_lineup.MatchLineupView.as_view(), name="api_match_lineup"),
     re_path(r"^matches/(?P<match_id>[\w-]+)/call/?$", views_call.MatchCallView.as_view(), name="api_match_call"),
     re_path(r"^matches/(?P<match_id>[\w-]+)/availability-link/?$", views_match.AvailabilityLinkView.as_view(),

@@ -23,7 +23,7 @@ from match.report_pdf import render_report
 from match.notifications import admin_emails, is_past_match, report_filename, send_call_report
 from match.phase import (CLOSE_CALL, CLOSE_MATCH, CREATE_CALL, CREATE_GAMES, ENTER_RESULTS, NOTHING, STEPS, phase_for,
                          player_status)
-from match.views import no_show_score, OUTCOME_LABELS, validate_call, call_roster, club_score, lineup_rows, match_outcome, stage_countdown
+from match.views import no_show_score, OUTCOME_LABELS, validate_call, call_roster, club_score, lineup_rows, match_outcome, stage_countdown, valid_close_match
 from players.models import Player
 
 from .errors import ApiError
@@ -181,6 +181,10 @@ def _actions(match, call, games, membership):
                            reason=_("Todos los partidos tienen resultado: no se pueden cambiar las parejas. "
                                     "Borra el resultado del partido para poder hacerlo.") if all_results else None))
         out.append(_action("enter_results", _("Poner resultados"), "pairs", reverse("enter_results", args=[match.public_id])))
+        if match.draft_mode:
+            can_close, close_reason = valid_close_match(games, match)
+            out.append(_action("close_match", _("Cerrar acta"), "pairs", ficha, locked=not can_close,
+                               reason=close_reason if not can_close else None))
     if call is not None:
         out.append(_action("report_pdf", _("Informe PDF"), "report", reverse("call_report", args=[match.public_id])))
         if not call.draft_mode:
