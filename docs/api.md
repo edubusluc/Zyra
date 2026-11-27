@@ -36,6 +36,16 @@ va autenticada con un **token de dispositivo**. El código está en `api/`; las 
 | `POST /teams/<id>/transfer-captaincy` | no | El capitán traspasa la capitanía (`{"member": id}` de `captaincies[].successors`); él queda como miembro; 409 `cannot_transfer` |
 | `GET /teams/<id>/roster` | no | Plantilla del equipo: `team` (con `max_roster`), `can_manage`, `in_team`, `can_copy` y `players` (nombre, foto, posición, mano, `role`, `linked`, `in_team`). Quien gestiona ve también las bajas |
 | `GET`/`POST /teams/<id>/copy` | no | Copiar jugadores desde el equipo de otra competición (SNP ↔ LAPI; capitán o gestor en los dos). GET (`?from=`): `target`, `source`, `sources`, `in_team`, `max_roster` y `candidates` (`status`: `copy`, `invite`, `member`, `already`, `other_team`; `match`). POST `{from, players: [ids]}`: copia y devuelve `copied`, `invited`, `skipped`, `in_team` y `over_limit`; 404 sin otro equipo del que copiar |
+| `GET /teams/<id>/members` | no | Miembros del equipo con `role` (`captain`, `manager`, `member`). El capitán ve además `email`, las acciones posibles (`can_make_manager`, `can_remove_manager`, `can_transfer`, `can_remove`), `managers_full`, `invitations` (pendientes, con `url` y `share_text`) y `link` (enlace compartido vigente); el resto, solo usuario y rol |
+| `POST /teams/<id>/invitations` | no | Invita por email (capitán): `{email}`; 400 `validation_error` (`fields.email`), 502 `email_failed`; devuelve `invitation` |
+| `POST /teams/<id>/invitations/link` | no | Genera el enlace compartido (capitán); el anterior deja de valer (`replaced`) |
+| `POST /teams/<id>/invitations/<id>/revoke` | no | Anula una invitación pendiente (capitán) |
+| `POST /teams/<id>/members/<id>/manager` | no | `{enable}`: hace gestor o devuelve a miembro (capitán); 409 `cannot_change` (máximo dos gestores) |
+| `POST /teams/<id>/members/<id>/transfer` | no | Traspasa la capitanía a ese miembro (capitán); 409 `cannot_transfer` |
+| `POST /teams/<id>/members/<id>/remove` | no | Da de baja a un miembro y le avisa por correo (capitán); 409 `cannot_remove` |
+| `POST /teams/<id>/leave` | no | Abandona el equipo; el capitán con más miembros: 409 `cannot_leave`; el único miembro cierra el equipo con `{confirm_name}` (409 `confirm_name`) |
+| `GET /legal` | no | Documentos legales: `privacy`, `terms` y `cookies` |
+| `GET /legal/<slug>` | no | El documento en español como `title`, `updated` y `blocks` (`heading`, `paragraph`, `list`, con negrita y enlaces en Markdown) |
 | `POST /teams/<id>/players` | no | Alta de jugador (gestores): `name`, `last_name`, `position`, `hand`, `joined_season`, `photo`. `check: true` solo valida; 409 `similar_players` si hay uno parecido, y se repite con `confirm_similar: true` |
 | `PATCH /players/<id>` | no | Edita un jugador (gestores): nombre, posición, mano, temporada, `photo` y `remove_photo` |
 | `POST /players/<id>/leave` | no | Baja de la plantilla (como la web: con cuenta enlazada solo el capitán; el capitán no se da de baja); 409 `cannot_leave`; devuelve `open_matches` y `roster_empty` |

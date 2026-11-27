@@ -2,7 +2,7 @@
 from django.urls import re_path
 
 from . import (views, views_account, views_apple, views_auth, views_call, views_lineup, views_results, views_club, views_devices, views_google, views_home,
-               views_create_match, views_invitations, views_match, views_notices, views_profile, views_roster, views_setup, views_stats)
+               views_create_match, views_invitations, views_legal, views_match, views_members, views_notices, views_profile, views_roster, views_setup, views_stats)
 
 urlpatterns = [
     re_path(r"^auth/login/?$", views_auth.LoginView.as_view(), name="api_login"),
@@ -75,6 +75,20 @@ urlpatterns = [
     re_path(r"^me/password/?$", views_profile.PasswordView.as_view(), name="api_profile_password"),
     re_path(r"^me/sessions/revoke-others/?$", views_profile.RevokeOthersView.as_view(), name="api_profile_revoke_others"),
     re_path(r"^teams/(?P<team_id>[\w-]+)/roster/?$", views_roster.RosterView.as_view(), name="api_roster"),
+    re_path(r"^legal/?$", views_legal.LegalListView.as_view(), name="api_legal"),
+    re_path(r"^legal/(?P<slug>[\w-]+)/?$", views_legal.LegalDocumentView.as_view(), name="api_legal_document"),
+    re_path(r"^teams/(?P<team_id>[\w-]+)/members/?$", views_members.MembersView.as_view(), name="api_members"),
+    re_path(r"^teams/(?P<team_id>[\w-]+)/members/(?P<member_id>[\w-]+)/manager/?$", views_members.MemberManagerView.as_view(),
+            name="api_member_manager"),
+    re_path(r"^teams/(?P<team_id>[\w-]+)/members/(?P<member_id>[\w-]+)/transfer/?$", views_members.MemberTransferView.as_view(),
+            name="api_member_transfer"),
+    re_path(r"^teams/(?P<team_id>[\w-]+)/members/(?P<member_id>[\w-]+)/remove/?$", views_members.MemberRemoveView.as_view(),
+            name="api_member_remove"),
+    re_path(r"^teams/(?P<team_id>[\w-]+)/invitations/?$", views_members.InvitationsView.as_view(), name="api_invitations"),
+    re_path(r"^teams/(?P<team_id>[\w-]+)/invitations/link/?$", views_members.InvitationLinkView.as_view(), name="api_invitation_link"),
+    re_path(r"^teams/(?P<team_id>[\w-]+)/invitations/(?P<invitation_id>[\w-]+)/revoke/?$", views_members.RevokeInvitationView.as_view(),
+            name="api_invitation_revoke"),
+    re_path(r"^teams/(?P<team_id>[\w-]+)/leave/?$", views_members.LeaveTeamView.as_view(), name="api_leave_team"),
     re_path(r"^teams/(?P<team_id>[\w-]+)/copy/?$", views_roster.CopyPlayersView.as_view(), name="api_copy_players"),
     re_path(r"^teams/(?P<team_id>[\w-]+)/players/?$", views_roster.CreatePlayerView.as_view(), name="api_create_player"),
     re_path(r"^players/(?P<player_id>[\w-]+)/leave/?$", views_roster.LeaveView.as_view(), name="api_player_leave"),
