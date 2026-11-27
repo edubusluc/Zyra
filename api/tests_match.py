@@ -195,6 +195,15 @@ class CloseCallApiTests(TestCase):
         self._call(3)
         self.assertEqual(self.post(self.captain_token, {"allow_short": "si"}).status_code, 400)
 
+    def test_short_close_confirmation_does_not_repeat_the_count(self):
+        """Cerrando por debajo del mínimo el aviso dice el recuento una sola vez."""
+        self._call(4)
+        confirm = self.client.get(reverse("api_match", args=[self.match.public_id]),
+                                  HTTP_AUTHORIZATION=f"Bearer {self.captain_token}").json()["primary"]["confirm"]
+        self.assertTrue(confirm["allow_short"])
+        self.assertIn("menos del mínimo", confirm["message"])
+        self.assertNotIn("Se cierra la convocatoria con", confirm["message"])
+
     def test_primary_close_call_carries_confirmation(self):
         """«Cerrar convocatoria» trae el aviso de la web: título, texto, acción y, si procede, casilla."""
         from core.competitions import competition_for
