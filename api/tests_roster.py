@@ -122,3 +122,54 @@ class RosterApiTests(TestCase):
         create_club("Club Sur", "Gijón", other, player_name="Eva", player_last_name="Mon")
         _, token = issue_token(other, "iPhone")
         self.assertEqual(self.call("patch", "api_player", token, {"name": "X"}, args=[self.free.public_id]).status_code, 404)
+
+
+class CopyPlayersApiTests(TestCase):
+    """Copiar jugadores del equipo SNP al de LAPI de la misma cuenta."""
+
+    def setUp(self):
+        """Un capitán con dos equipos (SNP y LAPI) y jugadores en el de SNP."""
+        cache.clear()
+        caches["ratelimit"].clear()
+        self.captain = User.objects.create_user("capi2", "capi2@example.com", PASSWORD)
+        self.snp = create_club("Club SNP", "Gijón", self.captain, competition="snp", player_name="Ana", player_last_name="Ruiz")
+        self.lapi = create_club("Club LAPI", "Gijón", self.captain, competition="lapi", player_name="Ana", player_last_name="Ruiz")
+        self.free = Player.objects.create(club=self.snp, name="Sergio", last_name="Pardo", in_team=True)
+        _, self.token = issue_token(self.captain, "iPhone")
+        self.team = str(self.lapi.public_id)
+
+    def call(self, method, data=None, team=None):
+        """Llama a copiar jugadores del equipo ``team`` (por defecto, el de LAPI)."""
+        return getattr(self.client, method)(reverse("api_copy_players", args=[team or self.team]), data=data,
+                                            content_type="application/json", HTTP_AUTHORIZATION=f"Bearer {self.token}")
+
+    def test_candidates_list_status_of_each_player(self):
+        """Sergio se puede copiar y Ana ya tiene ficha en LAPI."""
+        data = self.call("get").json()
+        status = {c["full_name"]: c["status"] for c in data["candidates"]}
+        self.assertEqual(status["Sergio Pardo"], "copy")
+        self.assertEqual(status["Ana Ruiz"], "already")
+        self.assertEqual(data["source"]["id"], str(self.snp.public_id))
+
+    def test_copy_creates_the_sheet(self):
+        """Copiar a Sergio crea su ficha en LAPI marcada como copia."""
+        res = self.call("post", {"from": str(self.snp.public_id), "players": [str(self.free.public_id)]}).json()
+        self.assertEqual(res["copied"], 1)
+        self.assertTrue(Player.objects.filter(club=self.lapi, name="Sergio", copied_from=self.free).exists())
+
+    def test_roster_reports_can_copy(self):
+        """La plantilla avisa de que hay de dónde copiar."""
+        res = self.client.get(reverse("api_roster", args=[self.team]), HTTP_AUTHORIZATION=f"Bearer {self.token}").json()
+        self.assertTrue(res["can_copy"])
+
+    def test_without_another_team_is_404(self):
+        """Quien solo tiene un equipo no puede copiar: 404."""
+        other = User.objects.create_user("solo", "solo@example.com", PASSWORD)
+        club = create_club("Solo", "Gijón", other, competition="snp", player_name="Eva", player_last_name="Gil")
+        _, token = issue_token(other, "iPhone")
+        res = self.client.get(reverse("api_copy_players", args=[str(club.public_id)]), HTTP_AUTHORIZATION=f"Bearer {token}")
+        self.assertEqual(res.status_code, 404)
+
+    def test_invalid_players_is_400(self):
+        """Si ``players`` no es una lista: 400."""
+        self.assertEqual(self.call("post", {"players": "Sergio"}).status_code, 400)
