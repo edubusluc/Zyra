@@ -17275,3 +17275,8 @@ msgstr "Not enough data"
 #, python-format
 msgid "%(label)s: sin datos suficientes"
 msgstr "%(label)s: not enough data"
+
+#: match/views.py
+#, python-format
+msgid "Hay parejas sin presentar (SNP 20.2): el acta se cerrará con %(outcome)s %(own)s-%(rival)s."
+msgstr "Some pairs did not show up (SNP 20.2): the match sheet will close as %(outcome)s %(own)s-%(rival)s."

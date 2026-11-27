@@ -761,6 +761,39 @@ class MatchResultsApiTests(TestCase):
         self.assertEqual(self.put(games[0], {"sets": [[6, 0], [6, 0]]}).json()["error"], "locked")
 
 
+    def preview(self, token=None):
+        """GET de la vista previa del cierre del acta."""
+        return self.client.get(reverse("api_match_close_preview", args=[self.match.public_id]),
+                               **self.auth(token or self.captain_token))
+
+    def test_close_preview_shows_the_score_before_closing(self):
+        """Con todo jugado da el marcador previsto sin cerrar; solo gestores; con el acta cerrada 409."""
+        games = self.lined_up()
+        self.assertEqual(self.preview(self.user_token).status_code, 404)
+        self.assertFalse(self.preview().json()["can_close"])
+        for game in games:
+            self.put(game, {"sets": [[6, 3], [6, 4]]})
+        data = self.preview().json()
+        self.assertEqual((data["can_close"], data["outcome"], data["own_points"], data["rival_points"]), (True, "V", 12, 0))
+        self.assertEqual((data["own_missing"], data["rival_missing"], data["future"]), (0, 0, True))
+        self.match.refresh_from_db()
+        self.assertTrue(self.match.draft_mode)
+        self.client.post(reverse("api_match_close", args=[self.match.public_id]), {"confirm_future": True},
+                         content_type="application/json", **self.auth(self.captain_token))
+        self.assertEqual(self.preview().status_code, 409)
+
+    def test_close_preview_with_two_missing_pairs_is_a_12_0_defeat(self):
+        """SNP 20.2: con dos parejas propias sin presentar se pierde 0-12 aunque se ganen las demás."""
+        games = self.lined_up()
+        for game in games[:3]:
+            self.put(game, {"sets": [[6, 3], [6, 4]]})
+        for game in games[3:]:
+            self.client.post(reverse("api_game_no_show", args=[self.match.public_id, game.public_id]), {"side": "own"},
+                            content_type="application/json", **self.auth(self.captain_token))
+        data = self.preview().json()
+        self.assertEqual((data["outcome"], data["own_points"], data["rival_points"], data["own_missing"]), ("D", 0, 12, 2))
+
+
 class MatchLineupImageApiTests(TestCase):
     """``GET /matches/<id>/lineup.jpg``: imagen de la alineación para compartir."""
 

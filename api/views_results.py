@@ -7,7 +7,7 @@ from django.utils.translation import gettext as _
 
 from match import outcomes
 from match.models import Game, Result
-from match.views import _mark_pair_no_show, close_match_now, valid_close_match
+from match.views import _mark_pair_no_show, close_match_now, close_preview, valid_close_match
 
 from .errors import ApiError
 from .fields import invalid
@@ -187,3 +187,21 @@ class CloseMatchView(ApiView):
         if code != "closed":
             raise ApiError("future_date" if code == "future" else "cannot_close", str(message), 409)
         return json_ok({"closed": True, "summary": str(message)})
+
+
+class CloseMatchPreviewView(ApiView):
+    """``GET /api/v1/matches/<id>/close-preview``: marcador con el que se cerraría el acta, sin cerrarla."""
+
+    def get(self, request, match_id):
+        """
+        Solo quien gestiona (404 si no). Devuelve lo de ``match.views.close_preview``: ``can_close`` y ``reason``,
+        ``outcome`` (``V``/``D``/``E``), ``own_points``, ``rival_points``, ``own_missing`` y ``rival_missing`` (parejas
+        no presentadas), ``tiebreak`` (empate decidido por el partido de desempate), ``recipients`` (cuentas que recibirán el
+        correo) y ``future`` si la fecha aún no ha llegado.
+        """
+        match, _membership = _managed_match(request.user, match_id)
+        if not match.draft_mode:
+            raise ApiError("cannot_close", _("El acta de este enfrentamiento ya está cerrada."), 409)
+        data = close_preview(match)
+        data["future"] = match.start_date > datetime.date.today()
+        return json_ok(data)
