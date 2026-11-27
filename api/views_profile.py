@@ -235,14 +235,9 @@ class OwnPlayerView(ApiView):
             raise invalid("remove_photo")
         data = {"position": body.get("position", player.position), "skillfull_hand": body.get("hand", player.skillfull_hand)}
         files = {}
-        raw = body.get("photo")
-        if raw not in (None, ""):
-            if not isinstance(raw, str) or len(raw) > MAX_PHOTO_LENGTH:
-                raise _photo_error(_("La foto es demasiado grande."))
-            try:
-                files["photo"] = SimpleUploadedFile("photo.jpg", base64.b64decode(raw, validate=True), content_type="image/jpeg")
-            except (binascii.Error, ValueError):
-                raise _photo_error(_("La foto no es una imagen válida."))
+        photo = decode_photo(body.get("photo"))
+        if photo is not None:
+            files["photo"] = photo
         form = OwnPlayerForm(data, files, instance=player)
         form.uploader = request.user
         if not form.is_valid():
@@ -259,3 +254,15 @@ class OwnPlayerView(ApiView):
 def _photo_error(message):
     """400 ``validation_error`` con el mensaje en el campo ``photo``."""
     return ApiError("validation_error", _("Revisa los datos del formulario."), 400, extra={"fields": {"photo": [message]}})
+
+
+def decode_photo(raw):
+    """Foto en base64 del cuerpo como fichero subido, o ``None`` si no viene. 400 ``validation_error`` si no es una imagen válida."""
+    if raw in (None, ""):
+        return None
+    if not isinstance(raw, str) or len(raw) > MAX_PHOTO_LENGTH:
+        raise _photo_error(_("La foto es demasiado grande."))
+    try:
+        return SimpleUploadedFile("photo.jpg", base64.b64decode(raw, validate=True), content_type="image/jpeg")
+    except (binascii.Error, ValueError):
+        raise _photo_error(_("La foto no es una imagen válida."))

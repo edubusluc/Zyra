@@ -34,6 +34,12 @@ va autenticada con un **token de dispositivo**. El código está en `api/`; las 
 | `POST /me/sessions/revoke-others` | no | Cierra la sesión en los demás dispositivos: `{"closed": n}` |
 | `PATCH /teams/<id>/me/player` | no | La persona edita su ficha: `position`, `hand`, `photo` (base64) y `remove_photo`; mismas reglas y moderación de foto que la web. 404 sin ficha enlazada; 400 `validation_error` con `fields` |
 | `POST /teams/<id>/transfer-captaincy` | no | El capitán traspasa la capitanía (`{"member": id}` de `captaincies[].successors`); él queda como miembro; 409 `cannot_transfer` |
+| `GET /teams/<id>/roster` | no | Plantilla del equipo: `team` (con `max_roster`), `can_manage`, `in_team` y `players` (nombre, foto, posición, mano, `role`, `linked`, `in_team`). Quien gestiona ve también las bajas |
+| `POST /teams/<id>/players` | no | Alta de jugador (gestores): `name`, `last_name`, `position`, `hand`, `joined_season`, `photo`. `check: true` solo valida; 409 `similar_players` si hay uno parecido, y se repite con `confirm_similar: true` |
+| `PATCH /players/<id>` | no | Edita un jugador (gestores): nombre, posición, mano, temporada, `photo` y `remove_photo` |
+| `POST /players/<id>/leave` | no | Baja de la plantilla (como la web: con cuenta enlazada solo el capitán; el capitán no se da de baja); 409 `cannot_leave`; devuelve `open_matches` y `roster_empty` |
+| `POST /players/<id>/join` | no | Alta de un jugador de baja (si dejó una cuenta se le invita por email: `invited`); 409 `cannot_join` |
+| `POST /players/<id>/delete` | no | Elimina un jugador sin cuenta que no ha jugado; 409 `cannot_delete` |
 | `GET /me/stats` | no | «Yo» (Mis estadísticas): lo de la persona en todas sus fichas, con filtros `season` y `match_type`. Con `ETag` |
 | `GET /teams/<id>/stats/team` | no | Estadísticas · Equipo del equipo `<id>` (cualquier miembro): balance, forma, puntos, sets, récords, plantilla, SNP y asistencia. Con `ETag` |
 | `GET /teams/<id>/stats/players/<player_id>` | no | Ficha de un jugador de la plantilla (la de «Yo» si es el propio): cabecera, cifras, temporadas, sets, convocatorias, compañeros, frente a la plantilla, SNP y partidos. Filtros `season` y `match_type`. Con `ETag` |

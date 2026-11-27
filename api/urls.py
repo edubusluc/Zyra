@@ -2,7 +2,7 @@
 from django.urls import re_path
 
 from . import (views, views_account, views_apple, views_auth, views_call, views_lineup, views_results, views_club, views_devices, views_google, views_home,
-               views_create_match, views_invitations, views_match, views_notices, views_profile, views_setup, views_stats)
+               views_create_match, views_invitations, views_match, views_notices, views_profile, views_roster, views_setup, views_stats)
 
 urlpatterns = [
     re_path(r"^auth/login/?$", views_auth.LoginView.as_view(), name="api_login"),
@@ -74,6 +74,12 @@ urlpatterns = [
     re_path(r"^me/email/?$", views_profile.EmailChangeView.as_view(), name="api_profile_email"),
     re_path(r"^me/password/?$", views_profile.PasswordView.as_view(), name="api_profile_password"),
     re_path(r"^me/sessions/revoke-others/?$", views_profile.RevokeOthersView.as_view(), name="api_profile_revoke_others"),
+    re_path(r"^teams/(?P<team_id>[\w-]+)/roster/?$", views_roster.RosterView.as_view(), name="api_roster"),
+    re_path(r"^teams/(?P<team_id>[\w-]+)/players/?$", views_roster.CreatePlayerView.as_view(), name="api_create_player"),
+    re_path(r"^players/(?P<player_id>[\w-]+)/leave/?$", views_roster.LeaveView.as_view(), name="api_player_leave"),
+    re_path(r"^players/(?P<player_id>[\w-]+)/join/?$", views_roster.JoinView.as_view(), name="api_player_join"),
+    re_path(r"^players/(?P<player_id>[\w-]+)/delete/?$", views_roster.DeletePlayerView.as_view(), name="api_player_delete"),
+    re_path(r"^players/(?P<player_id>[\w-]+)/?$", views_roster.PlayerView.as_view(), name="api_player"),
     re_path(r"^teams/(?P<team_id>[\w-]+)/me/player/?$", views_profile.OwnPlayerView.as_view(), name="api_own_player"),
     re_path(r"^teams/(?P<team_id>[\w-]+)/transfer-captaincy/?$", views_profile.TransferCaptaincyView.as_view(),
             name="api_transfer_captaincy"),
