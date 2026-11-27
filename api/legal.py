@@ -21,6 +21,7 @@ class _Blocks(HTMLParser):
     """Convierte el HTML de un documento en bloques ``heading``, ``paragraph`` y ``list`` con texto en Markdown (negrita y enlaces)."""
 
     def __init__(self, base_url):
+        """Guarda la URL base para los enlaces relativos y prepara el estado del análisis."""
         super().__init__(convert_charrefs=True)
         self.base_url = base_url
         self.blocks = []
@@ -30,6 +31,7 @@ class _Blocks(HTMLParser):
         self._link = None
 
     def handle_starttag(self, tag, attrs):
+        """Abre un bloque en títulos, párrafos y elementos, y marca negritas y enlaces."""
         if tag in ("h1", "h2", "h3", "p", "li"):
             self._tag, self._buffer = tag, []
             if tag == "li" and self._items is None:
@@ -44,6 +46,7 @@ class _Blocks(HTMLParser):
             self._buffer.append("[")
 
     def handle_endtag(self, tag):
+        """Cierra negritas, enlaces y bloques, y guarda el bloque terminado."""
         if tag in ("strong", "b") and self._tag:
             self._buffer.append("**")
         elif tag == "a" and self._tag and self._link is not None:
@@ -66,6 +69,7 @@ class _Blocks(HTMLParser):
             self._items = None
 
     def handle_data(self, data):
+        """Acumula el texto mientras haya un bloque abierto."""
         if self._tag:
             self._buffer.append(data)
 
