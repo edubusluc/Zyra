@@ -272,7 +272,7 @@ def list_match(request):
     open_ids = [m.id for m in matches if m.draft_mode]
     games_count = dict(Game.objects.filter(match_id__in=open_ids).values('match_id').annotate(n=Count('id'))
                        .values_list('match_id', 'n'))
-    with_result = dict(Game.objects.filter(match_id__in=open_ids, results__isnull=False).values('match_id')
+    with_result = dict(Game.objects.filter(match_id__in=open_ids).filter(Q(results__isnull=False) | ~Q(no_show='')).values('match_id')
                        .annotate(n=Count('id', distinct=True)).values_list('match_id', 'n'))
     # Estado de cada enfrentamiento abierto (mismas palabras que la ficha y el inicio: match.phase).
     phases = match_phase.phases_for(matches)

@@ -9,7 +9,7 @@ calendario y el inicio: «Por convocar», «Convocatoria abierta», «Por alinea
 """
 from dataclasses import dataclass
 
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.utils.translation import gettext_lazy as _, ngettext
 
 from call.models import Availability, Call
@@ -144,7 +144,10 @@ def phases_for(matches):
                   Club.objects.filter(pk__in={m.club_id for m in matches}).values_list("pk", "competition")}
     calls = {c.match_id: c for c in Call.objects.filter(match_id__in=ids).annotate(n_players=Count("players"))}
     games = dict(Game.objects.filter(match_id__in=ids).values_list("match_id").annotate(n=Count("id")))
-    results = dict(Result.objects.filter(game__match_id__in=ids).values_list("game__match_id").annotate(n=Count("game_id", distinct=True)))
+    # Un partido con la pareja no presentada no lleva resultado: cuenta como resuelto (si no, con menos jugadores
+    # de los necesarios los partidos «sin pareja» impedirían llegar nunca a «Cerrar acta»).
+    results = dict(Game.objects.filter(match_id__in=ids).filter(Q(results__isnull=False) | ~Q(no_show=""))
+                   .values_list("match_id").annotate(n=Count("id", distinct=True)))
     phases = {}
     for m in matches:
         call = calls.get(m.id)
