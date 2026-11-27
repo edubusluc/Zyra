@@ -171,5 +171,5 @@ class CopyPlayersApiTests(TestCase):
         self.assertEqual(res.status_code, 404)
 
     def test_invalid_players_is_400(self):
-        """Una lista con ids que no son ids: 400."""
-        self.assertEqual(self.call("post", {"players": ["x"]}).status_code, 400)
+        """Si ``players`` no es una lista: 400."""
+        self.assertEqual(self.call("post", {"players": "Sergio"}).status_code, 400)
