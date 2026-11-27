@@ -1,7 +1,11 @@
 """Vistas de ``/api/v1/me/...`` del perfil: cuenta, preferencias, contraseña, sesiones y traspaso de capitanía."""
+import base64
+import binascii
+
 from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth import password_validation
 from django.core.exceptions import ValidationError
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import transaction
 from django.utils.translation import gettext as _, ngettext
 
@@ -10,6 +14,7 @@ from core.forms import EmailChangeForm
 from core.models import REPORT_SCOPES, Membership, UserPreference
 from core.services import CaptaincyError, eligible_successors, transfer_captaincy
 from core.views import email_needs_confirmation
+from players.forms import OwnPlayerForm
 from players.models import Player
 
 from . import tokens
@@ -21,6 +26,7 @@ from .views_base import ApiView
 from .views_home import _team
 
 MAX_PASSWORD_LENGTH = 128
+MAX_PHOTO_LENGTH = 3_000_000  # caracteres en base64 (unos 2,2 MB de imagen)
 SCOPES = [code for code, _label in REPORT_SCOPES]
 
 
@@ -206,3 +212,50 @@ class TransferCaptaincyView(ApiView):
         except CaptaincyError as exc:
             raise ApiError("cannot_transfer", str(exc), 409)
         return json_ok({"transferred": True})
+
+
+class OwnPlayerView(ApiView):
+    """``PATCH /api/v1/teams/<id>/me/player``: la persona edita su propia ficha (posición, mano hábil y foto)."""
+
+    def patch(self, request, team_id):
+        """
+        Cuerpo con cualquiera de ``position`` (``Derecha``, ``Revés``, ``Mixto`` o ``NONE``), ``hand`` (``Diestro``,
+        ``Zurdo`` o ``NONE``), ``photo`` (imagen en base64) y ``remove_photo`` (booleano). Usa ``OwnPlayerForm`` de la web, así
+        que la foto se reduce, se pasa a WebP y se modera igual. 404 si la cuenta no tiene ficha enlazada en ese equipo; 400
+        ``validation_error`` con ``fields``. Devuelve la ficha como en ``GET /me/profile`` (``sheets[].player``).
+        """
+        body = self.json_body(request)
+        active, _suspended = active_memberships(request.user)
+        membership = next((m for m in active if str(m.club.public_id) == team_id), None)
+        player = Player.objects.filter(club=membership.club, user=request.user).first() if membership else None
+        if player is None:
+            raise ApiError("not_found", _("No encontrado."), 404)
+        remove = body.get("remove_photo", False)
+        if not isinstance(remove, bool):
+            raise invalid("remove_photo")
+        data = {"position": body.get("position", player.position), "skillfull_hand": body.get("hand", player.skillfull_hand)}
+        files = {}
+        raw = body.get("photo")
+        if raw not in (None, ""):
+            if not isinstance(raw, str) or len(raw) > MAX_PHOTO_LENGTH:
+                raise _photo_error(_("La foto es demasiado grande."))
+            try:
+                files["photo"] = SimpleUploadedFile("photo.jpg", base64.b64decode(raw, validate=True), content_type="image/jpeg")
+            except (binascii.Error, ValueError):
+                raise _photo_error(_("La foto no es una imagen válida."))
+        form = OwnPlayerForm(data, files, instance=player)
+        form.uploader = request.user
+        if not form.is_valid():
+            raise ApiError("validation_error", _("Revisa los datos del formulario."), 400,
+                           extra={"fields": {("hand" if f == "skillfull_hand" else f): [str(e) for e in errs]
+                                             for f, errs in form.errors.items()}})
+        form.save()
+        if remove and not files:
+            player.photo = None
+            player.save(update_fields=["photo"])
+        return json_ok({"player": _sheets(request.user, [membership])[0]["player"]})
+
+
+def _photo_error(message):
+    """400 ``validation_error`` con el mensaje en el campo ``photo``."""
+    return ApiError("validation_error", _("Revisa los datos del formulario."), 400, extra={"fields": {"photo": [message]}})

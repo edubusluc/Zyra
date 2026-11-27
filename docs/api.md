@@ -32,6 +32,7 @@ va autenticada con un **token de dispositivo**. El código está en `api/`; las 
 | `POST /me/email` | no | Cambia el email con la contraseña actual y envía la confirmación (409 `no_password` en cuentas de Google; 429 a las 5/h) |
 | `POST /me/password` | no | Cambia o añade la contraseña (`new_password`, `current_password` si ya hay; 403 `wrong_password`, 400 `weak_password`); revoca los demás dispositivos y deja este |
 | `POST /me/sessions/revoke-others` | no | Cierra la sesión en los demás dispositivos: `{"closed": n}` |
+| `PATCH /teams/<id>/me/player` | no | La persona edita su ficha: `position`, `hand`, `photo` (base64) y `remove_photo`; mismas reglas y moderación de foto que la web. 404 sin ficha enlazada; 400 `validation_error` con `fields` |
 | `POST /teams/<id>/transfer-captaincy` | no | El capitán traspasa la capitanía (`{"member": id}` de `captaincies[].successors`); él queda como miembro; 409 `cannot_transfer` |
 | `GET /me/stats` | no | «Yo» (Mis estadísticas): lo de la persona en todas sus fichas, con filtros `season` y `match_type`. Con `ETag` |
 | `GET /teams/<id>/stats/team` | no | Estadísticas · Equipo del equipo `<id>` (cualquier miembro): balance, forma, puntos, sets, récords, plantilla, SNP y asistencia. Con `ETag` |

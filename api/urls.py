@@ -74,6 +74,7 @@ urlpatterns = [
     re_path(r"^me/email/?$", views_profile.EmailChangeView.as_view(), name="api_profile_email"),
     re_path(r"^me/password/?$", views_profile.PasswordView.as_view(), name="api_profile_password"),
     re_path(r"^me/sessions/revoke-others/?$", views_profile.RevokeOthersView.as_view(), name="api_profile_revoke_others"),
+    re_path(r"^teams/(?P<team_id>[\w-]+)/me/player/?$", views_profile.OwnPlayerView.as_view(), name="api_own_player"),
     re_path(r"^teams/(?P<team_id>[\w-]+)/transfer-captaincy/?$", views_profile.TransferCaptaincyView.as_view(),
             name="api_transfer_captaincy"),
     re_path(r"^me/stats/?$", views_stats.MyStatsView.as_view(), name="api_my_stats"),
