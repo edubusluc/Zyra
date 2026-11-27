@@ -6,13 +6,14 @@ from core import similarity
 from core.models import Membership
 from core.services import AltaError, RemovalError, dar_de_alta, dar_de_baja, open_matches_with
 from match.models import Game
+from players import copy as player_copy
 from players.forms import PlayerEditForm, PlayerForm
 from players.models import Player
 
 from .errors import ApiError
 from .fields import invalid
 from .responses import json_ok
-from .teams import membership_for_team
+from .teams import active_memberships, membership_for_team
 from .views_base import ApiView
 from .views_profile import decode_photo
 
@@ -35,6 +36,14 @@ def _player(player, roles, pending=frozenset()):
         "copied_from": player.copied_from.club.name if player.copied_from_id else None,
         "pending_copy": player.pk in pending,
     }
+
+
+def copy_sources(user, club):
+    """Equipos de otra competición desde los que ``user`` puede copiar jugadores a ``club`` (donde también gestiona)."""
+    active, _suspended = active_memberships(user)
+    if not any(m.club_id == club.pk and m.can_manage for m in active):
+        return []
+    return [m.club for m in active if m.can_manage and m.club_id != club.pk and m.club.competition != club.competition]
 
 
 def _team_player(user, player_id, *, manage=True):
@@ -69,7 +78,7 @@ class RosterView(ApiView):
     def get(self, request, team_id):
         """
         ``team`` (``id``, ``name``, ``competition``, ``max_roster``), ``can_manage``, ``in_team`` (cuántos hay en la
-        plantilla) y ``players`` ordenados por nombre. Quien gestiona ve también las bajas (``in_team`` falso); el resto
+        plantilla), ``can_copy`` (hay otro equipo del que copiar jugadores) y ``players`` ordenados por nombre. Quien gestiona ve también las bajas (``in_team`` falso); el resto
         solo la plantilla. ``role`` es ``captain`` o ``manager`` en las fichas con esa cuenta.
         """
         membership = membership_for_team(request.user, team_id)
@@ -84,6 +93,7 @@ class RosterView(ApiView):
                      "competition_name": club.rules.name, "max_roster": club.rules.max_roster},
             "can_manage": membership.can_manage,
             "in_team": sum(p.in_team for p in players),
+            "can_copy": bool(copy_sources(request.user, club)),
             "players": [_player(p, roles) for p in players],
         })
 
@@ -213,3 +223,65 @@ class DeletePlayerView(ApiView):
                                               "de las estadísticas del equipo y de sus compañeros. Dalo de baja."), 409)
         player.delete()
         return json_ok({"deleted": True})
+
+
+def _copy_source(user, team_id, requested):
+    """Equipo de origen de la copia: ``requested`` (id público) si es uno de los posibles y, si no, el primero; 404 si no hay ninguno."""
+    membership = membership_for_team(user, team_id, manage=True)
+    sources = copy_sources(user, membership.club)
+    if not sources:
+        raise ApiError("not_found", _("No encontrado."), 404)
+    source = next((c for c in sources if str(c.public_id) == str(requested)), sources[0])
+    return membership.club, source, sources
+
+
+def _team_ref(club):
+    """Un equipo en las respuestas de copiar: ``id``, ``name`` y ``competition_name``."""
+    return {"id": str(club.public_id), "name": club.name, "competition_name": club.rules.name}
+
+
+class CopyPlayersView(ApiView):
+    """``GET`` y ``POST /api/v1/teams/<id>/copy``: copiar jugadores desde el equipo de otra competición (SNP ↔ LAPI)."""
+
+    def get(self, request, team_id):
+        """
+        Con ``?from=<id de equipo>`` (si no, el primero): ``target``, ``source``, ``sources`` (los posibles), ``in_team``,
+        ``max_roster`` y ``candidates``: la plantilla de origen con ``id``, ``full_name``, ``photo``, ``position``, ``hand``,
+        ``status`` (``copy``: se copia la ficha; ``invite``: tiene cuenta y recibirá una invitación; ``member``: su cuenta ya
+        está en este equipo y se enlaza; ``already``: ya está; ``other_team``: su cuenta juega en otro equipo de esta
+        competición) y ``match`` (nombre de la ficha que ya existe). Los que se pueden copiar van primero. 404 si no hay de dónde copiar.
+        """
+        target, source, sources = _copy_source(request.user, team_id, request.GET.get("from"))
+        rows = sorted(player_copy.candidates(source, target),
+                      key=lambda r: r["status"] not in (player_copy.MEMBER, player_copy.INVITE, player_copy.COPY))
+        return json_ok({
+            "target": _team_ref(target), "source": _team_ref(source), "sources": [_team_ref(c) for c in sources],
+            "in_team": player_copy.roster_size(target), "max_roster": target.rules.max_roster,
+            "candidates": [{
+                "id": str(r["player"].public_id), "full_name": r["player"].full_name,
+                "photo": r["player"].photo.url if r["player"].photo else None,
+                "position": r["player"].position, "hand": r["player"].skillfull_hand,
+                "status": r["status"], "match": r["match"].full_name if r["match"] else None,
+            } for r in rows],
+        })
+
+    def post(self, request, team_id):
+        """
+        Cuerpo ``from`` (id del equipo de origen) y ``players`` (ids de los jugadores a copiar). Copia los que se pueden
+        (``copy``, ``invite`` y ``member``); a los que tienen cuenta les llega una invitación por correo. Devuelve ``copied`` y
+        ``invited`` (cuántos), ``skipped`` (nombres que no se copiaron), ``in_team`` y ``over_limit`` (la plantilla pasa del
+        máximo de la competición; no lo impide).
+        """
+        body = self.json_body(request)
+        target, source, _sources = _copy_source(request.user, team_id, body.get("from"))
+        ids = body.get("players")
+        if not isinstance(ids, list):
+            raise invalid("players")
+        if not all(isinstance(raw, str) and raw.isalnum() and len(raw) <= 32 for raw in ids):
+            raise invalid("players")
+        wanted = ids
+        pks = [p.pk for p in Player.objects.filter(club=source, public_id__in=wanted)]
+        result = player_copy.copy_players(source, target, pks, request.user, site_url=request.build_absolute_uri("/"))
+        size, limit = player_copy.roster_size(target), target.rules.max_roster
+        return json_ok({"copied": len(result["copied"]), "invited": len(result["invited"]), "skipped": result["skipped"],
+                        "in_team": size, "over_limit": bool(limit and size > limit)})
