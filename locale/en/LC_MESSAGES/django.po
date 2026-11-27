@@ -17280,3 +17280,7 @@ msgstr "%(label)s: not enough data"
 #, python-format
 msgid "Hay parejas sin presentar (SNP 20.2): el acta se cerrará con %(outcome)s %(own)s-%(rival)s."
 msgstr "Some pairs did not show up (SNP 20.2): the match sheet will close as %(outcome)s %(own)s-%(rival)s."
+
+#: api/views_match.py
+msgid "Al cerrarla ya no se podrá apuntar ni quitar a nadie."
+msgstr "Once closed, nobody can be added or removed."

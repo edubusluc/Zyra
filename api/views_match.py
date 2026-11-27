@@ -55,8 +55,11 @@ def _close_confirm(match, phase, call):
             "Se va a cerrar la convocatoria con %(n)s jugador menos del mínimo (%(called)s de %(total)s). Hazlo solo si hay bajas, por ejemplo por lesión.",
             "Se va a cerrar la convocatoria con %(n)s jugadores menos del mínimo (%(called)s de %(total)s). Hazlo solo si hay bajas, por ejemplo por lesión.",
             phase.missing_players) % {"n": phase.missing_players, "called": phase.called, "total": phase.min_call})
-    parts.append(ngettext("Se cierra la convocatoria con %(n)s convocado: ya no se podrá apuntar ni quitar a nadie.",
-                          "Se cierra la convocatoria con %(n)s convocados: ya no se podrá apuntar ni quitar a nadie.", count) % {"n": count})
+    if short:  # el aviso de arriba ya dice cuántos hay: no se repite el recuento
+        parts.append(_("Al cerrarla ya no se podrá apuntar ni quitar a nadie."))
+    else:
+        parts.append(ngettext("Se cierra la convocatoria con %(n)s convocado: ya no se podrá apuntar ni quitar a nadie.",
+                              "Se cierra la convocatoria con %(n)s convocados: ya no se podrá apuntar ni quitar a nadie.", count) % {"n": count})
     finals = bool(call) and bool(league.finals_shortfall(match, call.players.all()))
     already = bool(call and call.report_deliveries.filter(status=ReportDelivery.SENT).exists())
     past = is_past_match(match)
