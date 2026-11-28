@@ -218,6 +218,11 @@
 </div>
 {% endfor %}
 <div class="z-panel z-account">
+    <h2 class="z-section-title mt-0">{% translate "Descargar mis datos" %}</h2>
+    <p class="form-text">{% translate "Un archivo con los datos personales que Zyra guarda de tu cuenta: perfil, preferencias, equipos, fichas de jugador y dispositivos." %}</p>
+    <a href="{% url 'export_my_data' %}" class="btn btn-outline-light"><i class="fa-solid fa-download me-1" aria-hidden="true"></i> {% translate "Descargar mis datos" %}</a>
+</div>
+<div class="z-panel z-account">
     <h2 class="z-section-title mt-0">{% translate "Eliminar mi cuenta" %}</h2>
     <p class="form-text">{% translate "Borra tu cuenta y tus preferencias. Si eres capitán, antes tienes que traspasar la capitanía a otro jugador del equipo." %}</p>
     <a href="{% url 'delete_account' %}" class="btn btn-outline-danger"><i class="fa-solid fa-user-slash me-1" aria-hidden="true"></i> {% translate "Eliminar mi cuenta" %}</a>

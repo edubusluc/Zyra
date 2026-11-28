@@ -28,6 +28,7 @@ va autenticada con un **token de dispositivo**. El código está en `api/`; las 
 |---|---|---|
 | `GET /me` | no | Arranque de la app: cuenta, equipos con rol, temporada y capacidades. Con `ETag` (304 si no cambió) |
 | `GET /me/profile` | no | «Mi perfil»: cuenta, ficha por equipo, preferencias y capitanías con posibles sucesores |
+| `GET /me/export` | no | «Descargar mis datos» (RGPD): cuenta, preferencias, equipos, fichas con histórico SNP, informes mensuales y dispositivos; sin contraseña ni tokens. 5 por hora |
 | `PATCH /me/preferences` | no | Cambia preferencias (booleanos y `monthly_scope`/`report_scope`; este último solo el capitán) |
 | `POST /me/email` | no | Cambia el email con la contraseña actual y envía la confirmación (409 `no_password` en cuentas de Google; 429 a las 5/h) |
 | `POST /me/password` | no | Cambia o añade la contraseña (`new_password`, `current_password` si ya hay; 403 `wrong_password`, 400 `weak_password`); revoca los demás dispositivos y deja este |

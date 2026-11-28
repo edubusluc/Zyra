@@ -10,6 +10,7 @@ from django.db import transaction
 from django.utils.translation import gettext as _, ngettext
 
 from core import email_verification, ratelimit, sessions
+from core.data_export import EXPORT_LIMIT, EXPORT_WINDOW, export_user_data
 from core.forms import EmailChangeForm
 from core.models import REPORT_SCOPES, Membership, UserPreference
 from core.services import CaptaincyError, eligible_successors, transfer_captaincy
@@ -266,3 +267,18 @@ def decode_photo(raw):
         return SimpleUploadedFile("photo.jpg", base64.b64decode(raw, validate=True), content_type="image/jpeg")
     except (binascii.Error, ValueError):
         raise _photo_error(_("La foto no es una imagen válida."))
+
+
+class ExportView(ApiView):
+    """``GET /api/v1/me/export``: los datos personales de la cuenta (RGPD, acceso y portabilidad)."""
+
+    def get(self, request):
+        """
+        ``generated_at``, ``account``, ``preferences``, ``memberships``, ``player_sheets`` (con ``snp_history``),
+        ``monthly_reports`` y ``app_devices``, lo mismo que descarga la web en «Mi perfil». Sin contraseña ni tokens.
+        429 tras 5 peticiones por hora.
+        """
+        if ratelimit.too_many_user(request, "export-data", EXPORT_LIMIT, EXPORT_WINDOW):
+            raise ApiError("rate_limited", _("Demasiadas peticiones. Espera un momento."), 429,
+                           {"Retry-After": str(EXPORT_WINDOW)})
+        return json_ok(export_user_data(request.user))

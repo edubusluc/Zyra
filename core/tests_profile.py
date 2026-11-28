@@ -156,3 +156,25 @@ class ReportPreferenceTests(TestCase):
     def test_invalid_value_is_ignored(self):
         self.client.post(reverse("my_profile"), {"report_scope": "otra"})
         self.assertEqual(self.client.get(reverse("my_profile")).context["report_scope"], "todos")
+
+
+class ExportMyDataTests(TestCase):
+    """«Descargar mis datos» en «Mi perfil»."""
+
+    def test_requires_login(self):
+        self.assertEqual(self.client.get(reverse("export_my_data")).status_code, 302)
+
+    def test_downloads_json_with_own_data(self):
+        User.objects.create_user("persona", "persona@example.com", "pass-12345-xyz")
+        self.client.login(username="persona", password="pass-12345-xyz")
+        response = self.client.get(reverse("export_my_data"))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("attachment", response["Content-Disposition"])
+        data = response.json()
+        self.assertEqual(data["account"]["email"], "persona@example.com")
+        self.assertEqual(data["memberships"], [])
+
+    def test_profile_offers_the_download(self):
+        User.objects.create_user("persona", "persona@example.com", "pass-12345-xyz")
+        self.client.login(username="persona", password="pass-12345-xyz")
+        self.assertContains(self.client.get(reverse("my_profile")), reverse("export_my_data"))

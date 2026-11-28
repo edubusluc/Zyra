@@ -26,6 +26,7 @@ urlpatterns = (
     path('profile/sheets/<int:pk>/link/', views.link_related_sheet, name='link_related_sheet'),
     path('profile/sheets/<int:pk>/not-mine/', views.reject_related_sheet, name='reject_related_sheet'),
     path('profile/verify-email/', views.resend_verification, name='resend_verification'),
+    path('profile/export/', views.export_my_data, name='export_my_data'),
     path('profile/delete/', views.delete_account_view, name='delete_account'),
     path('club/', views.club_home, name='club_home'),
     path('club/call-list/', views.set_call_list_visibility, name='set_call_list_visibility'),

@@ -47,7 +47,7 @@ EXEMPT = {
     # Preferencias de la cuenta: no tocan datos de un equipo.
     "toggle_my_form": "preferencia de la cuenta", "dismiss_manager_tip": "preferencia de la cuenta",
     "dismiss_snp_update_tip": "preferencia de la cuenta", "my_profile": "datos de la cuenta",
-    "logout_everywhere": "cuenta", "resend_verification": "cuenta", "delete_account": "cuenta (pide contraseña)",
+    "logout_everywhere": "cuenta", "resend_verification": "cuenta", "delete_account": "cuenta (pide contraseña)", "export_my_data": "cuenta",
     "password_check": "comprobación sin escribir",
     "delete_penalty": "ids públicos de advertencias; las de otros clubes se ignoran",
     "link_related_sheet": "ficha propia de la cuenta (id de la ficha)", "reject_related_sheet": "ficha propia de la cuenta",

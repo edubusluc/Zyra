@@ -17314,3 +17314,15 @@ msgstr ""
 "and you accept the <a href=\"%(terms_url)s\" target=\"_blank\" "
 "rel=\"noopener\">Terms</a> and the <a href=\"%(privacy_url)s\" "
 "target=\"_blank\" rel=\"noopener\">Privacy Policy</a>."
+
+#: core/templates/my_profile.html
+msgid "Descargar mis datos"
+msgstr "Download my data"
+
+#: core/templates/my_profile.html
+msgid ""
+"Un archivo con los datos personales que Zyra guarda de tu cuenta: perfil, "
+"preferencias, equipos, fichas de jugador y dispositivos."
+msgstr ""
+"A file with the personal data Zyra keeps about your account: profile, "
+"preferences, teams, player sheets and devices."
