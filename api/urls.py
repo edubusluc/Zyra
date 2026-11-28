@@ -88,6 +88,7 @@ urlpatterns = [
     re_path(r"^teams/(?P<team_id>[\w-]+)/snp-import/(?P<import_id>[\w-]+)/cancel/?$", views_snp.SnpImportCancelView.as_view(),
             name="api_snp_import_cancel"),
     re_path(r"^teams/(?P<team_id>[\w-]+)/rivals/?$", views_rivals.RivalsView.as_view(), name="api_rivals"),
+    re_path(r"^teams/(?P<team_id>[\w-]+)/rivals/(?P<rival_id>[\w-]+)/?$", views_rivals.RivalView.as_view(), name="api_rival"),
     re_path(r"^teams/(?P<team_id>[\w-]+)/own-team/?$", views_own_team.OwnTeamView.as_view(), name="api_own_team"),
     re_path(r"^legal/?$", views_legal.LegalListView.as_view(), name="api_legal"),
     re_path(r"^legal/(?P<slug>[\w-]+)/?$", views_legal.LegalDocumentView.as_view(), name="api_legal_document"),
