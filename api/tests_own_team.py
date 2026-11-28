@@ -1,13 +1,14 @@
 """Tests de ``GET/PUT /api/v1/teams/<id>/own-team`` (edición del equipo propio)."""
 from django.urls import reverse
 
+from core.models import Membership
 from team.models import divisions_for
 
 from .tests_notices import NoticesBase
 
 
 class OwnTeamApiTests(NoticesBase):
-    """Solo el capitán; mismos errores que el formulario de la web."""
+    """Capitán y gestores; mismos errores que el formulario de la web."""
 
     def setUp(self):
         """El equipo propio con categoría, país y división (el formulario las exige)."""
@@ -31,10 +32,15 @@ class OwnTeamApiTests(NoticesBase):
         self.assertEqual(data["name"], self.club.own_team.name)
         self.assertTrue(data["countries"] and data["divisions"] and data["genders"])
 
-    def test_only_captain(self):
-        """Una jugadora recibe 403."""
+    def test_player_forbidden(self):
+        """Una jugadora sin rol recibe 403."""
         self.assertEqual(self.client.get(self.url(), HTTP_AUTHORIZATION=f"Bearer {self.token}").status_code, 403)
         self.assertEqual(self.put({"name": "X"}, self.token).status_code, 403)
+
+    def test_manager_can_edit(self):
+        """Un gestor también edita el equipo propio (la web lo permite: ``club_manager_required``)."""
+        Membership.objects.filter(user=self.marta, club=self.club).update(role=Membership.MANAGER)
+        self.assertEqual(self.put({"name": "Norte B"}, self.token).status_code, 200)
 
     def test_update(self):
         """Cambia nombre y sede; el resto se conserva."""
