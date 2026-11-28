@@ -1266,7 +1266,7 @@ def leave_club(request):
 
 
 # Fecha de la última revisión de las páginas legales (cámbiala al editar sus textos).
-LEGAL_UPDATED = datetime.date(2026, 11, 9)
+LEGAL_UPDATED = datetime.date(2026, 11, 28)
 
 TEXT_PLAIN = "text/plain"
 
