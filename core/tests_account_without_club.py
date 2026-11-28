@@ -80,3 +80,24 @@ class RegisterAccountTests(TestCase):
         response = self.client.post(reverse("invitation", args=[invitation.token]))
         self.assertEqual(response.status_code, 302)
         self.assertTrue(Membership.objects.filter(user__username="espera", club=club).exists())
+
+
+class PrivacyNoticeTests(TestCase):
+    """Los formularios que crean una cuenta enlazan los términos y la política de privacidad (RGPD, arts. 12-13)."""
+
+    def assert_notice(self, response):
+        """La página trae el aviso con los dos enlaces legales."""
+        self.assertContains(response, "z-privacy-notice")
+        self.assertContains(response, f'href="{reverse("terms")}"')
+        self.assertContains(response, f'href="{reverse("privacy")}"')
+
+    def test_register_account_shows_notice(self):
+        self.assert_notice(self.client.get(reverse("register_account")))
+
+    def test_register_club_shows_notice_to_anonymous(self):
+        self.assert_notice(self.client.get(reverse("register_club")))
+
+    def test_register_club_hides_notice_to_logged_user(self):
+        User.objects.create_user("ya", "ya@example.com", PASSWORD)
+        self.client.login(username="ya", password=PASSWORD)
+        self.assertNotContains(self.client.get(reverse("register_club")), "z-privacy-notice")

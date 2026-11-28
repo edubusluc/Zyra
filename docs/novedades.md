@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 28/11/2026 · RGPD: aviso de privacidad al crear la cuenta
+
+- Los registros web («Crear mi cuenta» y «Registrar club», sin sesión) enlazan los Términos y la Política de privacidad antes de enviar el formulario, igual que la app. En el acceso, un aviso avisa de que entrar con Google por primera vez crea la cuenta. Textos en inglés incluidos.
+
 ## 26/11/2026 · Estadísticas: mínimo de 3 partidos en el orden por %
 
 - **Jugadores**: en la tabla de plantilla, el orden por % de victorias ya no pone primero a quien ha ganado su único partido. Encabezan quienes han jugado 3 partidos o más; el resto sale detrás y apagado, con su % visible. Parejas sigue con su propio mínimo (2).

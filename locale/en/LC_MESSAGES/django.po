@@ -17288,3 +17288,29 @@ msgstr "Once closed, nobody can be added or removed."
 #: api/views_snp.py
 msgid "Esta búsqueda ya no se puede confirmar."
 msgstr "This search can no longer be confirmed."
+
+#: core/templates/includes/privacy_notice.html:4
+#, python-format
+msgid ""
+"Al crear tu cuenta aceptas los <a href=\"%(terms_url)s\" target=\"_blank\" "
+"rel=\"noopener\">Términos</a> y confirmas que has leído la <a "
+"href=\"%(privacy_url)s\" target=\"_blank\" rel=\"noopener\">Política de "
+"privacidad</a>."
+msgstr ""
+"By creating your account you accept the <a href=\"%(terms_url)s\" "
+"target=\"_blank\" rel=\"noopener\">Terms</a> and confirm that you have read "
+"the <a href=\"%(privacy_url)s\" target=\"_blank\" rel=\"noopener\">Privacy "
+"Policy</a>."
+
+#: core/templates/registration/login.html:34
+#, python-format
+msgid ""
+"Si entras con Google por primera vez, se creará tu cuenta y aceptas los <a "
+"href=\"%(terms_url)s\" target=\"_blank\" rel=\"noopener\">Términos</a> y la "
+"<a href=\"%(privacy_url)s\" target=\"_blank\" rel=\"noopener\">Política de "
+"privacidad</a>."
+msgstr ""
+"If you sign in with Google for the first time, your account will be created "
+"and you accept the <a href=\"%(terms_url)s\" target=\"_blank\" "
+"rel=\"noopener\">Terms</a> and the <a href=\"%(privacy_url)s\" "
+"target=\"_blank\" rel=\"noopener\">Privacy Policy</a>."

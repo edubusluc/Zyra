@@ -22,6 +22,7 @@
         </form>
         {% translate "Crear mi cuenta con Google" as google_label %}
         {% include 'includes/google_button.html' with next=google_next label=google_label %}
+        {% include 'includes/privacy_notice.html' %}
         <p class="z-auth-foot">{% url 'login' as login_url %}{% if next %}{% with login_url=login_url|add:'?next='|add:next_q %}{% blocktranslate trimmed %}¿Ya tienes cuenta? <a href="{{ login_url }}">Inicia sesión</a>{% endblocktranslate %}{% endwith %}{% else %}{% blocktranslate trimmed %}¿Ya tienes cuenta? <a href="{{ login_url }}">Inicia sesión</a>{% endblocktranslate %}{% endif %}</p>
         <p class="z-auth-foot"><a href="{% url 'register' %}">{% translate "Volver a elegir cómo registrarme" %}</a></p>
     </div>

@@ -1,0 +1,3 @@
+{% load i18n %}
+{# Aviso de privacidad de los formularios que crean una cuenta (RGPD arts. 12-13): términos y política antes de enviar. #}
+<p class="z-auth-foot z-privacy-notice">{% url 'terms' as terms_url %}{% url 'privacy' as privacy_url %}{% blocktranslate trimmed %}Al crear tu cuenta aceptas los <a href="{{ terms_url }}" target="_blank" rel="noopener">Términos</a> y confirmas que has leído la <a href="{{ privacy_url }}" target="_blank" rel="noopener">Política de privacidad</a>.{% endblocktranslate %}</p>
