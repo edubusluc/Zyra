@@ -74,6 +74,7 @@ urlpatterns = [
             views_stats.PairStatsView.as_view(), name="api_pair_stats"),
     re_path(r"^teams/(?P<team_id>[\w-]+)/stats/rivals/?$", views_stats.RivalsStatsView.as_view(), name="api_rivals_stats"),
     re_path(r"^teams/(?P<team_id>[\w-]+)/stats/rival/?$", views_stats.RivalStatsView.as_view(), name="api_rival_stats"),
+    re_path(r"^me/export/?$", views_profile.ExportView.as_view(), name="api_profile_export"),
     re_path(r"^me/profile/?$", views_profile.ProfileView.as_view(), name="api_profile"),
     re_path(r"^me/preferences/?$", views_profile.PreferencesView.as_view(), name="api_profile_preferences"),
     re_path(r"^me/email/?$", views_profile.EmailChangeView.as_view(), name="api_profile_email"),

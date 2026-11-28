@@ -3,6 +3,10 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 28/11/2026 · RGPD: «Descargar mis datos»
+
+- Nuevo botón en «Mi perfil» (`/profile/export/`) y `GET /api/v1/me/export`: JSON con la cuenta, preferencias, equipos y rol, fichas de jugador (también las anteriores) con su histórico SNP, informes mensuales y dispositivos de la app. Sin contraseña ni tokens ni datos de otras personas; 5 descargas por hora. Lógica en `core/data_export.py`.
+
 ## 28/11/2026 · RGPD: política de privacidad, cookies y términos al día
 
 - **Privacidad**: nombra a OVHcloud (Alemania), Brevo y Google (solo acceso), quita Sentry (no está activo), añade datos de la app, jugadores sin cuenta, menores (14 años), novedades por correo, plazos (correos 180 días, copias 14 días) y respuesta a derechos en un mes.

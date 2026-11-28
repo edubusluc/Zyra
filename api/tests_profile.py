@@ -2,7 +2,7 @@
 from django.contrib.auth import get_user_model
 from django.core import mail
 from django.core.cache import cache, caches
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from api.tokens import DeviceToken, issue_token
@@ -189,3 +189,33 @@ class OwnPlayerApiTests(ProfileApiTests):
         r = self.patch_player(self.user_token, {"remove_photo": True})
         self.assertEqual(r.status_code, 200, r.content)
         self.assertIsNone(r.json()["player"]["photo"])
+
+
+class ExportApiTests(ProfileApiTests):
+    """``GET /api/v1/me/export``: los datos personales de la cuenta, sin secretos ni datos ajenos."""
+
+    def test_requires_token(self):
+        """Sin token: 401."""
+        self.assertEqual(self.client.get(reverse("api_profile_export")).status_code, 401)
+
+    def test_exports_own_data_only(self):
+        """Cuenta, equipos y ficha propios; nada del capitán ni secretos."""
+        response = self.call("get", "api_profile_export", self.user_token)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["account"]["username"], "jug")
+        self.assertEqual(data["account"]["email"], "jug@example.com")
+        self.assertEqual(data["memberships"], [{"club": "Club Norte", "role": "member"}])
+        self.assertEqual([s["name"] for s in data["player_sheets"]], ["Luis"])
+        self.assertEqual(len(data["app_devices"]), 1)
+        text = response.content.decode()
+        self.assertNotIn("capi@example.com", text)
+        self.assertNotIn("password", text.replace("has_password", ""))
+        self.assertNotIn("token", text)
+
+    @override_settings(RATE_LIMITS_ENABLED=True)
+    def test_rate_limited(self):
+        """A la sexta petición en una hora: 429."""
+        for _ in range(5):
+            self.assertEqual(self.call("get", "api_profile_export", self.user_token).status_code, 200)
+        self.assertEqual(self.call("get", "api_profile_export", self.user_token).status_code, 429)

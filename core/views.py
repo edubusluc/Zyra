@@ -3,6 +3,7 @@ Vistas generales de Zyra: portada, inicio de sesión, páginas de error, alta de
 cambio de club activo, gestión de miembros e invitaciones.
 """
 import datetime
+import json
 from urllib.parse import quote, urlencode
 
 from allauth.account.models import EmailAddress
@@ -45,6 +46,7 @@ from .emails import send_invitation_email, send_welcome_email
 from . import guides, season_prep, spaces
 from .forms import CaptainPlayerForm, CaptainSnpForm, ClubForm, EmailChangeForm, InviteMemberForm, SignUpForm
 from .middleware import SESSION_KEY
+from .data_export import EXPORT_LIMIT, EXPORT_WINDOW, export_user_data
 from .models import REPORT_SCOPES, Club, Invitation, Membership, UserPreference
 from .onboarding import onboarding_for
 from api import tokens as api_tokens
@@ -1115,6 +1117,19 @@ def resend_verification(request):
     if target and url_has_allowed_host_and_scheme(target, allowed_hosts={request.get_host()}):
         return redirect(target)
     return redirect("my_profile")
+
+
+@login_required
+@require_safe
+def export_my_data(request):
+    """«Descargar mis datos»: JSON con los datos personales de la cuenta (RGPD, acceso y portabilidad)."""
+    if ratelimit.too_many_user(request, "export-data", EXPORT_LIMIT, EXPORT_WINDOW):
+        return render(request, "429.html", status=429)
+    body = json.dumps(export_user_data(request.user), ensure_ascii=False, indent=2)
+    response = HttpResponse(body, content_type="application/json; charset=utf-8")
+    response["Content-Disposition"] = 'attachment; filename="zyra-mis-datos.json"'
+    response["Cache-Control"] = "no-store"
+    return response
 
 
 @login_required
