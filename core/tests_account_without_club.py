@@ -101,3 +101,18 @@ class PrivacyNoticeTests(TestCase):
         User.objects.create_user("ya", "ya@example.com", PASSWORD)
         self.client.login(username="ya", password=PASSWORD)
         self.assertNotContains(self.client.get(reverse("register_club")), "z-privacy-notice")
+
+
+class LegalTextsTests(TestCase):
+    """Las páginas legales nombran a los proveedores reales y no prometen lo que el código no hace."""
+
+    def test_privacy_names_processors_and_minors(self):
+        response = self.client.get(reverse("privacy"))
+        for text in ("OVHcloud", "Brevo", "14 años", "jugadores que no tienen cuenta", "180 días"):
+            self.assertContains(response, text)
+        self.assertNotContains(response, "Sentry")
+
+    def test_cookies_session_duration_matches_code(self):
+        response = self.client.get(reverse("cookies"))
+        self.assertNotContains(response, "2 semanas")
+        self.assertContains(response, "hasta un año desde tu última visita")

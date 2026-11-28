@@ -3,6 +3,12 @@
 Registro de lo que entra en `main`, de lo más reciente a lo más antiguo. Cada pull request que
 añade o cambia una funcionalidad suma aquí una línea (ver [Mantener la documentación](mantener-documentacion.md)).
 
+## 28/11/2026 · RGPD: política de privacidad, cookies y términos al día
+
+- **Privacidad**: nombra a OVHcloud (Alemania), Brevo y Google (solo acceso), quita Sentry (no está activo), añade datos de la app, jugadores sin cuenta, menores (14 años), novedades por correo, plazos (correos 180 días, copias 14 días) y respuesta a derechos en un mes.
+- **Cookies**: la sesión dura hasta cerrar el navegador o, con «Mantener la sesión iniciada», hasta un año (el texto decía 2 semanas).
+- **Términos**: edad mínima de 14 años y autorización de tutores para fichas y fotos de menores. La app muestra los mismos textos (`/api/v1/legal`).
+
 ## 28/11/2026 · RGPD: aviso de privacidad al crear la cuenta
 
 - Los registros web («Crear mi cuenta» y «Registrar club», sin sesión) enlazan los Términos y la Política de privacidad antes de enviar el formulario, igual que la app. En el acceso, un aviso avisa de que entrar con Google por primera vez crea la cuenta. Textos en inglés incluidos.
