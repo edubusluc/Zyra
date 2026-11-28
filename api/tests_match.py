@@ -134,6 +134,37 @@ class MatchApiTests(TestCase):
         self.assertTrue(actions["edit_call"]["locked"])
         self.assertTrue(actions["edit_call"]["reason"])
 
+    def _closed_before(self, days, result, points):
+        """Enfrentamiento cerrado contra el mismo rival hace ``days`` días."""
+        return Match.objects.create(
+            club=self.club, local=self.club.own_team, visiting=self.rival, draft_mode=False, result=result,
+            result_points=points, start_date=datetime.date.today() - datetime.timedelta(days=days))
+
+    def test_first_meeting_has_no_preview(self):
+        """Sin historial contra ese rival, ``preview`` es nulo."""
+        self.assertIsNone(self.get(self.user_token).json()["preview"])
+
+    def test_preview_has_balance_form_and_recent(self):
+        """Con dos enfrentamientos cerrados salen el balance, la forma y los últimos, el más reciente primero."""
+        self._closed_before(60, outcomes.LOCAL_WIN, "7/5")
+        self._closed_before(30, outcomes.VISITING_WIN, "4/8")
+        preview = self.get(self.user_token).json()["preview"]
+        self.assertEqual((preview["won"], preview["drawn"], preview["lost"], preview["played"]), (1, 0, 1, 2))
+        self.assertEqual(preview["form"], ["V", "D"])
+        self.assertEqual((preview["points_for"], preview["points_against"]), (11, 13))
+        self.assertEqual([r["outcome"] for r in preview["recent"]], ["D", "V"])
+        self.assertEqual((preview["recent"][0]["own"], preview["recent"][0]["other"]), (4, 8))
+        self.assertIn("match_id", preview["recent"][0])
+
+    def test_closed_match_has_no_preview(self):
+        """Con el acta cerrada la ficha no lleva la previa (como la web)."""
+        self._closed_before(30, outcomes.LOCAL_WIN, "7/5")
+        self.match.draft_mode = False
+        self.match.result = outcomes.LOCAL_WIN
+        self.match.result_points = "7/5"
+        self.match.save()
+        self.assertIsNone(self.get(self.user_token).json()["preview"])
+
 
 class CloseCallApiTests(TestCase):
     """``POST /matches/<id>/close-call``: cerrar la convocatoria desde la ficha nativa."""

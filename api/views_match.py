@@ -13,6 +13,7 @@ from core import ratelimit
 from call.models import Availability, Call, ReportDelivery
 from core.competitions import competition_for
 from core.templatetags.zyra_format import date_short
+from data_analyse import rivals
 from django.utils import timezone
 
 from match import league, lineup, no_show_backup, outcomes
@@ -224,12 +225,37 @@ def _availability(match, membership, open_for_answers):
             "pending": len(availability_logic.pending_players(match)), "can_remind": membership.is_admin}
 
 
+def _preview(match):
+    """
+    «Previa» del enfrentamiento (como la de la web, ``data_analyse.rivals.rival_preview``): balance contra ese rival en
+    los enfrentamientos cerrados anteriores, forma, puntos, mejor pareja y los tres últimos. None si el acta está
+    cerrada (la web solo la enseña con el acta abierta) o si nunca se jugó contra él.
+    """
+    if not match.draft_mode:
+        return None
+    preview = rivals.rival_preview(match)
+    if preview is None:
+        return None
+    best = preview["best_pair"]
+    return {
+        "won": preview["won"], "drawn": preview["drawn"], "lost": preview["lost"], "played": preview["played"],
+        "points_for": preview["points_for"], "points_against": preview["points_against"],
+        "league_points": preview["league_points"] if match.club.rules.league_type else None,
+        "form": list(preview["form"]),
+        "best_pair": None if best is None else {
+            "name": f"{best['p1'].short_name} + {best['p2'].short_name}", "wins": best["wins"], "played": best["played"]},
+        "recent": [{"match_id": str(e["match"].public_id), "date": e["date"].isoformat(), "date_label": date_short(e["date"]),
+                    "own": e["own"], "other": e["other"], "outcome": e["outcome"]} for e in preview["recent"]],
+    }
+
+
 class MatchView(ApiView):
     """``GET /api/v1/matches/<id>``: ficha de un enfrentamiento de un equipo activo de la cuenta."""
 
     def get(self, request, match_id):
         """
-        Devuelve ``{"match", "outcome", "steps", "me", "can_manage", "primary", "call", "games", "availability"}``.
+        Devuelve ``{"match", "outcome", "steps", "me", "can_manage", "primary", "call", "games", "availability",
+        "preview"}``. ``preview`` es la «Previa» contra ese rival (solo con el acta abierta y si ya se jugó contra él).
         ``outcome`` solo con el acta cerrada; ``call`` solo si hay convocatoria; ``availability`` es el resumen para
         quien gestiona. 404 si el enfrentamiento no es de un equipo activo de la cuenta.
         """
@@ -285,6 +311,7 @@ class MatchView(ApiView):
                 "players": [{"name": p.short_name, "sub": p.is_sub, "me": bool(player) and p.id == player.id}
                             for p in convocados]},
             "games": _games(match, games, player.id if player else None),
+            "preview": _preview(match),
             "actions": _actions(match, call, games, membership) if can_manage else [],
             "answer": None if player is None else {
                 "can_answer": open_for_answers, "value": availability.answer if availability else None,
