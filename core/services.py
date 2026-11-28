@@ -35,11 +35,43 @@ def club_of(user, competition=None):
     return membership.club if membership else None
 
 
+def space_in(user, competition):
+    """Membresía (con su club) de ``user`` en la competición ``competition`` (código), o None. Cuenta cualquier
+    papel: capitán, gestor o jugador."""
+    if not user.is_authenticated:
+        return None
+    return (Membership.objects.filter(user=user, club__suspended_at__isnull=True, club__competition=competition)
+            .select_related("club").order_by("pk").first())
+
+
+def taken_spaces(user):
+    """Espacios que ya ocupa ``user``: ``[{"competition", "club", "role"}]`` (``role`` es ``admin``, ``manager`` o
+    ``member``), uno por competición, para avisar antes de empezar un alta."""
+    if not user.is_authenticated:
+        return []
+    seen, spaces = set(), []
+    for membership in (Membership.objects.filter(user=user, club__suspended_at__isnull=True)
+                       .select_related("club").order_by("pk")):
+        if membership.club.competition not in seen:
+            seen.add(membership.club.competition)
+            spaces.append({"competition": membership.club.competition, "club": membership.club.name,
+                           "role": membership.role})
+    return spaces
+
+
 def free_competitions(user):
     """Competiciones (fichas) en las que ``user`` aún no tiene espacio, en el orden del registro."""
     taken = set(Membership.objects.filter(user=user, club__suspended_at__isnull=True)
                 .values_list("club__competition", flat=True)) if user.is_authenticated else set()
     return [c for c in COMPETITIONS.values() if c.code not in taken]
+
+
+def role_space_message(membership):
+    """Aviso con el papel: «Ya eres capitán de X en LAPI…» (capitán, gestor o jugador)."""
+    club = membership.club
+    return _("Ya eres %(role)s de %(club)s en %(competition)s y solo se puede tener un equipo por "
+             "competición. Abandónalo antes de unirte o crear otro de %(competition)s.") % {
+        "role": membership.team_role_label.lower(), "club": club.name, "competition": club.rules.name}
 
 
 def one_space_message(club):
@@ -50,8 +82,14 @@ def one_space_message(club):
 
 
 class SpaceTaken(Exception):
-    """La cuenta ya tiene un equipo en esa competición (un espacio por competición)."""
-    pass
+    """La cuenta ya tiene un equipo en esa competición (un espacio por competición). ``membership`` es el que
+    ya ocupa (con su club y su papel)."""
+
+    def __init__(self, competition, membership=None):
+        """Guarda la competición y la membresía que la ocupa."""
+        super().__init__(competition)
+        self.competition = competition
+        self.membership = membership
 
 
 def ensure_space_free(user, competition):
@@ -61,8 +99,9 @@ def ensure_space_free(user, competition):
     formulario de alta (doble clic, dos pestañas) no creen dos equipos en la misma competición.
     """
     User.objects.select_for_update().get(pk=user.pk)
-    if club_of(user, competition) is not None:
-        raise SpaceTaken(competition)
+    membership = space_in(user, competition)
+    if membership is not None:
+        raise SpaceTaken(competition, membership)
 
 
 @transaction.atomic

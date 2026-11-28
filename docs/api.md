@@ -221,7 +221,7 @@ Cuerpo: `{"id_token": "<jwt>", "nonce": "<valor en claro>", "device_name"?}`. Re
 
 ### `GET /club/options`
 
-Datos del formulario de alta: `competitions` (cada una con `code`, `name`, `full_name`, `color`, `snp` —si admite conectar la cuenta de SNP—, `divisions` y `countries` como `{code, label}`), `genders`, `google` (si se puede continuar con Google) y `snp_available`.
+Datos del formulario de alta: `competitions` (cada una con `code`, `name`, `full_name`, `color`, `snp` —si admite conectar la cuenta de SNP—, `divisions` y `countries` como `{code, label}`), `genders`, `google` (si se puede continuar con Google), `snp_available` y `taken`: con el token de la cuenta (opcional; sin él o inválido, `[]`) las competiciones donde ya tiene equipo, `[{competition, club, role}]` con `role` `admin`, `manager` o `member`, para no ofrecerlas al crear otro equipo.
 
 ### `POST /club/register`
 
@@ -243,7 +243,7 @@ Alta de club desde la app, con las mismas reglas que la web. Cuerpo:
 - `team.crest`: imagen en base64 (hasta ~2,2 MB); se reduce y valida igual que en la web.
 - Con éxito, 201 como el login, más `club` (`name`, `competition`) y, con SNP, `next_path`: la página web donde se elige qué jugador es el capitán (se abre con `/auth/web-session`); si SNP está apagado, `snp_unavailable: true`.
 - `400 validation_error` con `fields`: errores por campo con clave `seccion.campo` (`team.name`, `captain.snp_username`, `account.email`, `account.password`, `team.crest`…), cada uno una lista de textos.
-- `409 space_taken`: la cuenta ya tiene equipo en esa competición. `403 email_blocked`. `429 rate_limited`: 5 altas por hora y por IP (el mismo límite que la web). Errores de Google como en `/auth/google`.
+- `409 space_taken`: la cuenta ya tiene equipo en esa competición (como capitán, gestor o jugador); `detail` nombra el club y el papel y `taken` trae `{competition, club, role}`. `403 email_blocked`. `429 rate_limited`: 5 altas por hora y por IP (el mismo límite que la web). Errores de Google como en `/auth/google`.
 
 ### `GET /invitations/<token>` y `POST /invitations/<token>/accept`
 

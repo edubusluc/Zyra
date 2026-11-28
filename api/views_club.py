@@ -7,6 +7,7 @@ import base64
 import binascii
 
 from allauth.account.adapter import get_adapter
+from django.contrib.auth.models import AnonymousUser
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import IntegrityError, transaction
 from django.urls import reverse
@@ -17,13 +18,15 @@ from core.blocklist import is_user_blocked
 from core.competitions import COMPETITIONS
 from core.emails import send_welcome_email
 from core.forms import CaptainPlayerForm, CaptainSnpForm, ClubForm, SignUpForm
-from core.services import SpaceTaken, create_club, ensure_space_free
+from core.services import SpaceTaken, create_club, ensure_space_free, role_space_message, taken_spaces
 from core.views import REGISTER_LIMIT, REGISTER_WINDOW
 from players import snp_service
 from players.models import SnpAccount
 from team.models import Team
 
 from . import google, google_accounts
+from .auth import bearer_token
+from .tokens import resolve_token
 from .errors import ApiError
 from .fields import text_field
 from .responses import json_ok
@@ -55,8 +58,15 @@ class ClubOptionsView(ApiView):
         } for c in COMPETITIONS.values()]
         return json_ok({
             "competitions": competitions, "genders": _labelled(Team.GENDERS), "google": google.enabled(),
-            "snp_available": snp_service.is_enabled(),
+            "snp_available": snp_service.is_enabled(), "taken": taken_spaces(self._optional_user(request)),
         })
+
+    @staticmethod
+    def _optional_user(request):
+        """Cuenta del token si lo trae y es válido; si no, anónima (la ruta es pública)."""
+        raw = bearer_token(request)
+        device = resolve_token(raw) if raw else None
+        return device.user if device else AnonymousUser()
 
 
 def _section(body, name):
@@ -192,8 +202,12 @@ class RegisterClubView(ApiView):
                     snp_account.username = snp_form.cleaned_data["username"].strip()
                     snp_account.password = snp_form.cleaned_data["password"]
                     snp_account.save()
-        except SpaceTaken:
-            raise ApiError("space_taken", _("Ya tienes un equipo en esa competición."), 409)
+        except SpaceTaken as taken:
+            if taken.membership is None:
+                raise ApiError("space_taken", _("Ya tienes un equipo en esa competición."), 409)
+            raise ApiError("space_taken", role_space_message(taken.membership), 409, extra={"taken": {
+                "competition": taken.competition, "club": taken.membership.club.name,
+                "role": taken.membership.role}})
         except IntegrityError:
             # Dos altas a la vez con el mismo usuario o email: gana la primera.
             raise ApiError("validation_error", _("Revisa los datos del formulario."), 400, extra={"fields": {

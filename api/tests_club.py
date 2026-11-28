@@ -71,6 +71,29 @@ class OptionsTests(ClubTestCase):
         self.assertEqual([c["code"] for c in lapi["countries"]], ["ES"])
         self.assertEqual([g["code"] for g in data["genders"]], ["M", "F"])
 
+    def test_taken_is_empty_without_token(self):
+        """Sin sesión no hay espacios ocupados."""
+        self.assertEqual(self.client.get(reverse("api_club_options")).json()["taken"], [])
+
+    def test_taken_lists_every_role(self):
+        """Con token, las competiciones donde ya es capitán, gestor o jugador (con club y papel)."""
+        from api.tokens import issue_token
+        from core.services import create_club
+        user = User.objects.create_user("ana", "ana@example.com", "x-Clave-12345")
+        _device, raw = issue_token(user, "iPhone")
+        other = User.objects.create_user("bea", "bea@example.com", "x-Clave-12345")
+        club = create_club("Norte", "Gijón", other, competition="lapi")
+        Membership.objects.create(user=user, club=club, role=Membership.MEMBER)
+        create_club("Sur", "Oviedo", user, competition="snp")
+        data = self.client.get(reverse("api_club_options"), HTTP_AUTHORIZATION=f"Bearer {raw}").json()
+        self.assertEqual({t["competition"]: (t["club"], t["role"]) for t in data["taken"]},
+                         {"snp": ("Sur", "admin"), "lapi": ("Norte", "member")})
+
+    def test_invalid_token_is_ignored(self):
+        """Un token inválido no rompe la ruta pública: se trata como anónimo."""
+        response = self.client.get(reverse("api_club_options"), HTTP_AUTHORIZATION="Bearer zyra_nope")
+        self.assertEqual((response.status_code, response.json()["taken"]), (200, []))
+
     def test_requires_no_token_but_only_get(self):
         """Público; otro método es 405."""
         self.assertEqual(self.client.post(reverse("api_club_options")).status_code, 405)
@@ -220,6 +243,24 @@ class RegisterWithGoogleTests(ClubTestCase):
         response = self.post(self.google(jti="2"))
         self.assertEqual((response.status_code, response.json()["error"]), (409, "space_taken"))
         self.assertEqual(Club.objects.count(), 1)
+
+    def test_space_taken_names_club_and_role(self):
+        """El 409 dice en qué club y con qué papel (jugador, gestor o capitán) ya está en esa competición."""
+        from core.services import create_club
+        for role, word in ((Membership.MEMBER, "jugador"), (Membership.MANAGER, "gestor"), (Membership.ADMIN, "capitán")):
+            with self.subTest(role=role):
+                Club.objects.all().delete()
+                user = User.objects.get_or_create(username="ana", email="ana@example.com")[0]
+                EmailAddress.objects.get_or_create(user=user, email="ana@example.com", verified=True, primary=True)
+                owner = User.objects.get_or_create(username="due", email="due@example.com")[0]
+                club = create_club("Norte", "Gijón", owner, competition="snp")
+                Membership.objects.filter(user=owner).update(user=user) if role == Membership.ADMIN else \
+                    Membership.objects.create(user=user, club=club, role=role)
+                response = self.post(self.google(jti=f"role-{role}"))
+                self.assertEqual((response.status_code, response.json()["error"]), (409, "space_taken"))
+                data = response.json()
+                self.assertIn(word, data["detail"])
+                self.assertEqual(data["taken"], {"competition": "snp", "club": "Norte", "role": role})
 
     def test_invalid_token_creates_nothing(self):
         """Token mal: 401 y ni cuenta ni club."""
